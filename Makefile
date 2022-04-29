@@ -7,7 +7,6 @@ DEFAULT_TAG=$(shell git rev-list --tags="v*" --max-count=1)
 VERSION ?= $(shell echo $(shell git describe --tags $(or $(DIFF_TAG), $(DEFAULT_TAG))) | sed 's/^v//')
 TMVERSION := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::')
 COMMIT := $(shell git log -1 --format='%H')
-COMMIT_SHORT = $(shell git rev-parse --short=8 HEAD)
 LEDGER_ENABLED ?= true
 BINDIR ?= $(GOPATH)/bin
 DECIMAL_BINARY = dscd
@@ -20,7 +19,7 @@ DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bu
 NAMESPACE := decimal
 PROJECT := dsc
 DOCKER_IMAGE := $(NAMESPACE)/$(PROJECT)
-COMMIT_HASH := $(shell git rev-parse --short=7 HEAD)
+COMMIT_HASH := $(shell git rev-parse --short=8 HEAD)
 DOCKER_TAG := $(COMMIT_HASH)
 
 export GO111MODULE = on
