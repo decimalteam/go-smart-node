@@ -1,0 +1,26 @@
+{
+  "name": "decimal-smart-chain",
+  "version": "1.0.0",
+  "description": "<!-- parent:   order: false -->",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.4.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://bitbucket.org/decimalteam/go-smart-node.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://bitbucket.org/decimalteam/go-smart-node/issues"
+  },
+  "homepage": "https://bitbucket.org/decimalteam/go-smart-node#readme"
+}
