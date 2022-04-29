@@ -3,7 +3,6 @@ package starported
 import (
 	"math/rand"
 
-	"bitbucket.org/decimalteam/go-smart-node/testutil/sample"
 	starportedsimulation "bitbucket.org/decimalteam/go-smart-node/x/starported/simulation"
 	"bitbucket.org/decimalteam/go-smart-node/x/starported/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -16,7 +15,6 @@ import (
 
 // avoid unused import issue
 var (
-	_ = sample.AccAddress
 	_ = starportedsimulation.FindAccount
 	_ = simappparams.StakePerAccount
 	_ = simulation.MsgEntryKind
