@@ -1,0 +1,20 @@
+version: v1
+# managed:
+#   enabled: true
+  # go_package_prefix:
+  #   default: bitbucket.org/decimalteam/go-smart-node
+  #   except:
+  #     - buf.build/googleapis/googleapis
+plugins:
+  - name: grpc-gateway
+    out: .
+  - name: gocosmos
+    out: .
+    opt:
+      - plugins=interfacetype+grpc
+      # - google/api/annotations.proto=google.golang.org/genproto/googleapis/api/annotations
+      # - google/api/http.proto=google.golang.org/genproto/googleapis/api/annotations
+      # - Mgoogle/protobuf/any.proto=github.com/cosmos/cosmos-sdk/codec/types
+  - name: doc
+    out: docs/api
+    opt: docs/protodoc-markdown.tmpl,proto-docs.md

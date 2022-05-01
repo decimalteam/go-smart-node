@@ -3,18 +3,22 @@ package keeper
 import (
 	"testing"
 
-	"bitbucket.org/decimalteam/go-smart-node/x/starported/keeper"
-	"bitbucket.org/decimalteam/go-smart-node/x/starported/types"
+	"github.com/stretchr/testify/require"
+
+	"github.com/tendermint/tendermint/libs/log"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	tmdb "github.com/tendermint/tm-db"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/log"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	tmdb "github.com/tendermint/tm-db"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/starported/keeper"
+	"bitbucket.org/decimalteam/go-smart-node/x/starported/types"
 )
 
 func StarportedKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {

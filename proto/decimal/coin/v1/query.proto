@@ -1,0 +1,43 @@
+syntax = "proto3";
+package decimal.coin.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/coin/types";
+
+// Query defines the gRPC querier service for coin module.
+service Query {
+  // Coin queries existing coin by specific symbol.
+  rpc Coin(QueryCoinRequest) returns (QueryCoinResponse) {
+    option (google.api.http).get = "/coin/v1/coin/{symbol}";
+  }
+  // Coins queries list of all existing coins.
+  rpc Coins(QueryCoinsRequest) returns (QueryCoinsResponse) {
+    option (google.api.http).get = "/coin/v1/coins";
+  }
+}
+
+////////////////////////////////////////////////////////////////
+
+message QueryCoinRequest { string symbol = 1; }
+
+message QueryCoinResponse {
+  cosmos.base.v1beta1.Coin coin = 1 [ (gogoproto.nullable) = false ];
+}
+
+////////////////////////////////////////////////////////////////
+
+message QueryCoinsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryCoinsResponse {
+  repeated cosmos.base.v1beta1.Coin coins = 1 [
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.nullable) = false
+  ];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}

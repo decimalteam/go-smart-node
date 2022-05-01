@@ -36,6 +36,7 @@ secret.yml
 artifacts/*
 tmp-swagger-gen
 github.com/
+bitbucket.org/
 # vue/
 
 # Local docker volume mappings

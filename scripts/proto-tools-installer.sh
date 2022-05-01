@@ -6,9 +6,9 @@ DESTDIR=${DESTDIR:-}
 PREFIX=${PREFIX:-/usr/local}
 UNAME_S="$(uname -s 2>/dev/null)"
 UNAME_M="$(uname -m 2>/dev/null)"
-BUF_VERSION=0.11.0
-PROTOC_VERSION=3.13.0
-PROTOC_GRPC_GATEWAY_VERSION=1.14.7
+BUF_VERSION=1.4.0
+PROTOC_VERSION=3.20.1
+PROTOC_GRPC_GATEWAY_VERSION=2.10.0
 
 f_abort() {
     local l_rc=$1
@@ -91,7 +91,7 @@ f_install_protoc_gen_gocosmos() {
         return 1
     fi
     
-    go install github.com/regen-network/cosmos-proto/protoc-gen-gocosmos 2>/dev/null
+    go get github.com/regen-network/cosmos-proto/protoc-gen-gocosmos 2>/dev/null
     f_print_done
 }
 
@@ -99,7 +99,7 @@ f_install_protoc_gen_grpc_gateway() {
     f_print_installing_with_padding protoc-gen-grpc-gateway
     f_needs_install "${DESTDIR}/${PREFIX}/bin/protoc-gen-grpc-gateway" || return 0
     
-    curl -o "${DESTDIR}/${PREFIX}/bin/protoc-gen-grpc-gateway" -sSL "https://github.com/grpc-ecosystem/grpc-gateway/releases/download/v${PROTOC_GRPC_GATEWAY_VERSION}/${PROTOC_GRPC_GATEWAY_BIN}"
+    curl -sSL "https://github.com/grpc-ecosystem/grpc-gateway/releases/download/v${PROTOC_GRPC_GATEWAY_VERSION}/${PROTOC_GRPC_GATEWAY_BIN}" -o "${DESTDIR}/${PREFIX}/bin/protoc-gen-grpc-gateway"
     f_print_done
 }
 
@@ -113,7 +113,7 @@ f_install_protoc_gen_swagger() {
     fi
     
     pushd "${TEMPDIR}" >/dev/null
-    go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
+    go get github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
     npm install -g swagger-combine
     popd >/dev/null
     f_print_done

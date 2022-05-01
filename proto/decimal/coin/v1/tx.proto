@@ -1,0 +1,261 @@
+syntax = "proto3";
+package decimal.coin.v1;
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/coin/types";
+
+// Msg defines the coin Msg service.
+service Msg {
+
+  // CreateCoin defines message for new coin creation.
+  rpc CreateCoin(MsgCreateCoin) returns (MsgCreateCoinResponse);
+
+  // UpdateCoin defines message for modifying existing coin.
+  rpc UpdateCoin(MsgUpdateCoin) returns (MsgUpdateCoinResponse);
+
+  // SendCoin defines message for transfering specific coin.
+  rpc SendCoin(MsgSendCoin) returns (MsgSendCoinResponse);
+
+  // MultiSendCoin defines message for transfering specific coins as a batch.
+  rpc MultiSendCoin(MsgMultiSendCoin) returns (MsgMultisendCoinResponse);
+
+  // BuyCoin defines message for buying specific coin.
+  rpc BuyCoin(MsgBuyCoin) returns (MsgBuyCoinResponse);
+
+  // SellCoin defines message for selling specific coin.
+  rpc SellCoin(MsgSellCoin) returns (MsgSellCoinReponse);
+
+  // SellAllCoin defines message for selling all specific coin.
+  rpc SellAllCoin(MsgSellAllCoin) returns (MsgSellAllCoinResponse);
+
+  // RedeemCheck defines message for redeeming checks.
+  rpc RedeemCheck(MsgRedeemCheck) returns (MsgRedeemCheckResponse);
+}
+
+////////////////////////////////////////////////////////////////
+
+message MsgCreateCoin {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender",
+    (gogoproto.moretags) = "yaml:\"sender\""
+  ];
+  string title = 2 [
+    (gogoproto.jsontag) = "title",
+    (gogoproto.moretags) = "yaml:\"title\""
+  ];
+  string symbol = 3 [
+    (gogoproto.jsontag) = "symbol",
+    (gogoproto.moretags) = "yaml:\"symbol\""
+  ];
+  uint64 constant_reserve_ration = 4 [
+    (gogoproto.jsontag) = "constant_reserve_ration",
+    (gogoproto.moretags) = "yaml:\"constant_reserve_ration\""
+  ];
+  bytes initial_volume = 5 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "initial_volume",
+    (gogoproto.moretags) = "yaml:\"initial_volume\""
+  ];
+  bytes initial_reserve = 6 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "initial_reserve",
+    (gogoproto.moretags) = "yaml:\"initial_reserve\""
+  ];
+  bytes limit_volume = 7 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "limit_volume",
+    (gogoproto.moretags) = "yaml:\"limit_volume\""
+  ];
+  string identity = 8 [
+    (gogoproto.jsontag) = "identity",
+    (gogoproto.moretags) = "yaml:\"identity\""
+  ];
+}
+
+message MsgCreateCoinResponse {}
+
+////////////////////////////////////////////////////////////////
+
+message MsgUpdateCoin {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender",
+    (gogoproto.moretags) = "yaml:\"sender\""
+  ];
+  string symbol = 2 [
+    (gogoproto.jsontag) = "symbol",
+    (gogoproto.moretags) = "yaml:\"symbol\""
+  ];
+  bytes limit_volume = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "limit_volume",
+    (gogoproto.moretags) = "yaml:\"limit_volume\""
+  ];
+  string identity = 4 [
+    (gogoproto.jsontag) = "identity",
+    (gogoproto.moretags) = "yaml:\"identity\""
+  ];
+}
+
+message MsgUpdateCoinResponse {}
+
+////////////////////////////////////////////////////////////////
+
+message Send {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  cosmos.base.v1beta1.Coin coin = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "coin",
+    (gogoproto.moretags) = "yaml:\"coin\""
+  ];
+  string receiver = 2 [
+    (gogoproto.jsontag) = "receiver",
+    (gogoproto.moretags) = "yaml:\"receiver\""
+  ];
+}
+
+message MsgMultiSendCoin {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender",
+    (gogoproto.moretags) = "yaml:\"sender\""
+  ];
+  repeated Send sends = 2 [
+    (gogoproto.jsontag) = "sends",
+    (gogoproto.moretags) = "yaml:\"sends\""
+  ];
+}
+
+message MsgMultisendCoinResponse {}
+
+////////////////////////////////////////////////////////////////
+
+message MsgBuyCoin {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender",
+    (gogoproto.moretags) = "yaml:\"sender\""
+  ];
+  cosmos.base.v1beta1.Coin coin_to_buy = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "coin_to_buy",
+    (gogoproto.moretags) = "yaml:\"coin_to_buy\""
+  ];
+  cosmos.base.v1beta1.Coin max_coin_to_sell = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "max_coin_to_sell",
+    (gogoproto.moretags) = "yaml:\"max_coin_to_sell\""
+  ];
+}
+
+message MsgBuyCoinResponse {}
+
+////////////////////////////////////////////////////////////////
+
+message MsgSellCoin {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender",
+    (gogoproto.moretags) = "yaml:\"sender\""
+  ];
+  cosmos.base.v1beta1.Coin coin_to_sell = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "coin_to_sell",
+    (gogoproto.moretags) = "yaml:\"coin_to_sell\""
+  ];
+  cosmos.base.v1beta1.Coin min_coin_to_buy = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "min_coin_to_buy",
+    (gogoproto.moretags) = "yaml:\"min_coin_to_buy\""
+  ];
+}
+
+message MsgSellCoinReponse {}
+
+////////////////////////////////////////////////////////////////
+
+message MsgSellAllCoin {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender",
+    (gogoproto.moretags) = "yaml:\"sender\""
+  ];
+  cosmos.base.v1beta1.Coin coin_to_sell = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "coin_to_sell",
+    (gogoproto.moretags) = "yaml:\"coin_to_sell\""
+  ];
+  cosmos.base.v1beta1.Coin min_coin_to_buy = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "min_coin_to_buy",
+    (gogoproto.moretags) = "yaml:\"min_coin_to_buy\""
+  ];
+}
+
+message MsgSellAllCoinResponse {}
+
+////////////////////////////////////////////////////////////////
+
+message MsgSendCoin {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender",
+    (gogoproto.moretags) = "yaml:\"sender\""
+  ];
+  string receiver = 2 [
+    (gogoproto.jsontag) = "receiver",
+    (gogoproto.moretags) = "yaml:\"receiver\""
+  ];
+  cosmos.base.v1beta1.Coin coin = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "coin",
+    (gogoproto.moretags) = "yaml:\"coin\""
+  ];
+}
+
+message MsgSendCoinResponse {}
+
+////////////////////////////////////////////////////////////////
+
+message MsgRedeemCheck {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender",
+    (gogoproto.moretags) = "yaml:\"sender\""
+  ];
+  bytes check = 2 [
+    (gogoproto.jsontag) = "check",
+    (gogoproto.moretags) = "yaml:\"check\""
+  ];
+  bytes proof = 3 [
+    (gogoproto.jsontag) = "proof",
+    (gogoproto.moretags) = "yaml:\"proof\""
+  ];
+}
+
+message MsgRedeemCheckResponse {}
