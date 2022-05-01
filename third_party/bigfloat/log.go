@@ -1,11 +1,11 @@
-package math
+package bigfloat
+
+// Copied from https://github.com/ALTree/bigfloat since it has no release tags.
 
 import (
 	"math"
 	"math/big"
 )
-
-// https://github.com/ALTree/bigfloat
 
 // Log returns a big.Float representation of the natural logarithm of
 // z. Precision is the same as the one of the argument. The function

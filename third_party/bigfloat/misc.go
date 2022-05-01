@@ -1,8 +1,8 @@
-package math
+package bigfloat
+
+// Copied from https://github.com/ALTree/bigfloat since it has no release tags.
 
 import "math/big"
-
-// https://github.com/ALTree/bigfloat
 
 // agm returns the arithmetic-geometric mean of a and b.
 // a and b must have the same precision.
@@ -41,7 +41,7 @@ func agm(a, b *big.Float) *big.Float {
 
 var piCache *big.Float
 var piCachePrec uint
-var enablePiCache = true
+var enablePiCache bool = true
 
 func init() {
 	if !enablePiCache {

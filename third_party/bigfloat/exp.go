@@ -1,16 +1,16 @@
-package math
+package bigfloat
+
+// Copied from https://github.com/ALTree/bigfloat since it has no release tags.
 
 import (
 	"math"
 	"math/big"
 )
 
-// https://github.com/ALTree/bigfloat
-
 // Exp returns a big.Float representation of exp(z). Precision is
 // the same as the one of the argument. The function returns +Inf
 // when z = +Inf, and 0 when z = -Inf.
-func ExpFloat(z *big.Float) *big.Float {
+func Exp(z *big.Float) *big.Float {
 
 	// exp(0) == 1
 	if z.Sign() == 0 {
@@ -36,7 +36,7 @@ func ExpFloat(z *big.Float) *big.Float {
 		// perform argument reduction using
 		//     e^{2z} = (e^z)²
 		halfZ := new(big.Float).Mul(z, big.NewFloat(0.5))
-		halfExp := ExpFloat(halfZ.SetPrec(z.Prec() + 64))
+		halfExp := Exp(halfZ.SetPrec(z.Prec() + 64))
 		return new(big.Float).Mul(halfExp, halfExp).SetPrec(z.Prec())
 	} else {
 		// we got a nice IEEE-754 estimate

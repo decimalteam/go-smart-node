@@ -8,16 +8,23 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+var (
+	bigE15 = new(big.Int).Exp(big.NewInt(10), big.NewInt(15), nil)
+	bigE18 = new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)
+	sdkE15 = sdk.NewIntFromBigInt(bigE15)
+	sdkE18 = sdk.NewIntFromBigInt(bigE18)
+)
+
 func BipToPip(bip sdk.Int) sdk.Int {
-	return bip.Mul(sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)))
+	return bip.Mul(sdkE18)
 }
 
 func UnitToPip(unit sdk.Int) sdk.Int {
-	return unit.Mul(sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(15), nil)))
+	return unit.Mul(sdkE15)
 }
 
 func PipToUnit(pip sdk.Int) sdk.Int {
-	return pip.Quo(sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(15), nil)))
+	return pip.Quo(sdkE15)
 }
 
 // JoinAccAddresses returns string containing all provided address joined with ",".

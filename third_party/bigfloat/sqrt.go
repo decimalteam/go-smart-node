@@ -1,6 +1,8 @@
 // Package bigfloat provides the implementation of a few additional operations for the
 // standard library big.Float type.
-package math
+package bigfloat
+
+// Copied from https://github.com/ALTree/bigfloat since it has no release tags.
 
 import (
 	"math"
