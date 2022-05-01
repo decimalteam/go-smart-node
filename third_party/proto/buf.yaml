@@ -20,13 +20,13 @@ lint:
   ignore:
     - gogoproto
     - google
+    - proofs.proto
     - tendermint
     - cosmos
     - cosmos_proto
     - ibc
     - ethermint
     - evmos
-    - proofs.proto
 breaking:
   use:
     - FILE

@@ -10,8 +10,6 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
-
-	claimstypes "github.com/tharsis/evmos/v3/x/claims/types"
 )
 
 func init() {
@@ -199,20 +197,6 @@ func TestGetTransferAmount(t *testing.T) {
 				),
 			},
 			"10000",
-			false,
-		},
-		{
-			"valid - IBCTriggerAmt",
-			channeltypes.Packet{
-				Data: transfertypes.ModuleCdc.MustMarshalJSON(
-					&transfertypes.FungibleTokenPacketData{
-						Sender:   "cosmos1qql8ag4cluz6r4dz28p3w00dnc9w8ueulg2gmc",
-						Receiver: "dx1x2w87cvt5mqjncav4lxy8yfreynn273xhvvdu3",
-						Amount:   claimstypes.IBCTriggerAmt,
-					},
-				),
-			},
-			claimstypes.IBCTriggerAmt,
 			false,
 		},
 	}

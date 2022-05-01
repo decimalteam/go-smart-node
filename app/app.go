@@ -105,11 +105,6 @@ import (
 	feemarketkeeper "github.com/tharsis/ethermint/x/feemarket/keeper"
 	feemarkettypes "github.com/tharsis/ethermint/x/feemarket/types"
 
-	// // unnamed import of statik for swagger UI spport
-	// _ "bitbucket.org/decimalteam/go-smart-node/client/docs/statik"
-
-	"bitbucket.org/decimalteam/go-smart-node/app/ante"
-
 	"github.com/tharsis/evmos/v3/x/claims"
 	claimskeeper "github.com/tharsis/evmos/v3/x/claims/keeper"
 	claimstypes "github.com/tharsis/evmos/v3/x/claims/types"
@@ -133,6 +128,11 @@ import (
 	"github.com/tharsis/evmos/v3/x/vesting"
 	vestingkeeper "github.com/tharsis/evmos/v3/x/vesting/keeper"
 	vestingtypes "github.com/tharsis/evmos/v3/x/vesting/types"
+
+	// // unnamed import of statik for swagger UI spport
+	// _ "bitbucket.org/decimalteam/go-smart-node/client/docs/statik"
+
+	"bitbucket.org/decimalteam/go-smart-node/app/ante"
 )
 
 func init() {

@@ -8,12 +8,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
-	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
 
 func main() {
 	setupConfig()
-	cmdcfg.RegisterDenoms()
 
 	rootCmd, _ := NewRootCmd()
 
@@ -29,9 +28,9 @@ func main() {
 }
 
 func setupConfig() {
-	// set the address prefixes
-	config := sdk.GetConfig()
-	cmdcfg.SetBech32Prefixes(config)
-	cmdcfg.SetBip44CoinType(config)
-	config.Seal()
+	cfg := sdk.GetConfig()
+	config.SetBech32Prefixes(cfg)
+	config.SetBip44CoinType(cfg)
+	config.RegisterBaseDenom()
+	cfg.Seal()
 }
