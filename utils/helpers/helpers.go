@@ -50,3 +50,29 @@ func JoinUints(values []uint) string {
 	}
 	return sb.String()
 }
+
+// GetReserveLimitFromCRR returns coin reserve limit for specific CRR value.
+func GetReserveLimitFromCRR(crr uint) sdk.Int {
+	// CRR must be in range [10; 100]
+	if crr < 10 || crr > 100 {
+		return sdk.NewInt(0)
+	} else if crr < 20 {
+		return sdk.NewInt(100000).Mul(sdkE18)
+	} else if crr < 30 {
+		return sdk.NewInt(90000).Mul(sdkE18)
+	} else if crr < 40 {
+		return sdk.NewInt(80000).Mul(sdkE18)
+	} else if crr < 50 {
+		return sdk.NewInt(70000).Mul(sdkE18)
+	} else if crr < 60 {
+		return sdk.NewInt(60000).Mul(sdkE18)
+	} else if crr < 70 {
+		return sdk.NewInt(50000).Mul(sdkE18)
+	} else if crr < 80 {
+		return sdk.NewInt(40000).Mul(sdkE18)
+	} else if crr < 90 {
+		return sdk.NewInt(30000).Mul(sdkE18)
+	} else {
+		return sdk.NewInt(10000).Mul(sdkE18)
+	}
+}
