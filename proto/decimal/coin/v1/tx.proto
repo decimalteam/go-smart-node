@@ -58,21 +58,21 @@ message MsgCreateCoin {
   ];
   bytes initial_volume = 5 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "initial_volume",
-    (gogoproto.moretags) = "yaml:\"initial_volume\""
+    (gogoproto.moretags) = "yaml:\"initial_volume\"",
+    (gogoproto.nullable) = false
   ];
   bytes initial_reserve = 6 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "initial_reserve",
-    (gogoproto.moretags) = "yaml:\"initial_reserve\""
+    (gogoproto.moretags) = "yaml:\"initial_reserve\"",
+    (gogoproto.nullable) = false
   ];
   bytes limit_volume = 7 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "limit_volume",
-    (gogoproto.moretags) = "yaml:\"limit_volume\""
+    (gogoproto.moretags) = "yaml:\"limit_volume\"",
+    (gogoproto.nullable) = false
   ];
   string identity = 8 [
     (gogoproto.jsontag) = "identity",
@@ -98,9 +98,9 @@ message MsgUpdateCoin {
   ];
   bytes limit_volume = 3 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "limit_volume",
-    (gogoproto.moretags) = "yaml:\"limit_volume\""
+    (gogoproto.moretags) = "yaml:\"limit_volume\"",
+    (gogoproto.nullable) = false
   ];
   string identity = 4 [
     (gogoproto.jsontag) = "identity",
@@ -117,9 +117,9 @@ message Send {
   option (gogoproto.goproto_getters) = false;
 
   cosmos.base.v1beta1.Coin coin = 1 [
-    (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "coin",
-    (gogoproto.moretags) = "yaml:\"coin\""
+    (gogoproto.moretags) = "yaml:\"coin\"",
+    (gogoproto.nullable) = false
   ];
   string receiver = 2 [
     (gogoproto.jsontag) = "receiver",
@@ -154,14 +154,14 @@ message MsgBuyCoin {
     (gogoproto.moretags) = "yaml:\"sender\""
   ];
   cosmos.base.v1beta1.Coin coin_to_buy = 2 [
-    (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "coin_to_buy",
-    (gogoproto.moretags) = "yaml:\"coin_to_buy\""
+    (gogoproto.moretags) = "yaml:\"coin_to_buy\"",
+    (gogoproto.nullable) = false
   ];
   cosmos.base.v1beta1.Coin max_coin_to_sell = 3 [
-    (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "max_coin_to_sell",
-    (gogoproto.moretags) = "yaml:\"max_coin_to_sell\""
+    (gogoproto.moretags) = "yaml:\"max_coin_to_sell\"",
+    (gogoproto.nullable) = false
   ];
 }
 
@@ -178,14 +178,14 @@ message MsgSellCoin {
     (gogoproto.moretags) = "yaml:\"sender\""
   ];
   cosmos.base.v1beta1.Coin coin_to_sell = 2 [
-    (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "coin_to_sell",
-    (gogoproto.moretags) = "yaml:\"coin_to_sell\""
+    (gogoproto.moretags) = "yaml:\"coin_to_sell\"",
+    (gogoproto.nullable) = false
   ];
   cosmos.base.v1beta1.Coin min_coin_to_buy = 3 [
-    (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "min_coin_to_buy",
-    (gogoproto.moretags) = "yaml:\"min_coin_to_buy\""
+    (gogoproto.moretags) = "yaml:\"min_coin_to_buy\"",
+    (gogoproto.nullable) = false
   ];
 }
 
@@ -202,14 +202,14 @@ message MsgSellAllCoin {
     (gogoproto.moretags) = "yaml:\"sender\""
   ];
   cosmos.base.v1beta1.Coin coin_to_sell = 2 [
-    (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "coin_to_sell",
-    (gogoproto.moretags) = "yaml:\"coin_to_sell\""
+    (gogoproto.moretags) = "yaml:\"coin_to_sell\"",
+    (gogoproto.nullable) = false
   ];
   cosmos.base.v1beta1.Coin min_coin_to_buy = 3 [
-    (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "min_coin_to_buy",
-    (gogoproto.moretags) = "yaml:\"min_coin_to_buy\""
+    (gogoproto.moretags) = "yaml:\"min_coin_to_buy\"",
+    (gogoproto.nullable) = false
   ];
 }
 
@@ -230,9 +230,9 @@ message MsgSendCoin {
     (gogoproto.moretags) = "yaml:\"receiver\""
   ];
   cosmos.base.v1beta1.Coin coin = 3 [
-    (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "coin",
-    (gogoproto.moretags) = "yaml:\"coin\""
+    (gogoproto.moretags) = "yaml:\"coin\"",
+    (gogoproto.nullable) = false
   ];
 }
 

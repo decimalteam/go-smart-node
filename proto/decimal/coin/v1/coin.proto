@@ -8,23 +8,45 @@ option go_package = "bitbucket.org/decimalteam/go-smart-node/x/coin/types";
 message Coin {
   option (gogoproto.equal) = true;
   option (gogoproto.goproto_getters) = false;
-  option (gogoproto.goproto_stringer) = false;
+  option (gogoproto.goproto_stringer) = true;
 
-  string title = 1;
-  uint64 constant_reserve_ratio = 2;
-  string symbol = 3;
+  string title = 1 [
+    (gogoproto.jsontag) = "title",
+    (gogoproto.moretags) = "yaml:\"title\""
+  ];
+  uint64 crr = 2 [
+    (gogoproto.customname) = "CRR",
+    (gogoproto.jsontag) = "constant_reserve_ratio",
+    (gogoproto.moretags) = "yaml:\"constant_reserve_ratio\""
+  ];
+  string symbol = 3 [
+    (gogoproto.jsontag) = "symbol",
+    (gogoproto.moretags) = "yaml:\"symbol\""
+  ];
   bytes reserve = 4 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.jsontag) = "reserve",
+    (gogoproto.moretags) = "yaml:\"reserve\"",
     (gogoproto.nullable) = false
   ];
   bytes limit_volume = 5 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.jsontag) = "limit_volume",
+    (gogoproto.moretags) = "yaml:\"limit_volume\"",
     (gogoproto.nullable) = false
   ];
   bytes volume = 6 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.jsontag) = "volume",
+    (gogoproto.moretags) = "yaml:\"volume\"",
     (gogoproto.nullable) = false
   ];
-  string creator = 7;
-  string identity = 8;
+  string creator = 7 [
+    (gogoproto.jsontag) = "creator",
+    (gogoproto.moretags) = "yaml:\"creator\""
+  ];
+  string identity = 8 [
+    (gogoproto.jsontag) = "identity",
+    (gogoproto.moretags) = "yaml:\"identity\""
+  ];
 }

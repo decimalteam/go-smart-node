@@ -6,10 +6,18 @@ import "gogoproto/gogo.proto";
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/coin/types";
 
 message GenesisState {
-  string title = 1;
-  string symbol = 2;
+  string title = 1 [
+    (gogoproto.jsontag) = "title",
+    (gogoproto.moretags) = "yaml:\"title\""
+  ];
+  string symbol = 2 [
+    (gogoproto.jsontag) = "symbol",
+    (gogoproto.moretags) = "yaml:\"symbol\""
+  ];
   bytes limit_volume = 3 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.jsontag) = "limit_volume",
+    (gogoproto.moretags) = "yaml:\"limit_volume\"",
     (gogoproto.nullable) = false
   ];
 }
