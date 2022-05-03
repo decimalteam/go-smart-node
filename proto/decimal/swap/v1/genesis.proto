@@ -1,0 +1,20 @@
+syntax = "proto3";
+package decimal.swap.v1;
+
+import "gogoproto/gogo.proto";
+import "decimal/swap/v1/swap.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/swap/types";
+
+message GenesisState {
+  // params defines all the paramaters of related to deposit.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"params\""
+  ];
+  // swaps defines the swaps active at genesis.
+  repeated Swap swaps = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"swaps\""
+  ];
+}
