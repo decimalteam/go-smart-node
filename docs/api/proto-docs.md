@@ -59,7 +59,7 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | `title` | [string](#string) |  |  |
-| `constant_reserve_ratio` | [uint64](#uint64) |  |  |
+| `crr` | [uint64](#uint64) |  |  |
 | `symbol` | [string](#string) |  |  |
 | `reserve` | [bytes](#bytes) |  |  |
 | `limit_volume` | [bytes](#bytes) |  |  |

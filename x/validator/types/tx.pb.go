@@ -6,6 +6,7 @@ package types
 import (
 	context "context"
 	fmt "fmt"
+	types "github.com/cosmos/cosmos-sdk/codec/types"
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/gogo/protobuf/gogoproto"
 	grpc1 "github.com/gogo/protobuf/grpc"
@@ -14,7 +15,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	anypb "google.golang.org/protobuf/types/known/anypb"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -37,7 +37,7 @@ type MsgDeclareCandidate struct {
 	RewardAddr    string                                  `protobuf:"bytes,3,opt,name=reward_addr,json=rewardAddr,proto3" json:"reward_addr,omitempty" yaml:"reward_addr"`
 	Stake         github_com_cosmos_cosmos_sdk_types.Coin `protobuf:"bytes,4,opt,name=stake,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Coin" json:"stake" yaml:"stake"`
 	Description   Description                             `protobuf:"bytes,5,opt,name=description,proto3" json:"description" yaml:"description"`
-	PubKey        *anypb.Any                              `protobuf:"bytes,6,opt,name=pub_key,json=pubKey,proto3" json:"pub_key,omitempty" yaml:"pub_key"`
+	PubKey        *types.Any                              `protobuf:"bytes,6,opt,name=pub_key,json=pubKey,proto3" json:"pub_key,omitempty" yaml:"pub_key"`
 }
 
 func (m *MsgDeclareCandidate) Reset()         { *m = MsgDeclareCandidate{} }
@@ -2136,7 +2136,7 @@ func (m *MsgDeclareCandidate) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.PubKey == nil {
-				m.PubKey = &anypb.Any{}
+				m.PubKey = &types.Any{}
 			}
 			if err := m.PubKey.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
