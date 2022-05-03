@@ -3,21 +3,25 @@ package decimal.coin.v1;
 
 import "gogoproto/gogo.proto";
 
+import "decimal/coin/v1/coin.proto";
+import "decimal/coin/v1/params.proto";
+
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/coin/types";
 
+// GenesisState defines the module's genesis state.
 message GenesisState {
-  string title = 1 [
-    (gogoproto.jsontag) = "title",
-    (gogoproto.moretags) = "yaml:\"title\""
+
+  // module parameters
+  Params params = 1 [
+    (gogoproto.jsontag) = "params",
+    (gogoproto.moretags) = "yaml:\"params\"",
+    (gogoproto.nullable) = false
   ];
-  string symbol = 2 [
-    (gogoproto.jsontag) = "symbol",
-    (gogoproto.moretags) = "yaml:\"symbol\""
-  ];
-  bytes limit_volume = 3 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.jsontag) = "limit_volume",
-    (gogoproto.moretags) = "yaml:\"limit_volume\"",
+  
+  // registered coins
+  repeated Coin coins = 2 [
+    (gogoproto.jsontag) = "coins",
+    (gogoproto.moretags) = "yaml:\"coins\"",
     (gogoproto.nullable) = false
   ];
 }

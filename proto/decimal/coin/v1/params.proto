@@ -1,0 +1,33 @@
+syntax = "proto3";
+package decimal.coin.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/coin/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = false;
+
+  // title of the base coin
+  string base_title = 1 [
+    (gogoproto.jsontag) = "base_title",
+    (gogoproto.moretags) = "yaml:\"base_title\""
+  ];
+
+  // symbol of the base coin
+  string base_symbol = 2 [
+    (gogoproto.jsontag) = "base_symbol",
+    (gogoproto.moretags) = "yaml:\"base_symbol\""
+  ];
+  
+  // initial volume of the base coin
+  string base_initial_volume = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.jsontag) = "base_initial_volume",
+    (gogoproto.moretags) = "yaml:\"base_initial_volume\"",
+    (gogoproto.nullable) = false
+  ];
+}

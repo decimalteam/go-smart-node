@@ -11,6 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	auth "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bank "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -18,9 +19,9 @@ import (
 
 // Keeper implements the module data storaging.
 type Keeper struct {
-	cdc      codec.BinaryCodec
-	storeKey sdk.StoreKey
-	memKey   sdk.StoreKey
+	cdc        codec.BinaryCodec
+	storeKey   sdk.StoreKey
+	paramStore paramtypes.Subspace
 
 	AccountKeeper auth.AccountKeeperI
 	BankKeeper    bank.Keeper
@@ -33,14 +34,18 @@ type Keeper struct {
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey sdk.StoreKey,
-	memKey sdk.StoreKey,
+	ps paramtypes.Subspace,
 	accountKeeper auth.AccountKeeperI,
 	bankKeeper bank.Keeper,
 ) *Keeper {
+	// set KeyTable if it has not already been set
+	if !ps.HasKeyTable() {
+		ps = ps.WithKeyTable(types.ParamKeyTable())
+	}
 	keeper := &Keeper{
 		cdc:            cdc,
 		storeKey:       storeKey,
-		memKey:         memKey,
+		paramStore:     ps,
 		AccountKeeper:  accountKeeper,
 		BankKeeper:     bankKeeper,
 		coinCache:      make(map[string]bool),
@@ -50,96 +55,67 @@ func NewKeeper(
 }
 
 // Logger returns a module-specific logger.
-func (k Keeper) Logger(ctx sdk.Context) log.Logger {
+func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// GetCoin returns types.Coin instance if exists in KVStore
-func (k Keeper) GetCoin(ctx sdk.Context, symbol string) (types.Coin, error) {
+// GetCoin returns the coin if exists in KVStore.
+func (k *Keeper) GetCoin(ctx sdk.Context, symbol string) (coin types.Coin, err error) {
 	store := ctx.KVStore(k.storeKey)
-	var coin types.Coin
 	key := append(types.KeyPrefixCoin, []byte(strings.ToLower(symbol))...)
 	value := store.Get(key)
 	if value == nil {
-		return coin, fmt.Errorf("coin %s is not found in the key-value store", strings.ToLower(symbol))
+		err = fmt.Errorf("coin %s is not found in the key-value store", strings.ToLower(symbol))
+		return
 	}
-	err := k.cdc.UnmarshalLengthPrefixed(value, &coin)
+	err = k.cdc.UnmarshalLengthPrefixed(value, &coin)
 	if err != nil {
-		return coin, err
+		return
 	}
-	return coin, nil
+	return
 }
 
-func (k Keeper) SetCoin(ctx sdk.Context, coin types.Coin) {
+// GetAllCoins returns all coins existing in KVStore.
+func (k *Keeper) GetAllCoins(ctx sdk.Context) (coins []types.Coin) {
+	it := k.GetCoinsIterator(ctx)
+	defer it.Close()
+
+	for ; it.Valid(); it.Next() {
+		var coin types.Coin
+		err := k.cdc.UnmarshalLengthPrefixed(it.Value(), &coin)
+		if err != nil {
+			panic(err)
+		}
+		coins = append(coins, coin)
+	}
+
+	return coins
+}
+
+// GetCoinsIterator returns iterator over all coins existing in KVStore.
+func (k *Keeper) GetCoinsIterator(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return sdk.KVStorePrefixIterator(store, types.KeyPrefixCoin)
+}
+
+// SetCoin writes coin to KVStore.
+func (k *Keeper) SetCoin(ctx sdk.Context, coin types.Coin) {
 	store := ctx.KVStore(k.storeKey)
 	value := k.cdc.MustMarshalLengthPrefixed(&coin)
 	key := append(types.KeyPrefixCoin, []byte(strings.ToLower(coin.Symbol))...)
 	store.Set(key, value)
 }
 
-func (k Keeper) GetCoinsIterator(ctx sdk.Context) sdk.Iterator {
-	store := ctx.KVStore(k.storeKey)
-	return sdk.KVStorePrefixIterator(store, types.KeyPrefixCoin)
+func (k *Keeper) GetBaseCoin(ctx sdk.Context) string {
+	return k.GetParams(ctx).BaseSymbol
 }
 
-func (k Keeper) GetAllCoins(ctx sdk.Context) []types.Coin {
-	var coins []types.Coin
-	iterator := k.GetCoinsIterator(ctx)
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		var coin types.Coin
-		err := k.cdc.UnmarshalLengthPrefixed(iterator.Value(), &coin)
-		if err != nil {
-			panic(err)
-		}
-		coins = append(coins, coin)
-	}
-	return coins
+func (k *Keeper) IsCoinBase(ctx sdk.Context, symbol string) bool {
+	return k.GetParams(ctx).BaseSymbol == symbol
 }
 
-// Returns integer abs
-func Abs(x sdk.Int) sdk.Int {
-	if x.IsNegative() {
-		return x.Neg()
-	} else {
-		return x
-	}
-}
-
-// Updating balances
-func (k Keeper) UpdateBalance(ctx sdk.Context, coinSymbol string, amount sdk.Int, address sdk.AccAddress) error {
-	// Get account instance
-	acc := k.AccountKeeper.GetAccount(ctx, address)
-	if acc == nil {
-		acc = k.AccountKeeper.NewAccountWithAddress(ctx, address)
-	}
-	// Get account coins information
-	coins := k.BankKeeper.GetAllBalances(ctx, address)
-	updAmount := Abs(amount)
-	updCoin := sdk.Coins{sdk.NewCoin(strings.ToLower(coinSymbol), updAmount)}
-	// Updating coin information
-	if amount.IsNegative() {
-		coins = coins.Sub(updCoin)
-	} else {
-		coins = coins.Add(updCoin...)
-	}
-	// Update coin information
-	err := acc.SetCoins(coins)
-	if err != nil {
-		return err
-	}
-	// Update account information
-	k.AccountKeeper.SetAccount(ctx, acc)
-	return nil
-}
-
-func (k Keeper) IsCoinBase(symbol string) bool {
-	return k.Config.SymbolBaseCoin == symbol
-}
-
-func (k Keeper) UpdateCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, volume sdk.Int) {
-	if !coin.IsBase() {
+func (k *Keeper) UpdateCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, volume sdk.Int) {
+	if !k.IsCoinBase(ctx, coin.Symbol) {
 		k.SetCachedCoin(coin.Symbol)
 	}
 	coin.Reserve = reserve
@@ -153,22 +129,22 @@ func (k Keeper) UpdateCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, vo
 	))
 }
 
-// func (k Keeper) IsCheckRedeemed(ctx sdk.Context, check *types.Check) bool {
-// 	checkHash := check.HashFull()
-// 	store := ctx.KVStore(k.storeKey)
-// 	key := []byte(types.CheckPrefix + hex.EncodeToString(checkHash[:]))
-// 	return len(store.Get(key)) > 0
-// }
+func (k *Keeper) IsCheckRedeemed(ctx sdk.Context, check *types.Check) bool {
+	checkHash := check.HashFull()
+	store := ctx.KVStore(k.storeKey)
+	key := append(types.KeyPrefixCheck, checkHash[:]...)
+	value := store.Get(key)
+	return len(value) > 0 && value[0] > 0
+}
 
-// func (k Keeper) SetCheckRedeemed(ctx sdk.Context, check *types.Check) {
-// 	checkHash := check.HashFull()
-// 	store := ctx.KVStore(k.storeKey)
-// 	key := []byte(types.CheckPrefix + hex.EncodeToString(checkHash[:]))
-// 	store.Set(key, []byte{1})
-// 	return
-// }
+func (k *Keeper) SetCheckRedeemed(ctx sdk.Context, check *types.Check) {
+	checkHash := check.HashFull()
+	store := ctx.KVStore(k.storeKey)
+	key := append(types.KeyPrefixCheck, checkHash[:]...)
+	store.Set(key, []byte{1})
+}
 
-func (k Keeper) GetCommission(ctx sdk.Context, commissionInBaseCoin sdk.Int) (sdk.Int, string, error) {
+func (k *Keeper) GetCommission(ctx sdk.Context, commissionInBaseCoin sdk.Int) (sdk.Int, string, error) {
 	var feeCoin string
 	fee, ok := ctx.Value("fee").(sdk.Coins)
 	if !ok || fee == nil {
@@ -199,14 +175,9 @@ func (k Keeper) GetCommission(ctx sdk.Context, commissionInBaseCoin sdk.Int) (sd
 	return commission, feeCoin, nil
 }
 
-func (k Keeper) GetBaseCoin(ctx sdk.Context) string {
-	// TODO: Return "del" or "tdel"?
-	return "del"
-}
-
 ////////////////////////////////////////////////////////////////
 
-func (k Keeper) GetCoinCache(symbol string) bool {
+func (k *Keeper) GetCoinCache(symbol string) bool {
 	defer k.coinCacheMutex.Unlock()
 	k.coinCacheMutex.Lock()
 	_, ok := k.coinCache[symbol]
@@ -226,3 +197,28 @@ func (k *Keeper) ClearCoinCache() {
 		delete(k.coinCache, key)
 	}
 }
+
+// // Updating balances
+// func (k Keeper) UpdateBalance(ctx sdk.Context, symbol string, amount sdk.Int, address sdk.AccAddress) error {
+// 	// Get account coin information
+// 	coin := k.BankKeeper.GetBalance(ctx, address, symbol)
+// 	// Updating coin information
+// 	if amount.IsNegative() {
+// 		coin = coin.Sub(sdk.NewCoin(symbol, amount.Neg()))
+// 	} else {
+// 		coin = coin.Add(sdk.NewCoin(symbol, amount))
+// 	}
+// 	// Get account instance
+// 	acc := k.AccountKeeper.GetAccount(ctx, address)
+// 	if acc == nil {
+// 		acc = k.AccountKeeper.NewAccountWithAddress(ctx, address)
+// 	}
+// 	// Update coin information
+// 	err := acc.SetCoins(coins)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	// Update account information
+// 	k.AccountKeeper.SetAccount(ctx, acc)
+// 	return nil
+// }

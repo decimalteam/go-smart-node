@@ -11,9 +11,6 @@ const (
 	EventTypeRedeemCheck   = "redeem_check"
 	EventTypeUpdateCoin    = "update_coin"
 
-	// Event attributes
-	AttributeValueCategory = ModuleName
-
 	// Create Coin
 	AttributeTitle                 = "title"
 	AttributeSymbol                = "symbol"
@@ -42,4 +39,7 @@ const (
 	AttributeIssuer   = "issuer"
 	AttributeNonce    = "nonce"
 	AttributeDueBlock = "due_block"
+
+	// Event attributes
+	AttributeValueCategory = ModuleName
 )

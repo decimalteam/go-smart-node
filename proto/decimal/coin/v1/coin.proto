@@ -14,31 +14,31 @@ message Coin {
     (gogoproto.jsontag) = "title",
     (gogoproto.moretags) = "yaml:\"title\""
   ];
-  uint64 crr = 2 [
+  string symbol = 2 [
+    (gogoproto.jsontag) = "symbol",
+    (gogoproto.moretags) = "yaml:\"symbol\""
+  ];
+  uint64 crr = 3 [
     (gogoproto.customname) = "CRR",
     (gogoproto.jsontag) = "constant_reserve_ratio",
     (gogoproto.moretags) = "yaml:\"constant_reserve_ratio\""
   ];
-  string symbol = 3 [
-    (gogoproto.jsontag) = "symbol",
-    (gogoproto.moretags) = "yaml:\"symbol\""
-  ];
-  bytes reserve = 4 [
+  string reserve = 4 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.jsontag) = "reserve",
     (gogoproto.moretags) = "yaml:\"reserve\"",
     (gogoproto.nullable) = false
   ];
-  bytes limit_volume = 5 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.jsontag) = "limit_volume",
-    (gogoproto.moretags) = "yaml:\"limit_volume\"",
-    (gogoproto.nullable) = false
-  ];
-  bytes volume = 6 [
+  string volume = 5 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.jsontag) = "volume",
     (gogoproto.moretags) = "yaml:\"volume\"",
+    (gogoproto.nullable) = false
+  ];
+  string limit_volume = 6 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.jsontag) = "limit_volume",
+    (gogoproto.moretags) = "yaml:\"limit_volume\"",
     (gogoproto.nullable) = false
   ];
   string creator = 7 [
