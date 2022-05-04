@@ -18,7 +18,7 @@ import (
 	"github.com/tharsis/ethermint/encoding"
 	feemarkettypes "github.com/tharsis/ethermint/x/feemarket/types"
 
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
 
 // DefaultTestingAppInit defines the IBC application used for testing
@@ -44,8 +44,8 @@ var DefaultConsensusParams = &abci.ConsensusParams{
 
 func init() {
 	cfg := sdk.GetConfig()
-	config.SetBech32Prefixes(cfg)
-	config.SetBip44CoinType(cfg)
+	cmdcfg.SetBech32Prefixes(cfg)
+	cmdcfg.SetBip44CoinType(cfg)
 }
 
 // Setup initializes a new DSC. A Nop logger is set in DSC.

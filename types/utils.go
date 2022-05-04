@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -17,7 +18,7 @@ import (
 // NOTE: Nested multisigs are not supported.
 func IsSupportedKey(pubkey cryptotypes.PubKey) bool {
 	switch pubkey := pubkey.(type) {
-	case *ethsecp256k1.PubKey, *ed25519.PubKey:
+	case *secp256k1.PubKey, *ethsecp256k1.PubKey, *ed25519.PubKey:
 		return true
 	case multisig.PubKey:
 		if len(pubkey.GetPubKeys()) == 0 {

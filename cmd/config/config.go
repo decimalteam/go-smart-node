@@ -7,6 +7,23 @@ import (
 )
 
 const (
+	// AppName defines the application name.
+	AppName = "decimal"
+
+	// AppBinName defines the application binary name.
+	AppBinName = "dscd"
+)
+
+// Full list of registered chain IDs can be found here: https://chainlist.org/
+const (
+	// MainnetChainID defines EVM chain ID used for DSC mainnet network.
+	MainnetChainID = 2020
+
+	// TestnetChainID defines EVM chain ID used for DSC testnet network.
+	TestnetChainID = 202020
+)
+
+const (
 	// Bech32Prefix defines the Bech32 prefix used for EthAccounts
 	Bech32Prefix = "dx"
 
@@ -27,14 +44,6 @@ const (
 const (
 	// BaseDenom defines to the default denomination used in Decimal (staking, EVM, governance, etc.)
 	BaseDenom = "del"
-)
-
-// Full list of registered chain IDs can be found here: https://chainlist.org/
-const (
-	// MainnetChainID defines EVM chain ID used for DSC mainnet network.
-	MainnetChainID = 2020
-	// TestnetChainID defines EVM chain ID used for DSC testnet network.
-	TestnetChainID = 202020
 )
 
 // SetBech32Prefixes sets the global prefixes to be used when serializing addresses and public keys to Bech32 strings.

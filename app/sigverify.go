@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -26,6 +27,8 @@ const (
 // by the concrete type.
 // The types of keys supported are:
 //
+// - secp256k1 (Cosmos SDK keys)
+//
 // - ethsecp256k1 (Ethereum keys)
 //
 // - ed25519 (Validators)
@@ -37,10 +40,16 @@ func SigVerificationGasConsumer(
 	pubkey := sig.PubKey
 	switch pubkey := pubkey.(type) {
 
+	case *secp256k1.PubKey:
+		// Cosmos SDK keys
+		// TODO: Implement!
+		return nil
+
 	case *ethsecp256k1.PubKey:
 		// Ethereum keys
 		meter.ConsumeGas(secp256k1VerifyCost, "ante verify: eth_secp256k1")
 		return nil
+
 	case *ed25519.PubKey:
 		// Validator keys
 		meter.ConsumeGas(params.SigVerifyCostED25519, "ante verify: ed25519")

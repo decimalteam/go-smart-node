@@ -49,6 +49,8 @@ const (
 
 // NewRootCmd creates a new root command for dscd. It is called once in the main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
+
+	// Initialize client context
 	encodingConfig := encoding.MakeConfig(app.ModuleBasics)
 	initClientCtx := client.Context{}.
 		WithCodec(encodingConfig.Marshaler).
@@ -62,18 +64,20 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithKeyringOptions(dsckr.Option()).
 		WithViper(EnvPrefix)
 
+	// Initialize root command
 	rootCmd := &cobra.Command{
-		Use:   app.BinName,
-		Short: "Decimal Smart Chain Daemon",
+		Use:   cmdcfg.AppBinName,
+		Short: "Decimal Smart Chain daemon",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
-			// set the default command outputs
+
+			// Set the default command outputs
 			cmd.SetOut(cmd.OutOrStdout())
 			cmd.SetErr(cmd.ErrOrStderr())
 
 			// Disable ledger temporarily
 			useLedger, _ := cmd.Flags().GetBool(flags.FlagUseLedger)
 			if useLedger {
-				return errors.New("--ledger flag passed: Ledger device is currently not supported")
+				return fmt.Errorf("--%s flag passed: Ledger device is currently not supported", flags.FlagUseLedger)
 			}
 
 			initClientCtx, err := client.ReadPersistentCommandFlags(initClientCtx, cmd.Flags())
@@ -120,7 +124,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	a := appCreator{encodingConfig}
 	ethermintserver.AddCommands(rootCmd, app.DefaultNodeHome, a.newApp, a.appExport, addModuleInitFlags)
 
-	// add keybase, auxiliary RPC, query, and tx child commands
+	// Add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(
 		rpc.StatusCommand(),
 		queryCommand(),
@@ -132,7 +136,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		panic(err)
 	}
 
-	// add rosetta
+	// Add rosetta
 	rootCmd.AddCommand(sdkserver.RosettaCommand(encodingConfig.InterfaceRegistry, encodingConfig.Marshaler))
 
 	return rootCmd, encodingConfig
@@ -161,6 +165,7 @@ func queryCommand() *cobra.Command {
 	)
 
 	app.ModuleBasics.AddQueryCommands(cmd)
+
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
 	return cmd
@@ -187,6 +192,7 @@ func txCommand() *cobra.Command {
 	)
 
 	app.ModuleBasics.AddTxCommands(cmd)
+
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
 	return cmd
@@ -202,8 +208,9 @@ func initAppConfig() (string, interface{}) {
 		panic(fmt.Errorf("unknown app config type %T", customAppConfig))
 	}
 
-	srvCfg.StateSync.SnapshotInterval = 1500
-	srvCfg.StateSync.SnapshotKeepRecent = 2
+	// TODO: Is it necessary?
+	// srvCfg.StateSync.SnapshotInterval = 1500
+	// srvCfg.StateSync.SnapshotKeepRecent = 2
 
 	return customAppTemplate, srvCfg
 }
@@ -241,7 +248,11 @@ func (a appCreator) newApp(logger log.Logger, db dbm.DB, traceStore io.Writer, a
 	}
 
 	dscApp := app.NewDSC(
-		logger, db, traceStore, true, skipUpgradeHeights,
+		logger,
+		db,
+		traceStore,
+		true,
+		skipUpgradeHeights,
 		cast.ToString(appOpts.Get(flags.FlagHome)),
 		cast.ToUint(appOpts.Get(sdkserver.FlagInvCheckPeriod)),
 		a.encCfg,
@@ -264,23 +275,26 @@ func (a appCreator) newApp(logger log.Logger, db dbm.DB, traceStore io.Writer, a
 
 // appExport creates a new simapp (optionally at a given height) and exports state.
 func (a appCreator) appExport(
-	logger log.Logger, db dbm.DB, traceStore io.Writer, height int64, forZeroHeight bool, jailAllowedAddrs []string,
+	logger log.Logger,
+	db dbm.DB,
+	traceStore io.Writer,
+	height int64,
+	forZeroHeight bool,
+	jailAllowedAddrs []string,
 	appOpts servertypes.AppOptions,
 ) (servertypes.ExportedApp, error) {
 	var dscApp *app.DSC
 	homePath, ok := appOpts.Get(flags.FlagHome).(string)
-	if !ok || homePath == "" {
+	if !ok || len(homePath) == 0 {
 		return servertypes.ExportedApp{}, errors.New("application home not set")
 	}
 
-	if height != -1 {
-		dscApp = app.NewDSC(logger, db, traceStore, false, map[int64]bool{}, "", uint(1), a.encCfg, appOpts)
-
+	loadLatest := height < 0
+	dscApp = app.NewDSC(logger, db, traceStore, loadLatest, map[int64]bool{}, "", uint(1), a.encCfg, appOpts)
+	if !loadLatest {
 		if err := dscApp.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
-	} else {
-		dscApp = app.NewDSC(logger, db, traceStore, true, map[int64]bool{}, "", uint(1), a.encCfg, appOpts)
 	}
 
 	return dscApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)

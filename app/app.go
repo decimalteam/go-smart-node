@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
@@ -139,7 +140,7 @@ import (
 
 	// Decimal
 	"bitbucket.org/decimalteam/go-smart-node/app/ante"
-	cfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 
 	// Decimal modules
 	coin "bitbucket.org/decimalteam/go-smart-node/x/coin"
@@ -147,22 +148,20 @@ import (
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 
-const (
-	// BinName defines the application binary name.
-	BinName = "dscd"
+var (
+	// DefaultNodeHome defines default home directory for the application daemon.
+	DefaultNodeHome = os.ExpandEnv(fmt.Sprintf("$HOME/.%s/daemon", cmdcfg.AppName))
 )
 
 var (
 	// MainnetChainIDPrefix defines the EVM EIP155 chain ID prefix for Decimal mainnet.
-	MainnetChainIDPrefix = fmt.Sprintf("decimal_%d", cfg.MainnetChainID)
+	MainnetChainIDPrefix = fmt.Sprintf("%s_%d", cmdcfg.AppName, cmdcfg.MainnetChainID)
+
 	// TestnetChainIDPrefix defines the EVM EIP155 chain ID prefix for Decimal testnet.
-	TestnetChainIDPrefix = fmt.Sprintf("decimal_%d", cfg.TestnetChainID)
+	TestnetChainIDPrefix = fmt.Sprintf("%s_%d", cmdcfg.AppName, cmdcfg.TestnetChainID)
 )
 
 var (
-	// DefaultNodeHome defines default home directory for the application daemon.
-	DefaultNodeHome string
-
 	// ModuleBasics defines the module BasicManager is in charge of setting up basic,
 	// non-dependant module elements, such as codec registration and genesis verification.
 	ModuleBasics = module.NewBasicManager(
@@ -334,7 +333,7 @@ func NewDSC(
 
 	// NOTE we use custom transaction decoder that supports the sdk.Tx interface instead of sdk.StdTx
 	bApp := baseapp.NewBaseApp(
-		BinName,
+		cmdcfg.AppBinName,
 		logger,
 		db,
 		encodingConfig.TxConfig.TxDecoder(),
