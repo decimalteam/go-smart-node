@@ -56,7 +56,7 @@ func (AppModuleBasic) ConsensusVersion() uint64 {
 
 // RegisterLegacyAminoCodec performs a no-op as the module doesn't support Amino encoding.
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	return
+	//
 }
 
 // RegisterInterfaces registers the module's interface types.
@@ -80,7 +80,7 @@ func (b AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEnc
 
 // RegisterRESTRoutes registers the module's REST service handlers.
 func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {
-	return
+	//
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
@@ -160,7 +160,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 
 // RegisterInvariants registers the module's invariants.
 func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
-	return
+	//
 }
 
 // InitGenesis performs the module's genesis initialization.
@@ -184,7 +184,7 @@ func (am AppModule) ConsensusVersion() uint64 {
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the module.
 func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {
-	return
+	//
 }
 
 // EndBlock executes all ABCI EndBlock logic respective to the module.
@@ -197,7 +197,7 @@ func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.Valid
 ////////////////////////////////////////////////////////////////
 
 func (am AppModule) GenerateGenesisState(input *module.SimulationState) {
-	return
+	//
 }
 
 func (am AppModule) ProposalContents(simState module.SimulationState) []simtypes.WeightedProposalContent {
@@ -209,7 +209,7 @@ func (am AppModule) RandomizedParams(r *rand.Rand) []simtypes.ParamChange {
 }
 
 func (am AppModule) RegisterStoreDecoder(decoderRegistry sdk.StoreDecoderRegistry) {
-	return
+	//
 }
 
 func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
