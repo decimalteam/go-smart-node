@@ -20,8 +20,8 @@ func TestDSCExport(t *testing.T) {
 	db := dbm.NewMemDB()
 	app := NewDSC(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encoding.MakeConfig(ModuleBasics), simapp.EmptyAppOptions{})
 
-	genesisState := NewDefaultGenesisState()
-	stateBytes, err := json.MarshalIndent(genesisState, "", "  ")
+	gs := NewDefaultGenesisState()
+	stateBytes, err := json.MarshalIndent(gs, "", "  ")
 	require.NoError(t, err)
 
 	// Initialize the chain
