@@ -46,6 +46,7 @@ const (
 	// Send coin
 	CodeInvalidAmount          uint32 = 300
 	CodeInvalidReceiverAddress uint32 = 301
+	CodeInvalidSenderAddress   uint32 = 302
 
 	// Redeem check
 	CodeInvalidCheck          uint32 = 400
@@ -74,6 +75,7 @@ const allowedCoinSymbols = "^[a-zA-Z][a-zA-Z0-9]{2,9}$"
 
 var minCoinSupply = sdk.NewInt(1)
 var maxCoinSupply = helpers.BipToPip(sdk.NewInt(1000000000000000))
+var MinCoinReserve = helpers.BipToPip(sdk.NewInt(1000))
 
 func ErrInvalidCRR(crr string) *sdkerrors.Error {
 	return errors.Encode(
@@ -121,7 +123,7 @@ func ErrRetrievedAnotherCoin(symbolWant string, symbolRetrieved string) *sdkerro
 	)
 }
 
-func ErrCoinAlreadyExist(coin string) *sdkerrors.Error {
+func ErrCoinAlreadyExists(coin string) *sdkerrors.Error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeCoinAlreadyExists,
@@ -295,11 +297,19 @@ func ErrInvalidAmount() *sdkerrors.Error {
 	)
 }
 
-func ErrReceiverEmpty() *sdkerrors.Error {
+func ErrInvalidReceiverAddress(address string) *sdkerrors.Error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidReceiverAddress,
-		"Receiver cannot be empty ",
+		fmt.Sprintf("invalid receiver address: %s", address),
+	)
+}
+
+func ErrInvalidSenderAddress(address string) *sdkerrors.Error {
+	return errors.Encode(
+		DefaultCodespace,
+		CodeInvalidSenderAddress,
+		fmt.Sprintf("invalid sender address: %s", address),
 	)
 }
 

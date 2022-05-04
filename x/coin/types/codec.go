@@ -12,7 +12,13 @@ import (
 //
 // The actual codec used for serialization should be provided to modules/coin and
 // defined at the application level.
-var ModuleCdc = codec.NewProtoCodec(cdctypes.NewInterfaceRegistry())
+var (
+	Amino     = codec.NewLegacyAmino()
+	ModuleCdc = codec.NewProtoCodec(cdctypes.NewInterfaceRegistry())
+)
+
+// RegisterCodec registers concrete implementations of specific inferfaces.
+func RegisterCodec(cdc *codec.LegacyAmino) {}
 
 // RegisterInterfaces registers concrete implementations of specific inferfaces.
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {

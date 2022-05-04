@@ -19,12 +19,14 @@ import (
 
 // Keeper implements the module data storaging.
 type Keeper struct {
-	cdc        codec.BinaryCodec
-	storeKey   sdk.StoreKey
-	paramStore paramtypes.Subspace
+	cdc      codec.BinaryCodec
+	storeKey sdk.StoreKey
+	ps       paramtypes.Subspace
 
-	AccountKeeper auth.AccountKeeperI
-	BankKeeper    bank.Keeper
+	accountKeeper auth.AccountKeeperI
+	bankKeeper    bank.Keeper
+
+	baseDenom string
 
 	coinCache      map[string]bool
 	coinCacheMutex *sync.Mutex
@@ -45,9 +47,9 @@ func NewKeeper(
 	keeper := &Keeper{
 		cdc:            cdc,
 		storeKey:       storeKey,
-		paramStore:     ps,
-		AccountKeeper:  accountKeeper,
-		BankKeeper:     bankKeeper,
+		ps:             ps,
+		accountKeeper:  accountKeeper,
+		bankKeeper:     bankKeeper,
 		coinCache:      make(map[string]bool),
 		coinCacheMutex: &sync.Mutex{},
 	}
@@ -55,7 +57,7 @@ func NewKeeper(
 }
 
 // Logger returns a module-specific logger.
-func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
+func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
@@ -75,8 +77,8 @@ func (k *Keeper) GetCoin(ctx sdk.Context, symbol string) (coin types.Coin, err e
 	return
 }
 
-// GetAllCoins returns all coins existing in KVStore.
-func (k *Keeper) GetAllCoins(ctx sdk.Context) (coins []types.Coin) {
+// GetCoins returns all coins existing in KVStore.
+func (k *Keeper) GetCoins(ctx sdk.Context) (coins []types.Coin) {
 	it := k.GetCoinsIterator(ctx)
 	defer it.Close()
 
@@ -106,21 +108,18 @@ func (k *Keeper) SetCoin(ctx sdk.Context, coin types.Coin) {
 	store.Set(key, value)
 }
 
-func (k *Keeper) GetBaseCoin(ctx sdk.Context) string {
-	return k.GetParams(ctx).BaseSymbol
-}
-
-func (k *Keeper) IsCoinBase(ctx sdk.Context, symbol string) bool {
-	return k.GetParams(ctx).BaseSymbol == symbol
-}
-
-func (k *Keeper) UpdateCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, volume sdk.Int) {
-	if !k.IsCoinBase(ctx, coin.Symbol) {
+// Edit updates current coin reserve and volume and writes coin to KVStore.
+func (k *Keeper) EditCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, volume sdk.Int) {
+	if !k.IsCoinBase(coin.Symbol) {
 		k.SetCachedCoin(coin.Symbol)
 	}
+
+	// Update coin reserve and volume
 	coin.Reserve = reserve
 	coin.Volume = volume
 	k.SetCoin(ctx, coin)
+
+	// Emit event
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventTypeUpdateCoin,
 		sdk.NewAttribute(types.AttributeSymbol, coin.Symbol),
@@ -129,50 +128,67 @@ func (k *Keeper) UpdateCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, v
 	))
 }
 
+func (k *Keeper) GetBaseDenom() string {
+	return k.baseDenom
+}
+
+func (k *Keeper) IsCoinBase(symbol string) bool {
+	return k.GetBaseDenom() == symbol
+}
+
 func (k *Keeper) IsCheckRedeemed(ctx sdk.Context, check *types.Check) bool {
 	checkHash := check.HashFull()
 	store := ctx.KVStore(k.storeKey)
 	key := append(types.KeyPrefixCheck, checkHash[:]...)
 	value := store.Get(key)
-	return len(value) > 0 && value[0] > 0
+	if len(value) == 0 {
+		return false
+	}
+	var c types.Check
+	err := k.cdc.UnmarshalLengthPrefixed(value, &c)
+	if err != nil {
+		return false
+	}
+	return c.Redeemed
 }
 
 func (k *Keeper) SetCheckRedeemed(ctx sdk.Context, check *types.Check) {
 	checkHash := check.HashFull()
+	check.Redeemed = true
 	store := ctx.KVStore(k.storeKey)
 	key := append(types.KeyPrefixCheck, checkHash[:]...)
-	store.Set(key, []byte{1})
+	value := k.cdc.MustMarshalLengthPrefixed(check)
+	store.Set(key, value)
 }
 
-func (k *Keeper) GetCommission(ctx sdk.Context, commissionInBaseCoin sdk.Int) (sdk.Int, string, error) {
-	var feeCoin string
+func (k *Keeper) GetCommission(ctx sdk.Context, feeAmountBase sdk.Int) (sdk.Int, string, error) {
+	baseCoinDenom := k.GetBaseDenom()
+
+	var feeDenom string
 	fee, ok := ctx.Value("fee").(sdk.Coins)
-	if !ok || fee == nil {
-		feeCoin = k.GetBaseCoin(ctx)
-		return commissionInBaseCoin, feeCoin, nil
+	if !ok || len(fee) == 0 {
+		feeDenom = baseCoinDenom
+		return feeAmountBase, feeDenom, nil
 	}
 
-	commission := sdk.ZeroInt()
-
-	coin := fee[0]
-
-	feeCoin = coin.Denom
-	if feeCoin != k.GetBaseCoin(ctx) {
-		coinInfo, err := k.GetCoin(ctx, feeCoin)
+	feeDenom = strings.ToLower(fee[0].Denom)
+	feeAmount := feeAmountBase
+	if feeDenom != baseCoinDenom {
+		coin, err := k.GetCoin(ctx, feeDenom)
 		if err != nil {
 			return sdk.Int{}, "", err
 		}
 
-		if coinInfo.Reserve.LT(commissionInBaseCoin) {
-			return sdk.Int{}, "", fmt.Errorf("coin reserve balance is not sufficient for transaction. Has: %s, required %s",
-				coinInfo.Reserve.String(),
-				commissionInBaseCoin.String())
+		if coin.Reserve.LT(feeAmountBase) {
+			return sdk.Int{}, "", fmt.Errorf(
+				"coin reserve balance is not sufficient for transaction. Has: %s, required %s",
+				coin.Reserve.String(), feeAmountBase.String())
 		}
 
-		commission = formulas.CalculateSaleAmount(coinInfo.Volume, coinInfo.Reserve, uint(coinInfo.CRR), commissionInBaseCoin)
+		feeAmount = formulas.CalculateSaleAmount(coin.Volume, coin.Reserve, uint(coin.CRR), feeAmountBase)
 	}
 
-	return commission, feeCoin, nil
+	return feeAmount, feeDenom, nil
 }
 
 ////////////////////////////////////////////////////////////////
@@ -197,28 +213,3 @@ func (k *Keeper) ClearCoinCache() {
 		delete(k.coinCache, key)
 	}
 }
-
-// // Updating balances
-// func (k Keeper) UpdateBalance(ctx sdk.Context, symbol string, amount sdk.Int, address sdk.AccAddress) error {
-// 	// Get account coin information
-// 	coin := k.BankKeeper.GetBalance(ctx, address, symbol)
-// 	// Updating coin information
-// 	if amount.IsNegative() {
-// 		coin = coin.Sub(sdk.NewCoin(symbol, amount.Neg()))
-// 	} else {
-// 		coin = coin.Add(sdk.NewCoin(symbol, amount))
-// 	}
-// 	// Get account instance
-// 	acc := k.AccountKeeper.GetAccount(ctx, address)
-// 	if acc == nil {
-// 		acc = k.AccountKeeper.NewAccountWithAddress(ctx, address)
-// 	}
-// 	// Update coin information
-// 	err := acc.SetCoins(coins)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	// Update account information
-// 	k.AccountKeeper.SetAccount(ctx, acc)
-// 	return nil
-// }

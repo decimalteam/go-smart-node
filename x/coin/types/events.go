@@ -20,6 +20,7 @@ const (
 	AttributeInitVolume            = "initial_volume"
 	AttributeInitReserve           = "initial_reserve"
 	AttributeLimitVolume           = "limit_volume"
+	AttributeIdentity              = "identity"
 	AttributeCommissionCreateCoin  = "commission_create_coin"
 	AttributeCommissionRedeemCheck = "commission_redeem_check"
 

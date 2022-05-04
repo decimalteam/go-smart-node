@@ -19,13 +19,13 @@ service Msg {
   rpc SendCoin(MsgSendCoin) returns (MsgSendCoinResponse);
 
   // MultiSendCoin defines message for transfering specific coins as a batch.
-  rpc MultiSendCoin(MsgMultiSendCoin) returns (MsgMultisendCoinResponse);
+  rpc MultiSendCoin(MsgMultiSendCoin) returns (MsgMultiSendCoinResponse);
 
   // BuyCoin defines message for buying specific coin.
   rpc BuyCoin(MsgBuyCoin) returns (MsgBuyCoinResponse);
 
   // SellCoin defines message for selling specific coin.
-  rpc SellCoin(MsgSellCoin) returns (MsgSellCoinReponse);
+  rpc SellCoin(MsgSellCoin) returns (MsgSellCoinResponse);
 
   // SellAllCoin defines message for selling all specific coin.
   rpc SellAllCoin(MsgSellAllCoin) returns (MsgSellAllCoinResponse);
@@ -39,6 +39,7 @@ service Msg {
 message MsgCreateCoin {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   string sender = 1 [
     (gogoproto.jsontag) = "sender",
@@ -52,9 +53,10 @@ message MsgCreateCoin {
     (gogoproto.jsontag) = "symbol",
     (gogoproto.moretags) = "yaml:\"symbol\""
   ];
-  uint64 constant_reserve_ration = 4 [
-    (gogoproto.jsontag) = "constant_reserve_ration",
-    (gogoproto.moretags) = "yaml:\"constant_reserve_ration\""
+  uint64 crr = 4 [
+    (gogoproto.customname) = "CRR",
+    (gogoproto.jsontag) = "constant_reserve_ratio",
+    (gogoproto.moretags) = "yaml:\"constant_reserve_ratio\""
   ];
   bytes initial_volume = 5 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -87,6 +89,7 @@ message MsgCreateCoinResponse {}
 message MsgUpdateCoin {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   string sender = 1 [
     (gogoproto.jsontag) = "sender",
@@ -115,6 +118,7 @@ message MsgUpdateCoinResponse {}
 message Send {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   cosmos.base.v1beta1.Coin coin = 1 [
     (gogoproto.jsontag) = "coin",
@@ -130,6 +134,7 @@ message Send {
 message MsgMultiSendCoin {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   string sender = 1 [
     (gogoproto.jsontag) = "sender",
@@ -137,17 +142,19 @@ message MsgMultiSendCoin {
   ];
   repeated Send sends = 2 [
     (gogoproto.jsontag) = "sends",
-    (gogoproto.moretags) = "yaml:\"sends\""
+    (gogoproto.moretags) = "yaml:\"sends\"",
+    (gogoproto.nullable) = false
   ];
 }
 
-message MsgMultisendCoinResponse {}
+message MsgMultiSendCoinResponse {}
 
 ////////////////////////////////////////////////////////////////
 
 message MsgBuyCoin {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   string sender = 1 [
     (gogoproto.jsontag) = "sender",
@@ -172,6 +179,7 @@ message MsgBuyCoinResponse {}
 message MsgSellCoin {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   string sender = 1 [
     (gogoproto.jsontag) = "sender",
@@ -189,13 +197,14 @@ message MsgSellCoin {
   ];
 }
 
-message MsgSellCoinReponse {}
+message MsgSellCoinResponse {}
 
 ////////////////////////////////////////////////////////////////
 
 message MsgSellAllCoin {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   string sender = 1 [
     (gogoproto.jsontag) = "sender",
@@ -220,6 +229,7 @@ message MsgSellAllCoinResponse {}
 message MsgSendCoin {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   string sender = 1 [
     (gogoproto.jsontag) = "sender",
@@ -243,16 +253,17 @@ message MsgSendCoinResponse {}
 message MsgRedeemCheck {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   string sender = 1 [
     (gogoproto.jsontag) = "sender",
     (gogoproto.moretags) = "yaml:\"sender\""
   ];
-  bytes check = 2 [
+  string check = 2 [
     (gogoproto.jsontag) = "check",
     (gogoproto.moretags) = "yaml:\"check\""
   ];
-  bytes proof = 3 [
+  string proof = 3 [
     (gogoproto.jsontag) = "proof",
     (gogoproto.moretags) = "yaml:\"proof\""
   ];

@@ -19,7 +19,7 @@ func InitGenesis(
 ) {
 	keeper.SetParams(ctx, genesisState.Params)
 
-	// ensure the module account is set on genesis
+	// Ensure the module account is set on genesis
 	if acc := accountKeeper.GetModuleAccount(ctx, types.ModuleName); acc == nil {
 		// NOTE: shouldn't occur
 		panic(fmt.Sprintf("the %s module account has not been set", types.ModuleName))
@@ -36,6 +36,6 @@ func InitGenesis(
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	return &types.GenesisState{
 		Params: k.GetParams(ctx),
-		Coins:  k.GetAllCoins(ctx),
+		Coins:  k.GetCoins(ctx),
 	}
 }
