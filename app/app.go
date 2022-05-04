@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
@@ -133,28 +131,19 @@ import (
 	// _ "bitbucket.org/decimalteam/go-smart-node/client/docs/statik"
 
 	"bitbucket.org/decimalteam/go-smart-node/app/ante"
+	cfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
 
-func init() {
-	userHomeDir, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
-
-	DefaultNodeHome = filepath.Join(userHomeDir, ".decimal")
-
-	// manually update the power reduction by replacing micro (u) -> atto (a) evmos
-	sdk.DefaultPowerReduction = ethermint.PowerReduction
-}
-
 const (
-	// Name defines the application binary name
-	Name = "dscd"
+	// BinName defines the application binary name.
+	BinName = "dscd"
+)
 
-	// MainnetChainID defines the Decimal EIP155 chain ID for mainnet
-	MainnetChainID = "decimal_2020"
-	// TestnetChainID defines the Decimal EIP155 chain ID for testnet
-	TestnetChainID = "decimal_202020"
+var (
+	// MainnetChainIDPrefix defines the EVM EIP155 chain ID prefix for Decimal mainnet.
+	MainnetChainIDPrefix = fmt.Sprintf("decimal_%d", cfg.MainnetChainID)
+	// TestnetChainIDPrefix defines the EVM EIP155 chain ID prefix for Decimal testnet.
+	TestnetChainIDPrefix = fmt.Sprintf("decimal_%d", cfg.TestnetChainID)
 )
 
 var (
@@ -309,7 +298,7 @@ func NewDSC(
 
 	// NOTE we use custom transaction decoder that supports the sdk.Tx interface instead of sdk.StdTx
 	bApp := baseapp.NewBaseApp(
-		Name,
+		BinName,
 		logger,
 		db,
 		encodingConfig.TxConfig.TxDecoder(),

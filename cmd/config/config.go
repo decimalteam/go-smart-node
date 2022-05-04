@@ -31,9 +31,9 @@ const (
 
 // Full list of registered chain IDs can be found here: https://chainlist.org/
 const (
-	// MainnetChainID defines EVM chain ID used for DSC mainnet network
+	// MainnetChainID defines EVM chain ID used for DSC mainnet network.
 	MainnetChainID = 2020
-	// TestnetChainID defines EVM chain ID used for DSC testnet network
+	// TestnetChainID defines EVM chain ID used for DSC testnet network.
 	TestnetChainID = 202020
 )
 

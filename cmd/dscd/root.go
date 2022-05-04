@@ -63,7 +63,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithViper(EnvPrefix)
 
 	rootCmd := &cobra.Command{
-		Use:   app.Name,
+		Use:   app.BinName,
 		Short: "Decimal Smart Chain Daemon",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// set the default command outputs

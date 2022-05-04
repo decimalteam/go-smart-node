@@ -27,7 +27,7 @@ func TestDSCExport(t *testing.T) {
 	// Initialize the chain
 	app.InitChain(
 		abci.RequestInitChain{
-			ChainId:       MainnetChainID + "-1",
+			ChainId:       MainnetChainIDPrefix + "-1",
 			Validators:    []abci.ValidatorUpdate{},
 			AppStateBytes: stateBytes,
 		},
