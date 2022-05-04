@@ -24,6 +24,7 @@ import (
 	tmcfg "github.com/tendermint/tendermint/config"
 	tmflags "github.com/tendermint/tendermint/libs/cli/flags"
 	"github.com/tendermint/tendermint/libs/log"
+	tmrand "github.com/tendermint/tendermint/libs/rand"
 	"github.com/tendermint/tendermint/node"
 	tmclient "github.com/tendermint/tendermint/rpc/client"
 	dbm "github.com/tendermint/tm-db"
@@ -111,7 +112,7 @@ func DefaultConfig() Config {
 		AppConstructor:    NewAppConstructor(encCfg),
 		GenesisState:      app.ModuleBasics.DefaultGenesis(encCfg.Marshaler),
 		TimeoutCommit:     2 * time.Second,
-		ChainID:           "decimal-localnet-0",
+		ChainID:           fmt.Sprintf("decimal_%d-1", tmrand.Int63n(9999999999999)+1),
 		NumValidators:     4,
 		BondDenom:         ethermint.AttoPhoton,
 		MinGasPrices:      fmt.Sprintf("0.000006%s", ethermint.AttoPhoton),

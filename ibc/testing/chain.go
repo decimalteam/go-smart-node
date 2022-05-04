@@ -24,7 +24,7 @@ import (
 )
 
 // ChainIDPrefix defines the default chain ID prefix for Decimal test chains
-var ChainIDPrefix = "decimal-localnet-"
+var ChainIDPrefix = "decimal_202020-"
 
 func init() {
 	ibcgotesting.ChainIDPrefix = ChainIDPrefix

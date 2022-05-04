@@ -29,6 +29,14 @@ const (
 	BaseDenom = "del"
 )
 
+// Full list of registered chain IDs can be found here: https://chainlist.org/
+const (
+	// MainnetChainID defines EVM chain ID used for DSC mainnet network
+	MainnetChainID = 2020
+	// TestnetChainID defines EVM chain ID used for DSC testnet network
+	TestnetChainID = 202020
+)
+
 // SetBech32Prefixes sets the global prefixes to be used when serializing addresses and public keys to Bech32 strings.
 func SetBech32Prefixes(config *sdk.Config) {
 	config.SetBech32PrefixForAccount(Bech32PrefixAccAddr, Bech32PrefixAccPub)

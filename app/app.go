@@ -150,10 +150,11 @@ func init() {
 const (
 	// Name defines the application binary name
 	Name = "dscd"
+
 	// MainnetChainID defines the Decimal EIP155 chain ID for mainnet
-	MainnetChainID = "decimal-mainnet"
+	MainnetChainID = "decimal_2020"
 	// TestnetChainID defines the Decimal EIP155 chain ID for testnet
-	TestnetChainID = "decimal-localnet"
+	TestnetChainID = "decimal_202020"
 )
 
 var (

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 KEY="royalkey"
-CHAINID="decimal-localnet-1"
+CHAINID="decimal_202020-1"
 MONIKER="royalmoniker"
 DATA_DIR=$(mktemp -d -t decimal-datadir.XXXXX)
 

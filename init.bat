@@ -9,7 +9,7 @@ rem 3. add path C:\msys64\mingw64\bin
 rem             C:\msys64\usr\bin
 
 set KEY="royalkey"
-set CHAINID="decimal-localnet-1"
+set CHAINID="decimal_202020-1"
 set MONIKER="localtestnet"
 set KEYRING="test"
 set KEYALGO="eth_secp256k1"
@@ -17,7 +17,7 @@ set LOGLEVEL="info"
 # to trace evm
 #TRACE="--trace"
 set TRACE=""
-set HOME=%USERPROFILE%\.dscd
+set HOME=%USERPROFILE%\.decimal
 echo %HOME%
 set ETHCONFIG=%HOME%\config\config.toml
 set GENESIS=%HOME%\config\genesis.json

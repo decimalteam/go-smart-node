@@ -19,7 +19,7 @@ func TestInitCmd(t *testing.T) {
 		"init",     // Test the init cmd
 		"dsc-test", // Moniker
 		fmt.Sprintf("--%s=%s", cli.FlagOverwrite, "true"), // Overwrite genesis.json, in case it already exists
-		fmt.Sprintf("--%s=%s", flags.FlagChainID, "decimal-localnet-1"),
+		fmt.Sprintf("--%s=%s", flags.FlagChainID, "decimal_202020-1"),
 	})
 
 	err := svrcmd.Execute(rootCmd, app.DefaultNodeHome)

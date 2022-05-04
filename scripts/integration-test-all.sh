@@ -17,7 +17,7 @@ RPC_PORT="854"
 IP_ADDR="0.0.0.0"
 
 KEY="royalkey"
-CHAINID="decimal-localnet-1"
+CHAINID="decimal_202020-1"
 MONIKER="royalmoniker"
 
 ## default port prefixes for dscd

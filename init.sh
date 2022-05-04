@@ -1,7 +1,7 @@
 #!/bin/bash
 
 KEY="royalkey"
-CHAINID="decimal-localnet-1"
+CHAINID="decimal_202020-1"
 MONIKER="localtestnet"
 KEYRING="test"
 KEYALGO="eth_secp256k1"
@@ -11,15 +11,15 @@ LOGLEVEL="info"
 TRACE=""
 
 # Decimal paths
-DECIMAL_CONFIG="$HOME/.dscd/config/config.toml"
-DECIMAL_GENESIS="$HOME/.dscd/config/genesis.json"
-DECIMAL_GENESIS_TMP="$HOME/.dscd/config/tmp_genesis.json"
+DECIMAL_CONFIG="$HOME/.decimal/config/config.toml"
+DECIMAL_GENESIS="$HOME/.decimal/config/genesis.json"
+DECIMAL_GENESIS_TMP="$HOME/.decimal/config/tmp_genesis.json"
 
 # Calidate dependencies are installed
 command -v jq > /dev/null 2>&1 || { echo >&2 "jq not installed. More info: https://stedolan.github.io/jq/download/"; exit 1; }
 
 # Reinstall daemon
-rm -rf ~/.dscd*
+rm -rf ~/.decimal*
 make install
 
 # Set client config
