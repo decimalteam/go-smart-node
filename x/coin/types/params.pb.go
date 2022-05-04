@@ -28,7 +28,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type Params struct {
 	// title of the base coin
 	BaseTitle string `protobuf:"bytes,1,opt,name=base_title,json=baseTitle,proto3" json:"base_title" yaml:"base_title"`
-	// symbol of the base coin
+	// symbol of the base coin (denom)
 	BaseSymbol string `protobuf:"bytes,2,opt,name=base_symbol,json=baseSymbol,proto3" json:"base_symbol" yaml:"base_symbol"`
 	// initial volume of the base coin
 	BaseInitialVolume github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,3,opt,name=base_initial_volume,json=baseInitialVolume,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"base_initial_volume" yaml:"base_initial_volume"`

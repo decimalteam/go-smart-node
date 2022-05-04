@@ -53,8 +53,4 @@ message Check {
     (gogoproto.jsontag) = "s",
     (gogoproto.moretags) = "yaml:\"s\""
   ];
-  bool redeemed = 10 [
-    (gogoproto.jsontag) = "redeemed",
-    (gogoproto.moretags) = "yaml:\"redeemed\""
-  ];
 }

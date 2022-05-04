@@ -5,11 +5,9 @@ package types
 import (
 	"fmt"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/errors"
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
 const (
@@ -69,13 +67,6 @@ const (
 	CodeUnableRetrivePkey        uint32 = 502
 	CodeUnableRetriveSECPPkey    uint32 = 503
 )
-
-const maxCoinNameBytes = 64
-const allowedCoinSymbols = "^[a-zA-Z][a-zA-Z0-9]{2,9}$"
-
-var minCoinSupply = sdk.NewInt(1)
-var maxCoinSupply = helpers.BipToPip(sdk.NewInt(1000000000000000))
-var MinCoinReserve = helpers.BipToPip(sdk.NewInt(1000))
 
 func ErrInvalidCRR(crr string) *sdkerrors.Error {
 	return errors.Encode(

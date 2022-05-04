@@ -1,33 +1,28 @@
 package coin
 
 import (
-	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 
 // InitGenesis initializes the module's state from a provided genesis state.
-func InitGenesis(
-	ctx sdk.Context,
-	keeper keeper.Keeper,
-	accountKeeper authkeeper.AccountKeeper,
-	genesisState types.GenesisState,
-) {
-	keeper.SetParams(ctx, genesisState.Params)
+func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, gs types.GenesisState) {
+	// Initialize params
+	keeper.SetParams(ctx, gs.Params)
 
-	// Ensure the module account is set on genesis
-	if acc := accountKeeper.GetModuleAccount(ctx, types.ModuleName); acc == nil {
-		// NOTE: shouldn't occur
-		panic(fmt.Sprintf("the %s module account has not been set", types.ModuleName))
-	}
-
-	for _, coin := range genesisState.Coins {
+	// Initialize coins
+	for _, coin := range gs.Coins {
 		// TODO: Validate firstly
 		keeper.SetCoin(ctx, coin)
+		// TODO: Is that enough?
+	}
+
+	// Initialize checks
+	for _, check := range gs.Checks {
+		// TODO: Validate firstly
+		keeper.SetCheck(ctx, &check)
 		// TODO: Is that enough?
 	}
 }
@@ -37,5 +32,6 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	return &types.GenesisState{
 		Params: k.GetParams(ctx),
 		Coins:  k.GetCoins(ctx),
+		Checks: k.GetChecks(ctx),
 	}
 }

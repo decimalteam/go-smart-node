@@ -437,8 +437,8 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 		return nil, types.ErrInvalidProof(err.Error())
 	}
 
-	// Set check redeemed
-	k.SetCheckRedeemed(ctx, check)
+	// Write check to the storage
+	k.SetCheck(ctx, check)
 
 	// Send fee from issuer to the module
 	// TODO: Make sure it is correct way to get fees

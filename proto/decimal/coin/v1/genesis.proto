@@ -4,6 +4,7 @@ package decimal.coin.v1;
 import "gogoproto/gogo.proto";
 
 import "decimal/coin/v1/coin.proto";
+import "decimal/coin/v1/check.proto";
 import "decimal/coin/v1/params.proto";
 
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/coin/types";
@@ -22,6 +23,13 @@ message GenesisState {
   repeated Coin coins = 2 [
     (gogoproto.jsontag) = "coins",
     (gogoproto.moretags) = "yaml:\"coins\"",
+    (gogoproto.nullable) = false
+  ];
+  
+  // registered checks
+  repeated Check checks = 3 [
+    (gogoproto.jsontag) = "checks",
+    (gogoproto.moretags) = "yaml:\"checks\"",
     (gogoproto.nullable) = false
   ];
 }

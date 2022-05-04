@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/hex"
 	"fmt"
 	"regexp"
 )
@@ -38,14 +39,30 @@ func (gs *GenesisState) Validate() error {
 	}
 	// Check there are no coins with the same symbol
 	seenSymbols := make(map[string]bool)
-	for _, c := range gs.Coins {
-		if seenSymbols[c.Symbol] {
-			return fmt.Errorf("coin symbol duplicated on genesis: '%s'", c.Symbol)
+	for _, coin := range gs.Coins {
+		if seenSymbols[coin.Symbol] {
+			return fmt.Errorf("coin symbol duplicated on genesis: '%s'", coin.Symbol)
 		}
-		// if err := c.Validate(); err != nil {
+		// Validate coin
+		// if err := coin.Validate(); err != nil {
 		// 	return err
 		// }
-		seenSymbols[c.Symbol] = true
+		seenSymbols[coin.Symbol] = true
 	}
+	// Check there are no checks with the same hash
+	seenChecks := make(map[string]bool)
+	for _, check := range gs.Checks {
+		checkHash := check.HashFull()
+		checkHashStr := hex.EncodeToString(checkHash[:])
+		if seenChecks[checkHashStr] {
+			return fmt.Errorf("check hash duplicated on genesis: '%X'", checkHash[:])
+		}
+		// Validate check
+		// if err := check.Validate(); err != nil {
+		// 	return err
+		// }
+		seenChecks[checkHashStr] = true
+	}
+	// Validate params
 	return gs.Params.Validate()
 }

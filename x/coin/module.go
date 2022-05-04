@@ -55,7 +55,9 @@ func (AppModuleBasic) ConsensusVersion() uint64 {
 }
 
 // RegisterLegacyAminoCodec performs a no-op as the module doesn't support Amino encoding.
-func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {}
+func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+	return
+}
 
 // RegisterInterfaces registers the module's interface types.
 func (AppModuleBasic) RegisterInterfaces(interfaceRegistry codectypes.InterfaceRegistry) {
@@ -77,7 +79,9 @@ func (b AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEnc
 }
 
 // RegisterRESTRoutes registers the module's REST service handlers.
-func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {}
+func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {
+	return
+}
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(c client.Context, serveMux *runtime.ServeMux) {
@@ -155,13 +159,15 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 }
 
 // RegisterInvariants registers the module's invariants.
-func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {}
+func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
+	return
+}
 
 // InitGenesis performs the module's genesis initialization.
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
-	var genesisState types.GenesisState
-	cdc.MustUnmarshalJSON(data, &genesisState)
-	InitGenesis(ctx, am.keeper, am.accountKeeper, genesisState)
+	var gs types.GenesisState
+	cdc.MustUnmarshalJSON(data, &gs)
+	InitGenesis(ctx, am.keeper, gs)
 	return []abci.ValidatorUpdate{}
 }
 
@@ -172,10 +178,13 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 }
 
 // ConsensusVersion implements ConsensusVersion.
-func (am AppModule) ConsensusVersion() uint64 { return am.AppModuleBasic.ConsensusVersion() }
+func (am AppModule) ConsensusVersion() uint64 {
+	return am.AppModuleBasic.ConsensusVersion()
+}
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the module.
 func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {
+	return
 }
 
 // EndBlock executes all ABCI EndBlock logic respective to the module.
@@ -184,8 +193,11 @@ func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.Valid
 }
 
 ////////////////////////////////////////////////////////////////
+// Simulation
+////////////////////////////////////////////////////////////////
 
 func (am AppModule) GenerateGenesisState(input *module.SimulationState) {
+	return
 }
 
 func (am AppModule) ProposalContents(simState module.SimulationState) []simtypes.WeightedProposalContent {
@@ -197,6 +209,7 @@ func (am AppModule) RandomizedParams(r *rand.Rand) []simtypes.ParamChange {
 }
 
 func (am AppModule) RegisterStoreDecoder(decoderRegistry sdk.StoreDecoderRegistry) {
+	return
 }
 
 func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {

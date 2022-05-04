@@ -43,7 +43,7 @@ func NewMsgCreateCoin(
 	initReserve sdk.Int,
 	limitVolume sdk.Int,
 	identity string,
-) *MsgCreateCoin { // nolint: interfacer
+) *MsgCreateCoin {
 	return &MsgCreateCoin{
 		Sender:         sender.String(),
 		Title:          title,
@@ -125,7 +125,7 @@ func NewMsgUpdateCoin(
 	symbol string,
 	limitVolume sdk.Int,
 	identity string,
-) *MsgUpdateCoin { // nolint: interfacer
+) *MsgUpdateCoin {
 	return &MsgUpdateCoin{
 		Sender:      sender.String(),
 		Symbol:      symbol,
@@ -180,7 +180,7 @@ func NewMsgSendCoin(
 	sender sdk.AccAddress,
 	coin sdk.Coin,
 	receiver sdk.AccAddress,
-) *MsgSendCoin { // nolint: interfacer
+) *MsgSendCoin {
 	return &MsgSendCoin{
 		Sender:   sender.String(),
 		Coin:     coin,
@@ -233,7 +233,7 @@ func (msg MsgSendCoin) ValidateBasic() error {
 func NewMsgMultiSendCoin(
 	sender sdk.AccAddress,
 	sends []Send,
-) *MsgMultiSendCoin { // nolint: interfacer
+) *MsgMultiSendCoin {
 	return &MsgMultiSendCoin{
 		Sender: sender.String(),
 		Sends:  sends,
@@ -288,7 +288,7 @@ func NewMsgBuyCoin(
 	sender sdk.AccAddress,
 	coinToBuy sdk.Coin,
 	maxCoinToSell sdk.Coin,
-) *MsgBuyCoin { // nolint: interfacer
+) *MsgBuyCoin {
 	return &MsgBuyCoin{
 		Sender:        sender.String(),
 		CoinToBuy:     coinToBuy,
@@ -338,7 +338,7 @@ func NewMsgSellCoin(
 	sender sdk.AccAddress,
 	coinToSell sdk.Coin,
 	minCoinToBuy sdk.Coin,
-) *MsgSellCoin { // nolint: interfacer
+) *MsgSellCoin {
 	return &MsgSellCoin{
 		Sender:       sender.String(),
 		CoinToSell:   coinToSell,
@@ -388,7 +388,7 @@ func NewMsgSellAllCoin(
 	sender sdk.AccAddress,
 	coinToSell sdk.Coin,
 	minCoinToBuy sdk.Coin,
-) *MsgSellAllCoin { // nolint: interfacer
+) *MsgSellAllCoin {
 	return &MsgSellAllCoin{
 		Sender:       sender.String(),
 		CoinToSell:   coinToSell,
@@ -438,7 +438,7 @@ func NewMsgRedeemCheck(
 	sender sdk.AccAddress,
 	check string,
 	proof string,
-) *MsgRedeemCheck { // nolint: interfacer
+) *MsgRedeemCheck {
 	return &MsgRedeemCheck{
 		Sender: sender.String(),
 		Check:  check,

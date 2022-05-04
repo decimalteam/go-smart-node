@@ -61,19 +61,20 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+////////////////////////////////////////////////////////////////
+// Coin
+////////////////////////////////////////////////////////////////
+
 // GetCoin returns the coin if exists in KVStore.
 func (k *Keeper) GetCoin(ctx sdk.Context, symbol string) (coin types.Coin, err error) {
 	store := ctx.KVStore(k.storeKey)
 	key := append(types.KeyPrefixCoin, []byte(strings.ToLower(symbol))...)
 	value := store.Get(key)
-	if value == nil {
+	if len(value) == 0 {
 		err = fmt.Errorf("coin %s is not found in the key-value store", strings.ToLower(symbol))
 		return
 	}
 	err = k.cdc.UnmarshalLengthPrefixed(value, &coin)
-	if err != nil {
-		return
-	}
 	return
 }
 
@@ -128,13 +129,9 @@ func (k *Keeper) EditCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, vol
 	))
 }
 
-func (k *Keeper) GetBaseDenom() string {
-	return k.baseDenom
-}
-
-func (k *Keeper) IsCoinBase(symbol string) bool {
-	return k.GetBaseDenom() == symbol
-}
+////////////////////////////////////////////////////////////////
+// Check
+////////////////////////////////////////////////////////////////
 
 func (k *Keeper) IsCheckRedeemed(ctx sdk.Context, check *types.Check) bool {
 	checkHash := check.HashFull()
@@ -145,20 +142,81 @@ func (k *Keeper) IsCheckRedeemed(ctx sdk.Context, check *types.Check) bool {
 		return false
 	}
 	var c types.Check
-	err := k.cdc.UnmarshalLengthPrefixed(value, &c)
-	if err != nil {
-		return false
-	}
-	return c.Redeemed
+	return k.cdc.UnmarshalLengthPrefixed(value, &c) == nil
 }
 
-func (k *Keeper) SetCheckRedeemed(ctx sdk.Context, check *types.Check) {
+func (k *Keeper) GetCheck(ctx sdk.Context, checkHash []byte) (check *types.Check, err error) {
+	store := ctx.KVStore(k.storeKey)
+	key := append(types.KeyPrefixCheck, checkHash...)
+	value := store.Get(key)
+	if len(value) == 0 {
+		err = fmt.Errorf("check with hash %X is not found in the key-value store", checkHash)
+		return
+	}
+	err = k.cdc.UnmarshalLengthPrefixed(value, check)
+	return
+}
+
+// GetChecks returns all checks existing in KVStore.
+func (k *Keeper) GetChecks(ctx sdk.Context) (checks []types.Check) {
+	it := k.GetChecksIterator(ctx)
+	defer it.Close()
+
+	for ; it.Valid(); it.Next() {
+		var check types.Check
+		err := k.cdc.UnmarshalLengthPrefixed(it.Value(), &check)
+		if err != nil {
+			panic(err)
+		}
+		checks = append(checks, check)
+	}
+
+	return checks
+}
+
+// GetChecksIterator returns iterator over all checks existing in KVStore.
+func (k *Keeper) GetChecksIterator(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return sdk.KVStorePrefixIterator(store, types.KeyPrefixCheck)
+}
+
+// SetCheck writes check to KVStore.
+func (k *Keeper) SetCheck(ctx sdk.Context, check *types.Check) {
 	checkHash := check.HashFull()
-	check.Redeemed = true
 	store := ctx.KVStore(k.storeKey)
 	key := append(types.KeyPrefixCheck, checkHash[:]...)
 	value := k.cdc.MustMarshalLengthPrefixed(check)
 	store.Set(key, value)
+}
+
+////////////////////////////////////////////////////////////////
+// Params
+////////////////////////////////////////////////////////////////
+
+// GetParams returns the total set of the module parameters.
+func (k *Keeper) GetParams(ctx sdk.Context) (params types.Params) {
+	k.ps.GetParamSet(ctx, &params)
+	return params
+}
+
+// SetParams sets the module parameters to the param space.
+func (k *Keeper) SetParams(ctx sdk.Context, params types.Params) {
+	// Effective optimizations to reduce retrieving param values
+	k.baseDenom = params.BaseSymbol
+
+	k.ps.SetParamSet(ctx, &params)
+}
+
+////////////////////////////////////////////////////////////////
+// Helpers
+////////////////////////////////////////////////////////////////
+
+func (k *Keeper) GetBaseDenom() string {
+	return k.baseDenom
+}
+
+func (k *Keeper) IsCoinBase(symbol string) bool {
+	return k.GetBaseDenom() == symbol
 }
 
 func (k *Keeper) GetCommission(ctx sdk.Context, feeAmountBase sdk.Int) (sdk.Int, string, error) {
@@ -191,6 +249,8 @@ func (k *Keeper) GetCommission(ctx sdk.Context, feeAmountBase sdk.Int) (sdk.Int,
 	return feeAmount, feeDenom, nil
 }
 
+////////////////////////////////////////////////////////////////
+// Coin cache
 ////////////////////////////////////////////////////////////////
 
 func (k *Keeper) GetCoinCache(symbol string) bool {

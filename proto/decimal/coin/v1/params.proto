@@ -17,7 +17,7 @@ message Params {
     (gogoproto.moretags) = "yaml:\"base_title\""
   ];
 
-  // symbol of the base coin
+  // symbol of the base coin (denom)
   string base_symbol = 2 [
     (gogoproto.jsontag) = "base_symbol",
     (gogoproto.moretags) = "yaml:\"base_symbol\""

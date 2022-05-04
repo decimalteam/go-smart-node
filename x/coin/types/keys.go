@@ -4,11 +4,11 @@ const (
 	// ModuleName defines the module name
 	ModuleName = "coin"
 
-	// MemStoreKey defines the in-memory store key
-	MemStoreKey = "mem_coin"
-
 	// StoreKey defines the primary module store key
 	StoreKey = ModuleName
+
+	// MemStoreKey defines the in-memory store key
+	MemStoreKey = "mem_" + ModuleName
 
 	// RouterKey defines module's messages routing
 	RouterKey = ModuleName
