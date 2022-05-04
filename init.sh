@@ -19,7 +19,7 @@ DECIMAL_GENESIS_TMP="$HOME/.decimal/config/tmp_genesis.json"
 command -v jq > /dev/null 2>&1 || { echo >&2 "jq not installed. More info: https://stedolan.github.io/jq/download/"; exit 1; }
 
 # Reinstall daemon
-rm -rf ~/.decimal*
+rm -rf "$HOME/.decimal/*"
 make install
 
 # Set client config
