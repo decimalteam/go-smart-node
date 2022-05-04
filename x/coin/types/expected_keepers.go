@@ -48,3 +48,19 @@ type BankKeeper interface {
 	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
 	BurnCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
 }
+
+// CoinKeeper defines the exported coin keeper.
+type CoinKeeper interface {
+	GetCoin(ctx sdk.Context, symbol string) (coin Coin, err error)
+	GetCoins(ctx sdk.Context) (coins []Coin)
+	SetCoin(ctx sdk.Context, coin Coin)
+	EditCoin(ctx sdk.Context, coin Coin, reserve sdk.Int, volume sdk.Int)
+
+	IsCheckRedeemed(ctx sdk.Context, check *Check) bool
+	GetCheck(ctx sdk.Context, checkHash []byte) (check *Check, err error)
+	GetChecks(ctx sdk.Context) (checks []Check)
+	SetCheck(ctx sdk.Context, check *Check)
+
+	GetParams(ctx sdk.Context) (params Params)
+	SetParams(ctx sdk.Context, params Params)
+}
