@@ -1,0 +1,44 @@
+syntax = "proto3";
+package decimal.nft.v1;
+
+import "gogoproto/gogo.proto";
+import "decimal/nft/v1/owner.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
+
+message BaseNFT {
+  option (gogoproto.equal)           = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.stringer) = false;
+  option (gogoproto.goproto_stringer) = false;
+
+  string ID = 1 [
+    (gogoproto.jsontag) = "id",
+    (gogoproto.moretags) = "yaml:\"id\""
+  ];
+
+  repeated TokenOwner owners = 2 [
+      (gogoproto.castrepeated) = "TokenOwners",
+      (gogoproto.nullable) = false,
+      (gogoproto.moretags) = "yaml:\"owners\""
+  ];
+
+  string creator = 3 [
+      (gogoproto.moretags) = "yaml:\"creator\""
+  ];
+
+  string tokenURI = 4 [
+    (gogoproto.jsontag) = "token_uri",
+    (gogoproto.moretags) = "yaml:\"token_uri\""
+  ];
+
+  string reserve = 5 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.moretags) = "yaml:\"reserve\"",
+    (gogoproto.nullable) = false
+  ];
+
+  bool allow_mint = 6 [
+    (gogoproto.moretags) = "yaml:\"allow_mint\""
+  ];
+}
