@@ -3,7 +3,7 @@
   include: node-common-at-first.yml
 
 - name: Initialize private validator, p2p, genesis, and application configuration files
-  shell: '{{ decimal_bin }}/dscd init $(hostname) --network testnet --chain-id={{ chain_id }}'
+  shell: '{{ decimal_bin }}/dscd init $(hostname) --chain-id={{ chain_id }}'
   register: initialization
 
 - debug: var=initialization
