@@ -6,7 +6,17 @@
 #   shell: '{{ decimal_bin }}/dscd init $(hostname) --chain-id={{ chain_id }}'
 #   register: initialization
 
-# - debug: var=initialization
+- name: Create config directory if necessary
+  file:
+    path: '{{ decimal_data }}/daemon/config'
+    state: directory
+    recurse: true
+
+- name: Create data directory if necessary
+  file:
+    path: '{{ decimal_data }}/daemon/data'
+    state: directory
+    recurse: true
 
 - name: Copy node key
   shell: 'cp -b -f {{ decimal_keys }}/node_key.json {{ decimal_data }}/daemon/config/node_key.json'
@@ -16,6 +26,8 @@
 
 - name: Copy private validator state file
   shell: 'cp -b -f {{ decimal_keys }}/priv_validator_state.json {{ decimal_data }}/daemon/data/priv_validator_state.json'
+
+- debug: var=initialization
 
 - name: Get genesis blockchain file from validator
   uri:
