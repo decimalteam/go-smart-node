@@ -26,7 +26,7 @@ for platform in ${TARGET_PLATFORMS} ; do
     setup_build_env_for_platform "${platform}"
     
     make clean
-    echo Building for "$(go env GOOS)/$(go env GOARCH)" >&2
+    echo "Building for $(go env GOOS)/$(go env GOARCH)" >&2
     GOROOT_FINAL="$(go env GOROOT)" make build \
         LDFLAGS=-buildid="${VERSION}" \
         VERSION="${VERSION}" \
