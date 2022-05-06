@@ -3,7 +3,7 @@
 DECIMAL_VALIDATOR_01_TX_PATH="./build/gentx/validator-01.tmp.json"
 DECIMAL_VALIDATOR_02_TX_PATH="./build/gentx/validator-02.tmp.json"
 DECIMAL_VALIDATOR_03_TX_PATH="./build/gentx/validator-03.tmp.json"
-DECIMAL_INITIAL_STAKE_AMOUNT=40000000000000000000000000del
+DECIMAL_INITIAL_STAKE_AMOUNT=30000000000000000000000000del
 
 # Ensure tmp directory exists
 mkdir "./build/gentx" -p
@@ -26,7 +26,6 @@ dscd gentx dev-dsc-validator-0 $DECIMAL_INITIAL_STAKE_AMOUNT \
 
 # Print signature only and remove temporary file
 jq <"$DECIMAL_VALIDATOR_01_TX_PATH" '.signatures[0]'
-rm "$DECIMAL_VALIDATOR_01_TX_PATH"
 
 ################################################################
 # Validator 2
@@ -46,7 +45,6 @@ dscd gentx dev-dsc-validator-1 $DECIMAL_INITIAL_STAKE_AMOUNT \
 
 # Print signature only and remove temporary file
 jq <"$DECIMAL_VALIDATOR_02_TX_PATH" '.signatures[0]'
-rm "$DECIMAL_VALIDATOR_02_TX_PATH"
 
 ################################################################
 # Validator 3
@@ -66,7 +64,6 @@ dscd gentx dev-dsc-validator-2 $DECIMAL_INITIAL_STAKE_AMOUNT \
 
 # Print signature only and remove temporary file
 jq <"$DECIMAL_VALIDATOR_03_TX_PATH" '.signatures[0]'
-rm "$DECIMAL_VALIDATOR_03_TX_PATH"
 
 # Also remove `build/gentx` folder
 rm -rf "./build/gentx"
