@@ -1,0 +1,13 @@
+---
+- name: Update Decimal dscd/rest services (systemd)
+  hosts: all
+  gather_facts: False
+
+  roles:
+    - role: decimal-service
+      vars:
+        srv_mode: stop
+
+    - role: decimal-service
+      vars:
+        srv_mode: start

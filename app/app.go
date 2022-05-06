@@ -367,7 +367,6 @@ func NewDSC(
 		inflationtypes.StoreKey,
 		erc20types.StoreKey,
 		incentivestypes.StoreKey,
-		cointypes.StoreKey,
 		epochstypes.StoreKey,
 		claimstypes.StoreKey,
 		vestingtypes.StoreKey,

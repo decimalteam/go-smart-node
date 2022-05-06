@@ -1,0 +1,12 @@
+---
+- name: reload systemctl
+  systemd:
+    daemon_reload: true
+  become: true
+
+- name: run service explorer worker
+  service:
+    name: '{{ service_name_worker }}'
+    state: started
+    enabled: true
+  become: true

@@ -1,0 +1,24 @@
+---
+- name: Stop explorer indexer process
+  shell: pm2 stop all
+
+- name: Drop schema "public" with cascade
+  postgresql_schema:
+    db: orderer
+    name: public
+    state: absent
+    cascade_drop: true
+  become: true
+  become_user: postgres
+
+- name: Create schema "public"
+  postgresql_schema:
+    db: orderer
+    name: public
+    owner: orderer
+    state: present
+  become: true
+  become_user: postgres
+
+- name: Start explorer indexer process
+  shell: pm2 start all  

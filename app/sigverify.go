@@ -27,11 +27,11 @@ const (
 // by the concrete type.
 // The types of keys supported are:
 //
+// - ed25519 (Validators)
+//
 // - secp256k1 (Cosmos SDK keys)
 //
 // - ethsecp256k1 (Ethereum keys)
-//
-// - ed25519 (Validators)
 //
 // - multisig (Cosmos SDK multisigs)
 func SigVerificationGasConsumer(
@@ -40,15 +40,16 @@ func SigVerificationGasConsumer(
 	pubkey := sig.PubKey
 	switch pubkey := pubkey.(type) {
 
-	case *secp256k1.PubKey:
-		// Cosmos SDK keys
-		// TODO: Implement!
-		return nil
-
 	case *ethsecp256k1.PubKey:
 		// Ethereum keys
 		meter.ConsumeGas(secp256k1VerifyCost, "ante verify: eth_secp256k1")
 		return nil
+
+	case *secp256k1.PubKey:
+		// Cosmos SDK keys
+		// TODO: Is it needed to support?
+		// meter.ConsumeGas(params.SigVerifyCostSecp256k1, "ante verify: secp256k1")
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidPubKey, "secp256k1 public keys are unsupported")
 
 	case *ed25519.PubKey:
 		// Validator keys

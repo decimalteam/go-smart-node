@@ -1,0 +1,15 @@
+---
+- name: Update Decimal Smart Chain Node (only binary file)
+  hosts: all
+  gather_facts: true
+
+  roles:
+    - role: decimal-service
+      vars:
+        srv_mode: stop
+
+    - role: decimal-update
+
+    - role: decimal-service
+      vars:
+        srv_mode: start

@@ -31,13 +31,18 @@ func TestIsSupportedKeys(t *testing.T) {
 			false,
 		},
 		{
-			"ethsecp256k1 key",
-			&ethsecp256k1.PubKey{},
+			"ed25519 key",
+			&ed25519.PubKey{},
 			true,
 		},
 		{
-			"ed25519 key",
-			&ed25519.PubKey{},
+			"secp256k1 key",
+			&secp256k1.PubKey{},
+			false,
+		},
+		{
+			"ethsecp256k1 key",
+			&ethsecp256k1.PubKey{},
 			true,
 		},
 		{
@@ -58,11 +63,6 @@ func TestIsSupportedKeys(t *testing.T) {
 		{
 			"multisig key - invalid pubkey",
 			multisig.NewLegacyAminoPubKey(2, []cryptotypes.PubKey{&ed25519.PubKey{}, &ed25519.PubKey{}, &secp256k1.PubKey{}}),
-			false,
-		},
-		{
-			"cosmos secp256k1",
-			&secp256k1.PubKey{},
 			false,
 		},
 	}

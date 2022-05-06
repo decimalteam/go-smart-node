@@ -1,0 +1,6 @@
+---
+artifacts: build
+decimal_bin: '/home/centos/decimal'
+decimal_data: '/home/centos/.decimal'
+decimal_keys: '/home/centos/decimal-testnet'
+decimal_bin_mode: '0750'

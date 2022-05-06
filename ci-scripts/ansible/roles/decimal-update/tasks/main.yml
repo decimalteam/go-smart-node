@@ -1,0 +1,20 @@
+---
+- name: Install required packages (leveldb, snappy)
+  dnf:
+    name:
+      - leveldb
+      - snappy
+    state: latest
+  become: true
+
+- name: Create binary dir with parent directories if it not exists
+  file:
+    path: '{{ decimal_bin }}'
+    state: directory
+    recurse: true
+
+- name: Upload dscd from artifacts
+  copy:
+    src: '{{ artifacts }}/dscd'
+    dest: '{{ decimal_bin }}/dscd'
+    mode: '{{ decimal_bin_mode }}'

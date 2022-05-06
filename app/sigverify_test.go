@@ -38,11 +38,14 @@ func expectedGasCostByKeys(pubkeys []cryptotypes.PubKey) uint64 {
 	cost := uint64(0)
 	for _, pubkey := range pubkeys {
 		pubkeyType := strings.ToLower(fmt.Sprintf("%T", pubkey))
+		// NOTE: Doing this way important to check "ethsecp256k1" before "secp256k1"
 		switch {
 		case strings.Contains(pubkeyType, "ed25519"):
 			cost += authtypes.DefaultSigVerifyCostED25519
 		case strings.Contains(pubkeyType, "ethsecp256k1"):
 			cost += secp256k1VerifyCost
+		// case strings.Contains(pubkeyType, "secp256k1"):
+		// 	cost += authtypes.DefaultSigVerifyCostSecp256k1
 		default:
 			panic("unexpected key type")
 		}

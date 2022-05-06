@@ -1,0 +1,16 @@
+[Unit]
+Description=Decimal Smart Chain Node daemon
+Documentation=https://help.decimalchain.com
+
+[Service]
+Type=idle
+User=centos
+ExecStart=/home/centos/decimal/dscd start
+Restart=always
+RestartSec=30s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=DSCD
+
+[Install]
+WantedBy=multi-user.target

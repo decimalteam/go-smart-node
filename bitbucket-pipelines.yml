@@ -1,0 +1,451 @@
+image: python:3.8.2
+
+definitions:
+  steps:
+
+    - step: &build
+        name: Build
+        image: centos:centos8
+        caches:
+          - go-src
+          - go-pkg
+        script:
+          - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
+          - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://centos8-repo.crypton.studio|g' /etc/yum.repos.d/CentOS-Linux-*
+          - dnf install -y epel-release
+          - dnf install -y  leveldb leveldb-devel snappy gcc git wget make --nobest
+          - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
+          - tar -xvf go1.17.9.linux-amd64.tar.gz
+          - mv go /usr/local
+          - export GOROOT=/usr/local/go
+          - export GOPATH=~/go
+          - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+          - go version
+          - go env
+          - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+          - mkdir -pv "${PACKAGE_PATH}"
+          - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+          - export GO111MODULE=on
+          - cd "${PACKAGE_PATH}"
+          - go get ./...
+          - go test ./...
+          - COSMOS_BUILD_OPTIONS=cleveldb make install
+          - mkdir ${BITBUCKET_CLONE_DIR}/build
+          - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build
+        artifacts:
+          - build/**
+
+    - step: &deploy
+        name: Deploy
+        caches:
+          - pip
+        script:
+          - MESSAGE=`git log --format=%B -n 1 $BITBUCKET_COMMIT` # getting commit message
+          - pip3 install ansible==2.9.8
+
+          - chmod 700 ci-scripts/ansible
+          - cd ci-scripts/ansible
+
+          # run update playbook
+          - if [[ $MESSAGE == *\[update\]* ]]; then
+            ansible-playbook -i "$MASTER_HOSTS, $SLAVE_HOSTS" -e "ansible_user=$USERNAME chain_id=$CHAIN_ID artifacts=$BITBUCKET_CLONE_DIR/build" decimal-nodes-update.yml;
+            else echo 0; fi
+
+          # run reset playbook for MASTER HOSTS
+          - if [[ $MESSAGE == *\[reset\]* ]]; then
+            ansible-playbook -i "$MASTER_HOSTS" -e "ansible_user=$USERNAME mode=master chain_id=$CHAIN_ID artifacts=$BITBUCKET_CLONE_DIR/build persistent_peers=$PERSISTENT_PEERS" decimal-nodes-init.yml;
+            else echo 0; fi
+
+          # run reset playbook for EXPLORER HOSTS
+          - if [[ $MESSAGE == *\[reset\]* ]]; then
+            ansible-playbook -i "$EXPLORER_HOSTS" -e "ansible_user=$USERNAME" decimal-explorer-init.yml;
+            else echo 0; fi
+
+          # run reset playbook for SLAVE HOSTS
+          - if [[ $MESSAGE == *\[reset\]* ]]; then
+            ansible-playbook -i "$SLAVE_HOSTS" -e "ansible_user=$USERNAME mode=slave chain_id=$CHAIN_ID artifacts=$BITBUCKET_CLONE_DIR/build src_genesis=$SRC_GENESIS persistent_peers=$PERSISTENT_PEERS" decimal-nodes-init.yml;
+            else echo 0; fi
+
+    - parallel: &repo_build
+
+        - step:
+             name: Build on Centos 8 (latest)
+             image: centos:centos8
+             caches:
+               - go-src
+               - go-pkg
+             script:
+               - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
+               - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://centos8-repo.crypton.studio|g' /etc/yum.repos.d/CentOS-Linux-*
+               - dnf install -y epel-release
+               - dnf install -y leveldb leveldb-devel snappy gcc git wget make --nobest
+               - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
+               - tar -xvf go1.17.9.linux-amd64.tar.gz
+               - mv go /usr/local
+               - export GOROOT=/usr/local/go
+               - export GOPATH=~/go
+               - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+               - go version
+               - go env
+               - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+               - mkdir -pv "${PACKAGE_PATH}"
+               - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+               - export GO111MODULE=on
+               - cd "${PACKAGE_PATH}"
+               - go get ./...
+               - go test ./...
+               - COSMOS_BUILD_OPTIONS=cleveldb make install
+               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/centos/8/
+               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/centos/8/
+             artifacts:
+               - build/**
+
+        - step:
+            name: Build on Oracle Linux 8 (latest)
+            image: oraclelinux:8
+            caches:
+              - go-src
+              - go-pkg
+            script:
+              - dnf install -y oracle-epel-release-el8
+              - dnf install -y tar leveldb leveldb-devel snappy gcc git wget make --nobest
+              - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
+              - tar -xvf go1.17.9.linux-amd64.tar.gz
+              - mv go /usr/local
+              - export GOROOT=/usr/local/go
+              - export GOPATH=~/go
+              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+              - go version
+              - go env
+              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+              - mkdir -pv "${PACKAGE_PATH}"
+              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+              - export GO111MODULE=on
+              - cd "${PACKAGE_PATH}"
+              - go get ./...
+              - go test ./...
+              - COSMOS_BUILD_OPTIONS=cleveldb make install
+              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ol/8.5/
+              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ol/8.5/
+            artifacts:
+              - build/**
+
+        - step:
+            name: Build on Centos 7 (latest)
+            image: centos:centos7
+            caches:
+              - go-src
+              - go-pkg
+            script:
+              - yum install -y epel-release
+              - yum install -y leveldb leveldb-devel snappy gcc git wget make
+              - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
+              - tar -xvf go1.17.9.linux-amd64.tar.gz
+              - mv go /usr/local
+              - export GOROOT=/usr/local/go
+              - export GOPATH=~/go
+              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+              - go version
+              - go env
+              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+              - mkdir -pv "${PACKAGE_PATH}"
+              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+              - export GO111MODULE=on
+              - cd "${PACKAGE_PATH}"
+              - go get ./...
+              - go test ./...
+              - COSMOS_BUILD_OPTIONS=cleveldb make install
+              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
+              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
+            artifacts:
+              - build/**
+
+        - step:
+            name: Build on Ubuntu 22.04
+            image: ubuntu:22.04
+            caches:
+              - go-src
+              - go-pkg
+            script:
+              - apt-get update -y
+              - apt-get install -y build-essential
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
+              - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
+              - tar -xvf go1.17.9.linux-amd64.tar.gz
+              - mv go /usr/local
+              - export GOROOT=/usr/local/go
+              - export GOPATH=~/go
+              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+              - go version
+              - go env
+              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+              - mkdir -pv "${PACKAGE_PATH}"
+              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+              - export GO111MODULE=on
+              - cd "${PACKAGE_PATH}"
+              - go get ./...
+              - go test ./...
+              - COSMOS_BUILD_OPTIONS=cleveldb make install
+              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/22.04/
+              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/22.04/
+            artifacts:
+              - build/**
+
+        - step:
+            name: Build on Ubuntu 20.04
+            image: ubuntu:20.04
+            caches:
+              - go-src
+              - go-pkg
+            script:
+              - apt-get update -y
+              - apt-get install -y build-essential
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
+              - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
+              - tar -xvf go1.17.9.linux-amd64.tar.gz
+              - mv go /usr/local
+              - export GOROOT=/usr/local/go
+              - export GOPATH=~/go
+              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+              - go version
+              - go env
+              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+              - mkdir -pv "${PACKAGE_PATH}"
+              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+              - export GO111MODULE=on
+              - cd "${PACKAGE_PATH}"
+              - go get ./...
+              - go test ./...
+              - COSMOS_BUILD_OPTIONS=cleveldb make install
+              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/20.04/
+              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/20.04/
+            artifacts:
+              - build/**
+
+        - step:
+            name: Build on Ubuntu 18.04
+            image: ubuntu:18.04
+            caches:
+              - go-src
+              - go-pkg
+            script:
+              - apt-get update -y
+              - apt-get install -y build-essential
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
+              - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
+              - tar -xvf go1.17.9.linux-amd64.tar.gz
+              - mv go /usr/local
+              - export GOROOT=/usr/local/go
+              - export GOPATH=~/go
+              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+              - go version
+              - go env
+              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+              - mkdir -pv "${PACKAGE_PATH}"
+              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+              - export GO111MODULE=on
+              - cd "${PACKAGE_PATH}"
+              - go get ./...
+              - go test ./...
+              - COSMOS_BUILD_OPTIONS=cleveldb make install
+              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/18.04/
+              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/18.04/
+            artifacts:
+              - build/**
+
+        - step:
+            name: Build on Ubuntu 16.04
+            image: ubuntu:16.04
+            caches:
+              - go-src
+              - go-pkg
+            script:
+              - apt-get update -y
+              - apt-get install -y build-essential
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
+              - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
+              - tar -xvf go1.17.9.linux-amd64.tar.gz
+              - mv go /usr/local
+              - export GOROOT=/usr/local/go
+              - export GOPATH=~/go
+              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+              - go version
+              - go env
+              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+              - mkdir -pv "${PACKAGE_PATH}"
+              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+              - export GO111MODULE=on
+              - cd "${PACKAGE_PATH}"
+              - go get ./...
+              - go test ./...
+              - COSMOS_BUILD_OPTIONS=cleveldb make install
+              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/16.04/
+              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/16.04/
+            artifacts:
+              - build/**
+
+        - step:
+            name: Build on Debian 11
+            image: debian:11
+            caches:
+              - go-src
+              - go-pkg
+            script:
+              - apt-get update -y
+              - apt-get install -y build-essential
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
+              - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
+              - tar -xvf go1.17.9.linux-amd64.tar.gz
+              - mv go /usr/local
+              - export GOROOT=/usr/local/go
+              - export GOPATH=~/go
+              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+              - go version
+              - go env
+              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+              - mkdir -pv "${PACKAGE_PATH}"
+              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+              - export GO111MODULE=on
+              - cd "${PACKAGE_PATH}"
+              - go get ./...
+              - go test ./...
+              - COSMOS_BUILD_OPTIONS=cleveldb make install
+              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/11/
+              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/11/
+            artifacts:
+              - build/**
+
+        - step:
+            name: Build on Debian 10.10
+            image: debian:10.10
+            caches:
+              - go-src
+              - go-pkg
+            script:
+              - apt-get update -y
+              - apt-get install -y build-essential
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
+              - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
+              - tar -xvf go1.17.9.linux-amd64.tar.gz
+              - mv go /usr/local
+              - export GOROOT=/usr/local/go
+              - export GOPATH=~/go
+              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+              - go version
+              - go env
+              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+              - mkdir -pv "${PACKAGE_PATH}"
+              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+              - export GO111MODULE=on
+              - cd "${PACKAGE_PATH}"
+              - go get ./...
+              - go test ./...
+              - COSMOS_BUILD_OPTIONS=cleveldb make install
+              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/10/
+              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/10/
+            artifacts:
+              - build/**
+
+        - step:
+            name: Build on Debian 9 (stretch)
+            image: debian:9.13
+            caches:
+              - go-src
+              - go-pkg
+            script:
+              - apt-get update -y
+              - apt-get install -y build-essential
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
+              - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
+              - tar -xvf go1.17.9.linux-amd64.tar.gz
+              - mv go /usr/local
+              - export GOROOT=/usr/local/go
+              - export GOPATH=~/go
+              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+              - go version
+              - go env
+              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+              - mkdir -pv "${PACKAGE_PATH}"
+              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+              - export GO111MODULE=on
+              - cd "${PACKAGE_PATH}"
+              - go get ./...
+              - go test ./...
+              - COSMOS_BUILD_OPTIONS=cleveldb make install
+              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/9/
+              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/9/
+            artifacts:
+              - build/**
+
+  caches:
+    pip: ~/.cache/pip
+    go-src: ~/go/src
+    go-pkg: ~/go/pkg
+
+options:
+  max-time: 30
+
+pipelines:
+  branches:
+
+    master:
+      - step: *build
+
+    staging:
+      - step: *build
+      - step:
+          deployment: Staging
+          <<: *deploy
+
+    develop:
+      - step: *build
+      - step:
+          deployment: Test
+          <<: *deploy
+
+  custom:
+
+    build-and-deploy-binary-files-to-repo-DEVnet:
+      - parallel: *repo_build
+      - step:
+          name: Deploy
+          deployment: Test
+          script:
+            - pipe: atlassian/rsync-deploy:0.6.0
+              variables:
+                USER: $REPO_USER
+                SERVER: $REPO_HOST
+                LOCAL_PATH: "build/"
+                REMOTE_PATH: $REPO_REMOTE_PATH/$REPO_UPDATE_BLOCK
+                DELETE_FLAG: "true"
+                DEBUG: "true"
+
+    build-and-deploy-binary-files-to-repo-TESTnet:
+      - parallel: *repo_build
+      - step:
+          name: Deploy
+          deployment: Staging
+          script:
+            - pipe: atlassian/rsync-deploy:0.6.0
+              variables:
+                USER: $REPO_USER
+                SERVER: $REPO_HOST
+                LOCAL_PATH: "build/"
+                REMOTE_PATH: $REPO_REMOTE_PATH/$REPO_UPDATE_BLOCK
+                DELETE_FLAG: "true"
+                DEBUG: "true"
+
+    build-and-deploy-binary-files-to-repo-MAINnet:
+      - parallel: *repo_build
+      - step:
+          name: Deploy
+          deployment: Production
+          script:
+            - pipe: atlassian/rsync-deploy:0.6.0
+              variables:
+                USER: $REPO_USER
+                SERVER: $REPO_HOST
+                LOCAL_PATH: "build/"
+                REMOTE_PATH: $REPO_REMOTE_PATH/$REPO_UPDATE_BLOCK
+                DELETE_FLAG: "true"
+                DEBUG: "true"
