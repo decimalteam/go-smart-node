@@ -13,7 +13,7 @@ definitions:
           - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
           - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://centos8-repo.crypton.studio|g' /etc/yum.repos.d/CentOS-Linux-*
           - dnf install -y epel-release
-          - dnf install -y  leveldb leveldb-devel snappy gcc git wget make --nobest
+          - dnf install -y  leveldb leveldb-devel snappy gcc git which wget make --nobest
           - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
           - tar -xvf go1.17.9.linux-amd64.tar.gz
           - mv go /usr/local
@@ -78,7 +78,7 @@ definitions:
                - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
                - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://centos8-repo.crypton.studio|g' /etc/yum.repos.d/CentOS-Linux-*
                - dnf install -y epel-release
-               - dnf install -y leveldb leveldb-devel snappy gcc git wget make --nobest
+               - dnf install -y leveldb leveldb-devel snappy gcc git which wget make --nobest
                - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
                - tar -xvf go1.17.9.linux-amd64.tar.gz
                - mv go /usr/local
@@ -108,7 +108,7 @@ definitions:
               - go-pkg
             script:
               - dnf install -y oracle-epel-release-el8
-              - dnf install -y tar leveldb leveldb-devel snappy gcc git wget make --nobest
+              - dnf install -y tar leveldb leveldb-devel snappy gcc git which wget make --nobest
               - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
               - tar -xvf go1.17.9.linux-amd64.tar.gz
               - mv go /usr/local
@@ -138,7 +138,7 @@ definitions:
               - go-pkg
             script:
               - yum install -y epel-release
-              - yum install -y leveldb leveldb-devel snappy gcc git wget make
+              - yum install -y leveldb leveldb-devel snappy gcc git which wget make
               - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
               - tar -xvf go1.17.9.linux-amd64.tar.gz
               - mv go /usr/local
@@ -169,7 +169,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
               - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
               - tar -xvf go1.17.9.linux-amd64.tar.gz
               - mv go /usr/local
@@ -200,7 +200,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
               - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
               - tar -xvf go1.17.9.linux-amd64.tar.gz
               - mv go /usr/local
@@ -231,7 +231,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
               - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
               - tar -xvf go1.17.9.linux-amd64.tar.gz
               - mv go /usr/local
@@ -262,7 +262,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
               - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
               - tar -xvf go1.17.9.linux-amd64.tar.gz
               - mv go /usr/local
@@ -293,7 +293,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
               - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
               - tar -xvf go1.17.9.linux-amd64.tar.gz
               - mv go /usr/local
@@ -324,7 +324,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
               - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
               - tar -xvf go1.17.9.linux-amd64.tar.gz
               - mv go /usr/local
@@ -355,7 +355,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
               - wget https://golang.org/dl/go1.17.9.linux-amd64.tar.gz
               - tar -xvf go1.17.9.linux-amd64.tar.gz
               - mv go /usr/local
