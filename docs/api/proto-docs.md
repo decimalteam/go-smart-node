@@ -4,68 +4,190 @@
 
 ## Table of Contents
 
-- [decimal/coin/v1/coin.proto](#decimal/coin/v1/coin.proto)
-    - [Coin](#decimal.coin.v1.Coin)
+- [decimal/swap/v1/tx.proto](#decimal/swap/v1/tx.proto)
+    - [MsgHTLT](#decimal.swap.v1.MsgHTLT)
+    - [MsgHTLTResponse](#decimal.swap.v1.MsgHTLTResponse)
+    - [MsgRedeem](#decimal.swap.v1.MsgRedeem)
+    - [MsgRedeemResponse](#decimal.swap.v1.MsgRedeemResponse)
+    - [MsgRefund](#decimal.swap.v1.MsgRefund)
+    - [MsgRefundResponse](#decimal.swap.v1.MsgRefundResponse)
   
-- [decimal/coin/v1/genesis.proto](#decimal/coin/v1/genesis.proto)
-    - [GenesisState](#decimal.coin.v1.GenesisState)
+    - [TransferType](#decimal.swap.v1.TransferType)
   
-- [decimal/coin/v1/query.proto](#decimal/coin/v1/query.proto)
-    - [QueryCoinRequest](#decimal.coin.v1.QueryCoinRequest)
-    - [QueryCoinResponse](#decimal.coin.v1.QueryCoinResponse)
-    - [QueryCoinsRequest](#decimal.coin.v1.QueryCoinsRequest)
-    - [QueryCoinsResponse](#decimal.coin.v1.QueryCoinsResponse)
+    - [Msg](#decimal.swap.v1.Msg)
   
-    - [Query](#decimal.coin.v1.Query)
+- [decimal/swap/v1/swap.proto](#decimal/swap/v1/swap.proto)
+    - [Params](#decimal.swap.v1.Params)
+    - [Swap](#decimal.swap.v1.Swap)
   
-- [decimal/coin/v1/tx.proto](#decimal/coin/v1/tx.proto)
-    - [MsgBuyCoin](#decimal.coin.v1.MsgBuyCoin)
-    - [MsgBuyCoinResponse](#decimal.coin.v1.MsgBuyCoinResponse)
-    - [MsgCreateCoin](#decimal.coin.v1.MsgCreateCoin)
-    - [MsgCreateCoinResponse](#decimal.coin.v1.MsgCreateCoinResponse)
-    - [MsgMultiSendCoin](#decimal.coin.v1.MsgMultiSendCoin)
-    - [MsgMultisendCoinResponse](#decimal.coin.v1.MsgMultisendCoinResponse)
-    - [MsgRedeemCheck](#decimal.coin.v1.MsgRedeemCheck)
-    - [MsgRedeemCheckResponse](#decimal.coin.v1.MsgRedeemCheckResponse)
-    - [MsgSellAllCoin](#decimal.coin.v1.MsgSellAllCoin)
-    - [MsgSellAllCoinResponse](#decimal.coin.v1.MsgSellAllCoinResponse)
-    - [MsgSellCoin](#decimal.coin.v1.MsgSellCoin)
-    - [MsgSellCoinReponse](#decimal.coin.v1.MsgSellCoinReponse)
-    - [MsgSendCoin](#decimal.coin.v1.MsgSendCoin)
-    - [MsgSendCoinResponse](#decimal.coin.v1.MsgSendCoinResponse)
-    - [MsgUpdateCoin](#decimal.coin.v1.MsgUpdateCoin)
-    - [MsgUpdateCoinResponse](#decimal.coin.v1.MsgUpdateCoinResponse)
-    - [Send](#decimal.coin.v1.Send)
-  
-    - [Msg](#decimal.coin.v1.Msg)
+- [decimal/swap/v1/genesis.proto](#decimal/swap/v1/genesis.proto)
+    - [GenesisState](#decimal.swap.v1.GenesisState)
   
 - [Scalar Value Types](#scalar-value-types)
 
 
 
-<a name="decimal/coin/v1/coin.proto"></a>
+<a name="decimal/swap/v1/tx.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## decimal/coin/v1/coin.proto
+## decimal/swap/v1/tx.proto
 
 
 
-<a name="decimal.coin.v1.Coin"></a>
+<a name="decimal.swap.v1.MsgHTLT"></a>
 
-### Coin
+### MsgHTLT
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| `title` | [string](#string) |  |  |
-| `crr` | [uint64](#uint64) |  |  |
-| `symbol` | [string](#string) |  |  |
-| `reserve` | [bytes](#bytes) |  |  |
-| `limit_volume` | [bytes](#bytes) |  |  |
-| `volume` | [bytes](#bytes) |  |  |
-| `creator` | [string](#string) |  |  |
-| `identity` | [string](#string) |  |  |
+| `transfer_type` | [TransferType](#decimal.swap.v1.TransferType) |  |  |
+| `from` | [string](#string) |  |  |
+| `recipient` | [string](#string) |  |  |
+| `hashed_secret` | [bytes](#bytes) |  |  |
+| `secret` | [bytes](#bytes) |  |  |
+| `amount` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) | repeated |  |
+
+
+
+
+
+
+<a name="decimal.swap.v1.MsgHTLTResponse"></a>
+
+### MsgHTLTResponse
+
+
+
+
+
+
+
+<a name="decimal.swap.v1.MsgRedeem"></a>
+
+### MsgRedeem
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `from` | [string](#string) |  |  |
+| `secret` | [bytes](#bytes) |  |  |
+
+
+
+
+
+
+<a name="decimal.swap.v1.MsgRedeemResponse"></a>
+
+### MsgRedeemResponse
+
+
+
+
+
+
+
+<a name="decimal.swap.v1.MsgRefund"></a>
+
+### MsgRefund
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `from` | [string](#string) |  |  |
+| `hashed_secret` | [bytes](#bytes) |  |  |
+
+
+
+
+
+
+<a name="decimal.swap.v1.MsgRefundResponse"></a>
+
+### MsgRefundResponse
+
+
+
+
+
+
+ <!-- end messages -->
+
+
+<a name="decimal.swap.v1.TransferType"></a>
+
+### TransferType
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| TransferTypeOut | 0 |  |
+| TransferTypeIn | 1 |  |
+
+
+ <!-- end enums -->
+
+ <!-- end HasExtensions -->
+
+
+<a name="decimal.swap.v1.Msg"></a>
+
+### Msg
+
+
+| Method Name | Request Type | Response Type | Description | HTTP Verb | Endpoint |
+| ----------- | ------------ | ------------- | ------------| ------- | -------- |
+| `HTLT` | [MsgHTLT](#decimal.swap.v1.MsgHTLT) | [MsgHTLTResponse](#decimal.swap.v1.MsgHTLTResponse) |  | |
+| `Redeem` | [MsgRedeem](#decimal.swap.v1.MsgRedeem) | [MsgRedeemResponse](#decimal.swap.v1.MsgRedeemResponse) |  | |
+| `Refund` | [MsgRefund](#decimal.swap.v1.MsgRefund) | [MsgRefundResponse](#decimal.swap.v1.MsgRefundResponse) |  | |
+
+ <!-- end services -->
+
+
+
+<a name="decimal/swap/v1/swap.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## decimal/swap/v1/swap.proto
+
+
+
+<a name="decimal.swap.v1.Params"></a>
+
+### Params
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `locked_time_out` | [int64](#int64) |  |  |
+| `locked_time_in` | [int64](#int64) |  |  |
+
+
+
+
+
+
+<a name="decimal.swap.v1.Swap"></a>
+
+### Swap
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `transfer_type` | [TransferType](#decimal.swap.v1.TransferType) |  |  |
+| `hashed_secret` | [string](#string) |  |  |
+| `from` | [string](#string) |  |  |
+| `recipient` | [string](#string) |  |  |
+| `amount` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) | repeated |  |
+| `timestamp` | [uint64](#uint64) |  |  |
+| `redeemed` | [bool](#bool) |  |  |
+| `refunded` | [bool](#bool) |  |  |
 
 
 
@@ -81,14 +203,14 @@
 
 
 
-<a name="decimal/coin/v1/genesis.proto"></a>
+<a name="decimal/swap/v1/genesis.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## decimal/coin/v1/genesis.proto
+## decimal/swap/v1/genesis.proto
 
 
 
-<a name="decimal.coin.v1.GenesisState"></a>
+<a name="decimal.swap.v1.GenesisState"></a>
 
 ### GenesisState
 
@@ -96,9 +218,8 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| `title` | [string](#string) |  |  |
-| `symbol` | [string](#string) |  |  |
-| `limit_volume` | [bytes](#bytes) |  |  |
+| `params` | [Params](#decimal.swap.v1.Params) |  | params defines all the paramaters of related to deposit. |
+| `swaps` | [Swap](#decimal.swap.v1.Swap) | repeated | swaps defines the swaps active at genesis. |
 
 
 
@@ -109,364 +230,6 @@
  <!-- end enums -->
 
  <!-- end HasExtensions -->
-
- <!-- end services -->
-
-
-
-<a name="decimal/coin/v1/query.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## decimal/coin/v1/query.proto
-
-
-
-<a name="decimal.coin.v1.QueryCoinRequest"></a>
-
-### QueryCoinRequest
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `symbol` | [string](#string) |  |  |
-
-
-
-
-
-
-<a name="decimal.coin.v1.QueryCoinResponse"></a>
-
-### QueryCoinResponse
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `coin` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) |  |  |
-
-
-
-
-
-
-<a name="decimal.coin.v1.QueryCoinsRequest"></a>
-
-### QueryCoinsRequest
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `pagination` | [cosmos.base.query.v1beta1.PageRequest](#cosmos.base.query.v1beta1.PageRequest) |  |  |
-
-
-
-
-
-
-<a name="decimal.coin.v1.QueryCoinsResponse"></a>
-
-### QueryCoinsResponse
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `coins` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) | repeated |  |
-| `pagination` | [cosmos.base.query.v1beta1.PageResponse](#cosmos.base.query.v1beta1.PageResponse) |  |  |
-
-
-
-
-
- <!-- end messages -->
-
- <!-- end enums -->
-
- <!-- end HasExtensions -->
-
-
-<a name="decimal.coin.v1.Query"></a>
-
-### Query
-Query defines the gRPC querier service for coin module.
-
-| Method Name | Request Type | Response Type | Description | HTTP Verb | Endpoint |
-| ----------- | ------------ | ------------- | ------------| ------- | -------- |
-| `Coin` | [QueryCoinRequest](#decimal.coin.v1.QueryCoinRequest) | [QueryCoinResponse](#decimal.coin.v1.QueryCoinResponse) | Coin queries existing coin by specific symbol. | GET|/coin/v1/coin/{symbol}|
-| `Coins` | [QueryCoinsRequest](#decimal.coin.v1.QueryCoinsRequest) | [QueryCoinsResponse](#decimal.coin.v1.QueryCoinsResponse) | Coins queries list of all existing coins. | GET|/coin/v1/coins|
-
- <!-- end services -->
-
-
-
-<a name="decimal/coin/v1/tx.proto"></a>
-<p align="right"><a href="#top">Top</a></p>
-
-## decimal/coin/v1/tx.proto
-
-
-
-<a name="decimal.coin.v1.MsgBuyCoin"></a>
-
-### MsgBuyCoin
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `sender` | [string](#string) |  |  |
-| `coin_to_buy` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) |  |  |
-| `max_coin_to_sell` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) |  |  |
-
-
-
-
-
-
-<a name="decimal.coin.v1.MsgBuyCoinResponse"></a>
-
-### MsgBuyCoinResponse
-
-
-
-
-
-
-
-<a name="decimal.coin.v1.MsgCreateCoin"></a>
-
-### MsgCreateCoin
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `sender` | [string](#string) |  |  |
-| `title` | [string](#string) |  |  |
-| `symbol` | [string](#string) |  |  |
-| `constant_reserve_ration` | [uint64](#uint64) |  |  |
-| `initial_volume` | [bytes](#bytes) |  |  |
-| `initial_reserve` | [bytes](#bytes) |  |  |
-| `limit_volume` | [bytes](#bytes) |  |  |
-| `identity` | [string](#string) |  |  |
-
-
-
-
-
-
-<a name="decimal.coin.v1.MsgCreateCoinResponse"></a>
-
-### MsgCreateCoinResponse
-
-
-
-
-
-
-
-<a name="decimal.coin.v1.MsgMultiSendCoin"></a>
-
-### MsgMultiSendCoin
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `sender` | [string](#string) |  |  |
-| `sends` | [Send](#decimal.coin.v1.Send) | repeated |  |
-
-
-
-
-
-
-<a name="decimal.coin.v1.MsgMultisendCoinResponse"></a>
-
-### MsgMultisendCoinResponse
-
-
-
-
-
-
-
-<a name="decimal.coin.v1.MsgRedeemCheck"></a>
-
-### MsgRedeemCheck
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `sender` | [string](#string) |  |  |
-| `check` | [bytes](#bytes) |  |  |
-| `proof` | [bytes](#bytes) |  |  |
-
-
-
-
-
-
-<a name="decimal.coin.v1.MsgRedeemCheckResponse"></a>
-
-### MsgRedeemCheckResponse
-
-
-
-
-
-
-
-<a name="decimal.coin.v1.MsgSellAllCoin"></a>
-
-### MsgSellAllCoin
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `sender` | [string](#string) |  |  |
-| `coin_to_sell` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) |  |  |
-| `min_coin_to_buy` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) |  |  |
-
-
-
-
-
-
-<a name="decimal.coin.v1.MsgSellAllCoinResponse"></a>
-
-### MsgSellAllCoinResponse
-
-
-
-
-
-
-
-<a name="decimal.coin.v1.MsgSellCoin"></a>
-
-### MsgSellCoin
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `sender` | [string](#string) |  |  |
-| `coin_to_sell` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) |  |  |
-| `min_coin_to_buy` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) |  |  |
-
-
-
-
-
-
-<a name="decimal.coin.v1.MsgSellCoinReponse"></a>
-
-### MsgSellCoinReponse
-
-
-
-
-
-
-
-<a name="decimal.coin.v1.MsgSendCoin"></a>
-
-### MsgSendCoin
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `sender` | [string](#string) |  |  |
-| `receiver` | [string](#string) |  |  |
-| `coin` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) |  |  |
-
-
-
-
-
-
-<a name="decimal.coin.v1.MsgSendCoinResponse"></a>
-
-### MsgSendCoinResponse
-
-
-
-
-
-
-
-<a name="decimal.coin.v1.MsgUpdateCoin"></a>
-
-### MsgUpdateCoin
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `sender` | [string](#string) |  |  |
-| `symbol` | [string](#string) |  |  |
-| `limit_volume` | [bytes](#bytes) |  |  |
-| `identity` | [string](#string) |  |  |
-
-
-
-
-
-
-<a name="decimal.coin.v1.MsgUpdateCoinResponse"></a>
-
-### MsgUpdateCoinResponse
-
-
-
-
-
-
-
-<a name="decimal.coin.v1.Send"></a>
-
-### Send
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `coin` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) |  |  |
-| `receiver` | [string](#string) |  |  |
-
-
-
-
-
- <!-- end messages -->
-
- <!-- end enums -->
-
- <!-- end HasExtensions -->
-
-
-<a name="decimal.coin.v1.Msg"></a>
-
-### Msg
-Msg defines the coin Msg service.
-
-| Method Name | Request Type | Response Type | Description | HTTP Verb | Endpoint |
-| ----------- | ------------ | ------------- | ------------| ------- | -------- |
-| `CreateCoin` | [MsgCreateCoin](#decimal.coin.v1.MsgCreateCoin) | [MsgCreateCoinResponse](#decimal.coin.v1.MsgCreateCoinResponse) | CreateCoin defines message for new coin creation. | |
-| `UpdateCoin` | [MsgUpdateCoin](#decimal.coin.v1.MsgUpdateCoin) | [MsgUpdateCoinResponse](#decimal.coin.v1.MsgUpdateCoinResponse) | UpdateCoin defines message for modifying existing coin. | |
-| `SendCoin` | [MsgSendCoin](#decimal.coin.v1.MsgSendCoin) | [MsgSendCoinResponse](#decimal.coin.v1.MsgSendCoinResponse) | SendCoin defines message for transfering specific coin. | |
-| `MultiSendCoin` | [MsgMultiSendCoin](#decimal.coin.v1.MsgMultiSendCoin) | [MsgMultisendCoinResponse](#decimal.coin.v1.MsgMultisendCoinResponse) | MultiSendCoin defines message for transfering specific coins as a batch. | |
-| `BuyCoin` | [MsgBuyCoin](#decimal.coin.v1.MsgBuyCoin) | [MsgBuyCoinResponse](#decimal.coin.v1.MsgBuyCoinResponse) | BuyCoin defines message for buying specific coin. | |
-| `SellCoin` | [MsgSellCoin](#decimal.coin.v1.MsgSellCoin) | [MsgSellCoinReponse](#decimal.coin.v1.MsgSellCoinReponse) | SellCoin defines message for selling specific coin. | |
-| `SellAllCoin` | [MsgSellAllCoin](#decimal.coin.v1.MsgSellAllCoin) | [MsgSellAllCoinResponse](#decimal.coin.v1.MsgSellAllCoinResponse) | SellAllCoin defines message for selling all specific coin. | |
-| `RedeemCheck` | [MsgRedeemCheck](#decimal.coin.v1.MsgRedeemCheck) | [MsgRedeemCheckResponse](#decimal.coin.v1.MsgRedeemCheckResponse) | RedeemCheck defines message for redeeming checks. | |
 
  <!-- end services -->
 

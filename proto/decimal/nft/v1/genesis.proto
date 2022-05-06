@@ -1,0 +1,24 @@
+syntax = "proto3";
+package decimal.nft.v1;
+
+import "gogoproto/gogo.proto";
+import "decimal/nft/v1/collections.proto";
+import "decimal/nft/v1/owner.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
+
+message GenesisState {
+  option (gogoproto.equal)           = false;
+  option (gogoproto.goproto_getters) = false;
+
+  repeated Owner owners = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"owners\""
+  ];
+
+  repeated Collection collections = 2 [
+    (gogoproto.castrepeated) = "Collections",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"collections\""
+  ];
+}

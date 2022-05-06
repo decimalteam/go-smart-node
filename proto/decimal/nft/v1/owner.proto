@@ -1,0 +1,52 @@
+syntax = "proto3";
+package decimal.nft.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
+
+message IDCollection {
+  string denom = 1 [
+    (gogoproto.moretags) = "yaml:\"denom\""
+  ];
+  repeated string IDs = 2 [
+    (gogoproto.castrepeated) = "SortedStringArray",
+    (gogoproto.jsontag) = "ids",
+    (gogoproto.moretags) = "yaml:\"ids\""
+  ];
+}
+
+message Owner {
+  string address = 1 [
+    (gogoproto.moretags) = "yaml:\"address\""
+  ];
+  repeated IDCollection IDCollections = 2 [
+    (gogoproto.jsontag) = "id_collections",
+    (gogoproto.moretags) = "yaml:\"id_collections\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "IDCollections"
+  ];
+}
+
+message TokenOwner {
+  option (gogoproto.equal)           = false;
+  option (gogoproto.goproto_getters) = false;
+
+
+  string address = 1 [
+    (gogoproto.moretags) = "yaml:\"address\""
+  ];
+  repeated int64 SubTokenIDs = 2 [
+    (gogoproto.castrepeated) = "SortedIntArray",
+    (gogoproto.jsontag) = "sub_token_ids",
+    (gogoproto.moretags) = "yaml:\"sub_token_ids\""
+  ];
+}
+
+//message TokenOwners {
+//  repeated TokenOwner owners = 1[
+//    (gogoproto.customtype) = "bitbucket.org/decimalteam/go-smart-node/x/nft/exported.TokenOwner",
+//    (gogoproto.nullable) = false,
+//    (gogoproto.moretags) = "yaml:\"owners\""
+//  ];
+//}
