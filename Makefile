@@ -271,7 +271,7 @@ docs-tools-stamp: docs-tools
 go.sum: go.mod
 	echo "Ensure dependencies have not been modified ..." >&2
 	go mod verify
-	go mod tidy
+	go mod tidy -compat=1.17
 
 ###############################################################################
 ###                              Documentation                              ###
