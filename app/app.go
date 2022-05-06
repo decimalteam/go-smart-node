@@ -331,6 +331,9 @@ func NewDSC(
 	cdc := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
 
+	// Manually update the power reduction by replacing micro (u) -> atto (a) del
+	sdk.DefaultPowerReduction = ethermint.PowerReduction
+
 	// NOTE we use custom transaction decoder that supports the sdk.Tx interface instead of sdk.StdTx
 	bApp := baseapp.NewBaseApp(
 		cmdcfg.AppBinName,
