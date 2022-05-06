@@ -1,0 +1,7 @@
+---
+- name: Reset explorer data!
+  hosts: all
+  gather_facts: true
+
+  roles:
+    - role: decimal-explorer

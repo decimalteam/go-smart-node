@@ -18,7 +18,12 @@ import (
 // NOTE: Nested multisigs are not supported.
 func IsSupportedKey(pubkey cryptotypes.PubKey) bool {
 	switch pubkey := pubkey.(type) {
-	case *secp256k1.PubKey, *ethsecp256k1.PubKey, *ed25519.PubKey:
+	case *ed25519.PubKey:
+		return true
+	case *secp256k1.PubKey:
+		// TODO: Is it needed to support?
+		return false
+	case *ethsecp256k1.PubKey:
 		return true
 	case multisig.PubKey:
 		if len(pubkey.GetPubKeys()) == 0 {

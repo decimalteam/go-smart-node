@@ -1,0 +1,16 @@
+[Unit]
+Description=Decimal Smart Chain REST server daemon
+Documentation=https://help.decimalchain.com
+
+[Service]
+Type=idle
+User=centos
+ExecStart=/home/centos/decimal/dscd rosetta --chain-id {{ chain_id }}
+Restart=always
+RestartSec=30s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=DSCDREST
+
+[Install]
+WantedBy=multi-user.target

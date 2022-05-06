@@ -1,0 +1,29 @@
+---
+- name: Include tasks for clear data and update binary files
+  include: node-common-at-first.yml
+
+- name: Initialize private validator, p2p, genesis, and application configuration files
+  shell: '{{ decimal_bin }}/dscd init $(hostname) --network testnet --chain-id={{ chain_id }}'
+  register: initialization
+
+- debug: var=initialization
+
+- name: Get genesis blockchain file from validator
+  uri:
+    url: 'http://{{ src_genesis }}/rpc/genesis'
+    return_content: true
+  register: content
+
+- set_fact:
+    content: '{{ content.json.result.genesis }}'
+
+- debug: var=content
+
+- name: Save genesis file
+  copy:
+    content: '{{ content }}'
+    dest: '{{ decimal_data }}/daemon/config/genesis.json'
+    mode: '0750'
+
+- name: Include tasks with common (master & slave) final actions
+  include: node-common-in-last.yml

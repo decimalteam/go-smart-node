@@ -1,0 +1,3 @@
+---
+systemd_path: '/etc/systemd/system/'
+service_name_worker: worker.service

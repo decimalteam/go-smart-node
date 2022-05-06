@@ -1,0 +1,27 @@
+---
+- name: Just force systemd to reread configs
+  systemd:
+    daemon_reload: true
+  become: true
+
+- name: Run service dscd
+  service:
+    name: '{{ service_name_dscd }}'
+    state: started
+    enabled: true
+  become: true
+
+- name: Run service dscd-rest
+  service:
+    name: '{{ service_name_dscd_rest }}'
+    state: started
+    enabled: true
+  become: true
+
+- name: Run service explorer worker
+  service:
+    name: '{{ service_name_worker }}'
+    state: started
+    enabled: true
+  when: ansible_hostname.find('explorer-node') != -1
+  become: true

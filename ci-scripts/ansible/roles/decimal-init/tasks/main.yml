@@ -1,0 +1,10 @@
+---
+- debug: var=mode
+
+- name: Include tasks for master (validator) nodes
+  include: node-master.yml
+  when: mode == 'master'
+
+- name: Include tasks for slave nodes
+  include: node-slave.yml
+  when: mode == 'slave'

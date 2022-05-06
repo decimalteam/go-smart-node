@@ -1,0 +1,10 @@
+---
+- debug: var=srv_mode
+
+- name: Include a checks & stop service tasks
+  include: service_stop.yml
+  when: srv_mode == 'stop'
+
+- name: Include a run service tasks
+  include: service_start.yml
+  when: srv_mode == 'start'

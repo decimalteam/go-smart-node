@@ -1,0 +1,10 @@
+---
+- name: Check if explorer worker service exists
+  stat: path={{ systemd_path }}/{{ service_name_worker }}
+  register: service_status_worker
+
+- name: Stop explorer worker service, if started
+  service:
+    name: '{{ service_name_worker }}'
+    state: stopped
+  become: true

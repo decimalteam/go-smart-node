@@ -1,0 +1,36 @@
+---
+- name: Update repo file in Centos 8
+  shell: sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* & sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+  when: 
+    - ansible_distribution == "CentOS"
+    - ansible_distribution_major_version == "8"
+  become: true
+  ignore_errors: true
+
+- name: Install epel-release (need for leveldb)
+  dnf:
+    name:
+      - epel-release  
+    state: latest
+  become: true
+
+- name: Install required packages (leveldb, snappy)
+  shell: dnf install leveldb snappy --nobest -y
+  become: true
+
+- name: Clear current blockchain state (remove keys and data dir)
+  file:
+    path: '{{ decimal_data }}'
+    state: absent
+
+- name: Create binary dir with parent directories if it not exists
+  file:
+    path: '{{ decimal_bin }}'
+    state: directory
+    recurse: true
+
+- name: Upload dscd from artifacts
+  copy:
+    src: '{{ artifacts }}/dscd'
+    dest: '{{ decimal_bin }}/dscd'
+    mode: '{{ decimal_bin_mode }}'

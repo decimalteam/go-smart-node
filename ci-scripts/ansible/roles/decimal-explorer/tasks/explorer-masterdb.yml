@@ -1,0 +1,45 @@
+---
+- name: Stop parser explorer process
+  shell: pm2 stop all  
+
+- name: Drop schema "public" with cascade
+  postgresql_schema:
+    db: explorer
+    name: public
+    state: absent
+    cascade_drop: true
+  become: true
+  become_user: postgres
+
+- name: Create schema "public"
+  postgresql_schema:
+    db: explorer
+    name: public
+    state: present
+  become: true
+  become_user: postgres
+
+- name: REVOKE ALL ON SCHEMA public FROM public
+  postgresql_privs:
+    db: explorer
+    state: absent
+    privs: ALL
+    type: schema
+    objs: public
+    role: public
+  become: true
+  become_user: postgres
+
+- name: GRANT ALL ON SCHEMA public TO explorer
+  postgresql_privs:
+    db: explorer
+    state: present
+    privs: ALL
+    type: schema
+    objs: public
+    role: explorer
+  become: true
+  become_user: postgres
+
+- name: Start parser explorer process
+  shell: pm2 start all  
