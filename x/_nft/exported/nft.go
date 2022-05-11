@@ -28,7 +28,7 @@ type TokenOwner interface {
 
 type TokenOwners interface {
 	GetOwners() []TokenOwner
-	SetOwner(owner TokenOwner) error
+	SetOwner(owner TokenOwner) (TokenOwners, error)
 	GetOwner(address sdk.AccAddress) (TokenOwner, error)
 	String() string
 }

@@ -51,30 +51,30 @@ func (t TokenOwners) GetOwners() []exported.TokenOwner {
 	return result
 }
 
-func (t *TokenOwners) SetOwner(owner exported.TokenOwner) error {
+func (t TokenOwners) SetOwner(owner exported.TokenOwner) (exported.TokenOwners, error) {
 	ownerAddr, err := owner.GetAddress()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	for i, o := range *t {
+	for i, o := range t {
 		addr, err := o.GetAddress()
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		if addr.Equals(ownerAddr) {
 			v := *(owner.(*TokenOwner))
-			(*t)[i] = v
+			(t)[i] = v
 		}
 	}
 
-	*t = append(*t, TokenOwner{
+	t = append(t, TokenOwner{
 		Address:     ownerAddr.String(),
 		SubTokenIDs: owner.GetSubTokenIDs(),
 	})
 
-	return nil
+	return t, nil
 }
 
 func (t TokenOwners) GetOwner(address sdk.AccAddress) (exported.TokenOwner, error) {

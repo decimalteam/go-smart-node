@@ -1,9 +1,7 @@
 package types
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"regexp"
 	"strings"
 )
@@ -16,28 +14,31 @@ const regName = "^[a-zA-Z0-9_-]{1,255}$"
 
 var MinReserve = sdk.NewInt(100)
 
-var NewMinReserve = helpers.BipToPip(sdk.NewInt(100))
-var NewMinReserve2 = helpers.BipToPip(sdk.NewInt(1))
+//var NewMinReserve = helpers.BipToPip(sdk.NewInt(100))
+//var NewMinReserve2 = helpers.BipToPip(sdk.NewInt(1))
 
 // Route Implements Msg
-func (msg MsgMintNFT) Route() string { return RouterKey }
+func (m *MsgMintNFT) Route() string { return RouterKey }
 
 // Type Implements Msg
-func (msg MsgMintNFT) Type() string { return "mint_nft" }
+func (msg *MsgMintNFT) Type() string { return "mint_nft" }
 
 // ValidateBasic Implements Msg.
-func (msg MsgMintNFT) ValidateBasic() error {
+func (msg *MsgMintNFT) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return ErrInvalidSenderAddress(msg.Sender)
+	}
+	_, err = sdk.AccAddressFromBech32(msg.Recipient)
+	if err != nil {
+		return ErrInvalidRecipientAddress(msg.Recipient)
+	}
+
 	if strings.TrimSpace(msg.Denom) == "" {
 		return ErrInvalidDenom(msg.Denom)
 	}
 	if strings.TrimSpace(msg.ID) == "" {
 		return ErrInvalidNFT(msg.ID)
-	}
-	if msg.Sender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid sender address")
-	}
-	if msg.Recipient.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid recipient address")
 	}
 	if !msg.Quantity.IsPositive() {
 		return ErrInvalidQuantity(msg.Quantity.String())
@@ -57,14 +58,19 @@ func (msg MsgMintNFT) ValidateBasic() error {
 }
 
 // GetSignBytes Implements Msg.
-func (msg MsgMintNFT) GetSignBytes() []byte {
+func (msg *MsgMintNFT) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
 	return sdk.MustSortJSON(bz)
 }
 
 // GetSigners Implements Msg.
-func (msg MsgMintNFT) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Sender}
+func (msg *MsgMintNFT) GetSigners() []sdk.AccAddress {
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		panic(err)
+	}
+
+	return []sdk.AccAddress{sender}
 }
 
 /* --------------------------------------------------------------------------- */
@@ -82,21 +88,22 @@ func NewMsgBurnNFT(sender sdk.AccAddress, id string, denom string, subTokenIDs [
 }
 
 // Route Implements Msg
-func (msg MsgBurnNFT) Route() string { return RouterKey }
+func (msg *MsgBurnNFT) Route() string { return RouterKey }
 
 // Type Implements Msg
-func (msg MsgBurnNFT) Type() string { return "burn_nft" }
+func (msg *MsgBurnNFT) Type() string { return "burn_nft" }
 
 // ValidateBasic Implements Msg.
-func (msg MsgBurnNFT) ValidateBasic() error {
+func (msg *MsgBurnNFT) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return ErrInvalidSenderAddress(msg.Sender)
+	}
 	if strings.TrimSpace(msg.Denom) == "" {
 		return ErrInvalidDenom(msg.Denom)
 	}
 	if strings.TrimSpace(msg.ID) == "" {
 		return ErrInvalidNFT(msg.ID)
-	}
-	if msg.Sender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid sender address")
 	}
 	if !CheckUnique(msg.SubTokenIDs) {
 		return ErrNotUniqueSubTokenIDs()
@@ -113,7 +120,12 @@ func (msg *MsgBurnNFT) GetSignBytes() []byte {
 
 // GetSigners Implements Msg.
 func (msg *MsgBurnNFT) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Sender}
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		panic(err)
+	}
+
+	return []sdk.AccAddress{sender}
 }
 
 /* --------------------------------------------------------------------------- */
@@ -139,15 +151,17 @@ func (msg *MsgUpdateReserveNFT) Type() string { return "update_nft_reserve" }
 
 // ValidateBasic Implements Msg.
 func (msg *MsgUpdateReserveNFT) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return ErrInvalidSenderAddress(msg.Sender)
+	}
+
 	if strings.TrimSpace(msg.Denom) == "" {
 
 		return ErrInvalidDenom(msg.Denom)
 	}
 	if strings.TrimSpace(msg.ID) == "" {
 		return ErrInvalidNFT(msg.ID)
-	}
-	if msg.Sender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid sender address")
 	}
 	if !CheckUnique(msg.SubTokenIDs) {
 		return ErrNotUniqueSubTokenIDs()
@@ -168,7 +182,12 @@ func (msg *MsgUpdateReserveNFT) GetSignBytes() []byte {
 
 // GetSigners Implements Msg.
 func (msg *MsgUpdateReserveNFT) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Sender}
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		panic(err)
+	}
+
+	return []sdk.AccAddress{sender}
 }
 
 /* --------------------------------------------------------------------------- */
@@ -197,15 +216,21 @@ func (msg *MsgTransferNFT) ValidateBasic() error {
 	if strings.TrimSpace(msg.Denom) == "" {
 		return ErrInvalidCollection(msg.Denom)
 	}
-	if msg.Sender.Empty() {
-		return ErrInvalidRecipientAddress(msg.Sender.String())
+
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return ErrInvalidSenderAddress(msg.Sender)
 	}
-	if msg.Recipient.Empty() {
-		return ErrInvalidRecipientAddress(msg.Recipient.String())
+
+	recipient, err := sdk.AccAddressFromBech32(msg.Recipient)
+	if err != nil {
+		return ErrInvalidRecipientAddress(msg.Recipient)
 	}
-	if msg.Sender.Equals(msg.Recipient) {
+
+	if sender.Equals(recipient) {
 		return ErrForbiddenToTransferToYourself()
 	}
+
 	if strings.TrimSpace(msg.ID) == "" {
 		return ErrInvalidCollection(msg.ID)
 	}
@@ -224,7 +249,12 @@ func (msg *MsgTransferNFT) GetSignBytes() []byte {
 
 // GetSigners Implements Msg.
 func (msg *MsgTransferNFT) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Sender}
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		panic(err)
+	}
+
+	return []sdk.AccAddress{sender}
 }
 
 /* --------------------------------------------------------------------------- */
@@ -251,9 +281,11 @@ func (msg *MsgEditNFTMetadata) Type() string { return "edit_nft_metadata" }
 
 // ValidateBasic Implements Msg.
 func (msg *MsgEditNFTMetadata) ValidateBasic() error {
-	if msg.Sender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid sender address")
+	_, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return ErrInvalidSenderAddress(msg.Sender)
 	}
+
 	if strings.TrimSpace(msg.Denom) == "" {
 		return ErrInvalidDenom(msg.Denom)
 	}
@@ -271,7 +303,12 @@ func (msg *MsgEditNFTMetadata) GetSignBytes() []byte {
 
 // GetSigners Implements Msg.
 func (msg *MsgEditNFTMetadata) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Sender}
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		panic(err)
+	}
+
+	return []sdk.AccAddress{sender}
 }
 
 /* --------------------------------------------------------------------------- */

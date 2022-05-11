@@ -44,28 +44,45 @@ func (collection Collection) AddNFT(nft exported.NFT) (Collection, error) {
 		if err != nil {
 			return collection, ErrUnknownNFT(collection.Denom, id)
 		}
-		ownerAddress := nft.GetOwners().GetOwners()[0].GetAddress()
+		ownerAddress, err := nft.GetOwners().GetOwners()[0].GetAddress()
+		if err != nil {
+			return collection, err //
+		}
 		subTokenIDs := nft.GetOwners().GetOwners()[0].GetSubTokenIDs()
-		owner := collNFT.GetOwners().GetOwner(ownerAddress)
+		owner, err := collNFT.GetOwners().GetOwner(ownerAddress)
+		if err != nil {
+			return collection, err //
+		}
 		if owner == nil {
-			collNFT = collNFT.SetOwners(collNFT.GetOwners().SetOwner(&TokenOwner{
-				Address:     ownerAddress,
+			owners, err := collNFT.GetOwners().SetOwner(&TokenOwner{
+				Address:     ownerAddress.String(),
 				SubTokenIDs: subTokenIDs,
-			}))
+			})
+			if err != nil {
+				return collection, err
+			}
+
+			collNFT = collNFT.SetOwners(owners)
 		} else {
 			for _, id := range subTokenIDs {
 				owner = owner.SetSubTokenID(id)
 			}
-			collNFT = collNFT.SetOwners(collNFT.GetOwners().SetOwner(owner))
+
+			owners, err := collNFT.GetOwners().SetOwner(owner)
+			if err != nil {
+				return collection, err
+			}
+
+			collNFT = collNFT.SetOwners(owners)
 		}
-		updatedNFTs, found := collection.NFTs.Update(id, collNFT)
+		updatedNFTs, found := collection.NFTs.Update(id, expNftToBaseNft(collNFT))
 
 		if !found {
 			return collection, ErrUnknownNFT(collection.Denom, id)
 		}
 		collection.NFTs = updatedNFTs
 	} else {
-		collection.NFTs = collection.NFTs.Append(nft)
+		collection.NFTs = collection.NFTs.Append(nft.(BaseNFT))
 	}
 
 	return collection, nil
@@ -73,7 +90,7 @@ func (collection Collection) AddNFT(nft exported.NFT) (Collection, error) {
 
 // UpdateNFT updates an NFT from a collection
 func (collection Collection) UpdateNFT(nft exported.NFT) (Collection, error) {
-	nfts, ok := collection.NFTs.Update(nft.GetID(), nft)
+	nfts, ok := collection.NFTs.Update(nft.GetID(), expNftToBaseNft(nft))
 
 	if !ok {
 		return collection, ErrUnknownNFT(collection.Denom, nft.GetID())
@@ -186,3 +203,5 @@ func (collections Collections) Sort() Collections {
 	sort.Sort(collections)
 	return collections
 }
+
+func expNftToBaseNft(nft exported.NFT) BaseNFT { return nft.(BaseNFT) }
