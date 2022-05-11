@@ -1,0 +1,70 @@
+syntax = "proto3";
+package decimal.multisig.v1;
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/multisig/types";
+
+service Msg {
+  rpc CreateTransaction(MsgCreateTransaction) returns (MsgCreateTransactionResponse);
+  rpc CreateWallet(MsgCreateWallet) returns (MsgCreateWalletResponse);
+  rpc SignTransaction(MsgSignTransaction) returns (MsgSignTransactionResponse);
+}
+
+message MsgCreateTransaction {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string sender = 1 [
+    (gogoproto.moretags) = "yaml:\"sender\""
+  ];
+  string wallet = 2 [
+    (gogoproto.moretags) = "yaml:\"wallet\""
+  ];
+  string receiver = 3 [
+    (gogoproto.moretags) = "yaml:\"receiver\""
+  ];
+  repeated cosmos.base.v1beta1.Coin coins = 4 [
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"coins\""
+  ];
+}
+
+message MsgCreateTransactionResponse {}
+
+message MsgCreateWallet {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string sender = 1 [
+    (gogoproto.moretags) = "yaml:\"sender\""
+  ];
+  repeated string owners = 2 [
+    (gogoproto.moretags) = "yaml:\"owners\""
+  ];
+  repeated uint64 weights = 3 [
+    (gogoproto.moretags) = "yaml:\"weights\""
+  ];
+  uint64 threshold = 4 [
+    (gogoproto.moretags) = "yaml:\"threshold\""
+  ];
+}
+
+message MsgCreateWalletResponse {}
+
+message MsgSignTransaction {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string sender = 1 [
+    (gogoproto.moretags) = "yaml:\"sender\""
+  ];
+  string txID = 2 [
+    (gogoproto.jsontag) = "tx_id",
+    (gogoproto.moretags) = "yaml:\"tx_id\""
+  ];
+}
+
+message MsgSignTransactionResponse {}

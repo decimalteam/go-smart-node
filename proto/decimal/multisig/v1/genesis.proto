@@ -1,0 +1,8 @@
+syntax = "proto3";
+package decimal.multisig.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/multisig/types";
+
+message GenesisState {}
