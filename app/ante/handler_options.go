@@ -67,7 +67,7 @@ func newEthAnteHandler(options HandlerOptions) sdk.AnteHandler {
 		evmante.NewEthMempoolFeeDecorator(options.EvmKeeper),   // Check eth effective gas price against minimal-gas-prices
 		evmante.NewEthValidateBasicDecorator(options.EvmKeeper),
 		evmante.NewEthSigVerificationDecorator(options.EvmKeeper),
-		evmante.NewEthAccountVerificationDecorator(options.AccountKeeper, options.BankKeeper, options.EvmKeeper),
+		evmante.NewEthAccountVerificationDecorator(options.AccountKeeper, options.EvmKeeper),
 		evmante.NewEthGasConsumeDecorator(options.EvmKeeper, options.MaxTxGasWanted),
 		evmante.NewCanTransferDecorator(options.EvmKeeper),
 		evmante.NewEthIncrementSenderSequenceDecorator(options.AccountKeeper), // innermost AnteDecorator.
