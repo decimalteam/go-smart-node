@@ -7,11 +7,13 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
 func (w *Worker) getWork() {
 	// w.query <- &ParseTask{
-	// 	height: 116663,
+	// 	height: 116888, // 116663,
 	// 	txNum:  -1,
 	// }
 	// return
@@ -33,7 +35,6 @@ func (w *Worker) getWork() {
 	w.panicError(err)
 
 	// Send work to the channel
-	w.logger.Info(fmt.Sprintf("Got new work: %d block", height))
 	w.query <- &ParseTask{
 		height: int64(height),
 		txNum:  -1,
@@ -41,6 +42,7 @@ func (w *Worker) getWork() {
 }
 
 func (w *Worker) sendBlock(json []byte) {
+	start := time.Now()
 
 	// Prepare request
 	url := fmt.Sprintf("%s/block", w.config.IndexerEndpoint)
@@ -55,25 +57,24 @@ func (w *Worker) sendBlock(json []byte) {
 
 	// Parse response
 	if resp != nil {
-		w.logger.Info(fmt.Sprintf("Response status: %s", resp.Status))
 		if resp.StatusCode != 200 {
-			w.logger.Info("Status code is not OK. Wait and retry")
+			w.logger.Error("Error: unable to send block to the indexer with status code: %s", resp.Status)
 			w.resendBlock(json)
 			return
 		} else {
+			w.logger.Info("Block is successfully sent to the indexer (%s)", helpers.DurationToString(time.Since(start)))
 			// Parse response
 			bodyBytes, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				w.logger.Error(err.Error())
-				s := string(bodyBytes)
-				w.logger.Info("Response body: %s", s)
+				w.logger.Error("Error: unable to send block to the indexer: %s", err.Error())
+				w.logger.Info("Response from the indexer: %s", string(bodyBytes))
 				w.resendBlock(json)
 				return
 			}
 		}
 	}
 	if err != nil {
-		w.logger.Error(err.Error())
+		w.logger.Error("Error: unable to send block to the indexer: %s", err.Error())
 		w.resendBlock(json)
 		return
 	}

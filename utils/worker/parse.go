@@ -11,24 +11,25 @@ type ParseTask struct {
 	txNum  int
 }
 
-func (w *Worker) parseTxFromStd(tx sdk.Tx) ParsedTx {
-	var parsedTx ParsedTx
+func (w *Worker) parseTxInfo(tx sdk.Tx) (txInfo TxInfo) {
 	if tx == nil {
-		return parsedTx
+		return
 	}
 	for _, rawMsg := range tx.GetMsgs() {
+		params, err := w.cdc.Marshaler.MarshalJSON(rawMsg)
+		w.panicError(err)
 		var msg TxMsg
 		msg.Type = sdk.MsgTypeURL(rawMsg)
-		msg.Params = rawMsg
+		msg.Params = params
 		for _, signer := range rawMsg.GetSigners() {
 			msg.From = append(msg.From, signer.String())
 		}
-		parsedTx.Msgs = append(parsedTx.Msgs, msg)
+		txInfo.Msgs = append(txInfo.Msgs, msg)
 	}
-	parsedTx.Fee.Gas = tx.(sdk.FeeTx).GetGas()
-	parsedTx.Fee.Amount = tx.(sdk.FeeTx).GetFee()
-	parsedTx.Memo = tx.(sdk.TxWithMemo).GetMemo()
-	return parsedTx
+	txInfo.Fee.Gas = tx.(sdk.FeeTx).GetGas()
+	txInfo.Fee.Amount = tx.(sdk.FeeTx).GetFee()
+	txInfo.Memo = tx.(sdk.TxWithMemo).GetMemo()
+	return
 }
 
 func (w *Worker) parseEvents(events []abci.Event) []Event {

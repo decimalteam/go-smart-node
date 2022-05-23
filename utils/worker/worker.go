@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 
+	web3types "github.com/ethereum/go-ethereum/core/types"
 	web3 "github.com/ethereum/go-ethereum/ethclient"
 
 	"github.com/tendermint/tendermint/libs/log"
@@ -15,6 +17,8 @@ import (
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 
 	"github.com/cosmos/cosmos-sdk/simapp/params"
+
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
 type Worker struct {
@@ -84,30 +88,38 @@ func (w *Worker) executeFromQuery(wg *sync.WaitGroup) {
 }
 
 func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
+	start := time.Now()
 
 	// Fetch requested block from Tendermint RPC
-	block := w.fetchBlockInfo(height)
+	block := w.fetchBlock(height)
 
 	// Fetch everything needed from Tendermint RPC
-	txsChan := make(chan *[]Tx)
+	txsChan := make(chan []Tx)
 	resultsChan := make(chan *ctypes.ResultBlockResults)
 	sizeChan := make(chan int)
+	web3BlockChan := make(chan *web3types.Block)
+	web3ReceiptsChan := make(chan web3types.Receipts)
 	var parseTxNum int
 	if txNum == -1 {
 		parseTxNum = len(block.Block.Data.Txs)
 	} else {
 		parseTxNum = txNum
 	}
-	go w.fetchAllTxs(height, parseTxNum, txsChan)
-	go w.fetchBlockResults(height, resultsChan)
+	go w.fetchBlockWeb3(height, web3BlockChan) // request firstly
+	go w.fetchBlockTxs(height, parseTxNum, txsChan)
+	go w.fetchBlockTxResults(height, resultsChan)
 	go w.fetchBlockSize(height, sizeChan)
+	web3Block := <-web3BlockChan
+	go w.fetchBlockTxReceiptsWeb3(web3Block, web3ReceiptsChan)
 	txs := <-txsChan
 	results := <-resultsChan
 	size := <-sizeChan
+	web3Body := web3Block.Body()
+	web3Receipts := <-web3ReceiptsChan
 
 	w.logger.Info(fmt.Sprintf(
-		"Found %d txs in %d block. Events on begin/end block: %d/%d.",
-		len(*txs), height, len(results.BeginBlockEvents), len(results.EndBlockEvents),
+		"Found %d txs in %d block in %s. Begin/end block events: %d/%d",
+		len(txs), height, helpers.DurationToString(time.Since(start)), len(results.BeginBlockEvents), len(results.EndBlockEvents),
 	))
 
 	// Retrieve emission and rewards
@@ -157,13 +169,17 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 	b.Evidence = block.Block.Evidence
 	b.Header = block.Block.Header
 	b.LastCommit = block.Block.LastCommit
-	b.Data = BlockData{Txs: *txs}
+	b.Data = BlockData{Txs: txs}
 	b.Emission = emission
 	b.Rewards = rewards
 	b.CommissionRewards = commissionRewards
 	b.EndBlockEvents = w.parseEvents(results.EndBlockEvents)
 	b.BeginBlockEvents = w.parseEvents(results.BeginBlockEvents)
 	b.Size = size
+	b.EVM.Transactions = web3Body.Transactions
+	b.EVM.Uncles = web3Body.Uncles
+	b.EVM.Header = web3Block.Header()
+	b.EVM.Receipts = web3Receipts
 	data, err := json.Marshal(b)
 	w.panicError(err)
 

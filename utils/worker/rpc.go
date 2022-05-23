@@ -3,65 +3,31 @@ package worker
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
+
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
-func (w *Worker) fetchBlockInfo(height int64) *ctypes.ResultBlock {
+func (w *Worker) fetchBlock(height int64) *ctypes.ResultBlock {
+	start := time.Now()
+
 	// Request until get block
-	for {
+	for first := true; true; first = false {
 		// Request block
 		result, err := w.rpcClient.Block(w.ctx, &height)
 		if err == nil {
+			if !first {
+				w.logger.Info("Fetched block %d after waiting for %s", height, helpers.DurationToString(time.Since(start)))
+			} else {
+				w.logger.Info("Fetched block %d (%s)", height, helpers.DurationToString(time.Since(start)))
+			}
 			return result
 		}
 	}
-}
 
-func (w *Worker) fetchAllTxs(height int64, total int, ch chan *[]Tx) {
-	query := fmt.Sprintf("tx.height=%d", height)
-	page, perPage := 1, 100
-
-	var txs []Tx
-	for len(txs) < total {
-
-		// Request transactions
-		result, err := w.rpcClient.TxSearch(w.ctx, query, true, &page, &perPage, "")
-		w.panicError(err)
-
-		for _, tx := range result.Txs {
-			var parsedTx Tx
-			var txLog []interface{}
-
-			// Recover messages from raw transaction bytes
-			recoveredTx, err := w.cdc.TxConfig.TxDecoder()(tx.Tx)
-			w.panicError(err)
-
-			// Parse transaction results logs
-			err = json.Unmarshal([]byte(tx.TxResult.Log), &txLog)
-			if err != nil {
-				parsedTx.Log = []interface{}{FailedTxLog{Log: tx.TxResult.Log}}
-			} else {
-				parsedTx.Log = txLog
-			}
-
-			parsedTx.Tx = w.parseTxFromStd(recoveredTx)
-			parsedTx.Data = tx.TxResult.Data
-			parsedTx.Hash = tx.Hash.String()
-			parsedTx.Code = tx.TxResult.Code
-			parsedTx.GasUsed = tx.TxResult.GasUsed
-			parsedTx.GasWanted = tx.TxResult.GasWanted
-
-			txs = append(txs, parsedTx)
-		}
-
-		if len(result.Txs) > 0 {
-			page++
-		}
-	}
-
-	// Send result to the channel
-	ch <- &txs
+	return nil
 }
 
 func (w *Worker) fetchBlockSize(height int64, ch chan int) {
@@ -74,7 +40,53 @@ func (w *Worker) fetchBlockSize(height int64, ch chan int) {
 	ch <- result.BlockMetas[0].BlockSize
 }
 
-func (w *Worker) fetchBlockResults(height int64, ch chan *ctypes.ResultBlockResults) {
+func (w *Worker) fetchBlockTxs(height int64, total int, ch chan []Tx) {
+	query := fmt.Sprintf("tx.height=%d", height)
+	page, perPage := 1, 100
+
+	var results []Tx
+	for len(results) < total {
+
+		// Request transactions
+		result, err := w.rpcClient.TxSearch(w.ctx, query, true, &page, &perPage, "")
+		w.panicError(err)
+
+		for _, tx := range result.Txs {
+			var result Tx
+			var txLog []interface{}
+
+			// Recover messages from raw transaction bytes
+			recoveredTx, err := w.cdc.TxConfig.TxDecoder()(tx.Tx)
+			w.panicError(err)
+
+			// Parse transaction results logs
+			err = json.Unmarshal([]byte(tx.TxResult.Log), &txLog)
+			if err != nil {
+				result.Log = []interface{}{FailedTxLog{Log: tx.TxResult.Log}}
+			} else {
+				result.Log = txLog
+			}
+
+			result.Info = w.parseTxInfo(recoveredTx)
+			result.Data = tx.TxResult.Data
+			result.Hash = tx.Hash.String()
+			result.Code = tx.TxResult.Code
+			result.GasUsed = tx.TxResult.GasUsed
+			result.GasWanted = tx.TxResult.GasWanted
+
+			results = append(results, result)
+		}
+
+		if len(result.Txs) > 0 {
+			page++
+		}
+	}
+
+	// Send results to the channel
+	ch <- results
+}
+
+func (w *Worker) fetchBlockTxResults(height int64, ch chan *ctypes.ResultBlockResults) {
 
 	// Request until get block results
 	for {
