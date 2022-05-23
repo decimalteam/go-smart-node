@@ -164,7 +164,7 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 	b.EndBlockEvents = w.parseEvents(results.EndBlockEvents)
 	b.BeginBlockEvents = w.parseEvents(results.BeginBlockEvents)
 	b.Size = size
-	data, err := json.Marshal(block)
+	data, err := json.Marshal(b)
 	w.panicError(err)
 
 	// Send
