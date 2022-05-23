@@ -88,12 +88,12 @@ func (w *Worker) executeFromQuery(wg *sync.WaitGroup) {
 }
 
 func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
-	start := time.Now()
 
 	// Fetch requested block from Tendermint RPC
 	block := w.fetchBlock(height)
 
 	// Fetch everything needed from Tendermint RPC
+	start := time.Now()
 	txsChan := make(chan []Tx)
 	resultsChan := make(chan *ctypes.ResultBlockResults)
 	sizeChan := make(chan int)
