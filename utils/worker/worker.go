@@ -105,15 +105,15 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 	} else {
 		parseTxNum = txNum
 	}
-	go w.fetchBlockWeb3(height, web3BlockChan) // request firstly
 	go w.fetchBlockTxs(height, parseTxNum, txsChan)
 	go w.fetchBlockTxResults(height, resultsChan)
 	go w.fetchBlockSize(height, sizeChan)
-	web3Block := <-web3BlockChan
-	go w.fetchBlockTxReceiptsWeb3(web3Block, web3ReceiptsChan)
 	txs := <-txsChan
 	results := <-resultsChan
 	size := <-sizeChan
+	go w.fetchBlockWeb3(height, web3BlockChan)
+	web3Block := <-web3BlockChan
+	go w.fetchBlockTxReceiptsWeb3(web3Block, web3ReceiptsChan)
 	web3Body := web3Block.Body()
 	web3Receipts := <-web3ReceiptsChan
 
