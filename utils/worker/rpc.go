@@ -20,12 +20,12 @@ func (w *Worker) fetchBlock(height int64) *ctypes.ResultBlock {
 		if err == nil {
 			if !first {
 				w.logger.Info(
-					fmt.Sprintf("Fetched block %d (after waiting for %s)", height, helpers.DurationToString(time.Since(start))),
+					fmt.Sprintf("Fetched block (after %s)", helpers.DurationToString(time.Since(start))),
 					"block", height,
 				)
 			} else {
 				w.logger.Info(
-					fmt.Sprintf("Fetched block %d (%s)", height, helpers.DurationToString(time.Since(start))),
+					fmt.Sprintf("Fetched block (%s)", helpers.DurationToString(time.Since(start))),
 					"block", height,
 				)
 			}

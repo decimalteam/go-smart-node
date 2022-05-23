@@ -118,8 +118,11 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 	web3Receipts := <-web3ReceiptsChan
 
 	w.logger.Info(
-		fmt.Sprintf("Parsed block %d (%s)", height, helpers.DurationToString(time.Since(start))),
-		"block", height, "txs", len(txs), "bb-events", len(results.BeginBlockEvents), "eb-events", len(results.EndBlockEvents),
+		fmt.Sprintf("Compiled block (%s)", helpers.DurationToString(time.Since(start))),
+		"block", height,
+		"txs", len(txs),
+		"begin-block-events", len(results.BeginBlockEvents),
+		"end-block-events", len(results.EndBlockEvents),
 	)
 
 	// Retrieve emission and rewards
@@ -189,7 +192,7 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 
 func (w *Worker) panicError(err error) {
 	if err != nil {
-		w.logger.Error("Error: ", err)
+		w.logger.Error(fmt.Sprintf("Error: %v", err))
 		panic(err)
 	}
 }
