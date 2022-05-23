@@ -19,9 +19,15 @@ func (w *Worker) fetchBlock(height int64) *ctypes.ResultBlock {
 		result, err := w.rpcClient.Block(w.ctx, &height)
 		if err == nil {
 			if !first {
-				w.logger.Info("Fetched block %d after waiting for %s", height, helpers.DurationToString(time.Since(start)))
+				w.logger.Info(
+					fmt.Sprintf("Fetched block %d (after waiting for %s)", height, helpers.DurationToString(time.Since(start))),
+					"block", height,
+				)
 			} else {
-				w.logger.Info("Fetched block %d (%s)", height, helpers.DurationToString(time.Since(start)))
+				w.logger.Info(
+					fmt.Sprintf("Fetched block %d (%s)", height, helpers.DurationToString(time.Since(start))),
+					"block", height,
+				)
 			}
 			return result
 		}

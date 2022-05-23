@@ -41,7 +41,7 @@ func (w *Worker) getWork() {
 	}
 }
 
-func (w *Worker) sendBlock(json []byte) {
+func (w *Worker) sendBlock(height int64, json []byte) {
 	start := time.Now()
 
 	// Prepare request
@@ -58,30 +58,45 @@ func (w *Worker) sendBlock(json []byte) {
 	// Parse response
 	if resp != nil {
 		if resp.StatusCode != 200 {
-			w.logger.Error("Error: unable to send block to the indexer with status code: %s", resp.Status)
-			w.resendBlock(json)
+			w.logger.Error(
+				fmt.Sprintf("Error: unable to send block to the indexer with status code: %s", resp.Status),
+				"block", height,
+			)
+			w.resendBlock(height, json)
 			return
 		} else {
-			w.logger.Info("Block is successfully sent to the indexer (%s)", helpers.DurationToString(time.Since(start)))
+			w.logger.Info(
+				fmt.Sprintf("Block is successfully sent (%s)", helpers.DurationToString(time.Since(start))),
+				"block", height,
+			)
 			// Parse response
 			bodyBytes, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				w.logger.Error("Error: unable to send block to the indexer: %s", err.Error())
-				w.logger.Info("Response from the indexer: %s", string(bodyBytes))
-				w.resendBlock(json)
+				w.logger.Error(
+					fmt.Sprintf("Error: unable to send block to the indexer: %s", err.Error()),
+					"block", height,
+				)
+				w.logger.Info(
+					fmt.Sprintf("Response from the indexer: %s", string(bodyBytes)),
+					"block", height,
+				)
+				w.resendBlock(height, json)
 				return
 			}
 		}
 	}
 	if err != nil {
-		w.logger.Error("Error: unable to send block to the indexer: %s", err.Error())
-		w.resendBlock(json)
+		w.logger.Error(
+			fmt.Sprintf("Error: unable to send block to the indexer: %s", err.Error()),
+			"block", height,
+		)
+		w.resendBlock(height, json)
 		return
 	}
 }
 
-func (w *Worker) resendBlock(json []byte) {
+func (w *Worker) resendBlock(height int64, json []byte) {
 	time.Sleep(time.Second)
-	w.logger.Info("Retrying...")
-	w.sendBlock(json)
+	w.logger.Info("Retrying...", "block", height)
+	w.sendBlock(height, json)
 }
