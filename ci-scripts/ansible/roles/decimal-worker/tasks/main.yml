@@ -1,0 +1,38 @@
+---
+- name: Delite binary dir with parent directories if it not exists
+  file:
+    path: '{{ decimal_bin_worker }}'
+    state: absent
+
+- name: Create binary dir with parent directories if it not exists
+  file:
+    path: '{{ decimal_bin_worker }}'
+    state: directory
+    recurse: true
+
+- name: Build binary worker
+  shell: go build
+  args:
+    chdir: '{{ decimal_bin }}'
+
+- name: Copy binar worker
+  shell: 'cp  {{ decimal_bin }}/cmd/worker/* {{ decimal_bin_worker }}'
+
+- name: Generate .env
+  template:
+    src: ./env.j2
+    dest: '{{ systemd_path }}/worker.service'
+  become: true
+
+- name: Register/update worker service
+  template:
+    src: ./env.j2
+    dest: '{{ decimal_bin_worker }}/.env'
+  become: true
+
+- name: Run service worker
+  service:
+    name: 'worker.service'
+    state: started
+    enabled: true
+  become: true

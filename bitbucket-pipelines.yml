@@ -404,6 +404,18 @@ pipelines:
           <<: *deploy
 
   custom:
+    worker-dev-smart-chain:
+      - step:
+          name: Build worker
+          image: centos:latest
+          caches:
+             - go-src
+             - go-pkg
+          script:
+            - ansible-playbook -i "$WORKER_HOSTS" -e "ansible_user=$USERNAME artifacts=$BITBUCKET_CLONE_DIR/build decimal-worker-build.yml;
+          artifacts:
+            - build/**
+
 
     build-and-deploy-binary-files-to-repo-DEVnet:
       - parallel: *repo_build
