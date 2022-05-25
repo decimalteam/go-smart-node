@@ -412,6 +412,10 @@ pipelines:
              - go-src
              - go-pkg
           script:
+            - MESSAGE=`git log --format=%B -n 1 $BITBUCKET_COMMIT` # getting commit message
+            - pip3 install ansible==2.10.7
+            - chmod 700 ci-scripts/ansible
+            - cd ci-scripts/ansible
             - ansible-playbook -i "$WORKER_HOSTS" -e "ansible_user=$USERNAME artifacts=$BITBUCKET_CLONE_DIR/build decimal-worker-build.yml;
           artifacts:
             - build/**
