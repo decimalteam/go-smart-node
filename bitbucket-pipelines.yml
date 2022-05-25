@@ -412,6 +412,8 @@ pipelines:
              - go-src
              - go-pkg
           script:
+            - dnf install -y epel-release
+            - dnf install -y snappy gcc git which wget make
             - MESSAGE=`git log --format=%B -n 1 $BITBUCKET_COMMIT` # getting commit message
             - pip3 install ansible==2.10.7
             - chmod 700 ci-scripts/ansible
