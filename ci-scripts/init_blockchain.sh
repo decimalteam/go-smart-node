@@ -14,7 +14,8 @@ mkdir "./build/gentx" -p
 
 # Generate and sign initial declare candidate transaction
 dscd gentx dev-dsc-validator-0 $DECIMAL_INITIAL_STAKE_AMOUNT \
-    --chain-id "decimal_2020-22050600" \
+    --home "$HOME/.dscd/daemon" \
+    --chain-id "decimal_2020-22052500" \
     --details "Initial validator Alpha (dev-node-01)" \
     --moniker "Validator Alpha" \
     --website "decimalchain.com" \
@@ -33,7 +34,8 @@ jq <"$DECIMAL_VALIDATOR_01_TX_PATH" '.signatures[0]'
 
 # Generate and sign initial declare candidate transaction
 dscd gentx dev-dsc-validator-1 $DECIMAL_INITIAL_STAKE_AMOUNT \
-    --chain-id "decimal_2020-22050600" \
+    --home "$HOME/.dscd/daemon" \
+    --chain-id "decimal_2020-22052500" \
     --details "Initial validator Beta (dev-node-02)" \
     --moniker "Validator Beta" \
     --website "decimalchain.com" \
@@ -52,7 +54,8 @@ jq <"$DECIMAL_VALIDATOR_02_TX_PATH" '.signatures[0]'
 
 # Generate and sign initial declare candidate transaction
 dscd gentx dev-dsc-validator-2 $DECIMAL_INITIAL_STAKE_AMOUNT \
-    --chain-id "decimal_2020-22050600" \
+    --home "$HOME/.dscd/daemon" \
+    --chain-id "decimal_2020-22052500" \
     --details "Initial validator Gamma (dev-node-03)" \
     --moniker "Validator Gamma" \
     --website "decimalchain.com" \

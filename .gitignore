@@ -76,9 +76,11 @@ dependency-graph.png
 # Node.js
 **/node_modules
 
-
 # OpenZeppelin contracts
 contracts/@openzeppelin/*
 
-# Stash
+# Others
+.env
 .stash
+*.txt
+*.csv
