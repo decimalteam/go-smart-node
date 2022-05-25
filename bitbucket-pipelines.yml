@@ -412,6 +412,8 @@ pipelines:
              - go-src
              - go-pkg
           script:
+            - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
+            - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://centos8-repo.crypton.studio|g' /etc/yum.repos.d/CentOS-Linux-*
             - dnf install -y epel-release
             - dnf install -y snappy gcc git which wget make
             - MESSAGE=`git log --format=%B -n 1 $BITBUCKET_COMMIT` # getting commit message
