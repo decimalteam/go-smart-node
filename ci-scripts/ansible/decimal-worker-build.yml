@@ -3,8 +3,8 @@
   hosts: all
   gather_facts: False
 
-#  roles:
-#    - role: decimal-worker
+  roles:
+    - role: decimal-worker
 #      vars:
 #        srv_mode: stop
 
