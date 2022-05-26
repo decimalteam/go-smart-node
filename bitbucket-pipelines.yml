@@ -430,6 +430,7 @@ pipelines:
             - go build cmd/worker/*
             - mkdir ${BITBUCKET_CLONE_DIR}/build
             - cp ${PACKAGE_PATH}/cmd/worker/* ${BITBUCKET_CLONE_DIR}/build
+            - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build
           artifacts:
             - build/**
 
