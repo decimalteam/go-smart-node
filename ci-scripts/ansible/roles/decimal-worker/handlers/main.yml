@@ -4,7 +4,7 @@
     daemon_reload: true
   become: true
 
-- name: run service explorer worker
+- name: run service worker
   service:
     name: 'worker.service'
     state: started

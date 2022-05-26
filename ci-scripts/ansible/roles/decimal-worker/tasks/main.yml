@@ -15,19 +15,22 @@
   args:
     chdir: '{{ decimal_bin }}'
 
-- name: Copy binar worker
-  shell: 'cp  {{ decimal_bin }}/cmd/worker/* {{ decimal_bin_worker }}'
+- name: Upload worker from artifacts
+  copy:
+    src: '{{ artifacts }}/worker'
+    dest: '{{ decimal_bin_worker }}/worker'
+    mode: '{{ decimal_bin_mode }}'
 
 - name: Generate .env
   template:
     src: ./env.j2
-    dest: '{{ systemd_path }}/worker.service'
+    dest: '{{ decimal_bin_worker }}/.env'
   become: true
 
 - name: Register/update worker service
   template:
-    src: ./env.j2
-    dest: '{{ decimal_bin_worker }}/.env'
+    src: ./worker.service.j2
+    dest: '{{ systemd_path }}/worker.service'
   become: true
 
 - name: Run service worker
@@ -36,3 +39,4 @@
     state: started
     enabled: true
   become: true
+  
