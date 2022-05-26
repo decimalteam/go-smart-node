@@ -10,14 +10,9 @@
     state: directory
     recurse: true
 
-- name: Build binary worker
-  shell: go build
-  args:
-    chdir: '{{ decimal_bin }}'
-
 - name: Upload worker from artifacts
   copy:
-    src: '{{ artifacts }}/worker'
+    src: '{{ artifacts }}/build/worker'
     dest: '{{ decimal_bin_worker }}/worker'
     mode: '{{ decimal_bin_mode }}'
 

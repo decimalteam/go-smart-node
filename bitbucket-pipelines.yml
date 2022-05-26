@@ -407,6 +407,7 @@ pipelines:
     worker-dev-smart-chain:
       - step:
           name: Build worker
+          deployment: Test
           image: centos:centos8
           caches:
             - go-src
