@@ -12,7 +12,7 @@
 
 - name: Upload worker from artifacts
   copy:
-    src: '{{ artifacts }}/build/worker'
+    src: '{{ artifacts }}/worker'
     dest: '{{ decimal_bin_worker }}/worker'
     mode: '{{ decimal_bin_mode }}'
 
