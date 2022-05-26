@@ -442,6 +442,7 @@ pipelines:
 
       - step:
           name: Deploy
+          deployment: Test
           caches:
             - pip
           script:
