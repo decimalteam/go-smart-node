@@ -31,7 +31,7 @@
 - name: Run service worker
   service:
     name: 'worker.service'
-    state: started
+    state: restarted
     enabled: true
   become: true
   
