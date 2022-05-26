@@ -427,9 +427,10 @@ pipelines:
             - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
             - export GO111MODULE=on
             - cd "${PACKAGE_PATH}"
+            - go get ./...
             - go build cmd/worker/*
             - mkdir ${BITBUCKET_CLONE_DIR}/build
-            - cp ${PACKAGE_PATH}/cmd/worker/worker ${BITBUCKET_CLONE_DIR}/build/
+            - cp ${PACKAGE_PATH}/cmd/worker/* ${BITBUCKET_CLONE_DIR}/build/
           artifacts:
             - build/**
 
