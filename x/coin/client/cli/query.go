@@ -2,8 +2,8 @@ package cli
 
 import (
 	"context"
-	"encoding/hex"
 	"fmt"
+	"github.com/cosmos/btcutil/base58"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -77,6 +77,7 @@ func cmdQueryCoins() *cobra.Command {
 			if err != nil {
 				return err
 			}
+
 			req := &types.QueryCoinsRequest{
 				Pagination: pageReq,
 			}
@@ -89,7 +90,10 @@ func cmdQueryCoins() *cobra.Command {
 			return clientCtx.PrintProto(res)
 		},
 	}
+
 	flags.AddQueryFlagsToCmd(cmd)
+	flags.AddPaginationFlagsToCmd(cmd, "all coins")
+
 	return cmd
 }
 
@@ -105,12 +109,21 @@ func cmdQueryCheck() *cobra.Command {
 			}
 			queryClient := types.NewQueryClient(clientCtx)
 
-			hash, err := hex.DecodeString(args[0])
-			if err != nil {
-				return err
+			// Decode provided check from base58 format to raw bytes
+			checkBytes := base58.Decode(args[0])
+			if len(checkBytes) == 0 {
+				return types.ErrUnableDecodeCheck(args[0])
 			}
+
+			// Parse provided check from raw bytes to ensure it is valid
+			check, err := types.ParseCheck(checkBytes)
+			if err != nil {
+				return types.ErrInvalidCheck(err.Error())
+			}
+
+			hash := check.HashFull()
 			req := &types.QueryCheckRequest{
-				Hash: hash,
+				Hash: hash[:],
 			}
 
 			res, err := queryClient.Check(context.Background(), req)
@@ -153,7 +166,10 @@ func cmdQueryChecks() *cobra.Command {
 			return clientCtx.PrintProto(res)
 		},
 	}
+
 	flags.AddQueryFlagsToCmd(cmd)
+	flags.AddPaginationFlagsToCmd(cmd, "all checks")
+
 	return cmd
 }
 
@@ -179,6 +195,8 @@ func cmdQueryParams() *cobra.Command {
 			return clientCtx.PrintProto(res)
 		},
 	}
+
 	flags.AddQueryFlagsToCmd(cmd)
+
 	return cmd
 }

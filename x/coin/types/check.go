@@ -1,14 +1,13 @@
 package types
 
 import (
-	"bytes"
 	"crypto/ecdsa"
-	"crypto/sha256"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"io"
 	"math/big"
 
-	"golang.org/x/crypto/ripemd160"
 	"golang.org/x/crypto/sha3"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -27,11 +26,8 @@ var (
 )
 
 func ParseCheck(buf []byte) (check *Check, err error) {
-	err = rlp.Decode(bytes.NewReader(buf), &check)
-	if err != nil {
-		return
-	}
-	if check.S == nil || check.R == nil || check.V == nil {
+	err = rlp.DecodeBytes(buf, &check)
+	if check.S.BigInt() == nil || check.R.BigInt() == nil || check.V.BigInt() == nil {
 		err = errors.New("incorrect tx signature")
 		return
 	}
@@ -43,7 +39,7 @@ func (c *Check) Sender() (sdk.AccAddress, error) {
 }
 
 func (c *Check) LockPubKey() ([]byte, error) {
-	sig := c.Lock.BigInt().Bytes()
+	sig := c.Lock
 	if len(sig) < 65 {
 		sig = append(make([]byte, 65-len(sig)), sig...)
 	}
@@ -127,15 +123,54 @@ func recoverPlain(sighash Hash, rb, sb, vb *big.Int) (sdk.AccAddress, error) {
 	if len(pub) == 0 || pub[0] != 4 {
 		return sdk.AccAddress{}, errors.New("invalid public key")
 	}
-	pub2, err := crypto.UnmarshalPubkey(pub)
-	if err != nil {
-		return sdk.AccAddress{}, err
+	var addr common.Address
+	copy(addr[:], crypto.Keccak256(pub[1:])[12:])
+	return sdk.AccAddress(addr.Bytes()), nil
+}
+
+type rlpCheck struct {
+	ChainID  string
+	Coin     string
+	Amount   *big.Int
+	Nonce    []byte
+	DueBlock uint64
+	Lock     []byte
+	V        *big.Int
+	R        *big.Int
+	S        *big.Int
+}
+
+func (c *Check) EncodeRLP(w io.Writer) error {
+	return rlp.Encode(w, rlpCheck{
+		ChainID:  c.ChainID,
+		Coin:     c.Coin,
+		Amount:   c.Amount.BigInt(),
+		Nonce:    c.Nonce,
+		DueBlock: c.DueBlock,
+		Lock:     c.Lock,
+		V:        c.V.BigInt(),
+		R:        c.R.BigInt(),
+		S:        c.S.BigInt(),
+	})
+}
+
+func (c *Check) DecodeRLP(st *rlp.Stream) error {
+	var result rlpCheck
+	if err := st.Decode(&result); err != nil {
+		return err
 	}
-	pub3 := crypto.CompressPubkey(pub2)
-	hasherSHA256 := sha256.New()
-	hasherSHA256.Write(pub3)
-	sha := hasherSHA256.Sum(nil)
-	hasherRIPEMD160 := ripemd160.New()
-	hasherRIPEMD160.Write(sha)
-	return sdk.AccAddress(hasherRIPEMD160.Sum(nil)), nil
+
+	v, r, s := sdk.NewIntFromBigInt(result.V), sdk.NewIntFromBigInt(result.R), sdk.NewIntFromBigInt(result.S)
+
+	c.ChainID = result.ChainID
+	c.Coin = result.Coin
+	c.Amount = sdk.NewIntFromBigInt(result.Amount)
+	c.Nonce = result.Nonce
+	c.DueBlock = result.DueBlock
+	c.Lock = result.Lock
+	c.V = &v
+	c.R = &r
+	c.S = &s
+
+	return nil
 }

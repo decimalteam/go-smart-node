@@ -132,7 +132,7 @@ func (AppModule) Name() string {
 }
 
 func (am AppModule) NewHandler() sdk.Handler {
-	return NewHandler(am.keeper)
+	return NewHandler(&am.keeper)
 }
 
 // Route returns the module's message routing key.
@@ -165,13 +165,13 @@ func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	var gs types.GenesisState
 	cdc.MustUnmarshalJSON(data, &gs)
-	InitGenesis(ctx, am.keeper, gs)
+	am.keeper.InitGenesis(ctx, gs)
 	return []abci.ValidatorUpdate{}
 }
 
 // ExportGenesis returns the module's exported genesis state as raw JSON bytes.
 func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
-	gs := ExportGenesis(ctx, am.keeper)
+	gs := am.keeper.ExportGenesis(ctx)
 	return cdc.MustMarshalJSON(gs)
 }
 

@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -36,16 +35,18 @@ func (k Keeper) Coins(c context.Context, req *types.QueryCoinsRequest) (*types.Q
 	ctx := sdk.UnwrapSDKContext(c)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixCoin)
 
-	coins := []types.Coin{}
+	coins := make([]types.Coin, 0)
 
 	pageRes, err := query.Paginate(
 		store,
 		req.Pagination,
-		func(key, value []byte) error {
+		func(_, value []byte) error {
 			var coin types.Coin
-			if err := k.cdc.Unmarshal(value, &coin); err != nil {
+
+			if err := k.cdc.UnmarshalLengthPrefixed(value, &coin); err != nil {
 				return err
 			}
+
 			coins = append(coins, coin)
 			return nil
 		},
@@ -71,7 +72,7 @@ func (k Keeper) Check(c context.Context, req *types.QueryCheckRequest) (*types.Q
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryCheckResponse{Check: *check}, nil
+	return &types.QueryCheckResponse{Check: check}, nil
 }
 
 func (k Keeper) Checks(c context.Context, req *types.QueryChecksRequest) (*types.QueryChecksResponse, error) {
@@ -88,7 +89,7 @@ func (k Keeper) Checks(c context.Context, req *types.QueryChecksRequest) (*types
 		req.Pagination,
 		func(key, value []byte) error {
 			var check types.Check
-			if err := k.cdc.Unmarshal(value, &check); err != nil {
+			if err := k.cdc.UnmarshalLengthPrefixed(value, &check); err != nil {
 				return err
 			}
 			checks = append(checks, check)
