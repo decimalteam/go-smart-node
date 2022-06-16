@@ -1,6 +1,8 @@
 package worker
 
 import (
+	web3common "github.com/ethereum/go-ethereum/common"
+	web3hexutil "github.com/ethereum/go-ethereum/common/hexutil"
 	web3types "github.com/ethereum/go-ethereum/core/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -30,11 +32,27 @@ type Block struct {
 	EVM               BlockEVM           `json:"evm"`
 }
 
+type TransactionEVM struct {
+	Type             web3hexutil.Uint64  `json:"type"`
+	Hash             web3common.Hash     `json:"hash"`
+	Nonce            web3hexutil.Uint64  `json:"nonce"`
+	BlockHash        web3common.Hash     `json:"blockHash"`
+	BlockNumber      web3hexutil.Uint64  `json:"blockNumber"`
+	TransactionIndex web3hexutil.Uint64  `json:"transactionIndex"`
+	From             web3common.Address  `json:"from"`
+	To               *web3common.Address `json:"to"`
+	Value            *web3hexutil.Big    `json:"value"`
+	Data             web3hexutil.Bytes   `json:"input"`
+	Gas              web3hexutil.Uint64  `json:"gas"`
+	GasPrice         *web3hexutil.Big    `json:"gasPrice"`
+	ChainId          *web3hexutil.Big    `json:"chainId"`
+}
+
 type BlockEVM struct {
-	Header       *web3types.Header        `json:"header"`
-	Transactions []*web3types.Transaction `json:"transactions"`
-	Uncles       []*web3types.Header      `json:"uncles"`
-	Receipts     []*web3types.Receipt     `json:"receipts"`
+	Header       *web3types.Header    `json:"header"`
+	Transactions []*TransactionEVM    `json:"transactions"`
+	Uncles       []*web3types.Header  `json:"uncles"`
+	Receipts     []*web3types.Receipt `json:"receipts"`
 }
 
 type BlockData struct {
