@@ -126,7 +126,9 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 	web3Transactions := make([]*TransactionEVM, len(web3Body.Transactions))
 	for i, tx := range web3Body.Transactions {
 		msg, err := tx.AsMessage(web3types.NewEIP155Signer(w.web3ChainId), nil)
-		w.panicError(err)
+		if err != nil {
+			fmt.Printf("Error: unable to retrieve sender address for the transaction with hash %s\n", tx.Hash())
+		}
 		web3Transactions[i] = &TransactionEVM{
 			Type:             web3hexutil.Uint64(tx.Type()),
 			Hash:             tx.Hash(),
