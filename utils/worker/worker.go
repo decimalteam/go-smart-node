@@ -125,10 +125,8 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 	web3Body := web3Block.Body()
 	web3Transactions := make([]*TransactionEVM, len(web3Body.Transactions))
 	for i, tx := range web3Body.Transactions {
-		msg, err := tx.AsMessage(web3types.NewEIP155Signer(w.web3ChainId), nil)
-		if err != nil {
-			fmt.Printf("Error: unable to retrieve sender address for the transaction with hash %s\n", tx.Hash())
-		}
+		msg, err := tx.AsMessage(web3types.NewLondonSigner(w.web3ChainId), nil)
+		w.panicError(err)
 		web3Transactions[i] = &TransactionEVM{
 			Type:             web3hexutil.Uint64(tx.Type()),
 			Hash:             tx.Hash(),
@@ -137,12 +135,15 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 			BlockNumber:      web3hexutil.Uint64(web3Block.NumberU64()),
 			TransactionIndex: web3hexutil.Uint64(uint64(i)),
 			From:             msg.From(),
-			To:               tx.To(),
-			Value:            (*web3hexutil.Big)(tx.Value()),
-			Data:             web3hexutil.Bytes(tx.Data()),
-			Gas:              web3hexutil.Uint64(tx.Gas()),
-			GasPrice:         (*web3hexutil.Big)(tx.GasPrice()),
+			To:               msg.To(),
+			Value:            (*web3hexutil.Big)(msg.Value()),
+			Data:             web3hexutil.Bytes(msg.Data()),
+			Gas:              web3hexutil.Uint64(msg.Gas()),
+			GasPrice:         (*web3hexutil.Big)(msg.GasPrice()),
 			ChainId:          (*web3hexutil.Big)(tx.ChainId()),
+			AccessList:       msg.AccessList(),
+			GasTipCap:        (*web3hexutil.Big)(msg.GasTipCap()),
+			GasFeeCap:        (*web3hexutil.Big)(msg.GasFeeCap()),
 		}
 	}
 	web3Receipts := <-web3ReceiptsChan

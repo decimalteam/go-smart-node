@@ -45,7 +45,12 @@ type TransactionEVM struct {
 	Data             web3hexutil.Bytes   `json:"input"`
 	Gas              web3hexutil.Uint64  `json:"gas"`
 	GasPrice         *web3hexutil.Big    `json:"gasPrice"`
-	ChainId          *web3hexutil.Big    `json:"chainId"`
+
+	// Optional
+	ChainId    *web3hexutil.Big     `json:"chainId,omitempty"`              // EIP-155 replay protection
+	AccessList web3types.AccessList `json:"accessList,omitempty"`           // EIP-2930 access list
+	GasTipCap  *web3hexutil.Big     `json:"maxPriorityFeePerGas,omitempty"` // EIP-1559 dynamic fee transactions
+	GasFeeCap  *web3hexutil.Big     `json:"maxFeePerGas,omitempty"`         // EIP-1559 dynamic fee transactions
 }
 
 type BlockEVM struct {
