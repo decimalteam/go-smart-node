@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"io"
 	"math/big"
+	"strings"
 
 	"golang.org/x/crypto/sha3"
 
@@ -27,6 +28,9 @@ var (
 
 func ParseCheck(buf []byte) (check *Check, err error) {
 	err = rlp.DecodeBytes(buf, &check)
+	if err != nil {
+		return nil, err
+	}
 	if check.S.BigInt() == nil || check.R.BigInt() == nil || check.V.BigInt() == nil {
 		err = errors.New("incorrect tx signature")
 		return
@@ -126,6 +130,17 @@ func recoverPlain(sighash Hash, rb, sb, vb *big.Int) (sdk.AccAddress, error) {
 	var addr common.Address
 	copy(addr[:], crypto.Keccak256(pub[1:])[12:])
 	return sdk.AccAddress(addr.Bytes()), nil
+}
+
+type Checks []Check
+
+func (c Checks) String() string {
+	result := make([]string, len(c))
+	for i, v := range c {
+		result[i] = v.String()
+	}
+
+	return strings.Join(result, "\n")
 }
 
 type rlpCheck struct {

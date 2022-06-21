@@ -2,8 +2,8 @@ package rest
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	"encoding/base64"
 	"fmt"
-	"github.com/cosmos/btcutil/base58"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
@@ -103,22 +103,12 @@ func getCheckByHashHandlerFn(clientCtx client.Context) http.HandlerFunc {
 		vars := mux.Vars(r)
 		checkHash := vars["checkHash"]
 
-		// Decode provided check from base58 format to raw bytes
-		checkBytes := base58.Decode(checkHash)
-		if len(checkBytes) == 0 {
-			rest.WriteErrorResponse(w, 1, types.ErrUnableDecodeCheck(checkHash).Error())
+		checkBytes, err := base64.URLEncoding.DecodeString(checkHash)
+		if rest.CheckBadRequestError(w, err) {
 			return
 		}
 
-		// Parse provided check from raw bytes to ensure it is valid
-		check, err := types.ParseCheck(checkBytes)
-		if rest.CheckInternalServerError(w, err) {
-			return
-		}
-
-		hash := check.HashFull()
-
-		params := types.NewQueryCheckParams(hash[:])
+		params := types.NewQueryCheckParams(checkBytes)
 		bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
 		if rest.CheckBadRequestError(w, err) {
 			return

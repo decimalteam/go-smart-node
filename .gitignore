@@ -15,6 +15,7 @@
 *.dylib
 
 # Build
+cmd/dscd/dscd
 *.test
 .glide/
 vendor

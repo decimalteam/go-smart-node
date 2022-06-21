@@ -49,7 +49,7 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 	}
 
 	// Calculate special fee for creating custom coin
-	feeAmountBase := helpers.BipToPip(getCreateCoinCommission(coinDenom))
+	feeAmountBase := helpers.EtherToWei(getCreateCoinCommission(coinDenom))
 	feeAmount, feeDenom, err := k.GetCommission(ctx, feeAmountBase)
 	if err != nil {
 		return nil, types.ErrCalculateCommission(err.Error())
@@ -67,12 +67,6 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 	}
 
 	// Ensure balances are enough
-	if balanceBaseCoin.Amount.LT(msg.InitialReserve) {
-		return nil, types.ErrInsufficientCoinReserve()
-	}
-	if balanceFeeCoin.Amount.LT(feeAmount) {
-		return nil, types.ErrInsufficientFundsToPayCommission(feeAmount.String())
-	}
 	if feeDenom == baseCoinDenom {
 		feeAmountBaseTotal := feeAmount.Add(msg.InitialReserve)
 		if balanceBaseCoin.Amount.LT(feeAmountBaseTotal) {
@@ -80,6 +74,13 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 				sdk.NewCoin(baseCoinDenom, feeAmountBaseTotal).String(),
 				balanceBaseCoin.String(),
 			)
+		}
+	} else {
+		if balanceBaseCoin.Amount.LT(msg.InitialReserve) {
+			return nil, types.ErrInsufficientCoinReserve()
+		}
+		if balanceFeeCoin.Amount.LT(feeAmount) {
+			return nil, types.ErrInsufficientFundsToPayCommission(feeAmount.String())
 		}
 	}
 
@@ -154,8 +155,8 @@ func (k Keeper) UpdateCoin(goCtx context.Context, msg *types.MsgUpdateCoin) (*ty
 	}
 
 	// Ensure new limit volume is big enough
-	if coin.Volume.GT(msg.LimitVolume) {
-		return nil, types.ErrLimitVolumeBroken(coin.Volume.String(), msg.LimitVolume.String())
+	if coin.LimitVolume.GT(msg.LimitVolume) {
+		return nil, types.ErrLimitVolumeBroken(coin.LimitVolume.String(), msg.LimitVolume.String())
 	}
 
 	// Update coin metadata
@@ -364,7 +365,7 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 	}
 
 	// Calculate correct fee
-	feeAmountBase := helpers.UnitToPip(sdk.NewIntFromUint64(30))
+	feeAmountBase := helpers.FinneyToWei(sdk.NewIntFromUint64(30))
 	feeAmount := feeAmountBase
 	if coinDenom != baseCoinDenom {
 		feeAmount = formulas.CalculateSaleAmount(coin.Volume, coin.Reserve, uint(coin.CRR), feeAmountBase)
@@ -434,7 +435,7 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 
 	// Compare both public keys to ensure provided proof is correct
 	if !bytes.Equal(publicKeyA, publicKeyB) {
-		return nil, types.ErrInvalidProof(err.Error())
+		return nil, types.ErrInvalidProof("public keys to ensure provided proof is not correct")
 	}
 
 	// Write check to the storage
