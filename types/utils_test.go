@@ -169,7 +169,7 @@ func TestOldNewAddresForPubKey(t *testing.T) {
 		newAddress, err := bech32.ConvertAndEncode("dx", newPubKey.Address())
 		require.NoError(t, err)
 		require.Equal(t, tc.newAddress, newAddress)
-		oldAddress, err := bech32.ConvertAndEncode("dx", oldPubKey.Address())
+		oldAddress, err := GetOldAddressFromPubKey(oldPubKey.Key)
 		require.NoError(t, err)
 		require.Equal(t, tc.oldAddress, oldAddress)
 	}
