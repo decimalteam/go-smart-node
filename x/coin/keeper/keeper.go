@@ -273,3 +273,58 @@ func (k *Keeper) ClearCoinCache() {
 		delete(k.coinCache, key)
 	}
 }
+
+////////////////////////////////////////////////////////////////
+// Legacy balances
+////////////////////////////////////////////////////////////////
+
+// GetLegacyBalance returns balance for old address if exists in KVStore.
+func (k *Keeper) GetLegacyBalance(ctx sdk.Context, oldAddress string) (balance types.LegacyBalance, err error) {
+	store := ctx.KVStore(k.storeKey)
+	key := append(types.KeyPrefixLegacy, []byte(oldAddress)...)
+	value := store.Get(key)
+	if len(value) == 0 {
+		err = fmt.Errorf("old address %s is not found in the key-value store", strings.ToLower(oldAddress))
+		return
+	}
+	err = k.cdc.UnmarshalLengthPrefixed(value, &balance)
+	return
+}
+
+// SetLegacyBalance store legacy balance for old address. Must call only in genesis
+func (k *Keeper) SetLegacyBalance(ctx sdk.Context, balance types.LegacyBalance) {
+	store := ctx.KVStore(k.storeKey)
+	key := append(types.KeyPrefixLegacy, []byte(balance.OldAddress)...)
+	value := k.cdc.MustMarshalLengthPrefixed(&balance)
+	store.Set(key, value)
+}
+
+// DeleteLegacyBalance delete balance for old address. Must call in return transaction
+func (k *Keeper) DeleteLegacyBalance(ctx sdk.Context, oldAddress string) {
+	store := ctx.KVStore(k.storeKey)
+	key := append(types.KeyPrefixLegacy, []byte(oldAddress)...)
+	store.Delete(key)
+}
+
+// GetLegacyBalancesIterator returns iterator over all legacy balances existing in KVStore.
+func (k *Keeper) GetLegacyBalancesIterator(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return sdk.KVStorePrefixIterator(store, types.KeyPrefixLegacy)
+}
+
+// GetLegacyBalance returns balance for old address if exists in KVStore.
+func (k *Keeper) GetLegacyBalances(ctx sdk.Context) (balances []types.LegacyBalance) {
+	it := k.GetLegacyBalancesIterator(ctx)
+	defer it.Close()
+
+	for ; it.Valid(); it.Next() {
+		var balance types.LegacyBalance
+		err := k.cdc.UnmarshalLengthPrefixed(it.Value(), &balance)
+		if err != nil {
+			panic(err)
+		}
+		balances = append(balances, balance)
+	}
+
+	return balances
+}

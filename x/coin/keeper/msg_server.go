@@ -14,6 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 	"golang.org/x/crypto/sha3"
 
+	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -466,6 +467,47 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 	))
 
 	return &types.MsgRedeemCheckResponse{}, nil
+}
+
+////////////////////////////////////////////////////////////////
+// RedeemCheck
+////////////////////////////////////////////////////////////////
+
+func (k Keeper) ReturnLegacyBalance(goCtx context.Context, msg *types.MsgReturnLegacyBalance) (*types.MsgReturnLegacyBalanceResponse, error) {
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// NOTE: It was already validated so no need to check error
+	receiver, _ := sdk.AccAddressFromBech32(msg.Receiver)
+	oldAddress, _ := commonTypes.GetOldAddressFromPubKey(msg.PublicKeyBytes)
+
+	//
+	legacyBalance, err := k.GetLegacyBalance(ctx, oldAddress)
+	if err != nil {
+		return nil, types.ErrNoLegacyBalance(msg.Receiver, oldAddress)
+	}
+
+	var coinsToSend sdk.Coins
+	for _, entry := range legacyBalance.Entries {
+		coinDenom := strings.ToLower(entry.CoinDenom)
+		_, err = k.GetCoin(ctx, coinDenom)
+		if err != nil {
+			return nil, types.ErrCoinDoesNotExist(coinDenom)
+		}
+		coin := sdk.NewCoin(coinDenom, entry.Balance)
+		// summarize new balance
+		coinsToSend = coinsToSend.Add(coin)
+	}
+
+	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, receiver, coinsToSend)
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
+
+	// all complete, delete balbance
+	k.DeleteLegacyBalance(ctx, oldAddress)
+
+	return &types.MsgReturnLegacyBalanceResponse{}, nil
 }
 
 ////////////////////////////////////////////////////////////////

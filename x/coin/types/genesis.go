@@ -7,10 +7,11 @@ import (
 )
 
 // NewGenesisState creates a new genesis state.
-func NewGenesisState(params Params, coins []Coin) GenesisState {
+func NewGenesisState(params Params, coins []Coin, legacyBalances []LegacyBalance) GenesisState {
 	return GenesisState{
-		Params: params,
-		Coins:  coins,
+		Params:         params,
+		Coins:          coins,
+		LegacyBalances: legacyBalances,
 	}
 }
 
@@ -18,8 +19,9 @@ func NewGenesisState(params Params, coins []Coin) GenesisState {
 // default params and chain config values.
 func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
-		Params: DefaultParams(),
-		Coins:  []Coin{},
+		Params:         DefaultParams(),
+		Coins:          []Coin{},
+		LegacyBalances: []LegacyBalance{},
 	}
 }
 
@@ -63,6 +65,15 @@ func (gs *GenesisState) Validate() error {
 		// }
 		seenChecks[checkHashStr] = true
 	}
+	// Check there are repeated addresses in legacy balances
+	seenLegacy := make(map[string]bool)
+	for _, lb := range gs.LegacyBalances {
+		if seenLegacy[lb.OldAddress] {
+			return fmt.Errorf("legacy address duplicated on genesis: '%s'", lb.OldAddress)
+		}
+		seenLegacy[lb.OldAddress] = true
+	}
+
 	// Validate params
 	return gs.Params.Validate()
 }
