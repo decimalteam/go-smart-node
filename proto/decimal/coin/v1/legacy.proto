@@ -28,8 +28,8 @@ message LegacyBalance {
   option (gogoproto.goproto_stringer) = true;
 
   string oldAddress = 1 [
-    (gogoproto.jsontag) = "oldAddress",
-    (gogoproto.moretags) = "yaml:\"oldAddress\""
+    (gogoproto.jsontag) = "old_address",
+    (gogoproto.moretags) = "yaml:\"old_address\""
   ];
 
   repeated LegacyBalanceEntry entries = 2 [
