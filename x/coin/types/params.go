@@ -28,7 +28,7 @@ func DefaultParams() Params {
 	return Params{
 		BaseTitle:         "Decimal coin",
 		BaseSymbol:        "del",
-		BaseInitialVolume: sdk.NewInt(0),
+		BaseInitialVolume: sdk.NewInt(1),
 	}
 }
 

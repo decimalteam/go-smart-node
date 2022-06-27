@@ -328,3 +328,18 @@ func (k *Keeper) GetLegacyBalances(ctx sdk.Context) (balances []types.LegacyBala
 
 	return balances
 }
+
+// Genesis helper function. Call only from genesis
+// Transfer summarized legacy balances from stub address 'coin' to module
+// for future use in keeper.ReturnLegacyBalance
+func (k *Keeper) GenesisLegacyTransfer(ctx sdk.Context) {
+	// const coinAddress = "ds1vdhkjmsygul4t" // dc1vdhkjms35u4c0, []byte{'c', 'o', 'i', 'n'} as address
+	var stubCoinAddress = sdk.AccAddress([]byte{'c', 'o', 'i', 'n'})
+	coins := k.bankKeeper.GetAllBalances(ctx, stubCoinAddress)
+	if coins.Len() == 0 {
+		return
+	}
+	// why nolint: this will fail only if balance for stubCoinAddress does not exist, or bankKeeper not initialized,
+	// or no permission to transfer, but in this case GetAllBalances already fail or coin module has wrong initialization
+	k.bankKeeper.SendCoinsFromAccountToModule(ctx, stubCoinAddress, types.ModuleName, coins) // nolint
+}
