@@ -32,6 +32,9 @@ service Msg {
 
   // RedeemCheck defines message for redeeming checks.
   rpc RedeemCheck(MsgRedeemCheck) returns (MsgRedeemCheckResponse);
+
+  // MsgReturnLegacyBalance defines message for legacy balance returns.
+  rpc ReturnLegacyBalance(MsgReturnLegacyBalance) returns (MsgReturnLegacyBalanceResponse);
 }
 
 ////////////////////////////////////////////////////////////////

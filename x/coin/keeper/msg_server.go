@@ -470,7 +470,7 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 }
 
 ////////////////////////////////////////////////////////////////
-// RedeemCheck
+// Legacy balances
 ////////////////////////////////////////////////////////////////
 
 func (k Keeper) ReturnLegacyBalance(goCtx context.Context, msg *types.MsgReturnLegacyBalance) (*types.MsgReturnLegacyBalanceResponse, error) {
