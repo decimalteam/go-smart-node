@@ -230,6 +230,8 @@ var (
 		claimstypes.ModuleName:         nil,
 		incentivestypes.ModuleName:     {authtypes.Minter, authtypes.Burner},
 		cointypes.ModuleName:           {authtypes.Minter, authtypes.Burner},
+		// special account to hold legacy balances
+		cointypes.LegacyCoinPool: {authtypes.Minter, authtypes.Burner},
 	}
 
 	// Module accounts that are allowed to receive tokens

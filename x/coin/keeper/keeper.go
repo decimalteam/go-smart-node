@@ -337,5 +337,5 @@ func (k *Keeper) GenesisLegacyTransfer(ctx sdk.Context) {
 	}
 	// why nolint: this will fail only if balance for stubCoinAddress does not exist, or bankKeeper not initialized,
 	// or no permission to transfer, but in this case GetAllBalances already fail or coin module has wrong initialization
-	k.bankKeeper.SendCoinsFromAccountToModule(ctx, types.StubCoinAddress, types.ModuleName, coins) // nolint
+	k.bankKeeper.SendCoinsFromAccountToModule(ctx, types.StubCoinAddress, types.LegacyCoinPool, coins) // nolint
 }

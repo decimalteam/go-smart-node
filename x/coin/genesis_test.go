@@ -2,11 +2,13 @@ package coin_test
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/app"
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/testcoin"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	cosmosBankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/require"
 
 	//tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -142,4 +144,110 @@ func TestAppModuleBasic_ValidateGenesis(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAppModuleBasic_InitGenesisForLegacy(t *testing.T) {
+	app, ctx := bootstrapGenesisTest()
+
+	// write genesis
+	params := app.CoinKeeper.GetParams(ctx)
+
+	coins := []types.Coin{
+		{
+			Title:  "del",
+			Symbol: "del",
+		},
+		{
+			Title:       "Test coin",
+			Symbol:      "foo",
+			CRR:         50,
+			Reserve:     sdk.NewInt(1_000_000_000),
+			Volume:      sdk.NewInt(1_000_000_000_0),
+			LimitVolume: sdk.NewInt(1_000_000_000_000_000_000),
+			Creator:     "uatom",
+			Identity:    "dx1hs2wdrm87c92rzhq0vgmgrxr6u57xpr2lcygc2",
+		},
+	}
+
+	stub, err := sdk.Bech32ifyAddressBytes(config.Bech32Prefix, types.StubCoinAddress)
+	require.NoError(t, err, "StubCoinAddress to bech32")
+
+	otherAddress, err := sdk.Bech32ifyAddressBytes(config.Bech32Prefix, sdk.AccAddress("someotheraddressfortest"))
+	require.NoError(t, err, "other address to bech32")
+
+	bankGenesisState := &cosmosBankTypes.GenesisState{
+		Params: cosmosBankTypes.DefaultParams(),
+		Balances: []cosmosBankTypes.Balance{
+			{
+				Address: stub,
+				Coins: sdk.Coins{
+					{
+						Denom:  params.BaseSymbol,
+						Amount: sdk.NewInt(100),
+					},
+					{
+						Denom:  "foo",
+						Amount: sdk.NewInt(100),
+					},
+				},
+			},
+			{
+				Address: otherAddress,
+				Coins: sdk.Coins{
+					{
+						Denom:  params.BaseSymbol,
+						Amount: sdk.NewInt(200),
+					},
+					{
+						Denom:  "foo",
+						Amount: sdk.NewInt(200),
+					},
+				},
+			},
+		},
+	}
+	require.NoError(t, bankGenesisState.Validate(), "bankGenesisState")
+	app.BankKeeper.InitGenesis(ctx, bankGenesisState)
+
+	const oldAddress = "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy"
+	coinGenesisState := types.NewGenesisState(params, coins, []types.Check{}, []types.LegacyBalance{
+		{
+			OldAddress: oldAddress,
+			Entries: []types.LegacyBalanceEntry{
+				{
+					CoinDenom: "foo",
+					Balance:   sdk.NewInt(100),
+				},
+				{
+					CoinDenom: "del",
+					Balance:   sdk.NewInt(150),
+				},
+			},
+		},
+	})
+	require.NoError(t, coinGenesisState.Validate(), "coinGenesisState")
+	coin.InitGenesis(ctx, app.CoinKeeper, coinGenesisState)
+
+	// here bank and coin must be proper initialized
+	// so we check state
+	coinKeeper := app.CoinKeeper
+	balance, err := coinKeeper.GetLegacyBalance(ctx, oldAddress)
+	require.NoError(t, err, "GetLegacyBalance")
+	require.Equal(t, oldAddress, balance.OldAddress)
+	require.Equal(t, 2, len(balance.Entries))
+	for _, entry := range balance.Entries {
+		if entry.CoinDenom == "del" {
+			require.True(t, entry.Balance.Equal(sdk.NewInt(150)), "balance for del")
+		}
+		if entry.CoinDenom == "foo" {
+			require.True(t, entry.Balance.Equal(sdk.NewInt(100)), "balance for foo")
+		}
+	}
+
+	// stub address must be empty in bank keeper
+	stubCoins := app.BankKeeper.GetAllBalances(ctx, types.StubCoinAddress)
+	require.Equal(t, 0, len(stubCoins), "coins on stub address")
+	// otherAddress must be full
+	otherCoins := app.BankKeeper.GetAllBalances(ctx, sdk.AccAddress("someotheraddressfortest"))
+	require.Equal(t, 2, len(otherCoins))
 }

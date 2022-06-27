@@ -500,13 +500,23 @@ func (k Keeper) ReturnLegacyBalance(goCtx context.Context, msg *types.MsgReturnL
 		coinsToSend = coinsToSend.Add(coin)
 	}
 
-	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, receiver, coinsToSend)
+	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.LegacyCoinPool, receiver, coinsToSend)
 	if err != nil {
 		return nil, types.ErrInternal(err.Error())
 	}
 
 	// all complete, delete balbance
 	k.DeleteLegacyBalance(ctx, oldAddress)
+
+	// Emit transaction events
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		sdk.EventTypeMessage,
+		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+		sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
+		sdk.NewAttribute(types.AttributeReceiver, msg.Receiver),
+		sdk.NewAttribute(types.AttributeOldAddress, oldAddress),
+		sdk.NewAttribute(types.AttributeCointToReturn, coinsToSend.String()),
+	))
 
 	return &types.MsgReturnLegacyBalanceResponse{}, nil
 }

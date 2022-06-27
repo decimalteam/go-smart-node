@@ -41,6 +41,10 @@ const (
 	AttributeNonce    = "nonce"
 	AttributeDueBlock = "due_block"
 
+	// Legacy return
+	AttributeOldAddress    = "old_address"
+	AttributeCointToReturn = "coins_to_return"
+
 	// Event attributes
 	AttributeValueCategory = ModuleName
 )

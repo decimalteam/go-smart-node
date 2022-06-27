@@ -15,3 +15,6 @@ var MinCoinReserve = helpers.EtherToWei(sdk.NewInt(1000))
 
 // []byte{'c', 'o', 'i', 'n'} is encoded as 'ds1vdhkjmsygul4t' or 'dc1vdhkjms35u4c0'...
 var StubCoinAddress = sdk.AccAddress([]byte{'c', 'o', 'i', 'n'})
+
+// pool for legacy balances
+var LegacyCoinPool = "legacy_coin_pool"
