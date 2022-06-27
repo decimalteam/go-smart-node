@@ -111,7 +111,7 @@ func (k *Keeper) SetCoin(ctx sdk.Context, coin types.Coin) {
 
 // Edit updates current coin reserve and volume and writes coin to KVStore.
 func (k *Keeper) EditCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, volume sdk.Int) {
-	if !k.IsCoinBase(coin.Symbol) {
+	if !k.IsCoinBase(ctx, coin.Symbol) {
 		k.SetCachedCoin(coin.Symbol)
 	}
 
@@ -145,7 +145,7 @@ func (k *Keeper) IsCheckRedeemed(ctx sdk.Context, check *types.Check) bool {
 	return k.cdc.UnmarshalLengthPrefixed(value, &c) == nil
 }
 
-func (k *Keeper) GetCheck(ctx sdk.Context, checkHash []byte) (check *types.Check, err error) {
+func (k *Keeper) GetCheck(ctx sdk.Context, checkHash []byte) (check types.Check, err error) {
 	store := ctx.KVStore(k.storeKey)
 	key := append(types.KeyPrefixCheck, checkHash...)
 	value := store.Get(key)
@@ -153,7 +153,7 @@ func (k *Keeper) GetCheck(ctx sdk.Context, checkHash []byte) (check *types.Check
 		err = fmt.Errorf("check with hash %X is not found in the key-value store", checkHash)
 		return
 	}
-	err = k.cdc.UnmarshalLengthPrefixed(value, check)
+	err = k.cdc.UnmarshalLengthPrefixed(value, &check)
 	return
 }
 
@@ -201,9 +201,6 @@ func (k *Keeper) GetParams(ctx sdk.Context) (params types.Params) {
 
 // SetParams sets the module parameters to the param space.
 func (k *Keeper) SetParams(ctx sdk.Context, params types.Params) {
-	// Effective optimizations to reduce retrieving param values
-	k.baseDenom = params.BaseSymbol
-
 	k.ps.SetParamSet(ctx, &params)
 }
 
@@ -211,16 +208,17 @@ func (k *Keeper) SetParams(ctx sdk.Context, params types.Params) {
 // Helpers
 ////////////////////////////////////////////////////////////////
 
-func (k *Keeper) GetBaseDenom() string {
-	return k.baseDenom
+func (k *Keeper) GetBaseDenom(ctx sdk.Context) (symbol string) {
+	k.ps.Get(ctx, types.ParamStoreKeyBaseSymbol, &symbol)
+	return symbol
 }
 
-func (k *Keeper) IsCoinBase(symbol string) bool {
-	return k.GetBaseDenom() == symbol
+func (k *Keeper) IsCoinBase(ctx sdk.Context, symbol string) bool {
+	return k.GetBaseDenom(ctx) == symbol
 }
 
 func (k *Keeper) GetCommission(ctx sdk.Context, feeAmountBase sdk.Int) (sdk.Int, string, error) {
-	baseCoinDenom := k.GetBaseDenom()
+	baseCoinDenom := k.GetBaseDenom(ctx)
 
 	var feeDenom string
 	fee, ok := ctx.Value("fee").(sdk.Coins)

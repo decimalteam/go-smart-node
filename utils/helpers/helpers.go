@@ -19,16 +19,24 @@ var (
 	sdkE18 = sdk.NewIntFromBigInt(bigE18)
 )
 
-func BipToPip(bip sdk.Int) sdk.Int {
-	return bip.Mul(sdkE18)
+// EtherToWei convert number 1 to 1 * 10^18
+func EtherToWei(ether sdk.Int) sdk.Int {
+	return ether.Mul(sdkE18)
 }
 
-func UnitToPip(unit sdk.Int) sdk.Int {
-	return unit.Mul(sdkE15)
+// FinneyToWei convert number 1 to 1 * 10^15
+func FinneyToWei(finney sdk.Int) sdk.Int {
+	return finney.Mul(sdkE15)
 }
 
-func PipToUnit(pip sdk.Int) sdk.Int {
-	return pip.Quo(sdkE15)
+// WeiToFinney convert 1 * 10^15 to 1
+func WeiToFinney(wei sdk.Int) sdk.Int {
+	return wei.Quo(sdkE15)
+}
+
+// WeiToEther convert 1 * 10^18 to 1
+func WeiToEther(wei sdk.Int) sdk.Int {
+	return wei.Quo(sdkE18)
 }
 
 // JoinAccAddresses returns string containing all provided address joined with ",".

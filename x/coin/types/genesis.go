@@ -7,10 +7,11 @@ import (
 )
 
 // NewGenesisState creates a new genesis state.
-func NewGenesisState(params Params, coins []Coin, legacyBalances []LegacyBalance) GenesisState {
+func NewGenesisState(params Params, coins []Coin, checks []Check, legacyBalances []LegacyBalance) GenesisState {
 	return GenesisState{
 		Params:         params,
 		Coins:          coins,
+		Checks:         checks,
 		LegacyBalances: legacyBalances,
 	}
 }
@@ -21,6 +22,7 @@ func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
 		Params:         DefaultParams(),
 		Coins:          []Coin{},
+		Checks:         []Check{},
 		LegacyBalances: []LegacyBalance{},
 	}
 }

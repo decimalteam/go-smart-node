@@ -1,6 +1,7 @@
 package coin
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/client/rest"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -78,7 +79,7 @@ func (b AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEnc
 
 // RegisterRESTRoutes registers the module's REST service handlers.
 func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {
-	//
+	rest.RegisterHandlers(clientCtx, rtr)
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
@@ -132,7 +133,7 @@ func (AppModule) Name() string {
 }
 
 func (am AppModule) NewHandler() sdk.Handler {
-	return NewHandler(am.keeper)
+	return NewHandler(&am.keeper)
 }
 
 // Route returns the module's message routing key.
@@ -147,7 +148,7 @@ func (am AppModule) QuerierRoute() string {
 
 // LegacyQuerierHandler returns the module's Querier.
 func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
-	return nil
+	return keeper.NewQuerier(am.keeper, amino)
 }
 
 // RegisterServices registers a GRPC query service to respond to the module-specific GRPC queries.

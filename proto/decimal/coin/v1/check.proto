@@ -33,8 +33,7 @@ message Check {
     (gogoproto.jsontag) = "due_block",
     (gogoproto.moretags) = "yaml:\"due_block\""
   ];
-  string lock = 6 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+  bytes lock = 6 [
     (gogoproto.jsontag) = "lock",
     (gogoproto.moretags) = "yaml:\"lock\""
   ];

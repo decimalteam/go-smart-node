@@ -25,10 +25,11 @@ func ParamKeyTable() paramtypes.KeyTable {
 
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
+	volume, _ := sdk.NewIntFromString("340000000000000000000000000")
 	return Params{
 		BaseTitle:         "Decimal coin",
 		BaseSymbol:        "del",
-		BaseInitialVolume: sdk.NewInt(1),
+		BaseInitialVolume: volume,
 	}
 }
 
