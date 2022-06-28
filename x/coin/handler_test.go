@@ -15,6 +15,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"github.com/cosmos/btcutil/base58"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	cosmosAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	cosmosBankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	ethereumCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
@@ -405,14 +406,15 @@ func TestLegacyReturn(t *testing.T) {
 			sdk.NewInt(20),
 		},
 	}
-	stub, err := sdk.Bech32ifyAddressBytes(config.Bech32Prefix, types.StubCoinAddress)
-	require.NoError(t, err, "StubCoinAddress to bech32")
+
+	legacyCoinPoolAddress, err := sdk.Bech32ifyAddressBytes(config.Bech32Prefix, cosmosAuthTypes.NewModuleAddress(types.LegacyCoinPool))
+	require.NoError(t, err, "legacyCoinPoolAddress to bech32")
 
 	bankGenesisState := &cosmosBankTypes.GenesisState{
 		Params: cosmosBankTypes.DefaultParams(),
 		Balances: []cosmosBankTypes.Balance{
 			{
-				Address: stub,
+				Address: legacyCoinPoolAddress,
 				Coins: sdk.Coins{
 					{
 						Denom:  params.BaseSymbol,
@@ -495,6 +497,9 @@ func TestLegacyReturn(t *testing.T) {
 		// there must be nothing left in legacy
 		lb, err := app.CoinKeeper.GetLegacyBalance(ctx, la.oldAddress)
 		require.Error(t, err, "something leave for '%s': %+v", la.newAddress, lb)
+		// try to return again, must get error
+		_, err = msgHandler(ctx, msg)
+		require.Error(t, err, "expect error on return again for '%s'", la.newAddress)
 		// check balances in bank
 		receiver, err := sdk.AccAddressFromBech32(la.newAddress)
 		require.NoError(t, err, "receiver address '%s'", la.newAddress)
@@ -512,6 +517,8 @@ func TestLegacyReturn(t *testing.T) {
 			}
 		}
 	}
+
+	//
 }
 
 ///////////////////

@@ -40,8 +40,6 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, gs types.GenesisState) {
 		k.SetLegacyBalance(ctx, balance)
 		// TODO: Is that enough?
 	}
-	// transfer legacy balances from stub account to module account
-	k.GenesisLegacyTransfer(ctx)
 }
 
 // ExportGenesis returns the module's exported genesis.

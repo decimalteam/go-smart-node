@@ -8,6 +8,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/testcoin"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	cosmosAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	cosmosBankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/require"
 
@@ -169,8 +170,8 @@ func TestInitGenesisForLegacy(t *testing.T) {
 		},
 	}
 
-	stub, err := sdk.Bech32ifyAddressBytes(config.Bech32Prefix, types.StubCoinAddress)
-	require.NoError(t, err, "StubCoinAddress to bech32")
+	legacyCoinPoolAddress, err := sdk.Bech32ifyAddressBytes(config.Bech32Prefix, cosmosAuthTypes.NewModuleAddress(types.LegacyCoinPool))
+	require.NoError(t, err, "legacyCoinPoolAddress to bech32")
 
 	otherAddress, err := sdk.Bech32ifyAddressBytes(config.Bech32Prefix, sdk.AccAddress("someotheraddressfortest"))
 	require.NoError(t, err, "other address to bech32")
@@ -179,7 +180,7 @@ func TestInitGenesisForLegacy(t *testing.T) {
 		Params: cosmosBankTypes.DefaultParams(),
 		Balances: []cosmosBankTypes.Balance{
 			{
-				Address: stub,
+				Address: legacyCoinPoolAddress,
 				Coins: sdk.Coins{
 					{
 						Denom:  params.BaseSymbol,
@@ -244,9 +245,6 @@ func TestInitGenesisForLegacy(t *testing.T) {
 		}
 	}
 
-	// stub address must be empty in bank keeper
-	stubCoins := app.BankKeeper.GetAllBalances(ctx, types.StubCoinAddress)
-	require.Equal(t, 0, len(stubCoins), "coins on stub address")
 	// otherAddress must be full
 	otherCoins := app.BankKeeper.GetAllBalances(ctx, sdk.AccAddress("someotheraddressfortest"))
 	require.Equal(t, 2, len(otherCoins))
