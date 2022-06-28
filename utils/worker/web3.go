@@ -23,10 +23,10 @@ func (w *Worker) fetchBlockTxReceiptsWeb3(block *web3types.Block, ch chan web3ty
 	results := make(web3types.Receipts, len(block.Transactions()))
 	wg := &sync.WaitGroup{}
 	wg.Add(len(block.Transactions()))
-	for i, tx := range block.Transactions() {
+	for i := range block.Transactions() {
 		go func(i int) {
 			defer wg.Done()
-			result, err := w.web3Client.TransactionReceipt(w.ctx, tx.Hash())
+			result, err := w.web3Client.TransactionReceipt(w.ctx, block.Transactions()[i].Hash())
 			w.panicError(err)
 			results[i] = result
 		}(i)

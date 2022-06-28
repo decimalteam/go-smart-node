@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"net/http"
 	"os"
 	"sync"
 	"time"
 
+	web3hexutil "github.com/ethereum/go-ethereum/common/hexutil"
 	web3types "github.com/ethereum/go-ethereum/core/types"
 	web3 "github.com/ethereum/go-ethereum/ethclient"
 
@@ -22,15 +24,16 @@ import (
 )
 
 type Worker struct {
-	ctx        context.Context
-	httpClient *http.Client
-	cdc        params.EncodingConfig
-	logger     log.Logger
-	config     *Config
-	hostname   string
-	rpcClient  *rpc.HTTP
-	web3Client *web3.Client
-	query      chan *ParseTask
+	ctx         context.Context
+	httpClient  *http.Client
+	cdc         params.EncodingConfig
+	logger      log.Logger
+	config      *Config
+	hostname    string
+	rpcClient   *rpc.HTTP
+	web3Client  *web3.Client
+	web3ChainId *big.Int
+	query       chan *ParseTask
 }
 
 type Config struct {
@@ -54,16 +57,21 @@ func NewWorker(cdc params.EncodingConfig, logger log.Logger, config *Config) (*W
 	if err != nil {
 		return nil, err
 	}
+	web3ChainId, err := web3Client.ChainID(context.Background())
+	if err != nil {
+		return nil, err
+	}
 	worker := &Worker{
-		ctx:        context.Background(),
-		httpClient: httpClient,
-		cdc:        cdc,
-		logger:     logger,
-		config:     config,
-		hostname:   hostname,
-		rpcClient:  rpcClient,
-		web3Client: web3Client,
-		query:      make(chan *ParseTask, 1000),
+		ctx:         context.Background(),
+		httpClient:  httpClient,
+		cdc:         cdc,
+		logger:      logger,
+		config:      config,
+		hostname:    hostname,
+		rpcClient:   rpcClient,
+		web3Client:  web3Client,
+		web3ChainId: web3ChainId,
+		query:       make(chan *ParseTask, 1000),
 	}
 	return worker, nil
 }
@@ -115,6 +123,29 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 	web3Block := <-web3BlockChan
 	go w.fetchBlockTxReceiptsWeb3(web3Block, web3ReceiptsChan)
 	web3Body := web3Block.Body()
+	web3Transactions := make([]*TransactionEVM, len(web3Body.Transactions))
+	for i, tx := range web3Body.Transactions {
+		msg, err := tx.AsMessage(web3types.NewLondonSigner(w.web3ChainId), nil)
+		w.panicError(err)
+		web3Transactions[i] = &TransactionEVM{
+			Type:             web3hexutil.Uint64(tx.Type()),
+			Hash:             tx.Hash(),
+			Nonce:            web3hexutil.Uint64(tx.Nonce()),
+			BlockHash:        web3Block.Hash(),
+			BlockNumber:      web3hexutil.Uint64(web3Block.NumberU64()),
+			TransactionIndex: web3hexutil.Uint64(uint64(i)),
+			From:             msg.From(),
+			To:               msg.To(),
+			Value:            (*web3hexutil.Big)(msg.Value()),
+			Data:             web3hexutil.Bytes(msg.Data()),
+			Gas:              web3hexutil.Uint64(msg.Gas()),
+			GasPrice:         (*web3hexutil.Big)(msg.GasPrice()),
+			ChainId:          (*web3hexutil.Big)(tx.ChainId()),
+			AccessList:       msg.AccessList(),
+			GasTipCap:        (*web3hexutil.Big)(msg.GasTipCap()),
+			GasFeeCap:        (*web3hexutil.Big)(msg.GasFeeCap()),
+		}
+	}
 	web3Receipts := <-web3ReceiptsChan
 
 	w.logger.Info(
@@ -168,21 +199,24 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 	}
 
 	// Create and fill Block object and then marshal to JSON
-	var b Block
-	b.Evidence = block.Block.Evidence
-	b.Header = block.Block.Header
-	b.LastCommit = block.Block.LastCommit
-	b.Data = BlockData{Txs: txs}
-	b.Emission = emission
-	b.Rewards = rewards
-	b.CommissionRewards = commissionRewards
-	b.EndBlockEvents = w.parseEvents(results.EndBlockEvents)
-	b.BeginBlockEvents = w.parseEvents(results.BeginBlockEvents)
-	b.Size = size
-	b.EVM.Transactions = web3Body.Transactions
-	b.EVM.Uncles = web3Body.Uncles
-	b.EVM.Header = web3Block.Header()
-	b.EVM.Receipts = web3Receipts
+	b := Block{
+		Evidence:          block.Block.Evidence,
+		Header:            block.Block.Header,
+		LastCommit:        block.Block.LastCommit,
+		Data:              BlockData{Txs: txs},
+		Emission:          emission,
+		Rewards:           rewards,
+		CommissionRewards: commissionRewards,
+		EndBlockEvents:    w.parseEvents(results.EndBlockEvents),
+		BeginBlockEvents:  w.parseEvents(results.BeginBlockEvents),
+		Size:              size,
+		EVM: BlockEVM{
+			Header:       web3Block.Header(),
+			Transactions: web3Transactions,
+			Uncles:       web3Body.Uncles,
+			Receipts:     web3Receipts,
+		},
+	}
 	data, err := json.Marshal(b)
 	w.panicError(err)
 

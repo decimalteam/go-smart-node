@@ -12,8 +12,9 @@ import (
 )
 
 func (w *Worker) getWork() {
+	// Uncomment for test purposes
 	// w.query <- &ParseTask{
-	// 	height: 116888, // 116663,
+	// 	height: 319229,
 	// 	txNum:  -1,
 	// }
 	// return
