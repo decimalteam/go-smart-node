@@ -30,7 +30,7 @@
 
 Часть модуля coin, в генезисе ключ legacy_balances.
 
-Требует: в генезис модуля bank должен быть включен адрес ... - это адрес аккаунта legacy_coin_pool, на котором будет суммированный баланс наследства. После выполнении генезиса этот баланс будет управляться модулем coin, с которого потом будет каждому выдаваться при запросе.
+Требует: в генезис модуля bank должен быть включен адрес dx1dw0e0mqxja0q88vm5q9tcxc89hj3vtjltkkw4n - это адрес аккаунта legacy_coin_pool, на котором будет суммированный баланс наследства. После выполнении генезиса этот баланс будет управляться модулем coin, который будет каждому выдавать при запросе.
 
 Программа для получения адресов:
 
@@ -46,7 +46,7 @@ import (
 
 func main() {
 	moduleAddress := cosmosAuthTypes.NewModuleAddress("legacy_coin_pool")
-	address, err := bech32.ConvertAndEncode("ds", moduleAddress)
+	address, err := bech32.ConvertAndEncode("dx", moduleAddress)
 	if err != nil {
 		fmt.Println(err)
 	}
