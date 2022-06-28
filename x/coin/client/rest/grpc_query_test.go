@@ -1,4 +1,7 @@
-package tests
+//go:build norace
+// +build norace
+
+package rest_test
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/testcoin"
