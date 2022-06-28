@@ -543,7 +543,7 @@ func (msg MsgReturnLegacyBalance) ValidateBasic() error {
 		return ErrNoMatchReceiverAndPKey(msg.Receiver, address)
 	}
 	// Validate old address
-	_, err = commonTypes.GetOldAddressFromPubKey(msg.PublicKeyBytes)
+	_, err = commonTypes.GetLegacyAddressFromPubKey(msg.PublicKeyBytes)
 	if err != nil {
 		return ErrCannnotGetAddressFromPublicKey(err.Error())
 	}

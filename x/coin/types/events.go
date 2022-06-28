@@ -42,7 +42,7 @@ const (
 	AttributeDueBlock = "due_block"
 
 	// Legacy return
-	AttributeOldAddress    = "old_address"
+	AttributeLegacyAddress = "legacy_address"
 	AttributeCointToReturn = "coins_to_return"
 
 	// Event attributes

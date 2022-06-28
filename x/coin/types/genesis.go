@@ -71,17 +71,17 @@ func (gs *GenesisState) Validate() error {
 	// and validate balances
 	seenLegacy := make(map[string]bool)
 	for _, lb := range gs.LegacyBalances {
-		if seenLegacy[lb.OldAddress] {
-			return fmt.Errorf("legacy address duplicated on genesis: '%s'", lb.OldAddress)
+		if seenLegacy[lb.LegacyAddress] {
+			return fmt.Errorf("legacy address duplicated on genesis: '%s'", lb.LegacyAddress)
 		}
-		seenLegacy[lb.OldAddress] = true
+		seenLegacy[lb.LegacyAddress] = true
 		err := lb.Validate()
 		if err != nil {
 			return err
 		}
-		for _, entry := range lb.Entries {
-			if !seenSymbols[entry.CoinDenom] {
-				return fmt.Errorf("for address '%s' coin '%s' does not exists", lb.OldAddress, entry.CoinDenom)
+		for _, coin := range lb.Coins {
+			if !seenSymbols[coin.Denom] {
+				return fmt.Errorf("for address '%s' coin '%s' does not exists", lb.LegacyAddress, coin.Denom)
 			}
 		}
 	}

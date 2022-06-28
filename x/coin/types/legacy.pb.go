@@ -6,6 +6,7 @@ package types
 import (
 	fmt "fmt"
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
+	types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
@@ -24,54 +25,16 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type LegacyBalanceEntry struct {
-	CoinDenom string                                 `protobuf:"bytes,1,opt,name=coinDenom,proto3" json:"coin_denom" yaml:"coin_denom"`
-	Balance   github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=balance,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"balance" yaml:"balance"`
-}
-
-func (m *LegacyBalanceEntry) Reset()         { *m = LegacyBalanceEntry{} }
-func (m *LegacyBalanceEntry) String() string { return proto.CompactTextString(m) }
-func (*LegacyBalanceEntry) ProtoMessage()    {}
-func (*LegacyBalanceEntry) Descriptor() ([]byte, []int) {
-	return fileDescriptor_87a9255e1b6c7b3d, []int{0}
-}
-func (m *LegacyBalanceEntry) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *LegacyBalanceEntry) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_LegacyBalanceEntry.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *LegacyBalanceEntry) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_LegacyBalanceEntry.Merge(m, src)
-}
-func (m *LegacyBalanceEntry) XXX_Size() int {
-	return m.Size()
-}
-func (m *LegacyBalanceEntry) XXX_DiscardUnknown() {
-	xxx_messageInfo_LegacyBalanceEntry.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_LegacyBalanceEntry proto.InternalMessageInfo
-
 type LegacyBalance struct {
-	OldAddress string               `protobuf:"bytes,1,opt,name=oldAddress,proto3" json:"oldAddress" yaml:"oldAddress"`
-	Entries    []LegacyBalanceEntry `protobuf:"bytes,2,rep,name=entries,proto3" json:"entries" yaml:"entries"`
+	LegacyAddress string                                   `protobuf:"bytes,1,opt,name=legacyAddress,proto3" json:"legacy_address" yaml:"legacy_address"`
+	Coins         github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,2,rep,name=coins,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"coins" yaml:"coins"`
 }
 
 func (m *LegacyBalance) Reset()         { *m = LegacyBalance{} }
 func (m *LegacyBalance) String() string { return proto.CompactTextString(m) }
 func (*LegacyBalance) ProtoMessage()    {}
 func (*LegacyBalance) Descriptor() ([]byte, []int) {
-	return fileDescriptor_87a9255e1b6c7b3d, []int{1}
+	return fileDescriptor_87a9255e1b6c7b3d, []int{0}
 }
 func (m *LegacyBalance) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -101,67 +64,36 @@ func (m *LegacyBalance) XXX_DiscardUnknown() {
 var xxx_messageInfo_LegacyBalance proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*LegacyBalanceEntry)(nil), "decimal.coin.v1.LegacyBalanceEntry")
 	proto.RegisterType((*LegacyBalance)(nil), "decimal.coin.v1.LegacyBalance")
 }
 
 func init() { proto.RegisterFile("decimal/coin/v1/legacy.proto", fileDescriptor_87a9255e1b6c7b3d) }
 
 var fileDescriptor_87a9255e1b6c7b3d = []byte{
-	// 378 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x92, 0xbf, 0x4e, 0xeb, 0x30,
-	0x14, 0xc6, 0xe3, 0x5e, 0xe9, 0x56, 0xf5, 0xbd, 0x80, 0x88, 0x18, 0x2a, 0x84, 0xe2, 0x92, 0x4a,
-	0xa8, 0x4b, 0x6d, 0x15, 0x98, 0xba, 0x35, 0xc0, 0x80, 0x40, 0x0c, 0x19, 0x59, 0x20, 0x7f, 0xac,
-	0x10, 0x35, 0x89, 0xab, 0xd8, 0xad, 0xc8, 0x1b, 0x30, 0x32, 0x32, 0xf6, 0x61, 0x18, 0x3a, 0x30,
-	0x74, 0x44, 0x0c, 0x11, 0x6a, 0x17, 0xd4, 0xb1, 0x4f, 0x80, 0x9c, 0xa4, 0x4a, 0x0b, 0x93, 0xad,
-	0xef, 0x3b, 0xdf, 0xb1, 0x7f, 0xc7, 0x86, 0x07, 0x2e, 0x75, 0xfc, 0xd0, 0x0a, 0x88, 0xc3, 0xfc,
-	0x88, 0x8c, 0x3a, 0x24, 0xa0, 0x9e, 0xe5, 0x24, 0x78, 0x10, 0x33, 0xc1, 0xd4, 0x9d, 0xc2, 0xc5,
-	0xd2, 0xc5, 0xa3, 0xce, 0xfe, 0x9e, 0xc7, 0x3c, 0x96, 0x79, 0x44, 0xee, 0xf2, 0x32, 0xfd, 0x0d,
-	0x40, 0xf5, 0x3a, 0xcb, 0x19, 0x56, 0x60, 0x45, 0x0e, 0xbd, 0x88, 0x44, 0x9c, 0xa8, 0x3d, 0x58,
-	0x93, 0xb9, 0x73, 0x1a, 0xb1, 0xb0, 0x0e, 0x1a, 0xa0, 0x55, 0x33, 0x9a, 0x8b, 0x14, 0x41, 0x29,
-	0xde, 0xb9, 0x52, 0x5d, 0xa6, 0x68, 0x37, 0xb1, 0xc2, 0xa0, 0xab, 0x97, 0x9a, 0x6e, 0x96, 0x29,
-	0x95, 0xc2, 0xaa, 0x9d, 0xb7, 0xac, 0x57, 0xb2, 0x06, 0x57, 0x93, 0x14, 0x29, 0x1f, 0x29, 0x3a,
-	0xf2, 0x7c, 0xf1, 0x30, 0xb4, 0xb1, 0xc3, 0x42, 0xe2, 0x30, 0x1e, 0x32, 0x5e, 0x2c, 0x6d, 0xee,
-	0xf6, 0x89, 0x48, 0x06, 0x94, 0xe3, 0xcb, 0x48, 0x2c, 0x52, 0xb4, 0x6a, 0xb0, 0x4c, 0xd1, 0x76,
-	0x7e, 0x56, 0x21, 0xe8, 0xe6, 0xca, 0xea, 0xfe, 0x7f, 0x1a, 0x23, 0xe5, 0x65, 0x8c, 0xc0, 0xd7,
-	0x18, 0x01, 0xfd, 0x15, 0xc0, 0xad, 0x0d, 0x1c, 0xf5, 0x0c, 0x42, 0x16, 0xb8, 0x3d, 0xd7, 0x8d,
-	0x29, 0xe7, 0xeb, 0x28, 0xa5, 0x5a, 0xa2, 0x94, 0x9a, 0x6e, 0xae, 0x15, 0xa8, 0xf7, 0xb0, 0x4a,
-	0x23, 0x11, 0xfb, 0x94, 0xd7, 0x2b, 0x8d, 0x3f, 0xad, 0x7f, 0xc7, 0x4d, 0xfc, 0x63, 0xbc, 0xf8,
-	0xf7, 0x10, 0x8d, 0x43, 0x09, 0x2c, 0x31, 0x8a, 0x6c, 0x89, 0x51, 0x08, 0xba, 0xb9, 0xb2, 0x36,
-	0x31, 0x8c, 0x9b, 0xc9, 0x4c, 0x03, 0xd3, 0x99, 0x06, 0x3e, 0x67, 0x1a, 0x78, 0x9e, 0x6b, 0xca,
-	0x74, 0xae, 0x29, 0xef, 0x73, 0x4d, 0xb9, 0x3d, 0xb5, 0x7d, 0x61, 0x0f, 0x9d, 0x3e, 0x15, 0x98,
-	0xc5, 0x1e, 0x29, 0x6e, 0x21, 0xa8, 0x15, 0x12, 0x8f, 0xb5, 0x79, 0x68, 0xc5, 0xa2, 0x1d, 0x31,
-	0x97, 0x92, 0xc7, 0xfc, 0x5b, 0x64, 0xe3, 0xb4, 0xff, 0x66, 0x8f, 0x7d, 0xf2, 0x1d, 0x00, 0x00,
-	0xff, 0xff, 0xf1, 0xac, 0xfc, 0xc6, 0x33, 0x02, 0x00, 0x00,
+	// 336 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x54, 0x91, 0x3f, 0x4b, 0x3b, 0x31,
+	0x18, 0xc7, 0x2f, 0xbf, 0x1f, 0x0a, 0x9e, 0xad, 0x42, 0x51, 0xa8, 0x45, 0x92, 0x72, 0x53, 0x41,
+	0x9a, 0x70, 0xea, 0xd4, 0xcd, 0x73, 0x12, 0x44, 0xb0, 0xa3, 0x8b, 0xe4, 0x72, 0xe1, 0x3c, 0x7a,
+	0xb9, 0x94, 0x4b, 0x5a, 0xac, 0xaf, 0xc0, 0xd1, 0xd1, 0xb1, 0xb3, 0xaf, 0xa4, 0x63, 0x47, 0xa7,
+	0x53, 0x7a, 0x8b, 0x14, 0xa7, 0xbe, 0x02, 0xb9, 0xe4, 0x96, 0x4e, 0xf9, 0xf3, 0x79, 0xf8, 0x7c,
+	0x9f, 0x3c, 0x71, 0x4f, 0x23, 0xce, 0x12, 0x41, 0x53, 0xc2, 0x64, 0x92, 0x91, 0xa9, 0x4f, 0x52,
+	0x1e, 0x53, 0x36, 0xc3, 0xe3, 0x5c, 0x6a, 0xd9, 0x3a, 0xac, 0x29, 0xae, 0x28, 0x9e, 0xfa, 0x9d,
+	0xa3, 0x58, 0xc6, 0xd2, 0x30, 0x52, 0xed, 0x6c, 0x59, 0x07, 0x32, 0xa9, 0x84, 0x54, 0x24, 0xa4,
+	0x8a, 0x93, 0xa9, 0x1f, 0x72, 0x4d, 0x7d, 0x23, 0xb4, 0xdc, 0xfb, 0x05, 0x6e, 0xf3, 0xd6, 0x78,
+	0x03, 0x9a, 0xd2, 0x8c, 0xf1, 0xd6, 0xbd, 0xdb, 0xb4, 0x41, 0x57, 0x51, 0x94, 0x73, 0xa5, 0xda,
+	0xa0, 0x0b, 0x7a, 0x7b, 0xc1, 0xd9, 0xba, 0x40, 0x07, 0x16, 0x3c, 0x52, 0x4b, 0x36, 0x05, 0x3a,
+	0x9e, 0x51, 0x91, 0x0e, 0xbc, 0xed, 0x7b, 0x6f, 0xb8, 0x6d, 0x68, 0xbd, 0xb8, 0x3b, 0x55, 0xa4,
+	0x6a, 0xff, 0xeb, 0xfe, 0xef, 0xed, 0x9f, 0x9f, 0x60, 0xdb, 0x14, 0xae, 0x9a, 0xc2, 0x75, 0x53,
+	0xf8, 0x5a, 0x26, 0x59, 0x70, 0xb3, 0x28, 0x90, 0xb3, 0x2e, 0x90, 0xad, 0xdf, 0x14, 0xa8, 0x61,
+	0x03, 0xcc, 0xd1, 0xfb, 0xf8, 0x42, 0xbd, 0x38, 0xd1, 0x4f, 0x93, 0x10, 0x33, 0x29, 0x48, 0xfd,
+	0x34, 0xbb, 0xf4, 0x55, 0x34, 0x22, 0x7a, 0x36, 0xe6, 0xca, 0x98, 0xd4, 0xd0, 0x2a, 0x06, 0x8d,
+	0xd7, 0x39, 0x72, 0xde, 0xe7, 0x08, 0xfc, 0xcc, 0x11, 0x08, 0xee, 0x16, 0x2b, 0x08, 0x96, 0x2b,
+	0x08, 0xbe, 0x57, 0x10, 0xbc, 0x95, 0xd0, 0x59, 0x96, 0xd0, 0xf9, 0x2c, 0xa1, 0xf3, 0x70, 0x19,
+	0x26, 0x3a, 0x9c, 0xb0, 0x11, 0xd7, 0x58, 0xe6, 0x31, 0xa9, 0xa7, 0xab, 0x39, 0x15, 0x24, 0x96,
+	0x7d, 0x25, 0x68, 0xae, 0xfb, 0x99, 0x8c, 0x38, 0x79, 0xb6, 0xff, 0x61, 0xa2, 0xc2, 0x5d, 0x33,
+	0xc5, 0x8b, 0xbf, 0x00, 0x00, 0x00, 0xff, 0xff, 0xd5, 0xad, 0xae, 0xf3, 0xac, 0x01, 0x00, 0x00,
 }
 
-func (this *LegacyBalanceEntry) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*LegacyBalanceEntry)
-	if !ok {
-		that2, ok := that.(LegacyBalanceEntry)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.CoinDenom != that1.CoinDenom {
-		return false
-	}
-	if !this.Balance.Equal(that1.Balance) {
-		return false
-	}
-	return true
-}
 func (this *LegacyBalance) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
@@ -181,59 +113,19 @@ func (this *LegacyBalance) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if this.OldAddress != that1.OldAddress {
+	if this.LegacyAddress != that1.LegacyAddress {
 		return false
 	}
-	if len(this.Entries) != len(that1.Entries) {
+	if len(this.Coins) != len(that1.Coins) {
 		return false
 	}
-	for i := range this.Entries {
-		if !this.Entries[i].Equal(&that1.Entries[i]) {
+	for i := range this.Coins {
+		if !this.Coins[i].Equal(&that1.Coins[i]) {
 			return false
 		}
 	}
 	return true
 }
-func (m *LegacyBalanceEntry) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *LegacyBalanceEntry) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *LegacyBalanceEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	{
-		size := m.Balance.Size()
-		i -= size
-		if _, err := m.Balance.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintLegacy(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x12
-	if len(m.CoinDenom) > 0 {
-		i -= len(m.CoinDenom)
-		copy(dAtA[i:], m.CoinDenom)
-		i = encodeVarintLegacy(dAtA, i, uint64(len(m.CoinDenom)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
 func (m *LegacyBalance) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -254,10 +146,10 @@ func (m *LegacyBalance) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.Entries) > 0 {
-		for iNdEx := len(m.Entries) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.Coins) > 0 {
+		for iNdEx := len(m.Coins) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.Entries[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.Coins[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -268,10 +160,10 @@ func (m *LegacyBalance) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0x12
 		}
 	}
-	if len(m.OldAddress) > 0 {
-		i -= len(m.OldAddress)
-		copy(dAtA[i:], m.OldAddress)
-		i = encodeVarintLegacy(dAtA, i, uint64(len(m.OldAddress)))
+	if len(m.LegacyAddress) > 0 {
+		i -= len(m.LegacyAddress)
+		copy(dAtA[i:], m.LegacyAddress)
+		i = encodeVarintLegacy(dAtA, i, uint64(len(m.LegacyAddress)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -289,33 +181,18 @@ func encodeVarintLegacy(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *LegacyBalanceEntry) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.CoinDenom)
-	if l > 0 {
-		n += 1 + l + sovLegacy(uint64(l))
-	}
-	l = m.Balance.Size()
-	n += 1 + l + sovLegacy(uint64(l))
-	return n
-}
-
 func (m *LegacyBalance) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.OldAddress)
+	l = len(m.LegacyAddress)
 	if l > 0 {
 		n += 1 + l + sovLegacy(uint64(l))
 	}
-	if len(m.Entries) > 0 {
-		for _, e := range m.Entries {
+	if len(m.Coins) > 0 {
+		for _, e := range m.Coins {
 			l = e.Size()
 			n += 1 + l + sovLegacy(uint64(l))
 		}
@@ -328,122 +205,6 @@ func sovLegacy(x uint64) (n int) {
 }
 func sozLegacy(x uint64) (n int) {
 	return sovLegacy(uint64((x << 1) ^ uint64((int64(x) >> 63))))
-}
-func (m *LegacyBalanceEntry) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowLegacy
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: LegacyBalanceEntry: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: LegacyBalanceEntry: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CoinDenom", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowLegacy
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthLegacy
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthLegacy
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.CoinDenom = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Balance", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowLegacy
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthLegacy
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthLegacy
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Balance.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipLegacy(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthLegacy
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
 }
 func (m *LegacyBalance) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
@@ -476,7 +237,7 @@ func (m *LegacyBalance) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OldAddress", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field LegacyAddress", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -504,11 +265,11 @@ func (m *LegacyBalance) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.OldAddress = string(dAtA[iNdEx:postIndex])
+			m.LegacyAddress = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Entries", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Coins", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -535,8 +296,8 @@ func (m *LegacyBalance) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Entries = append(m.Entries, LegacyBalanceEntry{})
-			if err := m.Entries[len(m.Entries)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.Coins = append(m.Coins, types.Coin{})
+			if err := m.Coins[len(m.Coins)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-	sdk_types "github.com/cosmos/cosmos-sdk/types"
+	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 )
 
 func TestGenesisState_Validate(t *testing.T) {
@@ -28,16 +28,16 @@ func TestGenesisState_Validate(t *testing.T) {
 					{
 						Title:   "somecoin",
 						Symbol:  "sco",
-						Reserve: sdk_types.NewIntFromUint64(100),
+						Reserve: sdkTypes.NewIntFromUint64(100),
 					},
 				},
 				LegacyBalances: []types.LegacyBalance{
 					{
-						OldAddress: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy",
-						Entries: []types.LegacyBalanceEntry{
+						LegacyAddress: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy",
+						Coins: sdkTypes.Coins{
 							{
-								CoinDenom: "sco",
-								Balance:   sdk_types.NewIntFromUint64(100),
+								Denom:  "sco",
+								Amount: sdkTypes.NewIntFromUint64(100),
 							},
 						},
 					},
@@ -53,16 +53,16 @@ func TestGenesisState_Validate(t *testing.T) {
 					{
 						Title:   "somecoin",
 						Symbol:  "sco",
-						Reserve: sdk_types.NewIntFromUint64(100),
+						Reserve: sdkTypes.NewIntFromUint64(100),
 					},
 				},
 				LegacyBalances: []types.LegacyBalance{
 					{
-						OldAddress: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy",
-						Entries: []types.LegacyBalanceEntry{
+						LegacyAddress: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy",
+						Coins: sdkTypes.Coins{
 							{
-								CoinDenom: "sca",
-								Balance:   sdk_types.NewIntFromUint64(100),
+								Denom:  "sca",
+								Amount: sdkTypes.NewIntFromUint64(100),
 							},
 						},
 					},
@@ -78,16 +78,16 @@ func TestGenesisState_Validate(t *testing.T) {
 					{
 						Title:   "somecoin",
 						Symbol:  "sco",
-						Reserve: sdk_types.NewIntFromUint64(100),
+						Reserve: sdkTypes.NewIntFromUint64(100),
 					},
 				},
 				LegacyBalances: []types.LegacyBalance{
 					{
-						OldAddress: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy",
-						Entries: []types.LegacyBalanceEntry{
+						LegacyAddress: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy",
+						Coins: sdkTypes.Coins{
 							{
-								CoinDenom: "sco",
-								Balance:   sdk_types.NewInt(-1),
+								Denom:  "sco",
+								Amount: sdkTypes.NewInt(-1),
 							},
 						},
 					},
@@ -103,16 +103,16 @@ func TestGenesisState_Validate(t *testing.T) {
 					{
 						Title:   "somecoin",
 						Symbol:  "sco",
-						Reserve: sdk_types.NewIntFromUint64(100),
+						Reserve: sdkTypes.NewIntFromUint64(100),
 					},
 				},
 				LegacyBalances: []types.LegacyBalance{
 					{
-						OldAddress: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depi",
-						Entries: []types.LegacyBalanceEntry{
+						LegacyAddress: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depi",
+						Coins: sdkTypes.Coins{
 							{
-								CoinDenom: "sco",
-								Balance:   sdk_types.NewInt(1),
+								Denom:  "sco",
+								Amount: sdkTypes.NewInt(1),
 							},
 						},
 					},

@@ -69,8 +69,8 @@ func GetDecimalAddressFromBech32(address string) (sdk.AccAddress, error) {
 	return sdk.AccAddress(addressBz), nil
 }
 
-// GetOldAddressFromPubKey returns wallets address in old blockchain for given public key bytes
-func GetOldAddressFromPubKey(pubKeyBytes []byte) (string, error) {
+// GetLegacyAddressFromPubKey returns wallets address in old blockchain for given public key bytes
+func GetLegacyAddressFromPubKey(pubKeyBytes []byte) (string, error) {
 	oldPubKey := secp256k1.PubKey{}
 	oldPubKey.Key = pubKeyBytes
 	return bech32.ConvertAndEncode("dx", oldPubKey.Address())

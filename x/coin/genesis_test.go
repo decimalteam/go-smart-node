@@ -146,7 +146,7 @@ func TestAppModuleBasic_ValidateGenesis(t *testing.T) {
 	}
 }
 
-func TestAppModuleBasic_InitGenesisForLegacy(t *testing.T) {
+func TestInitGenesisForLegacy(t *testing.T) {
 	app, ctx := bootstrapGenesisTest()
 
 	// write genesis
@@ -212,15 +212,15 @@ func TestAppModuleBasic_InitGenesisForLegacy(t *testing.T) {
 	const oldAddress = "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy"
 	coinGenesisState := types.NewGenesisState(params, coins, []types.Check{}, []types.LegacyBalance{
 		{
-			OldAddress: oldAddress,
-			Entries: []types.LegacyBalanceEntry{
+			LegacyAddress: oldAddress,
+			Coins: sdk.Coins{
 				{
-					CoinDenom: "foo",
-					Balance:   sdk.NewInt(100),
+					Denom:  "foo",
+					Amount: sdk.NewInt(100),
 				},
 				{
-					CoinDenom: "del",
-					Balance:   sdk.NewInt(150),
+					Denom:  "del",
+					Amount: sdk.NewInt(150),
 				},
 			},
 		},
@@ -233,14 +233,14 @@ func TestAppModuleBasic_InitGenesisForLegacy(t *testing.T) {
 	coinKeeper := app.CoinKeeper
 	balance, err := coinKeeper.GetLegacyBalance(ctx, oldAddress)
 	require.NoError(t, err, "GetLegacyBalance")
-	require.Equal(t, oldAddress, balance.OldAddress)
-	require.Equal(t, 2, len(balance.Entries))
-	for _, entry := range balance.Entries {
-		if entry.CoinDenom == "del" {
-			require.True(t, entry.Balance.Equal(sdk.NewInt(150)), "balance for del")
+	require.Equal(t, oldAddress, balance.LegacyAddress)
+	require.Equal(t, 2, len(balance.Coins))
+	for _, coin := range balance.Coins {
+		if coin.Denom == "del" {
+			require.True(t, coin.Amount.Equal(sdk.NewInt(150)), "balance for del")
 		}
-		if entry.CoinDenom == "foo" {
-			require.True(t, entry.Balance.Equal(sdk.NewInt(100)), "balance for foo")
+		if coin.Denom == "foo" {
+			require.True(t, coin.Amount.Equal(sdk.NewInt(100)), "balance for foo")
 		}
 	}
 

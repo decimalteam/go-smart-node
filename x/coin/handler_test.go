@@ -453,15 +453,15 @@ func TestLegacyReturn(t *testing.T) {
 	coinGenesisState := types.NewGenesisState(params, coins, []types.Check{}, []types.LegacyBalance{})
 	for _, la := range legacyAccounts {
 		coinGenesisState.LegacyBalances = append(coinGenesisState.LegacyBalances, types.LegacyBalance{
-			OldAddress: la.oldAddress,
-			Entries: []types.LegacyBalanceEntry{
+			LegacyAddress: la.oldAddress,
+			Coins: sdk.Coins{
 				{
-					CoinDenom: "del",
-					Balance:   la.delLegacyBalance,
+					Denom:  "del",
+					Amount: la.delLegacyBalance,
 				},
 				{
-					CoinDenom: "foo",
-					Balance:   la.fooLegacyBalance,
+					Denom:  "foo",
+					Amount: la.fooLegacyBalance,
 				},
 			},
 		})

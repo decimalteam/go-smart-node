@@ -276,31 +276,31 @@ func (k *Keeper) ClearCoinCache() {
 // Legacy balances
 ////////////////////////////////////////////////////////////////
 
-// GetLegacyBalance returns balance for old address if exists in KVStore.
-func (k *Keeper) GetLegacyBalance(ctx sdk.Context, oldAddress string) (balance types.LegacyBalance, err error) {
+// GetLegacyBalance returns balance for legacy address if exists in KVStore.
+func (k *Keeper) GetLegacyBalance(ctx sdk.Context, legacyAddress string) (balance types.LegacyBalance, err error) {
 	store := ctx.KVStore(k.storeKey)
-	key := append(types.KeyPrefixLegacy, []byte(oldAddress)...)
+	key := append(types.KeyPrefixLegacy, []byte(legacyAddress)...)
 	value := store.Get(key)
 	if len(value) == 0 {
-		err = fmt.Errorf("old address %s is not found in the key-value store", strings.ToLower(oldAddress))
+		err = fmt.Errorf("legacy address %s is not found in the key-value store", strings.ToLower(legacyAddress))
 		return
 	}
 	err = k.cdc.UnmarshalLengthPrefixed(value, &balance)
 	return
 }
 
-// SetLegacyBalance store legacy balance for old address. Must call only in genesis
+// SetLegacyBalance store legacy balance for legacy address. Must call only in genesis
 func (k *Keeper) SetLegacyBalance(ctx sdk.Context, balance types.LegacyBalance) {
 	store := ctx.KVStore(k.storeKey)
-	key := append(types.KeyPrefixLegacy, []byte(balance.OldAddress)...)
+	key := append(types.KeyPrefixLegacy, []byte(balance.LegacyAddress)...)
 	value := k.cdc.MustMarshalLengthPrefixed(&balance)
 	store.Set(key, value)
 }
 
 // DeleteLegacyBalance delete balance for old address. Must call in return transaction
-func (k *Keeper) DeleteLegacyBalance(ctx sdk.Context, oldAddress string) {
+func (k *Keeper) DeleteLegacyBalance(ctx sdk.Context, legacyAddress string) {
 	store := ctx.KVStore(k.storeKey)
-	key := append(types.KeyPrefixLegacy, []byte(oldAddress)...)
+	key := append(types.KeyPrefixLegacy, []byte(legacyAddress)...)
 	store.Delete(key)
 }
 

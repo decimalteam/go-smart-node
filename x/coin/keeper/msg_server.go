@@ -480,33 +480,31 @@ func (k Keeper) ReturnLegacyBalance(goCtx context.Context, msg *types.MsgReturnL
 
 	// NOTE: It was already validated so no need to check error
 	receiver, _ := sdk.AccAddressFromBech32(msg.Receiver)
-	oldAddress, _ := commonTypes.GetOldAddressFromPubKey(msg.PublicKeyBytes)
+	legacyAddress, _ := commonTypes.GetLegacyAddressFromPubKey(msg.PublicKeyBytes)
 
 	//
-	legacyBalance, err := k.GetLegacyBalance(ctx, oldAddress)
+	legacyBalance, err := k.GetLegacyBalance(ctx, legacyAddress)
 	if err != nil {
-		return nil, types.ErrNoLegacyBalance(msg.Receiver, oldAddress)
+		return nil, types.ErrNoLegacyBalance(msg.Receiver, legacyAddress)
 	}
 
-	var coinsToSend sdk.Coins
-	for _, entry := range legacyBalance.Entries {
-		coinDenom := strings.ToLower(entry.CoinDenom)
+	// check coins existense
+	for _, coin := range legacyBalance.Coins {
+		coinDenom := strings.ToLower(coin.Denom)
 		_, err = k.GetCoin(ctx, coinDenom)
+		// this must never happens because we check coins existense in genesis
 		if err != nil {
 			return nil, types.ErrCoinDoesNotExist(coinDenom)
 		}
-		coin := sdk.NewCoin(coinDenom, entry.Balance)
-		// summarize new balance
-		coinsToSend = coinsToSend.Add(coin)
 	}
 
-	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.LegacyCoinPool, receiver, coinsToSend)
+	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.LegacyCoinPool, receiver, legacyBalance.Coins)
 	if err != nil {
 		return nil, types.ErrInternal(err.Error())
 	}
 
 	// all complete, delete balbance
-	k.DeleteLegacyBalance(ctx, oldAddress)
+	k.DeleteLegacyBalance(ctx, legacyAddress)
 
 	// Emit transaction events
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
@@ -514,8 +512,8 @@ func (k Keeper) ReturnLegacyBalance(goCtx context.Context, msg *types.MsgReturnL
 		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
 		sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
 		sdk.NewAttribute(types.AttributeReceiver, msg.Receiver),
-		sdk.NewAttribute(types.AttributeOldAddress, oldAddress),
-		sdk.NewAttribute(types.AttributeCointToReturn, coinsToSend.String()),
+		sdk.NewAttribute(types.AttributeLegacyAddress, legacyAddress),
+		sdk.NewAttribute(types.AttributeCointToReturn, legacyBalance.Coins.String()),
 	))
 
 	return &types.MsgReturnLegacyBalanceResponse{}, nil

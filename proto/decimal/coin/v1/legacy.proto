@@ -2,39 +2,24 @@ syntax = "proto3";
 package decimal.coin.v1;
 
 import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
 
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/coin/types";
-
-message LegacyBalanceEntry {
-  option (gogoproto.equal) = true;
-  option (gogoproto.goproto_getters) = false;
-  option (gogoproto.goproto_stringer) = true;
-
-  string coinDenom = 1 [
-    (gogoproto.jsontag) = "coin_denom",
-    (gogoproto.moretags) = "yaml:\"coin_denom\""
-  ];
-  string balance = 2 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.jsontag) = "balance",
-    (gogoproto.moretags) = "yaml:\"balance\"",
-    (gogoproto.nullable) = false
-  ];
-}
 
 message LegacyBalance {
   option (gogoproto.equal) = true;
   option (gogoproto.goproto_getters) = false;
   option (gogoproto.goproto_stringer) = true;
 
-  string oldAddress = 1 [
-    (gogoproto.jsontag) = "old_address",
-    (gogoproto.moretags) = "yaml:\"old_address\""
+  string legacyAddress = 1 [
+    (gogoproto.jsontag) = "legacy_address",
+    (gogoproto.moretags) = "yaml:\"legacy_address\""
   ];
 
-  repeated LegacyBalanceEntry entries = 2 [
+  repeated cosmos.base.v1beta1.Coin coins = 2 [
     (gogoproto.nullable) = false,
-    (gogoproto.jsontag) = "entries",
-    (gogoproto.moretags) = "yaml:\"entries\""
+    (gogoproto.jsontag) = "coins",
+    (gogoproto.moretags) = "yaml:\"coins\"",
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
 }
