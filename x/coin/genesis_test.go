@@ -225,6 +225,20 @@ func TestInitGenesisForLegacy(t *testing.T) {
 				},
 			},
 		},
+		{
+			// second address to check iterator
+			LegacyAddress: "dx1lw2q66zph22x3hzmc527em25kd4zfydnx7arw7",
+			Coins: sdk.Coins{
+				{
+					Denom:  "foo",
+					Amount: sdk.NewInt(1),
+				},
+				{
+					Denom:  "del",
+					Amount: sdk.NewInt(1),
+				},
+			},
+		},
 	})
 	require.NoError(t, coinGenesisState.Validate(), "coinGenesisState")
 	coin.InitGenesis(ctx, app.CoinKeeper, coinGenesisState)
@@ -248,4 +262,8 @@ func TestInitGenesisForLegacy(t *testing.T) {
 	// otherAddress must be full
 	otherCoins := app.BankKeeper.GetAllBalances(ctx, sdk.AccAddress("someotheraddressfortest"))
 	require.Equal(t, 2, len(otherCoins))
+
+	// chekc itertor by GetLegacyBalances
+	balances := coinKeeper.GetLegacyBalances(ctx)
+	require.Equal(t, 2, len(balances), "something wrong in iterator")
 }
