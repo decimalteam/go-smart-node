@@ -14,6 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 	"golang.org/x/crypto/sha3"
 
+	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -467,6 +468,55 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 	))
 
 	return &types.MsgRedeemCheckResponse{}, nil
+}
+
+////////////////////////////////////////////////////////////////
+// Legacy balances
+////////////////////////////////////////////////////////////////
+
+func (k Keeper) ReturnLegacyBalance(goCtx context.Context, msg *types.MsgReturnLegacyBalance) (*types.MsgReturnLegacyBalanceResponse, error) {
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// NOTE: It was already validated so no need to check error
+	receiver, _ := sdk.AccAddressFromBech32(msg.Receiver)
+	legacyAddress, _ := commonTypes.GetLegacyAddressFromPubKey(msg.PublicKeyBytes)
+
+	//
+	legacyBalance, err := k.GetLegacyBalance(ctx, legacyAddress)
+	if err != nil {
+		return nil, types.ErrNoLegacyBalance(msg.Receiver, legacyAddress)
+	}
+
+	// check coins existense
+	for _, coin := range legacyBalance.Coins {
+		coinDenom := strings.ToLower(coin.Denom)
+		_, err = k.GetCoin(ctx, coinDenom)
+		// this must never happens because we check coins existense in genesis
+		if err != nil {
+			return nil, types.ErrCoinDoesNotExist(coinDenom)
+		}
+	}
+
+	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.LegacyCoinPool, receiver, legacyBalance.Coins)
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
+
+	// all complete, delete balbance
+	k.DeleteLegacyBalance(ctx, legacyAddress)
+
+	// Emit transaction events
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		sdk.EventTypeMessage,
+		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+		sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
+		sdk.NewAttribute(types.AttributeReceiver, msg.Receiver),
+		sdk.NewAttribute(types.AttributeLegacyAddress, legacyAddress),
+		sdk.NewAttribute(types.AttributeCointToReturn, legacyBalance.Coins.String()),
+	))
+
+	return &types.MsgReturnLegacyBalanceResponse{}, nil
 }
 
 ////////////////////////////////////////////////////////////////
