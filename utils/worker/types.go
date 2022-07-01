@@ -19,6 +19,7 @@ type Attribute struct {
 }
 
 type Block struct {
+	ID                interface{}        `json:"id"`
 	Header            interface{}        `json:"header"`
 	Data              BlockData          `json:"data"`
 	Evidence          interface{}        `json:"evidence"`
