@@ -20,6 +20,17 @@ func (e Error) Error() string {
 	return fmt.Sprintf("statusCode: %d, message: \"%s\", data: \"%s\"", e.StatusCode, e.Message, e.Err)
 }
 
+// direct error
+type RPCError struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    string `json:"data"`
+}
+
+func (e RPCError) Error() string {
+	return fmt.Sprintf("RPCError(code: %d, message: '%s', data: '%s')", e.Code, e.Message, e.Data)
+}
+
 // ResponseError wraps Resty response error and allows to generate error info.
 type ResponseError struct {
 	*resty.Response

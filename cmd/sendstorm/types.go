@@ -28,7 +28,7 @@ func NewStormAccount(mnemonic string, api *dscApi.API) (*StormAccount, error) {
 	}
 	result.api = api
 	result.feeDenom = api.BaseCoin()
-	result.maxGas = api.MaxGas()
+	result.maxGas = 0   // TODO: it's temporary / api.MaxGas()
 	result.dirty = true // need to get balance and nonce
 	return &result, nil
 }

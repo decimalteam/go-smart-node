@@ -47,18 +47,21 @@ func (api *API) Transaction(hash string) (*TxResult, error) {
 			} `json:"tx_result"`
 		} `json:"result"`
 	}
+	type directError struct {
+		err RPCError `json:"error"`
+	}
 	// request
 	res, err := api.rpc.R().Get("/tx?hash=0x" + hash)
 	if err = processConnectionError(res, err); err != nil {
 		return nil, err
 	}
 	// json decode
-	respValue := directTxResult{}
-	err = universalJSONDecode(res.Body(), &respValue, nil, func() (bool, bool) {
-		return respValue.Result.Hash > "", false
+	respValue, respErr := directTxResult{}, directError{}
+	err = universalJSONDecode(res.Body(), &respValue, &respErr, func() (bool, bool) {
+		return respValue.Result.Hash > "", respErr.err.Code != 0
 	})
 	if err != nil {
-		return nil, err
+		return nil, joinErrors(err, respErr.err)
 	}
 	// process results
 	result := &TxResult{}

@@ -22,6 +22,17 @@ type Action interface {
 	GenerateTx(sa *StormAccount) ([]byte, error)
 }
 
+// EmptyAction is used if generator can't create valid action
+type EmptyAction struct{}
+
+func (ea *EmptyAction) CanPerform(sa *StormAccount) bool {
+	return false
+}
+
+func (ea *EmptyAction) GenerateTx(sa *StormAccount) ([]byte, error) {
+	return nil, fmt.Errorf("empty action")
+}
+
 type UpdateInfo struct {
 	Coins     []string
 	Addresses []string

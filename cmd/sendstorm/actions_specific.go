@@ -219,15 +219,30 @@ func (abg *BuyCoinGenerator) Update(ui UpdateInfo) {
 
 func (abg *BuyCoinGenerator) Generate() Action {
 	var coinInfo dscApi.Coin
-	coinName := randomChoice(abg.rnd, abg.knownCoins)
+	var amountToSell sdk.Int
+	var coinName string
+	if len(abg.knownCoins) == 1 {
+		return &EmptyAction{}
+	}
+	for {
+		coinName = randomChoice(abg.rnd, abg.knownCoins)
+		if coinName != abg.baseCoin {
+			break
+		}
+	}
+
 	for _, ci := range abg.knownFullCoins {
 		if ci.Symbol == coinName {
 			coinInfo = ci
 			break
 		}
 	}
-	amountToBuy := sdk.NewInt(randomRange(abg.rnd, abg.bottomRange, abg.upperRange))
-	amountToSell := formulas.CalculatePurchaseAmount(coinInfo.Volume, coinInfo.Reserve, uint(coinInfo.CRR), amountToBuy)
+	amountToBuy := helpers.FinneyToWei(sdk.NewInt(randomRange(abg.rnd, abg.bottomRange, abg.upperRange)))
+	if coinName == abg.baseCoin {
+		amountToSell = amountToBuy
+	} else {
+		amountToSell = formulas.CalculatePurchaseAmount(coinInfo.Volume, coinInfo.Reserve, uint(coinInfo.CRR), amountToBuy)
+	}
 
 	return &BuyCoinAction{
 		coinToBuy: sdk.NewCoin(

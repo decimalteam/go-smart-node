@@ -146,7 +146,7 @@ func cmdFaucet() *cobra.Command {
 					sdk.NewCoin(reactor.api.BaseCoin(), helpers.EtherToWei(sdk.NewInt(amountToSend))),
 					acc.account.SdkAddress(),
 				)
-				tx, err := dscTx.BuildTransaction([]sdk.Msg{msg}, "", reactor.api.BaseCoin(), reactor.api.MaxGas())
+				tx, err := dscTx.BuildTransaction([]sdk.Msg{msg}, "", reactor.api.BaseCoin(), 0) /// TODO: 0 gas is temporary
 				if err != nil {
 					fmt.Println(err)
 					continue
@@ -221,28 +221,15 @@ func cmdRun() *cobra.Command {
 				fmt.Println(err)
 				return
 			}
-			// update info
-			ui := UpdateInfo{}
-			coins, err := reactor.api.Coins()
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			for _, c := range coins {
-				ui.Coins = append(ui.Coins, c.Symbol)
-				ui.FullCoins = append(ui.FullCoins, c)
-			}
-			for _, acc := range reactor.accounts {
-				err = acc.Update()
-				if err != nil {
-					fmt.Println(err)
-				}
-				ui.Addresses = append(ui.Addresses, acc.Address())
-			}
-			reactor.actionReactor.Update(ui)
-
+			reactor.updateGeneratorsInfo()
 			// infinite loop
+			n := 0
 			for {
+				n++
+				if n >= 100 {
+					reactor.updateGeneratorsInfo()
+					n = 0
+				}
 				action := reactor.actionReactor.Generate()
 				acc := reactor.accounts[rand.Intn(len(reactor.accounts))]
 				if !action.CanPerform(acc) {
@@ -433,4 +420,26 @@ func (reactor *stormReactor) initLimiter(flags *pflag.FlagSet) error {
 	}
 	reactor.limiter = NewTPSLimiter(limit)
 	return nil
+}
+
+func (reactor *stormReactor) updateGeneratorsInfo() {
+	// update info
+	ui := UpdateInfo{}
+	coins, err := reactor.api.Coins()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	for _, c := range coins {
+		ui.Coins = append(ui.Coins, c.Symbol)
+		ui.FullCoins = append(ui.FullCoins, c)
+	}
+	for _, acc := range reactor.accounts {
+		err = acc.Update()
+		if err != nil {
+			fmt.Println(err)
+		}
+		ui.Addresses = append(ui.Addresses, acc.Address())
+	}
+	reactor.actionReactor.Update(ui)
 }
