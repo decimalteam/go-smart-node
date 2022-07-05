@@ -230,6 +230,7 @@ func cmdRun() *cobra.Command {
 			}
 			for _, c := range coins {
 				ui.Coins = append(ui.Coins, c.Symbol)
+				ui.FullCoins = append(ui.FullCoins, c)
 			}
 			for _, acc := range reactor.accounts {
 				err = acc.Update()

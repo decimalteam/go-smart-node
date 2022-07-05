@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+
+	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 )
 
 type ActionGenerator interface {
@@ -23,6 +25,7 @@ type Action interface {
 type UpdateInfo struct {
 	Coins     []string
 	Addresses []string
+	FullCoins []dscApi.Coin
 }
 
 // TODO: do we need thread safety?
@@ -38,31 +41,38 @@ type WeightedAG struct {
 	AG     ActionGenerator
 }
 
-//TODO: parameters for generator, refactor to remove boilerplate
+//TODO: parameters for generator
 func (ar *ActionReactor) Add(generatorName string, weight int64) error {
+	var wag *WeightedAG = nil
 	switch generatorName {
 	case "CreateCoin":
 		{
-			wag := &WeightedAG{
-				AG:     NewActionCreateGenerator(3, 9, 100, 1000, 1000, 2000, 1000000, 2000000),
+			wag = &WeightedAG{
+				AG:     NewCreateCoinGenerator(3, 9, 100, 1000, 1000, 2000, 1000000, 2000000),
 				Weight: weight,
 			}
-			ar.wsum += weight
-			ar.wags = append(ar.wags, wag)
-			return nil
 		}
 	case "SendCoin":
 		{
-			wag := &WeightedAG{
-				AG:     NewActionSendGenerator(500, 20000),
+			wag = &WeightedAG{
+				AG:     NewSendCoinGenerator(500, 20000),
 				Weight: weight,
 			}
-			ar.wsum += weight
-			ar.wags = append(ar.wags, wag)
-			return nil
+		}
+	case "BuyCoin":
+		{
+			wag = &WeightedAG{
+				AG:     NewBuyCoinGenerator(500, 20000, "del"),
+				Weight: weight,
+			}
 		}
 	}
-	return fmt.Errorf("%s: unknown generator name", generatorName)
+	if wag == nil {
+		return fmt.Errorf("%s: unknown generator name", generatorName)
+	}
+	ar.wsum += weight
+	ar.wags = append(ar.wags, wag)
+	return nil
 }
 
 // choose generator and generate action
