@@ -10,6 +10,7 @@ import (
 
 // This is fork of standart cosmos sdk SetUpContextDecorator
 // except: SetGasMeter uses our commissionGasMeter
+// see IMPORTANT LINE below
 
 // SetUpContextDecorator sets the GasMeter in the Context and wraps the next AnteHandler with a defer clause
 // to recover from any downstream OutOfGas panics in the AnteHandler chain to return an error with information
@@ -65,5 +66,6 @@ func SetGasMeter(simulate bool, ctx sdk.Context, gasLimit uint64) sdk.Context {
 		return ctx.WithGasMeter(sdk.NewInfiniteGasMeter())
 	}
 
+	// IMPORTANT LINE
 	return ctx.WithGasMeter(NewCommissionGasMeter(gasLimit))
 }

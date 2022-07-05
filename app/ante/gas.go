@@ -56,7 +56,7 @@ func addUint64Overflow(a, b uint64) (uint64, bool) {
 
 func (g *commissionGasMeter) ConsumeGas(amount sdk.Gas, descriptor string) {
 	// IMPORTANT LINE
-	// skip all non-cmmission calls
+	// skip all non-commission calls
 	if descriptor != GasCommissionDesc {
 		return
 	}
