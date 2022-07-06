@@ -139,11 +139,11 @@ func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper coin
 		if err != nil {
 			return ErrCoinDoesNotExist(fee.Denom)
 		}
-		if feeCoin.Volume.Sub(fee.Amount).LT(coinTypes.MinCoinSupply) {
-			return ErrCoinVolumeBecomeInsufficient(feeCoin.Volume.String(), fee.Amount.String(), coinTypes.MinCoinSupply.String())
-		}
 		coinInCollector := bankKeeper.GetBalance(ctx, sdkAuthTypes.NewModuleAddress(sdkAuthTypes.FeeCollectorName), fee.Denom)
 		futureAmountToBurn := coinInCollector.Amount.Add(fee.Amount)
+		if feeCoin.Volume.Sub(futureAmountToBurn).LT(coinTypes.MinCoinSupply) {
+			return ErrCoinVolumeBecomeInsufficient(feeCoin.Volume.String(), futureAmountToBurn.String(), coinTypes.MinCoinSupply.String())
+		}
 		futureReserveToDecrease := formulas.CalculateSaleReturn(feeCoin.Volume, feeCoin.Reserve, uint(feeCoin.CRR), futureAmountToBurn)
 		if feeCoin.Reserve.Sub(futureReserveToDecrease).LT(coinTypes.MinCoinReserve) {
 			return ErrCoinReserveBecomeInsufficient(feeCoin.Reserve.String(), futureReserveToDecrease.String(), coinTypes.MinCoinReserve.String())
