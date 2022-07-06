@@ -129,6 +129,44 @@ func (k *Keeper) EditCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, vol
 	))
 }
 
+// Special update function to use in DeductFee
+func (k Keeper) UpdateCoinVolumeReserve(ctx sdk.Context, coinDenom string, newVolume, newReserve sdk.Int) error {
+	coinDenom = strings.ToLower(coinDenom)
+
+	// Retrieve updating coin
+	coin, err := k.GetCoin(ctx, coinDenom)
+	if err != nil {
+		return types.ErrCoinDoesNotExist(coinDenom)
+	}
+
+	// Ensure new volume is lesser than LimitVolume
+	if coin.LimitVolume.LT(newVolume) {
+		return types.ErrLimitVolumeBroken(coin.LimitVolume.String(), newVolume.String())
+	}
+
+	// Ensure new reserve is greater than min reserve
+	if newReserve.LT(types.MinCoinReserve) {
+		return types.ErrTxBreaksMinReserveRule(types.MinCoinReserve.String(), newReserve.String())
+	}
+
+	coin.Volume = newVolume
+	coin.Reserve = newReserve
+
+	// Save coin to the storage
+	k.SetCoin(ctx, coin)
+
+	// Emit transaction events
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		sdk.EventTypeMessage,
+		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+		sdk.NewAttribute(types.AttributeSymbol, coin.Symbol),
+		sdk.NewAttribute(types.AttributeVolume, coin.Volume.String()),
+		sdk.NewAttribute(types.AttributeReserve, coin.Reserve.String()),
+	))
+
+	return nil
+}
+
 ////////////////////////////////////////////////////////////////
 // Check
 ////////////////////////////////////////////////////////////////
