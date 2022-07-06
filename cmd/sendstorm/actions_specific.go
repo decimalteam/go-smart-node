@@ -238,16 +238,16 @@ func (abg *BuyCoinGenerator) Generate() Action {
 		}
 	}
 	amountToBuy := helpers.FinneyToWei(sdk.NewInt(randomRange(abg.rnd, abg.bottomRange, abg.upperRange)))
-	if coinName == abg.baseCoin {
-		amountToSell = amountToBuy
-	} else {
-		amountToSell = formulas.CalculatePurchaseAmount(coinInfo.Volume, coinInfo.Reserve, uint(coinInfo.CRR), amountToBuy)
+	amountToSell = formulas.CalculatePurchaseAmount(coinInfo.Volume, coinInfo.Reserve, uint(coinInfo.CRR), amountToBuy)
+	// respect limit volume to decrease amount of errors
+	if coinInfo.Volume.Add(amountToBuy).GT(coinInfo.LimitVolume) {
+		return &EmptyAction{}
 	}
 
 	return &BuyCoinAction{
 		coinToBuy: sdk.NewCoin(
 			coinName,
-			helpers.FinneyToWei(amountToBuy),
+			amountToBuy,
 		),
 		maxCoinToSell: sdk.NewCoin(
 			abg.baseCoin,
