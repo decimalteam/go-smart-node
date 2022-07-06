@@ -29,6 +29,7 @@ const (
 	CodeUnknownTransaction             CodeType = 113
 	CodeCoinReserveInsufficient        CodeType = 114
 	CodeCoinReserveBecomeInsufficient  CodeType = 115
+	CodeCoinVolumeBecomeInsufficient   CodeType = 116
 )
 
 func ErrFeePayerAddressDoesNotExist(feePayer string) *sdkerrors.Error {
@@ -157,13 +158,24 @@ func ErrCoinReserveInsufficient(reserve, commission string) *sdkerrors.Error {
 	)
 }
 
-func ErrCoinReserveBecomeInsufficient(reserve, commission, minReserve string) *sdkerrors.Error {
+func ErrCoinReserveBecomeInsufficient(reserve, decreasing, minReserve string) *sdkerrors.Error {
 	return errors.Encode(
 		DefaultRootCodespace,
 		CodeCoinReserveBecomeInsufficient,
-		fmt.Sprintf("coin reserve will become lower than minimal reserve. Has: %s, commission: %s, minimal reserve: %s", reserve, commission, minReserve),
+		fmt.Sprintf("coin reserve will become lower than minimal reserve. Has: %s, decreasing: %s, minimal reserve: %s", reserve, decreasing, minReserve),
 		errors.NewParam("reserve", reserve),
-		errors.NewParam("commission", commission),
+		errors.NewParam("decreasing", decreasing),
 		errors.NewParam("min_reserve", minReserve),
+	)
+}
+
+func ErrCoinVolumeBecomeInsufficient(volume, decreasing, minVolume string) *sdkerrors.Error {
+	return errors.Encode(
+		DefaultRootCodespace,
+		CodeCoinVolumeBecomeInsufficient,
+		fmt.Sprintf("coin volume will become lower than minimal volume. Has: %s, decreasing: %s, minimal volume: %s", volume, decreasing, minVolume),
+		errors.NewParam("volume", volume),
+		errors.NewParam("decreasing", decreasing),
+		errors.NewParam("min_volume", minVolume),
 	)
 }

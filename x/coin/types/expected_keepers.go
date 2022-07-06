@@ -67,5 +67,4 @@ type CoinKeeper interface {
 	// need for fee deduction
 	IsCoinBase(ctx sdk.Context, symbol string) bool
 	GetBaseDenom(ctx sdk.Context) string
-	UpdateCoinVolumeReserve(ctx sdk.Context, symbol string, newVolume, newReserve sdk.Int) error
 }

@@ -36,7 +36,7 @@ const (
 )
 
 // Calculate fee in base coin
-func CalculateFee(tx sdk.Tx, txBytesLen int64) (sdk.Int, error) {
+func CalculateFee(tx sdk.Tx, txBytesLen int64, factor sdk.Dec) (sdk.Int, error) {
 	commissionInBaseCoin := sdk.ZeroInt()
 	commissionInBaseCoin = commissionInBaseCoin.AddRaw(txBytesLen * 2)
 	for _, msg := range tx.GetMsgs() {
@@ -56,11 +56,13 @@ func CalculateFee(tx sdk.Tx, txBytesLen int64) (sdk.Int, error) {
 		case *coinTypes.MsgRedeemCheck:
 			commissionInBaseCoin = sdk.ZeroInt()
 		default:
-			return sdk.NewInt(0), fmt.Errorf("unknown feee for transaction type %T", msg)
+			return sdk.NewInt(0), ErrUnknownTransaction(fmt.Sprintf("%T", msg))
 		}
 	}
 
 	commissionInBaseCoin = helpers.FinneyToWei(commissionInBaseCoin)
+	// change commission according to factor
+	commissionInBaseCoin = factor.MulInt(commissionInBaseCoin).RoundInt()
 	// TODO: special gas value for special transactions
 	return commissionInBaseCoin, nil
 }

@@ -45,7 +45,10 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 		panic(fmt.Sprintf("%s module account has not been set", sdkAuthTypes.FeeCollectorName))
 	}
 
-	commissionInBaseCoin, err := CalculateFee(tx, int64(len(ctx.TxBytes())))
+	commissionInBaseCoin, err := CalculateFee(tx, int64(len(ctx.TxBytes())), sdk.OneDec())
+	if err != nil {
+		return ctx, err
+	}
 
 	feeFromTx := feeTx.GetFee()
 	feePayerAcc := fd.accountKeeper.GetAccount(ctx, feeTx.FeePayer())
@@ -61,7 +64,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 		if commissionInBaseCoin.IsZero() {
 			return next(ctx, tx, simulate)
 		}
-		err = DeductFees(ctx, fd.bankKeeper, fd.coinKeeper, feePayerAcc, sdk.NewCoin(baseDenom, commissionInBaseCoin), commissionInBaseCoin)
+		err = DeductFees(ctx, fd.bankKeeper, fd.coinKeeper, feePayerAcc, sdk.NewCoin(baseDenom, commissionInBaseCoin))
 		if err != nil {
 			return ctx, err
 		}
@@ -78,7 +81,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 	// fee from transaction not empty
 	feeInBaseCoin := feeFromTx[0].Amount
 
-	// convert fee from transaction if it not in base coin
+	// calculate fee in base coin to check enough amount of fee
 	if feeFromTx[0].Denom != baseDenom {
 		coinInfo, err := fd.coinKeeper.GetCoin(ctx, feeFromTx[0].Denom)
 		if err != nil {
@@ -101,7 +104,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 	}
 
 	// deduct the fees
-	err = DeductFees(ctx, fd.bankKeeper, fd.coinKeeper, feePayerAcc, feeFromTx[0], feeInBaseCoin)
+	err = DeductFees(ctx, fd.bankKeeper, fd.coinKeeper, feePayerAcc, feeFromTx[0])
 	if err != nil {
 		return ctx, err
 	}
@@ -117,66 +120,40 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 
 // DeductFees deducts fees from the given account.
 func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper coinTypes.CoinKeeper,
-	acc sdkAuthTypes.AccountI, fee sdk.Coin, feeInBaseCoin sdk.Int) error {
-	balance := bankKeeper.GetBalance(ctx, acc.GetAddress(), fee.Denom)
-
-	feeCoin, err := coinKeeper.GetCoin(ctx, strings.ToLower(fee.Denom))
-	if err != nil {
-		return ErrCoinDoesNotExist(fee.Denom)
-	}
-
-	if !coinKeeper.IsCoinBase(ctx, fee.Denom) {
-		if feeCoin.Reserve.Sub(feeInBaseCoin).LT(coinTypes.MinCoinReserve) {
-			return ErrCoinReserveBecomeInsufficient(feeCoin.Reserve.String(), feeInBaseCoin.String(), coinTypes.MinCoinReserve.String())
-		}
-	}
+	acc sdkAuthTypes.AccountI, fee sdk.Coin) error {
 
 	if !fee.IsValid() {
 		return ErrInvalidFeeAmount(fee.String())
 	}
 
-	// verify the account has enough funds to pay for fee
-	resultbalance := balance.Sub(fee)
-	if resultbalance.IsNegative() {
+	// verify the account has enough funds to pay fee
+	balance := bankKeeper.GetBalance(ctx, acc.GetAddress(), fee.Denom)
+	resultBalance := balance.Sub(fee)
+	if resultBalance.IsNegative() {
 		return ErrInsufficientFundsToPayFee(balance.String(), fee.String())
 	}
 
-	// Validate the account has enough "spendable" coins as this will cover cases
-	// such as vesting accounts.
-	/* TODO: how to check it?
-	spendableCoins := bankKeeper.SpendableCoins(ctx, acc.GetAddress())
-	if _, hasNeg := spendableCoins.SafeSub(sdk.NewCoins(fee)); hasNeg {
-		return ErrInsufficientFundsToPayFee(spendableCoins.String(), fee.String())
+	// verify for future coin burning: we must keep minimal volume and reserve
+	if !coinKeeper.IsCoinBase(ctx, fee.Denom) {
+		feeCoin, err := coinKeeper.GetCoin(ctx, strings.ToLower(fee.Denom))
+		if err != nil {
+			return ErrCoinDoesNotExist(fee.Denom)
+		}
+		if feeCoin.Volume.Sub(fee.Amount).LT(coinTypes.MinCoinSupply) {
+			return ErrCoinVolumeBecomeInsufficient(feeCoin.Volume.String(), fee.Amount.String(), coinTypes.MinCoinSupply.String())
+		}
+		coinInCollector := bankKeeper.GetBalance(ctx, sdkAuthTypes.NewModuleAddress(sdkAuthTypes.FeeCollectorName), fee.Denom)
+		futureAmountToBurn := coinInCollector.Amount.Add(fee.Amount)
+		futureReserveToDecrease := formulas.CalculateSaleReturn(feeCoin.Volume, feeCoin.Reserve, uint(feeCoin.CRR), futureAmountToBurn)
+		if feeCoin.Reserve.Sub(futureReserveToDecrease).LT(coinTypes.MinCoinReserve) {
+			return ErrCoinReserveBecomeInsufficient(feeCoin.Reserve.String(), futureReserveToDecrease.String(), coinTypes.MinCoinReserve.String())
+		}
 	}
-	*/
 
-	err = bankKeeper.SendCoinsFromAccountToModule(ctx, acc.GetAddress(), sdkAuthTypes.FeeCollectorName, sdk.NewCoins(fee))
+	err := bankKeeper.SendCoinsFromAccountToModule(ctx, acc.GetAddress(), sdkAuthTypes.FeeCollectorName, sdk.NewCoins(fee))
 	if err != nil {
 		return ErrFailedToSendCoins(err.Error())
 	}
 
-	/* TODO: for what ???
-	s := supplyKeeper.GetSupply(ctx)
-	s = s.Inflate(sdk.NewCoins(fee))
-	supplyKeeper.SetSupply(ctx, s)
-	*/
-	// TODO: this is correct ???
-	// update coin: decrease reserve and volume
-	err = nil
-	if !coinKeeper.IsCoinBase(ctx, fee.Denom) {
-		err = coinKeeper.UpdateCoinVolumeReserve(ctx,
-			fee.Denom,
-			feeCoin.Volume.Sub(fee.Amount),
-			feeCoin.Reserve.Sub(feeInBaseCoin),
-		)
-	} else {
-		// decrease volume of del, keep reserve
-		err = coinKeeper.UpdateCoinVolumeReserve(ctx,
-			fee.Denom,
-			feeCoin.Volume.Sub(fee.Amount),
-			feeCoin.Reserve,
-		)
-	}
-
-	return err
+	return nil
 }

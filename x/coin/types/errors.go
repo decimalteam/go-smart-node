@@ -143,8 +143,8 @@ func ErrInvalidCoinInitialVolume(initialVolume string) *sdkerrors.Error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidCoinInitialVolume,
-		fmt.Sprintf("coin initial volume should be between %s and %s. Given %s", minCoinSupply.String(), maxCoinSupply.String(), initialVolume),
-		errors.NewParam("min_coin_supply", minCoinSupply.String()),
+		fmt.Sprintf("coin initial volume should be between %s and %s. Given %s", MinCoinSupply.String(), maxCoinSupply.String(), initialVolume),
+		errors.NewParam("min_coin_supply", MinCoinSupply.String()),
 		errors.NewParam("max_coin_supply", maxCoinSupply.String()),
 		errors.NewParam("initial_volume", initialVolume),
 	)
