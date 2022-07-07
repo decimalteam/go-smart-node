@@ -28,13 +28,14 @@ func NewFeeDecorator(ck coinTypes.CoinKeeper, bk evmTypes.BankKeeper, ak evmType
 }
 
 // AnteHandle implements sdk.AnteHandler function.
-func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
+	simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	// no fee on blockchain start
 	if ctx.BlockHeight() == 0 {
 		return next(ctx, tx, simulate)
 	}
 
-	// inital check for transaction
+	// initial check for transaction
 	feeTx, ok := tx.(sdk.FeeTx)
 	if !ok {
 		return ctx, ErrNotFeeTxType()
@@ -91,10 +92,12 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 			return ctx, ErrCoinReserveInsufficient(coinInfo.Reserve.String(), commissionInBaseCoin.String())
 		}
 
-		feeInBaseCoin = formulas.CalculateSaleReturn(coinInfo.Volume, coinInfo.Reserve, uint(coinInfo.CRR), feeFromTx[0].Amount)
+		feeInBaseCoin = formulas.CalculateSaleReturn(coinInfo.Volume, coinInfo.Reserve,
+			uint(coinInfo.CRR), feeFromTx[0].Amount)
 
 		if coinInfo.Reserve.Sub(feeInBaseCoin).LT(coinTypes.MinCoinReserve) {
-			return ctx, ErrCoinReserveBecomeInsufficient(coinInfo.Reserve.String(), feeInBaseCoin.String(), coinTypes.MinCoinReserve.String())
+			return ctx, ErrCoinReserveBecomeInsufficient(coinInfo.Reserve.String(), feeInBaseCoin.String(),
+				coinTypes.MinCoinReserve.String())
 		}
 	}
 
@@ -135,7 +138,11 @@ func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper coin
 	// verify for future coin burning: we must keep minimal volume and reserve
 	if !coinKeeper.IsCoinBase(ctx, fee.Denom) {
 		// .Neg() becausee coins will be burn in fee collector
-		err := coinKeeper.CheckFutureChanges(ctx, fee.Denom, fee.Amount.Neg())
+		feeCoin, err := coinKeeper.GetCoin(ctx, fee.Denom)
+		if err != nil {
+			return ErrCoinDoesNotExist(fee.Denom)
+		}
+		err = coinKeeper.CheckFutureChanges(ctx, feeCoin, fee.Amount.Neg())
 		if err != nil {
 			return err
 		}

@@ -548,7 +548,7 @@ func (k Keeper) buyCoin(
 	}
 
 	// Ensure supply limit of the coin to buy does not overflow
-	err = k.CheckFutureChanges(ctx, coinToBuyDenom, coin.Amount)
+	err = k.CheckFutureChanges(ctx, coinToBuy, coin.Amount)
 	if err != nil {
 		return err
 	}
@@ -684,7 +684,7 @@ func (k Keeper) sellCoin(
 		return types.ErrInsufficientFunds(coin.String(), balance.String())
 	}
 
-	err = k.CheckFutureChanges(ctx, coinToSellDenom, coin.Amount.Neg())
+	err = k.CheckFutureChanges(ctx, coinToSell, coin.Amount.Neg())
 	if err != nil {
 		return err
 	}

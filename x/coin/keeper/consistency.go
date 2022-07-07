@@ -12,16 +12,12 @@ import (
 // It includes check balance of auth.FeeCollectorName
 // Positive amount = buy = increase volume and reserve
 // Negative amount = sell/deduct = decrease volume and reserve
-func (k *Keeper) CheckFutureChanges(ctx sdk.Context, symbol string, amount sdk.Int) error {
+func (k *Keeper) CheckFutureChanges(ctx sdk.Context, coinInfo types.Coin, amount sdk.Int) error {
 	// no need to chech base coin
-	if symbol == k.GetBaseDenom(ctx) {
+	if coinInfo.Symbol == k.GetBaseDenom(ctx) {
 		return nil
 	}
 
-	coinInfo, err := k.GetCoin(ctx, symbol)
-	if err != nil {
-		return types.ErrCoinDoesNotExist(symbol)
-	}
 	// simple check new volume
 	newVolume := coinInfo.Volume.Add(amount)
 	if newVolume.LT(types.MinCoinSupply) {
@@ -33,7 +29,7 @@ func (k *Keeper) CheckFutureChanges(ctx sdk.Context, symbol string, amount sdk.I
 	// for sell/deduct need include auth.FeeCollectorName balance for coin
 	// because this balance will be burned
 	if amount.IsNegative() {
-		coinInCollector := k.bankKeeper.GetBalance(ctx, sdkAuthTypes.NewModuleAddress(sdkAuthTypes.FeeCollectorName), symbol)
+		coinInCollector := k.bankKeeper.GetBalance(ctx, sdkAuthTypes.NewModuleAddress(sdkAuthTypes.FeeCollectorName), coinInfo.Symbol)
 		futureAmountToBurn := coinInCollector.Amount.Add(amount.Neg())
 		// check for minimal volume
 		newVolume = coinInfo.Volume.Sub(futureAmountToBurn)
