@@ -14,6 +14,8 @@ type (
 	MsgSendCoin            = coinTypes.MsgSendCoin
 	MsgRedeemCheck         = coinTypes.MsgRedeemCheck
 	MsgReturnLegacyBalance = coinTypes.MsgReturnLegacyBalance
+
+	OneSend = coinTypes.Send
 )
 
 var (
