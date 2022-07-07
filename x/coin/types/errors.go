@@ -41,6 +41,7 @@ const (
 	CodeMinimumValueToBuyReached   uint32 = 205
 	CodeUpdateBalance              uint32 = 206
 	CodeLimitVolumeBroken          uint32 = 207
+	CodeTxBreaksMinVolumeLimit     uint32 = 208
 
 	// Send coin
 	CodeInvalidAmount          uint32 = 300
@@ -227,11 +228,11 @@ func ErrInsufficientFundsToSellAll() *sdkerrors.Error {
 	)
 }
 
-func ErrTxBreaksVolumeLimit(volume string, limitVolume string) *sdkerrors.Error {
+func ErrTxBreaksMinVolumeLimit(volume string, limitVolume string) *sdkerrors.Error {
 	return errors.Encode(
 		DefaultCodespace,
-		CodeTxBreaksVolumeLimit,
-		fmt.Sprintf("tx breaks LimitVolume rule: %s > %s", volume, limitVolume),
+		CodeTxBreaksMinVolumeLimit,
+		fmt.Sprintf("tx breaks min volume rule: %s < %s", volume, limitVolume),
 		errors.NewParam("volume", volume),
 		errors.NewParam("limit_volume", limitVolume),
 	)
@@ -308,6 +309,16 @@ func ErrInvalidSenderAddress(address string) *sdkerrors.Error {
 		DefaultCodespace,
 		CodeInvalidSenderAddress,
 		fmt.Sprintf("invalid sender address: %s", address),
+	)
+}
+
+func ErrTxBreaksVolumeLimit(volume string, limitVolume string) *sdkerrors.Error {
+	return errors.Encode(
+		DefaultCodespace,
+		CodeTxBreaksVolumeLimit,
+		fmt.Sprintf("tx breaks LimitVolume rule: %s > %s", volume, limitVolume),
+		errors.NewParam("volume", volume),
+		errors.NewParam("limit_volume", limitVolume),
 	)
 }
 

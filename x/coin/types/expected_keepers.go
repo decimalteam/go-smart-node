@@ -67,4 +67,5 @@ type CoinKeeper interface {
 	// need for fee deduction
 	IsCoinBase(ctx sdk.Context, symbol string) bool
 	GetBaseDenom(ctx sdk.Context) string
+	CheckFutureChanges(ctx sdk.Context, symbol string, amount sdk.Int) error
 }
