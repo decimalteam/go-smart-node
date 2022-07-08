@@ -26,7 +26,7 @@ const (
 
 	burnFee = 10
 
-	redeemCheckFee = 30
+	//redeemCheckFee = 30
 
 	createWalletFee      = 100
 	createTransactionFee = 100
@@ -54,6 +54,8 @@ func CalculateFee(tx sdk.Tx, txBytesLen int64, factor sdk.Dec) (sdk.Int, error) 
 		case *coinTypes.MsgSellAllCoin:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(sellCoinFee)
 		case *coinTypes.MsgRedeemCheck:
+			commissionInBaseCoin = sdk.ZeroInt()
+		case *coinTypes.MsgUpdateCoin:
 			commissionInBaseCoin = sdk.ZeroInt()
 		default:
 			return sdk.NewInt(0), ErrUnknownTransaction(fmt.Sprintf("%T", msg))
