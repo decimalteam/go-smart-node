@@ -147,10 +147,6 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 		ui.FullCoins = append(ui.FullCoins, c)
 	}
 	for _, acc := range reactor.accounts {
-		err = acc.Update()
-		if err != nil {
-			fmt.Println(err)
-		}
 		ui.Addresses = append(ui.Addresses, acc.Address())
 	}
 	reactor.actionReactor.Update(ui)

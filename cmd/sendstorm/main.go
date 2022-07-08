@@ -126,7 +126,7 @@ func cmdFaucet() *cobra.Command {
 			}
 			// do action
 			for i, acc := range reactor.accounts {
-				err := acc.Update()
+				err := acc.UpdateBalance()
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -215,29 +215,25 @@ func cmdRun() *cobra.Command {
 				fmt.Println(err)
 				return
 			}
+			for _, acc := range reactor.accounts {
+				err = acc.UpdateNumberSequence()
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+				err = acc.UpdateBalance()
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+			}
 			reactor.updateGeneratorsInfo()
 			// infinite loop
 			n := 0
 			for {
-				n++
-				if n >= 100 {
-					reactor.updateGeneratorsInfo()
-					n = 0
-				}
 				action := reactor.actionReactor.Generate()
 				acc := reactor.accounts[rand.Intn(len(reactor.accounts))]
 				if !action.CanPerform(acc) {
-					/*
-						amt := action.(*ActionSend).coin.Amount
-						blnc := acc.BalanceForCoin("del")
-						adr := action.(*ActionSend).address
-						fmt.Printf(" dirty: %v, less: %v, addr eq: %v\n",
-							acc.IsDirty(),
-							blnc.LT(amt),
-							acc.Address() == adr,
-						)
-					*/
-					//fmt.Printf("cannot %#v for %s\n", action, acc.Address())
 					continue
 				}
 				if !reactor.limiter.CanMake() {
@@ -253,19 +249,23 @@ func cmdRun() *cobra.Command {
 					fmt.Println(err)
 					acc.MarkDirty()
 					// TODO: Update() returns error
-					go acc.Update()
+					go acc.UpdateNumberSequence()
 					continue
 				}
-				fmt.Printf("%v\n", res)
 				if res.Code != 0 {
-					fmt.Printf("%s: (%d) %s\n", acc.Address(), res.Code, res.Log)
+					fmt.Printf("account: %s, action: %#v, result: %#v\n", acc.Address(), action, res)
 					acc.MarkDirty()
 					// TODO: Update() returns error
-					go acc.Update()
+					go acc.UpdateNumberSequence()
 					continue
 				}
 				acc.IncrementSequence()
 				go acc.UpdateBalance()
+				n++
+				if n >= 100 {
+					go reactor.updateGeneratorsInfo()
+					n = 0
+				}
 			}
 		},
 	}

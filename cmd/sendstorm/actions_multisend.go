@@ -24,11 +24,13 @@ type MultiSendCoinAction struct {
 	summary sdk.Coins // for fast check
 }
 
-func NewMultiSendCoinGenerator(bottomRange, upperRange int64) *MultiSendCoinGenerator {
+func NewMultiSendCoinGenerator(bottomRange, upperRange, sendCountBottom, sendCountUpper int64) *MultiSendCoinGenerator {
 	return &MultiSendCoinGenerator{
-		bottomRange: bottomRange,
-		upperRange:  upperRange,
-		rnd:         rand.New(rand.NewSource(time.Now().Unix())),
+		bottomRange:     bottomRange,
+		upperRange:      upperRange,
+		sendCountBottom: sendCountBottom,
+		sendCountUpper:  sendCountUpper,
+		rnd:             rand.New(rand.NewSource(time.Now().Unix())),
 	}
 }
 

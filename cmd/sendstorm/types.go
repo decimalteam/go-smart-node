@@ -33,7 +33,7 @@ func NewStormAccount(mnemonic string, api *dscApi.API) (*StormAccount, error) {
 	return &result, nil
 }
 
-func (sa *StormAccount) Update() error {
+func (sa *StormAccount) UpdateNumberSequence() error {
 	sa.mu.Lock()
 	defer sa.mu.Unlock()
 	an, as, err := sa.api.AccountNumberAndSequence(sa.account.Address())
@@ -41,10 +41,6 @@ func (sa *StormAccount) Update() error {
 		return fmt.Errorf("%w: AccountNumberAndSequence", err)
 	}
 	sa.account = sa.account.WithAccountNumber(an).WithSequence(as).WithChainID(sa.api.ChainID())
-	sa.currentBalance, err = sa.api.AddressBalance(sa.account.Address())
-	if err != nil {
-		return fmt.Errorf("%w: AddressBalance", err)
-	}
 	sa.dirty = false
 	return nil
 }
