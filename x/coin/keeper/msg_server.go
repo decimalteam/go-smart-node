@@ -548,11 +548,9 @@ func (k Keeper) buyCoin(
 	}
 
 	// Ensure supply limit of the coin to buy does not overflow
-	if !k.IsCoinBase(ctx, coinToBuy.Symbol) {
-		coinToBuyAmountNew := coinToBuy.Volume.Add(coin.Amount)
-		if coinToBuyAmountNew.GT(coinToBuy.LimitVolume) {
-			return types.ErrTxBreaksVolumeLimit(coinToBuyAmountNew.String(), coinToBuy.LimitVolume.String())
-		}
+	err = k.CheckFutureChanges(ctx, coinToBuy, coin.Amount)
+	if err != nil {
+		return err
 	}
 
 	// Calculate amount of sell coins which buyer will receive
@@ -684,6 +682,11 @@ func (k Keeper) sellCoin(
 	// Ensure that seller account holds enough coins to sell
 	if balance.Amount.LT(coin.Amount) {
 		return types.ErrInsufficientFunds(coin.String(), balance.String())
+	}
+
+	err = k.CheckFutureChanges(ctx, coinToSell, coin.Amount.Neg())
+	if err != nil {
+		return err
 	}
 
 	// Calculate amount of buy coins which seller will receive
