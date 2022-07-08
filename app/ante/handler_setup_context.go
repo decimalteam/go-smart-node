@@ -23,7 +23,8 @@ func NewSetUpContextDecorator() SetUpContextDecorator {
 	return SetUpContextDecorator{}
 }
 
-func (sud SetUpContextDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+func (sud SetUpContextDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
+	simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	// all transactions must implement GasTx
 	gasTx, ok := tx.(authAnte.GasTx)
 	if !ok {

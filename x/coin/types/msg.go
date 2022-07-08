@@ -109,7 +109,7 @@ func (msg MsgCreateCoin) ValidateBasic() error {
 		return ErrInvalidCRR(strconv.FormatUint(msg.CRR, 10))
 	}
 	// Check coin initial volume to be correct
-	if msg.InitialVolume.LT(minCoinSupply) || msg.InitialVolume.GT(maxCoinSupply) {
+	if msg.InitialVolume.LT(MinCoinSupply) || msg.InitialVolume.GT(maxCoinSupply) {
 		return ErrInvalidCoinInitialVolume(msg.InitialVolume.String())
 	}
 	if msg.InitialVolume.GT(msg.LimitVolume) {

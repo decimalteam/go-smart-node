@@ -200,6 +200,7 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 
 	// Create and fill Block object and then marshal to JSON
 	b := Block{
+		ID:                block.BlockID,
 		Evidence:          block.Block.Evidence,
 		Header:            block.Block.Header,
 		LastCommit:        block.Block.LastCommit,
