@@ -12,6 +12,7 @@ import (
 	authSigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	authTx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 
+	appAnte "bitbucket.org/decimalteam/go-smart-node/app/ante"
 	"bitbucket.org/decimalteam/go-smart-node/sdk/wallet"
 )
 
@@ -21,40 +22,74 @@ type TxConstructor struct {
 	builder client.TxBuilder
 }
 
-// BuildTransaction creates transaction builder without
-func BuildTransaction(msgs []sdk.Msg, memo string, feeDenom string, maxGas uint64) (*TxConstructor, error) {
+// BuildTransaction creates transaction builder with automatic fee calculation
+func BuildTransaction(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom string) (*TxConstructor, error) {
+	txc, err := newTxConstructor(msgs, memo)
+	if err != nil {
+		return nil, err
+	}
+	oldFee := sdk.ZeroInt()
+	newFee := sdk.OneInt()
+	for !oldFee.Equal(newFee) {
+		oldFee = sdk.ZeroInt().Add(newFee) //=copy, sdk.Int is reference type
+		newFee, err = calculateFee(acc, msgs, memo, feeDenom, oldFee)
+		if err != nil {
+			return nil, err
+		}
+	}
+	txc.SetFeeAmount(sdk.NewCoins(sdk.NewCoin(feeDenom, newFee)))
+	// additional parameters may be usable
+	// txBuilder.SetTimeoutHeight(f.TimeoutHeight())
+
+	return txc, nil
+}
+
+func calculateFee(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom string, fee sdk.Int) (sdk.Int, error) {
+	txc, err := newTxConstructor(msgs, memo)
+	txc.SetFeeAmount(sdk.NewCoins(sdk.NewCoin(feeDenom, fee)))
+	err = txc.SignTransaction(acc)
+	if err != nil {
+		// with zero fee, decimal node will calculate correct fee itself
+		return sdk.ZeroInt(), err
+	}
+	bz, err := txc.BytesToSend()
+	if err != nil {
+		// with zero fee, decimal node will calculate correct fee itself
+		return sdk.ZeroInt(), err
+	}
+	newFee, err := appAnte.CalculateFee(msgs, int64(len(bz)), sdk.OneDec())
+	if err != nil {
+		// with zero fee, decimal node will calculate correct fee itself
+		return sdk.ZeroInt(), err
+	}
+	return newFee, nil
+}
+
+func newTxConstructor(msgs []sdk.Msg, memo string) (*TxConstructor, error) {
 	// 1. create TxBuilder
 	interfaceRegistry := codecTypes.NewInterfaceRegistry()
 	marshaler := codec.NewProtoCodec(interfaceRegistry)
 	txConfig := authTx.NewTxConfig(marshaler, authTx.DefaultSignModes)
-
 	txBuilder := txConfig.NewTxBuilder()
-
 	// 2. set transaction info
 	if err := txBuilder.SetMsgs(msgs...); err != nil {
 		return nil, err
 	}
-
 	txBuilder.SetMemo(memo)
-	fee := calculateFee(msgs, memo, maxGas)
-	txBuilder.SetGasLimit(fee.Uint64())
-	// additional parameters may be usable
-	// txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin(feeDenom, fee)))
-	// txBuilder.SetTimeoutHeight(f.TimeoutHeight())
-
 	return &TxConstructor{txConfig, txBuilder}, nil
 }
 
-func calculateFee(msgs []sdk.Msg, memo string, maxGas uint64) sdk.Int {
-	return sdk.NewInt(int64(maxGas))
+// SignTransaction signs transaction and appends signature to transaction signatures.
+func (constructor *TxConstructor) SetFeeAmount(coins sdk.Coins) {
+	constructor.builder.SetFeeAmount(coins)
 }
 
 // SignTransaction signs transaction and appends signature to transaction signatures.
-func (constructor *TxConstructor) SignTransaction(acc *wallet.Account) (*TxConstructor, error) {
+func (constructor *TxConstructor) SignTransaction(acc *wallet.Account) error {
 	const signMode = signingTypes.SignMode_SIGN_MODE_DIRECT
 	// Check chain ID, account number and sequence
 	if acc.ChainID() == "" {
-		return nil, fmt.Errorf("chain ID is not set up")
+		return fmt.Errorf("chain ID is not set up")
 	}
 	// TODO
 	//if acc.accountNumber == 0 || acc.sequence == 0 {
@@ -65,7 +100,7 @@ func (constructor *TxConstructor) SignTransaction(acc *wallet.Account) (*TxConst
 	var prevSignatures []signing.SignatureV2
 	prevSignatures, err := constructor.builder.GetTx().GetSignaturesV2()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// 3. signing
@@ -86,19 +121,19 @@ func (constructor *TxConstructor) SignTransaction(acc *wallet.Account) (*TxConst
 	}
 
 	if err = constructor.builder.SetSignatures(sig); err != nil {
-		return nil, err
+		return err
 	}
 
 	// Generate the bytes to be signed.
 	bytesToSign, err := constructor.config.SignModeHandler().GetSignBytes(signMode, signerData, constructor.builder.GetTx())
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Sign those bytes
 	sigBytes, err := acc.Sign(bytesToSign)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Construct final SignatureV2 struct
@@ -113,10 +148,10 @@ func (constructor *TxConstructor) SignTransaction(acc *wallet.Account) (*TxConst
 
 	prevSignatures = append(prevSignatures, sig)
 	if err = constructor.builder.SetSignatures(prevSignatures...); err != nil {
-		return nil, err
+		return err
 	}
 
-	return constructor, nil
+	return nil
 }
 
 // BytesToSend return binary encoded transaction

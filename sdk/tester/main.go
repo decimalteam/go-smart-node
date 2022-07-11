@@ -22,6 +22,7 @@ func formatAsJSON(obj interface{}) string {
 
 var mult = sdk.NewInt(1000000000000000000)
 
+// TODO: split and document
 func main() {
 	api := dscApi.NewAPI(dscApi.ConnectionOptions{EndpointHost: "http://127.0.0.1", Timeout: 40})
 	err := api.GetParameters()
@@ -69,16 +70,16 @@ func main() {
 			fmt.Printf("create wallet error: %v\n", err)
 			return
 		}
-		tx, err := dscTx.BuildTransaction([]sdk.Msg{dscTx.NewMsgSendCoin(
+		tx, err := dscTx.BuildTransaction(faucet, []sdk.Msg{dscTx.NewMsgSendCoin(
 			faucet.SdkAddress(),
 			sdk.NewCoin(api.BaseCoin(), helpers.EtherToWei(sdk.NewInt(10))),
 			w.SdkAddress(),
-		)}, "some send", api.BaseCoin(), api.MaxGas())
+		)}, "some send", api.BaseCoin())
 		if err != nil {
 			fmt.Printf("BuildTransaction error: %v\n", err)
 			return
 		}
-		tx, err = tx.SignTransaction(faucet)
+		err = tx.SignTransaction(faucet)
 		if err != nil {
 			fmt.Printf("SignTransaction error: %v\n", err)
 			return
@@ -97,33 +98,3 @@ func main() {
 		faucet.IncrementSequence()
 	}
 }
-
-/*
-	tx, err := w.BuildTransaction([]sdk.Msg{dscTx.NewMsgCreateCoin(
-		w.SdkAddress(),
-		"aaa",
-		"aaa",
-		10,
-		sdk.NewInt(1000).Mul(mult),
-		sdk.NewInt(1000).Mul(mult),
-		sdk.NewInt(100000).Mul(mult),
-		"aaa",
-	)}, "", "del")
-	if err != nil {
-		fmt.Printf("BuildTransaction error: %v\n", err)
-		return
-	}
-	tx, err = w.SignTransaction(tx)
-	if err != nil {
-		fmt.Printf("SignTransaction error: %v\n", err)
-		return
-	}
-	bytes, err := tx.BytesToSend()
-	if err != nil {
-		fmt.Printf("BytesToSend error: %v\n", err)
-		return
-	}
-	fmt.Printf("%s\n", string(bytes))
-	r, err := api.BroadcastTxSync(bytes)
-	fmt.Println(string(r.Body()))
-*/

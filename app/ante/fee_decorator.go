@@ -45,7 +45,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 		panic(fmt.Sprintf("%s module account has not been set", sdkAuthTypes.FeeCollectorName))
 	}
 
-	commissionInBaseCoin, err := CalculateFee(tx, int64(len(ctx.TxBytes())), sdk.OneDec())
+	commissionInBaseCoin, err := CalculateFee(tx.GetMsgs(), int64(len(ctx.TxBytes())), sdk.OneDec())
 	if err != nil {
 		return ctx, err
 	}

@@ -8,22 +8,28 @@ import (
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 )
 
+// Generate some action with random parameters
 type ActionGenerator interface {
-	// generate some action with random parameters
 	Generate() Action
 	Update(ui UpdateInfo)
 }
 
 type Action interface {
-	// indicates than account can send transaction without errors
-	// i.e. enought balance, account is owner of something...
-	CanPerform(sa *StormAccount) bool
-	// generate transaction data
+	// returns list of accounts than can make transaction
+	// need to decrease count of invalid actions, required ownership of coin/nft, coin balance etc...
+	ChooseAccounts(saList []*StormAccount) []*StormAccount
+	// generate signed transaction data
 	GenerateTx(sa *StormAccount) ([]byte, error)
+	// for debug puprposes
+	String() string
 }
 
 // EmptyAction is used if generator can't create valid action
 type EmptyAction struct{}
+
+func (ea *EmptyAction) ChooseAccounts(saList []*StormAccount) []*StormAccount {
+	return []*StormAccount{}
+}
 
 func (ea *EmptyAction) CanPerform(sa *StormAccount) bool {
 	return false
@@ -33,13 +39,16 @@ func (ea *EmptyAction) GenerateTx(sa *StormAccount) ([]byte, error) {
 	return nil, fmt.Errorf("empty action")
 }
 
+func (ea *EmptyAction) String() string {
+	return "EmptyAction{}"
+}
+
+// UpdateInfo contains all external updatable data for generators
 type UpdateInfo struct {
 	Coins     []string
 	Addresses []string
 	FullCoins []dscApi.Coin
 }
-
-// TODO: do we need thread safety?
 
 // TPS (transactions per second) limiter
 type TPSLimiter struct {

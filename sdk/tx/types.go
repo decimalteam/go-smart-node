@@ -20,6 +20,7 @@ type (
 
 var (
 	NewMsgCreateCoin          = coinTypes.NewMsgCreateCoin
+	NewMsgUpdateCoin          = coinTypes.NewMsgUpdateCoin
 	NewMsgMultiSendCoin       = coinTypes.NewMsgMultiSendCoin
 	NewMsgBuyCoin             = coinTypes.NewMsgBuyCoin
 	NewMsgSellCoin            = coinTypes.NewMsgSellCoin

@@ -76,14 +76,18 @@ func (acg *CreateCoinGenerator) Generate() Action {
 	}
 }
 
-func (ac *CreateCoinAction) CanPerform(sa *StormAccount) bool {
-	if sa.IsDirty() {
-		return false
+func (ac *CreateCoinAction) ChooseAccounts(saList []*StormAccount) []*StormAccount {
+	var res []*StormAccount
+	for i := range saList {
+		if saList[i].IsDirty() {
+			continue
+		}
+		if saList[i].BalanceForCoin(saList[i].feeDenom).LT(ac.initReserve) {
+			continue
+		}
+		res = append(res, saList[i])
 	}
-	if sa.BalanceForCoin(sa.feeDenom).LT(ac.initReserve) {
-		return false
-	}
-	return true
+	return res
 }
 
 func (ac *CreateCoinAction) GenerateTx(sa *StormAccount) ([]byte, error) {
@@ -102,13 +106,17 @@ func (ac *CreateCoinAction) GenerateTx(sa *StormAccount) ([]byte, error) {
 		ac.limitVolume,
 		ac.identity,
 	)
-	tx, err := dscTx.BuildTransaction([]sdk.Msg{msg}, "", sa.FeeDenom(), sa.MaxGas())
+	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom())
 	if err != nil {
 		return nil, err
 	}
-	tx, err = tx.SignTransaction(sa.Account())
+	err = tx.SignTransaction(sa.Account())
 	if err != nil {
 		return nil, err
 	}
 	return tx.BytesToSend()
+}
+
+func (ac *CreateCoinAction) String() string {
+	return ""
 }

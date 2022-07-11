@@ -59,21 +59,29 @@ func (asg *MultiSendCoinGenerator) Generate() Action {
 		summary: sums}
 }
 
-func (as *MultiSendCoinAction) CanPerform(sa *StormAccount) bool {
-	if sa.IsDirty() {
-		return false
-	}
-	for _, coin := range as.summary {
-		if sa.BalanceForCoin(coin.Denom).LT(coin.Amount) {
-			return false
+func (as *MultiSendCoinAction) ChooseAccounts(saList []*StormAccount) []*StormAccount {
+	var res []*StormAccount
+	for i := range saList {
+		if saList[i].IsDirty() {
+			continue
 		}
-	}
-	for _, send := range as.sends {
-		if sa.Address() == send.Receiver {
-			return false
+		doAdd := true
+		for _, coin := range as.summary {
+			if saList[i].BalanceForCoin(coin.Denom).LT(coin.Amount) {
+				doAdd = false
+			}
 		}
+		for _, send := range as.sends {
+			if saList[i].Address() == send.Receiver {
+				doAdd = false
+			}
+		}
+		if !doAdd {
+			continue
+		}
+		res = append(res, saList[i])
 	}
-	return true
+	return res
 }
 
 func (as *MultiSendCoinAction) GenerateTx(sa *StormAccount) ([]byte, error) {
@@ -83,13 +91,17 @@ func (as *MultiSendCoinAction) GenerateTx(sa *StormAccount) ([]byte, error) {
 	}
 
 	msg := dscTx.NewMsgMultiSendCoin(sender, as.sends)
-	tx, err := dscTx.BuildTransaction([]sdk.Msg{msg}, "", sa.FeeDenom(), sa.MaxGas())
+	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom())
 	if err != nil {
 		return nil, err
 	}
-	tx, err = tx.SignTransaction(sa.Account())
+	err = tx.SignTransaction(sa.Account())
 	if err != nil {
 		return nil, err
 	}
 	return tx.BytesToSend()
+}
+
+func (as *MultiSendCoinAction) String() string {
+	return ""
 }

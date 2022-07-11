@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -45,17 +46,21 @@ func (asg *SendCoinGenerator) Generate() Action {
 		address: randomChoice(asg.rnd, asg.knownAddresses)}
 }
 
-func (as *SendCoinAction) CanPerform(sa *StormAccount) bool {
-	if sa.IsDirty() {
-		return false
+func (as *SendCoinAction) ChooseAccounts(saList []*StormAccount) []*StormAccount {
+	var res []*StormAccount
+	for i := range saList {
+		if saList[i].IsDirty() {
+			continue
+		}
+		if saList[i].BalanceForCoin(as.coin.Denom).LT(as.coin.Amount) {
+			continue
+		}
+		if saList[i].Address() == as.address {
+			continue
+		}
+		res = append(res, saList[i])
 	}
-	if sa.BalanceForCoin(as.coin.Denom).LT(as.coin.Amount) {
-		return false
-	}
-	if sa.Address() == as.address {
-		return false
-	}
-	return true
+	return res
 }
 
 func (as *SendCoinAction) GenerateTx(sa *StormAccount) ([]byte, error) {
@@ -69,13 +74,17 @@ func (as *SendCoinAction) GenerateTx(sa *StormAccount) ([]byte, error) {
 	}
 
 	msg := dscTx.NewMsgSendCoin(sender, as.coin, receiver)
-	tx, err := dscTx.BuildTransaction([]sdk.Msg{msg}, "", sa.FeeDenom(), sa.MaxGas())
+	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom())
 	if err != nil {
 		return nil, err
 	}
-	tx, err = tx.SignTransaction(sa.Account())
+	err = tx.SignTransaction(sa.Account())
 	if err != nil {
 		return nil, err
 	}
 	return tx.BytesToSend()
+}
+
+func (as *SendCoinAction) String() string {
+	return fmt.Sprintf("SendCoin{address: %s, coin: %s}", as.address, as.coin.String())
 }

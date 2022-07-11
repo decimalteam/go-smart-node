@@ -54,6 +54,13 @@ func (ar *ActionReactor) Add(generatorName string, weight int64) error {
 				Weight: weight,
 			}
 		}
+	case "UpdateCoin":
+		{
+			wag = &WeightedAG{
+				AG:     NewUpdateCoinGenerator(1, 100, "del"),
+				Weight: weight,
+			}
+		}
 	}
 	if wag == nil {
 		return fmt.Errorf("%s: unknown generator name", generatorName)

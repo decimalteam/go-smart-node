@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -81,14 +82,18 @@ func (asg *SellCoinGenerator) Generate() Action {
 	}
 }
 
-func (as *SellCoinAction) CanPerform(sa *StormAccount) bool {
-	if sa.IsDirty() {
-		return false
+func (as *SellCoinAction) ChooseAccounts(saList []*StormAccount) []*StormAccount {
+	var res []*StormAccount
+	for i := range saList {
+		if saList[i].IsDirty() {
+			continue
+		}
+		if saList[i].BalanceForCoin(as.coinToSell.Denom).LT(as.coinToSell.Amount) {
+			continue
+		}
+		res = append(res, saList[i])
 	}
-	if sa.BalanceForCoin(as.coinToSell.Denom).LT(as.coinToSell.Amount) {
-		return false
-	}
-	return true
+	return res
 }
 
 func (as *SellCoinAction) GenerateTx(sa *StormAccount) ([]byte, error) {
@@ -103,13 +108,17 @@ func (as *SellCoinAction) GenerateTx(sa *StormAccount) ([]byte, error) {
 		as.minCoinToBuy,
 	)
 	// TODO: fee in custom coin
-	tx, err := dscTx.BuildTransaction([]sdk.Msg{msg}, "", sa.FeeDenom(), sa.MaxGas())
+	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom())
 	if err != nil {
 		return nil, err
 	}
-	tx, err = tx.SignTransaction(sa.Account())
+	err = tx.SignTransaction(sa.Account())
 	if err != nil {
 		return nil, err
 	}
 	return tx.BytesToSend()
+}
+
+func (as *SellCoinAction) String() string {
+	return fmt.Sprintf("SellCoin{coinToSell:%s, minCoinToBuy:%s}", as.coinToSell.String(), as.minCoinToBuy.String())
 }

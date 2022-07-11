@@ -140,12 +140,12 @@ func cmdFaucet() *cobra.Command {
 					sdk.NewCoin(reactor.api.BaseCoin(), helpers.EtherToWei(sdk.NewInt(amountToSend))),
 					acc.account.SdkAddress(),
 				)
-				tx, err := dscTx.BuildTransaction([]sdk.Msg{msg}, "", reactor.api.BaseCoin(), 0) /// TODO: 0 gas is temporary
+				tx, err := dscTx.BuildTransaction(reactor.faucetAccount, []sdk.Msg{msg}, "", reactor.api.BaseCoin())
 				if err != nil {
 					fmt.Println(err)
 					continue
 				}
-				tx, err = tx.SignTransaction(reactor.faucetAccount)
+				err = tx.SignTransaction(reactor.faucetAccount)
 				if err != nil {
 					fmt.Println(err)
 					continue
@@ -232,10 +232,11 @@ func cmdRun() *cobra.Command {
 			n := 0
 			for {
 				action := reactor.actionReactor.Generate()
-				acc := reactor.accounts[rand.Intn(len(reactor.accounts))]
-				if !action.CanPerform(acc) {
+				accs := action.ChooseAccounts(reactor.accounts)
+				if len(accs) == 0 {
 					continue
 				}
+				acc := accs[rand.Intn(len(accs))]
 				if !reactor.limiter.CanMake() {
 					continue
 				}
@@ -253,12 +254,16 @@ func cmdRun() *cobra.Command {
 					continue
 				}
 				if res.Code != 0 {
-					fmt.Printf("account: %s, action: %#v, result: %#v\n", acc.Address(), action, res)
+					fmt.Printf("account: %s, action: %s, result: %#v\n", acc.Address(), action, res)
+					if res.Code == 111222 {
+						os.Exit(1)
+					}
 					acc.MarkDirty()
 					// TODO: Update() returns error
 					go acc.UpdateNumberSequence()
 					continue
 				}
+				//fmt.Printf("%T:: tx hash: %s\n", action, res.Hash)
 				acc.IncrementSequence()
 				go acc.UpdateBalance()
 				n++

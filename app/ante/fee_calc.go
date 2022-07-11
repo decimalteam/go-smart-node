@@ -36,10 +36,10 @@ const (
 )
 
 // Calculate fee in base coin
-func CalculateFee(tx sdk.Tx, txBytesLen int64, factor sdk.Dec) (sdk.Int, error) {
+func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec) (sdk.Int, error) {
 	commissionInBaseCoin := sdk.ZeroInt()
 	commissionInBaseCoin = commissionInBaseCoin.AddRaw(txBytesLen * 2)
-	for _, msg := range tx.GetMsgs() {
+	for _, msg := range msgs {
 		switch m := msg.(type) {
 		case *coinTypes.MsgCreateCoin:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(createCoinFee)
@@ -54,9 +54,9 @@ func CalculateFee(tx sdk.Tx, txBytesLen int64, factor sdk.Dec) (sdk.Int, error) 
 		case *coinTypes.MsgSellAllCoin:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(sellCoinFee)
 		case *coinTypes.MsgRedeemCheck:
-			commissionInBaseCoin = sdk.ZeroInt()
+			break // no commission
 		case *coinTypes.MsgUpdateCoin:
-			commissionInBaseCoin = sdk.ZeroInt()
+			break // no commission
 		default:
 			return sdk.NewInt(0), ErrUnknownTransaction(fmt.Sprintf("%T", msg))
 		}
