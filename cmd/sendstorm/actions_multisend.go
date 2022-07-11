@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
@@ -103,5 +105,14 @@ func (as *MultiSendCoinAction) GenerateTx(sa *StormAccount) ([]byte, error) {
 }
 
 func (as *MultiSendCoinAction) String() string {
-	return ""
+	var sb strings.Builder
+	sb.WriteString("MultiSendCoin {")
+	for i, s := range as.sends {
+		sb.WriteString(fmt.Sprintf("Send{Receiver: %s, Coin: %s}", s.Receiver, s.Coin.String()))
+		if i < len(as.sends)-1 {
+			sb.WriteString(", ")
+		}
+	}
+	sb.WriteString("}")
+	return sb.String()
 }

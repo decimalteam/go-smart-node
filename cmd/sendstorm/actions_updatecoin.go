@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -109,6 +110,7 @@ func (au *UpdateCoinAction) GenerateTx(sa *StormAccount) ([]byte, error) {
 	return tx.BytesToSend()
 }
 
-func (as *UpdateCoinAction) String() string {
-	return ""
+func (au *UpdateCoinAction) String() string {
+	return fmt.Sprintf("UpdateCoin{Symbol: %s, new limit: %s, new idenity: %s}",
+		au.symbol, au.newLimitVolume.String(), au.newIdentity)
 }
