@@ -130,8 +130,7 @@ func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper coin
 
 	// verify the account has enough funds to pay fee
 	balance := bankKeeper.GetBalance(ctx, feePayerAddress, fee.Denom)
-	resultBalance := balance.Sub(fee)
-	if resultBalance.IsNegative() {
+	if balance.Amount.LT(fee.Amount) {
 		return ErrInsufficientFundsToPayFee(balance.String(), fee.String())
 	}
 
