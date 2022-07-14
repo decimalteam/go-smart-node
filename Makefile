@@ -13,7 +13,7 @@ LEDGER_ENABLED ?= true
 BINDIR ?= $(GOPATH)/bin
 DECIMAL_BINARY = dscd
 DECIMAL_DIR = decimal
-BUILDDIR ?= $(CURDIR)/build
+BUILDDIR ?= ~/go/bin
 SIMAPP = ./app
 HTTPS_GIT := https://bitbucket.org/decimalteam/go-smart-node.git
 DOCKER := $(shell which docker)
@@ -250,7 +250,7 @@ else
 endif
 
 tools: tools-stamp
-tools-stamp: contract-tools docs-tools proto-tools statik runsim
+tools-stamp: docs-tools proto-tools statik
 	# Create dummy file to satisfy dependency and avoid
 	# rebuilding when this Makefile target is hit twice
 	# in a row.

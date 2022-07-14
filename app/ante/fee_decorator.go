@@ -1,6 +1,7 @@
 package ante
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"fmt"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
@@ -43,6 +44,10 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 
 	if addr := fd.accountKeeper.GetModuleAddress(sdkAuthTypes.FeeCollectorName); addr == nil {
 		panic(fmt.Sprintf("%s module account has not been set", sdkAuthTypes.FeeCollectorName))
+	}
+
+	if addr := fd.accountKeeper.GetModuleAddress(types.ReservedPool); addr == nil {
+		panic(fmt.Sprintf("%s module account has not been set", types.ReservedPool))
 	}
 
 	commissionInBaseCoin, err := CalculateFee(tx, int64(len(ctx.TxBytes())), sdk.OneDec())

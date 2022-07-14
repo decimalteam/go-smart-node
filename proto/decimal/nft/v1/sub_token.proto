@@ -1,0 +1,17 @@
+syntax = "proto3";
+package decimal.nft.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
+
+message SubToken {
+  int64 ID = 1 [
+    (gogoproto.moretags) = "yaml:\"id\""
+  ];
+
+  string reserve = 2 [
+    (gogoproto.jsontag) = "reserve",
+    (gogoproto.moretags) = "yaml:\"reserve\""
+  ];
+}

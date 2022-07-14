@@ -1,4 +1,4 @@
-package types
+package keeper_test
 
 // nolint: deadcode unused
 var (
@@ -11,10 +11,3 @@ var (
 	TokenURI1 = "https://google.com/token-1.json"
 	TokenURI2 = "https://google.com/token-2.json"
 )
-
-//// generateAddresses generates numAddrs of normal AccAddrs and ValAddrs
-//func GenerateAddresses(dsc *app.DSC, ctx sdk.Context) []sdk.AccAddress {
-//
-//
-//	return addrs
-//}

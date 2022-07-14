@@ -20,23 +20,23 @@ func (m *GenesisState) GetCollections() []Collection {
 }
 
 // NewGenesisState creates a new genesis state.
-func NewGenesisState(owners []Owner, collections Collections) GenesisState {
-	return GenesisState{
+func NewGenesisState(owners []Owner, collections Collections) *GenesisState {
+	return &GenesisState{
 		Owners:      owners,
 		Collections: collections,
 	}
 }
 
 // DefaultGenesisState returns a default genesis state
-func DefaultGenesisState() GenesisState {
-	return NewGenesisState([]Owner{}, NewCollections())
+func DefaultGenesisState() *GenesisState {
+	return NewGenesisState([]Owner{}, Collections{})
 }
 
-// ValidateGenesis performs basic validation of nfts genesis data returning an
+// Validate performs basic validation of nfts genesis data returning an
 // error for any failed validation criteria.
-func ValidateGenesis(data GenesisState) error {
-	for _, Owner := range data.Owners {
-		addr, err := sdk.AccAddressFromBech32(Owner.Address)
+func (m GenesisState) Validate() error {
+	for _, owner := range m.Owners {
+		addr, err := sdk.AccAddressFromBech32(owner.Address)
 		if err != nil {
 			return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, err.Error())
 		}

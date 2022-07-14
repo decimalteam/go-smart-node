@@ -3,14 +3,20 @@ package types
 import (
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/exported"
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"sort"
 	"strconv"
 	"strings"
 )
 
-func (t *TokenOwner) GetAddress() (sdk.AccAddress, error) {
-	return sdk.AccAddressFromBech32(t.Address)
+func NewTokenOwner(address string, subTokenIDs []int64) exported.TokenOwner {
+	return &TokenOwner{
+		Address:     address,
+		SubTokenIDs: subTokenIDs,
+	}
+}
+
+func (t *TokenOwner) GetAddress() string {
+	return t.Address
 }
 
 func (t *TokenOwner) GetSubTokenIDs() []int64 {
@@ -52,43 +58,29 @@ func (t TokenOwners) GetOwners() []exported.TokenOwner {
 }
 
 func (t TokenOwners) SetOwner(owner exported.TokenOwner) (exported.TokenOwners, error) {
-	ownerAddr, err := owner.GetAddress()
-	if err != nil {
-		return nil, err
-	}
-
 	for i, o := range t {
-		addr, err := o.GetAddress()
-		if err != nil {
-			return nil, err
-		}
-
-		if addr.Equals(ownerAddr) {
-			v := *(owner.(*TokenOwner))
-			(t)[i] = v
+		if o.GetAddress() == owner.GetAddress() {
+			t[i] = *(owner.(*TokenOwner))
+			return t, nil
 		}
 	}
 
 	t = append(t, TokenOwner{
-		Address:     ownerAddr.String(),
+		Address:     owner.GetAddress(),
 		SubTokenIDs: owner.GetSubTokenIDs(),
 	})
 
 	return t, nil
 }
 
-func (t TokenOwners) GetOwner(address sdk.AccAddress) (exported.TokenOwner, error) {
+func (t TokenOwners) GetOwner(address string) exported.TokenOwner {
 	for _, owner := range t {
-		ownerAddr, err := owner.GetAddress()
-		if err != nil {
-			return nil, err
-		}
-
-		if ownerAddr.Equals(address) {
-			return &owner, nil
+		ownerAddr := owner.GetAddress()
+		if ownerAddr == address {
+			return &owner
 		}
 	}
-	return nil, nil
+	return nil
 }
 
 func (t TokenOwners) String() string {

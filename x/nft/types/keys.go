@@ -1,7 +1,6 @@
 package types
 
 import (
-	coin "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"encoding/binary"
 	"fmt"
 	"github.com/tendermint/tendermint/crypto/tmhash"
@@ -14,7 +13,7 @@ const (
 	ModuleName = "nft"
 
 	// StoreKey is the default store key for NFT
-	StoreKey = coin.StoreKey
+	StoreKey = ModuleName
 
 	// QuerierRoute is the querier route for the NFT store.
 	QuerierRoute = ModuleName

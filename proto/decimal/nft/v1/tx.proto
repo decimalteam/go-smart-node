@@ -6,9 +6,9 @@ import "gogoproto/gogo.proto";
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
 
 service Msg {
+  rpc MintNFT(MsgMintNFT) returns (MsgMintNFTResponse);
   rpc TransferNFT(MsgTransferNFT) returns (MsgTransferNFTResponse);
   rpc EditNFTMetadata(MsgEditNFTMetadata) returns (MsgEditNFTMetadataResponse);
-  rpc MintNFT(MsgMintNFT) returns (MsgMintNFTResponse);
   rpc BurnNFT(MsgBurnNFT) returns (MsgBurnNFTResponse);
   rpc UpdateReserveNFT(MsgUpdateReserveNFT) returns (MsgUpdateReserveNFTResponse);
 }

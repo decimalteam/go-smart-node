@@ -71,7 +71,7 @@ func getCoinByDenomHandlerFn(clientCtx client.Context) http.HandlerFunc {
 		vars := mux.Vars(r)
 		coinDenom := vars["coinDenom"]
 
-		res, height, err := clientCtx.Query(fmt.Sprintf(fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute, types.QueryCoin, coinDenom)))
+		res, height, err := clientCtx.Query(fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute, types.QueryCoin, coinDenom))
 		if rest.CheckInternalServerError(w, err) {
 			return
 		}
@@ -114,7 +114,7 @@ func getCheckByHashHandlerFn(clientCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		res, height, err := clientCtx.QueryWithData(fmt.Sprintf(fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryCheck)), bz)
+		res, height, err := clientCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryCheck), bz)
 		if rest.CheckInternalServerError(w, err) {
 			return
 		}

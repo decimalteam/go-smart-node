@@ -1,6 +1,8 @@
 package app
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/nft"
+	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -146,6 +148,7 @@ import (
 	coin "bitbucket.org/decimalteam/go-smart-node/x/coin"
 	coinkeeper "bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	nftkeeper "bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
 )
 
 var (
@@ -214,6 +217,7 @@ var (
 		recovery.AppModuleBasic{},
 		// Decimal
 		coin.AppModuleBasic{},
+		nft.AppModuleBasic{},
 	)
 
 	// Module account permissions
@@ -230,6 +234,7 @@ var (
 		claimstypes.ModuleName:         nil,
 		incentivestypes.ModuleName:     {authtypes.Minter, authtypes.Burner},
 		cointypes.ModuleName:           {authtypes.Minter, authtypes.Burner},
+		nfttypes.ReservedPool:          {authtypes.Minter, authtypes.Burner},
 		// special account to hold legacy balances
 		cointypes.LegacyCoinPool: nil,
 	}
@@ -303,6 +308,7 @@ type DSC struct {
 
 	// Decimal keepers
 	CoinKeeper coinkeeper.Keeper
+	NftKeeper  nftkeeper.Keeper
 
 	// Module manager
 	mm *module.Manager
@@ -377,6 +383,7 @@ func NewDSC(
 		vestingtypes.StoreKey,
 		// Decimal keys
 		cointypes.StoreKey,
+		nfttypes.StoreKey,
 	)
 
 	// Add the EVM transient store key
@@ -665,6 +672,13 @@ func NewDSC(
 		app.BankKeeper,
 	)
 	app.CoinKeeper = *coinKeeper
+	nftKeeper := nftkeeper.NewKeeper(
+		appCodec,
+		keys[nfttypes.StoreKey],
+		app.BankKeeper,
+		cmdcfg.BaseDenom,
+	)
+	app.NftKeeper = *nftKeeper
 
 	/****  Module Options ****/
 
@@ -706,6 +720,7 @@ func NewDSC(
 		recovery.NewAppModule(*app.RecoveryKeeper),
 		// Decimal app modules
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
+		nft.NewAppModule(app.NftKeeper, app.AccountKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -743,6 +758,7 @@ func NewDSC(
 		incentivestypes.ModuleName,
 		recoverytypes.ModuleName,
 		cointypes.ModuleName,
+		nfttypes.ModuleName,
 	)
 
 	// NOTE: fee market module must go last in order to retrieve the block gas used.
@@ -775,6 +791,7 @@ func NewDSC(
 		incentivestypes.ModuleName,
 		recoverytypes.ModuleName,
 		cointypes.ModuleName,
+		nfttypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -812,6 +829,7 @@ func NewDSC(
 		recoverytypes.ModuleName,
 		// Decimal modules
 		cointypes.ModuleName,
+		nfttypes.ModuleName,
 		// NOTE: crisis module must go at the end to check for invariants on each module
 		crisistypes.ModuleName,
 	)
