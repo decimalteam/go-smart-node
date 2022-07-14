@@ -1,3 +1,63 @@
+* Добавление нового модуля
+
+В proto/decimal/<module>/<version> создать .proto файлы с декларациями (минимум):
+
+*) genesis.proto
+
+*) query.proto
+
+*) tx.proto
+
+*) различные типы в *.proto
+
+Примерный заголовок
+```
+syntax = "proto3";
+package decimal.*.v1;
+
+import "gogoproto/gogo.proto";
+
+// если необходимы декларации из других файлов
+import "decimal/*/v1/*.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/*/types";
+
+message GenesisState {}
+```
+
+Структура модуля. Дерево от x/<module>.
+
+```
+.
++-- module.go (AppModule + AppModuleBasic: конструктор, регистрация rest/grpc роутов, cli комманд; это все потом уходит в app.go)
++-- genesis.go (InitGenesis + ExportGenesis)
++-- handler.go (NewHandler: обработка известных типов транзакций)
++-- client
+|   +-- cli
+|   |   +-- query.go (запросы через cli)
+|   |   +-- tx.go (отправка транзакций через cli)
+|   +-- rest
+|   |   +-- rest.go (регистрация роутов)
+|   |   +-- query.go (регистрация хэндлеров gorilla/mux)
++-- keeper
+|   +-- keeper.go (операции со стором key-value: загрузка, сохранение, итерация)
+|   +-- msg_server.go (обработка транзакций - имплементация описаний service Msg в tx.proto)
+|   +-- querier.go (конструктор NewQuerier для module.go)
+|   +-- grpc_query.go (обработка запросов - имплементация описаний service Query в query.proto)
++-- simulation
+|   +-- simap.go (нужен для тестирования)
++-- types
+|   +-- codec.go (регистрация типов транзакций в кодеках)
+|   +-- config.go (константы модуля)
+|   +-- errors.go (типизированные ошибки с кодами, codespace для облегчения разбора ошибок внешними сервисами, перевода на другие языки)
+|   +-- events.go (константы полей при отправке событий)
+|   +-- genesis.go (DefaultGenesis(), Validate())
+|   +-- keys.go (ключи keeper, используются при сохранении в сторе)
+|   +-- msg.go (конструкторы сообщений-транзакций + имплементация методов для удовлетворения типу sdk.Msg: Route, Type, GetSignBytes, GetSigners, ValidateBasic)
+|   +-- params.go (нужен при наличии глобальных параметров модуля, которые задаются в генезисе и должны храниться в сторе)
+
+```
+
 * Добавление нового типа
 
 В proto/decimal/<module>/<version> создать .proto файл с декларацией типа.

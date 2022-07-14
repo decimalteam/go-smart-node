@@ -1,0 +1,86 @@
+syntax = "proto3";
+package decimal.multisig.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+
+import "decimal/multisig/v1/multisig.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/multisig/types";
+
+// Query defines the gRPC querier service.
+service Query {
+
+  // Retrieves existing wallets by owner address.
+  rpc Wallets(QueryWalletsRequest) returns (QueryWalletsResponse) {
+    option (google.api.http).get = "/multisig/v1/wallets/{owner}";
+  }
+
+  // Retrieves existing wallet by address.
+  rpc Wallet(QueryWalletRequest) returns (QueryWalletResponse) {
+    option (google.api.http).get = "/multisig/v1/wallet/{address}";
+  }
+
+  // Retrieves existing transactions by wallet address.
+  rpc Transactions(QueryTransactionsRequest) returns (QueryTransactionsResponse) {
+    option (google.api.http).get = "/multisig/v1/transactions/{address}";
+  }
+
+  // Retrieves existing transaction by id.
+  rpc Transaction(QueryTransactionRequest) returns (QueryTransactionResponse) {
+    option (google.api.http).get = "/multisig/v1/transaction/{id}";
+  }
+}
+
+////////////////////////////////////////////////////////////////
+// QueryWallets
+////////////////////////////////////////////////////////////////
+
+message QueryWalletsRequest {
+  string owner = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+message QueryWalletsResponse {
+  repeated Wallet wallets = 1 [ (gogoproto.nullable) = false ];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+////////////////////////////////////////////////////////////////
+// QueryWallet
+////////////////////////////////////////////////////////////////
+
+message QueryWalletRequest {
+  string address = 1;
+}
+
+message QueryWalletResponse {
+  Wallet wallet = 1 [ (gogoproto.nullable) = false ];
+}
+
+////////////////////////////////////////////////////////////////
+// QueryTransactions
+////////////////////////////////////////////////////////////////
+
+message QueryTransactionsRequest {
+  string address = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+message QueryTransactionsResponse {
+  repeated Transaction transactions = 1 [ (gogoproto.nullable) = false ];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+////////////////////////////////////////////////////////////////
+// QueryTransaction
+////////////////////////////////////////////////////////////////
+
+message QueryTransactionRequest {
+  string id = 1;
+}
+
+message QueryTransactionResponse {
+  Transaction transaction = 1 [ (gogoproto.nullable) = false ];
+}

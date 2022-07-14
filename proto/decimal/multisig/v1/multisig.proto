@@ -10,25 +10,30 @@ message Transaction {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string ID = 1 [
+  string id = 1 [
     (gogoproto.jsontag) = "id",
     (gogoproto.moretags) = "yaml:\"id\""
   ];
   string wallet = 2 [
+    (gogoproto.jsontag) = "wallet",
     (gogoproto.moretags) = "yaml:\"wallet\""
   ];
   string receiver = 3 [
+    (gogoproto.jsontag) = "receiver",
     (gogoproto.moretags) = "yaml:\"receiver\""
   ];
   repeated cosmos.base.v1beta1.Coin coins = 4 [
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
     (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "coins",
     (gogoproto.moretags) = "yaml:\"coins\""
   ];
   repeated string signers = 5 [
+    (gogoproto.jsontag) = "signers",
     (gogoproto.moretags) = "yaml:\"signers\""
   ];
   int64 created_at = 6 [
+    (gogoproto.jsontag) = "created_at",
     (gogoproto.moretags) = "yaml:\"created_at\""
   ];
 }
@@ -38,15 +43,19 @@ message Wallet {
   option (gogoproto.goproto_getters) = false;
 
   string address = 1 [
+    (gogoproto.jsontag) = "address",
     (gogoproto.moretags) = "yaml:\"address\""
   ];
   repeated string owners = 2 [
+    (gogoproto.jsontag) = "owners",
     (gogoproto.moretags) = "yaml:\"owners\""
   ];
   repeated uint64 weights = 3 [
+    (gogoproto.jsontag) = "weights",
     (gogoproto.moretags) = "yaml:\"weights\""
   ];
   uint64 threshold = 4 [
+    (gogoproto.jsontag) = "threshold",
     (gogoproto.moretags) = "yaml:\"threshold\""
   ];
 }

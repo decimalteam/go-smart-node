@@ -146,6 +146,10 @@ import (
 	coin "bitbucket.org/decimalteam/go-smart-node/x/coin"
 	coinkeeper "bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+
+	multisig "bitbucket.org/decimalteam/go-smart-node/x/multisig"
+	multisigkeeper "bitbucket.org/decimalteam/go-smart-node/x/multisig/keeper"
+	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 )
 
 var (
@@ -214,6 +218,7 @@ var (
 		recovery.AppModuleBasic{},
 		// Decimal
 		coin.AppModuleBasic{},
+		multisig.AppModuleBasic{},
 	)
 
 	// Module account permissions
@@ -302,7 +307,8 @@ type DSC struct {
 	RecoveryKeeper   *recoverykeeper.Keeper
 
 	// Decimal keepers
-	CoinKeeper coinkeeper.Keeper
+	CoinKeeper     coinkeeper.Keeper
+	MultisigKeeper multisigkeeper.Keeper
 
 	// Module manager
 	mm *module.Manager
@@ -377,6 +383,7 @@ func NewDSC(
 		vestingtypes.StoreKey,
 		// Decimal keys
 		cointypes.StoreKey,
+		multisigtypes.StoreKey,
 	)
 
 	// Add the EVM transient store key
@@ -657,14 +664,21 @@ func NewDSC(
 	app.EvidenceKeeper = *evidenceKeeper
 
 	// Create Decimal keepers
-	coinKeeper := coinkeeper.NewKeeper(
+	app.CoinKeeper = *coinkeeper.NewKeeper(
 		appCodec,
 		keys[cointypes.StoreKey],
 		app.GetSubspace(cointypes.ModuleName),
 		app.AccountKeeper,
 		app.BankKeeper,
 	)
-	app.CoinKeeper = *coinKeeper
+
+	app.MultisigKeeper = *multisigkeeper.NewKeeper(
+		appCodec,
+		keys[multisigtypes.StoreKey],
+		app.GetSubspace(multisigtypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+	)
 
 	/****  Module Options ****/
 
@@ -706,6 +720,7 @@ func NewDSC(
 		recovery.NewAppModule(*app.RecoveryKeeper),
 		// Decimal app modules
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
+		multisig.NewAppModule(appCodec, app.MultisigKeeper, app.AccountKeeper, app.BankKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -743,6 +758,7 @@ func NewDSC(
 		incentivestypes.ModuleName,
 		recoverytypes.ModuleName,
 		cointypes.ModuleName,
+		multisigtypes.ModuleName,
 	)
 
 	// NOTE: fee market module must go last in order to retrieve the block gas used.
@@ -775,6 +791,7 @@ func NewDSC(
 		incentivestypes.ModuleName,
 		recoverytypes.ModuleName,
 		cointypes.ModuleName,
+		multisigtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -812,6 +829,7 @@ func NewDSC(
 		recoverytypes.ModuleName,
 		// Decimal modules
 		cointypes.ModuleName,
+		multisigtypes.ModuleName,
 		// NOTE: crisis module must go at the end to check for invariants on each module
 		crisistypes.ModuleName,
 	)
@@ -840,6 +858,7 @@ func NewDSC(
 		epochs.NewAppModule(appCodec, app.EpochsKeeper),
 		feemarket.NewAppModule(app.FeeMarketKeeper),
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
+		multisig.NewAppModule(appCodec, app.MultisigKeeper, app.AccountKeeper, app.BankKeeper),
 	)
 
 	app.sm.RegisterStoreDecoders()
@@ -1126,6 +1145,7 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(recoverytypes.ModuleName)
 	// Decimal subspaces
 	paramsKeeper.Subspace(cointypes.ModuleName)
+	paramsKeeper.Subspace(multisigtypes.ModuleName)
 	return paramsKeeper
 }
 
