@@ -75,17 +75,18 @@ func newEthAnteHandler(options HandlerOptions) sdk.AnteHandler {
 }
 
 // newCosmosAnteHandler creates the default ante handler for Cosmos transactions
+// keep in sync with newCosmosAnteHandlerEip712, except signature verification
 func newCosmosAnteHandler(options HandlerOptions) sdk.AnteHandler {
 	return sdk.ChainAnteDecorators(
 		evmante.RejectMessagesDecorator{}, // reject MsgEthereumTxs
-		authante.NewSetUpContextDecorator(),
+		NewSetUpContextDecorator(),
 		authante.NewRejectExtensionOptionsDecorator(),
 		authante.NewMempoolFeeDecorator(),
 		authante.NewValidateBasicDecorator(),
 		authante.NewTxTimeoutHeightDecorator(),
 		authante.NewValidateMemoDecorator(options.AccountKeeper),
 		authante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		authante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper),
+		NewFeeDecorator(options.CoinKeeper, options.BankKeeper, options.AccountKeeper),
 		NewValidatorCommissionDecorator(options.Cdc),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		authante.NewSetPubKeyDecorator(options.AccountKeeper),
@@ -98,16 +99,17 @@ func newCosmosAnteHandler(options HandlerOptions) sdk.AnteHandler {
 }
 
 // newCosmosAnteHandlerEip712 creates the ante handler for transactions signed with EIP712
+// keep in sync with newCosmosAnteHandler, except signature verification
 func newCosmosAnteHandlerEip712(options HandlerOptions) sdk.AnteHandler {
 	return sdk.ChainAnteDecorators(
 		evmante.RejectMessagesDecorator{}, // reject MsgEthereumTxs
-		authante.NewSetUpContextDecorator(),
+		NewSetUpContextDecorator(),
 		authante.NewMempoolFeeDecorator(),
 		authante.NewValidateBasicDecorator(),
 		authante.NewTxTimeoutHeightDecorator(),
 		authante.NewValidateMemoDecorator(options.AccountKeeper),
 		authante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		authante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper),
+		NewFeeDecorator(options.CoinKeeper, options.BankKeeper, options.AccountKeeper),
 		NewValidatorCommissionDecorator(options.Cdc),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		authante.NewSetPubKeyDecorator(options.AccountKeeper),

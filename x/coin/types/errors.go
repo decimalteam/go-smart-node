@@ -4,6 +4,7 @@ package types
 
 import (
 	"fmt"
+	"strconv"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -40,6 +41,7 @@ const (
 	CodeMinimumValueToBuyReached   uint32 = 205
 	CodeUpdateBalance              uint32 = 206
 	CodeLimitVolumeBroken          uint32 = 207
+	CodeTxBreaksMinVolumeLimit     uint32 = 208
 
 	// Send coin
 	CodeInvalidAmount          uint32 = 300
@@ -66,6 +68,12 @@ const (
 	CodeUnableRetriveArmoredPkey uint32 = 501
 	CodeUnableRetrivePkey        uint32 = 502
 	CodeUnableRetriveSECPPkey    uint32 = 503
+
+	// Legacy return
+	CodeInvalidPublicKeyLength         uint32 = 600
+	CodeCannnotGetAddressFromPublicKey uint32 = 601
+	CodeNoMatchReceiverAndPKey         uint32 = 602
+	CodeNoLegacyBalance                uint32 = 603
 )
 
 func ErrInvalidCRR(crr string) *sdkerrors.Error {
@@ -136,8 +144,8 @@ func ErrInvalidCoinInitialVolume(initialVolume string) *sdkerrors.Error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidCoinInitialVolume,
-		fmt.Sprintf("coin initial volume should be between %s and %s. Given %s", minCoinSupply.String(), maxCoinSupply.String(), initialVolume),
-		errors.NewParam("min_coin_supply", minCoinSupply.String()),
+		fmt.Sprintf("coin initial volume should be between %s and %s. Given %s", MinCoinSupply.String(), maxCoinSupply.String(), initialVolume),
+		errors.NewParam("min_coin_supply", MinCoinSupply.String()),
 		errors.NewParam("max_coin_supply", maxCoinSupply.String()),
 		errors.NewParam("initial_volume", initialVolume),
 	)
@@ -220,11 +228,11 @@ func ErrInsufficientFundsToSellAll() *sdkerrors.Error {
 	)
 }
 
-func ErrTxBreaksVolumeLimit(volume string, limitVolume string) *sdkerrors.Error {
+func ErrTxBreaksMinVolumeLimit(volume string, limitVolume string) *sdkerrors.Error {
 	return errors.Encode(
 		DefaultCodespace,
-		CodeTxBreaksVolumeLimit,
-		fmt.Sprintf("tx breaks LimitVolume rule: %s > %s", volume, limitVolume),
+		CodeTxBreaksMinVolumeLimit,
+		fmt.Sprintf("tx breaks min volume rule: %s < %s", volume, limitVolume),
 		errors.NewParam("volume", volume),
 		errors.NewParam("limit_volume", limitVolume),
 	)
@@ -301,6 +309,16 @@ func ErrInvalidSenderAddress(address string) *sdkerrors.Error {
 		DefaultCodespace,
 		CodeInvalidSenderAddress,
 		fmt.Sprintf("invalid sender address: %s", address),
+	)
+}
+
+func ErrTxBreaksVolumeLimit(volume string, limitVolume string) *sdkerrors.Error {
+	return errors.Encode(
+		DefaultCodespace,
+		CodeTxBreaksVolumeLimit,
+		fmt.Sprintf("tx breaks LimitVolume rule: %s > %s", volume, limitVolume),
+		errors.NewParam("volume", volume),
+		errors.NewParam("limit_volume", limitVolume),
 	)
 }
 
@@ -458,5 +476,45 @@ func ErrUnableRetrieveSECPPkey(name string, algo string) *sdkerrors.Error {
 		fmt.Sprintf("unable to retrieve secp256k1 private key for account %s: %s private key retrieved instead", name, algo),
 		errors.NewParam("name", name),
 		errors.NewParam("algo", algo),
+	)
+}
+
+// Legacy return errors
+func ErrInvalidPublicKeyLength(publicKeyLength int) *sdkerrors.Error {
+	return errors.Encode(
+		DefaultCodespace,
+		CodeInvalidPublicKeyLength,
+		fmt.Sprintf("invalid public key length %d", publicKeyLength),
+		errors.NewParam("public_key_length", strconv.Itoa(publicKeyLength)),
+	)
+}
+
+func ErrCannnotGetAddressFromPublicKey(err string) *sdkerrors.Error {
+	return errors.Encode(
+		DefaultCodespace,
+		CodeCannnotGetAddressFromPublicKey,
+		fmt.Sprintf("can not get address from public key: %s", err),
+		errors.NewParam("error", err),
+	)
+}
+
+func ErrNoMatchReceiverAndPKey(expectAddress, gotAddress string) *sdkerrors.Error {
+	return errors.Encode(
+		DefaultCodespace,
+		CodeNoMatchReceiverAndPKey,
+		fmt.Sprintf("receiver address and address from public key not match: expect %s, but got %s",
+			expectAddress, gotAddress),
+		errors.NewParam("receiver_address", expectAddress),
+		errors.NewParam("pubkey_address", gotAddress),
+	)
+}
+
+func ErrNoLegacyBalance(receiver, legacyAddress string) *sdkerrors.Error {
+	return errors.Encode(
+		DefaultCodespace,
+		CodeNoLegacyBalance,
+		fmt.Sprintf("no legacy balance for receiver %s and legacy address %s", receiver, legacyAddress),
+		errors.NewParam("receiver_address", receiver),
+		errors.NewParam("legacy_address", legacyAddress),
 	)
 }

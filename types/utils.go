@@ -8,6 +8,7 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
@@ -66,4 +67,11 @@ func GetDecimalAddressFromBech32(address string) (sdk.AccAddress, error) {
 	}
 
 	return sdk.AccAddress(addressBz), nil
+}
+
+// GetLegacyAddressFromPubKey returns wallets address in old blockchain for given public key bytes
+func GetLegacyAddressFromPubKey(pubKeyBytes []byte) (string, error) {
+	oldPubKey := secp256k1.PubKey{}
+	oldPubKey.Key = pubKeyBytes
+	return bech32.ConvertAndEncode("dx", oldPubKey.Address())
 }

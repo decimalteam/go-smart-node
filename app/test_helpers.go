@@ -1,13 +1,14 @@
 package app
 
 import (
-	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"strconv"
 	"time"
+
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -124,7 +125,7 @@ func addTestAddrs(app *DSC, ctx sdk.Context, accNum int, accCoins sdk.Coins, str
 func initAccountWithCoins(app *DSC, ctx sdk.Context, addr sdk.AccAddress, coins sdk.Coins) {
 	ok, failedDenom := checkCoinsExist(ctx, &app.CoinKeeper, coins)
 	if !ok {
-		panic(fmt.Sprintf("coin with denom '%s' not exist", failedDenom))
+		panic(fmt.Sprintf("coin with denom '%s' not exist", *failedDenom))
 	}
 
 	err := app.BankKeeper.MintCoins(ctx, cointypes.ModuleName, coins)

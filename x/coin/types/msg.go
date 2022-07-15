@@ -5,6 +5,11 @@ import (
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
+
+	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
+	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
+	"github.com/tharsis/evmos/v3/cmd/config"
 )
 
 var (
@@ -16,17 +21,19 @@ var (
 	_ sdk.Msg = &MsgSellCoin{}
 	_ sdk.Msg = &MsgSellAllCoin{}
 	_ sdk.Msg = &MsgRedeemCheck{}
+	_ sdk.Msg = &MsgReturnLegacyBalance{}
 )
 
 const (
-	TypeMsgCreateCoin    = "create_coin"
-	TypeMsgUpdateCoin    = "update_coin"
-	TypeMsgSendCoin      = "send_coin"
-	TypeMsgMultiSendCoin = "multi_send_coin"
-	TypeMsgBuyCoin       = "buy_coin"
-	TypeMsgSellCoin      = "sell_coin"
-	TypeMsgSellAllCoin   = "sell_all_coin"
-	TypeMsgRedeemCheck   = "redeem_check"
+	TypeMsgCreateCoin          = "create_coin"
+	TypeMsgUpdateCoin          = "update_coin"
+	TypeMsgSendCoin            = "send_coin"
+	TypeMsgMultiSendCoin       = "multi_send_coin"
+	TypeMsgBuyCoin             = "buy_coin"
+	TypeMsgSellCoin            = "sell_coin"
+	TypeMsgSellAllCoin         = "sell_all_coin"
+	TypeMsgRedeemCheck         = "redeem_check"
+	TypeMsgReturnLegacyBalance = "return_legacy"
 )
 
 ////////////////////////////////////////////////////////////////
@@ -102,7 +109,7 @@ func (msg MsgCreateCoin) ValidateBasic() error {
 		return ErrInvalidCRR(strconv.FormatUint(msg.CRR, 10))
 	}
 	// Check coin initial volume to be correct
-	if msg.InitialVolume.LT(minCoinSupply) || msg.InitialVolume.GT(maxCoinSupply) {
+	if msg.InitialVolume.LT(MinCoinSupply) || msg.InitialVolume.GT(maxCoinSupply) {
 		return ErrInvalidCoinInitialVolume(msg.InitialVolume.String())
 	}
 	if msg.InitialVolume.GT(msg.LimitVolume) {
@@ -473,5 +480,72 @@ func (msg MsgRedeemCheck) ValidateBasic() error {
 		return ErrInvalidSenderAddress(msg.Sender)
 	}
 	// TODO
+	return nil
+}
+
+////////////////////////////////////////////////////////////////
+// MsgReturnLegacyBalance
+////////////////////////////////////////////////////////////////
+
+// NewMsgReturnLegacyBalance creates a new instance of MsgReturnLegacyBalance.
+func NewMsgReturnLegacyBalance(
+	sender sdk.AccAddress,
+	receiver sdk.AccAddress,
+	publicKeyBytes []byte,
+) *MsgReturnLegacyBalance {
+	return &MsgReturnLegacyBalance{
+		Sender:         sender.String(),
+		Receiver:       receiver.String(),
+		PublicKeyBytes: publicKeyBytes,
+	}
+}
+
+// Route should return the name of the module.
+func (msg MsgReturnLegacyBalance) Route() string { return RouterKey }
+
+// Type should return the action.
+func (msg MsgReturnLegacyBalance) Type() string { return TypeMsgRedeemCheck }
+
+// GetSignBytes encodes the message for signing.
+func (msg *MsgReturnLegacyBalance) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
+
+// GetSigners defines whose signature is required.
+func (msg MsgReturnLegacyBalance) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil
+	}
+	return []sdk.AccAddress{addr}
+}
+
+// ValidateBasic runs stateless checks on the message.
+func (msg MsgReturnLegacyBalance) ValidateBasic() error {
+	// Validate sender
+	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
+		return ErrInvalidSenderAddress(msg.Sender)
+	}
+	// Validate receiver
+	if _, err := sdk.AccAddressFromBech32(msg.Receiver); err != nil {
+		return ErrInvalidReceiverAddress(msg.Receiver)
+	}
+	// Validate public key
+	if len(msg.PublicKeyBytes) != ethsecp256k1.PubKeySize {
+		return ErrInvalidPublicKeyLength(len(msg.PublicKeyBytes))
+	}
+	// Validate receiver and public key
+	address, err := bech32.ConvertAndEncode(config.Bech32Prefix, ethsecp256k1.PubKey{Key: msg.PublicKeyBytes}.Address())
+	if err != nil {
+		return ErrCannnotGetAddressFromPublicKey(err.Error())
+	}
+	if address != msg.Receiver {
+		return ErrNoMatchReceiverAndPKey(msg.Receiver, address)
+	}
+	// Validate old address
+	_, err = commonTypes.GetLegacyAddressFromPubKey(msg.PublicKeyBytes)
+	if err != nil {
+		return ErrCannnotGetAddressFromPublicKey(err.Error())
+	}
 	return nil
 }
