@@ -37,7 +37,12 @@ message MsgCreateTransaction {
   ];
 }
 
-message MsgCreateTransactionResponse {}
+message MsgCreateTransactionResponse {
+  string txID = 1 [
+    (gogoproto.jsontag) = "tx_id",
+    (gogoproto.moretags) = "yaml:\"tx_id\""
+  ];  
+}
 
 message MsgCreateWallet {
   option (gogoproto.equal) = false;
@@ -61,7 +66,12 @@ message MsgCreateWallet {
   ];
 }
 
-message MsgCreateWalletResponse {}
+message MsgCreateWalletResponse {
+  string wallet = 1 [
+    (gogoproto.jsontag) = "wallet",
+    (gogoproto.moretags) = "yaml:\"wallet\""    
+  ];
+}
 
 message MsgSignTransaction {
   option (gogoproto.equal) = false;

@@ -19,22 +19,23 @@ const (
 	CodeInvalidOwner          uint32 = 103
 	CodeInvalidWeightCount    uint32 = 104
 	CodeInvalidWeight         uint32 = 105
-	CodeWalletAccountNotFound uint32 = 108
-	CodeDuplicateOwner        uint32 = 110
-	CodeInvalidWallet         uint32 = 111
-	CodeUnableToCreateWallet  uint32 = 113
-	CodeWalletAlreadyExists   uint32 = 114
-	CodeAccountAlreadyExists  uint32 = 115
+	CodeInvalidThreshold      uint32 = 106
+	CodeWalletAccountNotFound uint32 = 107
+	CodeDuplicateOwner        uint32 = 108
+	CodeInvalidWallet         uint32 = 109
+	CodeUnableToCreateWallet  uint32 = 110
+	CodeWalletAlreadyExists   uint32 = 111
+	CodeAccountAlreadyExists  uint32 = 112
 
 	// CreateTransaction
 	CodeUnableToCreateTransaction  uint32 = 201
 	CodeInvalidTransactionIDError  uint32 = 202
 	CodeInvalidTransactionIDPrefix uint32 = 203
-	CodeInvalidCoinToSend          uint32 = 204
-	CodeInvalidAmountToSend        uint32 = 205
-	CodeInsufficientFunds          uint32 = 206
-	CodeInvalidReceiver            uint32 = 207
-	CodeTransactionNotFound        uint32 = 208
+	CodeInvalidAmountToSend        uint32 = 204
+	CodeInsufficientFunds          uint32 = 205
+	CodeInvalidReceiver            uint32 = 206
+	CodeTransactionNotFound        uint32 = 207
+	CodeNoCoinsToSend              uint32 = 208
 
 	// SignTransaction
 	CodeAlreadyEnoughSignatures  uint32 = 301
@@ -95,6 +96,16 @@ func ErrInvalidWeight(weight string, data string) *sdkerrors.Error {
 		DefaultCodespace,
 		CodeInvalidWeight,
 		fmt.Sprintf("Invalid weight: weight cannot be %s than %s", data, weight),
+	)
+}
+
+func ErrInvalidThreshold(sumOfWeights, threshold string) *sdkerrors.Error {
+	return errors.Encode(
+		DefaultCodespace,
+		CodeInvalidThreshold,
+		fmt.Sprintf("Sum of weights is less than threshold: %s < %s", sumOfWeights, threshold),
+		errors.NewParam("sum_of_weights", sumOfWeights),
+		errors.NewParam("threshold", threshold),
 	)
 }
 
@@ -215,11 +226,11 @@ func ErrInsufficientFunds(funds, balance string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidCoinToSend(denom string) *sdkerrors.Error {
+func ErrNoCoinsToSend() *sdkerrors.Error {
 	return errors.Encode(
 		DefaultCodespace,
-		CodeInvalidCoinToSend,
-		fmt.Sprintf("Coin to send with symbol %s does not exist", denom),
+		CodeNoCoinsToSend,
+		"No coins to send",
 	)
 }
 

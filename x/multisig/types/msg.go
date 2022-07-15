@@ -19,14 +19,6 @@ const (
 	TypeMsgSignTransaction   = "sign_transaction"
 )
 
-// Multisignature wallet limitations.
-const (
-	MinOwnerCount = 2
-	MaxOwnerCount = 16
-	MinWeight     = 1
-	MaxWeight     = 1024
-)
-
 ////////////////////////////////////////////////////////////////
 // MsgCreateWallet
 ////////////////////////////////////////////////////////////////
@@ -81,7 +73,7 @@ func (msg MsgCreateWallet) ValidateBasic() error {
 	}
 	// Validate owners (ensure there are no duplicates)
 	owners := make(map[string]bool, len(msg.Owners))
-	for i, c := 0, len(msg.Owners); i < c; i++ {
+	for i := 0; i < len(msg.Owners); i++ {
 		if _, err := sdk.AccAddressFromBech32(msg.Owners[i]); err != nil {
 			return ErrInvalidOwner(msg.Owners[i])
 		}
@@ -91,13 +83,18 @@ func (msg MsgCreateWallet) ValidateBasic() error {
 		owners[msg.Owners[i]] = true
 	}
 	// Validate weights
-	for i, c := 0, len(msg.Weights); i < c; i++ {
+	var sumOfWeights uint64
+	for i := 0; i < len(msg.Weights); i++ {
 		if msg.Weights[i] < MinWeight {
 			return ErrInvalidWeight(strconv.Itoa(MinWeight), "less")
 		}
 		if msg.Weights[i] > MaxWeight {
 			return ErrInvalidWeight(strconv.Itoa(MaxWeight), "greater")
 		}
+		sumOfWeights += msg.Weights[i]
+	}
+	if sumOfWeights < msg.Threshold {
+		return ErrInvalidThreshold(strconv.FormatUint(sumOfWeights, 10), strconv.FormatUint(msg.Threshold, 10))
 	}
 	return nil
 }
@@ -152,9 +149,13 @@ func (msg *MsgCreateTransaction) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Receiver); err != nil {
 		return ErrInvalidReceiver(msg.Receiver)
 	}
-	// Amount should be positive
+	if len(msg.Coins) == 0 {
+		return ErrNoCoinsToSend()
+	}
+	// Check to amount should be positive, but sdk.Coin cannot be negative
+	// and sdk.Coins cannot cointain coins zero amount
 	for _, coin := range msg.Coins {
-		if coin.Amount.LT(sdk.NewInt(0)) {
+		if coin.Amount.LTE(sdk.ZeroInt()) {
 			return ErrInvalidAmount(coin.Denom, coin.Amount.String())
 		}
 	}

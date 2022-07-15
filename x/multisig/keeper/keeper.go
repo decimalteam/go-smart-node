@@ -117,7 +117,7 @@ func (k Keeper) GetTransaction(ctx sdk.Context, txID string) (transaction types.
 func (k Keeper) SetTransaction(ctx sdk.Context, transaction types.Transaction) {
 	store := ctx.KVStore(k.storeKey)
 	value := k.cdc.MustMarshalLengthPrefixed(&transaction)
-	key := append(types.KeyPrefixWallet, []byte(transaction.Id)...)
+	key := append(types.KeyPrefixTransaction, []byte(transaction.Id)...)
 	store.Set(key, value)
 }
 

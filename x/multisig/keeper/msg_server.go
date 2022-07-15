@@ -49,7 +49,9 @@ func (k Keeper) CreateWallet(goCtx context.Context, msg *types.MsgCreateWallet) 
 		sdk.NewAttribute(types.AttributeKeyWallet, wallet.Address),
 	))
 
-	return &types.MsgCreateWalletResponse{}, nil
+	return &types.MsgCreateWalletResponse{
+		Wallet: wallet.Address,
+	}, nil
 }
 
 func (k Keeper) CreateTransaction(goCtx context.Context, msg *types.MsgCreateTransaction) (*types.MsgCreateTransactionResponse, error) {
@@ -111,7 +113,9 @@ func (k Keeper) CreateTransaction(goCtx context.Context, msg *types.MsgCreateTra
 		sdk.NewAttribute(types.AttributeKeyTransaction, transaction.Id),
 	))
 
-	return &types.MsgCreateTransactionResponse{}, nil
+	return &types.MsgCreateTransactionResponse{
+		TxID: transaction.Id,
+	}, nil
 }
 
 func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransaction) (*types.MsgSignTransactionResponse, error) {
