@@ -5,6 +5,8 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"encoding/binary"
 	"fmt"
+	"sort"
+	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -115,8 +117,8 @@ func (k Keeper) ExistTokenID(ctx sdk.Context, id string) bool {
 	return store.Has(tokenIDKey)
 }
 
-// mintNFT mints an NFT and manages that NFTs existence within Collections and Owners
-func (k Keeper) mintNFT(
+// Mint mints an NFT and manages that NFTs existence within Collections and Owners
+func (k Keeper) Mint(
 	ctx sdk.Context,
 	denom, id string,
 	reserve, quantity sdk.Int,
@@ -301,7 +303,7 @@ func (k Keeper) DeleteNFT(ctx sdk.Context, denom, id string, subTokenIDsToDelete
 	return nil
 }
 
-//UpdateNFTReserve function to increase the minimum reserve of the NFT token
+// UpdateNFTReserve function to increase the minimum reserve of the NFT token
 func (k Keeper) UpdateNFTReserve(ctx sdk.Context, denom, id string, subTokenIDs []int64, newReserve sdk.Int) error {
 	collection, found := k.GetCollection(ctx, denom)
 	if !found {
@@ -350,4 +352,43 @@ func (k Keeper) UpdateNFTReserve(ctx sdk.Context, denom, id string, subTokenIDs 
 	}
 
 	return err
+}
+
+func (k Keeper) Transfer(nft exported.NFT, sender, recipient string, subTokenIDsToTransfer []int64) (exported.NFT, error) {
+	senderOwner := nft.GetOwners().GetOwner(sender)
+
+	sort.Sort(types.SortedIntArray(subTokenIDsToTransfer))
+
+	for _, idToTransfer := range subTokenIDsToTransfer {
+		if types.SortedIntArray(senderOwner.GetSubTokenIDs()).Find(idToTransfer) == -1 {
+			return nil, types.ErrOwnerDoesNotOwnSubTokenID(
+				senderOwner.String(), strconv.FormatInt(idToTransfer, 10),
+			)
+		}
+		senderOwner = senderOwner.RemoveSubTokenID(idToTransfer)
+	}
+
+	recipientOwner := nft.GetOwners().GetOwner(recipient)
+
+	if recipientOwner == nil {
+		recipientOwner = types.NewTokenOwner(recipient, subTokenIDsToTransfer)
+	} else {
+		for _, id := range subTokenIDsToTransfer {
+			recipientOwner = recipientOwner.SetSubTokenID(id)
+		}
+	}
+
+	senderOwners, err := nft.GetOwners().SetOwner(senderOwner)
+	if err != nil {
+		return nil, err
+	}
+	recipientOwners, err := nft.GetOwners().SetOwner(recipientOwner)
+	if err != nil {
+		return nil, err
+	}
+
+	nft = nft.SetOwners(senderOwners)
+	nft = nft.SetOwners(recipientOwners)
+
+	return nft, nil
 }

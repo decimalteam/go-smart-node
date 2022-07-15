@@ -30,7 +30,7 @@ func (k Keeper) MintNFT(c context.Context, msg *types.MsgMintNFT) (*types.MsgMin
 		}
 	}
 
-	lastSubTokenID, err := k.mintNFT(ctx, msg.Denom, msg.ID, msg.Reserve, msg.Quantity, msg.Sender, msg.Recipient, msg.TokenURI, msg.AllowMint)
+	lastSubTokenID, err := k.Mint(ctx, msg.Denom, msg.ID, msg.Reserve, msg.Quantity, msg.Sender, msg.Recipient, msg.TokenURI, msg.AllowMint)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (k Keeper) TransferNFT(c context.Context, msg *types.MsgTransferNFT) (*type
 		return nil, err
 	}
 
-	nft, err = types.TransferNFT(nft, msg.Sender, msg.Recipient, msg.SubTokenIDs)
+	nft, err = k.Transfer(nft, msg.Sender, msg.Recipient, msg.SubTokenIDs)
 	if err != nil {
 		return nil, err
 	}

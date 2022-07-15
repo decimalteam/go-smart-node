@@ -5,7 +5,6 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"sort"
-	"strconv"
 	"strings"
 )
 
@@ -147,43 +146,4 @@ var _ sort.Interface = NFTs{}
 func (nfts NFTs) Sort() NFTs {
 	sort.Sort(nfts)
 	return nfts
-}
-
-func TransferNFT(nft exported.NFT, sender, recipient string, subTokenIDsToTransfer []int64) (exported.NFT, error) {
-	senderOwner := nft.GetOwners().GetOwner(sender)
-
-	sort.Sort(SortedIntArray(subTokenIDsToTransfer))
-
-	for _, idToTransfer := range subTokenIDsToTransfer {
-		if SortedIntArray(senderOwner.GetSubTokenIDs()).Find(idToTransfer) == -1 {
-			return nil, ErrOwnerDoesNotOwnSubTokenID(
-				senderOwner.String(), strconv.FormatInt(idToTransfer, 10),
-			)
-		}
-		senderOwner = senderOwner.RemoveSubTokenID(idToTransfer)
-	}
-
-	recipientOwner := nft.GetOwners().GetOwner(recipient)
-
-	if recipientOwner == nil {
-		recipientOwner = NewTokenOwner(recipient, subTokenIDsToTransfer)
-	} else {
-		for _, id := range subTokenIDsToTransfer {
-			recipientOwner = recipientOwner.SetSubTokenID(id)
-		}
-	}
-
-	senderOwners, err := nft.GetOwners().SetOwner(senderOwner)
-	if err != nil {
-		return nil, err
-	}
-	recipientOwners, err := nft.GetOwners().SetOwner(recipientOwner)
-	if err != nil {
-		return nil, err
-	}
-
-	nft = nft.SetOwners(senderOwners)
-	nft = nft.SetOwners(recipientOwners)
-
-	return nft, nil
 }

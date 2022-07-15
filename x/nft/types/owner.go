@@ -8,6 +8,15 @@ import (
 	"strings"
 )
 
+// Supply gets the total supply of an Owner
+func (owner Owner) Supply() int {
+	total := 0
+	for _, idCollection := range owner.IDCollections {
+		total += idCollection.Supply()
+	}
+	return total
+}
+
 func NewTokenOwner(address string, subTokenIDs []int64) exported.TokenOwner {
 	return &TokenOwner{
 		Address:     address,
