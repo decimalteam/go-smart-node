@@ -94,6 +94,8 @@ func NewCreateWalletCmd() *cobra.Command {
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
+	// workaround for cosmos
+	cmd.Flags().String(flags.FlagChainID, "", "network chain id")
 
 	_ = cmd.MarkFlagRequired(flags.FlagFrom)
 
@@ -142,6 +144,8 @@ func NewCreateTransactionCmd() *cobra.Command {
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
+	// workaround for cosmos
+	cmd.Flags().String(flags.FlagChainID, "", "network chain id")
 
 	_ = cmd.MarkFlagRequired(flags.FlagFrom)
 
@@ -175,6 +179,8 @@ func NewSignTransactionCmd() *cobra.Command {
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
+	// workaround for cosmos
+	cmd.Flags().String(flags.FlagChainID, "", "network chain id")
 
 	_ = cmd.MarkFlagRequired(flags.FlagFrom)
 

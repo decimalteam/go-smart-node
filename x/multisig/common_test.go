@@ -4,14 +4,18 @@ import (
 	"testing"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
 	feemarkettypes "github.com/tharsis/ethermint/x/feemarket/types"
 )
 
@@ -272,6 +276,72 @@ func TestTryOverspend(t *testing.T) {
 	goCtx = sdk.WrapSDKContext(ctx)
 	_, err = dsc.MultisigKeeper.SignTransaction(goCtx, msgSign)
 	require.Error(t, err)
+}
+
+func TestActualizeLegacyTwice(t *testing.T) {
+	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	addrs, _ := generateAddresses(dsc, ctx, 10,
+		sdk.NewCoins(
+			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
+		),
+	)
+
+	// special legacy keys
+	pk, err := ethsecp256k1.GenerateKey()
+	require.NoError(t, err)
+	pubKey := pk.PubKey().Bytes()
+	legacyAddress, err := commonTypes.GetLegacyAddressFromPubKey(pubKey)
+	require.NoError(t, err)
+
+	actualAddress, err := bech32.ConvertAndEncode(config.Bech32Prefix, ethsecp256k1.PubKey{Key: pubKey}.Address())
+	require.NoError(t, err)
+
+	var sender = addrs[0]
+	var owners = []string{addrs[1].String(), addrs[2].String(), "", addrs[3].String()}
+	var legacyOwners = []string{"", "", legacyAddress, ""}
+	var weights = []uint64{1, 1, 1, 1}
+	var threshold uint64 = 2
+
+	// create wallets
+	wallet := types.Wallet{
+		Address:      "someaddr1", //anything
+		Owners:       owners,
+		Weights:      weights,
+		Threshold:    threshold,
+		LegacyOwners: legacyOwners,
+	}
+	dsc.MultisigKeeper.SetWallet(ctx, wallet)
+
+	wallet = types.Wallet{
+		Address:      "someaddr2", //anything
+		Owners:       owners,
+		Weights:      weights,
+		Threshold:    threshold,
+		LegacyOwners: legacyOwners,
+	}
+	dsc.MultisigKeeper.SetWallet(ctx, wallet)
+
+	// fist actualization: 2 wallet changes
+	msg := types.NewMsgActualizeLegacyAddress(sender, pubKey)
+	err = msg.ValidateBasic()
+	require.NoError(t, err)
+	goCtx := sdk.WrapSDKContext(ctx)
+	actualizeResult, err := dsc.MultisigKeeper.ActualizeLegacyAddress(goCtx, msg)
+	require.NoError(t, err)
+	require.Equal(t, 2, len(actualizeResult.WalletsAddresses), "count of actualized wallets")
+
+	// check modification of wallet owners
+	wallet, err = dsc.MultisigKeeper.GetWallet(ctx, "someaddr1")
+	require.NoError(t, err)
+	require.Equal(t, actualAddress, wallet.Owners[2])
+	wallet, err = dsc.MultisigKeeper.GetWallet(ctx, "someaddr2")
+	require.NoError(t, err)
+	require.Equal(t, actualAddress, wallet.Owners[2])
+
+	// second transaction must have no effect
+	actualizeResult, err = dsc.MultisigKeeper.ActualizeLegacyAddress(goCtx, msg)
+	require.NoError(t, err)
+	require.Equal(t, 0, len(actualizeResult.WalletsAddresses), "count of actualized wallets")
 }
 
 // getBaseAppWithCustomKeeper Returns a simapp with custom keepers

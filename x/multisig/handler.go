@@ -30,6 +30,9 @@ func NewHandler(server types.MsgServer) sdk.Handler {
 		case *types.MsgSignTransaction:
 			res, err := server.SignTransaction(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgActualizeLegacyAddress:
+			res, err := server.ActualizeLegacyAddress(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg)
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)

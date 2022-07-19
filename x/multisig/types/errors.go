@@ -41,6 +41,10 @@ const (
 	CodeAlreadyEnoughSignatures  uint32 = 301
 	CodeTransactionAlreadySigned uint32 = 302
 	CodeSignerIsNotOwner         uint32 = 303
+
+	//Legacy addresees
+	CodeInvalidPublicKeyLength         uint32 = 401
+	CodeCannnotGetAddressFromPublicKey uint32 = 402
 )
 
 func ErrInternal(err string) *sdkerrors.Error {
@@ -277,6 +281,25 @@ func ErrUnablePreformTransaction(txID, err string) *sdkerrors.Error {
 		CodeSignerIsNotOwner,
 		fmt.Sprintf("unable to perform multi-signature transaction %s: %s", txID, err),
 		errors.NewParam("tx_id", txID),
+		errors.NewParam("error", err),
+	)
+}
+
+// Legacy addresses
+func ErrInvalidPublicKeyLength(publicKeyLength string) *sdkerrors.Error {
+	return errors.Encode(
+		DefaultCodespace,
+		CodeInvalidPublicKeyLength,
+		fmt.Sprintf("invalid public key length: %s", publicKeyLength),
+		errors.NewParam("public_key_length", publicKeyLength),
+	)
+}
+
+func ErrCannnotGetAddressFromPublicKey(err string) *sdkerrors.Error {
+	return errors.Encode(
+		DefaultCodespace,
+		CodeCannnotGetAddressFromPublicKey,
+		fmt.Sprintf("can not get address from public key: %s", err),
 		errors.NewParam("error", err),
 	)
 }

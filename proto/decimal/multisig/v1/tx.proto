@@ -10,6 +10,7 @@ service Msg {
   rpc CreateTransaction(MsgCreateTransaction) returns (MsgCreateTransactionResponse);
   rpc CreateWallet(MsgCreateWallet) returns (MsgCreateWalletResponse);
   rpc SignTransaction(MsgSignTransaction) returns (MsgSignTransactionResponse);
+  rpc ActualizeLegacyAddress(MsgActualizeLegacyAddress) returns (MsgActualizeLegacyAddressResponse);
 }
 
 message MsgCreateTransaction {
@@ -89,3 +90,27 @@ message MsgSignTransaction {
 }
 
 message MsgSignTransactionResponse {}
+
+////////////////////////////////////////////////////////////////
+
+message MsgActualizeLegacyAddress {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender",
+    (gogoproto.moretags) = "yaml:\"sender\""
+  ];
+  bytes publicKeyBytes = 2 [
+    (gogoproto.jsontag) = "public_key_bytes",
+    (gogoproto.moretags) = "yaml:\"public_key_bytes\""
+  ];
+}
+
+message MsgActualizeLegacyAddressResponse {
+  repeated string walletsAddresses = 1 [
+    (gogoproto.jsontag) = "wallets_addresses",
+    (gogoproto.moretags) = "yaml:\"wallets_addresses\""
+  ];  
+}

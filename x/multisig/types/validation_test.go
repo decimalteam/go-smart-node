@@ -7,6 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
 )
 
 func TestValidateWallet(t *testing.T) {
@@ -217,6 +218,44 @@ func TestValidateSignTransaction(t *testing.T) {
 
 	for _, tc := range testCases {
 		msg := NewMsgSignTransaction(tc.sender, tc.txID)
+		err := msg.ValidateBasic()
+		if tc.expectError {
+			require.Error(t, err, tc.tag)
+		} else {
+			require.NoError(t, err, tc.tag)
+		}
+	}
+}
+
+func TestValidateActualizeLegacyAddress(t *testing.T) {
+	pk, err := ethsecp256k1.GenerateKey()
+	require.NoError(t, err)
+	validPubkey := pk.PubKey().Bytes()
+	invalidPubKey := []byte{1, 2, 3}
+	sender := sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address())
+
+	var testCases = []struct {
+		tag         string
+		sender      sdk.AccAddress
+		pubKey      []byte
+		expectError bool
+	}{
+		{
+			tag:         "valid pubkey",
+			sender:      sender,
+			pubKey:      validPubkey,
+			expectError: false,
+		},
+		{
+			tag:         "invalid pubkey",
+			sender:      sender,
+			pubKey:      invalidPubKey,
+			expectError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		msg := NewMsgActualizeLegacyAddress(tc.sender, tc.pubKey)
 		err := msg.ValidateBasic()
 		if tc.expectError {
 			require.Error(t, err, tc.tag)

@@ -3,20 +3,25 @@ package types
 import (
 	"strconv"
 
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
+	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
 )
 
 var (
 	_ sdk.Msg = &MsgCreateWallet{}
 	_ sdk.Msg = &MsgCreateTransaction{}
 	_ sdk.Msg = &MsgSignTransaction{}
+	_ sdk.Msg = &MsgActualizeLegacyAddress{}
 )
 
 const (
-	TypeMsgCreateWallet      = "create_wallet"
-	TypeMsgCreateTransaction = "create_transaction"
-	TypeMsgSignTransaction   = "sign_transaction"
+	TypeMsgCreateWallet           = "create_wallet"
+	TypeMsgCreateTransaction      = "create_transaction"
+	TypeMsgSignTransaction        = "sign_transaction"
+	TypeMsgActualizeLegacyAddress = "actualize_legacy_address"
 )
 
 ////////////////////////////////////////////////////////////////
@@ -209,5 +214,60 @@ func (msg *MsgSignTransaction) ValidateBasic() error {
 		return ErrInvalidTransactionIDPrefix(msg.TxID, MultisigTransactionIDPrefix, prefix)
 	}
 	// TODO: TxID length
+	return nil
+}
+
+////////////////////////////////////////////////////////////////
+// MsgActualizeLegacyAddress
+////////////////////////////////////////////////////////////////
+
+// NewMsgActualizeLegacyAddress creates a new instance of MsgActualizeLegacyAddress.
+func NewMsgActualizeLegacyAddress(
+	sender sdk.AccAddress,
+	publicKeyBytes []byte,
+) *MsgActualizeLegacyAddress {
+	return &MsgActualizeLegacyAddress{
+		Sender:         sender.String(),
+		PublicKeyBytes: publicKeyBytes,
+	}
+}
+
+// Route returns name of the route for the message.
+func (msg *MsgActualizeLegacyAddress) Route() string { return RouterKey }
+
+// Type returns the name of the type for the message.
+func (msg *MsgActualizeLegacyAddress) Type() string { return TypeMsgActualizeLegacyAddress }
+
+// GetSignBytes returns the canonical byte representation of the message used to generate a signature.
+func (msg *MsgActualizeLegacyAddress) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
+
+// GetSigners returns the list of signers required to sign the message.
+func (msg *MsgActualizeLegacyAddress) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil
+	}
+	return []sdk.AccAddress{addr}
+}
+
+// ValidateBasic performs basic validation of the message.
+func (msg *MsgActualizeLegacyAddress) ValidateBasic() error {
+	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
+		return ErrInvalidSender(msg.Sender)
+	}
+	// Validate public key
+	if len(msg.PublicKeyBytes) != ethsecp256k1.PubKeySize {
+		return ErrInvalidPublicKeyLength(strconv.Itoa(len(msg.PublicKeyBytes)))
+	}
+	// check public key
+	if _, err := bech32.ConvertAndEncode(config.Bech32Prefix, ethsecp256k1.PubKey{Key: msg.PublicKeyBytes}.Address()); err != nil {
+		return ErrCannnotGetAddressFromPublicKey(err.Error())
+	}
+	if _, err := commonTypes.GetLegacyAddressFromPubKey(msg.PublicKeyBytes); err != nil {
+		return ErrCannnotGetAddressFromPublicKey(err.Error())
+	}
+
 	return nil
 }

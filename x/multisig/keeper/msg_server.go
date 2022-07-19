@@ -5,9 +5,13 @@ import (
 	"strconv"
 	"strings"
 
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
+	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
 )
 
 func (k Keeper) CreateWallet(goCtx context.Context, msg *types.MsgCreateWallet) (*types.MsgCreateWalletResponse, error) {
@@ -200,4 +204,57 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 	))
 
 	return &types.MsgSignTransactionResponse{}, nil
+}
+
+func (k Keeper) ActualizeLegacyAddress(goCtx context.Context, msg *types.MsgActualizeLegacyAddress) (*types.MsgActualizeLegacyAddressResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	actualAddress, err := bech32.ConvertAndEncode(config.Bech32Prefix, ethsecp256k1.PubKey{Key: msg.PublicKeyBytes}.Address())
+	if err != nil {
+		return nil, types.ErrCannnotGetAddressFromPublicKey(err.Error())
+	}
+
+	legacyAddress, err := commonTypes.GetLegacyAddressFromPubKey(msg.PublicKeyBytes)
+	if err != nil {
+		return nil, types.ErrCannnotGetAddressFromPublicKey(err.Error())
+	}
+
+	wallets, err := k.GetWalletsByLegacyOwner(ctx, legacyAddress)
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
+	if len(wallets) == 0 {
+		return &types.MsgActualizeLegacyAddressResponse{}, nil
+	}
+
+	walletsAddresses := make([]string, 0)
+	for _, wallet := range wallets {
+		// modify address to actual
+		for i := range wallet.LegacyOwners {
+			if wallet.LegacyOwners[i] == legacyAddress {
+				wallet.LegacyOwners[i] = ""
+				wallet.Owners[i] = actualAddress
+				// save
+				k.SetWallet(ctx, wallet)
+				walletsAddresses = append(walletsAddresses, wallet.Address)
+
+				// Emit transaction events
+				ctx.EventManager().EmitEvent(sdk.NewEvent(
+					sdk.EventTypeMessage,
+					sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+					sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
+					sdk.NewAttribute(types.AttributeKeyOwners, strings.Join(wallet.Owners, ",")),
+					sdk.NewAttribute(types.AttributeKeyWeights, helpers.JoinUints64(wallet.Weights)),
+					sdk.NewAttribute(types.AttributeKeyThreshold, strconv.FormatUint(wallet.Threshold, 10)),
+					sdk.NewAttribute(types.AttributeKeyWallet, wallet.Address),
+				))
+				// wallet has no duplicates in owners, so break here
+				break
+			}
+		}
+	}
+
+	return &types.MsgActualizeLegacyAddressResponse{
+		WalletsAddresses: walletsAddresses,
+	}, nil
 }
