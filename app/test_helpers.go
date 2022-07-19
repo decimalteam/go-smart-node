@@ -18,7 +18,6 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	ibctesting "github.com/cosmos/ibc-go/v3/testing"
 	"github.com/cosmos/ibc-go/v3/testing/simapp"
 
 	"github.com/tharsis/ethermint/encoding"
@@ -28,7 +27,7 @@ import (
 )
 
 // DefaultTestingAppInit defines the IBC application used for testing
-var DefaultTestingAppInit func() (ibctesting.TestingApp, map[string]json.RawMessage) = SetupTestingApp
+//var DefaultTestingAppInit func() (ibctesting.TestingApp, map[string]json.RawMessage) = SetupTestingApp
 
 // DefaultConsensusParams defines the default Tendermint consensus params used in DSC testing.
 var DefaultConsensusParams = &abci.ConsensusParams{
@@ -93,12 +92,12 @@ func Setup(
 }
 
 // SetupTestingApp initializes the IBC-go testing application
-func SetupTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
-	db := dbm.NewMemDB()
-	cfg := encoding.MakeConfig(ModuleBasics)
-	app := NewDSC(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5, cfg, simapp.EmptyAppOptions{})
-	return app, NewDefaultGenesisState()
-}
+//func SetupTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
+//	db := dbm.NewMemDB()
+//	cfg := encoding.MakeConfig(ModuleBasics)
+//	app := NewDSC(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5, cfg, simapp.EmptyAppOptions{})
+//	return app, NewDefaultGenesisState()
+//}
 
 // AddTestAddrs constructs and returns accNum amount of accounts with an
 // initial balance of accAmt in random order

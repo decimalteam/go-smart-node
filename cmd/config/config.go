@@ -1,7 +1,10 @@
 package config
 
 import (
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"os"
+	"path/filepath"
 
 	ethermint "github.com/tharsis/ethermint/types"
 )
@@ -44,6 +47,13 @@ const (
 const (
 	// BaseDenom defines to the default denomination used in Decimal (staking, EVM, governance, etc.)
 	BaseDenom = "del"
+
+	UpdatesName = "updates.json"
+)
+
+var (
+	DataPath    = fmt.Sprintf("%s/.decimal/daemon/data", os.Getenv("HOME"))
+	UpdatesInfo = NewUpdatesInfo(filepath.Join(DataPath, UpdatesName))
 )
 
 // SetBech32Prefixes sets the global prefixes to be used when serializing addresses and public keys to Bech32 strings.

@@ -38,6 +38,8 @@ artifacts/*
 tmp-swagger-gen
 github.com/
 bitbucket.org/
+scripts/default_priv_validator_state.json
+scripts/unsafe_reset_all.sh
 # vue/
 
 # Local docker volume mappings
