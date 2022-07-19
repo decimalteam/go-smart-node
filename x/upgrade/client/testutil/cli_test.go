@@ -1,7 +1,7 @@
 package testutil
 
 import (
-	"github.com/cosmos/cosmos-sdk/testutil/network"
+	"bitbucket.org/decimalteam/go-smart-node/testutil/network"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )

@@ -26,20 +26,21 @@ func TestContentAccessors(t *testing.T) {
 	}{
 		"upgrade": {
 			p: types.NewSoftwareUpgradeProposal("Title", "desc", types.Plan{
-				Name:   "due_height",
-				Info:   "https://foo.bar",
-				Height: 99999999999,
+				Name:       "due_height",
+				Info:       "https://foo.bar",
+				Height:     99999999999,
+				ToDownload: 9999999999,
 			}),
 			title: "Title",
 			desc:  "desc",
-			typ:   "SoftwareUpgrade",
+			typ:   "DSCSoftwareUpgrade",
 			str:   "Software Upgrade Proposal:\n  Title:       Title\n  Description: desc\n",
 		},
 		"cancel": {
 			p:     types.NewCancelSoftwareUpgradeProposal("Cancel", "bad idea"),
 			title: "Cancel",
 			desc:  "bad idea",
-			typ:   "CancelSoftwareUpgrade",
+			typ:   "DSCCancelSoftwareUpgrade",
 			str:   "Cancel Software Upgrade Proposal:\n  Title:       Cancel\n  Description: bad idea\n",
 		},
 	}
