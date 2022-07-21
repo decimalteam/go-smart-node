@@ -116,8 +116,13 @@ func NewSwapRedeemCmd() *cobra.Command {
 			}
 
 			r, err := hex.DecodeString(args[8])
+			if err != nil {
+				return err
+			}
 			s, err := hex.DecodeString(args[9])
-
+			if err != nil {
+				return err
+			}
 			var _r types.Hash
 			copy(_r[:], r)
 
@@ -185,7 +190,7 @@ func NewChainActivateCmd() *cobra.Command {
 
 func NewChainDeactivateCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "chain-deactivate [number] --from",
+		Use:   "chain-deactivate [number]",
 		Short: "Deactivate chain",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
