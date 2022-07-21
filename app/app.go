@@ -308,7 +308,7 @@ type DSC struct {
 
 	// Decimal keepers
 	CoinKeeper coinkeeper.Keeper
-	NftKeeper  nftkeeper.Keeper
+	NFTKeeper  nftkeeper.Keeper
 
 	// Module manager
 	mm *module.Manager
@@ -678,7 +678,7 @@ func NewDSC(
 		app.BankKeeper,
 		cmdcfg.BaseDenom,
 	)
-	app.NftKeeper = *nftKeeper
+	app.NFTKeeper = *nftKeeper
 
 	/****  Module Options ****/
 
@@ -720,7 +720,7 @@ func NewDSC(
 		recovery.NewAppModule(*app.RecoveryKeeper),
 		// Decimal app modules
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
-		nft.NewAppModule(app.NftKeeper, app.AccountKeeper),
+		nft.NewAppModule(app.NFTKeeper, app.AccountKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that

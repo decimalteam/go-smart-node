@@ -5,6 +5,14 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+// SetOwnerCollectionByDenom sets a collection of NFT IDs owned by an address
+func (k Keeper) SetOwnerCollectionByDenom(ctx sdk.Context, owner sdk.AccAddress, denom string, ownerCollection types.OwnerCollection) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetOwnerCollectionByDenomKey(owner, denom)
+
+	store.Set(key, k.cdc.MustMarshalLengthPrefixed(&ownerCollection))
+}
+
 // GetOwnerCollections gets all the ID Collections owned by an address
 func (k Keeper) GetOwnerCollections(ctx sdk.Context, address sdk.AccAddress) []types.OwnerCollection {
 	var collections []types.OwnerCollection
@@ -29,14 +37,6 @@ func (k Keeper) GetOwnerCollectionByDenom(ctx sdk.Context, address sdk.AccAddres
 	k.cdc.MustUnmarshalLengthPrefixed(bz, &collection)
 
 	return collection
-}
-
-// SetOwnerCollectionByDenom sets a collection of NFT IDs owned by an address
-func (k Keeper) SetOwnerCollectionByDenom(ctx sdk.Context, owner sdk.AccAddress, denom string, ownerCollection types.OwnerCollection) {
-	store := ctx.KVStore(k.storeKey)
-	key := types.GetOwnerCollectionByDenomKey(owner, denom)
-
-	store.Set(key, k.cdc.MustMarshalLengthPrefixed(&ownerCollection))
 }
 
 // iterateOwners iterates over the OwnerCollection by Owner and performs a function

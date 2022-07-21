@@ -18,10 +18,10 @@ func (k Keeper) MintNFT(c context.Context, msg *types.MsgMintNFT) (*types.MsgMin
 			return nil, types.ErrNotAllowedMint()
 		}
 	} else {
-		if k.ExistTokenURI(ctx, msg.TokenURI) {
+		if k.HasTokenURI(ctx, msg.TokenURI) {
 			return nil, types.ErrNotUniqueTokenURI()
 		}
-		if k.ExistTokenID(ctx, msg.ID) {
+		if k.HasTokenID(ctx, msg.ID) {
 			return nil, types.ErrNotUniqueTokenID()
 		}
 		if msg.Reserve.LT(types.NewMinReserve2) {

@@ -19,7 +19,7 @@ func getBaseAppWithCustomKeeper() (*codec.LegacyAmino, *app.DSC, sdk.Context) {
 
 	appCodec := dsc.AppCodec()
 
-	dsc.NftKeeper = *keeper.NewKeeper(
+	dsc.NFTKeeper = *keeper.NewKeeper(
 		appCodec,
 		dsc.GetKey(types.StoreKey),
 		dsc.BankKeeper,
@@ -29,184 +29,124 @@ func getBaseAppWithCustomKeeper() (*codec.LegacyAmino, *app.DSC, sdk.Context) {
 	return codec.NewLegacyAmino(), dsc, ctx
 }
 
-func TestMintNFT(t *testing.T) {
+func TestSetNFT(t *testing.T) {
 	_, dsc, ctx := getBaseAppWithCustomKeeper()
 
-	addrs := getAddrs(dsc, ctx, 1)
-	quantity := sdk.NewInt(50)
+	addrs := app.GetAddrs(dsc, ctx, 2)
 
-	// MintNFT shouldn't fail when collection does not exist
-	msg := types.MsgMintNFT{
-		Sender:    addrs[0].String(),
-		Recipient: addrs[0].String(),
-		ID:        ID1,
-		Denom:     Denom1,
-		Quantity:  quantity,
-		TokenURI:  TokenURI1,
-		Reserve:   types.NewMinReserve2,
-		AllowMint: true,
+	nft1 := types.NewBaseNFT(
+		firstID,
+		addrs[0].String(),
+		firstTokenURI,
+		firstReserve,
+		firstAllowMint,
+	)
+
+	nft1 = nft1.AddOwnerSubTokenIDs(addrs[0].String(), []uint64{1, 2, 3})
+
+	nft2 := types.NewBaseNFT(
+		secondID,
+		addrs[0].String(),
+		firstTokenURI,
+		firstReserve,
+		firstAllowMint,
+	)
+
+	nft2 = nft2.AddOwnerSubTokenIDs(addrs[1].String(), []uint64{4, 5, 6})
+
+	// SetNFT method must return an error if there is no collection for this denom
+	err := dsc.NFTKeeper.SetNFT(ctx, firstDenom, firstID, nft1)
+	require.Error(t, err, firstID)
+
+	nftsToStore := []types.BaseNFT{nft1, nft2}
+	nftIDsToStore := make([]string, len(nftsToStore))
+	for i, nft := range nftsToStore {
+		nftIDsToStore[i] = nft.GetID()
 	}
 
-	lastSubTokenID, err := dsc.NftKeeper.Mint(ctx, msg.Denom, msg.ID, msg.Reserve, msg.Quantity, msg.Sender, msg.Recipient, msg.TokenURI, msg.AllowMint)
-	require.NoError(t, err)
-	require.Equal(t, quantity.AddRaw(1).Int64(), lastSubTokenID)
+	collection := types.NewCollection(firstDenom, nftIDsToStore)
+	dsc.NFTKeeper.SetCollection(ctx, collection.Denom, collection)
 
-	// MintNFT shouldn't fail when collection exists
-	msg = types.MsgMintNFT{
-		Sender:    addrs[0].String(),
-		Recipient: addrs[0].String(),
-		ID:        ID1,
-		Denom:     Denom1,
-		Quantity:  quantity,
-		TokenURI:  TokenURI1,
-		Reserve:   types.NewMinReserve2,
-		AllowMint: true,
+	for _, nft := range nftsToStore {
+		err := dsc.NFTKeeper.SetNFT(ctx, collection.GetDenom(), nft.GetID(), nft)
+		require.NoError(t, err, nft.GetID())
 	}
 
-	lastSubTokenID, err = dsc.NftKeeper.Mint(ctx, msg.Denom, msg.ID, msg.Reserve, msg.Quantity, msg.Sender, msg.Recipient, msg.TokenURI, msg.AllowMint)
-	require.NoError(t, err)
-	require.Equal(t, quantity.Add(quantity).AddRaw(1).Int64(), lastSubTokenID)
+	// Check throw GetNFTs method
+	storedNFTs := dsc.NFTKeeper.GetNFTs(ctx)
+	require.Len(t, nftsToStore, len(storedNFTs))
 
-	msg = types.MsgMintNFT{
-		Sender:    addrs[0].String(),
-		Recipient: addrs[0].String(),
-		ID:        ID3,
-		Denom:     Denom1,
-		Quantity:  quantity,
-		TokenURI:  TokenURI1,
-		Reserve:   types.NewMinReserve2,
-		AllowMint: true,
+	for _, nftToStore := range nftsToStore {
+		var stored bool
+		for _, storedNFT := range storedNFTs {
+			if nftToStore.GetID() == storedNFT.GetID() {
+				stored = true
+				require.Equal(t, nftToStore, storedNFT)
+				break
+			}
+		}
+
+		require.True(t, stored, nftToStore.GetID())
 	}
-	lastSubTokenID, err = dsc.NftKeeper.Mint(ctx, msg.Denom, msg.ID, msg.Reserve, msg.Quantity, msg.Sender, msg.Recipient, msg.TokenURI, msg.AllowMint)
-	require.NoError(t, err)
-	require.Equal(t, quantity.AddRaw(1).Int64(), lastSubTokenID)
+
+	// Check throw GetNFT method
+	for _, nftToStore := range nftsToStore {
+		storedNFT, err := dsc.NFTKeeper.GetNFT(ctx, collection.GetDenom(), nftToStore.GetID())
+		require.NoError(t, err, nftToStore.GetID())
+		require.Equal(t, nftToStore, storedNFT)
+	}
 }
 
-func TestGetNFT(t *testing.T) {
+func TestHasTokenID(t *testing.T) {
 	_, dsc, ctx := getBaseAppWithCustomKeeper()
 
-	addrs := getAddrs(dsc, ctx, 1)
+	addrs := app.GetAddrs(dsc, ctx, 1)
 
-	// MintNFT shouldn't fail when collection does not exist
-	msg := types.MsgMintNFT{
-		Sender:    addrs[0].String(),
-		Recipient: addrs[0].String(),
-		ID:        ID1,
-		Denom:     Denom1,
-		Quantity:  sdk.NewInt(1),
-		TokenURI:  TokenURI1,
-		Reserve:   types.NewMinReserve2,
-		AllowMint: true,
-	}
+	nft1 := types.NewBaseNFT(
+		firstID,
+		addrs[0].String(),
+		firstTokenURI,
+		firstReserve,
+		firstAllowMint,
+	)
 
-	_, err := dsc.NftKeeper.Mint(ctx, msg.Denom, msg.ID, msg.Reserve, msg.Quantity, msg.Sender, msg.Recipient, msg.TokenURI, msg.AllowMint)
-	require.NoError(t, err)
+	exists := dsc.NFTKeeper.HasTokenID(ctx, nft1.GetID())
+	require.False(t, exists, nft1.GetID())
 
-	// GetNFT should get the NFT
-	receivedNFT, err := dsc.NftKeeper.GetNFT(ctx, Denom1, ID1)
-	require.NoError(t, err)
-	require.Equal(t, receivedNFT.GetID(), ID1)
-	require.True(t, receivedNFT.GetCreator() == addrs[0].String())
-	require.Equal(t, receivedNFT.GetTokenURI(), TokenURI1)
+	// Сan not save nft without collection
+	collection := types.NewCollection(firstDenom, []string{nft1.GetID()})
+	dsc.NFTKeeper.SetCollection(ctx, collection.Denom, collection)
 
-	// MintNFT shouldn't fail when collection exists
-	msg = types.MsgMintNFT{
-		Sender:    addrs[0].String(),
-		Recipient: addrs[0].String(),
-		ID:        ID2,
-		Denom:     Denom1,
-		Quantity:  sdk.NewInt(1),
-		TokenURI:  TokenURI1,
-		Reserve:   types.NewMinReserve2,
-		AllowMint: true,
-	}
+	err := dsc.NFTKeeper.SetNFT(ctx, collection.Denom, nft1.GetID(), nft1)
+	require.NoError(t, err, nft1.GetID())
 
-	_, err = dsc.NftKeeper.Mint(ctx, msg.Denom, msg.ID, msg.Reserve, msg.Quantity, msg.Sender, msg.Recipient, msg.TokenURI, msg.AllowMint)
-	require.NoError(t, err)
-
-	// GetNFT should get the NFT when collection exists
-	receivedNFT2, err := dsc.NftKeeper.GetNFT(ctx, Denom1, ID2)
-	require.NoError(t, err)
-	require.Equal(t, receivedNFT2.GetID(), ID2)
-	require.True(t, receivedNFT2.GetCreator() == addrs[0].String())
-	require.Equal(t, receivedNFT2.GetTokenURI(), TokenURI1)
-
-	invariantMsg, fail := keeper.SupplyInvariant(dsc.NftKeeper)(ctx)
-	require.False(t, fail, invariantMsg)
+	exists = dsc.NFTKeeper.HasTokenID(ctx, nft1.GetID())
+	require.True(t, exists, nft1.GetID())
 }
 
-func TestEditNFT(t *testing.T) {
+func TestHasTokenURI(t *testing.T) {
 	_, dsc, ctx := getBaseAppWithCustomKeeper()
 
-	addrs := getAddrs(dsc, ctx, 1)
+	addrs := app.GetAddrs(dsc, ctx, 1)
 
-	msg := types.MsgMintNFT{
-		Sender:    addrs[0].String(),
-		Recipient: addrs[0].String(),
-		ID:        ID1,
-		Denom:     Denom1,
-		Quantity:  sdk.NewInt(1),
-		TokenURI:  TokenURI1,
-		Reserve:   types.NewMinReserve2,
-		AllowMint: true,
-	}
+	nft1 := types.NewBaseNFT(
+		firstID,
+		addrs[0].String(),
+		firstTokenURI,
+		firstReserve,
+		firstAllowMint,
+	)
 
-	// MintNFT shouldn't fail when collection does not exist
-	_, err := dsc.NftKeeper.Mint(ctx, msg.Denom, msg.ID, msg.Reserve, msg.Quantity, msg.Sender, msg.Recipient, msg.TokenURI, msg.AllowMint)
-	require.NoError(t, err)
+	exists := dsc.NFTKeeper.HasTokenURI(ctx, nft1.GetTokenURI())
+	require.False(t, exists, nft1.GetTokenURI())
 
-	err = dsc.NftKeeper.EditNFT(ctx, Denom1, ID1, TokenURI2)
-	require.NoError(t, err)
+	// Сan not save nft without collection
+	collection := types.NewCollection(firstDenom, []string{nft1.GetID()})
+	dsc.NFTKeeper.SetCollection(ctx, collection.Denom, collection)
 
-	// GetNFT should get the NFT with new TokenURI1
-	receivedNFT, err := dsc.NftKeeper.GetNFT(ctx, Denom1, ID1)
-	require.NoError(t, err)
-	require.Equal(t, receivedNFT.GetTokenURI(), TokenURI2)
-}
+	err := dsc.NFTKeeper.SetNFT(ctx, collection.Denom, nft1.GetID(), nft1)
+	require.NoError(t, err, nft1.GetID())
 
-func TestDeleteNFT(t *testing.T) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
-
-	addrs := getAddrs(dsc, ctx, 1)
-
-	subTokenIDsToDelete := []int64{}
-	quantity := sdk.NewInt(1)
-
-	// DeleteNFT should fail when NFT doesn't exist and collection doesn't exist
-	//err := dsc.NftKeeper.DeleteNFT(ctx, Denom1, ID1, subTokenIDsToDelete)
-	//require.Error(t, err)
-
-	msg := types.MsgMintNFT{
-		Sender:    addrs[0].String(),
-		Recipient: addrs[0].String(),
-		ID:        ID1,
-		Denom:     Denom1,
-		Quantity:  quantity,
-		TokenURI:  TokenURI1,
-		Reserve:   types.NewMinReserve2,
-		AllowMint: true,
-	}
-
-	// MintNFT should not fail when collection does not exist
-	_, err := dsc.NftKeeper.Mint(ctx, msg.Denom, msg.ID, msg.Reserve, msg.Quantity, msg.Sender, msg.Recipient, msg.TokenURI, msg.AllowMint)
-	require.NoError(t, err)
-
-	//// DeleteNFT should fail when NFT doesn't exist but collection does
-	//err = dsc.NftKeeper.DeleteNFT(ctx, Denom1, ID2, subTokenIDsToDelete)
-	//require.Error(t, err)
-	//
-	//// DeleteNFT should fail when at least of nft's subtokenIds is not in the owner's subTokenIDs
-	//err = dsc.NftKeeper.DeleteNFT(ctx, Denom1, ID1, []int64{10})
-	//require.Error(t, err)
-
-	// DeleteNFT should not fail when NFT and collection exist
-	err = dsc.NftKeeper.DeleteNFT(ctx, Denom1, ID1, subTokenIDsToDelete)
-	require.NoError(t, err)
-
-	// NFT should no longer exist ???
-	_, err = dsc.NftKeeper.GetNFT(ctx, Denom1, ID1)
-	require.NoError(t, err)
-
-	owner := dsc.NftKeeper.GetOwner(ctx, addrs[0])
-	require.Equal(t, 1, owner.Supply())
+	exists = dsc.NFTKeeper.HasTokenURI(ctx, nft1.GetTokenURI())
+	require.True(t, exists, nft1.GetTokenURI())
 }

@@ -5,20 +5,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// IterateCollections iterates over collections and performs a function
-func (k Keeper) IterateCollections(ctx sdk.Context, handler func(collection types.Collection) (stop bool)) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.CollectionsKeyPrefix)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		var collection types.Collection
-		k.cdc.MustUnmarshalLengthPrefixed(iterator.Value(), &collection)
-		if handler(collection) {
-			break
-		}
-	}
-}
-
 // SetCollection sets the entire collection of a single denom
 func (k Keeper) SetCollection(ctx sdk.Context, denom string, collection types.Collection) {
 	store := ctx.KVStore(k.storeKey)
@@ -44,7 +30,7 @@ func (k Keeper) GetCollection(ctx sdk.Context, denom string) (collection types.C
 
 // GetCollections returns all the NFTs collections
 func (k Keeper) GetCollections(ctx sdk.Context) (collections []types.Collection) {
-	k.IterateCollections(ctx,
+	k.iterateCollections(ctx,
 		func(collection types.Collection) (stop bool) {
 			collections = append(collections, collection)
 			return false
@@ -55,11 +41,24 @@ func (k Keeper) GetCollections(ctx sdk.Context) (collections []types.Collection)
 
 // GetDenoms returns all the NFT denoms
 func (k Keeper) GetDenoms(ctx sdk.Context) (denoms []string) {
-	k.IterateCollections(ctx,
+	k.iterateCollections(ctx,
 		func(collection types.Collection) (stop bool) {
 			denoms = append(denoms, collection.Denom)
 			return false
 		},
 	)
 	return
+}
+
+func (k Keeper) iterateCollections(ctx sdk.Context, handler func(collection types.Collection) (stop bool)) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.CollectionsKeyPrefix)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var collection types.Collection
+		k.cdc.MustUnmarshalLengthPrefixed(iterator.Value(), &collection)
+		if handler(collection) {
+			break
+		}
+	}
 }

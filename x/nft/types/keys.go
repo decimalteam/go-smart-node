@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/binary"
-	"fmt"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -27,21 +26,25 @@ const (
 
 // NFTs are stored as follow:
 //
-// - Colections: 0x00<denom_bytes_key> :<Collection>
+// - Colections: 0x00<denom_bytes_key> : <Collection>
 //
-// - Owners: 0x01<address_bytes_key><denom_bytes_key>: <Owner>
+// - NFTs: 0x01<token_id_bytes_key> : <NFT>
+//
+// - OwnerCollection: 0x02<address_bytes_key><denom_bytes_key> : <OwnerCollection>
+//
+// - SubTokens: 0x03<nft_id_bytes_key><sub_token_id_bytes_key> : <SubToken>
+//
+// - TokenURI: 0x04<token_uri_bytes_key> : <[]byte{}>
 
 const NFTPrefix = 0x60
 
 var (
-	CollectionsKeyPrefix = []byte{NFTPrefix, 0x00} // key for NFT collections
-	NFTKeyPrefix         = []byte{NFTPrefix, 0x01} // key for NFTs
-	OwnersKeyPrefix      = []byte{NFTPrefix, 0x02} // key for balance of NFTs held by an address
-	SubTokenKeyPrefix    = []byte{NFTPrefix, 0x03}
-	TokenURIKeyPrefix    = []byte{NFTPrefix, 0x05}
+	CollectionsKeyPrefix      = []byte{NFTPrefix, 0x00} // key for NFT collections
+	NFTKeyPrefix              = []byte{NFTPrefix, 0x01} // key for NFTs
+	OwnerCollectionsKeyPrefix = []byte{NFTPrefix, 0x02} // key for balance of NFTs held by an address
+	SubTokenKeyPrefix         = []byte{NFTPrefix, 0x03}
+	TokenURIKeyPrefix         = []byte{NFTPrefix, 0x04}
 )
-
-const OwnerKeyHashLength = 54
 
 // GetCollectionKey gets the key of a collection
 func GetCollectionKey(denom string) []byte {
@@ -54,22 +57,12 @@ func GetCollectionKey(denom string) []byte {
 func GetNFTKey(id string) []byte {
 	bs := getHash(id)
 
-	return append(CollectionsKeyPrefix, bs...)
-}
-
-// SplitOwnerKey gets an address and denom from an owner key
-func SplitOwnerKey(key []byte) (sdk.AccAddress, []byte) {
-	if len(key) != OwnerKeyHashLength {
-		panic(fmt.Sprintf("unexpected key length %d", len(key)))
-	}
-	address := key[2 : AddrLen+2]
-	denomHashBz := key[AddrLen+1:]
-	return sdk.AccAddress(address), denomHashBz
+	return append(NFTKeyPrefix, bs...)
 }
 
 // GetOwnerCollectionsKey gets the key prefix for all the collections owned by an account address
 func GetOwnerCollectionsKey(address sdk.AccAddress) []byte {
-	return append(OwnersKeyPrefix, address.Bytes()...)
+	return append(OwnerCollectionsKeyPrefix, address.Bytes()...)
 }
 
 // GetOwnerCollectionByDenomKey gets the key of a collection owned by an account address
@@ -79,15 +72,15 @@ func GetOwnerCollectionByDenomKey(address sdk.AccAddress, denom string) []byte {
 	return append(GetOwnerCollectionsKey(address), bs...)
 }
 
-func GetSubTokensKey(id string) []byte {
-	bsID := getHash(id)
+func GetSubTokensKey(nftID string) []byte {
+	bsID := getHash(nftID)
 	return append(SubTokenKeyPrefix, bsID...)
 }
 
-func GetSubTokenKey(id string, subTokenID uint64) []byte {
+func GetSubTokenKey(nftID string, subTokenID uint64) []byte {
 	b := make([]byte, 8)
 	binary.LittleEndian.PutUint64(b, subTokenID)
-	return append(GetSubTokensKey(id), b...)
+	return append(GetSubTokensKey(nftID), b...)
 }
 
 func GetTokenURIKey(tokenURI string) []byte {

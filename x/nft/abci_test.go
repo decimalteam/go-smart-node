@@ -18,7 +18,7 @@ func getBaseAppWithCustomKeeper() (*codec.LegacyAmino, *app.DSC, sdk.Context) {
 
 	appCodec := dsc.AppCodec()
 
-	dsc.NftKeeper = *keeper.NewKeeper(
+	dsc.NFTKeeper = *keeper.NewKeeper(
 		appCodec,
 		dsc.GetKey(types.StoreKey),
 		dsc.BankKeeper,

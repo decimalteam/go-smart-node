@@ -5,6 +5,24 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+// SetNFT sets nft to store
+func (k Keeper) SetNFT(ctx sdk.Context, denom, id string, nft types.BaseNFT) error {
+	_, found := k.GetCollection(ctx, denom)
+	if !found {
+		return types.ErrUnknownCollection(denom)
+	}
+
+	store := ctx.KVStore(k.storeKey)
+	nftKey := types.GetNFTKey(id)
+
+	bz := k.cdc.MustMarshalLengthPrefixed(&nft)
+	store.Set(nftKey, bz)
+
+	k.setTokenURI(ctx, nft.TokenURI)
+
+	return nil
+}
+
 // GetNFT gets the entire NFT metadata struct for a uint64
 func (k Keeper) GetNFT(ctx sdk.Context, denom, id string) (types.BaseNFT, error) {
 	_, found := k.GetCollection(ctx, denom)
@@ -14,7 +32,6 @@ func (k Keeper) GetNFT(ctx sdk.Context, denom, id string) (types.BaseNFT, error)
 
 	store := ctx.KVStore(k.storeKey)
 	nftKey := types.GetNFTKey(id)
-
 	bz := store.Get(nftKey)
 	if bz == nil {
 		return types.BaseNFT{}, types.ErrUnknownNFT(denom, id)
@@ -27,23 +44,6 @@ func (k Keeper) GetNFT(ctx sdk.Context, denom, id string) (types.BaseNFT, error)
 	return nft, nil
 }
 
-// SetNFT sets nft to store
-func (k Keeper) SetNFT(ctx sdk.Context, id string, nft types.BaseNFT) {
-	store := ctx.KVStore(k.storeKey)
-	nftKey := types.GetNFTKey(id)
-
-	bz := k.cdc.MustMarshalLengthPrefixed(&nft)
-	store.Set(nftKey, bz)
-}
-
-// ExistTokenID check if nft exists
-func (k Keeper) ExistTokenID(ctx sdk.Context, id string) bool {
-	store := ctx.KVStore(k.storeKey)
-	nftKey := types.GetNFTKey(id)
-
-	return store.Has(nftKey)
-}
-
 // GetNFTs returns all matched NFTs
 func (k Keeper) GetNFTs(ctx sdk.Context) (nfts []types.BaseNFT) {
 	k.iterateNFTs(ctx, func(nft types.BaseNFT) (stop bool) {
@@ -54,18 +54,26 @@ func (k Keeper) GetNFTs(ctx sdk.Context) (nfts []types.BaseNFT) {
 	return
 }
 
-func (k Keeper) SetTokenURI(ctx sdk.Context, tokenURI string) {
+// HasTokenID check if nft exists
+func (k Keeper) HasTokenID(ctx sdk.Context, id string) bool {
 	store := ctx.KVStore(k.storeKey)
-	tokenURIKey := types.GetTokenURIKey(tokenURI)
+	nftKey := types.GetNFTKey(id)
 
-	store.Set(tokenURIKey, []byte{})
+	return store.Has(nftKey)
 }
 
-func (k Keeper) ExistTokenURI(ctx sdk.Context, tokenURI string) bool {
+func (k Keeper) HasTokenURI(ctx sdk.Context, tokenURI string) bool {
 	store := ctx.KVStore(k.storeKey)
 	tokenURIKey := types.GetTokenURIKey(tokenURI)
 
 	return store.Has(tokenURIKey)
+}
+
+func (k Keeper) setTokenURI(ctx sdk.Context, tokenURI string) {
+	store := ctx.KVStore(k.storeKey)
+	tokenURIKey := types.GetTokenURIKey(tokenURI)
+
+	store.Set(tokenURIKey, []byte{})
 }
 
 // iterateNFTs iterates over NFTs and performs a function

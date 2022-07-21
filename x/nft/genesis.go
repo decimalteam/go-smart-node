@@ -45,7 +45,7 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	for _, nft := range nfts {
 		nftSubTokens := k.GetSubTokens(ctx, nft.GetID())
 		subTokens[nft.GetID()] = types.SubTokens{
-			SubTokens: make([]types.SubToken, len(nftSubTokens)),
+			SubTokens: nftSubTokens,
 		}
 	}
 

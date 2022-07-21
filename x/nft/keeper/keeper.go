@@ -132,7 +132,7 @@ func (k Keeper) MintNFTAndCollection(
 		nft = types.NewBaseNFT(id, creator, tokenURI, reserve, allowMint)
 	}
 
-	nft = nft.AddSubTokenIDs(owner, subTokenIDs)
+	nft = nft.AddOwnerSubTokenIDs(owner, subTokenIDs)
 
 	collection, found := k.GetCollection(ctx, denom)
 	if found {
@@ -140,11 +140,13 @@ func (k Keeper) MintNFTAndCollection(
 	} else {
 		collection = types.NewCollection(denom, []string{nft.ID})
 	}
+
 	k.SetCollection(ctx, denom, collection)
 
-	k.SetNFT(ctx, id, nft)
-
-	k.SetTokenURI(ctx, tokenURI)
+	err = k.SetNFT(ctx, denom, id, nft)
+	if err != nil {
+		return err
+	}
 
 	creatorAddress, err := sdk.AccAddressFromBech32(creator)
 	if err != nil {
@@ -188,7 +190,10 @@ func (k Keeper) Transfer(ctx sdk.Context, denom, id string, sender, recipient st
 	nft = nft.SetOwners(nft.GetOwners().SetOwner(senderOwner))
 	nft = nft.SetOwners(nft.GetOwners().SetOwner(recipientOwner))
 
-	k.SetNFT(ctx, id, nft)
+	err = k.SetNFT(ctx, denom, id, nft)
+	if err != nil {
+		return types.BaseNFT{}, err
+	}
 
 	return nft, nil
 }
@@ -202,7 +207,10 @@ func (k Keeper) EditNFT(ctx sdk.Context, denom, id string, tokenURI string) erro
 
 	nft = nft.EditMetadata(tokenURI)
 
-	k.SetNFT(ctx, id, nft)
+	err = k.SetNFT(ctx, denom, id, nft)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -244,7 +252,10 @@ func (k Keeper) DeleteNFTSubTokens(ctx sdk.Context, denom, id string, subTokenID
 
 	nft = nft.SetOwners(nft.GetOwners().SetOwner(owner))
 
-	k.SetNFT(ctx, id, nft)
+	err = k.SetNFT(ctx, denom, id, nft)
+	if err != nil {
+		return err
+	}
 
 	ownerAddress, err := sdk.AccAddressFromBech32(owner.GetAddress())
 	if err != nil {

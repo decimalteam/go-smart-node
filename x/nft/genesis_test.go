@@ -1,68 +1,128 @@
 package nft_test
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/app"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"testing"
+	"time"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
+)
+
+// nolint: deadcode unused
+const (
+	firstDenom  = "first_denom"
+	secondDenom = "second_denom"
+	thirdDenom  = "third_denom"
+	ID1         = "1"
+	ID2         = "2"
+	TokenURI1   = "https://google.com/token-1.json"
+	TokenURI2   = "https://google.com/token-2.json"
 )
 
 func TestInitGenesis(t *testing.T) {
 	_, dsc, ctx := getBaseAppWithCustomKeeper()
 
-	addrs := getAddrs(dsc, ctx, 2)
 	genesisState := types.DefaultGenesisState()
-	require.Equal(t, 0, len(genesisState.Owners))
 	require.Equal(t, 0, len(genesisState.Collections))
+	require.Equal(t, 0, len(genesisState.Nfts))
+	require.Equal(t, 0, len(genesisState.SubTokens))
 
-	ids := []string{ID1, ID2, ID3}
-	idCollection := types.NewIDCollection(Denom1, ids)
-	idCollection2 := types.NewIDCollection(Denom2, ids)
-	owner := types.NewOwner(addrs[0].String(), idCollection)
+	denoms := []string{firstDenom, secondDenom, thirdDenom}
+	const nftsAmount = 2
 
-	owner2 := types.NewOwner(addrs[1].String(), idCollection2)
+	// prepare collections
+	collections := make([]types.Collection, len(denoms))
+	for i, denom := range denoms {
+		nftIDs := make([]string, nftsAmount)
+		for j := 0; j < nftsAmount; j++ {
+			nftIDs[j] = time.Now().String()
+		}
 
-	owners := []types.Owner{owner, owner2}
+		collections[i] = types.NewCollection(denom, nftIDs)
+	}
 
-	reserve := sdk.NewInt(100)
-	subTokenIds := []int64{}
+	const subTokenAmount = 3
+	// prepare nfts
+	nfts := make([]types.BaseNFT, len(denoms)*nftsAmount)
+	subTokens := make(map[string]types.SubTokens, len(nfts))
+	for i, collection := range collections {
+		for j, nftID := range collection.NFTs {
+			address := app.GetAddrs(dsc, ctx, 1)[0]
+			tokenURI := time.Now().String()
+			nft := types.NewBaseNFT(
+				nftID,
+				address.String(),
+				tokenURI,
+				reserve,
+				true,
+			)
 
-	nft1 := types.NewBaseNFT(ID1, addrs[0].String(), addrs[0].String(), TokenURI1, reserve, subTokenIds, true)
-	nft2 := types.NewBaseNFT(ID2, addrs[0].String(), addrs[0].String(), TokenURI1, reserve, subTokenIds, true)
-	nft3 := types.NewBaseNFT(ID3, addrs[0].String(), addrs[0].String(), TokenURI1, reserve, subTokenIds, true)
-	nfts := types.NewNFTs(nft1, nft2, nft3)
-	collection := types.NewCollection(Denom1, nfts)
+			subTokenIDs := nft.GenSubTokenIDs(subTokenAmount)
+			firstTokenOwner := types.NewTokenOwner(address.String(), subTokenIDs)
+			nft = nft.SetOwners(nft.GetOwners().SetOwner(firstTokenOwner))
 
-	nftx := types.NewBaseNFT(ID1, addrs[1].String(), addrs[1].String(), TokenURI1, reserve, subTokenIds, true)
-	nft2x := types.NewBaseNFT(ID2, addrs[1].String(), addrs[1].String(), TokenURI1, reserve, subTokenIds, true)
-	nft3x := types.NewBaseNFT(ID3, addrs[1].String(), addrs[1].String(), TokenURI1, reserve, subTokenIds, true)
-	nftsx := types.NewNFTs(nftx, nft2x, nft3x)
-	collection2 := types.NewCollection(Denom2, nftsx)
+			nfts[i*nftsAmount+j] = nft
 
-	collections := types.NewCollections(collection, collection2)
+			// prepare sub tokens map
+			subTokens[nft.ID] = types.SubTokens{
+				SubTokens: make([]types.SubToken, subTokenIDs.Len()),
+			}
+			for q, subTokenID := range subTokenIDs {
+				subTokens[nft.ID].SubTokens[q] = types.NewSubToken(subTokenID, nft.Reserve)
+			}
+		}
+	}
 
-	genesisState = types.NewGenesisState(owners, collections)
+	genesisState = types.NewGenesisState(collections, nfts, subTokens)
 
-	nft.InitGenesis(ctx, dsc.NftKeeper, *genesisState)
+	nft.InitGenesis(ctx, dsc.NFTKeeper, *genesisState)
 
-	returnedOwners := dsc.NftKeeper.GetOwners(ctx)
-	require.Equal(t, 2, len(owners))
-	require.Equal(t, returnedOwners[0].String(), owners[0].String())
-	require.Equal(t, returnedOwners[1].String(), owners[1].String())
+	storedCollections := dsc.NFTKeeper.GetCollections(ctx)
+	compareCollections(t, storedCollections, collections)
 
-	returnedCollections := dsc.NftKeeper.GetCollections(ctx)
-	require.Equal(t, 2, len(returnedCollections))
-	require.Equal(t, returnedCollections[0].String(), collections[0].String())
-	require.Equal(t, returnedCollections[1].String(), collections[1].String())
+	storedNFTs := dsc.NFTKeeper.GetNFTs(ctx)
+	compareNFTs(t, storedNFTs, nfts)
 
-	exportedGenesisState := nft.ExportGenesis(ctx, dsc.NftKeeper)
-	require.Equal(t, len(genesisState.Owners), len(exportedGenesisState.Owners))
-	require.Equal(t, genesisState.Owners[0].String(), exportedGenesisState.Owners[0].String())
-	require.Equal(t, genesisState.Owners[1].String(), exportedGenesisState.Owners[1].String())
+	exportedGenesisState := nft.ExportGenesis(ctx, dsc.NFTKeeper)
+	require.Len(t, exportedGenesisState.Collections, len(collections))
+	compareCollections(t, exportedGenesisState.Collections, collections)
 
-	require.Equal(t, len(genesisState.Collections), len(exportedGenesisState.Collections))
-	require.Equal(t, genesisState.Collections[0].String(), exportedGenesisState.Collections[0].String())
-	require.Equal(t, genesisState.Collections[1].String(), exportedGenesisState.Collections[1].String())
+	require.Len(t, exportedGenesisState.Nfts, len(nfts))
+	compareNFTs(t, exportedGenesisState.Nfts, nfts)
+
+	require.Equal(t, exportedGenesisState.SubTokens, subTokens)
+}
+
+func compareCollections(t *testing.T, storedCollections, collectionsToStore []types.Collection) {
+	require.Len(t, storedCollections, len(collectionsToStore))
+	for _, storedCollection := range storedCollections {
+		var matched bool
+		for _, collectionToStore := range collectionsToStore {
+			if collectionToStore.Denom == storedCollection.Denom {
+				matched = true
+				require.Equal(t, collectionToStore, storedCollection)
+				break
+			}
+		}
+
+		require.True(t, matched, storedCollection.Denom)
+	}
+}
+
+func compareNFTs(t *testing.T, storedNFTs, nftsToStore []types.BaseNFT) {
+	require.Len(t, storedNFTs, len(nftsToStore))
+	for _, storedNFT := range storedNFTs {
+		var matched bool
+		for _, nftToStore := range nftsToStore {
+			if nftToStore.ID == storedNFT.ID {
+				matched = true
+				require.Equal(t, nftToStore, storedNFT)
+				break
+			}
+		}
+
+		require.True(t, matched, storedNFT.ID)
+	}
 }
