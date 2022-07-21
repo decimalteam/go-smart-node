@@ -146,6 +146,10 @@ import (
 	coin "bitbucket.org/decimalteam/go-smart-node/x/coin"
 	coinkeeper "bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+
+	swap "bitbucket.org/decimalteam/go-smart-node/x/swap"
+	swapkeeper "bitbucket.org/decimalteam/go-smart-node/x/swap/keeper"
+	swaptypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
 )
 
 var (
@@ -214,6 +218,7 @@ var (
 		recovery.AppModuleBasic{},
 		// Decimal
 		coin.AppModuleBasic{},
+		swap.AppModuleBasic{},
 	)
 
 	// Module account permissions
@@ -232,6 +237,7 @@ var (
 		cointypes.ModuleName:           {authtypes.Minter, authtypes.Burner},
 		// special account to hold legacy balances
 		cointypes.LegacyCoinPool: nil,
+		swaptypes.SwapPool:       nil,
 	}
 
 	// Module accounts that are allowed to receive tokens
@@ -239,6 +245,7 @@ var (
 		distrtypes.ModuleName:      true,
 		incentivestypes.ModuleName: true,
 		cointypes.ModuleName:       true, // TODO: ?
+		swaptypes.SwapPool:         true,
 	}
 )
 
@@ -303,6 +310,7 @@ type DSC struct {
 
 	// Decimal keepers
 	CoinKeeper coinkeeper.Keeper
+	SwapKeeper swapkeeper.Keeper
 
 	// Module manager
 	mm *module.Manager
@@ -377,6 +385,7 @@ func NewDSC(
 		vestingtypes.StoreKey,
 		// Decimal keys
 		cointypes.StoreKey,
+		swaptypes.StoreKey,
 	)
 
 	// Add the EVM transient store key
@@ -666,6 +675,14 @@ func NewDSC(
 	)
 	app.CoinKeeper = *coinKeeper
 
+	swapKeeper := swapkeeper.NewKeeper(
+		appCodec,
+		keys[swaptypes.StoreKey],
+		app.GetSubspace(swaptypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+	)
+	app.SwapKeeper = *swapKeeper
 	/****  Module Options ****/
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
@@ -706,6 +723,7 @@ func NewDSC(
 		recovery.NewAppModule(*app.RecoveryKeeper),
 		// Decimal app modules
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
+		swap.NewAppModule(appCodec, app.SwapKeeper, app.AccountKeeper, app.BankKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -743,6 +761,7 @@ func NewDSC(
 		incentivestypes.ModuleName,
 		recoverytypes.ModuleName,
 		cointypes.ModuleName,
+		swaptypes.ModuleName,
 	)
 
 	// NOTE: fee market module must go last in order to retrieve the block gas used.
@@ -775,6 +794,7 @@ func NewDSC(
 		incentivestypes.ModuleName,
 		recoverytypes.ModuleName,
 		cointypes.ModuleName,
+		swaptypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -812,6 +832,7 @@ func NewDSC(
 		recoverytypes.ModuleName,
 		// Decimal modules
 		cointypes.ModuleName,
+		swaptypes.ModuleName,
 		// NOTE: crisis module must go at the end to check for invariants on each module
 		crisistypes.ModuleName,
 	)
@@ -840,6 +861,7 @@ func NewDSC(
 		epochs.NewAppModule(appCodec, app.EpochsKeeper),
 		feemarket.NewAppModule(app.FeeMarketKeeper),
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
+		swap.NewAppModule(appCodec, app.SwapKeeper, app.AccountKeeper, app.BankKeeper),
 	)
 
 	app.sm.RegisterStoreDecoders()
@@ -1126,6 +1148,7 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(recoverytypes.ModuleName)
 	// Decimal subspaces
 	paramsKeeper.Subspace(cointypes.ModuleName)
+	paramsKeeper.Subspace(swaptypes.ModuleName)
 	return paramsKeeper
 }
 

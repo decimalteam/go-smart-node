@@ -7,70 +7,173 @@ import "cosmos/base/v1beta1/coin.proto";
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/swap/types";
 
 service Msg {
-  rpc HTLT(MsgHTLT) returns (MsgHTLTResponse);
-  rpc Redeem(MsgRedeem) returns (MsgRedeemResponse);
-  rpc Refund(MsgRefund) returns (MsgRefundResponse);
+  rpc SwapInitialize(MsgSwapInitialize) returns (MsgSwapInitializeResponse);
+  rpc SwapRedeem(MsgSwapRedeem) returns (MsgSwapRedeemResponse);
+  rpc ChainActivate(MsgChainActivate) returns (MsgChainActivateResponse);
+  rpc ChainDeactivate(MsgChainDeactivate) returns (MsgChainDeactivateResponse);
 }
 
-enum TransferType {
-  option (gogoproto.goproto_enum_stringer) = false;
+///////////////////
+// SwapInitialize
+///////////////////
 
-  TransferTypeOut = 0;
-  TransferTypeIn = 1;
-}
-
-message MsgHTLT {
+message MsgSwapInitialize {
   option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
 
-  TransferType transfer_type = 1 [
-    (gogoproto.moretags) = "yaml:\"transfer_type\""
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender",
+    (gogoproto.moretags) = "yaml:\"sender\""
   ];
-  string from = 2 [
-    (gogoproto.moretags) = "yaml:\"from\""
-  ];
-  string recipient = 3 [
+
+  string recipient = 2 [
+    (gogoproto.jsontag) = "recipient",
     (gogoproto.moretags) = "yaml:\"recipient\""
   ];
-  bytes hashed_secret = 4 [
-    (gogoproto.customtype) = "Hash",
+
+  string amount = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"hashed_secret\""
-  ];
-  bytes secret = 5 [
-    (gogoproto.moretags) = "yaml:\"secret\""
-  ];
-  repeated cosmos.base.v1beta1.Coin amount = 6 [
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
-    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "amount",
     (gogoproto.moretags) = "yaml:\"amount\""
   ];
+
+  string tokenSymbol = 4 [
+    (gogoproto.jsontag) = "token_symbol",
+    (gogoproto.moretags) = "yaml:\"token_symbol\""
+  ];
+
+  string transactionNumber = 5 [
+    (gogoproto.jsontag) = "transaction_number",
+    (gogoproto.moretags) = "yaml:\"transaction_number\""
+  ];
+
+  uint32 fromChain = 6 [
+    (gogoproto.jsontag) = "from_chain",
+    (gogoproto.moretags) = "yaml:\"from_chain\""
+  ];
+
+  uint32 destChain = 7 [
+    (gogoproto.jsontag) = "dest_chain",
+    (gogoproto.moretags) = "yaml:\"dest_chain\""
+  ];
 }
 
-message MsgHTLTResponse {}
+message MsgSwapInitializeResponse {}
 
-message MsgRedeem {
+///////////////////
+// SwapRedeem
+///////////////////
+
+message MsgSwapRedeem {
   option (gogoproto.equal) = false;
-  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_getters) = false;  
 
-  string from = 1 [
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender",
+    (gogoproto.moretags) = "yaml:\"sender\""
+  ];
+
+  string from = 2 [
+    (gogoproto.jsontag) = "from",
     (gogoproto.moretags) = "yaml:\"from\""
   ];
-  bytes secret = 2;
-}
 
-message MsgRedeemResponse {}
-
-message MsgRefund {
-  option (gogoproto.equal) = false;
-  option (gogoproto.goproto_getters) = false;
-
-  string from = 1 [
-    (gogoproto.moretags) = "yaml:\"from\""
+  string recipient = 3 [
+    (gogoproto.jsontag) = "recipient",
+    (gogoproto.moretags) = "yaml:\"recipient\""
   ];
-  bytes hashed_secret = 2 [
+
+  string amount = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "amount",
+    (gogoproto.moretags) = "yaml:\"amount\""
+  ];
+
+  string tokenSymbol = 5 [
+    (gogoproto.jsontag) = "token_symbol",
+    (gogoproto.moretags) = "yaml:\"token_symbol\""
+  ];
+
+  string transactionNumber = 6 [
+    (gogoproto.jsontag) = "transaction_number",
+    (gogoproto.moretags) = "yaml:\"transaction_number\""
+  ];
+
+  uint32 fromChain = 7 [
+    (gogoproto.jsontag) = "from_chain",
+    (gogoproto.moretags) = "yaml:\"from_chain\""
+  ];
+
+  uint32 destChain = 8 [
+    (gogoproto.jsontag) = "dest_chain",
+    (gogoproto.moretags) = "yaml:\"dest_chain\""
+  ];
+
+  uint32 v = 9 [
+    (gogoproto.jsontag) = "v",
+    (gogoproto.moretags) = "yaml:\"v\""
+  ];
+
+  string r = 10 [
     (gogoproto.customtype) = "Hash",
-    (gogoproto.nullable) = false
+    (gogoproto.jsontag) = "r",
+    (gogoproto.moretags) = "yaml:\"r\""
+  ];
+
+  string s = 11 [
+    (gogoproto.customtype) = "Hash",
+    (gogoproto.jsontag) = "s",
+    (gogoproto.moretags) = "yaml:\"s\""
   ];
 }
 
-message MsgRefundResponse {}
+message MsgSwapRedeemResponse {}
+
+///////////////////
+// ChainActivate
+///////////////////
+
+message MsgChainActivate {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;  
+
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender",
+    (gogoproto.moretags) = "yaml:\"sender\""
+  ];
+
+  uint32 chainNumber = 2 [
+    (gogoproto.jsontag) = "chain_number",
+    (gogoproto.moretags) = "yaml:\"chain_number\""
+  ];
+
+  string chainName = 3 [
+    (gogoproto.jsontag) = "chain_name",
+    (gogoproto.moretags) = "yaml:\"chain_name\""
+  ];
+}
+
+message MsgChainActivateResponse {}
+
+///////////////////
+// ChainDeactivate
+///////////////////
+
+message MsgChainDeactivate {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;  
+
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender",
+    (gogoproto.moretags) = "yaml:\"sender\""
+  ];
+
+  uint32 chainNumber = 2 [
+    (gogoproto.jsontag) = "chain_number",
+    (gogoproto.moretags) = "yaml:\"chain_number\""
+  ];
+}
+
+message MsgChainDeactivateResponse {}

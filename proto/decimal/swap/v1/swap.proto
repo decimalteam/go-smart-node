@@ -8,39 +8,76 @@ import "decimal/swap/v1/tx.proto";
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/swap/types";
 
 message Swap {
-  TransferType transfer_type = 1 [
-    (gogoproto.jsontag) = "transfer_type"
-  ];
 
-  string hashed_secret = 2 [
+  string hashedSecret = 1 [
     (gogoproto.nullable) = true,
-    (gogoproto.customtype) = "Hash"
+    (gogoproto.customtype) = "Hash",
+    (gogoproto.jsontag) = "hashed_secret",
+    (gogoproto.moretags) = "yaml:\"hashed_secret\""
   ];
 
-  string from = 3;
-
-  string recipient = 4 [
-    (gogoproto.jsontag) = "recipient"
+  string from = 2 [
+    (gogoproto.jsontag) = "from",
+    (gogoproto.moretags) = "yaml:\"from\""
   ];
 
-  repeated cosmos.base.v1beta1.Coin amount = 5 [
+  string recipient = 3 [
+    (gogoproto.jsontag) = "recipient",
+    (gogoproto.moretags) = "yaml:\"recipient\""
+  ];
+
+  repeated cosmos.base.v1beta1.Coin amount = 4 [
+    (gogoproto.jsontag) = "amount",
+    (gogoproto.moretags) = "yaml:\"amount\"",    
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
     (gogoproto.nullable) = false
   ];
 
-  uint64 timestamp = 6;
+  uint64 timestamp = 5 [
+    (gogoproto.jsontag) = "timestamp",
+    (gogoproto.moretags) = "yaml:\"timestamp\""
+  ];
 
-  bool redeemed = 7;
+  bool redeemed = 6 [
+    (gogoproto.jsontag) = "redeemed",
+    (gogoproto.moretags) = "yaml:\"redeemed\""
+  ];
 
-  bool refunded = 8;
+  bool refunded = 7 [
+    (gogoproto.jsontag) = "refunded",
+    (gogoproto.moretags) = "yaml:\"refunded\""
+  ];
+}
+
+message Chain {
+
+  uint32 number = 1 [
+    (gogoproto.jsontag) = "number",
+    (gogoproto.moretags) = "yaml:\"number\""
+  ];
+
+  string name = 2 [
+    (gogoproto.jsontag) = "number",
+    (gogoproto.moretags) = "yaml:\"number\""
+  ];
+
+  bool active = 3 [
+    (gogoproto.jsontag) = "active",
+    (gogoproto.moretags) = "yaml:\"active\""
+  ];
+
 }
 
 message Params {
-  int64 locked_time_out = 1 [
-    (gogoproto.casttype) = "time.Duration"
+  int64 lockedTimeOut = 1 [
+    (gogoproto.casttype) = "time.Duration",
+    (gogoproto.jsontag) = "locked_time_out",
+    (gogoproto.moretags) = "yaml:\"locked_time_out\""
   ];
 
-  int64 locked_time_in = 2 [
-    (gogoproto.casttype) = "time.Duration"
+  int64 lockedTimeIn = 2 [
+    (gogoproto.casttype) = "time.Duration",
+    (gogoproto.jsontag) = "locked_time_in",
+    (gogoproto.moretags) = "yaml:\"locked_time_in\""
   ];
 }
