@@ -57,9 +57,9 @@ func transferNFTHandler(clientCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		subTokenIDs := make([]int64, len(req.SubTokenIDs))
+		subTokenIDs := make([]uint64, len(req.SubTokenIDs))
 		for i, d := range req.SubTokenIDs {
-			subTokenID, err := strconv.ParseInt(d, 10, 64)
+			subTokenID, err := strconv.ParseUint(d, 10, 64)
 			if err != nil {
 				rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid subTokenID")
 				return
@@ -168,9 +168,9 @@ func burnNFTHandler(clientCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		subTokenIDs := make([]int64, len(req.SubTokenIDs))
+		subTokenIDs := make([]uint64, len(req.SubTokenIDs))
 		for i, d := range req.SubTokenIDs {
-			subTokenID, err := strconv.ParseInt(d, 10, 64)
+			subTokenID, err := strconv.ParseUint(d, 10, 64)
 			if err != nil {
 				rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid subTokenID")
 				return
@@ -210,9 +210,9 @@ func updateReserveNFTHandler(clientCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		subTokenIDs := make([]int64, len(req.SubTokenIDs))
+		subTokenIDs := make([]uint64, len(req.SubTokenIDs))
 		for i, d := range req.SubTokenIDs {
-			subTokenID, err := strconv.ParseInt(d, 10, 64)
+			subTokenID, err := strconv.ParseUint(d, 10, 64)
 			if err != nil {
 				rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid subTokenID")
 				return

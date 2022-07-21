@@ -36,13 +36,14 @@ func (k Keeper) QueryOwnerCollections(c context.Context, req *types.QueryOwnerCo
 	}
 
 	ctx := sdk.UnwrapSDKContext(c)
-	var owner types.Owner
+	owner := types.Owner{
+		Address: req.GetOwner(),
+	}
 	if req.Denom == "" {
-		owner = k.GetOwner(ctx, ownerAddress)
+		owner.Collections = k.GetOwnerCollections(ctx, ownerAddress)
 	} else {
-		idCollection, _ := k.GetIDCollectionByDenom(ctx, ownerAddress, req.Denom)
-		owner.Address = req.Owner
-		owner.IDCollections = append(owner.IDCollections, idCollection).Sort()
+		collection := k.GetOwnerCollectionByDenom(ctx, ownerAddress, req.Denom)
+		owner.Collections = append(owner.Collections, collection)
 	}
 
 	return &types.QueryOwnerCollectionsResponse{Owner: owner}, nil
@@ -80,7 +81,7 @@ func (k Keeper) QueryNFT(c context.Context, req *types.QueryNFTRequest) (*types.
 	}
 
 	return &types.QueryNFTResponse{
-		Nft: nft.(types.BaseNFT),
+		Nft: nft,
 	}, nil
 }
 
@@ -90,13 +91,13 @@ func (k Keeper) QuerySubTokens(c context.Context, req *types.QuerySubTokensReque
 	var subTokens []types.SubToken
 
 	for _, id := range req.SubTokenIDs {
-		reserve, ok := k.GetSubToken(ctx, req.Denom, req.TokenID, id)
+		subToken, ok := k.GetSubToken(ctx, req.TokenID, id)
 		if !ok {
 			continue
 		}
 		subTokens = append(subTokens, types.SubToken{
 			ID:      id,
-			Reserve: reserve.String(),
+			Reserve: subToken.Reserve,
 		})
 	}
 

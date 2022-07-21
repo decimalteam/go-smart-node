@@ -34,12 +34,11 @@ const (
 const NFTPrefix = 0x60
 
 var (
-	CollectionsKeyPrefix    = []byte{NFTPrefix, 0x00} // key for NFT collections
-	OwnersKeyPrefix         = []byte{NFTPrefix, 0x01} // key for balance of NFTs held by an address
-	SubTokenKeyPrefix       = []byte{NFTPrefix, 0x02}
-	LastSubTokenIDKeyPrefix = []byte{NFTPrefix, 0x03}
-	TokenURIKeyPrefix       = []byte{NFTPrefix, 0x04}
-	TokenIDKeyPrefix        = []byte{NFTPrefix, 0x05}
+	CollectionsKeyPrefix = []byte{NFTPrefix, 0x00} // key for NFT collections
+	NFTKeyPrefix         = []byte{NFTPrefix, 0x01} // key for NFTs
+	OwnersKeyPrefix      = []byte{NFTPrefix, 0x02} // key for balance of NFTs held by an address
+	SubTokenKeyPrefix    = []byte{NFTPrefix, 0x03}
+	TokenURIKeyPrefix    = []byte{NFTPrefix, 0x05}
 )
 
 const OwnerKeyHashLength = 54
@@ -47,6 +46,13 @@ const OwnerKeyHashLength = 54
 // GetCollectionKey gets the key of a collection
 func GetCollectionKey(denom string) []byte {
 	bs := getHash(denom)
+
+	return append(CollectionsKeyPrefix, bs...)
+}
+
+// GetNFTKey gets the key of a nft
+func GetNFTKey(id string) []byte {
+	bs := getHash(id)
 
 	return append(CollectionsKeyPrefix, bs...)
 }
@@ -61,38 +67,31 @@ func SplitOwnerKey(key []byte) (sdk.AccAddress, []byte) {
 	return sdk.AccAddress(address), denomHashBz
 }
 
-// GetOwnersKey gets the key prefix for all the collections owned by an account address
-func GetOwnersKey(address sdk.AccAddress) []byte {
+// GetOwnerCollectionsKey gets the key prefix for all the collections owned by an account address
+func GetOwnerCollectionsKey(address sdk.AccAddress) []byte {
 	return append(OwnersKeyPrefix, address.Bytes()...)
 }
 
-// GetOwnerKey gets the key of a collection owned by an account address
-func GetOwnerKey(address sdk.AccAddress, denom string) []byte {
+// GetOwnerCollectionByDenomKey gets the key of a collection owned by an account address
+func GetOwnerCollectionByDenomKey(address sdk.AccAddress, denom string) []byte {
 	bs := getHash(denom)
 
-	return append(GetOwnersKey(address), bs...)
+	return append(GetOwnerCollectionsKey(address), bs...)
 }
 
-func GetSubTokenKey(denom, id string, subTokenID int64) []byte {
-	bs := getHash(denom)
+func GetSubTokensKey(id string) []byte {
 	bsID := getHash(id)
+	return append(SubTokenKeyPrefix, bsID...)
+}
+
+func GetSubTokenKey(id string, subTokenID uint64) []byte {
 	b := make([]byte, 8)
-	binary.LittleEndian.PutUint64(b, uint64(subTokenID))
-	return append(append(append(SubTokenKeyPrefix, bs...), bsID...), b...)
-}
-
-func GetLastSubTokenIDKey(denom, id string) []byte {
-	bs := getHash(denom)
-	bsID := getHash(id)
-	return append(append(LastSubTokenIDKeyPrefix, bs...), bsID...)
+	binary.LittleEndian.PutUint64(b, subTokenID)
+	return append(GetSubTokensKey(id), b...)
 }
 
 func GetTokenURIKey(tokenURI string) []byte {
 	return append(TokenURIKeyPrefix, []byte(tokenURI)...)
-}
-
-func GetTokenIDKey(id string) []byte {
-	return append(TokenIDKeyPrefix, []byte(id)...)
 }
 
 func getHash(denom string) []byte {

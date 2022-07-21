@@ -42,7 +42,7 @@ message MsgMintNFT {
     (gogoproto.jsontag) = "reserve",
     (gogoproto.moretags) = "yaml:\"reserve\""
   ];
-  bool allow_mint = 8 [
+  bool allowMint = 8 [
     (gogoproto.moretags) = "yaml:\"allow_mint\""
   ];
 }
@@ -63,7 +63,7 @@ message MsgTransferNFT {
   string denom = 4 [
     (gogoproto.moretags) = "yaml:\"denom\""
   ];
-  repeated int64 SubTokenIDs = 5 [
+  repeated uint64 SubTokenIDs = 5 [
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "sub_token_ids",
     (gogoproto.moretags) = "yaml:\"sub_token_ids\""
@@ -102,7 +102,7 @@ message MsgBurnNFT {
   string denom = 3 [
     (gogoproto.moretags) = "yaml:\"denom\""
   ];
-  repeated int64 SubTokenIDs = 4 [
+  repeated uint64 subTokenIDs = 4 [
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "sub_token_ids",
     (gogoproto.moretags) = "yaml:\"sub_token_ids\""
@@ -122,12 +122,12 @@ message MsgUpdateReserveNFT {
   string denom = 3 [
     (gogoproto.moretags) = "yaml:\"denom\""
   ];
-  repeated int64 SubTokenIDs = 4 [
+  repeated uint64 subTokenIDs = 4 [
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "sub_token_ids",
     (gogoproto.moretags) = "yaml:\"sub_token_ids\""
   ];
-  string NewReserveNFT = 5 [
+  string newReserveNFT = 5 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "new_reserve_nft",

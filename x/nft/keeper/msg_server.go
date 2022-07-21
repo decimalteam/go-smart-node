@@ -18,7 +18,6 @@ func (k Keeper) MintNFT(c context.Context, msg *types.MsgMintNFT) (*types.MsgMin
 			return nil, types.ErrNotAllowedMint()
 		}
 	} else {
-		// TODO abcd всегда игнорируется. Можно насоздавать токенов с одинаковым uri, хотя проверка есть.
 		if k.ExistTokenURI(ctx, msg.TokenURI) {
 			return nil, types.ErrNotUniqueTokenURI()
 		}
@@ -42,7 +41,7 @@ func (k Keeper) MintNFT(c context.Context, msg *types.MsgMintNFT) (*types.MsgMin
 			sdk.NewAttribute(types.AttributeKeyDenom, msg.Denom),
 			sdk.NewAttribute(types.AttributeKeyNFTID, msg.ID),
 			sdk.NewAttribute(types.AttributeKeyNFTTokenURI, msg.TokenURI),
-			sdk.NewAttribute(types.AttributeKeySubTokenIDStartRange, strconv.FormatInt(lastSubTokenID-msg.Quantity.Int64(), 10)),
+			sdk.NewAttribute(types.AttributeKeySubTokenIDStartRange, strconv.FormatUint(lastSubTokenID, 10)),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
@@ -57,24 +56,10 @@ func (k Keeper) MintNFT(c context.Context, msg *types.MsgMintNFT) (*types.MsgMin
 func (k Keeper) TransferNFT(c context.Context, msg *types.MsgTransferNFT) (*types.MsgTransferNFTResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 
-	nft, err := k.GetNFT(ctx, msg.Denom, msg.ID)
+	_, err := k.Transfer(ctx, msg.Denom, msg.ID, msg.Sender, msg.Recipient, msg.SubTokenIDs)
 	if err != nil {
 		return nil, err
 	}
-
-	nft, err = k.Transfer(nft, msg.Sender, msg.Recipient, msg.SubTokenIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	collection, found := k.GetCollection(ctx, msg.Denom)
-	if !found {
-		return nil, types.ErrUnknownCollection(msg.Denom)
-	}
-
-	collection.NFTs, _ = collection.NFTs.Update(msg.ID, nft.(types.BaseNFT))
-
-	k.SetCollection(ctx, msg.Denom, collection)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -141,7 +126,7 @@ func (k Keeper) BurnNFT(c context.Context, msg *types.MsgBurnNFT) (*types.MsgBur
 	}
 
 	// remove NFT
-	err = k.DeleteNFT(ctx, msg.Denom, msg.ID, msg.SubTokenIDs)
+	err = k.DeleteNFTSubTokens(ctx, msg.Denom, msg.ID, msg.SubTokenIDs)
 	if err != nil {
 		return nil, err
 	}

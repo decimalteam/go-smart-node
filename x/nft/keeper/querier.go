@@ -74,8 +74,11 @@ func queryOwner(ctx sdk.Context, path []string, req abci.RequestQuery, k Keeper,
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, err.Error())
 	}
+	owner := types.Owner{
+		Address:     params.Owner.String(),
+		Collections: k.GetOwnerCollections(ctx, params.Owner),
+	}
 
-	owner := k.GetOwner(ctx, params.Owner)
 	bz, err := legacyQuerierCdc.MarshalJSON(owner)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
@@ -92,11 +95,12 @@ func queryOwnerByDenom(ctx sdk.Context, path []string, req abci.RequestQuery, k 
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, err.Error())
 	}
 
-	var owner types.Owner
-
-	idCollection, _ := k.GetIDCollectionByDenom(ctx, params.Owner, params.Denom)
-	owner.Address = params.Owner.String()
-	owner.IDCollections = append(owner.IDCollections, idCollection).Sort()
+	owner := types.Owner{
+		Address: params.Owner.String(),
+		Collections: []types.OwnerCollection{
+			k.GetOwnerCollectionByDenom(ctx, params.Owner, params.Denom),
+		},
+	}
 
 	bz, err := legacyQuerierCdc.MarshalJSON(owner)
 	if err != nil {
@@ -119,9 +123,7 @@ func queryCollection(ctx sdk.Context, path []string, req abci.RequestQuery, k Ke
 		return nil, types.ErrUnknownCollection(params.Denom)
 	}
 
-	// use Collections custom JSON to make the denom the key of the object
-	collections := types.NewCollections(collection)
-	bz, err := legacyQuerierCdc.MarshalJSON(collections)
+	bz, err := legacyQuerierCdc.MarshalJSON(collection)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
@@ -172,13 +174,13 @@ func querySubTokens(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuer
 	var response types.ResponseSubTokens
 
 	for _, id := range params.SubTokenIDs {
-		reserve, ok := k.GetSubToken(ctx, params.Denom, params.TokenID, id)
+		subToken, ok := k.GetSubToken(ctx, params.TokenID, id)
 		if !ok {
 			continue
 		}
 		response = append(response, types.ResponseSubToken{
-			ID:      id,
-			Reserve: reserve,
+			ID:      subToken.ID,
+			Reserve: subToken.Reserve,
 		})
 	}
 

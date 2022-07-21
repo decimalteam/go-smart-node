@@ -8,15 +8,46 @@ import (
 
 // InitGenesis sets nft information for genesis.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) {
-	k.SetOwners(ctx, data.Owners)
+	nftDenoms := make(map[string]string)
+	for _, collection := range data.Collections {
+		for _, id := range collection.NFTs {
+			nftDenoms[id] = collection.Denom
+		}
 
-	for _, c := range data.Collections {
-		sortedCollection := types.NewCollection(c.Denom, c.NFTs.Sort())
-		k.SetCollection(ctx, c.Denom, sortedCollection)
+		k.SetCollection(ctx, collection.Denom, collection)
+	}
+
+	for nftID, subTokens := range data.SubTokens {
+		for _, subToken := range subTokens.SubTokens {
+			k.SetSubToken(ctx, nftID, subToken)
+		}
+	}
+
+	for _, nft := range data.Nfts {
+		denom := nftDenoms[nft.GetID()]
+
+		for _, owner := range nft.GetOwners() {
+			err := k.MintNFTAndCollection(ctx, denom, nft.GetID(), nft.GetReserve(), nft.GetCreator(), owner.GetAddress(), nft.GetTokenURI(), nft.GetAllowMint(), owner.SubTokenIDs)
+			if err != nil {
+				panic(err)
+			}
+		}
 	}
 }
 
 // ExportGenesis returns a GenesisState for a given context and keeper.
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
-	return types.NewGenesisState(k.GetOwners(ctx), k.GetCollections(ctx))
+	collections := k.GetCollections(ctx)
+
+	nfts := k.GetNFTs(ctx)
+
+	subTokens := make(map[string]types.SubTokens)
+	for _, nft := range nfts {
+		nftSubTokens := k.GetSubTokens(ctx, nft.GetID())
+		subTokens[nft.GetID()] = types.SubTokens{
+			SubTokens: make([]types.SubToken, len(nftSubTokens)),
+		}
+	}
+
+	return types.NewGenesisState(collections, nfts, subTokens)
 }

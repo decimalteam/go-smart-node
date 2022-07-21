@@ -6,12 +6,17 @@ import "gogoproto/gogo.proto";
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
 
 message SubToken {
-  int64 ID = 1 [
+  option (gogoproto.equal)           = false;
+  option (gogoproto.goproto_getters) = false;
+
+  uint64 ID = 1 [
+    (gogoproto.jsontag) = "id",
     (gogoproto.moretags) = "yaml:\"id\""
   ];
 
   string reserve = 2 [
-    (gogoproto.jsontag) = "reserve",
-    (gogoproto.moretags) = "yaml:\"reserve\""
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.moretags) = "yaml:\"reserve\"",
+    (gogoproto.nullable) = false
   ];
 }

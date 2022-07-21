@@ -1,7 +1,6 @@
 package types
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/exported"
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"sort"
@@ -9,13 +8,9 @@ import (
 )
 
 // NewBaseNFT creates a new NFT instance
-func NewBaseNFT(id string, creator, owner string, tokenURI string, reserve sdk.Int, subTokenIDs []int64, allowMint bool) BaseNFT {
+func NewBaseNFT(id string, creator, tokenURI string, reserve sdk.Int, allowMint bool) BaseNFT {
 	return BaseNFT{
-		ID: id,
-		Owners: TokenOwners{TokenOwner{
-			Address:     owner,
-			SubTokenIDs: subTokenIDs,
-		}},
+		ID:        id,
 		TokenURI:  strings.TrimSpace(tokenURI),
 		Creator:   creator,
 		Reserve:   reserve,
@@ -26,7 +21,7 @@ func NewBaseNFT(id string, creator, owner string, tokenURI string, reserve sdk.I
 // GetID returns the ID of the token
 func (bnft BaseNFT) GetID() string { return bnft.ID }
 
-func (bnft BaseNFT) GetOwners() exported.TokenOwners { return &bnft.Owners }
+func (bnft BaseNFT) GetOwners() TokenOwners { return bnft.Owners }
 
 // GetTokenURI returns the path to optional extra properties
 func (bnft BaseNFT) GetTokenURI() string { return bnft.TokenURI }
@@ -36,14 +31,14 @@ func (bnft BaseNFT) GetCreator() string {
 }
 
 // EditMetadata edits metadata of an nft
-func (bnft BaseNFT) EditMetadata(tokenURI string) exported.NFT {
+func (bnft BaseNFT) EditMetadata(tokenURI string) BaseNFT {
 	bnft.TokenURI = tokenURI
-	return &bnft
+	return bnft
 }
 
-func (bnft BaseNFT) SetOwners(owners exported.TokenOwners) exported.NFT {
-	bnft.Owners = owners.(TokenOwners)
-	return &bnft
+func (bnft BaseNFT) SetOwners(owners TokenOwners) BaseNFT {
+	bnft.Owners = owners
+	return bnft
 }
 
 func (bnft BaseNFT) GetReserve() sdk.Int {
@@ -52,6 +47,42 @@ func (bnft BaseNFT) GetReserve() sdk.Int {
 
 func (bnft BaseNFT) GetAllowMint() bool {
 	return bnft.AllowMint
+}
+
+func (bnft BaseNFT) GenSubTokenIDs(quantity uint64) SortedUintArray {
+	var prevSubTokenID uint64 = 0
+	for _, o := range bnft.GetOwners() {
+		max := o.GetSubTokenIDs().Max()
+		if max > prevSubTokenID {
+			prevSubTokenID = max
+		}
+	}
+
+	subTokenIDs := make(SortedUintArray, quantity)
+
+	for i := uint64(0); i < quantity; i++ {
+		prevSubTokenID++
+		subTokenIDs[i] = prevSubTokenID
+	}
+
+	return subTokenIDs
+}
+
+func (bnft BaseNFT) AddSubTokenIDs(ownerAddress string, subTokenIDs SortedUintArray) BaseNFT {
+	owner := bnft.GetOwners().GetOwner(ownerAddress)
+	if owner == nil {
+		owner = NewTokenOwner(ownerAddress, subTokenIDs)
+
+		bnft = bnft.SetOwners(bnft.GetOwners().SetOwner(owner))
+	} else {
+		for _, id := range subTokenIDs {
+			owner = owner.SetSubTokenID(id)
+		}
+
+		bnft = bnft.SetOwners(bnft.GetOwners().SetOwner(owner))
+	}
+
+	return bnft
 }
 
 func (bnft BaseNFT) String() string {
@@ -93,13 +124,13 @@ func (nfts NFTs) Find(id string) (nft BaseNFT, found bool) {
 }
 
 // Update removes and replaces an NFT from the set
-func (nfts NFTs) Update(id string, nft exported.NFT) (NFTs, bool) {
+func (nfts NFTs) Update(id string, nft BaseNFT) (NFTs, bool) {
 	index := nfts.find(id)
 	if index == -1 {
 		return nfts, false
 	}
 
-	return append(append(nfts[:index], *nft.(*BaseNFT)), nfts[index+1:]...), true
+	return append(append(nfts[:index], nft), nfts[index+1:]...), true
 }
 
 // Remove removes an NFT from the set of NFTs

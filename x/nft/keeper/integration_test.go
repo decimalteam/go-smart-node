@@ -8,9 +8,9 @@ import (
 
 // nolint: deadcode unused
 var (
-	Denom1    = "test_denom1"
-	Denom2    = "test_denom2"
-	Denom3    = "test_denom3"
+	Denom1    = "test_denom_1"
+	Denom2    = "test_denom_2"
+	Denom3    = "test_denom_3"
 	ID1       = "1"
 	ID2       = "2"
 	ID3       = "3"
@@ -18,8 +18,8 @@ var (
 	TokenURI2 = "https://google.com/token-2.json"
 )
 
-func getAddrs(dsc *app.DSC, ctx sdk.Context) []sdk.AccAddress {
-	addrs := app.AddTestAddrsIncremental(dsc, ctx, 1, sdk.Coins{
+func getAddrs(dsc *app.DSC, ctx sdk.Context, number int) []sdk.AccAddress {
+	addrs := app.AddTestAddrsIncremental(dsc, ctx, number, sdk.Coins{
 		{
 			Denom:  "del",
 			Amount: helpers.EtherToWei(sdk.NewInt(1000000000000)),

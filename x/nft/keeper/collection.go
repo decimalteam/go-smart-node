@@ -37,6 +37,7 @@ func (k Keeper) GetCollection(ctx sdk.Context, denom string) (collection types.C
 	if bz == nil {
 		return
 	}
+
 	k.cdc.MustUnmarshalLengthPrefixed(bz, &collection)
 	return collection, true
 }

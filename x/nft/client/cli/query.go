@@ -234,11 +234,10 @@ func cmdQuerySubTokens() *cobra.Command {
 			denom := args[0]
 			tokenID := args[1]
 
-			// TODO ids - []int64, but not string. Make sure it is correct
 			subTokenIDsStr := strings.Split(args[2], ",")
-			subTokenIDs := make([]int64, len(subTokenIDsStr))
+			subTokenIDs := make([]uint64, len(subTokenIDsStr))
 			for i, d := range subTokenIDsStr {
-				subTokenID, err := strconv.ParseInt(d, 10, 64)
+				subTokenID, err := strconv.ParseUint(d, 10, 64)
 				if err != nil {
 					return fmt.Errorf("invalid subTokenID")
 				}

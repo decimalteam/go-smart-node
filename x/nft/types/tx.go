@@ -98,7 +98,7 @@ func (m *MsgMintNFT) GetSigners() []sdk.AccAddress {
 /* --------------------------------------------------------------------------- */
 
 // NewMsgBurnNFT is a constructor function for MsgBurnNFT
-func NewMsgBurnNFT(sender sdk.AccAddress, id string, denom string, subTokenIDs []int64) *MsgBurnNFT {
+func NewMsgBurnNFT(sender sdk.AccAddress, id string, denom string, subTokenIDs []uint64) *MsgBurnNFT {
 	return &MsgBurnNFT{
 		Sender:      sender.String(),
 		ID:          strings.TrimSpace(id),
@@ -153,7 +153,7 @@ func (msg *MsgBurnNFT) GetSigners() []sdk.AccAddress {
 /* --------------------------------------------------------------------------- */
 
 // NewUpdateReservNFT is a constructor function for MsgUpdateReservNFT
-func NewMsgUpdateReserveNFT(sender sdk.AccAddress, id string, denom string, subTokenIDs []int64, newReserveNFT sdk.Int) *MsgUpdateReserveNFT {
+func NewMsgUpdateReserveNFT(sender sdk.AccAddress, id string, denom string, subTokenIDs []uint64, newReserveNFT sdk.Int) *MsgUpdateReserveNFT {
 	return &MsgUpdateReserveNFT{
 		Sender:        sender.String(),
 		ID:            strings.TrimSpace(id),
@@ -215,7 +215,7 @@ func (msg *MsgUpdateReserveNFT) GetSigners() []sdk.AccAddress {
 /* --------------------------------------------------------------------------- */
 
 // NewMsgTransferNFT is a constructor function for MsgSetName
-func NewMsgTransferNFT(sender, recipient sdk.AccAddress, denom, id string, subTokenIDs []int64) *MsgTransferNFT {
+func NewMsgTransferNFT(sender, recipient sdk.AccAddress, denom, id string, subTokenIDs []uint64) *MsgTransferNFT {
 	return &MsgTransferNFT{
 		Sender:      sender.String(),
 		Recipient:   recipient.String(),
@@ -330,7 +330,8 @@ func (msg *MsgEditNFTMetadata) GetSigners() []sdk.AccAddress {
 }
 
 /* --------------------------------------------------------------------------- */
-func CheckUnique(arr []int64) bool {
+
+func CheckUnique(arr []uint64) bool {
 	for i, el := range arr {
 		for j, el2 := range arr {
 			if i != j && el == el2 {

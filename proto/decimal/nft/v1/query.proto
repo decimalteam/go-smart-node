@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 
 import "decimal/nft/v1/owner.proto";
-import "decimal/nft/v1/collections.proto";
+import "decimal/nft/v1/collection.proto";
 import "decimal/nft/v1/nft.proto";
 import "decimal/nft/v1/sub_token.proto";
 
@@ -107,7 +107,7 @@ message QueryNFTResponse {
 message QuerySubTokensRequest {
   string denom = 1;
   string tokenID = 2;
-  repeated int64 subTokenIDs = 3;
+  repeated uint64 subTokenIDs = 3;
 }
 
 message QuerySubTokensResponse {
