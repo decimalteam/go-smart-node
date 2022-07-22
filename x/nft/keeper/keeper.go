@@ -153,8 +153,13 @@ func (k Keeper) MintNFTAndCollection(
 		return err
 	}
 
-	ownerCollection := k.GetOwnerCollectionByDenom(ctx, creatorAddress, denom)
-	ownerCollection = ownerCollection.AddID(nft.GetID())
+	ownerCollection, found := k.GetOwnerCollectionByDenom(ctx, creatorAddress, denom)
+	if !found {
+		ownerCollection = types.NewOwnerCollection(denom, []string{nft.GetID()})
+	} else {
+		ownerCollection = ownerCollection.AddID(nft.GetID())
+	}
+
 	k.SetOwnerCollectionByDenom(ctx, creatorAddress, denom, ownerCollection)
 
 	return nil

@@ -42,7 +42,10 @@ func (k Keeper) QueryOwnerCollections(c context.Context, req *types.QueryOwnerCo
 	if req.Denom == "" {
 		owner.Collections = k.GetOwnerCollections(ctx, ownerAddress)
 	} else {
-		collection := k.GetOwnerCollectionByDenom(ctx, ownerAddress, req.Denom)
+		collection, found := k.GetOwnerCollectionByDenom(ctx, ownerAddress, req.Denom)
+		if !found {
+			collection = types.NewOwnerCollection(req.Denom, []string{})
+		}
 		owner.Collections = append(owner.Collections, collection)
 	}
 

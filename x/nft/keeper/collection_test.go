@@ -21,6 +21,7 @@ const (
 var (
 	firstReserve  sdk.Int = types.NewMinReserve2
 	secondReserve sdk.Int = types.NewMinReserve2.MulRaw(2)
+	firstQuantity sdk.Int = sdk.NewInt(10)
 )
 
 func TestSetCollections(t *testing.T) {

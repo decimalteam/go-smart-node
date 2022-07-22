@@ -41,7 +41,8 @@ func TestSetOwnerCollection(t *testing.T) {
 
 	// Check throw GetOwnerCollectionByDenom method
 	for _, ownerCollectionToStore := range ownerCollectionsToStore {
-		storedOwnerCollection := dsc.NFTKeeper.GetOwnerCollectionByDenom(ctx, addrs[0], ownerCollectionToStore.Denom)
+		storedOwnerCollection, found := dsc.NFTKeeper.GetOwnerCollectionByDenom(ctx, addrs[0], ownerCollectionToStore.Denom)
+		require.True(t, found)
 		require.Equal(t, ownerCollectionToStore, storedOwnerCollection)
 	}
 }

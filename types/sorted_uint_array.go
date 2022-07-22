@@ -36,6 +36,10 @@ func FindUtilUint64(group FindableUint64, el uint64) int {
 type SortedUintArray []uint64
 
 func (sa SortedUintArray) Max() uint64 {
+	if sa.Len() == 0 {
+		return 0
+	}
+
 	return sa[sa.Len()-1]
 }
 

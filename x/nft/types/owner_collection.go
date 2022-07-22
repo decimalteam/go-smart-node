@@ -3,10 +3,10 @@ package types
 import "strings"
 
 // NewOwnerCollection creates a new IDCollection instance
-func NewOwnerCollection(denom string, ids []string) OwnerCollection {
+func NewOwnerCollection(denom string, nftIDs []string) OwnerCollection {
 	return OwnerCollection{
 		Denom: strings.TrimSpace(denom),
-		NFTs:  SortedStringArray(ids).Sort(),
+		NFTs:  SortedStringArray(nftIDs).Sort(),
 	}
 }
 

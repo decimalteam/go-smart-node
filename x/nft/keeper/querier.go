@@ -95,10 +95,15 @@ func queryOwnerByDenom(ctx sdk.Context, path []string, req abci.RequestQuery, k 
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, err.Error())
 	}
 
+	ownerCollection, found := k.GetOwnerCollectionByDenom(ctx, params.Owner, params.Denom)
+	if !found {
+		ownerCollection = types.NewOwnerCollection(params.Denom, []string{})
+	}
+
 	owner := types.Owner{
 		Address: params.Owner.String(),
 		Collections: []types.OwnerCollection{
-			k.GetOwnerCollectionByDenom(ctx, params.Owner, params.Denom),
+			ownerCollection,
 		},
 	}
 
