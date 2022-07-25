@@ -22,14 +22,14 @@ message GenesisState {
     (gogoproto.moretags) = "yaml:\"nfts\""
   ];
 
-  map<string, SubTokens> sub_tokens = 3 [
+  map<string, SubTokens> subTokens = 3 [
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"sub_tokens\""
   ];
 }
 
 message SubTokens {
-  repeated SubToken sub_tokens = 1 [
+  repeated SubToken subTokens = 1 [
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"sub_tokens\""
   ];

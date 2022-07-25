@@ -2,6 +2,7 @@ package nft_test
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/app"
+	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"testing"
@@ -15,14 +16,10 @@ const (
 	firstDenom  = "first_denom"
 	secondDenom = "second_denom"
 	thirdDenom  = "third_denom"
-	ID1         = "1"
-	ID2         = "2"
-	TokenURI1   = "https://google.com/token-1.json"
-	TokenURI2   = "https://google.com/token-2.json"
 )
 
 func TestInitGenesis(t *testing.T) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 	genesisState := types.DefaultGenesisState()
 	require.Equal(t, 0, len(genesisState.Collections))

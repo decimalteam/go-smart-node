@@ -2,35 +2,14 @@ package keeper_test
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/app"
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
+	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
-	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	feemarkettypes "github.com/tharsis/ethermint/x/feemarket/types"
 	"testing"
 )
 
-func getBaseAppWithCustomKeeper() (*codec.LegacyAmino, *app.DSC, sdk.Context) {
-	dsc := app.Setup(false, feemarkettypes.DefaultGenesisState())
-	ctx := dsc.BaseApp.NewContext(false, tmproto.Header{})
-
-	appCodec := dsc.AppCodec()
-
-	dsc.NFTKeeper = *keeper.NewKeeper(
-		appCodec,
-		dsc.GetKey(types.StoreKey),
-		dsc.BankKeeper,
-		config.BaseDenom,
-	)
-
-	return codec.NewLegacyAmino(), dsc, ctx
-}
-
 func TestSetNFT(t *testing.T) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 	addrs := app.GetAddrs(dsc, ctx, 2)
 
@@ -39,7 +18,7 @@ func TestSetNFT(t *testing.T) {
 		addrs[0].String(),
 		firstTokenURI,
 		firstReserve,
-		firstAllowMint,
+		true,
 	)
 
 	nft1 = nft1.AddOwnerSubTokenIDs(addrs[0].String(), []uint64{1, 2, 3})
@@ -49,7 +28,7 @@ func TestSetNFT(t *testing.T) {
 		addrs[0].String(),
 		firstTokenURI,
 		firstReserve,
-		firstAllowMint,
+		true,
 	)
 
 	nft2 = nft2.AddOwnerSubTokenIDs(addrs[1].String(), []uint64{4, 5, 6})
@@ -98,7 +77,7 @@ func TestSetNFT(t *testing.T) {
 }
 
 func TestHasTokenID(t *testing.T) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 	addrs := app.GetAddrs(dsc, ctx, 1)
 
@@ -107,7 +86,7 @@ func TestHasTokenID(t *testing.T) {
 		addrs[0].String(),
 		firstTokenURI,
 		firstReserve,
-		firstAllowMint,
+		true,
 	)
 
 	exists := dsc.NFTKeeper.HasTokenID(ctx, nft1.GetID())
@@ -125,7 +104,7 @@ func TestHasTokenID(t *testing.T) {
 }
 
 func TestHasTokenURI(t *testing.T) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 	addrs := app.GetAddrs(dsc, ctx, 1)
 
@@ -134,7 +113,7 @@ func TestHasTokenURI(t *testing.T) {
 		addrs[0].String(),
 		firstTokenURI,
 		firstReserve,
-		firstAllowMint,
+		true,
 	)
 
 	exists := dsc.NFTKeeper.HasTokenURI(ctx, nft1.GetTokenURI())

@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/app"
+	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
@@ -9,7 +10,7 @@ import (
 )
 
 func TestMintNFT(t *testing.T) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 	sender := app.GetAddrs(dsc, ctx, 1)[0]
 
@@ -18,7 +19,7 @@ func TestMintNFT(t *testing.T) {
 		sender.String(),
 		firstTokenURI,
 		firstReserve,
-		firstAllowMint,
+		true,
 	)
 	subTokenIDs := expectedNFT.GenSubTokenIDs(10)
 	expectedNFT = expectedNFT.AddOwnerSubTokenIDs(expectedNFT.Creator, subTokenIDs)
@@ -55,7 +56,7 @@ func TestMintNFT(t *testing.T) {
 
 func TestMintNFTValidation(t *testing.T) {
 	t.Run("disabled mint", func(t *testing.T) {
-		_, dsc, ctx := getBaseAppWithCustomKeeper()
+		dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 		sender := app.GetAddrs(dsc, ctx, 1)[0]
 
@@ -77,7 +78,7 @@ func TestMintNFTValidation(t *testing.T) {
 	})
 
 	t.Run("wrong sender account", func(t *testing.T) {
-		_, dsc, ctx := getBaseAppWithCustomKeeper()
+		dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 		addrs := app.GetAddrs(dsc, ctx, 2)
 		creator := addrs[0]
@@ -108,7 +109,7 @@ func TestMintNFTValidation(t *testing.T) {
 	})
 
 	t.Run("invalid token id", func(t *testing.T) {
-		_, dsc, ctx := getBaseAppWithCustomKeeper()
+		dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 		sender := app.GetAddrs(dsc, ctx, 1)[0]
 
@@ -137,7 +138,7 @@ func TestMintNFTValidation(t *testing.T) {
 	})
 
 	t.Run("invalid token uri", func(t *testing.T) {
-		_, dsc, ctx := getBaseAppWithCustomKeeper()
+		dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 		sender := app.GetAddrs(dsc, ctx, 1)[0]
 
@@ -166,7 +167,7 @@ func TestMintNFTValidation(t *testing.T) {
 	})
 
 	t.Run("invalid nft reserve", func(t *testing.T) {
-		_, dsc, ctx := getBaseAppWithCustomKeeper()
+		dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 		sender := app.GetAddrs(dsc, ctx, 1)[0]
 
@@ -185,7 +186,7 @@ func TestMintNFTValidation(t *testing.T) {
 }
 
 func TestTransferNFT(t *testing.T) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 	addrs := app.GetAddrs(dsc, ctx, 2)
 	fromOwner := addrs[0]
@@ -196,7 +197,7 @@ func TestTransferNFT(t *testing.T) {
 		fromOwner.String(),
 		firstTokenURI,
 		firstReserve,
-		firstAllowMint,
+		true,
 	)
 	subTokenIDs := nft.GenSubTokenIDs(4)
 	nft = nft.AddOwnerSubTokenIDs(nft.Creator, subTokenIDs)
@@ -231,7 +232,7 @@ func TestTransferNFT(t *testing.T) {
 }
 
 func TestEditNFTMetadata(t *testing.T) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 	sender := app.GetAddrs(dsc, ctx, 1)[0]
 
@@ -240,7 +241,7 @@ func TestEditNFTMetadata(t *testing.T) {
 		sender.String(),
 		firstTokenURI,
 		firstReserve,
-		firstAllowMint,
+		true,
 	)
 	subTokenIDs := nft.GenSubTokenIDs(4)
 	nft = nft.AddOwnerSubTokenIDs(nft.Creator, subTokenIDs)
@@ -267,7 +268,7 @@ func TestEditNFTMetadata(t *testing.T) {
 }
 
 func TestBurnNFT(t *testing.T) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 	sender := app.GetAddrs(dsc, ctx, 1)[0]
 
@@ -276,7 +277,7 @@ func TestBurnNFT(t *testing.T) {
 		sender.String(),
 		firstTokenURI,
 		firstReserve,
-		firstAllowMint,
+		true,
 	)
 	subTokenIDs := nft.GenSubTokenIDs(4)
 	nft = nft.AddOwnerSubTokenIDs(nft.Creator, subTokenIDs)
@@ -310,7 +311,7 @@ func TestBurnNFT(t *testing.T) {
 }
 
 func TestUpdateNFTReserve(t *testing.T) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 	sender := app.GetAddrs(dsc, ctx, 1)[0]
 
@@ -319,7 +320,7 @@ func TestUpdateNFTReserve(t *testing.T) {
 		sender.String(),
 		firstTokenURI,
 		firstReserve,
-		firstAllowMint,
+		true,
 	)
 	subTokenIDs := nft.GenSubTokenIDs(4)
 	nft = nft.AddOwnerSubTokenIDs(nft.Creator, subTokenIDs)

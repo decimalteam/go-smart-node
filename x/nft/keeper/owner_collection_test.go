@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/app"
+	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"testing"
 
@@ -9,7 +10,7 @@ import (
 )
 
 func TestSetOwnerCollection(t *testing.T) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 	addrs := app.GetAddrs(dsc, ctx, 1)
 

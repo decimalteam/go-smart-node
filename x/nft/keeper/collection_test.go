@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
@@ -8,24 +9,21 @@ import (
 )
 
 const (
-	firstID         string = "first_id"
-	secondID        string = "second_id"
-	firstDenom      string = "first_test_denom"
-	secondDenom     string = "second_test_denom"
-	firstTokenURI   string = "first_token_uri"
-	secondTokenURI  string = "second_token_uri"
-	firstAllowMint  bool   = true
-	secondAllowMint bool   = true
+	firstID        string = "first_id"
+	secondID       string = "second_id"
+	firstDenom     string = "first_test_denom"
+	secondDenom    string = "second_test_denom"
+	firstTokenURI  string = "first_token_uri"
+	secondTokenURI string = "second_token_uri"
 )
 
 var (
 	firstReserve  sdk.Int = types.NewMinReserve2
 	secondReserve sdk.Int = types.NewMinReserve2.MulRaw(2)
-	firstQuantity sdk.Int = sdk.NewInt(10)
 )
 
 func TestSetCollections(t *testing.T) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 	collectionDenomsToStore := []string{firstDenom, secondDenom}
 	for _, denom := range collectionDenomsToStore {
@@ -58,7 +56,7 @@ func TestSetCollections(t *testing.T) {
 }
 
 func TestGetDenoms(t *testing.T) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 	collectionDenomsToStore := []string{firstDenom, secondDenom}
 	for _, denom := range collectionDenomsToStore {

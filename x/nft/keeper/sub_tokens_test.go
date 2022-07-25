@@ -1,13 +1,14 @@
 package keeper_test
 
 import (
+	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestSetSubTokens(t *testing.T) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 	subToken1 := types.NewSubToken(
 		1,
@@ -53,7 +54,7 @@ func TestSetSubTokens(t *testing.T) {
 }
 
 func TestUpdateSubToken(t *testing.T) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 	subToken := types.NewSubToken(
 		1,
@@ -75,7 +76,7 @@ func TestUpdateSubToken(t *testing.T) {
 }
 
 func TestRemoveSubTokens(t *testing.T) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
 
 	subToken := types.NewSubToken(
 		1,

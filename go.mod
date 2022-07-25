@@ -23,8 +23,8 @@ require (
 	github.com/tharsis/ethermint v0.15.0
 	github.com/tharsis/evmos/v3 v3.0.2
 	go.opencensus.io v0.23.0
-	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
-	google.golang.org/genproto v0.0.0-20220720214146-176da50484ac
+	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
+	google.golang.org/genproto v0.0.0-20220722212130-b98a9ff5e252
 	google.golang.org/grpc v1.47.0
 	google.golang.org/protobuf v1.28.0
 	gopkg.in/yaml.v2 v2.4.0
