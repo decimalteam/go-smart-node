@@ -92,16 +92,12 @@ func (k Keeper) QuerySubTokens(c context.Context, req *types.QuerySubTokensReque
 	ctx := sdk.UnwrapSDKContext(c)
 
 	var subTokens []types.SubToken
-
 	for _, id := range req.SubTokenIDs {
 		subToken, ok := k.GetSubToken(ctx, req.TokenID, id)
 		if !ok {
 			continue
 		}
-		subTokens = append(subTokens, types.SubToken{
-			ID:      id,
-			Reserve: subToken.Reserve,
-		})
+		subTokens = append(subTokens, subToken)
 	}
 
 	return &types.QuerySubTokensResponse{

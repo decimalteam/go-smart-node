@@ -11,10 +11,12 @@ import (
 const (
 	firstID        string = "first_id"
 	secondID       string = "second_id"
+	thirdID        string = "third_id"
 	firstDenom     string = "first_test_denom"
 	secondDenom    string = "second_test_denom"
 	firstTokenURI  string = "first_token_uri"
 	secondTokenURI string = "second_token_uri"
+	thirdTokenURI  string = "third_token_uri"
 )
 
 var (
