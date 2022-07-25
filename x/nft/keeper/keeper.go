@@ -47,15 +47,11 @@ func (k Keeper) Mint(
 	tokenURI string,
 	allowMint bool,
 ) (uint64, error) {
-	subTokens, err := k.GenAndMintSubTokens(ctx, denom, id, reserve, quantity, creator)
+	subTokenIDs, err := k.GenAndMintSubTokens(ctx, denom, id, reserve, quantity, creator)
 	if err != nil {
 		return 0, err
 	}
 
-	subTokenIDs := make([]uint64, len(subTokens))
-	for _, subTokenID := range subTokenIDs {
-		subTokenIDs = append(subTokenIDs, subTokenID)
-	}
 	err = k.MintNFTAndCollection(ctx, denom, id, reserve, creator, owner, tokenURI, allowMint, subTokenIDs)
 	if err != nil {
 		return 0, err
@@ -69,18 +65,17 @@ func (k Keeper) GenAndMintSubTokens(
 	denom, id string,
 	reserve, quantity sdk.Int,
 	creator string,
-) ([]types.SubToken, error) {
+) (types.SortedUintArray, error) {
 	nft, err := k.GetNFT(ctx, denom, id)
 	if err == nil {
 		reserve = nft.GetReserve()
 	}
 
 	subTokenIDs := nft.GenSubTokenIDs(quantity.Uint64())
-	subTokens := make([]types.SubToken, subTokenIDs.Len())
 	for _, subTokenID := range subTokenIDs {
 		subToken := types.SubToken{
 			ID:      subTokenID,
-			Reserve: quantity,
+			Reserve: reserve,
 		}
 
 		k.SetSubToken(ctx, id, subToken)
@@ -101,7 +96,7 @@ func (k Keeper) GenAndMintSubTokens(
 		return nil, err
 	}
 
-	return subTokens, nil
+	return subTokenIDs, nil
 }
 
 func (k Keeper) MintSubTokens(
@@ -181,9 +176,9 @@ func (k Keeper) Transfer(ctx sdk.Context, denom, id string, sender, recipient st
 		}
 		senderOwner = senderOwner.RemoveSubTokenID(idToTransfer)
 	}
+	nft = nft.SetOwners(nft.GetOwners().SetOwner(senderOwner))
 
 	recipientOwner := nft.GetOwners().GetOwner(recipient)
-
 	if recipientOwner == nil {
 		recipientOwner = types.NewTokenOwner(recipient, subTokenIDsToTransfer)
 	} else {
@@ -191,8 +186,6 @@ func (k Keeper) Transfer(ctx sdk.Context, denom, id string, sender, recipient st
 			recipientOwner = recipientOwner.SetSubTokenID(subTokenID)
 		}
 	}
-
-	nft = nft.SetOwners(nft.GetOwners().SetOwner(senderOwner))
 	nft = nft.SetOwners(nft.GetOwners().SetOwner(recipientOwner))
 
 	err = k.SetNFT(ctx, denom, id, nft)
@@ -247,6 +240,7 @@ func (k Keeper) DeleteNFTSubTokens(ctx sdk.Context, denom, id string, subTokenID
 			)
 		}
 		owner = owner.RemoveSubTokenID(subTokenIDToDelete)
+
 		subToken, ok := k.GetSubToken(ctx, id, subTokenIDToDelete)
 		if !ok {
 			return fmt.Errorf("subToken with ID = %d not found", subTokenIDToDelete)
