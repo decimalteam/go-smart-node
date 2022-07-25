@@ -78,6 +78,5 @@ func CalculateFee(tx sdk.Tx, txBytesLen int64, factor sdk.Dec) (sdk.Int, error) 
 	// change commission according to factor
 	commissionInBaseCoin = factor.MulInt(commissionInBaseCoin).RoundInt()
 	// TODO: special gas value for special transactions
-
 	return commissionInBaseCoin, nil
 }

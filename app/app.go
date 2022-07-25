@@ -1,8 +1,6 @@
 package app
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/nft"
-	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -148,7 +146,9 @@ import (
 	coin "bitbucket.org/decimalteam/go-smart-node/x/coin"
 	coinkeeper "bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	nft "bitbucket.org/decimalteam/go-smart-node/x/nft"
 	nftkeeper "bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
+	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
 var (
