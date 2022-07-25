@@ -52,7 +52,7 @@ func TestInitGenesis(t *testing.T) {
 				nftID,
 				address.String(),
 				tokenURI,
-				reserve,
+				types.NewMinReserve2,
 				true,
 			)
 
@@ -73,6 +73,8 @@ func TestInitGenesis(t *testing.T) {
 	}
 
 	genesisState = types.NewGenesisState(collections, nfts, subTokens)
+	err := genesisState.Validate()
+	require.NoError(t, err)
 
 	nft.InitGenesis(ctx, dsc.NFTKeeper, *genesisState)
 
@@ -83,6 +85,9 @@ func TestInitGenesis(t *testing.T) {
 	compareNFTs(t, storedNFTs, nfts)
 
 	exportedGenesisState := nft.ExportGenesis(ctx, dsc.NFTKeeper)
+	err = exportedGenesisState.Validate()
+	require.NoError(t, err)
+
 	require.Len(t, exportedGenesisState.Collections, len(collections))
 	compareCollections(t, exportedGenesisState.Collections, collections)
 

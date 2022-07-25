@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
@@ -52,6 +53,9 @@ func TestMintNFT(t *testing.T) {
 	storedSubTokens := dsc.NFTKeeper.GetSubTokens(ctx, expectedNFT.ID)
 	require.Len(t, storedSubTokens, len(expectedSubTokens))
 	require.Equal(t, expectedSubTokens, storedSubTokens)
+
+	msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
+	require.False(t, broken, msg)
 }
 
 func TestMintNFTValidation(t *testing.T) {
@@ -75,6 +79,9 @@ func TestMintNFTValidation(t *testing.T) {
 		// next nft mint with allowMint=false flag should be with error
 		err = mintNFT(firstDenom, 10, nft, dsc, ctx)
 		require.Error(t, err)
+
+		msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
+		require.False(t, broken, msg)
 	})
 
 	t.Run("wrong sender account", func(t *testing.T) {
@@ -106,6 +113,9 @@ func TestMintNFTValidation(t *testing.T) {
 		// only nft creator can mint more nfts for nft tokenID
 		err = mintNFT(firstDenom, 10, secondNFT, dsc, ctx)
 		require.Error(t, err)
+
+		msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
+		require.False(t, broken, msg)
 	})
 
 	t.Run("invalid token id", func(t *testing.T) {
@@ -135,6 +145,9 @@ func TestMintNFTValidation(t *testing.T) {
 		// nft token id must be unique
 		err = mintNFT(secondDenom, 10, secondNFT, dsc, ctx)
 		require.Error(t, err)
+
+		msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
+		require.False(t, broken, msg)
 	})
 
 	t.Run("invalid token uri", func(t *testing.T) {
@@ -164,6 +177,9 @@ func TestMintNFTValidation(t *testing.T) {
 		// nft token uri must be unique
 		err = mintNFT(secondDenom, 10, secondNFT, dsc, ctx)
 		require.Error(t, err)
+
+		msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
+		require.False(t, broken, msg)
 	})
 
 	t.Run("invalid nft reserve", func(t *testing.T) {
@@ -182,6 +198,9 @@ func TestMintNFTValidation(t *testing.T) {
 		// nft reserve must be valid
 		err := mintNFT(firstDenom, 10, nft, dsc, ctx)
 		require.Error(t, err)
+
+		msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
+		require.False(t, broken, msg)
 	})
 }
 
@@ -229,6 +248,9 @@ func TestTransferNFT(t *testing.T) {
 
 	toOwnerSubTokens := storedNFT.GetOwners().GetOwner(toOwner.String()).GetSubTokenIDs()
 	require.Equal(t, types.SortedUintArray{1, 2}, toOwnerSubTokens)
+
+	invariantMsg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
+	require.False(t, broken, invariantMsg)
 }
 
 func TestEditNFTMetadata(t *testing.T) {
@@ -265,6 +287,9 @@ func TestEditNFTMetadata(t *testing.T) {
 	storedNFT, err := dsc.NFTKeeper.GetNFT(ctx, collectionDenom, nft.ID)
 	require.NoError(t, err)
 	require.Equal(t, msg.TokenURI, storedNFT.GetTokenURI())
+
+	invariantMsg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
+	require.False(t, broken, invariantMsg)
 }
 
 func TestBurnNFT(t *testing.T) {
@@ -308,6 +333,9 @@ func TestBurnNFT(t *testing.T) {
 
 	storedSubTokens := dsc.NFTKeeper.GetSubTokens(ctx, nft.ID)
 	require.Len(t, storedSubTokens, 0)
+
+	invariantMsg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
+	require.False(t, broken, invariantMsg)
 }
 
 func TestUpdateNFTReserve(t *testing.T) {
@@ -358,6 +386,9 @@ func TestUpdateNFTReserve(t *testing.T) {
 			secondReserve,
 		), storedSubToken)
 	}
+
+	invariantMsg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
+	require.False(t, broken, invariantMsg)
 }
 
 func mintNFT(denom string, quantity int64, nft types.BaseNFT, dsc *app.DSC, ctx sdk.Context) error {

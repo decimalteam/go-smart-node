@@ -25,16 +25,11 @@ func AllInvariants(k Keeper) sdk.Invariant {
 // SupplyInvariant checks that the total amount of nfts on collections matches the total amount nfts in store
 func SupplyInvariant(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
-		totalSupply := 0
 		collections := k.GetCollections(ctx)
-
-		for _, collection := range collections {
-			totalSupply += collection.Supply()
-		}
-
 		nfts := k.GetNFTs(ctx)
-		broken := len(nfts) != totalSupply
 
-		return sdk.FormatInvariant(types.ModuleName, "supply", "NFT supply invariants found"), broken
+		msg, invariant := types.SupplyInvariantCheck(collections, nfts)
+
+		return sdk.FormatInvariant(types.ModuleName, "supply", msg), invariant
 	}
 }

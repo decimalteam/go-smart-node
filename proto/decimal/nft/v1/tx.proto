@@ -63,8 +63,7 @@ message MsgTransferNFT {
   string denom = 4 [
     (gogoproto.moretags) = "yaml:\"denom\""
   ];
-  repeated uint64 SubTokenIDs = 5 [
-    (gogoproto.nullable) = false,
+  repeated uint64 subTokenIDs = 5 [
     (gogoproto.jsontag) = "sub_token_ids",
     (gogoproto.moretags) = "yaml:\"sub_token_ids\""
   ];
@@ -103,7 +102,6 @@ message MsgBurnNFT {
     (gogoproto.moretags) = "yaml:\"denom\""
   ];
   repeated uint64 subTokenIDs = 4 [
-    (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "sub_token_ids",
     (gogoproto.moretags) = "yaml:\"sub_token_ids\""
   ];
@@ -123,7 +121,6 @@ message MsgUpdateReserveNFT {
     (gogoproto.moretags) = "yaml:\"denom\""
   ];
   repeated uint64 subTokenIDs = 4 [
-    (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "sub_token_ids",
     (gogoproto.moretags) = "yaml:\"sub_token_ids\""
   ];

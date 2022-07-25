@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
@@ -52,6 +53,9 @@ func TestQueryCollectionSupply(t *testing.T) {
 	res, err := dsc.NFTKeeper.QueryCollectionSupply(sdk.WrapSDKContext(ctx), &req)
 	require.NoError(t, err)
 	require.Equal(t, expectedResponse, *res)
+
+	msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
+	require.False(t, broken, msg)
 }
 
 func TestQueryOwnerCollections(t *testing.T) {
@@ -90,6 +94,9 @@ func TestQueryOwnerCollections(t *testing.T) {
 	secondCollectionDenom := secondDenom
 	err = mintNFT(secondCollectionDenom, 10, thirdNFT, dsc, ctx)
 	require.NoError(t, err)
+
+	msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
+	require.False(t, broken, msg)
 
 	t.Run("without denom", func(t *testing.T) {
 		expectedResponse := types.QueryOwnerCollectionsResponse{
@@ -181,6 +188,9 @@ func TestQueryCollection(t *testing.T) {
 	res, err := dsc.NFTKeeper.QueryCollection(sdk.WrapSDKContext(ctx), &req)
 	require.NoError(t, err)
 	require.Equal(t, expectedResponse, *res)
+
+	msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
+	require.False(t, broken, msg)
 }
 
 func TestQueryNFT(t *testing.T) {
@@ -215,6 +225,9 @@ func TestQueryNFT(t *testing.T) {
 	res, err := dsc.NFTKeeper.QueryNFT(sdk.WrapSDKContext(ctx), &req)
 	require.NoError(t, err)
 	require.Equal(t, expectedResponse, *res)
+
+	msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
+	require.False(t, broken, msg)
 }
 
 func TestQuerySubTokens(t *testing.T) {
@@ -254,4 +267,7 @@ func TestQuerySubTokens(t *testing.T) {
 	res, err := dsc.NFTKeeper.QuerySubTokens(sdk.WrapSDKContext(ctx), &req)
 	require.NoError(t, err)
 	require.Equal(t, expectedResponse, *res)
+
+	msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
+	require.False(t, broken, msg)
 }

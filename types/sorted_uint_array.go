@@ -66,6 +66,10 @@ func (sa SortedUintArray) Find(el uint64) (idx int) {
 	return FindUtilUint64(sa, el)
 }
 
+func (sa SortedUintArray) Has(el uint64) bool {
+	return FindUtilUint64(sa, el) != -1
+}
+
 // String is the string representation
 func (sa SortedUintArray) String() string {
 	str := make([]string, sa.Len())
