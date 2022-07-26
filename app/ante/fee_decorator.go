@@ -1,7 +1,6 @@
 package ante
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"fmt"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
@@ -46,11 +45,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 		panic(fmt.Sprintf("%s module account has not been set", sdkAuthTypes.FeeCollectorName))
 	}
 
-	if addr := fd.accountKeeper.GetModuleAddress(types.ReservedPool); addr == nil {
-		panic(fmt.Sprintf("%s module account has not been set", types.ReservedPool))
-	}
-
-	commissionInBaseCoin, err := CalculateFee(tx, int64(len(ctx.TxBytes())), sdk.OneDec())
+	commissionInBaseCoin, err := CalculateFee(tx.GetMsgs(), int64(len(ctx.TxBytes())), sdk.OneDec())
 	if err != nil {
 		return ctx, err
 	}
@@ -135,8 +130,7 @@ func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper coin
 
 	// verify the account has enough funds to pay fee
 	balance := bankKeeper.GetBalance(ctx, feePayerAddress, fee.Denom)
-	resultBalance := balance.Sub(fee)
-	if resultBalance.IsNegative() {
+	if balance.Amount.LT(fee.Amount) {
 		return ErrInsufficientFundsToPayFee(balance.String(), fee.String())
 	}
 
