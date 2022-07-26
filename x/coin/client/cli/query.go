@@ -24,16 +24,16 @@ func GetQueryCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 	cmd.AddCommand(
-		cmdQueryCoin(),
-		cmdQueryCoins(),
-		cmdQueryCheck(),
-		cmdQueryChecks(),
-		cmdQueryParams(),
+		QueryCoinCmd(),
+		QueryCoinsCmd(),
+		QueryCheckCmd(),
+		QueryChecksCmd(),
+		QueryParamsCmd(),
 	)
 	return cmd
 }
 
-func cmdQueryCoin() *cobra.Command {
+func QueryCoinCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "coin [symbol]",
 		Short: "Query specific coin by symbol (denom)",
@@ -43,6 +43,7 @@ func cmdQueryCoin() *cobra.Command {
 			if err != nil {
 				return err
 			}
+
 			queryClient := types.NewQueryClient(clientCtx)
 
 			req := &types.QueryCoinRequest{
@@ -61,7 +62,7 @@ func cmdQueryCoin() *cobra.Command {
 	return cmd
 }
 
-func cmdQueryCoins() *cobra.Command {
+func QueryCoinsCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "coins",
 		Short: "Query all existing coins",
@@ -97,7 +98,7 @@ func cmdQueryCoins() *cobra.Command {
 	return cmd
 }
 
-func cmdQueryCheck() *cobra.Command {
+func QueryCheckCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "check [hash]",
 		Short: "Query specific check by hash in hex format",
@@ -138,7 +139,7 @@ func cmdQueryCheck() *cobra.Command {
 	return cmd
 }
 
-func cmdQueryChecks() *cobra.Command {
+func QueryChecksCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "checks",
 		Short: "Query all existing checks",
@@ -173,7 +174,7 @@ func cmdQueryChecks() *cobra.Command {
 	return cmd
 }
 
-func cmdQueryParams() *cobra.Command {
+func QueryParamsCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "params",
 		Short: fmt.Sprintf("Query the current parameters of the module %s", types.ModuleName),

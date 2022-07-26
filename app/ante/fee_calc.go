@@ -5,6 +5,7 @@ import (
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	nftTypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -54,9 +55,20 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec) (sdk.Int, er
 		case *coinTypes.MsgSellAllCoin:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(sellCoinFee)
 		case *coinTypes.MsgRedeemCheck:
-			break // no commission
+			commissionInBaseCoin = sdk.ZeroInt()
 		case *coinTypes.MsgUpdateCoin:
-			break // no commission
+			commissionInBaseCoin = sdk.ZeroInt()
+		case *nftTypes.MsgMintNFT:
+			commissionInBaseCoin = sdk.ZeroInt()
+		case *nftTypes.MsgBurnNFT:
+			commissionInBaseCoin = sdk.ZeroInt()
+		case *nftTypes.MsgTransferNFT:
+			commissionInBaseCoin = sdk.ZeroInt()
+		case *nftTypes.MsgUpdateReserveNFT:
+			commissionInBaseCoin = sdk.ZeroInt()
+		case *nftTypes.MsgEditNFTMetadata:
+			commissionInBaseCoin = sdk.ZeroInt()
+
 		default:
 			return sdk.NewInt(0), ErrUnknownTransaction(fmt.Sprintf("%T", msg))
 		}

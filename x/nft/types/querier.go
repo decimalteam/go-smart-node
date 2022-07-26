@@ -7,8 +7,6 @@ import (
 )
 
 // QueryCollectionParams defines the params for queries:
-// - 'custom/nft/supply'
-// - 'custom/nft/collection'
 type QueryCollectionParams struct {
 	Denom string `json:"denom"`
 }
@@ -56,13 +54,13 @@ func NewQueryNFTParams(denom, id string) QueryNFTParams {
 
 // QuerySubTokensParams params for query 'custom/nfts/sub_tokens'
 type QuerySubTokensParams struct {
-	Denom       string  `json:"denom"`
-	TokenID     string  `json:"token_id"`
-	SubTokenIDs []int64 `json:"sub_token_ids"`
+	Denom       string   `json:"denom"`
+	TokenID     string   `json:"token_id"`
+	SubTokenIDs []uint64 `json:"sub_token_ids"`
 }
 
 // NewQuerySubTokensParams creates a new instance of QuerySubTokensParams
-func NewQuerySubTokensParams(denom, id string, subTokenIDs []int64) QuerySubTokensParams {
+func NewQuerySubTokensParams(denom, id string, subTokenIDs []uint64) QuerySubTokensParams {
 	return QuerySubTokensParams{
 		Denom:       denom,
 		TokenID:     id,
@@ -73,6 +71,6 @@ func NewQuerySubTokensParams(denom, id string, subTokenIDs []int64) QuerySubToke
 type ResponseSubTokens []ResponseSubToken
 
 type ResponseSubToken struct {
-	ID      int64
+	ID      uint64
 	Reserve sdk.Int
 }

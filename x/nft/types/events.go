@@ -12,7 +12,6 @@ var (
 
 	AttributeKeySender               = "sender"
 	AttributeKeyRecipient            = "recipient"
-	AttributeKeyOwner                = "owner"
 	AttributeKeyNFTID                = "nft_id"
 	AttributeKeyNFTTokenURI          = "token_uri"
 	AttributeKeyDenom                = "denom"
