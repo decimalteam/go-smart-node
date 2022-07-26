@@ -2,5 +2,114 @@ syntax = "proto3";
 package decimal.nft.v1;
 
 import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+import "decimal/nft/v1/owner.proto";
+import "decimal/nft/v1/collection.proto";
+import "decimal/nft/v1/nft.proto";
+import "decimal/nft/v1/sub_token.proto";
 
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Retrieves existing coin by specific symbol.
+  rpc QueryCollectionSupply(QueryCollectionSupplyRequest) returns (QueryCollectionSupplyResponse) {
+    option (google.api.http).get = "/nft/v1/supply/{denom}";
+  }
+
+  rpc QueryOwnerCollections(QueryOwnerCollectionsRequest) returns (QueryOwnerCollectionsResponse) {
+    option (google.api.http).get = "/nft/v1/owner/{owner}";
+  }
+
+  rpc QueryCollection(QueryCollectionRequest) returns (QueryCollectionResponse) {
+    option (google.api.http).get = "/nft/v1/collection/{denom}";
+  }
+
+  rpc QueryDenoms(QueryDenomsRequest) returns (QueryDenomsResponse) {
+    option (google.api.http).get = "/nft/v1/denoms";
+  }
+
+  rpc QueryNFT(QueryNFTRequest) returns (QueryNFTResponse) {
+    option (google.api.http).get = "/nft/v1/nft/nft/{denom}/{tokenID}";
+  }
+
+  rpc QuerySubTokens(QuerySubTokensRequest) returns (QuerySubTokensResponse) {
+    option (google.api.http).get = "/nft/v1/nft/sub_tokens";
+  }
+}
+
+////////////////////////////////////////////////////////////////
+// Supply
+////////////////////////////////////////////////////////////////
+
+message QueryCollectionSupplyRequest {
+  string denom = 1;
+}
+
+message QueryCollectionSupplyResponse {
+  int64 supply = 1;
+}
+
+////////////////////////////////////////////////////////////////
+// Owner collections
+////////////////////////////////////////////////////////////////
+
+message QueryOwnerCollectionsRequest {
+  string owner = 1;
+  string denom = 2;
+}
+
+message QueryOwnerCollectionsResponse {
+  Owner owner = 1 [ (gogoproto.nullable) = false ];
+}
+
+////////////////////////////////////////////////////////////////
+// Collections
+////////////////////////////////////////////////////////////////
+
+message QueryCollectionRequest {
+  string denom = 1;
+}
+
+message QueryCollectionResponse {
+  Collection collection = 1 [ (gogoproto.nullable) = false ];
+}
+
+////////////////////////////////////////////////////////////////
+// Denoms
+////////////////////////////////////////////////////////////////
+
+message QueryDenomsRequest {
+}
+
+message QueryDenomsResponse {
+  repeated string denoms = 1;
+}
+
+////////////////////////////////////////////////////////////////
+// NFT
+////////////////////////////////////////////////////////////////
+
+message QueryNFTRequest {
+  string denom = 1;
+  string tokenID = 2;
+}
+
+message QueryNFTResponse {
+  BaseNFT nft = 1 [ (gogoproto.nullable) = false ];
+}
+
+////////////////////////////////////////////////////////////////
+// SubTokens
+////////////////////////////////////////////////////////////////
+
+message QuerySubTokensRequest {
+  string denom = 1;
+  string tokenID = 2;
+  repeated uint64 subTokenIDs = 3;
+}
+
+message QuerySubTokensResponse {
+  repeated SubToken subTokens = 1 [ (gogoproto.nullable) = false ];
+}

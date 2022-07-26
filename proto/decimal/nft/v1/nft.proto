@@ -38,7 +38,7 @@ message BaseNFT {
     (gogoproto.nullable) = false
   ];
 
-  bool allow_mint = 6 [
+  bool allowMint = 6 [
     (gogoproto.moretags) = "yaml:\"allow_mint\""
   ];
 }

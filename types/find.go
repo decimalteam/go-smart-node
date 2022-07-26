@@ -32,28 +32,3 @@ func FindUtil(group Findable, el string) int {
 	}
 	return -1
 }
-
-type FindableInt64 interface {
-	ElAtIndex(index int) int64
-	Len() int
-}
-
-func FindUtilInt64(group FindableInt64, el int64) int {
-	if group.Len() == 0 {
-		return -1
-	}
-	low := 0
-	high := group.Len() - 1
-	median := 0
-	for low <= high {
-		median = (low + high) / 2
-		if group.ElAtIndex(median) == el {
-			return median
-		} else if group.ElAtIndex(median) < el {
-			low = median + 1
-		} else if group.ElAtIndex(median) > el {
-			high = median - 1
-		}
-	}
-	return -1
-}
