@@ -679,7 +679,6 @@ func NewDSC(
 		app.AccountKeeper,
 		app.BankKeeper,
 	)
-	app.CoinKeeper = *coinKeeper
 
 	app.MultisigKeeper = *multisigkeeper.NewKeeper(
 		appCodec,
