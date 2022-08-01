@@ -1,0 +1,1 @@
+This is code samples of using sdk and sametime is tool to test sdk

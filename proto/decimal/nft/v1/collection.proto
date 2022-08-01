@@ -1,0 +1,32 @@
+syntax = "proto3";
+package decimal.nft.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
+
+message Collection {
+  option (gogoproto.goproto_stringer) = true;
+
+  string denom = 1 [
+    (gogoproto.moretags) = "yaml:\"denom\""
+  ];
+  repeated string NFTs = 2 [
+    (gogoproto.castrepeated) = "SortedStringArray",
+    (gogoproto.jsontag) = "nfts",
+    (gogoproto.moretags) = "yaml:\"nfts\""
+  ];
+}
+
+message OwnerCollection {
+  option (gogoproto.goproto_stringer) = true;
+
+  string denom = 1 [
+    (gogoproto.moretags) = "yaml:\"denom\""
+  ];
+  repeated string NFTs = 2 [
+    (gogoproto.castrepeated) = "SortedStringArray",
+    (gogoproto.jsontag) = "nfts",
+    (gogoproto.moretags) = "yaml:\"nfts\""
+  ];
+}
