@@ -6,6 +6,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	multisigTypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
+	nftTypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -36,10 +37,10 @@ const (
 )
 
 // Calculate fee in base coin
-func CalculateFee(tx sdk.Tx, txBytesLen int64, factor sdk.Dec) (sdk.Int, error) {
+func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec) (sdk.Int, error) {
 	commissionInBaseCoin := sdk.ZeroInt()
 	commissionInBaseCoin = commissionInBaseCoin.AddRaw(txBytesLen * 2)
-	for _, msg := range tx.GetMsgs() {
+	for _, msg := range msgs {
 		switch m := msg.(type) {
 		case *coinTypes.MsgCreateCoin:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(createCoinFee)
@@ -64,6 +65,16 @@ func CalculateFee(tx sdk.Tx, txBytesLen int64, factor sdk.Dec) (sdk.Int, error) 
 		case *multisigTypes.MsgSignTransaction:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(signTransactionFee)
 		case *multisigTypes.MsgActualizeLegacyAddress:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *nftTypes.MsgMintNFT:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *nftTypes.MsgBurnNFT:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *nftTypes.MsgTransferNFT:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *nftTypes.MsgUpdateReserveNFT:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *nftTypes.MsgEditNFTMetadata:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		default:
 			return sdk.NewInt(0), ErrUnknownTransaction(fmt.Sprintf("%T", msg))

@@ -19,6 +19,10 @@ var (
 	sdkE18 = sdk.NewIntFromBigInt(bigE18)
 )
 
+func BipToPip(bip sdk.Int) sdk.Int {
+	return bip.Mul(sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)))
+}
+
 // EtherToWei convert number 1 to 1 * 10^18
 func EtherToWei(ether sdk.Int) sdk.Int {
 	return ether.Mul(sdkE18)

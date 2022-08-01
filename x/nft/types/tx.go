@@ -1,6 +1,7 @@
 package types
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"regexp"
 	"strings"
@@ -10,62 +11,81 @@ import (
 // MsgMintNFT
 /* --------------------------------------------------------------------------- */
 
+// NewMsgMintNFT is a constructor function for MsgMintNFT
+func NewMsgMintNFT(
+	sender, recipient sdk.AccAddress,
+	id, denom, tokenURI string,
+	quantity, reserve sdk.Int,
+	allowMint bool,
+) *MsgMintNFT {
+	return &MsgMintNFT{
+		Sender:    sender.String(),
+		Recipient: recipient.String(),
+		ID:        strings.TrimSpace(id),
+		Denom:     strings.TrimSpace(denom),
+		TokenURI:  strings.TrimSpace(tokenURI),
+		Quantity:  quantity,
+		Reserve:   reserve,
+		AllowMint: allowMint,
+	}
+}
+
 const regName = "^[a-zA-Z0-9_-]{1,255}$"
 
 var MinReserve = sdk.NewInt(100)
 
-//var NewMinReserve = helpers.EtherToWei(sdk.NewInt(100))
-//var NewMinReserve2 = helpers.EtherToWei(sdk.NewInt(1))
+var NewMinReserve = helpers.BipToPip(sdk.NewInt(100))
+var NewMinReserve2 = helpers.BipToPip(sdk.NewInt(1))
 
 // Route Implements Msg
 func (m *MsgMintNFT) Route() string { return RouterKey }
 
 // Type Implements Msg
-func (msg *MsgMintNFT) Type() string { return "mint_nft" }
+func (m *MsgMintNFT) Type() string { return "mint_nft" }
 
 // ValidateBasic Implements Msg.
-func (msg *MsgMintNFT) ValidateBasic() error {
-	_, err := sdk.AccAddressFromBech32(msg.Sender)
+func (m *MsgMintNFT) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Sender)
 	if err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return ErrInvalidSenderAddress(m.Sender)
 	}
-	_, err = sdk.AccAddressFromBech32(msg.Recipient)
+	_, err = sdk.AccAddressFromBech32(m.Recipient)
 	if err != nil {
-		return ErrInvalidRecipientAddress(msg.Recipient)
+		return ErrInvalidRecipientAddress(m.Recipient)
 	}
 
-	if strings.TrimSpace(msg.Denom) == "" {
-		return ErrInvalidDenom(msg.Denom)
+	if strings.TrimSpace(m.Denom) == "" {
+		return ErrInvalidDenom(m.Denom)
 	}
-	if strings.TrimSpace(msg.ID) == "" {
-		return ErrInvalidNFT(msg.ID)
+	if strings.TrimSpace(m.ID) == "" {
+		return ErrInvalidNFT(m.ID)
 	}
-	if !msg.Quantity.IsPositive() {
-		return ErrInvalidQuantity(msg.Quantity.String())
+	if !m.Quantity.IsPositive() {
+		return ErrInvalidQuantity(m.Quantity.String())
 	}
 
-	if !msg.Reserve.IsPositive() || msg.Reserve.LT(MinReserve) {
-		return ErrInvalidReserve(msg.Reserve.String())
+	if !m.Reserve.IsPositive() || m.Reserve.LT(MinReserve) {
+		return ErrInvalidReserve(m.Reserve.String())
 	}
-	if match, _ := regexp.MatchString(regName, msg.Denom); !match {
-		return ErrInvalidDenom(msg.Denom)
+	if match, _ := regexp.MatchString(regName, m.Denom); !match {
+		return ErrInvalidDenom(m.Denom)
 	}
-	if match, _ := regexp.MatchString(regName, msg.ID); !match {
-		return ErrInvalidTokenID(msg.ID)
+	if match, _ := regexp.MatchString(regName, m.ID); !match {
+		return ErrInvalidTokenID(m.ID)
 	}
 
 	return nil
 }
 
 // GetSignBytes Implements Msg.
-func (msg *MsgMintNFT) GetSignBytes() []byte {
-	bz := ModuleCdc.MustMarshalJSON(msg)
+func (m *MsgMintNFT) GetSignBytes() []byte {
+	bz := ModuleCdc.MustMarshalJSON(m)
 	return sdk.MustSortJSON(bz)
 }
 
 // GetSigners Implements Msg.
-func (msg *MsgMintNFT) GetSigners() []sdk.AccAddress {
-	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+func (m *MsgMintNFT) GetSigners() []sdk.AccAddress {
+	sender, err := sdk.AccAddressFromBech32(m.Sender)
 	if err != nil {
 		panic(err)
 	}
@@ -78,8 +98,8 @@ func (msg *MsgMintNFT) GetSigners() []sdk.AccAddress {
 /* --------------------------------------------------------------------------- */
 
 // NewMsgBurnNFT is a constructor function for MsgBurnNFT
-func NewMsgBurnNFT(sender sdk.AccAddress, id string, denom string, subTokenIDs []int64) MsgBurnNFT {
-	return MsgBurnNFT{
+func NewMsgBurnNFT(sender sdk.AccAddress, id string, denom string, subTokenIDs []uint64) *MsgBurnNFT {
+	return &MsgBurnNFT{
 		Sender:      sender.String(),
 		ID:          strings.TrimSpace(id),
 		Denom:       strings.TrimSpace(denom),
@@ -133,8 +153,8 @@ func (msg *MsgBurnNFT) GetSigners() []sdk.AccAddress {
 /* --------------------------------------------------------------------------- */
 
 // NewUpdateReservNFT is a constructor function for MsgUpdateReservNFT
-func NewMsgUpdateReserveNFT(sender sdk.AccAddress, id string, denom string, subTokenIDs []int64, newReserveNFT sdk.Int) MsgUpdateReserveNFT {
-	return MsgUpdateReserveNFT{
+func NewMsgUpdateReserveNFT(sender sdk.AccAddress, id string, denom string, subTokenIDs []uint64, newReserveNFT sdk.Int) *MsgUpdateReserveNFT {
+	return &MsgUpdateReserveNFT{
 		Sender:        sender.String(),
 		ID:            strings.TrimSpace(id),
 		Denom:         strings.TrimSpace(denom),
@@ -195,8 +215,8 @@ func (msg *MsgUpdateReserveNFT) GetSigners() []sdk.AccAddress {
 /* --------------------------------------------------------------------------- */
 
 // NewMsgTransferNFT is a constructor function for MsgSetName
-func NewMsgTransferNFT(sender, recipient sdk.AccAddress, denom, id string, subTokenIDs []int64) MsgTransferNFT {
-	return MsgTransferNFT{
+func NewMsgTransferNFT(sender, recipient sdk.AccAddress, denom, id string, subTokenIDs []uint64) *MsgTransferNFT {
+	return &MsgTransferNFT{
 		Sender:      sender.String(),
 		Recipient:   recipient.String(),
 		Denom:       strings.TrimSpace(denom),
@@ -262,10 +282,8 @@ func (msg *MsgTransferNFT) GetSigners() []sdk.AccAddress {
 /* --------------------------------------------------------------------------- */
 
 // NewMsgEditNFTMetadata is a constructor function for MsgSetName
-func NewMsgEditNFTMetadata(sender sdk.AccAddress, id,
-	denom, tokenURI string,
-) MsgEditNFTMetadata {
-	return MsgEditNFTMetadata{
+func NewMsgEditNFTMetadata(sender sdk.AccAddress, id, denom, tokenURI string) *MsgEditNFTMetadata {
+	return &MsgEditNFTMetadata{
 		Sender:   sender.String(),
 		ID:       strings.TrimSpace(id),
 		Denom:    strings.TrimSpace(denom),
@@ -312,7 +330,8 @@ func (msg *MsgEditNFTMetadata) GetSigners() []sdk.AccAddress {
 }
 
 /* --------------------------------------------------------------------------- */
-func CheckUnique(arr []int64) bool {
+
+func CheckUnique(arr []uint64) bool {
 	for i, el := range arr {
 		for j, el2 := range arr {
 			if i != j && el == el2 {
