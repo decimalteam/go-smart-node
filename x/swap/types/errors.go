@@ -15,16 +15,19 @@ const (
 	CodeSenderIsNotSwapService uint32 = 101
 	CodeInvalidAmount          uint32 = 102
 	CodeInvalidChainNumber     uint32 = 103
+	CodeInvalidChainName       uint32 = 104
 
 	// SwapInitialize
 	CodeChainDoesNotExists       uint32 = 201
 	CodeInsufficientAccountFunds uint32 = 202
 
 	// SwapRedeem
-	CodeInvalidTransactionNumber uint32 = 301
-	CodeAlreadyRedeemed          uint32 = 302
-	CodeInvalidServiceAddress    uint32 = 303
-	CodeInsufficientPoolFunds    uint32 = 304
+	CodeInvalidRecipientAddress  uint32 = 301
+	CodeInvalidTransactionNumber uint32 = 302
+	CodeAlreadyRedeemed          uint32 = 303
+	CodeInvalidServiceAddress    uint32 = 304
+	CodeInsufficientPoolFunds    uint32 = 305
+	CodeChainNumbersAreSame      uint32 = 306
 )
 
 func ErrInvalidSenderAddress(address string) *sdkerrors.Error {
@@ -61,6 +64,14 @@ func ErrInvalidChainNumber() *sdkerrors.Error {
 	)
 }
 
+func ErrInvalidChainName() *sdkerrors.Error {
+	return errors.Encode(
+		DefaultCodespace,
+		CodeInvalidChainName,
+		"chain name should be not empty",
+	)
+}
+
 // SwapInitialize
 func ErrChainDoesNotExists(chainNumber string) *sdkerrors.Error {
 	return errors.Encode(
@@ -82,6 +93,15 @@ func ErrInsufficientAccountFunds(address string, coins string) *sdkerrors.Error 
 }
 
 // SwapRedeem
+func ErrInvalidRecipientAddress(address string) *sdkerrors.Error {
+	return errors.Encode(
+		DefaultCodespace,
+		CodeInvalidRecipientAddress,
+		fmt.Sprintf("invalid recipient address: %s", address),
+		errors.NewParam("address", address),
+	)
+}
+
 func ErrInvalidTransactionNumber(transactionNumber string) *sdkerrors.Error {
 	return errors.Encode(
 		DefaultCodespace,
@@ -115,5 +135,13 @@ func ErrInsufficientPoolFunds(want string, exists string) *sdkerrors.Error {
 		DefaultCodespace,
 		CodeInsufficientPoolFunds,
 		fmt.Sprintf("insufficient pool funds: want = %s, exists = %s", want, exists),
+	)
+}
+
+func ErrChainNumbersAreSame() *sdkerrors.Error {
+	return errors.Encode(
+		DefaultCodespace,
+		CodeChainNumbersAreSame,
+		"from chain and dest chain are same",
 	)
 }

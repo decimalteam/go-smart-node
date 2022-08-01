@@ -78,6 +78,9 @@ func (msg MsgSwapInitialize) ValidateBasic() error {
 	if msg.DestChain == 0 {
 		return ErrInvalidChainNumber()
 	}
+	if msg.FromChain == msg.DestChain {
+		return ErrChainNumbersAreSame()
+	}
 	if _, ok := sdk.NewIntFromString(msg.TransactionNumber); !ok {
 		return ErrInvalidTransactionNumber(msg.TransactionNumber)
 	}
@@ -136,6 +139,9 @@ func (msg MsgSwapRedeem) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return ErrInvalidSenderAddress(msg.Sender)
 	}
+	if _, err := sdk.AccAddressFromBech32(msg.Recipient); err != nil {
+		return ErrInvalidRecipientAddress(msg.Recipient)
+	}
 	if !msg.Amount.IsPositive() {
 		return ErrInvalidAmount()
 	}
@@ -144,6 +150,9 @@ func (msg MsgSwapRedeem) ValidateBasic() error {
 	}
 	if msg.DestChain == 0 {
 		return ErrInvalidChainNumber()
+	}
+	if msg.FromChain == msg.DestChain {
+		return ErrChainNumbersAreSame()
 	}
 	if _, ok := sdk.NewIntFromString(msg.TransactionNumber); !ok {
 		return ErrInvalidTransactionNumber(msg.TransactionNumber)
@@ -188,12 +197,16 @@ func (msg MsgChainActivate) ValidateBasic() error {
 		return ErrInvalidSenderAddress(msg.Sender)
 	}
 
-	if msg.Sender != SwapServiceAddress {
+	if msg.Sender != ChainActivatorAddress {
 		return ErrSenderIsNotSwapService(msg.Sender)
 	}
 
 	if msg.ChainNumber == 0 {
 		return ErrInvalidChainNumber()
+	}
+
+	if msg.ChainName == "" {
+		return ErrInvalidChainName()
 	}
 
 	return nil
@@ -234,7 +247,7 @@ func (msg MsgChainDeactivate) ValidateBasic() error {
 		return ErrInvalidSenderAddress(msg.Sender)
 	}
 
-	if msg.Sender != SwapServiceAddress {
+	if msg.Sender != ChainActivatorAddress {
 		return ErrSenderIsNotSwapService(msg.Sender)
 	}
 
