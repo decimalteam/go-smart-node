@@ -6,6 +6,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdkAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	evmTypes "github.com/tharsis/ethermint/x/evm/types"
 
@@ -16,6 +17,7 @@ type FeeDecorator struct {
 	coinKeeper    coinTypes.CoinKeeper
 	bankKeeper    evmTypes.BankKeeper
 	accountKeeper evmTypes.AccountKeeper
+	feeKeeper     feeTypes.FeeKeeper
 }
 
 // NewFeeDecorator creates new FeeDecorator to deduct fee
@@ -45,7 +47,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 		panic(fmt.Sprintf("%s module account has not been set", sdkAuthTypes.FeeCollectorName))
 	}
 
-	commissionInBaseCoin, err := CalculateFee(tx.GetMsgs(), int64(len(ctx.TxBytes())), sdk.OneDec())
+	commissionInBaseCoin, err := CalculateFee(tx.GetMsgs(), int64(len(ctx.TxBytes())), fd.feeKeeper.GetPrice(ctx))
 	if err != nil {
 		return ctx, err
 	}

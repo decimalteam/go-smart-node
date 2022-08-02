@@ -1,8 +1,9 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	"fmt"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -44,4 +45,10 @@ func (k Keeper) SavePrice(
 	fmt.Println(price)
 
 	return nil
+}
+
+func (k Keeper) GetPrice(
+	ctx sdk.Context,
+) sdk.Dec {
+	return sdk.OneDec()
 }
