@@ -182,8 +182,10 @@ func (am AppModule) ConsensusVersion() uint64 {
 }
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the module.
-func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {
-	//
+func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
+	fmt.Println(" BeginBlock")
+	fmt.Println(ctx.GasMeter().String())
+	fmt.Println()
 }
 
 // EndBlock executes all ABCI EndBlock logic respective to the module.

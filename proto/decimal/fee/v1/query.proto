@@ -1,0 +1,29 @@
+syntax = "proto3";
+package decimal.fee.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/fee/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Retrieves existing coin by specific symbol.
+  rpc QueryBaseDenomPrice(QueryBaseDenomPriceRequest) returns (QueryBaseDenomPriceResponse) {
+    option (google.api.http).get = "/fee/v1/price";
+  }
+}
+
+////////////////////////////////////////////////////////////////
+// Price
+////////////////////////////////////////////////////////////////
+
+message QueryBaseDenomPriceRequest {
+}
+
+message QueryBaseDenomPriceResponse {
+  float price = 1 [
+    (gogoproto.customtype) = "float64",
+    (gogoproto.nullable) = false
+  ];
+}
