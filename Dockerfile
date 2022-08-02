@@ -18,6 +18,7 @@ WORKDIR /root
 
 COPY --from=build-env /go/src/bitbucket.org/decimalteam/go-smart-node/build/dscd /usr/bin/dscd
 
-EXPOSE 26656 26657 1317 9090
+# tendermint-p2p, tendermint-rpc, rest, grpc, evm json rpc, evm ws
+EXPOSE 26656 26657 1317 9090 8545 8546
 
-CMD ["dscd"]
+CMD ["dscd", "start"]
