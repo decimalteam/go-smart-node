@@ -2,6 +2,7 @@ package tx
 
 import (
 	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	nftTypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
 type (
@@ -16,6 +17,12 @@ type (
 	MsgReturnLegacyBalance = coinTypes.MsgReturnLegacyBalance
 
 	OneSend = coinTypes.Send
+
+	MsgMintNFT          = nftTypes.MsgMintNFT
+	MsgBurnNFT          = nftTypes.MsgBurnNFT
+	MsgUpdateReserveNFT = nftTypes.MsgUpdateReserveNFT
+	MsgTransferNFT      = nftTypes.MsgTransferNFT
+	MsgEditNFTMetadata  = nftTypes.MsgEditNFTMetadata
 )
 
 var (
@@ -28,4 +35,10 @@ var (
 	NewMsgSendCoin            = coinTypes.NewMsgSendCoin
 	NewMsgRedeemCheck         = coinTypes.NewMsgRedeemCheck
 	NewMsgReturnLegacyBalance = coinTypes.NewMsgReturnLegacyBalance
+
+	NewMsgMintNFT          = nftTypes.NewMsgMintNFT
+	NewMsgBurnNFT          = nftTypes.NewMsgBurnNFT
+	NewMsgUpdateReserveNFT = nftTypes.NewMsgUpdateReserveNFT
+	NewMsgTransferNFT      = nftTypes.NewMsgTransferNFT
+	NewMsgEditNFTMetadata  = nftTypes.NewMsgEditNFTMetadata
 )

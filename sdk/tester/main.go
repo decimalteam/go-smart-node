@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	dscWallet "bitbucket.org/decimalteam/go-smart-node/sdk/wallet"
-	helpers "bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -24,7 +25,7 @@ var mult = sdk.NewInt(1000000000000000000)
 
 // TODO: split and document
 func main() {
-	api := dscApi.NewAPI(dscApi.ConnectionOptions{EndpointHost: "http://127.0.0.1", Timeout: 40})
+	api, _ := dscApi.NewAPI(dscApi.ConnectionOptions{EndpointHost: "http://127.0.0.1", Timeout: 40})
 	err := api.GetParameters()
 	if err != nil {
 		fmt.Printf("get ChainID error: %v\n", err)
@@ -46,7 +47,7 @@ func main() {
 	}
 	fmt.Printf("api.Coins() result: %v\n", coins)
 	///////////////
-	faucetMnemonic := "bench own lock april loyal wheel nest slogan practice patch lamp change work scout slide city limb short festival card tornado enrich submit food"
+	faucetMnemonic := "domain kangaroo addict allow capital message young faculty diesel aware dry mirror tomato prepare census inflict diagram eye project modify question hip crater pelican"
 	faucet, err := dscWallet.NewAccountFromMnemonicWords(faucetMnemonic, "")
 	if err != nil {
 		fmt.Printf("create wallet error: %v\n", err)
@@ -96,5 +97,12 @@ func main() {
 		}
 		fmt.Printf("result = %+v\n", r)
 		faucet.IncrementSequence()
+	}
+
+	nftDenoms, err := api.NFTCollections()
+	if err != nil {
+		fmt.Printf("NFTCollections err = %v\n", err)
+	} else {
+		fmt.Printf("NFT collections:\n%s\n", strings.Join(nftDenoms, "\n"))
 	}
 }

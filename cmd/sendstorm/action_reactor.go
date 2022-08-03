@@ -61,6 +61,13 @@ func (ar *ActionReactor) Add(generatorName string, weight int64) error {
 				Weight: weight,
 			}
 		}
+	case "MintNFT":
+		{
+			wag = &WeightedAG{
+				AG:     NewMintNFTGenerator(1, 100, 100, 1000, 1, 10),
+				Weight: weight,
+			}
+		}
 	}
 	if wag == nil {
 		return fmt.Errorf("%s: unknown generator name", generatorName)

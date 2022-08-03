@@ -48,13 +48,16 @@ func (reactor *stormReactor) initApi(flags *pflag.FlagSet) error {
 		log.SetOutput(logfile)
 	}
 
-	reactor.api = dscApi.NewAPI(dscApi.ConnectionOptions{
+	reactor.api, err = dscApi.NewAPI(dscApi.ConnectionOptions{
 		EndpointHost:   nodeHost,
 		TendermintPort: tPort,
 		RestPort:       rPort,
 		Timeout:        10,
 		Debug:          debug,
 	})
+	if err != nil {
+		return err
+	}
 	err = reactor.api.GetParameters()
 	if err != nil {
 		return err

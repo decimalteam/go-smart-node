@@ -4,6 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 
 	config "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	decimalTypes "bitbucket.org/decimalteam/go-smart-node/types"
 	cryptoTypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
@@ -13,9 +14,10 @@ import (
 
 // Account contains private key of the account that allows to sign transactions to broadcast to the blockchain.
 type Account struct {
-	privateKeyTM *ethsecp256k1.PrivKey
-	publicKeyTM  *ethsecp256k1.PubKey
-	address      string
+	privateKeyTM  *ethsecp256k1.PrivKey
+	publicKeyTM   *ethsecp256k1.PubKey
+	address       string
+	legacyAddress string
 
 	// These fields are used only for signing transactions:
 	chainID       string
@@ -42,6 +44,10 @@ func NewAccountFromMnemonicWords(words string, password string) (*Account, error
 	result.privateKeyTM = &ethsecp256k1.PrivKey{Key: bz}
 	result.publicKeyTM = result.privateKeyTM.PubKey().(*ethsecp256k1.PubKey)
 	result.address, err = bech32.ConvertAndEncode(config.Bech32Prefix, result.publicKeyTM.Address())
+	if err != nil {
+		return nil, err
+	}
+	result.legacyAddress, err = decimalTypes.GetLegacyAddressFromPubKey(result.privateKeyTM.PubKey().Bytes())
 	if err != nil {
 		return nil, err
 	}
@@ -74,6 +80,11 @@ func (acc *Account) IncrementSequence() {
 // Address returns accounts's address in bech32 format.
 func (acc *Account) Address() string {
 	return acc.address
+}
+
+// Address returns accounts's address in bech32 format.
+func (acc *Account) LegacyAddress() string {
+	return acc.legacyAddress
 }
 
 // SdkAddress returns accounts's cosmos AccAddress ([]byte)
