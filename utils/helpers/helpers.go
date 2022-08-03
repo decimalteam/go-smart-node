@@ -56,13 +56,13 @@ func JoinAccAddresses(values []sdk.AccAddress) string {
 }
 
 // JoinUints returns string containing all provided uint values joined with ",".
-func JoinUints(values []uint) string {
+func JoinUints64(values []uint64) string {
 	var sb strings.Builder
 	for i, v := range values {
 		if i > 0 {
 			sb.WriteString(",")
 		}
-		sb.WriteString(strconv.FormatUint(uint64(v), 10))
+		sb.WriteString(strconv.FormatUint(v, 10))
 	}
 	return sb.String()
 }
