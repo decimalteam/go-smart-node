@@ -17,6 +17,7 @@ import (
 	evmtypes "github.com/tharsis/ethermint/x/evm/types"
 
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 )
 
 // HandlerOptions defines the list of module keepers required to run the Decimal AnteHandler decorators.
@@ -28,6 +29,7 @@ type HandlerOptions struct {
 	EvmKeeper       evmante.EVMKeeper
 	FeegrantKeeper  authante.FeegrantKeeper
 	CoinKeeper      cointypes.CoinKeeper
+	FeeKeeper       feetypes.FeeKeeper
 	SignModeHandler authsigning.SignModeHandler
 	SigGasConsumer  func(meter sdk.GasMeter, sig signing.SignatureV2, params authtypes.Params) error
 	Cdc             codec.BinaryCodec
@@ -56,6 +58,9 @@ func (options HandlerOptions) Validate() error {
 	}
 	if options.CoinKeeper == nil {
 		return sdkerrors.Wrap(sdkerrors.ErrLogic, "coin keeper is required for AnteHandler")
+	}
+	if options.FeeKeeper == nil {
+		return sdkerrors.Wrap(sdkerrors.ErrLogic, "fee keeper is required for AnteHandler")
 	}
 	return nil
 }
@@ -86,7 +91,7 @@ func newCosmosAnteHandler(options HandlerOptions) sdk.AnteHandler {
 		authante.NewTxTimeoutHeightDecorator(),
 		authante.NewValidateMemoDecorator(options.AccountKeeper),
 		authante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		NewFeeDecorator(options.CoinKeeper, options.BankKeeper, options.AccountKeeper),
+		NewFeeDecorator(options.CoinKeeper, options.BankKeeper, options.AccountKeeper, options.FeeKeeper),
 		NewValidatorCommissionDecorator(options.Cdc),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		authante.NewSetPubKeyDecorator(options.AccountKeeper),
@@ -109,7 +114,7 @@ func newCosmosAnteHandlerEip712(options HandlerOptions) sdk.AnteHandler {
 		authante.NewTxTimeoutHeightDecorator(),
 		authante.NewValidateMemoDecorator(options.AccountKeeper),
 		authante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		NewFeeDecorator(options.CoinKeeper, options.BankKeeper, options.AccountKeeper),
+		NewFeeDecorator(options.CoinKeeper, options.BankKeeper, options.AccountKeeper, options.FeeKeeper),
 		NewValidatorCommissionDecorator(options.Cdc),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		authante.NewSetPubKeyDecorator(options.AccountKeeper),

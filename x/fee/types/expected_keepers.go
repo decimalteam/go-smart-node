@@ -9,6 +9,7 @@ import (
 
 type FeeKeeper interface {
 	GetPrice(ctx sdk.Context) sdk.Dec
+	GetModuleParams(ctx sdk.Context) Params
 }
 
 // interface from ethermint evm module

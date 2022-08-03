@@ -5,69 +5,43 @@ import (
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	nftTypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// Fee constants in units (10^15)
-const (
-	// completed
-	sendCoinFee         = 10
-	sendMultiCoinAddFee = 5
-	buyCoinFee          = 100
-	sellCoinFee         = 100
-	createCoinFee       = 100
-	// future
-	declareCandidateFee = 10000
-	editCandidateFee    = 10000
-	delegateFee         = 200
-	unbondFee           = 200
-	setOnlineFee        = 100
-	setOfflineFee       = 100
-
-	burnFee = 10
-
-	//redeemCheckFee = 30
-
-	createWalletFee      = 100
-	createTransactionFee = 100
-	signTransactionFee   = 100
-
-	htltFee = 33000
-)
-
 // Calculate fee in base coin
-func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec) (sdk.Int, error) {
+func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec, params feeTypes.Params) (sdk.Int, error) {
 	commissionInBaseCoin := sdk.ZeroInt()
 	commissionInBaseCoin = commissionInBaseCoin.AddRaw(txBytesLen * 2)
 	for _, msg := range msgs {
 		switch m := msg.(type) {
 		case *coinTypes.MsgCreateCoin:
-			commissionInBaseCoin = commissionInBaseCoin.AddRaw(createCoinFee)
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(int64(params.CoinCreate))
 		case *coinTypes.MsgSendCoin:
-			commissionInBaseCoin = commissionInBaseCoin.AddRaw(sendCoinFee)
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(int64(params.CoinSend))
 		case *coinTypes.MsgMultiSendCoin:
-			commissionInBaseCoin = commissionInBaseCoin.AddRaw(sendCoinFee + int64((len(m.Sends)-1)*sendMultiCoinAddFee))
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(int64(params.CoinSend) + int64((len(m.Sends)-1)*int(params.CoinSendMultiAddition)))
 		case *coinTypes.MsgBuyCoin:
-			commissionInBaseCoin = commissionInBaseCoin.AddRaw(buyCoinFee)
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(int64(params.CoinBuy))
 		case *coinTypes.MsgSellCoin:
-			commissionInBaseCoin = commissionInBaseCoin.AddRaw(sellCoinFee)
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(int64(params.CoinSell))
 		case *coinTypes.MsgSellAllCoin:
-			commissionInBaseCoin = commissionInBaseCoin.AddRaw(sellCoinFee)
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(int64(params.CoinSell))
 		case *coinTypes.MsgRedeemCheck:
-			commissionInBaseCoin = sdk.ZeroInt()
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *coinTypes.MsgUpdateCoin:
-			commissionInBaseCoin = sdk.ZeroInt()
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *nftTypes.MsgMintNFT:
-			commissionInBaseCoin = sdk.ZeroInt()
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *nftTypes.MsgBurnNFT:
-			commissionInBaseCoin = sdk.ZeroInt()
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *nftTypes.MsgTransferNFT:
-			commissionInBaseCoin = sdk.ZeroInt()
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *nftTypes.MsgUpdateReserveNFT:
-			commissionInBaseCoin = sdk.ZeroInt()
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *nftTypes.MsgEditNFTMetadata:
-			commissionInBaseCoin = sdk.ZeroInt()
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 
 		default:
 			return sdk.NewInt(0), ErrUnknownTransaction(fmt.Sprintf("%T", msg))

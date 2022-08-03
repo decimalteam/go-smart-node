@@ -21,11 +21,12 @@ type FeeDecorator struct {
 }
 
 // NewFeeDecorator creates new FeeDecorator to deduct fee
-func NewFeeDecorator(ck coinTypes.CoinKeeper, bk evmTypes.BankKeeper, ak evmTypes.AccountKeeper) FeeDecorator {
+func NewFeeDecorator(ck coinTypes.CoinKeeper, bk evmTypes.BankKeeper, ak evmTypes.AccountKeeper, fk feeTypes.FeeKeeper) FeeDecorator {
 	return FeeDecorator{
 		coinKeeper:    ck,
 		bankKeeper:    bk,
 		accountKeeper: ak,
+		feeKeeper:     fk,
 	}
 }
 
@@ -47,7 +48,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 		panic(fmt.Sprintf("%s module account has not been set", sdkAuthTypes.FeeCollectorName))
 	}
 
-	commissionInBaseCoin, err := CalculateFee(tx.GetMsgs(), int64(len(ctx.TxBytes())), fd.feeKeeper.GetPrice(ctx))
+	commissionInBaseCoin, err := CalculateFee(tx.GetMsgs(), int64(len(ctx.TxBytes())), fd.feeKeeper.GetPrice(ctx), fd.feeKeeper.GetModuleParams(ctx))
 	if err != nil {
 		return ctx, err
 	}

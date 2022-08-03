@@ -882,6 +882,7 @@ func NewDSC(
 		FeegrantKeeper:  app.FeeGrantKeeper,
 		IBCKeeper:       app.IBCKeeper,
 		CoinKeeper:      &app.CoinKeeper,
+		FeeKeeper:       &app.FeeKeeper,
 		SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 		SigGasConsumer:  SigVerificationGasConsumer,
 		Cdc:             appCodec,
