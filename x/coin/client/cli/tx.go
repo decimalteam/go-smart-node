@@ -104,7 +104,7 @@ func NewUpdateCoinCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update [symbol] [limitVolume] [identity]",
 		Short: "Update custom coin",
-		Long: fmt.Sprintf(`change one token from your wallet to another 
+		Long: fmt.Sprintf(`update coin your custom coin parametres 
 
 Example: 	
 $ %s tx coin update del 10000000 "" --from mykey`, version.AppName),
@@ -127,9 +127,13 @@ $ %s tx coin update del 10000000 "" --from mykey`, version.AppName),
 			}
 
 			// Check if coin does not exist yet
-			err = existCoinSymbol(clientCtx, symbol)
+			resp, err := getCoin(clientCtx, symbol)
 			if err != nil {
 				return err
+			}
+
+			if resp.Coin.Creator != from.String() {
+				return types.ErrUpdateOnlyForCreator()
 			}
 
 			msg := types.NewMsgUpdateCoin(from, symbol, limitVolume, identity)
@@ -530,7 +534,7 @@ $ %s tx coin issue-check 1000del 10 235 123456789 --from mykey
 				return err
 			}
 
-			return clientCtx.PrintString(fmt.Sprintf("hash: %s", base58.Encode(checkBytes)))
+			return clientCtx.PrintString(base58.Encode(checkBytes))
 		},
 	}
 
@@ -565,7 +569,6 @@ $ %s tx coin redeem-check {check hash} "" --from mykey
 			// Decode provided check from base58 format to raw bytes
 			checkBytes := base58.Decode(checkBase58)
 			if len(checkBytes) == 0 {
-				return types.ErrUnableDecodeCheck(checkBase58)
 			}
 
 			// Parse provided check from raw bytes to ensure it is valid

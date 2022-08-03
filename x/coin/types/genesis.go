@@ -38,7 +38,7 @@ func (gs *GenesisState) Validate() error {
 		return ErrInvalidCoinSymbol(gs.Params.BaseSymbol)
 	}
 	// Check coin initial volume to be correct
-	if gs.Params.BaseInitialVolume.LT(minCoinSupply) || gs.Params.BaseInitialVolume.GT(maxCoinSupply) {
+	if gs.Params.BaseInitialVolume.LT(MinCoinSupply) || gs.Params.BaseInitialVolume.GT(maxCoinSupply) {
 		return ErrInvalidCoinInitialVolume(gs.Params.BaseInitialVolume.String())
 	}
 	// Check there are no coins with the same symbol

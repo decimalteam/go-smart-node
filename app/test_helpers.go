@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -109,6 +110,17 @@ func AddTestAddrs(app *DSC, ctx sdk.Context, accNum int, accAmt sdk.Coins) []sdk
 // initial balance of accAmt in random order
 func AddTestAddrsIncremental(app *DSC, ctx sdk.Context, accNum int, accAmt sdk.Coins) []sdk.AccAddress {
 	return addTestAddrs(app, ctx, accNum, accAmt, createIncrementalAccounts)
+}
+
+func GetAddrs(dsc *DSC, ctx sdk.Context, number int) []sdk.AccAddress {
+	addrs := AddTestAddrsIncremental(dsc, ctx, number, sdk.Coins{
+		{
+			Denom:  "del",
+			Amount: helpers.EtherToWei(sdk.NewInt(1000000000000)),
+		},
+	})
+
+	return addrs
 }
 
 func addTestAddrs(app *DSC, ctx sdk.Context, accNum int, accCoins sdk.Coins, strategy GenerateAccountStrategy) []sdk.AccAddress {

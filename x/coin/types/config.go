@@ -9,7 +9,7 @@ import (
 const maxCoinNameBytes = 64
 const allowedCoinSymbols = "^[a-zA-Z][a-zA-Z0-9]{2,9}$"
 
-var minCoinSupply = sdk.NewInt(1)
+var MinCoinSupply = sdk.NewInt(1)
 var maxCoinSupply = helpers.EtherToWei(sdk.NewInt(1000000000000000))
 var MinCoinReserve = helpers.EtherToWei(sdk.NewInt(1000))
 

@@ -19,6 +19,10 @@ var (
 	sdkE18 = sdk.NewIntFromBigInt(bigE18)
 )
 
+func BipToPip(bip sdk.Int) sdk.Int {
+	return bip.Mul(sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)))
+}
+
 // EtherToWei convert number 1 to 1 * 10^18
 func EtherToWei(ether sdk.Int) sdk.Int {
 	return ether.Mul(sdkE18)
@@ -52,13 +56,13 @@ func JoinAccAddresses(values []sdk.AccAddress) string {
 }
 
 // JoinUints returns string containing all provided uint values joined with ",".
-func JoinUints(values []uint) string {
+func JoinUints64(values []uint64) string {
 	var sb strings.Builder
 	for i, v := range values {
 		if i > 0 {
 			sb.WriteString(",")
 		}
-		sb.WriteString(strconv.FormatUint(uint64(v), 10))
+		sb.WriteString(strconv.FormatUint(v, 10))
 	}
 	return sb.String()
 }
