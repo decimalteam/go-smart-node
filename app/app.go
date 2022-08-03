@@ -211,6 +211,8 @@ var (
 		//claims.AppModuleBasic{},
 		//recovery.AppModuleBasic{},
 		// Decimal
+		nft.AppModuleBasic{},
+		multisig.AppModuleBasic{},
 		coin.AppModuleBasic{},
 		multisig.AppModuleBasic{},
 		nft.AppModuleBasic{},
@@ -224,13 +226,13 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
 		//ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
-		evmtypes.ModuleName:            {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
-		inflationtypes.ModuleName:      {authtypes.Minter},
-		erc20types.ModuleName:          {authtypes.Minter, authtypes.Burner},
+		evmtypes.ModuleName:       {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
+		inflationtypes.ModuleName: {authtypes.Minter},
+		erc20types.ModuleName:     {authtypes.Minter, authtypes.Burner},
 		//claimstypes.ModuleName:         nil,
-		incentivestypes.ModuleName:     {authtypes.Minter, authtypes.Burner},
-		cointypes.ModuleName:           {authtypes.Minter, authtypes.Burner},
-		nfttypes.ReservedPool:          {authtypes.Minter, authtypes.Burner},
+		incentivestypes.ModuleName: {authtypes.Minter, authtypes.Burner},
+		cointypes.ModuleName:       {authtypes.Minter, authtypes.Burner},
+		nfttypes.ReservedPool:      {authtypes.Minter, authtypes.Burner},
 		// special account to hold legacy balances
 		cointypes.LegacyCoinPool: nil,
 	}
