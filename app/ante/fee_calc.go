@@ -2,6 +2,7 @@ package ante
 
 import (
 	"fmt"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -75,6 +76,14 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec) (sdk.Int, er
 		case *nftTypes.MsgUpdateReserveNFT:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *nftTypes.MsgEditNFTMetadata:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *govtypes.MsgSubmitProposal:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *govtypes.MsgDeposit:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *govtypes.MsgVote:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *govtypes.MsgVoteWeighted:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		default:
 			return sdk.NewInt(0), ErrUnknownTransaction(fmt.Sprintf("%T", msg))
