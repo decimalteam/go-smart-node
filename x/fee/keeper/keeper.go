@@ -5,6 +5,7 @@ import (
 
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -14,23 +15,49 @@ import (
 
 // Keeper maintains the link to data storage and exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	storeKey sdk.StoreKey // Unexposed key to access store from sdk.Context
-
-	cdc codec.BinaryCodec // The amino codec for binary encoding/decoding.
+	storeKey sdk.StoreKey      // Unexposed key to access store from sdk.Context
+	cdc      codec.BinaryCodec // The amino codec for binary encoding/decoding.
+	ps       paramtypes.Subspace
 
 	bankKeeper keeper.Keeper
 
-	BaseDenom *string
+	baseDenom *string
 }
 
 // NewKeeper creates new instances of the nft Keeper
-func NewKeeper(cdc codec.BinaryCodec, storeKey sdk.StoreKey, bankKeeper keeper.Keeper, baseDenom string) *Keeper {
-	return &Keeper{
-		storeKey:   storeKey,
-		cdc:        cdc,
-		bankKeeper: bankKeeper,
-		BaseDenom:  &baseDenom,
+func NewKeeper(
+	cdc codec.BinaryCodec,
+	storeKey sdk.StoreKey,
+	ps paramtypes.Subspace,
+	bankKeeper keeper.Keeper,
+	baseDenom string,
+) *Keeper {
+	// set KeyTable if it has not already been set
+	if !ps.HasKeyTable() {
+		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
+	return &Keeper{
+		cdc:        cdc,
+		storeKey:   storeKey,
+		ps:         ps,
+		bankKeeper: bankKeeper,
+		baseDenom:  &baseDenom,
+	}
+}
+
+////////////////////////////////////////////////////////////////
+// Params
+////////////////////////////////////////////////////////////////
+
+// GetParams returns the total set of the module parameters.
+func (k *Keeper) GetModuleParams(ctx sdk.Context) (params types.Params) {
+	k.ps.GetParamSet(ctx, &params)
+	return params
+}
+
+// SetParams sets the module parameters to the param space.
+func (k *Keeper) SetModuleParams(ctx sdk.Context, params types.Params) {
+	k.ps.SetParamSet(ctx, &params)
 }
 
 // Logger returns a module-specific logger.

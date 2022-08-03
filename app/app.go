@@ -106,9 +106,6 @@ import (
 	evmrest "github.com/tharsis/ethermint/x/evm/client/rest"
 	evmkeeper "github.com/tharsis/ethermint/x/evm/keeper"
 	evmtypes "github.com/tharsis/ethermint/x/evm/types"
-	feemarket "github.com/tharsis/ethermint/x/feemarket"
-	feemarketkeeper "github.com/tharsis/ethermint/x/feemarket/keeper"
-	feemarkettypes "github.com/tharsis/ethermint/x/feemarket/types"
 
 	// Evmos modules
 	claims "github.com/tharsis/evmos/v3/x/claims"
@@ -209,7 +206,6 @@ var (
 		ibctransfer.AppModuleBasic{},
 		// Ethermint
 		evm.AppModuleBasic{},
-		feemarket.AppModuleBasic{},
 		// Evmos
 		vesting.AppModuleBasic{},
 		inflation.AppModuleBasic{},
@@ -298,8 +294,7 @@ type DSC struct {
 	ScopedIBCTransferKeeper capabilitykeeper.ScopedKeeper
 
 	// Ethermint keepers
-	EvmKeeper       *evmkeeper.Keeper
-	FeeMarketKeeper feemarketkeeper.Keeper
+	EvmKeeper *evmkeeper.Keeper
 
 	// Evmos keepers
 	InflationKeeper  inflationkeeper.Keeper
@@ -378,7 +373,6 @@ func NewDSC(
 		ibctransfertypes.StoreKey,
 		// Ethermint keys
 		evmtypes.StoreKey,
-		feemarkettypes.StoreKey,
 		// Evmos keys
 		inflationtypes.StoreKey,
 		erc20types.StoreKey,
@@ -487,10 +481,12 @@ func NewDSC(
 	)
 
 	// Create Ethermint keepers
-	app.FeeMarketKeeper = feemarketkeeper.NewKeeper(
+	app.FeeKeeper = *feekeeper.NewKeeper(
 		appCodec,
-		keys[feemarkettypes.StoreKey],
-		app.GetSubspace(feemarkettypes.ModuleName),
+		keys[feetypes.StoreKey],
+		app.GetSubspace(feetypes.ModuleName),
+		app.BankKeeper,
+		cmdcfg.BaseDenom,
 	)
 	app.EvmKeeper = evmkeeper.NewKeeper(
 		appCodec,
@@ -500,7 +496,7 @@ func NewDSC(
 		app.AccountKeeper,
 		app.BankKeeper,
 		&stakingKeeper,
-		app.FeeMarketKeeper,
+		app.FeeKeeper,
 		cast.ToString(appOpts.Get(srvflags.EVMTracer)),
 	)
 
@@ -685,13 +681,6 @@ func NewDSC(
 		cmdcfg.BaseDenom,
 	)
 	app.NFTKeeper = *nftKeeper
-	feeKeeper := feekeeper.NewKeeper(
-		appCodec,
-		keys[feetypes.StoreKey],
-		app.BankKeeper,
-		cmdcfg.BaseDenom,
-	)
-	app.FeeKeeper = *feeKeeper
 
 	/****  Module Options ****/
 
@@ -722,7 +711,6 @@ func NewDSC(
 		ibctransferModule,
 		// Ethermint app modules
 		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper),
-		feemarket.NewAppModule(app.FeeMarketKeeper),
 		// Evmos app modules
 		inflation.NewAppModule(app.InflationKeeper, app.AccountKeeper, app.StakingKeeper),
 		erc20.NewAppModule(app.Erc20Keeper, app.AccountKeeper),
@@ -748,7 +736,6 @@ func NewDSC(
 		capabilitytypes.ModuleName,
 		// Note: epochs' begin should be "real" start of epochs, we keep epochs beginblock at the beginning
 		epochstypes.ModuleName,
-		feemarkettypes.ModuleName,
 		evmtypes.ModuleName,
 		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
@@ -782,7 +769,6 @@ func NewDSC(
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		evmtypes.ModuleName,
-		feemarkettypes.ModuleName,
 		// Note: epochs' endblock should be "real" end of epochs, we keep epochs endblock at the end
 		epochstypes.ModuleName,
 		claimstypes.ModuleName,
@@ -835,7 +821,7 @@ func NewDSC(
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		// Ethermint modules
-		evmtypes.ModuleName, feemarkettypes.ModuleName,
+		evmtypes.ModuleName,
 		// Evmos modules
 		vestingtypes.ModuleName,
 		inflationtypes.ModuleName,
@@ -873,7 +859,6 @@ func NewDSC(
 		ibctransferModule,
 		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper),
 		epochs.NewAppModule(appCodec, app.EpochsKeeper),
-		feemarket.NewAppModule(app.FeeMarketKeeper),
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
 	)
 
@@ -893,9 +878,9 @@ func NewDSC(
 		AccountKeeper:   app.AccountKeeper,
 		BankKeeper:      app.BankKeeper,
 		EvmKeeper:       app.EvmKeeper,
+		FeeMarketKeeper: app.FeeKeeper,
 		FeegrantKeeper:  app.FeeGrantKeeper,
 		IBCKeeper:       app.IBCKeeper,
-		FeeMarketKeeper: app.FeeMarketKeeper,
 		CoinKeeper:      &app.CoinKeeper,
 		SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 		SigGasConsumer:  SigVerificationGasConsumer,
@@ -1152,7 +1137,6 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(ibchost.ModuleName)
 	// Ethermint subspaces
 	paramsKeeper.Subspace(evmtypes.ModuleName)
-	paramsKeeper.Subspace(feemarkettypes.ModuleName)
 	// Evmos subspaces
 	paramsKeeper.Subspace(inflationtypes.ModuleName)
 	paramsKeeper.Subspace(erc20types.ModuleName)
@@ -1161,6 +1145,7 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(recoverytypes.ModuleName)
 	// Decimal subspaces
 	paramsKeeper.Subspace(cointypes.ModuleName)
+	paramsKeeper.Subspace(feetypes.ModuleName)
 	return paramsKeeper
 }
 

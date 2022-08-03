@@ -1,11 +1,13 @@
 package fee
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/client/cli"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
-	"context"
-	"encoding/json"
 	"github.com/cosmos/cosmos-sdk/client"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/gorilla/mux"
@@ -40,12 +42,16 @@ func (AppModuleBasic) RegisterInterfaces(interfaceRegistry codectypes.InterfaceR
 
 // DefaultGenesis default genesis state
 func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
-	return nil
+	return cdc.MustMarshalJSON(types.DefaultGenesisState())
 }
 
 // ValidateGenesis performs genesis state validation for the module.
-func (b AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
-	return nil
+func (b AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
+	var genesisState types.GenesisState
+	if err := cdc.UnmarshalJSON(bz, &genesisState); err != nil {
+		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
+	}
+	return genesisState.Validate()
 }
 
 // RegisterRESTRoutes registers rest routes
@@ -123,12 +129,16 @@ func (am AppModule) ConsensusVersion() uint64 {
 
 // InitGenesis performs the module's genesis initialization.
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
+	var gs types.GenesisState
+	cdc.MustUnmarshalJSON(data, &gs)
+	InitGenesis(ctx, am.keeper, gs)
 	return []abci.ValidatorUpdate{}
 }
 
 // ExportGenesis returns the module's exported genesis state as raw JSON bytes.
 func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
-	return nil
+	gs := ExportGenesis(ctx, am.keeper)
+	return cdc.MustMarshalJSON(gs)
 }
 
 // BeginBlock module begin-block
