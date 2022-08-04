@@ -10,6 +10,7 @@ import (
 
 // Parameter store keys.
 var (
+	PSKeyByteFee = []byte("ByteFee")
 	// coin transactions fees
 	PSKeyCoinSend              = []byte("CoinSend")
 	PSKeyCoinSendMultiAddition = []byte("CoinSendMultiAddition")
@@ -46,6 +47,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return Params{
+		ByteFee: 2,
 		// coin transactions fees
 		CoinSend:              10,
 		CoinSendMultiAddition: 5,
@@ -76,6 +78,7 @@ func DefaultParams() Params {
 // ParamSetPairs returns the parameter set pairs.
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
+		paramtypes.NewParamSetPair(PSKeyByteFee, &p.ByteFee, validateUint64),
 		// coin transactions fees
 		paramtypes.NewParamSetPair(PSKeyCoinSend, &p.CoinSend, validateUint64),
 		paramtypes.NewParamSetPair(PSKeyCoinSendMultiAddition, &p.CoinSendMultiAddition, validateUint64),

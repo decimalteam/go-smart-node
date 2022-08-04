@@ -13,7 +13,7 @@ import (
 // Calculate fee in base coin
 func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec, params feeTypes.Params) (sdk.Int, error) {
 	commissionInBaseCoin := sdk.ZeroInt()
-	commissionInBaseCoin = commissionInBaseCoin.AddRaw(txBytesLen * 2)
+	commissionInBaseCoin = commissionInBaseCoin.AddRaw(txBytesLen * int64(params.ByteFee))
 	for _, msg := range msgs {
 		switch m := msg.(type) {
 		case *coinTypes.MsgCreateCoin:

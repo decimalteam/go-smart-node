@@ -29,5 +29,6 @@ func TestDefaultGenesis(t *testing.T) {
 	fee.InitGenesis(ctx, dsc.FeeKeeper, *types.DefaultGenesisState())
 
 	params := dsc.FeeKeeper.GetModuleParams(ctx)
+	// check proper genesis initialization
 	require.Equal(t, types.DefaultParams(), params)
 }
