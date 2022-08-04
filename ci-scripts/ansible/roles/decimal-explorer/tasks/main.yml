@@ -5,8 +5,8 @@
 
 - name: Include tasks for explorer master DB
   include: explorer-masterdb.yml
-  when: ansible_hostname.find('explorer-db-master') != -1
+#  when: ansible_hostname.find('explorer-db-master') != -1
 
 - name: Include tasks for explorer indexer service
   include: explorer-indexer.yml
-  when: ansible_hostname.find('explorer-indexer') != -1
+#  when: ansible_hostname.find('explorer-indexer') != -1
