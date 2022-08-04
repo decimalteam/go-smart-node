@@ -82,6 +82,11 @@ func (aa *MintNFTAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, error)
 	if err != nil {
 		return nil, err
 	}
+	// NOTE: due NFT spec, only NFT creator can change NFT reserve
+	// so i set recipient to sender for MsgUpdateReserve
+	if rand.Int31n(2) == 0 {
+		aa.recipient = sa.Address()
+	}
 	recipient, err := sdk.AccAddressFromBech32(aa.recipient)
 	if err != nil {
 		return nil, err

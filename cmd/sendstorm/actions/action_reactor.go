@@ -17,73 +17,30 @@ type WeightedAG struct {
 
 //TODO: parameters for generator
 func (ar *ActionReactor) Add(generatorName string, weight int64) error {
-	var wag *WeightedAG = nil
+	var wag *WeightedAG = &WeightedAG{Weight: weight}
 	switch generatorName {
 	//coin
 	case "CreateCoin":
-		{
-			wag = &WeightedAG{
-				AG:     NewCreateCoinGenerator(3, 9, 100, 1000, 1000, 2000, 1000000, 2000000),
-				Weight: weight,
-			}
-		}
+		wag.AG = NewCreateCoinGenerator(3, 9, 100, 1000, 1000, 2000, 1000000, 2000000)
 	case "SendCoin":
-		{
-			wag = &WeightedAG{
-				AG:     NewSendCoinGenerator(500, 20000),
-				Weight: weight,
-			}
-		}
+		wag.AG = NewSendCoinGenerator(500, 20000)
 	case "BuyCoin":
-		{
-			wag = &WeightedAG{
-				AG:     NewBuyCoinGenerator(500, 20000, "del"),
-				Weight: weight,
-			}
-		}
+		wag.AG = NewBuyCoinGenerator(500, 20000, "del")
 	case "SellCoin":
-		{
-			wag = &WeightedAG{
-				AG:     NewSellCoinGenerator(500, 20000, "del"),
-				Weight: weight,
-			}
-		}
+		wag.AG = NewSellCoinGenerator(500, 20000, "del")
 	case "MultiSendCoin":
-		{
-			wag = &WeightedAG{
-				AG:     NewMultiSendCoinGenerator(500, 20000, 1, 10),
-				Weight: weight,
-			}
-		}
+		wag.AG = NewMultiSendCoinGenerator(500, 20000, 1, 10)
 	case "UpdateCoin":
-		{
-			wag = &WeightedAG{
-				AG:     NewUpdateCoinGenerator(1, 100, "del"),
-				Weight: weight,
-			}
-		}
+		wag.AG = NewUpdateCoinGenerator(1, 100, "del")
 	// nft
 	case "MintNFT":
-		{
-			wag = &WeightedAG{
-				AG:     NewMintNFTGenerator(1, 100, 100, 1000, 1, 10),
-				Weight: weight,
-			}
-		}
+		wag.AG = NewMintNFTGenerator(1, 100, 100, 1000, 1, 10)
 	case "TransferNFT":
-		{
-			wag = &WeightedAG{
-				AG:     NewTransferNFTGenerator(),
-				Weight: weight,
-			}
-		}
+		wag.AG = NewTransferNFTGenerator()
 	case "EditNFT":
-		{
-			wag = &WeightedAG{
-				AG:     NewEditNFTGenerator(1, 100),
-				Weight: weight,
-			}
-		}
+		wag.AG = NewEditNFTGenerator(1, 100)
+	case "BurnNFT":
+		wag.AG = NewBurnNFTGenerator()
 	}
 	if wag == nil {
 		return fmt.Errorf("%s: unknown generator name", generatorName)
