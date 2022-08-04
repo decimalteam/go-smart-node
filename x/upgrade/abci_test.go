@@ -1,7 +1,7 @@
 package upgrade_test
 
+/*
 import (
-	"bitbucket.org/decimalteam/go-smart-node/app"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,6 +9,8 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"bitbucket.org/decimalteam/go-smart-node/app"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -468,3 +470,4 @@ func TestBinaryVersion(t *testing.T) {
 		}
 	}
 }
+*/
