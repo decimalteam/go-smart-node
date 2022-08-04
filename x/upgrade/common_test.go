@@ -12,14 +12,17 @@ import (
 
 // getBaseAppWithCustomKeeper Returns a simapp with custom CoinKeeper
 // to avoid messing with the hooks.
-func getBaseAppWithCustomKeeper() (*codec.LegacyAmino, *app.DSC, sdk.Context) {
+func getBaseAppWithCustomKeeper(skip map[int64]bool) (*codec.LegacyAmino, *app.DSC, sdk.Context) {
 	dsc := app.Setup(false, feemarkettypes.DefaultGenesisState())
 	ctx := dsc.BaseApp.NewContext(false, tmproto.Header{})
 
 	appCodec := dsc.AppCodec()
 
+	if skip == nil {
+		skip = make(map[int64]bool)
+	}
 	dsc.UpgradeKeeper = keeper.NewKeeper(
-		make(map[int64]bool),
+		skip,
 		dsc.GetKey(types.StoreKey),
 		appCodec,
 		app.DefaultNodeHome,

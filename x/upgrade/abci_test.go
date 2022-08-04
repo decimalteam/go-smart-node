@@ -34,14 +34,14 @@ type TestSuite struct {
 
 var s TestSuite
 
-func bootstrapABCITest() (*app.DSC, sdk.Context) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+func bootstrapABCITest(skip map[int64]bool) (*app.DSC, sdk.Context) {
+	_, dsc, ctx := getBaseAppWithCustomKeeper(skip)
 
 	return dsc, ctx
 }
 
 func setupTest(height int64, skip map[int64]bool) TestSuite {
-	dsc, _ := bootstrapABCITest()
+	dsc, _ := bootstrapABCITest(skip)
 
 	s.keeper = dsc.UpgradeKeeper
 	s.ctx = dsc.BaseApp.NewContext(false, tmproto.Header{Height: height, Time: time.Now()})
@@ -69,25 +69,29 @@ func TestRequireFutureBlock(t *testing.T) {
 
 func TestDoHeightUpgrade(t *testing.T) {
 	s := setupTest(10, map[int64]bool{})
+	testname := "TestDoHeightUpgrade"
+
 	t.Log("Verify can schedule an upgrade")
-	err := s.handler(s.ctx, &types.SoftwareUpgradeProposal{Title: "prop", Plan: types.Plan{Name: "test", Height: s.ctx.BlockHeight() + 1}})
+	err := s.handler(s.ctx, &types.SoftwareUpgradeProposal{Title: "prop", Plan: types.Plan{Name: testname, Height: s.ctx.BlockHeight() + 1}})
 	require.NoError(t, err)
 
-	VerifyDoUpgrade(t)
+	VerifyDoUpgrade(t, testname)
 }
 
 func TestCanOverwriteScheduleUpgrade(t *testing.T) {
 	s := setupTest(10, map[int64]bool{})
+	testname := "TestCanOverwriteScheduleUpgrade"
+
 	t.Log("Can overwrite plan")
 	err := s.handler(s.ctx, &types.SoftwareUpgradeProposal{Title: "prop", Plan: types.Plan{Name: "bad_test", Height: s.ctx.BlockHeight() + 10}})
 	require.NoError(t, err)
-	err = s.handler(s.ctx, &types.SoftwareUpgradeProposal{Title: "prop", Plan: types.Plan{Name: "test", Height: s.ctx.BlockHeight() + 1}})
+	err = s.handler(s.ctx, &types.SoftwareUpgradeProposal{Title: "prop", Plan: types.Plan{Name: testname, Height: s.ctx.BlockHeight() + 1}})
 	require.NoError(t, err)
 
-	VerifyDoUpgrade(t)
+	VerifyDoUpgrade(t, testname)
 }
 
-func VerifyDoUpgrade(t *testing.T) {
+func VerifyDoUpgrade(t *testing.T, testName string) {
 	t.Log("Verify that a panic happens at the upgrade height")
 	newCtx := s.ctx.WithBlockHeight(s.ctx.BlockHeight() + 1).WithBlockTime(time.Now())
 
@@ -97,7 +101,7 @@ func VerifyDoUpgrade(t *testing.T) {
 	})
 
 	t.Log("Verify that the upgrade can be successfully applied with a handler")
-	s.keeper.SetUpgradeHandler("test", func(ctx sdk.Context, plan types.Plan, vm module.VersionMap) (module.VersionMap, error) {
+	s.keeper.SetUpgradeHandler(testName, func(ctx sdk.Context, plan types.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		return vm, nil
 	})
 	require.NotPanics(t, func() {
@@ -182,12 +186,14 @@ func TestCanClear(t *testing.T) {
 
 func TestCantApplySameUpgradeTwice(t *testing.T) {
 	s := setupTest(10, map[int64]bool{})
+	testname := "TestCantApplySameUpgradeTwice"
+
 	height := s.ctx.BlockHeader().Height + 1
-	err := s.handler(s.ctx, &types.SoftwareUpgradeProposal{Title: "prop", Plan: types.Plan{Name: "test", Height: height}})
+	err := s.handler(s.ctx, &types.SoftwareUpgradeProposal{Title: "prop", Plan: types.Plan{Name: testname, Height: height}})
 	require.NoError(t, err)
-	VerifyDoUpgrade(t)
+	VerifyDoUpgrade(t, testname)
 	t.Log("Verify an executed upgrade \"test\" can't be rescheduled")
-	err = s.handler(s.ctx, &types.SoftwareUpgradeProposal{Title: "prop", Plan: types.Plan{Name: "test", Height: height}})
+	err = s.handler(s.ctx, &types.SoftwareUpgradeProposal{Title: "prop", Plan: types.Plan{Name: testname, Height: height}})
 	require.Error(t, err)
 	require.True(t, errors.Is(sdkerrors.ErrInvalidRequest, err), err)
 }
@@ -203,14 +209,16 @@ func TestNoSpuriousUpgrades(t *testing.T) {
 
 func TestPlanStringer(t *testing.T) {
 	require.Equal(t, `Upgrade Plan
- Name: test
- height: 100
- Info: .`, types.Plan{Name: "test", Height: 100, Info: ""}.String())
+  Name: test
+  height: 100
+  download at: 10
+  Info: .`, types.Plan{Name: "test", Height: 100, Info: "", ToDownload: 10}.String())
 
 	require.Equal(t, fmt.Sprintf(`Upgrade Plan
- Name: test
- height: 100
- Info: .`), types.Plan{Name: "test", Height: 100, Info: ""}.String())
+  Name: test
+  height: 100
+  download at: 100
+  Info: .`), types.Plan{Name: "test", Height: 100, Info: "", ToDownload: 100}.String())
 }
 
 func VerifyNotDone(t *testing.T, newCtx sdk.Context, name string) {
@@ -362,17 +370,18 @@ func TestUpgradeSkippingOnlyTwo(t *testing.T) {
 
 func TestUpgradeWithoutSkip(t *testing.T) {
 	s := setupTest(10, map[int64]bool{})
+	testname := "TestUpgradeWithoutSkip"
 	newCtx := s.ctx.WithBlockHeight(s.ctx.BlockHeight() + 1).WithBlockTime(time.Now())
 	req := abci.RequestBeginBlock{Header: newCtx.BlockHeader()}
-	err := s.handler(s.ctx, &types.SoftwareUpgradeProposal{Title: "prop", Plan: types.Plan{Name: "test", Height: s.ctx.BlockHeight() + 1}})
+	err := s.handler(s.ctx, &types.SoftwareUpgradeProposal{Title: "prop", Plan: types.Plan{Name: testname, Height: s.ctx.BlockHeight() + 1}})
 	require.NoError(t, err)
 	t.Log("Verify if upgrade happens without skip upgrade")
 	require.Panics(t, func() {
 		s.module.BeginBlock(newCtx, req)
 	})
 
-	VerifyDoUpgrade(t)
-	VerifyDone(t, s.ctx, "test")
+	VerifyDoUpgrade(t, testname)
+	VerifyDone(t, s.ctx, testname)
 }
 
 func TestDumpUpgradeInfoToFile(t *testing.T) {
@@ -444,7 +453,7 @@ func TestBinaryVersion(t *testing.T) {
 		{
 			"test panic: upgrade needed",
 			func() (sdk.Context, abci.RequestBeginBlock) {
-				err := s.handler(s.ctx, &types.SoftwareUpgradeProposal{Title: "Upgrade test", Plan: types.Plan{Name: "test2", Height: 13}})
+				err := s.handler(s.ctx, &types.SoftwareUpgradeProposal{Title: "Upgrade test", Plan: types.Plan{Name: "upgrade needed", Height: 13}})
 				require.NoError(t, err)
 
 				newCtx := s.ctx.WithBlockHeight(13)
@@ -458,6 +467,7 @@ func TestBinaryVersion(t *testing.T) {
 	for _, tc := range testCases {
 		ctx, req := tc.preRun()
 		if tc.expectPanic {
+			t.Log(tc.name)
 			require.Panics(t, func() {
 				s.module.BeginBlock(ctx, req)
 			})

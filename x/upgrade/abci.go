@@ -131,7 +131,8 @@ func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
 			// We don't have an upgrade handler for this upgrade name, meaning this software is out of date so shutdown
 			ctx.Logger().Error(upgradeMsg)
 
-			os.Exit(1)
+			//os.Exit(1)
+			panic(1)
 		}
 
 		// We have an upgrade handler for this upgrade name, so apply the upgrade
