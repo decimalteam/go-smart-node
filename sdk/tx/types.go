@@ -2,6 +2,7 @@ package tx
 
 import (
 	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	multisigTypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	nftTypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
@@ -23,6 +24,10 @@ type (
 	MsgUpdateReserveNFT = nftTypes.MsgUpdateReserveNFT
 	MsgTransferNFT      = nftTypes.MsgTransferNFT
 	MsgEditNFTMetadata  = nftTypes.MsgEditNFTMetadata
+
+	MsgCreateWallet      = multisigTypes.MsgCreateWallet
+	MsgCreateTransaction = multisigTypes.MsgCreateTransaction
+	MsgSignTransaction   = multisigTypes.MsgSignTransaction
 )
 
 var (
@@ -41,4 +46,8 @@ var (
 	NewMsgUpdateReserveNFT = nftTypes.NewMsgUpdateReserveNFT
 	NewMsgTransferNFT      = nftTypes.NewMsgTransferNFT
 	NewMsgEditNFTMetadata  = nftTypes.NewMsgEditNFTMetadata
+
+	NewMsgCreateWallet      = multisigTypes.NewMsgCreateWallet
+	NewMsgCreateTransaction = multisigTypes.NewMsgCreateTransaction
+	NewMsgSignTransaction   = multisigTypes.NewMsgSignTransaction
 )

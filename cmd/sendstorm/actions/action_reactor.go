@@ -41,6 +41,9 @@ func (ar *ActionReactor) Add(generatorName string, weight int64) error {
 		wag.AG = NewEditNFTGenerator(1, 100)
 	case "BurnNFT":
 		wag.AG = NewBurnNFTGenerator()
+	// multisig
+	case "CreateMultisigWallet":
+		wag.AG = NewCreateMultisigWalletGenerator()
 	}
 	if wag == nil {
 		return fmt.Errorf("%s: unknown generator name", generatorName)
