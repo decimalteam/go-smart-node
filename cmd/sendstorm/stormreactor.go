@@ -7,17 +7,19 @@ import (
 	"strconv"
 	"strings"
 
+	stormActions "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/actions"
+	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	dscWallet "bitbucket.org/decimalteam/go-smart-node/sdk/wallet"
 	"github.com/spf13/pflag"
 )
 
 type stormReactor struct {
-	accounts      []*StormAccount
+	accounts      []*stormTypes.StormAccount
 	faucetAccount *dscWallet.Account
 	api           *dscApi.API
-	actionReactor *ActionReactor
-	limiter       *TPSLimiter
+	actionReactor *stormActions.ActionReactor
+	limiter       *stormActions.TPSLimiter
 }
 
 func (reactor *stormReactor) initApi(flags *pflag.FlagSet) error {
@@ -74,9 +76,9 @@ func (reactor *stormReactor) initAccounts(flags *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
-	reactor.accounts = make([]*StormAccount, 0)
+	reactor.accounts = make([]*stormTypes.StormAccount, 0)
 	for _, mn := range mnemonics {
-		acc, err := NewStormAccount(mn, reactor.api)
+		acc, err := stormTypes.NewStormAccount(mn, reactor.api)
 		if err != nil {
 			return err
 		}
@@ -109,7 +111,7 @@ func (reactor *stormReactor) initActionReactor(flags *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
-	reactor.actionReactor = &ActionReactor{}
+	reactor.actionReactor = &stormActions.ActionReactor{}
 	for _, act := range actions {
 		ss := strings.Split(act, "=")
 		if len(ss) != 2 {
@@ -133,13 +135,13 @@ func (reactor *stormReactor) initLimiter(flags *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
-	reactor.limiter = NewTPSLimiter(limit)
+	reactor.limiter = stormActions.NewTPSLimiter(limit)
 	return nil
 }
 
 func (reactor *stormReactor) updateGeneratorsInfo() {
 	// update info
-	ui := UpdateInfo{}
+	ui := stormActions.UpdateInfo{}
 	coins, err := reactor.api.Coins()
 	if err != nil {
 		fmt.Println(err)
@@ -152,5 +154,28 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 	for _, acc := range reactor.accounts {
 		ui.Addresses = append(ui.Addresses, acc.Address())
 	}
+	// nft
+	nfts := make([]dscApi.NFT, 0)
+	denoms, err := reactor.api.NFTCollections()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	for _, denom := range denoms {
+		nftIds, err := reactor.api.NFTsByDenom(denom)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		for _, id := range nftIds {
+			nft, err := reactor.api.NFT(denom, id)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			nfts = append(nfts, *nft)
+		}
+	}
+	ui.NFTs = nfts
 	reactor.actionReactor.Update(ui)
 }

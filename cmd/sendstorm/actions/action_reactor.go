@@ -1,4 +1,4 @@
-package main
+package actions
 
 import (
 	"fmt"
@@ -19,6 +19,7 @@ type WeightedAG struct {
 func (ar *ActionReactor) Add(generatorName string, weight int64) error {
 	var wag *WeightedAG = nil
 	switch generatorName {
+	//coin
 	case "CreateCoin":
 		{
 			wag = &WeightedAG{
@@ -61,10 +62,25 @@ func (ar *ActionReactor) Add(generatorName string, weight int64) error {
 				Weight: weight,
 			}
 		}
+	// nft
 	case "MintNFT":
 		{
 			wag = &WeightedAG{
 				AG:     NewMintNFTGenerator(1, 100, 100, 1000, 1, 10),
+				Weight: weight,
+			}
+		}
+	case "TransferNFT":
+		{
+			wag = &WeightedAG{
+				AG:     NewTransferNFTGenerator(),
+				Weight: weight,
+			}
+		}
+	case "EditNFT":
+		{
+			wag = &WeightedAG{
+				AG:     NewEditNFTGenerator(1, 100),
 				Weight: weight,
 			}
 		}

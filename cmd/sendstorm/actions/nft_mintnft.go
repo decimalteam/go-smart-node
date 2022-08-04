@@ -1,11 +1,13 @@
-package main
+package actions
 
 import (
 	"fmt"
 	"math/rand"
 	"time"
 
+	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
+
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -51,23 +53,23 @@ func (gg *MintNFTGenerator) Update(ui UpdateInfo) {
 
 func (gg *MintNFTGenerator) Generate() Action {
 	return &MintNFTAction{
-		recipient: randomChoice(gg.rnd, gg.knownAddresses),
-		id:        randomString(gg.rnd, randomRange(gg.rnd, gg.textLengthBottom, gg.textLengthUp), charsAll),
-		denom:     randomString(gg.rnd, randomRange(gg.rnd, gg.textLengthBottom, gg.textLengthUp), charsAll),
-		tokenURI:  randomString(gg.rnd, randomRange(gg.rnd, gg.textLengthBottom, gg.textLengthUp), charsAll),
-		quantity:  sdk.NewInt(randomRange(gg.rnd, gg.quantityBottom, gg.quantityUp)),
-		reserve:   helpers.EtherToWei(sdk.NewInt(randomRange(gg.rnd, gg.reserveBottom, gg.reserveUp))),
+		recipient: RandomChoice(gg.rnd, gg.knownAddresses),
+		id:        RandomString(gg.rnd, RandomRange(gg.rnd, gg.textLengthBottom, gg.textLengthUp), charsAll),
+		denom:     RandomString(gg.rnd, RandomRange(gg.rnd, gg.textLengthBottom, gg.textLengthUp), charsAll),
+		tokenURI:  RandomString(gg.rnd, RandomRange(gg.rnd, gg.textLengthBottom, gg.textLengthUp), charsAll),
+		quantity:  sdk.NewInt(RandomRange(gg.rnd, gg.quantityBottom, gg.quantityUp)),
+		reserve:   helpers.EtherToWei(sdk.NewInt(RandomRange(gg.rnd, gg.reserveBottom, gg.reserveUp))),
 		allowMint: gg.rnd.Int31n(2) == 0,
 	}
 }
 
-func (aa *MintNFTAction) ChooseAccounts(saList []*StormAccount) []*StormAccount {
-	var res []*StormAccount
+func (aa *MintNFTAction) ChooseAccounts(saList []*stormTypes.StormAccount) []*stormTypes.StormAccount {
+	var res []*stormTypes.StormAccount
 	for i := range saList {
 		if saList[i].IsDirty() {
 			continue
 		}
-		if saList[i].BalanceForCoin(saList[i].feeDenom).LT(aa.reserve) {
+		if saList[i].BalanceForCoin(saList[i].FeeDenom()).LT(aa.reserve) {
 			continue
 		}
 		res = append(res, saList[i])
@@ -75,7 +77,7 @@ func (aa *MintNFTAction) ChooseAccounts(saList []*StormAccount) []*StormAccount 
 	return res
 }
 
-func (aa *MintNFTAction) GenerateTx(sa *StormAccount) ([]byte, error) {
+func (aa *MintNFTAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, error) {
 	sender, err := sdk.AccAddressFromBech32(sa.Address())
 	if err != nil {
 		return nil, err

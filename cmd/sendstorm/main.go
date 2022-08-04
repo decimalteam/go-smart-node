@@ -130,7 +130,6 @@ func cmdFaucet() *cobra.Command {
 				if err != nil {
 					fmt.Println(err)
 				}
-				fmt.Println(acc.currentBalance)
 				fmt.Printf("account: (%d) %s, balance: %s\n", i, acc.Address(), acc.BalanceForCoin(reactor.api.BaseCoin()))
 				if onlyEmpty && acc.BalanceForCoin(reactor.api.BaseCoin()).GT(sdk.ZeroInt()) {
 					continue
@@ -138,7 +137,7 @@ func cmdFaucet() *cobra.Command {
 				msg := dscTx.NewMsgSendCoin(
 					reactor.faucetAccount.SdkAddress(),
 					sdk.NewCoin(reactor.api.BaseCoin(), helpers.EtherToWei(sdk.NewInt(amountToSend))),
-					acc.account.SdkAddress(),
+					acc.Account().SdkAddress(),
 				)
 				tx, err := dscTx.BuildTransaction(reactor.faucetAccount, []sdk.Msg{msg}, "", reactor.api.BaseCoin())
 				if err != nil {

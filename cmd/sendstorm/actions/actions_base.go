@@ -1,10 +1,11 @@
-package main
+package actions
 
 import (
 	"fmt"
 	"math/rand"
 	"time"
 
+	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 )
 
@@ -17,9 +18,9 @@ type ActionGenerator interface {
 type Action interface {
 	// returns list of accounts than can make transaction
 	// need to decrease count of invalid actions, required ownership of coin/nft, coin balance etc...
-	ChooseAccounts(saList []*StormAccount) []*StormAccount
+	ChooseAccounts(saList []*stormTypes.StormAccount) []*stormTypes.StormAccount
 	// generate signed transaction data
-	GenerateTx(sa *StormAccount) ([]byte, error)
+	GenerateTx(sa *stormTypes.StormAccount) ([]byte, error)
 	// for debug puprposes
 	String() string
 }
@@ -27,15 +28,15 @@ type Action interface {
 // EmptyAction is used if generator can't create valid action
 type EmptyAction struct{}
 
-func (ea *EmptyAction) ChooseAccounts(saList []*StormAccount) []*StormAccount {
-	return []*StormAccount{}
+func (ea *EmptyAction) ChooseAccounts(saList []*stormTypes.StormAccount) []*stormTypes.StormAccount {
+	return []*stormTypes.StormAccount{}
 }
 
-func (ea *EmptyAction) CanPerform(sa *StormAccount) bool {
+func (ea *EmptyAction) CanPerform(sa *stormTypes.StormAccount) bool {
 	return false
 }
 
-func (ea *EmptyAction) GenerateTx(sa *StormAccount) ([]byte, error) {
+func (ea *EmptyAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, error) {
 	return nil, fmt.Errorf("empty action")
 }
 
@@ -48,6 +49,7 @@ type UpdateInfo struct {
 	Coins     []string
 	Addresses []string
 	FullCoins []dscApi.Coin
+	NFTs      []dscApi.NFT
 }
 
 // TPS (transactions per second) limiter
@@ -83,12 +85,12 @@ const charsAll = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
 const charsAbc = "abcdefghijklmnopqrstuvwxyz"
 
 // returns random number in range [low,up)
-func randomRange(rnd *rand.Rand, bottom, up int64) int64 {
+func RandomRange(rnd *rand.Rand, bottom, up int64) int64 {
 	return rnd.Int63n(up-bottom) + bottom
 }
 
 // returns random string length n
-func randomString(rnd *rand.Rand, n int64, source string) string {
+func RandomString(rnd *rand.Rand, n int64, source string) string {
 	var letters = []rune(source)
 	s := make([]rune, n)
 	for i := range s {
@@ -98,6 +100,30 @@ func randomString(rnd *rand.Rand, n int64, source string) string {
 }
 
 // TODO: need generics
-func randomChoice(rnd *rand.Rand, list []string) string {
+func RandomChoice(rnd *rand.Rand, list []string) string {
 	return list[rnd.Intn(len(list))]
+}
+
+// Return random sublist (copy)
+func RandomSublist(rnd *rand.Rand, list []uint64) []uint64 {
+	if len(list) == 0 {
+		return []uint64{}
+	}
+	if len(list) == 1 {
+		return []uint64{list[0]}
+	}
+	// random indexes to choose
+	ids := make([]int, len(list))
+	for i := range list {
+		ids[i] = i
+	}
+	rnd.Shuffle(len(ids), func(i, j int) {
+		ids[i], ids[j] = ids[j], ids[i]
+	})
+	n := int(RandomRange(rnd, 1, int64(len(list)+1)))
+	result := make([]uint64, n)
+	for i := 0; i < n; i++ {
+		result[i] = list[ids[i]]
+	}
+	return result
 }

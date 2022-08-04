@@ -1,10 +1,11 @@
-package main
+package actions
 
 import (
 	"fmt"
 	"math/rand"
 	"time"
 
+	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -40,14 +41,14 @@ func (asg *SendCoinGenerator) Update(ui UpdateInfo) {
 func (asg *SendCoinGenerator) Generate() Action {
 	return &SendCoinAction{
 		coin: sdk.NewCoin(
-			randomChoice(asg.rnd, asg.knownCoins),
-			helpers.FinneyToWei(sdk.NewInt(randomRange(asg.rnd, asg.bottomRange, asg.upperRange))),
+			RandomChoice(asg.rnd, asg.knownCoins),
+			helpers.FinneyToWei(sdk.NewInt(RandomRange(asg.rnd, asg.bottomRange, asg.upperRange))),
 		),
-		address: randomChoice(asg.rnd, asg.knownAddresses)}
+		address: RandomChoice(asg.rnd, asg.knownAddresses)}
 }
 
-func (as *SendCoinAction) ChooseAccounts(saList []*StormAccount) []*StormAccount {
-	var res []*StormAccount
+func (as *SendCoinAction) ChooseAccounts(saList []*stormTypes.StormAccount) []*stormTypes.StormAccount {
+	var res []*stormTypes.StormAccount
 	for i := range saList {
 		if saList[i].IsDirty() {
 			continue
@@ -63,7 +64,7 @@ func (as *SendCoinAction) ChooseAccounts(saList []*StormAccount) []*StormAccount
 	return res
 }
 
-func (as *SendCoinAction) GenerateTx(sa *StormAccount) ([]byte, error) {
+func (as *SendCoinAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, error) {
 	sender, err := sdk.AccAddressFromBech32(sa.Address())
 	if err != nil {
 		return nil, err

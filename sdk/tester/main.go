@@ -105,4 +105,28 @@ func main() {
 	} else {
 		fmt.Printf("NFT collections:\n%s\n", strings.Join(nftDenoms, "\n"))
 	}
+
+	// nft
+	nfts := make([]dscApi.NFT, 0)
+	denoms, err := api.NFTCollections()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	for _, denom := range denoms {
+		nftIds, err := api.NFTsByDenom(denom)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		for _, id := range nftIds {
+			nft, err := api.NFT(denom, id)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			nfts = append(nfts, *nft)
+		}
+	}
+	fmt.Printf("---\n%v\n---\n", nfts)
 }
