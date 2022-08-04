@@ -10,10 +10,12 @@ import (
 
 func (p Plan) String() string {
 	due := p.DueAt()
+	downloadedAt := p.DownloadAt()
 	return fmt.Sprintf(`Upgrade Plan
   Name: %s
   %s
-  Info: %s.`, p.Name, due, p.Info)
+  %s
+  Info: %s.`, p.Name, due, downloadedAt, p.Info)
 }
 
 // ValidateBasic does basic validation of a Plan
@@ -45,6 +47,11 @@ func (p Plan) ShouldExecute(ctx sdk.Context) bool {
 // DueAt is a string representation of when this plan is due to be executed
 func (p Plan) DueAt() string {
 	return fmt.Sprintf("height: %d", p.Height)
+}
+
+// DownloadAt is a string representation of when this plan binary file is downloaded
+func (p Plan) DownloadAt() string {
+	return fmt.Sprintf("download at: %d", p.ToDownload)
 }
 
 func (p Plan) Mapping() map[string][]string {
