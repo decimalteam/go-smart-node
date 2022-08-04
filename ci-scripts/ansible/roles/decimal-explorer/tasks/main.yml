@@ -1,7 +1,7 @@
 ---
 - name: Include tasks for explorer worker service
   include: explorer-worker.yml
-  when: ansible_hostname.find('explorer-node') != -1
+#  when: ansible_hostname.find('explorer-node') != -1
 
 - name: Include tasks for explorer master DB
   include: explorer-masterdb.yml
