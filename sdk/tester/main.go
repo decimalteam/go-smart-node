@@ -106,7 +106,7 @@ func main() {
 		fmt.Printf("NFT collections:\n%s\n", strings.Join(nftDenoms, "\n"))
 	}
 
-	// nft
+	// all nft
 	nfts := make([]dscApi.NFT, 0)
 	denoms, err := api.NFTCollections()
 	if err != nil {
@@ -129,4 +129,21 @@ func main() {
 		}
 	}
 	fmt.Printf("---\n%v\n---\n", nfts)
+
+	// all multisig wallets by owner
+	owners := []string{
+		"dx1s4c5cak2u7l3ddu67jana9vtfwvj8ezdjdv7j4",
+		"dx1fzulqsza5nqva7jesfjw7a3a2xwfq9kp24pm53",
+		"dx1h5h43cmz892zaqfazxphnacgktzga9elmf0y27",
+		"dx1yr7z7ts7v5gh688ay6pe0d384dm0y2hrh4madg",
+		"dx10nd8yly2kzmezhlnka5s9et7hyvkvggcrl07rs",
+	}
+	for _, owner := range owners {
+		wallets, err := api.MultisigWalletsByOwner(owner)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Printf("%v\n", wallets)
+		}
+	}
 }
