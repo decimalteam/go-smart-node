@@ -2,7 +2,7 @@ package types
 
 const (
 	// ModuleName is the name of the module
-	ModuleName = "fee"
+	ModuleName = "basedenomfee"
 
 	// StoreKey is the default store key for fee
 	StoreKey = ModuleName
