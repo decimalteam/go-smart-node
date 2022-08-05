@@ -3,9 +3,12 @@ package ante
 import (
 	"fmt"
 
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
+	multisigTypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	nftTypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -16,6 +19,7 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec, params feeTy
 	commissionInBaseCoin = commissionInBaseCoin.AddRaw(txBytesLen * int64(params.ByteFee))
 	for _, msg := range msgs {
 		switch m := msg.(type) {
+		//coin
 		case *coinTypes.MsgCreateCoin:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(int64(params.CoinCreate))
 		case *coinTypes.MsgSendCoin:
@@ -32,6 +36,16 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec, params feeTy
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *coinTypes.MsgUpdateCoin:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		// multisig
+		case *multisigTypes.MsgCreateWallet:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(int64(params.MultisigCreateWallet))
+		case *multisigTypes.MsgCreateTransaction:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(int64(params.MultisigCreateTransaction))
+		case *multisigTypes.MsgSignTransaction:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(int64(params.MultisigSignTransaction))
+		case *multisigTypes.MsgActualizeLegacyAddress:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		// nft
 		case *nftTypes.MsgMintNFT:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *nftTypes.MsgBurnNFT:
@@ -42,7 +56,15 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec, params feeTy
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *nftTypes.MsgEditNFTMetadata:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
-
+		//gov
+		case *govtypes.MsgSubmitProposal:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *govtypes.MsgDeposit:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *govtypes.MsgVote:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *govtypes.MsgVoteWeighted:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		default:
 			return sdk.NewInt(0), ErrUnknownTransaction(fmt.Sprintf("%T", msg))
 		}

@@ -50,7 +50,7 @@ func (AppModuleBasic) Name() string {
 
 // ConsensusVersion returns the consensus state-breaking version for the module.
 func (AppModuleBasic) ConsensusVersion() uint64 {
-	return 2
+	return 1
 }
 
 // RegisterLegacyAminoCodec performs a no-op as the module doesn't support Amino encoding.

@@ -4,7 +4,7 @@
 
 - name: Drop schema "public" with cascade
   postgresql_schema:
-    db: orderer
+    db: ordererdev
     name: public
     state: absent
     cascade_drop: true
@@ -13,9 +13,9 @@
 
 - name: Create schema "public"
   postgresql_schema:
-    db: orderer
+    db: ordererdev
     name: public
-    owner: orderer
+    owner: ordererdev
     state: present
   become: true
   become_user: postgres
