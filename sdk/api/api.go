@@ -29,7 +29,7 @@ type API struct {
 }
 
 type ConnectionOptions struct {
-	EndpointHost   string // hostname or IP as http://<...>
+	EndpointHost   string // hostname or IP without any protocol description like "http://"
 	TendermintPort int    // tendermint RPC port, default 26657
 	RestPort       int    // REST server port, default 1317
 	GRPCPort       int    // gRPC port, default 9090
@@ -75,16 +75,16 @@ func NewAPI(opts ConnectionOptions) (*API, error) {
 	// rpc client
 	api.rpc = resty.New().
 		SetTimeout(time.Duration(opts.Timeout) * time.Second).
-		SetBaseURL(fmt.Sprintf("%s:%d", opts.EndpointHost, opts.TendermintPort))
+		SetBaseURL(fmt.Sprintf("http://%s:%d", opts.EndpointHost, opts.TendermintPort))
 	// rest client
 	api.rest = resty.New().
 		SetTimeout(time.Duration(opts.Timeout) * time.Second).
-		SetBaseURL(fmt.Sprintf("%s:%d", opts.EndpointHost, opts.RestPort))
+		SetBaseURL(fmt.Sprintf("http://%s:%d", opts.EndpointHost, opts.RestPort))
 	// gRPC client
 	if opts.UseGRPC {
 		api.useGRPC = true
 		api.grpcClient, err = grpc.Dial(
-			"127.0.0.1:9090",    // your gRPC server address.
+			fmt.Sprintf("%s:%d", opts.EndpointHost, opts.GRPCPort), // your gRPC server address.
 			grpc.WithInsecure(), // The Cosmos SDK doesn't support any transport security mechanism.
 		)
 		if err != nil {
@@ -99,6 +99,10 @@ func NewAPI(opts ConnectionOptions) (*API, error) {
 	// init global cosmos sdk prefixes
 	initConfig()
 	return api, nil
+}
+
+func (api *API) Close() error {
+	return api.grpcClient.Close()
 }
 
 // ChainID() returns blockchain network chain id
@@ -118,15 +122,7 @@ func (api *API) BaseCoin() string {
 
 // GetParameters() get blockchain parameters
 func (api *API) GetParameters() error {
-	if api.useGRPC {
-		return api.grpcGetParameters()
-	} else {
-		return api.restGetParameters()
-	}
-}
-
-func (api *API) grpcGetParameters() error {
-	return nil
+	return api.restGetParameters()
 }
 
 func (api *API) restGetParameters() error {

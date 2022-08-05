@@ -25,10 +25,14 @@ var mult = sdk.NewInt(1000000000000000000)
 
 // TODO: split and document
 func main() {
-	api, _ := dscApi.NewAPI(dscApi.ConnectionOptions{EndpointHost: "http://127.0.0.1", Timeout: 40})
-	err := api.GetParameters()
+	api, err := dscApi.NewAPI(dscApi.ConnectionOptions{EndpointHost: "127.0.0.1", Timeout: 40, UseGRPC: true})
 	if err != nil {
-		fmt.Printf("get ChainID error: %v\n", err)
+		fmt.Printf("connect error: %v\n", err)
+		return
+	}
+	err = api.GetParameters()
+	if err != nil {
+		fmt.Printf("GetParameters error: %v\n", err)
 		return
 	}
 	chainID := api.ChainID()
@@ -41,6 +45,7 @@ func main() {
 		}
 		fmt.Printf("Address=%s\n", formatAsJSON(res))
 	}
+	fmt.Println("start coins")
 	coins, err := api.Coins()
 	if err != nil {
 		fmt.Printf("api.Coins() error: %v\n", err)
