@@ -18,6 +18,12 @@
     state: directory
     recurse: true
 
+- name: Copy app.toml config
+  shell: 'cp -b -f {{ decimal_keys }}/app.toml {{ decimal_data }}/daemon/config/app.toml'
+
+- name: Copy config.toml config
+  shell: 'cp -b -f {{ decimal_keys }}/config.toml {{ decimal_data }}/daemon/config/config.toml'
+
 - name: Copy node key
   shell: 'cp -b -f {{ decimal_keys }}/node_key.json {{ decimal_data }}/daemon/config/node_key.json'
 
