@@ -67,15 +67,31 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) SavePrice(
 	ctx sdk.Context,
-	price float64,
+	price sdk.Dec,
 ) error {
-	fmt.Println(price)
-
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetBaseDenomPriceKey()
+	value, err := price.Marshal()
+	if err != nil {
+		return err
+	}
+	store.Set(key, value)
 	return nil
 }
 
 func (k Keeper) GetPrice(
 	ctx sdk.Context,
-) sdk.Dec {
-	return sdk.OneDec()
+) (sdk.Dec, error) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetBaseDenomPriceKey()
+	value := store.Get(key)
+	if len(value) == 0 {
+		return sdk.ZeroDec(), fmt.Errorf("price is not found in the key-value store")
+	}
+	var price sdk.Dec
+	err := price.Unmarshal(value)
+	if err != nil {
+		return sdk.ZeroDec(), err
+	}
+	return price, nil
 }

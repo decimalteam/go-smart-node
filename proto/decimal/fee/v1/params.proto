@@ -105,4 +105,9 @@ message Params {
     (gogoproto.jsontag) = "validator_set_offline",
     (gogoproto.moretags) = "yaml:\"validator_set_offline\""    
   ];
+
+  string oracleAddress = 21 [
+    (gogoproto.jsontag) = "oracle_address",
+    (gogoproto.moretags) = "yaml:\"oracle_address\""   
+  ];
 }

@@ -5,6 +5,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
@@ -35,6 +36,8 @@ var (
 	PSKeyValidatorUnbond           = []byte("ValidatorUnbond")
 	PSKeyValidatorSetOnline        = []byte("ValidatorSetOnline")
 	PSKeyValidatorSetOffline       = []byte("ValidatorSetOffline")
+	//
+	PSKeyOracleAddress = []byte("OracleAddress")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -72,6 +75,9 @@ func DefaultParams() Params {
 		ValidatorUnbond:           200,
 		ValidatorSetOnline:        100,
 		ValidatorSetOffline:       100,
+		// oracle
+		// NOTE: default address is []byte{0}
+		OracleAddress: "dx1qqjrdrw8",
 	}
 }
 
@@ -103,11 +109,16 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(PSKeyValidatorUnbond, &p.ValidatorUnbond, validateUint64),
 		paramtypes.NewParamSetPair(PSKeyValidatorSetOnline, &p.ValidatorSetOnline, validateUint64),
 		paramtypes.NewParamSetPair(PSKeyValidatorSetOffline, &p.ValidatorSetOffline, validateUint64),
+		// oracle
+		paramtypes.NewParamSetPair(PSKeyOracleAddress, &p.OracleAddress, validateAddress),
 	}
 }
 
 // Validate validates the set of params.
 func (p *Params) Validate() error {
+	if _, err := sdk.AccAddressFromBech32(p.OracleAddress); err != nil {
+		return err
+	}
 	// all parameters are uint64, i.e. >= 0
 	// and currently there is no limits
 	return nil
@@ -123,6 +134,17 @@ func validateUint64(i interface{}) error {
 	_, ok := i.(uint64)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	return nil
+}
+
+func validateAddress(i interface{}) error {
+	addr, ok := i.(string)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	if _, err := sdk.AccAddressFromBech32(addr); err != nil {
+		return fmt.Errorf("invalid address '%s': %s", addr, err.Error())
 	}
 	return nil
 }

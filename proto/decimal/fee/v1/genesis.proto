@@ -15,4 +15,12 @@ message GenesisState {
     (gogoproto.moretags) = "yaml:\"params\"",
     (gogoproto.nullable) = false
   ];
+
+  // initial price
+  string intialPrice = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.jsontag) = "initial_price",
+    (gogoproto.moretags) = "yaml:\"initial_price\"",
+    (gogoproto.nullable) = false
+  ];
 }

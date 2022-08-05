@@ -10,12 +10,21 @@ service Msg {
 }
 
 message MsgSaveBaseDenomPrice {
-  string baseDenom = 1;
-  float price = 2 [
-    (gogoproto.customtype) = "float64",
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender",
+    (gogoproto.moretags) = "yaml:\"sender\""  
+  ];  
+  string baseDenom = 2 [
+    (gogoproto.jsontag) = "base_denom",
+    (gogoproto.moretags) = "yaml:\"base_denom\"" 
+  ];
+  string price = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.jsontag) = "price",
+    (gogoproto.moretags) = "yaml:\"price\"",      
     (gogoproto.nullable) = false
   ];
-  string sender = 3;
+
 }
 
 message MsgSaveBaseDenomPriceResponse{}

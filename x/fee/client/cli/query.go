@@ -1,11 +1,12 @@
 package cli
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	"context"
 	"fmt"
 	"strings"
+
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 
 	"github.com/spf13/cobra"
 
@@ -14,17 +15,17 @@ import (
 
 // GetQueryCmd returns the cli query commands for this module
 func GetQueryCmd() *cobra.Command {
-	nftQueryCmd := &cobra.Command{
+	queryCmd := &cobra.Command{
 		Use:   types.ModuleName,
 		Short: "Querying commands for the Fee module",
 		RunE:  client.ValidateCmd,
 	}
 
-	nftQueryCmd.AddCommand(
+	queryCmd.AddCommand(
 		cmdQueryBaseDenomPrice(),
 	)
 
-	return nftQueryCmd
+	return queryCmd
 }
 
 // GetCmdQueryCollectionSupply queries the supply of a nft collection
@@ -33,10 +34,10 @@ func cmdQueryBaseDenomPrice() *cobra.Command {
 		Use:   "price",
 		Short: "base denom price from oracle",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Get the total count of NFTs that match a certain denomination.
+			fmt.Sprintf(`Get current denom price from oracle.
 
 Example:
-$ %s query %s supply crypto-kitties
+$ %s query %s price
 `, config.AppBinName, types.ModuleName,
 			),
 		),
@@ -49,9 +50,7 @@ $ %s query %s supply crypto-kitties
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			req := types.QueryBaseDenomPriceRequest{}
-
-			res, err := queryClient.QueryBaseDenomPrice(context.Background(), &req)
+			res, err := queryClient.QueryBaseDenomPrice(context.Background(), &types.QueryBaseDenomPriceRequest{})
 			if err != nil {
 				return err
 			}

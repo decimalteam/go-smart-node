@@ -1,8 +1,10 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	"context"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -13,6 +15,12 @@ func (k Keeper) QueryBaseDenomPrice(c context.Context, req *types.QueryBaseDenom
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
+	ctx := sdk.UnwrapSDKContext(c)
 
-	return &types.QueryBaseDenomPriceResponse{Price: 100.}, nil
+	price, err := k.GetPrice(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.QueryBaseDenomPriceResponse{Price: price}, nil
 }

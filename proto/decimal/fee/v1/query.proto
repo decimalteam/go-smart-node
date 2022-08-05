@@ -22,8 +22,10 @@ message QueryBaseDenomPriceRequest {
 }
 
 message QueryBaseDenomPriceResponse {
-  float price = 1 [
-    (gogoproto.customtype) = "float64",
-    (gogoproto.nullable) = false
+  string price = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.jsontag) = "price",
+    (gogoproto.moretags) = "yaml:\"price\"",      
+    (gogoproto.nullable) = false    
   ];
 }

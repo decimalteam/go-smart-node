@@ -96,9 +96,13 @@ func (AppModule) Name() string {
 	return types.ModuleName
 }
 
+func (am AppModule) NewHandler() sdk.Handler {
+	return NewHandler(&am.keeper)
+}
+
 // RegisterInvariants registers the fee module invariants
 func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
-	keeper.RegisterInvariants(ir, am.keeper)
+
 }
 
 // Route returns the module's message routing key.

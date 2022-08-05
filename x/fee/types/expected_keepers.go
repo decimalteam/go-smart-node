@@ -8,7 +8,7 @@ import (
 )
 
 type FeeKeeper interface {
-	GetPrice(ctx sdk.Context) sdk.Dec
+	GetPrice(ctx sdk.Context) (sdk.Dec, error)
 	GetModuleParams(ctx sdk.Context) Params
 }
 
