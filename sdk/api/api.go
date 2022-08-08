@@ -20,7 +20,6 @@ const queryLimit = 10
 // and makes broadcast of prepared transaction
 type API struct {
 	rpc        *resty.Client // this is interface
-	rest       *resty.Client
 	grpcClient *grpc.ClientConn
 
 	useGRPC bool
@@ -34,7 +33,6 @@ type API struct {
 type ConnectionOptions struct {
 	EndpointHost   string // hostname or IP without any protocol description like "http://"
 	TendermintPort int    // tendermint RPC port, default 26657
-	RestPort       int    // REST server port, default 1317
 	GRPCPort       int    // gRPC port, default 9090
 	Timeout        uint   // timeout in seconds
 	Debug          bool   //turn on debugging via stdlib log
@@ -66,9 +64,6 @@ func NewAPI(opts ConnectionOptions) (*API, error) {
 	if opts.TendermintPort == 0 {
 		opts.TendermintPort = 26657
 	}
-	if opts.RestPort == 0 {
-		opts.RestPort = 1317
-	}
 	if opts.GRPCPort == 0 {
 		opts.GRPCPort = 9090
 	}
@@ -79,10 +74,6 @@ func NewAPI(opts ConnectionOptions) (*API, error) {
 	api.rpc = resty.New().
 		SetTimeout(time.Duration(opts.Timeout) * time.Second).
 		SetBaseURL(fmt.Sprintf("http://%s:%d", opts.EndpointHost, opts.TendermintPort))
-	// rest client
-	api.rest = resty.New().
-		SetTimeout(time.Duration(opts.Timeout) * time.Second).
-		SetBaseURL(fmt.Sprintf("http://%s:%d", opts.EndpointHost, opts.RestPort))
 	// gRPC client
 	if opts.UseGRPC {
 		api.useGRPC = true
@@ -96,7 +87,6 @@ func NewAPI(opts ConnectionOptions) (*API, error) {
 	}
 	//
 	if opts.Debug {
-		api.rest = api.rest.SetDebug(true).SetLogger(log2log{})
 		api.rpc = api.rpc.SetDebug(true).SetLogger(log2log{})
 	}
 	// init global cosmos sdk prefixes

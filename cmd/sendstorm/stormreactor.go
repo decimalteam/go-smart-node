@@ -32,10 +32,6 @@ func (reactor *stormReactor) initApi(flags *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
-	rPort, err := flags.GetInt(restPort)
-	if err != nil {
-		return err
-	}
 	debug, err := flags.GetBool(turnOnDebug)
 	if err != nil {
 		return err
@@ -54,7 +50,6 @@ func (reactor *stormReactor) initApi(flags *pflag.FlagSet) error {
 	reactor.api, err = dscApi.NewAPI(dscApi.ConnectionOptions{
 		EndpointHost:   nodeHost,
 		TendermintPort: tPort,
-		RestPort:       rPort,
 		Timeout:        10,
 		Debug:          debug,
 		UseGRPC:        true,
