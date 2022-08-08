@@ -7,6 +7,7 @@ import (
 
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Generate some action with random parameters
@@ -32,10 +33,6 @@ func (ea *EmptyAction) ChooseAccounts(saList []*stormTypes.StormAccount) []*stor
 	return []*stormTypes.StormAccount{}
 }
 
-func (ea *EmptyAction) CanPerform(sa *stormTypes.StormAccount) bool {
-	return false
-}
-
 func (ea *EmptyAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, error) {
 	return nil, fmt.Errorf("empty action")
 }
@@ -46,10 +43,20 @@ func (ea *EmptyAction) String() string {
 
 // UpdateInfo contains all external updatable data for generators
 type UpdateInfo struct {
-	Coins     []string
-	Addresses []string
-	FullCoins []dscApi.Coin
-	NFTs      []dscApi.NFT
+	Coins                []string
+	Addresses            []string
+	FullCoins            []dscApi.Coin
+	NFTs                 []dscApi.NFT
+	NFTSubTokenReserves  map[NFTSubTokenKey]sdk.Int
+	MultisigWallets      []dscApi.MultisigWallet
+	MultisigTransactions []dscApi.MultisigTransaction
+	MultisigBalances     map[string]sdk.Coins
+}
+
+type NFTSubTokenKey struct {
+	Denom   string
+	TokenID string
+	ID      uint64
 }
 
 // TPS (transactions per second) limiter

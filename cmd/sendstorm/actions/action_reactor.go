@@ -41,11 +41,19 @@ func (ar *ActionReactor) Add(generatorName string, weight int64) error {
 		wag.AG = NewEditNFTGenerator(1, 100)
 	case "BurnNFT":
 		wag.AG = NewBurnNFTGenerator()
+	case "UpdateReserveNFT":
+		wag.AG = NewUpdateReserveNFTGenerator(1, 100)
 	// multisig
 	case "CreateMultisigWallet":
 		wag.AG = NewCreateMultisigWalletGenerator()
+	case "DepositMultisigWallet":
+		wag.AG = NewDepositMultisigWalletGenerator(100, 10000)
+	case "CreateMultisigTransaction":
+		wag.AG = NewCreateMultisigTransactionGenerator(100, 10000)
+	case "SignMultisigTransaction":
+		wag.AG = NewSignMultisigTransactionGenerator()
 	}
-	if wag == nil {
+	if wag.AG == nil {
 		return fmt.Errorf("%s: unknown generator name", generatorName)
 	}
 	ar.wsum += weight
@@ -68,6 +76,7 @@ func (ar *ActionReactor) Generate() Action {
 
 func (ar *ActionReactor) Update(ui UpdateInfo) {
 	for _, wag := range ar.wags {
+		fmt.Printf("update: %T\n", wag.AG)
 		wag.AG.Update(ui)
 	}
 }

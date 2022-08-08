@@ -1,59 +1,93 @@
 package api
 
 import (
-	"fmt"
-	"strconv"
+	"context"
+
+	multisigTypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
+	query "github.com/cosmos/cosmos-sdk/types/query"
 )
 
-type MultisigWallet struct {
-	Address      string
-	Owners       []string
-	Weights      []uint64
-	Threshold    uint64
-	LegacyOwners []string
-}
+type MultisigWallet = multisigTypes.Wallet
+type MultisigTransaction = multisigTypes.Transaction
 
 func (api *API) MultisigWalletsByOwner(owner string) ([]MultisigWallet, error) {
-	type responseType struct {
-		Result []struct {
-			Address      string   `json:"address"`
-			Owners       []string `json:"owners"`
-			Weights      []string `json:"weights"`
-			LegacyOwners []string `json:"legacy_owners"`
-			Threshold    string   `json:"threshold"`
-		} `json:"result"`
-		Height string `json:"height"`
+	client := multisigTypes.NewQueryClient(api.grpcClient)
+	wallets := make([]MultisigWallet, 0)
+	req := &multisigTypes.QueryWalletsRequest{
+		Owner:      owner,
+		Pagination: &query.PageRequest{Limit: queryLimit},
 	}
-	// request
-	res, err := api.rest.R().Get(fmt.Sprintf("/multisig/wallets/%s", owner))
-	if err = processConnectionError(res, err); err != nil {
-		return []MultisigWallet{}, err
-	}
-	// json decode
-	response := responseType{}
-	err = universalJSONDecode(res.Body(), &response, nil, func() (bool, bool) {
-		return response.Height > "", false
-	})
-	if err != nil {
-		return []MultisigWallet{}, err
-	}
-	// process result
-	var result = make([]MultisigWallet, len(response.Result))
-	for i, w := range response.Result {
-		result[i].Address = w.Address
-		result[i].Owners = w.Owners
-		result[i].Threshold, err = strconv.ParseUint(w.Threshold, 10, 64)
+	for {
+		res, err := client.Wallets(
+			context.Background(),
+			req,
+		)
 		if err != nil {
 			return []MultisigWallet{}, err
 		}
-		result[i].Weights = make([]uint64, len(w.Weights))
-		for j := range w.Weights {
-			result[i].Weights[j], err = strconv.ParseUint(w.Weights[j], 10, 64)
-			if err != nil {
-				return []MultisigWallet{}, err
-			}
+		if len(res.Wallets) == 0 {
+			break
 		}
+		wallets = append(wallets, res.Wallets...)
+		if len(res.Pagination.NextKey) == 0 {
+			break
+		}
+		req.Pagination.Key = res.Pagination.NextKey
 	}
-	return result, nil
+	return wallets, nil
+}
 
+func (api *API) MultisigWalletByAddress(address string) (MultisigWallet, error) {
+	client := multisigTypes.NewQueryClient(api.grpcClient)
+	res, err := client.Wallet(
+		context.Background(),
+		&multisigTypes.QueryWalletRequest{
+			Address: address,
+		},
+	)
+	if err != nil {
+		return MultisigWallet{}, err
+	}
+	return res.Wallet, nil
+}
+
+func (api *API) MultisigTransactionsByWallet(address string) ([]MultisigTransaction, error) {
+	client := multisigTypes.NewQueryClient(api.grpcClient)
+	txs := make([]MultisigTransaction, 0)
+	req := &multisigTypes.QueryTransactionsRequest{
+		Address:    address,
+		Pagination: &query.PageRequest{Limit: queryLimit},
+	}
+	for {
+		res, err := client.Transactions(
+			context.Background(),
+			req,
+		)
+		if err != nil {
+			return []MultisigTransaction{}, err
+		}
+		if len(res.Transactions) == 0 {
+			break
+		}
+		txs = append(txs, res.Transactions...)
+		if len(res.Pagination.NextKey) == 0 {
+			break
+		}
+		req.Pagination.Key = res.Pagination.NextKey
+	}
+	return txs, nil
+}
+
+func (api *API) MultisigTransactionsByID(txID string) (MultisigTransaction, error) {
+	client := multisigTypes.NewQueryClient(api.grpcClient)
+	res, err := client.Transaction(
+		context.Background(),
+		&multisigTypes.QueryTransactionRequest{
+			Id: txID,
+		},
+	)
+	if err != nil {
+		return MultisigTransaction{}, err
+	}
+	return res.Transaction, nil
 }

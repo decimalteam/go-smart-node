@@ -13,6 +13,9 @@ import (
 	config "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
 
+// this is default limit for queries with pagination
+const queryLimit = 10
+
 // API struct accumulates all queries to blockchain node
 // and makes broadcast of prepared transaction
 type API struct {

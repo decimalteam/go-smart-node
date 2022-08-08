@@ -16,15 +16,16 @@ import (
 type UpdateReserveNFTGenerator struct {
 	increaseBottom, increaseUp int64 // value in 10^18 (del)
 	knownNFT                   []dscApi.NFT
+	knownSubtokenReserves      map[NFTSubTokenKey]sdk.Int
 	rnd                        *rand.Rand
 }
 
 type UpdateReserveNFTAction struct {
-	creator  string // need for filter
-	id       string
-	denom    string
-	increase int64 // value in 10^18 (del)
-	subIds   []uint64
+	creator    string // need for filter
+	id         string
+	denom      string
+	newReserve sdk.Int
+	subIds     []uint64
 }
 
 func NewUpdateReserveNFTGenerator(increaseBottom, increaseUp int64) *UpdateReserveNFTGenerator {
@@ -37,36 +38,53 @@ func NewUpdateReserveNFTGenerator(increaseBottom, increaseUp int64) *UpdateReser
 
 func (gg *UpdateReserveNFTGenerator) Update(ui UpdateInfo) {
 	gg.knownNFT = ui.NFTs
+	gg.knownSubtokenReserves = ui.NFTSubTokenReserves
 }
 
 func (gg *UpdateReserveNFTGenerator) Generate() Action {
 	if len(gg.knownNFT) == 0 {
 		return &EmptyAction{}
 	}
-	i := int(RandomRange(gg.rnd, 0, int64(len(gg.knownNFT))))
-	nftToUpdateReserve := gg.knownNFT[i]
-	subTokenIDs := make([]uint64, 0)
-	for _, o := range nftToUpdateReserve.Owners {
-		if o.Address == nftToUpdateReserve.Creator {
-			subTokenIDs = append(subTokenIDs, o.SubTokenIDs...)
-			break
+	// 10 attepmts to get ntf to burn
+	for n := 0; n < 10; n++ {
+		i := int(RandomRange(gg.rnd, 0, int64(len(gg.knownNFT))))
+		nftToUpdateReserve := gg.knownNFT[i]
+		subTokenIDs := make([]uint64, 0)
+		for _, o := range nftToUpdateReserve.Owners {
+			if o.Address == nftToUpdateReserve.Creator {
+				subTokenIDs = append(subTokenIDs, o.SubTokenIDs...)
+				break
+			}
 		}
+		// creator not in owners
+		if len(subTokenIDs) == 0 {
+			continue
+		}
+		increase := RandomRange(gg.rnd, gg.increaseBottom, gg.increaseUp)
+		subToUpdate := RandomSublist(gg.rnd, subTokenIDs)
+		// get max reserve of subtokens
+		newReserve := sdk.ZeroInt()
+		for _, s := range subToUpdate {
+			key := NFTSubTokenKey{Denom: nftToUpdateReserve.Denom, TokenID: nftToUpdateReserve.ID, ID: s}
+			reserve, ok := gg.knownSubtokenReserves[key]
+			if !ok {
+				continue
+			}
+			if newReserve.LT(reserve) {
+				newReserve = reserve
+			}
+		}
+		newReserve = newReserve.Add(helpers.EtherToWei(sdk.NewInt(increase)))
 
+		return &UpdateReserveNFTAction{
+			creator:    nftToUpdateReserve.Creator,
+			id:         nftToUpdateReserve.ID,
+			denom:      nftToUpdateReserve.Denom,
+			subIds:     subToUpdate,
+			newReserve: newReserve,
+		}
 	}
-	// creator not in owners
-	if len(subTokenIDs) == 0 {
-		return &EmptyAction{}
-	}
-	increase := RandomRange(gg.rnd, gg.increaseBottom, gg.increaseUp)
-	subToUpdate := RandomSublist(gg.rnd, subTokenIDs)
-
-	return &UpdateReserveNFTAction{
-		creator:  nftToUpdateReserve.Creator,
-		id:       nftToUpdateReserve.ID,
-		denom:    nftToUpdateReserve.Denom,
-		subIds:   subToUpdate,
-		increase: increase,
-	}
+	return &EmptyAction{}
 }
 
 func (aa *UpdateReserveNFTAction) ChooseAccounts(saList []*stormTypes.StormAccount) []*stormTypes.StormAccount {
@@ -78,9 +96,10 @@ func (aa *UpdateReserveNFTAction) ChooseAccounts(saList []*stormTypes.StormAccou
 		if saList[i].Address() != aa.creator {
 			continue
 		}
-		if saList[i].BalanceForCoin(saList[i].FeeDenom()).LT(helpers.EtherToWei(sdk.NewInt(aa.increase))) {
-			continue
-		}
+		// TODO
+		//if saList[i].BalanceForCoin(saList[i].FeeDenom()).LT(helpers.EtherToWei(sdk.NewInt(aa.increase))) {
+		//	continue
+		//}
 		res = append(res, saList[i])
 	}
 	return res
@@ -97,7 +116,7 @@ func (aa *UpdateReserveNFTAction) GenerateTx(sa *stormTypes.StormAccount) ([]byt
 		aa.id,
 		aa.denom,
 		aa.subIds,
-		helpers.EtherToWei(sdk.NewInt(aa.increase)),
+		aa.newReserve,
 	)
 	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom())
 	if err != nil {
@@ -111,10 +130,10 @@ func (aa *UpdateReserveNFTAction) GenerateTx(sa *stormTypes.StormAccount) ([]byt
 }
 
 func (aa *UpdateReserveNFTAction) String() string {
-	return fmt.Sprintf("UpdateReserveNFT{ID: %s, Denom: %s, SubIds: %v, Increase: %d}",
+	return fmt.Sprintf("UpdateReserveNFT{ID: %s, Denom: %s, SubIds: %v, newReserve: %s}",
 		aa.id,
 		aa.denom,
 		aa.subIds,
-		aa.increase,
+		aa.newReserve.String(),
 	)
 }

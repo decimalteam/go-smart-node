@@ -52,6 +52,9 @@ func (gg *MintNFTGenerator) Update(ui UpdateInfo) {
 }
 
 func (gg *MintNFTGenerator) Generate() Action {
+	if len(gg.knownAddresses) == 0 {
+		return &EmptyAction{}
+	}
 	return &MintNFTAction{
 		recipient: RandomChoice(gg.rnd, gg.knownAddresses),
 		id:        RandomString(gg.rnd, RandomRange(gg.rnd, gg.textLengthBottom, gg.textLengthUp), charsAll),
@@ -83,7 +86,7 @@ func (aa *MintNFTAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, error)
 		return nil, err
 	}
 	// NOTE: due NFT spec, only NFT creator can change NFT reserve
-	// so i set recipient to sender for MsgUpdateReserve
+	// so i set recipient to sender for MsgUpdateReserve, MsgBurnNFT
 	if rand.Int31n(2) == 0 {
 		aa.recipient = sa.Address()
 	}

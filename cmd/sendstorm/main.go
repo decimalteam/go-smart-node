@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/sdk/wallet"
 	helpers "bitbucket.org/decimalteam/go-smart-node/utils/helpers"
@@ -21,6 +22,7 @@ const (
 	tendermintPort = "tport"
 	restPort       = "rport"
 	turnOnDebug    = "debug"
+	commitFlag     = "commit"
 )
 
 func main() {
@@ -33,10 +35,11 @@ func main() {
 	}
 
 	rootCmd.PersistentFlags().String(mnemonicsFlag, "mnemonics.cfg", "path to mnemonics file")
-	rootCmd.PersistentFlags().String(nodeFlag, "http://localhost", "hostname of decimal node as http://... without port")
+	rootCmd.PersistentFlags().String(nodeFlag, "localhost", "hostname or IP of decimal node without http:// or port")
 	rootCmd.PersistentFlags().Int(tendermintPort, 26657, "tendermint RPC port of decimal node")
 	rootCmd.PersistentFlags().Int(restPort, 1317, "REST port of decimal node")
 	rootCmd.PersistentFlags().Bool(turnOnDebug, false, "write api requests/responses to sendstorm.log")
+	rootCmd.PersistentFlags().Bool(commitFlag, false, "use broadcast_tx_commit (wait for block completion) for transaction sending (very slow)")
 
 	rootCmd.AddCommand(
 		cmdGenerate(),
@@ -194,6 +197,11 @@ func cmdRun() *cobra.Command {
 			}
 			reactor := stormReactor{}
 			// init
+			doCommitTx, err := cmd.Flags().GetBool(turnOnDebug)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 			err = reactor.initApi(cmd.Flags())
 			if err != nil {
 				fmt.Println(err)
@@ -244,7 +252,12 @@ func cmdRun() *cobra.Command {
 					fmt.Println(err)
 					return
 				}
-				res, err := reactor.api.BroadcastTxSync(bytesToSend)
+				var res *api.TxSyncResponse
+				if doCommitTx {
+					res, err = reactor.api.BroadcastTxCommit(bytesToSend)
+				} else {
+					res, err = reactor.api.BroadcastTxSync(bytesToSend)
+				}
 				if err != nil {
 					fmt.Println(err)
 					acc.MarkDirty()
@@ -262,7 +275,6 @@ func cmdRun() *cobra.Command {
 					go acc.UpdateNumberSequence()
 					continue
 				}
-				//fmt.Printf("%T:: tx hash: %s\n", action, res.Hash)
 				acc.IncrementSequence()
 				go acc.UpdateBalance()
 				n++
