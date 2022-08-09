@@ -1,10 +1,11 @@
-package main
+package actions
 
 import (
 	"fmt"
 	"math/rand"
 	"time"
 
+	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
@@ -50,7 +51,7 @@ func (asg *SellCoinGenerator) Generate() Action {
 		return &EmptyAction{}
 	}
 	for {
-		coinName = randomChoice(asg.rnd, asg.knownCoins)
+		coinName = RandomChoice(asg.rnd, asg.knownCoins)
 		if coinName != asg.baseCoin {
 			break
 		}
@@ -64,7 +65,7 @@ func (asg *SellCoinGenerator) Generate() Action {
 			break
 		}
 	}
-	amountToSell = helpers.FinneyToWei(sdk.NewInt(randomRange(asg.rnd, asg.bottomRange, asg.upperRange)))
+	amountToSell = helpers.FinneyToWei(sdk.NewInt(RandomRange(asg.rnd, asg.bottomRange, asg.upperRange)))
 	// respect limit volume to decrease amount of errors
 	if coinInfo.Volume.Sub(amountToSell).LT(sdk.ZeroInt()) {
 		return &EmptyAction{}
@@ -82,8 +83,8 @@ func (asg *SellCoinGenerator) Generate() Action {
 	}
 }
 
-func (as *SellCoinAction) ChooseAccounts(saList []*StormAccount) []*StormAccount {
-	var res []*StormAccount
+func (as *SellCoinAction) ChooseAccounts(saList []*stormTypes.StormAccount) []*stormTypes.StormAccount {
+	var res []*stormTypes.StormAccount
 	for i := range saList {
 		if saList[i].IsDirty() {
 			continue
@@ -96,7 +97,7 @@ func (as *SellCoinAction) ChooseAccounts(saList []*StormAccount) []*StormAccount
 	return res
 }
 
-func (as *SellCoinAction) GenerateTx(sa *StormAccount) ([]byte, error) {
+func (as *SellCoinAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, error) {
 	sender, err := sdk.AccAddressFromBech32(sa.Address())
 	if err != nil {
 		return nil, err

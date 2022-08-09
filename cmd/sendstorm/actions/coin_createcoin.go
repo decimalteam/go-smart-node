@@ -1,10 +1,11 @@
-package main
+package actions
 
 import (
 	"fmt"
 	"math/rand"
 	"time"
 
+	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -57,7 +58,7 @@ func (acg *CreateCoinGenerator) Generate() Action {
 	var symbol string
 	doContinue := true
 	for doContinue {
-		symbol = randomString(acg.rnd, randomRange(acg.rnd, acg.symbolLengthBottom, acg.symbolLengthUp), charsAbc)
+		symbol = RandomString(acg.rnd, RandomRange(acg.rnd, acg.symbolLengthBottom, acg.symbolLengthUp), charsAbc)
 		doContinue = false
 		for _, s := range acg.knownCoins {
 			if symbol == s {
@@ -67,23 +68,23 @@ func (acg *CreateCoinGenerator) Generate() Action {
 	}
 
 	return &CreateCoinAction{
-		title:       randomString(acg.rnd, 10, charsAll),
+		title:       RandomString(acg.rnd, 10, charsAll),
 		symbol:      symbol,
-		crr:         uint64(randomRange(acg.rnd, 10, 100+1)),
-		initVolume:  helpers.EtherToWei(sdk.NewInt(randomRange(acg.rnd, acg.initVolumeBottom, acg.initVolumeUp))),
-		initReserve: helpers.EtherToWei(sdk.NewInt(randomRange(acg.rnd, acg.initReserveBottom, acg.initReserveUp))),
-		limitVolume: helpers.EtherToWei(sdk.NewInt(randomRange(acg.rnd, acg.limitVolumeBottom, acg.limitVolumeUp))),
-		identity:    randomString(acg.rnd, 10, charsAll),
+		crr:         uint64(RandomRange(acg.rnd, 10, 100+1)),
+		initVolume:  helpers.EtherToWei(sdk.NewInt(RandomRange(acg.rnd, acg.initVolumeBottom, acg.initVolumeUp))),
+		initReserve: helpers.EtherToWei(sdk.NewInt(RandomRange(acg.rnd, acg.initReserveBottom, acg.initReserveUp))),
+		limitVolume: helpers.EtherToWei(sdk.NewInt(RandomRange(acg.rnd, acg.limitVolumeBottom, acg.limitVolumeUp))),
+		identity:    RandomString(acg.rnd, 10, charsAll),
 	}
 }
 
-func (ac *CreateCoinAction) ChooseAccounts(saList []*StormAccount) []*StormAccount {
-	var res []*StormAccount
+func (ac *CreateCoinAction) ChooseAccounts(saList []*stormTypes.StormAccount) []*stormTypes.StormAccount {
+	var res []*stormTypes.StormAccount
 	for i := range saList {
 		if saList[i].IsDirty() {
 			continue
 		}
-		if saList[i].BalanceForCoin(saList[i].feeDenom).LT(ac.initReserve) {
+		if saList[i].BalanceForCoin(saList[i].FeeDenom()).LT(ac.initReserve) {
 			continue
 		}
 		res = append(res, saList[i])
@@ -91,7 +92,7 @@ func (ac *CreateCoinAction) ChooseAccounts(saList []*StormAccount) []*StormAccou
 	return res
 }
 
-func (ac *CreateCoinAction) GenerateTx(sa *StormAccount) ([]byte, error) {
+func (ac *CreateCoinAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, error) {
 	sender, err := sdk.AccAddressFromBech32(sa.Address())
 	if err != nil {
 		return nil, err

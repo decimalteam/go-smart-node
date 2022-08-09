@@ -77,7 +77,7 @@ func (k Keeper) Transactions(c context.Context, req *types.QueryTransactionsRequ
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 	ctx := sdk.UnwrapSDKContext(c)
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixWallet)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTransaction)
 	transactions := make([]types.Transaction, 0)
 	pageRes, err := query.Paginate(
 		store,
