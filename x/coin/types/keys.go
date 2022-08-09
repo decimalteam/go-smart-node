@@ -1,5 +1,7 @@
 package types
 
+import "strings"
+
 const (
 	// ModuleName defines the module name
 	ModuleName = "coin"
@@ -30,3 +32,15 @@ var (
 	KeyPrefixCheck  = []byte{prefixCheck}  // 0x02
 	KeyPrefixLegacy = []byte{prefixLegacy} // 0x03
 )
+
+func CoinStoreKey(symbol string) []byte {
+	return append(KeyPrefixCoin, []byte(strings.ToLower(symbol))...)
+}
+
+func CheckStoreKey(checkHash []byte) []byte {
+	return append(KeyPrefixCheck, checkHash...)
+}
+
+func LegacyBalanceStoreKey(legacyAddress string) []byte {
+	return append(KeyPrefixLegacy, []byte(legacyAddress)...)
+}

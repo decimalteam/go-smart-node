@@ -1,0 +1,148 @@
+syntax = "proto3";
+package decimal.coin.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/coin/types";
+
+message EventCreateCoin {
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender"
+  ];
+  string title = 2 [
+    (gogoproto.jsontag) = "title"
+  ];
+  string symbol = 3 [
+    (gogoproto.jsontag) = "symbol"
+  ];
+  uint64 crr = 4 [
+    (gogoproto.customname) = "CRR",
+    (gogoproto.jsontag) = "constant_reserve_ratio"
+  ];
+  string volume = 5 [
+  (gogoproto.jsontag) = "volume"
+  ];
+  string reserve = 6 [
+    (gogoproto.jsontag) = "reserve"
+  ];
+  string limit_volume = 7 [
+    (gogoproto.jsontag) = "limit_volume"
+  ];
+  string identity = 8 [
+    (gogoproto.jsontag) = "identity"
+  ];
+  string commission_create_coin = 9[
+  (gogoproto.jsontag) = "commission_create_coin"
+  ];
+}
+
+message EventUpdateCoin {
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender"
+  ];
+  string symbol = 2 [
+    (gogoproto.jsontag) = "symbol"
+  ];
+  string limit_volume = 3 [
+    (gogoproto.jsontag) = "limit_volume"
+  ];
+  string identity = 4 [
+    (gogoproto.jsontag) = "identity"
+  ];
+}
+
+message EventBuyCoin {
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender"
+  ];
+  string to_buy_coin = 2 [
+    (gogoproto.jsontag) = "to_buy_coin"
+  ];
+  string to_sell_coin = 3 [
+    (gogoproto.jsontag) = "to_sell_coin"
+  ];
+  string to_sell_in_base_coin = 4[
+    (gogoproto.jsontag) = "to_sell_in_base_coin"
+  ];
+}
+
+message EventSellCoin {
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender"
+  ];
+  string to_sell_coin = 2 [
+    (gogoproto.jsontag) = "to_sell_coin"
+  ];
+  string to_buy_coin = 3 [
+    (gogoproto.jsontag) = "to_buy_coin"
+    ];
+  string to_sell_in_base_coin = 4 [
+    (gogoproto.jsontag) = "to_sell_in_base_coin"
+  ];
+}
+
+message EventSendCoin {
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender"
+  ];
+  string receiver = 2 [
+    (gogoproto.jsontag) = "receiver"
+  ];
+  string coin = 3 [
+    (gogoproto.jsontag) = "coin"
+  ];
+}
+
+message EventMultiSendCoin {
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender"
+  ];
+  repeated MultiSendReceiver receivers = 2 [
+    (gogoproto.jsontag) = "receivers"
+  ];
+}
+
+message EventCheckRedeem {
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender"
+  ];
+  string issuer = 2 [
+    (gogoproto.jsontag) = "issuer"
+  ];
+  string coin = 3 [
+    (gogoproto.jsontag) = "coin"
+  ];
+  string nonce = 4 [
+    (gogoproto.jsontag) = "nonce"
+  ];
+  string due_block = 5 [
+    (gogoproto.jsontag) = "due_block"
+  ];
+  string commission_redeem_check = 6 [
+    (gogoproto.jsontag) = "commission_redeem_check"
+  ];
+}
+
+message EventReturnLegacyBalance {
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender"
+  ];
+  string receiver = 2 [
+    (gogoproto.jsontag) = "receiver"
+  ];
+  string legacy_address = 3 [
+    (gogoproto.jsontag) = "legacy_address"
+  ];
+  string coins_to_return = 4 [
+    (gogoproto.jsontag) = "coins_to_return"
+  ];
+}
+
+message MultiSendReceiver {
+  string receiver = 1 [
+    (gogoproto.jsontag) = "receiver"
+  ];
+  string coin = 2 [
+    (gogoproto.jsontag) = "coin"
+  ];
+}

@@ -1,0 +1,89 @@
+syntax = "proto3";
+package decimal.nft.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
+
+message EventMintNFT {
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender"
+  ];
+  string recipient = 2 [
+    (gogoproto.jsontag) = "recipient"
+  ];
+  string denom = 3 [
+    (gogoproto.jsontag) = "denom"
+  ];
+  string NFT_id = 4 [
+    (gogoproto.customname) = "NFTID",
+    (gogoproto.jsontag) = "nft_id"
+  ];
+  string token_uri = 5 [
+    (gogoproto.customname) = "TokenURI",
+    (gogoproto.jsontag) = "token_uri"
+  ];
+  string sub_token_id_start_range = 6 [
+    (gogoproto.customname) = "SubTokenIDStartRange",
+    (gogoproto.jsontag) = "sub_token_id_start_range"
+  ];
+}
+
+message EventTransferNFT {
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender"
+  ];
+  string recipient = 2 [
+    (gogoproto.jsontag) = "recipient"
+  ];
+  string denom = 3 [
+    (gogoproto.jsontag) = "denom"
+  ];
+  string NFT_id = 4 [
+    (gogoproto.customname) = "NFTId",
+    (gogoproto.jsontag) = "nft_id"
+  ];
+}
+
+message EventEditMetadataNFT {
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender"
+  ];
+  string denom = 2 [
+    (gogoproto.jsontag) = "denom"
+  ];
+  string NFT_id = 3 [
+    (gogoproto.customname) = "NFTID",
+    (gogoproto.jsontag) = "nft_id"
+  ];
+  string token_uri = 4 [
+    (gogoproto.customname) = "TokenURI",
+    (gogoproto.jsontag) = "token_uri"
+  ];
+}
+
+message EventBurnNFT {
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender"
+  ];
+  string denom = 2 [
+    (gogoproto.jsontag) = "denom"
+  ];
+  string NFT_id = 3 [
+    (gogoproto.customname) = "NFTID",
+    (gogoproto.jsontag) = "nft_id"
+  ];
+}
+
+message EventUpdateReserveNFT {
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender"
+  ];
+  string denom = 2 [
+    (gogoproto.jsontag) = "denom"
+  ];
+  string NFT_id = 3 [
+    (gogoproto.customname) = "NFTID",
+    (gogoproto.jsontag) = "nft_id"
+  ];
+}

@@ -34,21 +34,17 @@ func (k Keeper) MintNFT(c context.Context, msg *types.MsgMintNFT) (*types.MsgMin
 		return nil, err
 	}
 
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeMintNFT,
-			sdk.NewAttribute(types.AttributeKeyRecipient, msg.Recipient),
-			sdk.NewAttribute(types.AttributeKeyDenom, msg.Denom),
-			sdk.NewAttribute(types.AttributeKeyNFTID, msg.ID),
-			sdk.NewAttribute(types.AttributeKeyNFTTokenURI, msg.TokenURI),
-			sdk.NewAttribute(types.AttributeKeySubTokenIDStartRange, strconv.FormatUint(lastSubTokenID, 10)),
-		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
-		),
+	err = ctx.EventManager().EmitTypedEvent(&types.EventMintNFT{
+		Sender:               msg.Sender,
+		Recipient:            msg.Recipient,
+		Denom:                msg.Denom,
+		NFTID:                msg.ID,
+		TokenURI:             msg.TokenURI,
+		SubTokenIDStartRange: strconv.FormatUint(lastSubTokenID, 10),
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	return &types.MsgMintNFTResponse{}, nil
 }
@@ -61,20 +57,15 @@ func (k Keeper) TransferNFT(c context.Context, msg *types.MsgTransferNFT) (*type
 		return nil, err
 	}
 
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeTransfer,
-			sdk.NewAttribute(types.AttributeKeyRecipient, msg.Recipient),
-			sdk.NewAttribute(types.AttributeKeyDenom, msg.Denom),
-			sdk.NewAttribute(types.AttributeKeyNFTID, msg.ID),
-		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
-		),
+	err = ctx.EventManager().EmitTypedEvent(&types.EventTransferNFT{
+		Sender:    msg.Sender,
+		Recipient: msg.Recipient,
+		Denom:     msg.Denom,
+		NFTId:     msg.ID,
 	})
-
+	if err != nil {
+		return nil, err
+	}
 	return &types.MsgTransferNFTResponse{}, nil
 }
 
@@ -96,19 +87,15 @@ func (k Keeper) EditNFTMetadata(c context.Context, msg *types.MsgEditNFTMetadata
 		return nil, err
 	}
 
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeEditNFTMetadata,
-			sdk.NewAttribute(types.AttributeKeyDenom, msg.Denom),
-			sdk.NewAttribute(types.AttributeKeyNFTID, msg.ID),
-			sdk.NewAttribute(types.AttributeKeyNFTTokenURI, msg.TokenURI),
-		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
-		),
+	err = ctx.EventManager().EmitTypedEvent(&types.EventEditMetadataNFT{
+		Sender:   msg.Sender,
+		Denom:    msg.Denom,
+		NFTID:    msg.ID,
+		TokenURI: msg.TokenURI,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	return &types.MsgEditNFTMetadataResponse{}, nil
 }
@@ -131,18 +118,14 @@ func (k Keeper) BurnNFT(c context.Context, msg *types.MsgBurnNFT) (*types.MsgBur
 		return nil, err
 	}
 
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeBurnNFT,
-			sdk.NewAttribute(types.AttributeKeyDenom, msg.Denom),
-			sdk.NewAttribute(types.AttributeKeyNFTID, msg.ID),
-		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
-		),
+	err = ctx.EventManager().EmitTypedEvent(&types.EventBurnNFT{
+		Sender: msg.Sender,
+		Denom:  msg.Denom,
+		NFTID:  msg.ID,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	return &types.MsgBurnNFTResponse{}, nil
 }
@@ -165,18 +148,14 @@ func (k Keeper) UpdateReserveNFT(c context.Context, msg *types.MsgUpdateReserveN
 		return nil, err
 	}
 
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeUpdateReserveNFT,
-			sdk.NewAttribute(types.AttributeKeyDenom, msg.Denom),
-			sdk.NewAttribute(types.AttributeKeyNFTID, msg.ID),
-		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
-		),
+	err = ctx.EventManager().EmitTypedEvent(&types.EventUpdateReserveNFT{
+		Sender: msg.Sender,
+		Denom:  msg.Denom,
+		NFTID:  msg.ID,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	return &types.MsgUpdateReserveNFTResponse{}, nil
 }

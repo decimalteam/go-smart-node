@@ -68,12 +68,14 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 // GetCoin returns the coin if exists in KVStore.
 func (k *Keeper) GetCoin(ctx sdk.Context, symbol string) (coin types.Coin, err error) {
 	store := ctx.KVStore(k.storeKey)
-	key := append(types.KeyPrefixCoin, []byte(strings.ToLower(symbol))...)
+	key := types.CoinStoreKey(symbol)
+
 	value := store.Get(key)
 	if len(value) == 0 {
 		err = fmt.Errorf("coin %s is not found in the key-value store", strings.ToLower(symbol))
 		return
 	}
+	
 	err = k.cdc.UnmarshalLengthPrefixed(value, &coin)
 	return
 }
@@ -105,7 +107,7 @@ func (k *Keeper) GetCoinsIterator(ctx sdk.Context) sdk.Iterator {
 func (k *Keeper) SetCoin(ctx sdk.Context, coin types.Coin) {
 	store := ctx.KVStore(k.storeKey)
 	value := k.cdc.MustMarshalLengthPrefixed(&coin)
-	key := append(types.KeyPrefixCoin, []byte(strings.ToLower(coin.Symbol))...)
+	key := types.CoinStoreKey(coin.Symbol)
 	store.Set(key, value)
 }
 
@@ -136,7 +138,8 @@ func (k *Keeper) EditCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, vol
 func (k *Keeper) IsCheckRedeemed(ctx sdk.Context, check *types.Check) bool {
 	checkHash := check.HashFull()
 	store := ctx.KVStore(k.storeKey)
-	key := append(types.KeyPrefixCheck, checkHash[:]...)
+	key := types.CheckStoreKey(checkHash[:])
+
 	value := store.Get(key)
 	if len(value) == 0 {
 		return false
@@ -147,7 +150,7 @@ func (k *Keeper) IsCheckRedeemed(ctx sdk.Context, check *types.Check) bool {
 
 func (k *Keeper) GetCheck(ctx sdk.Context, checkHash []byte) (check types.Check, err error) {
 	store := ctx.KVStore(k.storeKey)
-	key := append(types.KeyPrefixCheck, checkHash...)
+	key := types.CheckStoreKey(checkHash)
 	value := store.Get(key)
 	if len(value) == 0 {
 		err = fmt.Errorf("check with hash %X is not found in the key-value store", checkHash)
@@ -184,7 +187,7 @@ func (k *Keeper) GetChecksIterator(ctx sdk.Context) sdk.Iterator {
 func (k *Keeper) SetCheck(ctx sdk.Context, check *types.Check) {
 	checkHash := check.HashFull()
 	store := ctx.KVStore(k.storeKey)
-	key := append(types.KeyPrefixCheck, checkHash[:]...)
+	key := types.CheckStoreKey(checkHash[:])
 	value := k.cdc.MustMarshalLengthPrefixed(check)
 	store.Set(key, value)
 }
@@ -279,7 +282,7 @@ func (k *Keeper) ClearCoinCache() {
 // GetLegacyBalance returns balance for legacy address if exists in KVStore.
 func (k *Keeper) GetLegacyBalance(ctx sdk.Context, legacyAddress string) (balance types.LegacyBalance, err error) {
 	store := ctx.KVStore(k.storeKey)
-	key := append(types.KeyPrefixLegacy, []byte(legacyAddress)...)
+	key := types.LegacyBalanceStoreKey(legacyAddress)
 	value := store.Get(key)
 	if len(value) == 0 {
 		err = fmt.Errorf("legacy address %s is not found in the key-value store", strings.ToLower(legacyAddress))
@@ -292,7 +295,7 @@ func (k *Keeper) GetLegacyBalance(ctx sdk.Context, legacyAddress string) (balanc
 // SetLegacyBalance store legacy balance for legacy address. Must call only in genesis
 func (k *Keeper) SetLegacyBalance(ctx sdk.Context, balance types.LegacyBalance) {
 	store := ctx.KVStore(k.storeKey)
-	key := append(types.KeyPrefixLegacy, []byte(balance.LegacyAddress)...)
+	key := types.LegacyBalanceStoreKey(balance.LegacyAddress)
 	value := k.cdc.MustMarshalLengthPrefixed(&balance)
 	store.Set(key, value)
 }
@@ -300,7 +303,7 @@ func (k *Keeper) SetLegacyBalance(ctx sdk.Context, balance types.LegacyBalance) 
 // DeleteLegacyBalance delete balance for old address. Must call in return transaction
 func (k *Keeper) DeleteLegacyBalance(ctx sdk.Context, legacyAddress string) {
 	store := ctx.KVStore(k.storeKey)
-	key := append(types.KeyPrefixLegacy, []byte(legacyAddress)...)
+	key := types.LegacyBalanceStoreKey(legacyAddress)
 	store.Delete(key)
 }
 
