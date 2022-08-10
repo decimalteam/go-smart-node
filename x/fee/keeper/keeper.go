@@ -61,11 +61,11 @@ func (k *Keeper) SetModuleParams(ctx sdk.Context, params types.Params) {
 }
 
 // Logger returns a module-specific logger.
-func (k Keeper) Logger(ctx sdk.Context) log.Logger {
+func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) SavePrice(
+func (k *Keeper) SavePrice(
 	ctx sdk.Context,
 	price sdk.Dec,
 ) error {
@@ -79,7 +79,7 @@ func (k Keeper) SavePrice(
 	return nil
 }
 
-func (k Keeper) GetPrice(
+func (k *Keeper) GetPrice(
 	ctx sdk.Context,
 ) (sdk.Dec, error) {
 	store := ctx.KVStore(k.storeKey)

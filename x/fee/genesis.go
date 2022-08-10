@@ -9,12 +9,19 @@ import (
 // InitGenesis sets nft information for genesis.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, gs types.GenesisState) {
 	k.SetModuleParams(ctx, gs.Params)
-	k.SavePrice(ctx, gs.IntialPrice)
+	err := k.SavePrice(ctx, gs.IntialPrice)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // ExportGenesis returns a GenesisState for a given context and keeper.
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
-	price, _ := k.GetPrice(ctx)
+	price, err := k.GetPrice(ctx)
+	if err != nil {
+		panic(err)
+	}
+
 	return &types.GenesisState{
 		Params:      k.GetModuleParams(ctx),
 		IntialPrice: price,

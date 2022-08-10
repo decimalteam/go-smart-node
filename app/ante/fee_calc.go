@@ -65,6 +65,10 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec, params feeTy
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *govtypes.MsgVoteWeighted:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+
+		// fee
+		case *feeTypes.MsgSaveBaseDenomPrice:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		default:
 			return sdk.NewInt(0), ErrUnknownTransaction(fmt.Sprintf("%T", msg))
 		}

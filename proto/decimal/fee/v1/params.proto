@@ -106,6 +106,7 @@ message Params {
     (gogoproto.moretags) = "yaml:\"validator_set_offline\""    
   ];
 
+  // fee params
   string oracleAddress = 21 [
     (gogoproto.jsontag) = "oracle_address",
     (gogoproto.moretags) = "yaml:\"oracle_address\""   
