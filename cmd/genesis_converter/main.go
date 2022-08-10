@@ -119,11 +119,16 @@ func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
 		return GenesisNew{}, Statistic{}, err
 	}
 	// multisig wallets
-	gsNew.AppState.Multisig.Wallets, err = convertMultisig(gsOld.AppState.Multisig.Wallets, addrTable)
+	gsNew.AppState.Multisig.Wallets, err = convertMultisigWallets(gsOld.AppState.Multisig.Wallets, addrTable)
 	if err != nil {
 		return GenesisNew{}, Statistic{}, err
 	}
 	// transactions
+	gsNew.AppState.Multisig.Transactions, err =
+		convertMultisigTransactions(gsOld.AppState.Multisig.Transactions, addrTable)
+	if err != nil {
+		return GenesisNew{}, Statistic{}, err
+	}
 	// nft
 	gsNew.AppState.NFT.Collections, gsNew.AppState.NFT.NFTs, err =
 		convertNFT(gsOld.AppState.NFT.Collections, addrTable)

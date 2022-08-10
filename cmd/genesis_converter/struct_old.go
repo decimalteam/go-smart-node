@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/base64"
 	"fmt"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type GenesisOld struct {
@@ -11,8 +13,8 @@ type GenesisOld struct {
 			Accounts []AccountOld `json:"accounts"`
 		} `json:"auth"`
 		Multisig struct {
-			//+txs
-			Wallets []WalletOld `json:"wallets"`
+			Transactions []TransactionOld `json:"txs"`
+			Wallets      []WalletOld      `json:"wallets"`
 		} `json:"multisig"`
 		Coin struct {
 			Coins []FullCoinOld `json:"coins"`
@@ -86,7 +88,14 @@ type WalletOld struct {
 	Weights   []string `json:"weights"`
 }
 
-// TODO: transactions
+type TransactionOld struct {
+	Coins     sdk.Coins `json:"coins"`
+	ID        string    `json:"id"`
+	Receiver  string    `json:"receiver"`
+	CreatedAt string    `json:"string"`
+	Wallet    string    `json:"wallet"`
+	Signers   []string  `json:"signers"`
+}
 
 ///////////////////////////
 // NFT

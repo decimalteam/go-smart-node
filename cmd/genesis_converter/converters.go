@@ -115,11 +115,23 @@ func convertCoins(coinsOld []FullCoinOld, addrTable *AddressTable) ([]FullCoinNe
 	return res, nil
 }
 
-func convertMultisig(walletsOld []WalletOld, addrTable *AddressTable) ([]WalletNew, error) {
+func convertMultisigWallets(walletsOld []WalletOld, addrTable *AddressTable) ([]WalletNew, error) {
 	var res []WalletNew
 	for _, wallet := range walletsOld {
 		newWallet := WalletO2N(wallet, addrTable)
 		res = append(res, newWallet)
+	}
+	return res, nil
+}
+
+func convertMultisigTransactions(transactionsOld []TransactionOld, addrTable *AddressTable) ([]TransactionNew, error) {
+	var res []TransactionNew
+	for _, txOld := range transactionsOld {
+		if addrTable.GetAddress(txOld.Receiver) == "" {
+			continue
+		}
+		newTx := TransactionO2N(txOld, addrTable)
+		res = append(res, newTx)
 	}
 	return res, nil
 }

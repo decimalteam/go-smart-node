@@ -22,22 +22,14 @@ type GenesisNew struct {
 			// can be EthAccount or ModuleAccount
 			Accounts []interface{} `json:"accounts"`
 			Params   interface{}   `json:"params"`
-			/*
-				Params   struct {
-					MaxMemoCharacters      string `json:"max_memo_characters"`       // 256
-					SigVerifyCostEd25519   string `json:"sig_verify_cost_ed25519"`   // 590
-					SigVerifyCostSecp256k1 string `json:"sig_verify_cost_secp256k1"` // 1000
-					TxSigLimit             string `json:"tx_sig_limit"`              // 7
-					TxSizeCostPerByte      string `json:"tx_size_cost_per_byte"`     // 10
-				} `json:"params"`
-			*/
 		} `json:"auth"`
 		Bank struct {
 			Params   interface{}  `json:"params"`
 			Balances []BalanceNew `json:"balances"`
 		} `json:"bank"`
 		Multisig struct {
-			Wallets []WalletNew `json:"wallets"`
+			Transactions []TransactionNew `json:"transactions"`
+			Wallets      []WalletNew      `json:"wallets"`
 		} `json:"multisig"`
 		Coin struct {
 			Params         interface{}        `json:"params"`
@@ -48,6 +40,25 @@ type GenesisNew struct {
 			Collections []CollectionNew `json:"collections"`
 			NFTs        []NFTNew        `json:"nfts"`
 		} `json:"nft"`
+		// other modules
+		Authz        interface{} `json:"authz"`
+		Capability   interface{} `json:"capability"`
+		Crisis       interface{} `json:"crisis"`
+		Distribution interface{} `json:"distribution"`
+		Epochs       interface{} `json:"epochs"`
+		Erc20        interface{} `json:"erc20"`
+		Evidence     interface{} `json:"evidence"`
+		Evm          interface{} `json:"evm"`
+		Feegrant     interface{} `json:"feegrant"`
+		Feemarket    interface{} `json:"feemarket"`
+		Gov          interface{} `json:"gov"`
+		Incentives   interface{} `json:"incentives"`
+		Inflation    interface{} `json:"inflation"`
+		Params       interface{} `json:"params"`
+		Slashing     interface{} `json:"slashing"`
+		Staking      interface{} `json:"staking"`
+		Upgrade      interface{} `json:"upgrade"`
+		Vesting      interface{} `json:"vesting"`
 	} `json:"app_state"`
 }
 
@@ -63,7 +74,7 @@ type AccountNew struct {
 		PublicKey     struct {
 			Typ string `json:"@type"`
 			Key string `json:"key"`
-		}
+		} `json:"pub_key"`
 		Sequence string `json:"sequence"`
 	} `json:"base_account"`
 	CodeHash string `json:"code_hash"`
@@ -196,6 +207,33 @@ func WalletO2N(wallet WalletOld, addrTable *AddressTable) WalletNew {
 	}
 	if !hasLegacy {
 		result.LegacyOwners = nil
+	}
+	return result
+}
+
+type TransactionNew struct {
+	Coins     sdk.Coins `json:"coins"`
+	ID        string    `json:"id"`
+	Receiver  string    `json:"receiver"`
+	CreatedAt string    `json:"created_at"`
+	Wallet    string    `json:"wallet"`
+	Signers   []string  `json:"signers"`
+}
+
+func TransactionO2N(tx TransactionOld, addrTable *AddressTable) TransactionNew {
+	var result = TransactionNew{
+		Coins:     tx.Coins,
+		ID:        tx.ID,
+		Receiver:  addrTable.GetAddress(tx.Receiver),
+		CreatedAt: "0", // field looking unused
+		Wallet:    tx.Wallet,
+	}
+	result.Signers = make([]string, len(tx.Signers))
+	for i, s := range tx.Signers {
+		if s == "" {
+			continue
+		}
+		result.Signers[i] = addrTable.GetAddress(s)
 	}
 	return result
 }

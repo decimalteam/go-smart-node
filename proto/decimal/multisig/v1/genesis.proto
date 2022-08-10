@@ -13,4 +13,9 @@ message GenesisState {
     (gogoproto.moretags) = "yaml:\"wallets\"",
     (gogoproto.nullable) = false
   ];
+  repeated Transaction transactions = 2 [
+    (gogoproto.jsontag) = "transactions",
+    (gogoproto.moretags) = "yaml:\"transactions\"",
+    (gogoproto.nullable) = false
+  ];
 }
