@@ -1,4 +1,4 @@
-package main
+package actions
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -42,18 +43,18 @@ func (asg *MultiSendCoinGenerator) Update(ui UpdateInfo) {
 }
 
 func (asg *MultiSendCoinGenerator) Generate() Action {
-	n := randomRange(asg.rnd, asg.sendCountBottom, asg.sendCountUpper)
+	n := RandomRange(asg.rnd, asg.sendCountBottom, asg.sendCountUpper)
 	sums := sdk.NewCoins()
 	sends := make([]dscTx.OneSend, n)
 	for i := int64(0); i < n; i++ {
 		coin := sdk.NewCoin(
-			randomChoice(asg.rnd, asg.knownCoins),
-			helpers.FinneyToWei(sdk.NewInt(randomRange(asg.rnd, asg.bottomRange, asg.upperRange))),
+			RandomChoice(asg.rnd, asg.knownCoins),
+			helpers.FinneyToWei(sdk.NewInt(RandomRange(asg.rnd, asg.bottomRange, asg.upperRange))),
 		)
 		sums = sums.Add(coin)
 		sends[i] = dscTx.OneSend{
 			Coin:     coin,
-			Receiver: randomChoice(asg.rnd, asg.knownAddresses),
+			Receiver: RandomChoice(asg.rnd, asg.knownAddresses),
 		}
 	}
 	return &MultiSendCoinAction{
@@ -61,8 +62,8 @@ func (asg *MultiSendCoinGenerator) Generate() Action {
 		summary: sums}
 }
 
-func (as *MultiSendCoinAction) ChooseAccounts(saList []*StormAccount) []*StormAccount {
-	var res []*StormAccount
+func (as *MultiSendCoinAction) ChooseAccounts(saList []*stormTypes.StormAccount) []*stormTypes.StormAccount {
+	var res []*stormTypes.StormAccount
 	for i := range saList {
 		if saList[i].IsDirty() {
 			continue
@@ -86,7 +87,7 @@ func (as *MultiSendCoinAction) ChooseAccounts(saList []*StormAccount) []*StormAc
 	return res
 }
 
-func (as *MultiSendCoinAction) GenerateTx(sa *StormAccount) ([]byte, error) {
+func (as *MultiSendCoinAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, error) {
 	sender, err := sdk.AccAddressFromBech32(sa.Address())
 	if err != nil {
 		return nil, err

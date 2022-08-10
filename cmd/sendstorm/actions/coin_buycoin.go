@@ -1,10 +1,11 @@
-package main
+package actions
 
 import (
 	"fmt"
 	"math/rand"
 	"time"
 
+	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
@@ -51,7 +52,7 @@ func (abg *BuyCoinGenerator) Generate() Action {
 		return &EmptyAction{}
 	}
 	for {
-		coinName = randomChoice(abg.rnd, abg.knownCoins)
+		coinName = RandomChoice(abg.rnd, abg.knownCoins)
 		if coinName != abg.baseCoin {
 			break
 		}
@@ -63,7 +64,7 @@ func (abg *BuyCoinGenerator) Generate() Action {
 			break
 		}
 	}
-	amountToBuy := helpers.FinneyToWei(sdk.NewInt(randomRange(abg.rnd, abg.bottomRange, abg.upperRange)))
+	amountToBuy := helpers.FinneyToWei(sdk.NewInt(RandomRange(abg.rnd, abg.bottomRange, abg.upperRange)))
 	amountToSell = formulas.CalculatePurchaseAmount(coinInfo.Volume, coinInfo.Reserve, uint(coinInfo.CRR), amountToBuy)
 	// respect limit volume to decrease amount of errors
 	if coinInfo.Volume.Add(amountToBuy).GT(coinInfo.LimitVolume) {
@@ -82,13 +83,13 @@ func (abg *BuyCoinGenerator) Generate() Action {
 	}
 }
 
-func (ab *BuyCoinAction) ChooseAccounts(saList []*StormAccount) []*StormAccount {
-	var res []*StormAccount
+func (ab *BuyCoinAction) ChooseAccounts(saList []*stormTypes.StormAccount) []*stormTypes.StormAccount {
+	var res []*stormTypes.StormAccount
 	for i := range saList {
 		if saList[i].IsDirty() {
 			continue
 		}
-		if saList[i].BalanceForCoin(saList[i].feeDenom).LT(ab.maxCoinToSell.Amount) {
+		if saList[i].BalanceForCoin(saList[i].FeeDenom()).LT(ab.maxCoinToSell.Amount) {
 			continue
 		}
 		res = append(res, saList[i])
@@ -96,7 +97,7 @@ func (ab *BuyCoinAction) ChooseAccounts(saList []*StormAccount) []*StormAccount 
 	return res
 }
 
-func (ab *BuyCoinAction) GenerateTx(sa *StormAccount) ([]byte, error) {
+func (ab *BuyCoinAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, error) {
 	sender, err := sdk.AccAddressFromBech32(sa.Address())
 	if err != nil {
 		return nil, err

@@ -7,17 +7,20 @@ import (
 	"strconv"
 	"strings"
 
+	stormActions "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/actions"
+	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	dscWallet "bitbucket.org/decimalteam/go-smart-node/sdk/wallet"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/pflag"
 )
 
 type stormReactor struct {
-	accounts      []*StormAccount
+	accounts      []*stormTypes.StormAccount
 	faucetAccount *dscWallet.Account
 	api           *dscApi.API
-	actionReactor *ActionReactor
-	limiter       *TPSLimiter
+	actionReactor *stormActions.ActionReactor
+	limiter       *stormActions.TPSLimiter
 }
 
 func (reactor *stormReactor) initApi(flags *pflag.FlagSet) error {
@@ -26,10 +29,6 @@ func (reactor *stormReactor) initApi(flags *pflag.FlagSet) error {
 		return err
 	}
 	tPort, err := flags.GetInt(tendermintPort)
-	if err != nil {
-		return err
-	}
-	rPort, err := flags.GetInt(restPort)
 	if err != nil {
 		return err
 	}
@@ -48,13 +47,16 @@ func (reactor *stormReactor) initApi(flags *pflag.FlagSet) error {
 		log.SetOutput(logfile)
 	}
 
-	reactor.api = dscApi.NewAPI(dscApi.ConnectionOptions{
+	reactor.api, err = dscApi.NewAPI(dscApi.ConnectionOptions{
 		EndpointHost:   nodeHost,
 		TendermintPort: tPort,
-		RestPort:       rPort,
 		Timeout:        10,
 		Debug:          debug,
+		UseGRPC:        true,
 	})
+	if err != nil {
+		return err
+	}
 	err = reactor.api.GetParameters()
 	if err != nil {
 		return err
@@ -71,9 +73,9 @@ func (reactor *stormReactor) initAccounts(flags *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
-	reactor.accounts = make([]*StormAccount, 0)
+	reactor.accounts = make([]*stormTypes.StormAccount, 0)
 	for _, mn := range mnemonics {
-		acc, err := NewStormAccount(mn, reactor.api)
+		acc, err := stormTypes.NewStormAccount(mn, reactor.api)
 		if err != nil {
 			return err
 		}
@@ -106,7 +108,7 @@ func (reactor *stormReactor) initActionReactor(flags *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
-	reactor.actionReactor = &ActionReactor{}
+	reactor.actionReactor = &stormActions.ActionReactor{}
 	for _, act := range actions {
 		ss := strings.Split(act, "=")
 		if len(ss) != 2 {
@@ -130,13 +132,17 @@ func (reactor *stormReactor) initLimiter(flags *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
-	reactor.limiter = NewTPSLimiter(limit)
+	reactor.limiter = stormActions.NewTPSLimiter(limit)
 	return nil
 }
 
 func (reactor *stormReactor) updateGeneratorsInfo() {
 	// update info
-	ui := UpdateInfo{}
+	ui := stormActions.UpdateInfo{}
+	ui.MultisigBalances = make(map[string]sdk.Coins)
+	// TODO: GRPC api.Coins() doesn't return base coin
+	ui.Coins = append(ui.Coins, reactor.api.BaseCoin())
+
 	coins, err := reactor.api.Coins()
 	if err != nil {
 		fmt.Println(err)
@@ -148,6 +154,85 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 	}
 	for _, acc := range reactor.accounts {
 		ui.Addresses = append(ui.Addresses, acc.Address())
+	}
+	// nft
+	nfts := make([]dscApi.NFT, 0)
+	denoms, err := reactor.api.NFTCollections()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	for _, denom := range denoms {
+		coll, err := reactor.api.NFTCollection(denom)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		for _, id := range coll.NFTs {
+			nft, err := reactor.api.NFT(denom, id)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			nfts = append(nfts, nft)
+		}
+	}
+	ui.NFTs = nfts
+	// nft subtokens
+	ui.NFTSubTokenReserves = make(map[stormActions.NFTSubTokenKey]sdk.Int)
+	for _, nft := range ui.NFTs {
+		subIds := []uint64{}
+		for _, o := range nft.Owners {
+			subIds = append(subIds, o.SubTokenIDs...)
+		}
+		subtokens, err := reactor.api.NFTSubTokens(nft.Denom, nft.ID, subIds)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		for i := range subtokens {
+			ui.NFTSubTokenReserves[stormActions.NFTSubTokenKey{Denom: nft.Denom, TokenID: nft.ID, ID: subtokens[i].ID}] = subtokens[i].Reserve
+		}
+	}
+	// multisig wallets
+	for _, owner := range ui.Addresses {
+		wallets, err := reactor.api.MultisigWalletsByOwner(owner)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		for _, wallet := range wallets {
+			doAdd := true
+			for _, w := range ui.MultisigWallets {
+				if wallet.Address == w.Address {
+					doAdd = false
+					break
+				}
+			}
+			if doAdd {
+				ui.MultisigWallets = append(ui.MultisigWallets, wallet)
+			}
+		}
+	}
+	// multisig transactions
+	for _, wallet := range ui.MultisigWallets {
+		fmt.Printf("call api.MultisigTransactionsByWallet(%s)\n", wallet.Address)
+		txs, err := reactor.api.MultisigTransactionsByWallet(wallet.Address)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		ui.MultisigTransactions = append(ui.MultisigTransactions, txs...)
+	}
+	// multisig balances
+	for _, wallet := range ui.MultisigWallets {
+		fmt.Printf("call api.AddressBalance(%s)\n", wallet.Address)
+		balance, err := reactor.api.AddressBalance(wallet.Address)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		ui.MultisigBalances[wallet.Address] = balance
 	}
 	reactor.actionReactor.Update(ui)
 }
