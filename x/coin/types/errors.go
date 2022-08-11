@@ -4,7 +4,6 @@ package types
 
 import (
 	"fmt"
-	"strconv"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -68,12 +67,6 @@ const (
 	CodeUnableRetriveArmoredPkey uint32 = 501
 	CodeUnableRetrivePkey        uint32 = 502
 	CodeUnableRetriveSECPPkey    uint32 = 503
-
-	// Legacy return
-	CodeInvalidPublicKeyLength         uint32 = 600
-	CodeCannnotGetAddressFromPublicKey uint32 = 601
-	CodeNoMatchReceiverAndPKey         uint32 = 602
-	CodeNoLegacyBalance                uint32 = 603
 )
 
 func ErrInvalidCRR(crr string) *sdkerrors.Error {
@@ -476,45 +469,5 @@ func ErrUnableRetrieveSECPPkey(name string, algo string) *sdkerrors.Error {
 		fmt.Sprintf("unable to retrieve secp256k1 private key for account %s: %s private key retrieved instead", name, algo),
 		errors.NewParam("name", name),
 		errors.NewParam("algo", algo),
-	)
-}
-
-// Legacy return errors
-func ErrInvalidPublicKeyLength(publicKeyLength int) *sdkerrors.Error {
-	return errors.Encode(
-		DefaultCodespace,
-		CodeInvalidPublicKeyLength,
-		fmt.Sprintf("invalid public key length %d", publicKeyLength),
-		errors.NewParam("public_key_length", strconv.Itoa(publicKeyLength)),
-	)
-}
-
-func ErrCannnotGetAddressFromPublicKey(err string) *sdkerrors.Error {
-	return errors.Encode(
-		DefaultCodespace,
-		CodeCannnotGetAddressFromPublicKey,
-		fmt.Sprintf("can not get address from public key: %s", err),
-		errors.NewParam("error", err),
-	)
-}
-
-func ErrNoMatchReceiverAndPKey(expectAddress, gotAddress string) *sdkerrors.Error {
-	return errors.Encode(
-		DefaultCodespace,
-		CodeNoMatchReceiverAndPKey,
-		fmt.Sprintf("receiver address and address from public key not match: expect %s, but got %s",
-			expectAddress, gotAddress),
-		errors.NewParam("receiver_address", expectAddress),
-		errors.NewParam("pubkey_address", gotAddress),
-	)
-}
-
-func ErrNoLegacyBalance(receiver, legacyAddress string) *sdkerrors.Error {
-	return errors.Encode(
-		DefaultCodespace,
-		CodeNoLegacyBalance,
-		fmt.Sprintf("no legacy balance for receiver %s and legacy address %s", receiver, legacyAddress),
-		errors.NewParam("receiver_address", receiver),
-		errors.NewParam("legacy_address", legacyAddress),
 	)
 }

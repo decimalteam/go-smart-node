@@ -181,7 +181,7 @@ func initConsistencyApp(t *testing.T, reserve, volume, limitVolume sdk.Int, crr 
 	require.NoError(t, bankGenesisState.Validate(), "bankGenesisState")
 	app.BankKeeper.InitGenesis(ctx, bankGenesisState)
 
-	coinGenesisState := types.NewGenesisState(params, coins, []types.Check{}, []types.LegacyBalance{})
+	coinGenesisState := types.NewGenesisState(params, coins, []types.Check{})
 	require.NoError(t, coinGenesisState.Validate(), "coinGenesisState")
 	coin.InitGenesis(ctx, app.CoinKeeper, coinGenesisState)
 

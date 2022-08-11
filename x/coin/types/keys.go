@@ -21,12 +21,10 @@ const (
 const (
 	prefixCoin  byte = iota + 1 // 1
 	prefixCheck                 // 2
-	prefixLegacy
 )
 
 // KVStore key prefixes
 var (
-	KeyPrefixCoin   = []byte{prefixCoin}   // 0x01
-	KeyPrefixCheck  = []byte{prefixCheck}  // 0x02
-	KeyPrefixLegacy = []byte{prefixLegacy} // 0x03
+	KeyPrefixCoin  = []byte{prefixCoin}  // 0x01
+	KeyPrefixCheck = []byte{prefixCheck} // 0x02
 )

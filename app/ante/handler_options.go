@@ -14,6 +14,7 @@ import (
 	evmtypes "github.com/tharsis/ethermint/x/evm/types"
 
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	legacytypes "bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 )
 
 // HandlerOptions defines the list of module keepers required to run the Decimal AnteHandler decorators.
@@ -25,6 +26,7 @@ type HandlerOptions struct {
 	EvmKeeper       evmante.EVMKeeper
 	FeegrantKeeper  authante.FeegrantKeeper
 	CoinKeeper      cointypes.CoinKeeper
+	LegacyKeeper    legacytypes.LegacyKeeper
 	SignModeHandler authsigning.SignModeHandler
 	SigGasConsumer  func(meter sdk.GasMeter, sig signing.SignatureV2, params authtypes.Params) error
 	Cdc             codec.BinaryCodec
@@ -53,6 +55,9 @@ func (options HandlerOptions) Validate() error {
 	}
 	if options.CoinKeeper == nil {
 		return sdkerrors.Wrap(sdkerrors.ErrLogic, "coin keeper is required for AnteHandler")
+	}
+	if options.LegacyKeeper == nil {
+		return sdkerrors.Wrap(sdkerrors.ErrLogic, "legacy keeper is required for AnteHandler")
 	}
 	return nil
 }
@@ -90,6 +95,7 @@ func newCosmosAnteHandler(options HandlerOptions) sdk.AnteHandler {
 		authante.NewValidateSigCountDecorator(options.AccountKeeper),
 		authante.NewSigGasConsumeDecorator(options.AccountKeeper, options.SigGasConsumer),
 		authante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
+		NewLegacyActualizerDecorator(options.LegacyKeeper),
 		authante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		//ibcante.NewAnteDecorator(options.IBCKeeper),
 	)
@@ -114,6 +120,7 @@ func newCosmosAnteHandlerEip712(options HandlerOptions) sdk.AnteHandler {
 		authante.NewSigGasConsumeDecorator(options.AccountKeeper, options.SigGasConsumer),
 		// Note: signature verification uses EIP instead of the cosmos signature validator
 		evmante.NewEip712SigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
+		NewLegacyActualizerDecorator(options.LegacyKeeper),
 		authante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		//ibcante.NewAnteDecorator(options.IBCKeeper),
 	)

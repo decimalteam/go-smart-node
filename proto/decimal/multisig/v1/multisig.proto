@@ -58,8 +58,4 @@ message Wallet {
     (gogoproto.jsontag) = "threshold",
     (gogoproto.moretags) = "yaml:\"threshold\""
   ];
-  repeated string legacyOwners = 5 [
-    (gogoproto.jsontag) = "legacy_owners",
-    (gogoproto.moretags) = "yaml:\"legacy_owners\""
-  ];
 }

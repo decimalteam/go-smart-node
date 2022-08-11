@@ -20,24 +20,6 @@ func TestGenesisStateValidate(t *testing.T) {
 			true,
 		},
 		{
-			"valid legacy owners",
-			&types.GenesisState{
-				Wallets: []types.Wallet{
-					{
-						Address: sdk.AccAddress([]byte{1, 2, 3}).String(),
-						Owners:  []string{"", ""},
-						LegacyOwners: []string{
-							sdk.AccAddress([]byte{1, 2, 3, 1}).String(),
-							sdk.AccAddress([]byte{1, 2, 3, 2}).String(),
-						},
-						Weights:   []uint64{1, 1},
-						Threshold: 2,
-					},
-				},
-			},
-			true,
-		},
-		{
 			"double wallet",
 			&types.GenesisState{
 				Wallets: []types.Wallet{
@@ -115,24 +97,6 @@ func TestGenesisStateValidate(t *testing.T) {
 			false,
 		},
 		{
-			"double legacy owners",
-			&types.GenesisState{
-				Wallets: []types.Wallet{
-					{
-						Address: sdk.AccAddress([]byte{1, 2, 3}).String(),
-						Owners:  []string{"", ""},
-						LegacyOwners: []string{
-							sdk.AccAddress([]byte{1, 2, 3, 1}).String(),
-							sdk.AccAddress([]byte{1, 2, 3, 1}).String(),
-						},
-						Weights:   []uint64{1, 1},
-						Threshold: 2,
-					},
-				},
-			},
-			false,
-		},
-		{
 			"threshold over sum of weights",
 			&types.GenesisState{
 				Wallets: []types.Wallet{
@@ -144,42 +108,6 @@ func TestGenesisStateValidate(t *testing.T) {
 						},
 						Weights:   []uint64{1, 1},
 						Threshold: 3,
-					},
-				},
-			},
-			false,
-		},
-		{
-			"invalid owner/legacy combination (filled)",
-			&types.GenesisState{
-				Wallets: []types.Wallet{
-					{
-						Address: sdk.AccAddress([]byte{1, 2, 3}).String(),
-						Owners:  []string{sdk.AccAddress([]byte{1, 2, 3, 4}).String(), ""},
-						LegacyOwners: []string{
-							sdk.AccAddress([]byte{1, 2, 3, 1}).String(),
-							sdk.AccAddress([]byte{1, 2, 3, 2}).String(),
-						},
-						Weights:   []uint64{1, 1},
-						Threshold: 2,
-					},
-				},
-			},
-			false,
-		},
-		{
-			"invalid owner/legacy combination (empty)",
-			&types.GenesisState{
-				Wallets: []types.Wallet{
-					{
-						Address: sdk.AccAddress([]byte{1, 2, 3}).String(),
-						Owners:  []string{"", ""},
-						LegacyOwners: []string{
-							"",
-							sdk.AccAddress([]byte{1, 2, 3, 2}).String(),
-						},
-						Weights:   []uint64{1, 1},
-						Threshold: 2,
 					},
 				},
 			},
