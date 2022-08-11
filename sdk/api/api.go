@@ -151,14 +151,22 @@ func (api *API) restGetParameters() error {
 	if err != nil {
 		return err
 	}
+
 	// process results
+	api.chainID = respValue.Result.Genesis.ChainID
+	api.baseCoin = respValue.Result.Genesis.AppState.Coin.Params.BaseSymbol
+
+	gas := respValue.Result.Genesis.ConsensusParams.Block.MaxGas
+	if gas == "-1" {
+		return nil
+	}
+
 	maxGas, err := strconv.ParseUint(respValue.Result.Genesis.ConsensusParams.Block.MaxGas, 10, 64)
 	if err != nil {
 		return err
 	}
-	api.chainID = respValue.Result.Genesis.ChainID
-	api.baseCoin = respValue.Result.Genesis.AppState.Coin.Params.BaseSymbol
 	api.maxGas = maxGas
+
 	return nil
 }
 
