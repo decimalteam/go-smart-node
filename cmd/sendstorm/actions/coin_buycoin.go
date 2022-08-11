@@ -48,7 +48,7 @@ func (abg *BuyCoinGenerator) Generate() Action {
 	var coinInfo dscApi.Coin
 	var amountToSell sdk.Int
 	var coinName string
-	if len(abg.knownCoins) == 1 {
+	if len(abg.knownCoins) <= 1 {
 		return &EmptyAction{}
 	}
 	for {

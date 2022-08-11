@@ -140,8 +140,6 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 	// update info
 	ui := stormActions.UpdateInfo{}
 	ui.MultisigBalances = make(map[string]sdk.Coins)
-	// TODO: GRPC api.Coins() doesn't return base coin
-	ui.Coins = append(ui.Coins, reactor.api.BaseCoin())
 
 	coins, err := reactor.api.Coins()
 	if err != nil {
