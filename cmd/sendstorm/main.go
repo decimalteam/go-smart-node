@@ -195,7 +195,7 @@ func cmdRun() *cobra.Command {
 			}
 			reactor := stormReactor{}
 			// init
-			doCommitTx, err := cmd.Flags().GetBool(turnOnDebug)
+			doCommitTx, err := cmd.Flags().GetBool(commitFlag)
 			if err != nil {
 				fmt.Println(err)
 				return

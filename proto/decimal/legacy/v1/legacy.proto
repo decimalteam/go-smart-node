@@ -1,0 +1,51 @@
+syntax = "proto3";
+package decimal.legacy.v1;
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/legacy/types";
+
+message LegacyRecord {
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // old address
+  string address = 1 [
+    (gogoproto.jsontag) = "address",
+    (gogoproto.moretags) = "yaml:\"address\""
+  ];
+
+  // account balance
+  repeated cosmos.base.v1beta1.Coin coins = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "coins",
+    (gogoproto.moretags) = "yaml:\"coins\"",
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+
+  // nft token ids
+  repeated NFTRecord nfts = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "nfts",
+    (gogoproto.moretags) = "yaml:\"nfts\""
+  ];
+
+  // multisig wallets addresses
+  repeated string wallets = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "wallets",
+    (gogoproto.moretags) = "yaml:\"wallets\""
+  ];
+}
+
+message NFTRecord {
+  string denom = 1 [
+    (gogoproto.jsontag) = "denom",
+    (gogoproto.moretags) = "yaml:\"denom\""    
+  ];
+  string id = 2 [
+    (gogoproto.jsontag) = "id",
+    (gogoproto.moretags) = "yaml:\"id\""    
+  ];
+};

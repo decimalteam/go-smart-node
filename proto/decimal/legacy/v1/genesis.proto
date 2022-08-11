@@ -1,0 +1,17 @@
+syntax = "proto3";
+package decimal.legacy.v1;
+
+import "gogoproto/gogo.proto";
+import "decimal/legacy/v1/legacy.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/legacy/types";
+
+// GenesisState defines the module's genesis state.
+message GenesisState {
+  // legacy records
+  repeated LegacyRecord legacyRecords = 1 [
+    (gogoproto.jsontag) = "legacy_records",
+    (gogoproto.moretags) = "yaml:\"legacy_records\"",
+    (gogoproto.nullable) = false
+  ];    
+}
