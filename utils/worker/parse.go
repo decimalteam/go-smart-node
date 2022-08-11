@@ -16,11 +16,9 @@ func (w *Worker) parseTxInfo(tx sdk.Tx) (txInfo TxInfo) {
 		return
 	}
 	for _, rawMsg := range tx.GetMsgs() {
-		params, err := w.cdc.Marshaler.MarshalJSON(rawMsg)
-		w.panicError(err)
 		var msg TxMsg
 		msg.Type = sdk.MsgTypeURL(rawMsg)
-		msg.Params = params
+		msg.Params = string(w.cdc.Marshaler.MustMarshalJSON(rawMsg))
 		for _, signer := range rawMsg.GetSigners() {
 			msg.From = append(msg.From, signer.String())
 		}
