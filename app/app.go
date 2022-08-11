@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 
 	//"github.com/tharsis/evmos/v3/x/claims"
@@ -43,6 +44,7 @@ import (
 	upgradeclient "bitbucket.org/decimalteam/go-smart-node/x/upgrade/client"
 	upgradekeeper "bitbucket.org/decimalteam/go-smart-node/x/upgrade/keeper"
 	upgradetypes "bitbucket.org/decimalteam/go-smart-node/x/upgrade/types"
+
 	// SDK modules
 	auth "github.com/cosmos/cosmos-sdk/x/auth"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
@@ -120,6 +122,7 @@ import (
 	inflation "github.com/tharsis/evmos/v3/x/inflation"
 	inflationkeeper "github.com/tharsis/evmos/v3/x/inflation/keeper"
 	inflationtypes "github.com/tharsis/evmos/v3/x/inflation/types"
+
 	//recoverytypes "github.com/tharsis/evmos/v3/x/recovery/types"
 	vesting "github.com/tharsis/evmos/v3/x/vesting"
 	vestingkeeper "github.com/tharsis/evmos/v3/x/vesting/keeper"
@@ -144,6 +147,10 @@ import (
 	nft "bitbucket.org/decimalteam/go-smart-node/x/nft"
 	nftkeeper "bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+
+	legacy "bitbucket.org/decimalteam/go-smart-node/x/legacy"
+	legacykeeper "bitbucket.org/decimalteam/go-smart-node/x/legacy/keeper"
+	legacytypes "bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 )
 
 var (
@@ -216,6 +223,7 @@ var (
 		coin.AppModuleBasic{},
 		multisig.AppModuleBasic{},
 		nft.AppModuleBasic{},
+		legacy.AppModuleBasic{},
 	)
 
 	// Module account permissions
@@ -234,7 +242,7 @@ var (
 		cointypes.ModuleName:       {authtypes.Minter, authtypes.Burner},
 		nfttypes.ReservedPool:      {authtypes.Minter, authtypes.Burner},
 		// special account to hold legacy balances
-		cointypes.LegacyCoinPool: nil,
+		legacytypes.LegacyCoinPool: nil,
 	}
 
 	// Module accounts that are allowed to receive tokens
@@ -308,6 +316,7 @@ type DSC struct {
 	CoinKeeper     coinkeeper.Keeper
 	MultisigKeeper multisigkeeper.Keeper
 	NFTKeeper      nftkeeper.Keeper
+	LegacyKeeper   legacykeeper.Keeper
 
 	// Module manager
 	mm *module.Manager
@@ -384,6 +393,7 @@ func NewDSC(
 		cointypes.StoreKey,
 		multisigtypes.StoreKey,
 		nfttypes.StoreKey,
+		legacytypes.StoreKey,
 	)
 
 	// Add the EVM transient store key
@@ -688,6 +698,14 @@ func NewDSC(
 	)
 	app.NFTKeeper = *nftKeeper
 
+	app.LegacyKeeper = *legacykeeper.NewKeeper(
+		appCodec,
+		keys[legacytypes.StoreKey],
+		app.BankKeeper,
+		app.NFTKeeper,
+		app.MultisigKeeper,
+	)
+
 	/****  Module Options ****/
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
@@ -730,6 +748,7 @@ func NewDSC(
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
 		multisig.NewAppModule(appCodec, app.MultisigKeeper, app.AccountKeeper, app.BankKeeper),
 		nft.NewAppModule(app.NFTKeeper, app.AccountKeeper),
+		legacy.NewAppModule(app.appCodec, app.LegacyKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -769,6 +788,7 @@ func NewDSC(
 		cointypes.ModuleName,
 		multisigtypes.ModuleName,
 		nfttypes.ModuleName,
+		legacytypes.ModuleName,
 	)
 
 	// NOTE: fee market module must go last in order to retrieve the block gas used.
@@ -803,6 +823,7 @@ func NewDSC(
 		cointypes.ModuleName,
 		multisigtypes.ModuleName,
 		nfttypes.ModuleName,
+		legacytypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -842,6 +863,7 @@ func NewDSC(
 		cointypes.ModuleName,
 		multisigtypes.ModuleName,
 		nfttypes.ModuleName,
+		legacytypes.ModuleName,
 		// NOTE: crisis module must go at the end to check for invariants on each module
 		crisistypes.ModuleName,
 	)
@@ -892,6 +914,7 @@ func NewDSC(
 		//IBCKeeper:       app.IBCKeeper,
 		FeeMarketKeeper: app.FeeMarketKeeper,
 		CoinKeeper:      &app.CoinKeeper,
+		LegacyKeeper:    &app.LegacyKeeper,
 		SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 		SigGasConsumer:  SigVerificationGasConsumer,
 		Cdc:             appCodec,

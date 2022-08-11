@@ -1,10 +1,11 @@
-package main
+package actions
 
 import (
 	"fmt"
 	"math/rand"
 	"time"
 
+	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
@@ -52,7 +53,7 @@ func (aug *UpdateCoinGenerator) Generate() Action {
 		return &EmptyAction{}
 	}
 	for {
-		coinName = randomChoice(aug.rnd, aug.knownCoins)
+		coinName = RandomChoice(aug.rnd, aug.knownCoins)
 		if coinName != aug.baseCoin {
 			break
 		}
@@ -64,7 +65,7 @@ func (aug *UpdateCoinGenerator) Generate() Action {
 		}
 	}
 
-	delta := helpers.FinneyToWei(sdk.NewInt(randomRange(aug.rnd, aug.bottomRange, aug.upperRange)))
+	delta := helpers.FinneyToWei(sdk.NewInt(RandomRange(aug.rnd, aug.bottomRange, aug.upperRange)))
 
 	creator, err := sdk.AccAddressFromBech32(coinInfo.Creator)
 	if err != nil {
@@ -75,17 +76,17 @@ func (aug *UpdateCoinGenerator) Generate() Action {
 		creator:        creator,
 		symbol:         coinName,
 		newLimitVolume: coinInfo.LimitVolume.Add(delta),
-		newIdentity:    randomString(aug.rnd, 30, charsAll),
+		newIdentity:    RandomString(aug.rnd, 30, charsAll),
 	}
 }
 
-func (au *UpdateCoinAction) ChooseAccounts(saList []*StormAccount) []*StormAccount {
-	var res []*StormAccount
+func (au *UpdateCoinAction) ChooseAccounts(saList []*stormTypes.StormAccount) []*stormTypes.StormAccount {
+	var res []*stormTypes.StormAccount
 	for i := range saList {
 		if saList[i].IsDirty() {
 			continue
 		}
-		if !saList[i].account.SdkAddress().Equals(au.creator) {
+		if !saList[i].Account().SdkAddress().Equals(au.creator) {
 			continue
 		}
 		res = append(res, saList[i])
@@ -93,7 +94,7 @@ func (au *UpdateCoinAction) ChooseAccounts(saList []*StormAccount) []*StormAccou
 	return res
 }
 
-func (au *UpdateCoinAction) GenerateTx(sa *StormAccount) ([]byte, error) {
+func (au *UpdateCoinAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, error) {
 	sender, err := sdk.AccAddressFromBech32(sa.Address())
 	if err != nil {
 		return nil, err

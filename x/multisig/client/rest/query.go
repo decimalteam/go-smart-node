@@ -13,25 +13,25 @@ import (
 func registerQueryRoutes(clientCtx client.Context, r *mux.Router) {
 	// Get wallet
 	r.HandleFunc(
-		"/wallet/{address}",
+		"/multisig/wallet/{address}",
 		getHandlerFn(clientCtx, types.QueryWallet, "address"),
 	).Methods("GET")
 
 	// Get wallets by owner
 	r.HandleFunc(
-		"/wallets/{owner}",
+		"/multisig/wallets/{owner}",
 		getHandlerFn(clientCtx, types.QueryWallets, "owner"),
 	).Methods("GET")
 
 	// Get transaction by id
 	r.HandleFunc(
-		"/transaction/{tx_id}",
+		"/multisig/transaction/{tx_id}",
 		getHandlerFn(clientCtx, types.QueryTransaction, "tx_id"),
 	).Methods("GET")
 
 	// Get transactions by wallet
 	r.HandleFunc(
-		"/transactions/{wallet}",
+		"/multisig/transactions/{wallet}",
 		getHandlerFn(clientCtx, types.QueryTransactions, "wallet"),
 	).Methods("GET")
 

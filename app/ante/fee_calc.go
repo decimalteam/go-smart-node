@@ -2,6 +2,7 @@ package ante
 
 import (
 	"fmt"
+
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
@@ -65,8 +66,6 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec) (sdk.Int, er
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(createTransactionFee)
 		case *multisigTypes.MsgSignTransaction:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(signTransactionFee)
-		case *multisigTypes.MsgActualizeLegacyAddress:
-			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *nftTypes.MsgMintNFT:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *nftTypes.MsgBurnNFT:

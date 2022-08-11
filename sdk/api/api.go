@@ -6,16 +6,23 @@ import (
 	"strconv"
 	"time"
 
-	config "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	resty "github.com/go-resty/resty/v2"
+	"google.golang.org/grpc"
+
+	config "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
+
+// this is default limit for queries with pagination
+const queryLimit = 10
 
 // API struct accumulates all queries to blockchain node
 // and makes broadcast of prepared transaction
 type API struct {
-	rpc  *resty.Client // this is interface
-	rest *resty.Client
+	rpc        *resty.Client // this is interface
+	grpcClient *grpc.ClientConn
+
+	useGRPC bool
 
 	// network parameters from genesis
 	chainID  string
@@ -24,11 +31,12 @@ type API struct {
 }
 
 type ConnectionOptions struct {
-	EndpointHost   string // hostname or IP as http://<...>
+	EndpointHost   string // hostname or IP without any protocol description like "http://"
 	TendermintPort int    // tendermint RPC port, default 26657
-	RestPort       int    // REST server port, default 1317
+	GRPCPort       int    // gRPC port, default 9090
 	Timeout        uint   // timeout in seconds
 	Debug          bool   //turn on debugging via stdlib log
+	UseGRPC        bool
 }
 
 //resty logger implementation
@@ -50,13 +58,14 @@ func (l log2log) Debugf(format string, v ...interface{}) {
 	log.Printf("L2LDBG:"+format, v...)
 }
 
-func NewAPI(opts ConnectionOptions) *API {
+func NewAPI(opts ConnectionOptions) (*API, error) {
+	var err error
 	api := &API{}
 	if opts.TendermintPort == 0 {
 		opts.TendermintPort = 26657
 	}
-	if opts.RestPort == 0 {
-		opts.RestPort = 1317
+	if opts.GRPCPort == 0 {
+		opts.GRPCPort = 9090
 	}
 	if opts.Timeout == 0 {
 		opts.Timeout = 10
@@ -64,19 +73,29 @@ func NewAPI(opts ConnectionOptions) *API {
 	// rpc client
 	api.rpc = resty.New().
 		SetTimeout(time.Duration(opts.Timeout) * time.Second).
-		SetBaseURL(fmt.Sprintf("%s:%d", opts.EndpointHost, opts.TendermintPort))
-	// rest client
-	api.rest = resty.New().
-		SetTimeout(time.Duration(opts.Timeout) * time.Second).
-		SetBaseURL(fmt.Sprintf("%s:%d", opts.EndpointHost, opts.RestPort))
+		SetBaseURL(fmt.Sprintf("http://%s:%d", opts.EndpointHost, opts.TendermintPort))
+	// gRPC client
+	if opts.UseGRPC {
+		api.useGRPC = true
+		api.grpcClient, err = grpc.Dial(
+			fmt.Sprintf("%s:%d", opts.EndpointHost, opts.GRPCPort), // your gRPC server address.
+			grpc.WithInsecure(), // The Cosmos SDK doesn't support any transport security mechanism.
+		)
+		if err != nil {
+			return nil, err
+		}
+	}
 	//
 	if opts.Debug {
-		api.rest = api.rest.SetDebug(true).SetLogger(log2log{})
 		api.rpc = api.rpc.SetDebug(true).SetLogger(log2log{})
 	}
 	// init global cosmos sdk prefixes
 	initConfig()
-	return api
+	return api, nil
+}
+
+func (api *API) Close() error {
+	return api.grpcClient.Close()
 }
 
 // ChainID() returns blockchain network chain id
@@ -96,6 +115,10 @@ func (api *API) BaseCoin() string {
 
 // GetParameters() get blockchain parameters
 func (api *API) GetParameters() error {
+	return api.restGetParameters()
+}
+
+func (api *API) restGetParameters() error {
 	type respDirectGenesis struct {
 		Result struct {
 			Genesis struct {

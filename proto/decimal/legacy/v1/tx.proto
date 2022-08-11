@@ -1,0 +1,9 @@
+syntax = "proto3";
+package decimal.legacy.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/legacy/types";
+
+service Msg {
+}

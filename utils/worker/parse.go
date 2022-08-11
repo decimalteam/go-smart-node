@@ -1,6 +1,8 @@
 package worker
 
 import (
+	"encoding/json"
+
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,7 +18,8 @@ func (w *Worker) parseTxInfo(tx sdk.Tx) (txInfo TxInfo) {
 		return
 	}
 	for _, rawMsg := range tx.GetMsgs() {
-		params, err := w.cdc.Marshaler.MarshalJSON(rawMsg)
+		params := make(map[string]interface{})
+		err := json.Unmarshal(w.cdc.Marshaler.MustMarshalJSON(rawMsg), &params)
 		w.panicError(err)
 		var msg TxMsg
 		msg.Type = sdk.MsgTypeURL(rawMsg)
