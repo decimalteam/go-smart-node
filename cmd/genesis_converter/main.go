@@ -126,7 +126,7 @@ func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
 	}
 	// transactions
 	gsNew.AppState.Multisig.Transactions, err =
-		convertMultisigTransactions(gsOld.AppState.Multisig.Transactions, addrTable)
+		convertMultisigTransactions(gsOld.AppState.Multisig.Transactions, addrTable, gsOld.AppState.Multisig.Wallets)
 	if err != nil {
 		return GenesisNew{}, Statistic{}, err
 	}

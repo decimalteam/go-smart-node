@@ -116,10 +116,32 @@ func convertMultisigWallets(walletsOld []WalletOld, addrTable *AddressTable, leg
 	return res, nil
 }
 
-func convertMultisigTransactions(transactionsOld []TransactionOld, addrTable *AddressTable) ([]TransactionNew, error) {
+func isTxIncomplete(tx TransactionOld, wallet WalletOld) bool {
+	threshold, _ := strconv.ParseUint(wallet.Threshold, 10, 64)
+	wsum := uint64(0)
+	for i := range tx.Signers {
+		if tx.Signers[i] > "" {
+			w, _ := strconv.ParseUint(wallet.Weights[i], 10, 64)
+			wsum += w
+		}
+	}
+	return wsum >= threshold
+}
+
+func convertMultisigTransactions(transactionsOld []TransactionOld, addrTable *AddressTable, walletsOld []WalletOld) ([]TransactionNew, error) {
 	var res []TransactionNew
 	for _, txOld := range transactionsOld {
 		if addrTable.GetAddress(txOld.Receiver) == "" {
+			continue
+		}
+		wallet := WalletOld{}
+		for _, w := range walletsOld {
+			if txOld.Wallet == w.Address {
+				wallet = w
+				break
+			}
+		}
+		if isTxIncomplete(txOld, wallet) {
 			continue
 		}
 		newTx := TransactionO2N(txOld, addrTable)
