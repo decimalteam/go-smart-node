@@ -32,14 +32,21 @@ type GenesisNew struct {
 			Wallets      []WalletNew      `json:"wallets"`
 		} `json:"multisig"`
 		Coin struct {
-			Params         interface{}        `json:"params"`
-			Coins          []FullCoinNew      `json:"coins"`
-			LegacyBalances []LegacyBalanceNew `json:"legacyBalances"`
+			Params interface{}   `json:"params"`
+			Coins  []FullCoinNew `json:"coins"`
 		} `json:"coin"`
 		NFT struct {
-			Collections []CollectionNew `json:"collections"`
-			NFTs        []NFTNew        `json:"nfts"`
+			Collections []CollectionNew         `json:"collections"`
+			NFTs        []NFTNew                `json:"nfts"`
+			SubTokens   map[string]SubTokensNew `json:"subTokens"`
 		} `json:"nft"`
+		Legacy struct {
+			LegacyRecords []LegacyRecordNew `json:"legacyRecords"`
+		} `json:"legacy"`
+		//
+		Genutils struct {
+			Gentxs []interface{} `json:"gen_txs"`
+		} `json:"genutil"`
 		// other modules
 		Authz        interface{} `json:"authz"`
 		Capability   interface{} `json:"capability"`
@@ -157,11 +164,6 @@ type FullCoinNew struct {
 	Volume      string `json:"volume"`
 }
 
-type LegacyBalanceNew struct {
-	Address string    `json:"address"`
-	Coins   sdk.Coins `json:"coins"`
-}
-
 func FullCoinO2N(coin FullCoinOld, addrTable *AddressTable) FullCoinNew {
 	return FullCoinNew{
 		CRR:         coin.CRR,
@@ -176,37 +178,81 @@ func FullCoinO2N(coin FullCoinOld, addrTable *AddressTable) FullCoinNew {
 }
 
 ///////////////////////////
+// Legacy
+///////////////////////////
+type LegacyRecordNew struct {
+	Address string      `json:"address"`
+	Coins   sdk.Coins   `json:"coins"`
+	NFTs    []NFTRecord `json:"nfts"`
+	Wallets []string    `json:"wallets"`
+}
+
+type NFTRecord struct {
+	Denom string `json:"denom"`
+	ID    string `json:"id"`
+}
+
+type LegacyRecords struct {
+	data map[string]*LegacyRecordNew
+}
+
+func NewLegacyRecords() *LegacyRecords {
+	return &LegacyRecords{make(map[string]*LegacyRecordNew)}
+}
+
+func (rs *LegacyRecords) AddCoins(address string, coins sdk.Coins) {
+	rec, ok := rs.data[address]
+	if !ok {
+		rec = &LegacyRecordNew{Address: address}
+	}
+	rec.Coins = rec.Coins.Add(coins...)
+	rs.data[address] = rec
+}
+
+func (rs *LegacyRecords) AddNFT(address string, denom, id string) {
+	rec, ok := rs.data[address]
+	if !ok {
+		rec = &LegacyRecordNew{Address: address}
+	}
+	rec.NFTs = append(rec.NFTs, NFTRecord{Denom: denom, ID: id})
+	rs.data[address] = rec
+}
+
+func (rs *LegacyRecords) AddWallet(address string, wallet string) {
+	rec, ok := rs.data[address]
+	if !ok {
+		rec = &LegacyRecordNew{Address: address}
+	}
+	rec.Wallets = append(rec.Wallets, wallet)
+	rs.data[address] = rec
+}
+
+///////////////////////////
 // Multisig
 ///////////////////////////
 
 type WalletNew struct {
-	Address      string   `json:"address"`
-	Owners       []string `json:"owners"`
-	Threshold    string   `json:"threshold"`
-	Weights      []string `json:"weights"`
-	LegacyOwners []string `json:"legacyOwners,omitempty"`
+	Address   string   `json:"address"`
+	Owners    []string `json:"owners"`
+	Threshold string   `json:"threshold"`
+	Weights   []string `json:"weights"`
 }
 
-func WalletO2N(wallet WalletOld, addrTable *AddressTable) WalletNew {
-	var hasLegacy = false
+func WalletO2N(wallet WalletOld, addrTable *AddressTable, legacyRecords *LegacyRecords) WalletNew {
 	var result = WalletNew{
 		Address: wallet.Address,
 	}
 	result.Owners = make([]string, len(wallet.Owners))
-	result.LegacyOwners = make([]string, len(wallet.Owners))
 	result.Weights = wallet.Weights
 	result.Threshold = wallet.Threshold
 	for i := range wallet.Owners {
 		newAddress := addrTable.GetAddress(wallet.Owners[i])
 		if newAddress == "" {
-			result.LegacyOwners[i] = wallet.Owners[i]
-			hasLegacy = true
+			result.Owners[i] = wallet.Owners[i]
+			legacyRecords.AddWallet(wallet.Owners[i], wallet.Address)
 		} else {
 			result.Owners[i] = newAddress
 		}
-	}
-	if !hasLegacy {
-		result.LegacyOwners = nil
 	}
 	return result
 }
@@ -259,4 +305,13 @@ type NFTNew struct {
 type OwnerNew struct {
 	SubTokenIDs []string `json:"SubTokenIDs"`
 	Address     string   `json:"address"`
+}
+
+type SubTokensNew struct {
+	SubTokens []SubTokenNew `json:"subTokens"`
+}
+
+type SubTokenNew struct {
+	ID      string `json:"ID"`
+	Reserve string `json:"reserve"`
 }

@@ -108,8 +108,9 @@ func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
 	}
 	gsNew.AppState.Auth.Accounts = accsNew
 	// balances
-	gsNew.AppState.Bank.Balances, gsNew.AppState.Coin.LegacyBalances, err =
-		convertBalances(gsOld.AppState.Auth.Accounts, addrTable)
+	legacyRecords := NewLegacyRecords()
+	gsNew.AppState.Bank.Balances, err =
+		convertBalances(gsOld.AppState.Auth.Accounts, addrTable, legacyRecords)
 	if err != nil {
 		return GenesisNew{}, Statistic{}, err
 	}
@@ -119,7 +120,7 @@ func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
 		return GenesisNew{}, Statistic{}, err
 	}
 	// multisig wallets
-	gsNew.AppState.Multisig.Wallets, err = convertMultisigWallets(gsOld.AppState.Multisig.Wallets, addrTable)
+	gsNew.AppState.Multisig.Wallets, err = convertMultisigWallets(gsOld.AppState.Multisig.Wallets, addrTable, legacyRecords)
 	if err != nil {
 		return GenesisNew{}, Statistic{}, err
 	}
@@ -131,9 +132,35 @@ func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
 	}
 	// nft
 	gsNew.AppState.NFT.Collections, gsNew.AppState.NFT.NFTs, err =
-		convertNFT(gsOld.AppState.NFT.Collections, addrTable)
+		convertNFT(gsOld.AppState.NFT.Collections, addrTable, legacyRecords)
 	if err != nil {
 		return GenesisNew{}, Statistic{}, err
+	}
+	gsNew.AppState.NFT.SubTokens, err =
+		convertSubTokens(gsOld.AppState.NFT.SubTokens)
+	if err != nil {
+		return GenesisNew{}, Statistic{}, err
+	}
+	// legacy records
+	var records []LegacyRecordNew
+	for _, v := range legacyRecords.data {
+		records = append(records, *v)
+	}
+	gsNew.AppState.Legacy.LegacyRecords = records
+	// validate NFT subtokens
+	invalidSubtokens := verifySubtokens(gsOld.AppState.NFT.SubTokens, gsOld.AppState.NFT.Collections,
+		gsOld.AppState.Validator.DelegationsNFT, gsOld.AppState.Validator.UndondingNFT)
+	for key, cnt := range invalidSubtokens {
+		fmt.Printf("invalid subtoken nft: %#v == %#v\n", key, *cnt)
+	}
+	// validate coins
+	coinDiffs := verifyCoinsVolume(gsOld.AppState.Coin.Coins, gsOld.AppState.Auth.Accounts,
+		gsOld.AppState.Validator.Delegations, gsOld.AppState.Validator.Unbondings)
+	for _, diff := range coinDiffs {
+		if !diff.BCSum.Equal(diff.Volume) {
+			fmt.Printf("%s invalid coin volume (sum in blockchain, volume in storage):  %s != %s (GT:%v)\n",
+				diff.Symbol, diff.BCSum.String(), diff.Volume.String(), diff.BCSum.GT(diff.Volume))
+		}
 	}
 	return gsNew, Statistic{}, nil
 }

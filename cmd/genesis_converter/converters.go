@@ -65,10 +65,9 @@ func convertAccounts(accsOld []AccountOld, addrTable *AddressTable) ([]interface
 	return res, nil
 }
 
-func convertBalances(accsOld []AccountOld, addrTable *AddressTable) ([]BalanceNew, []LegacyBalanceNew, error) {
+func convertBalances(accsOld []AccountOld, addrTable *AddressTable, legacyRecords *LegacyRecords) ([]BalanceNew, error) {
 	var res []BalanceNew
 	var legacyBalance = sdk.NewCoins()
-	var legacyRecords []LegacyBalanceNew
 	for _, acc := range accsOld {
 		if acc.Value.Address == "" {
 			continue
@@ -83,28 +82,21 @@ func convertBalances(accsOld []AccountOld, addrTable *AddressTable) ([]BalanceNe
 		if acc.Typ == accountTypeModule {
 			newAddress = addrTable.GetModule(acc.Value.Name).address
 			if newAddress == "" {
-				return []BalanceNew{}, []LegacyBalanceNew{}, fmt.Errorf("address %s: unknown module name '%s'", acc.Value.Address, acc.Value.Name)
+				return []BalanceNew{}, fmt.Errorf("address %s: unknown module name '%s'", acc.Value.Address, acc.Value.Name)
 			}
 		}
-		coins := sdk.NewCoins()
-		for _, c := range acc.Value.Coins {
-			amount, ok := sdk.NewIntFromString(c.Amount)
-			if !ok {
-				return []BalanceNew{}, []LegacyBalanceNew{}, fmt.Errorf("address %s: cannot convert '%s' to sdk.Int", acc.Value.Address, c.Amount)
-			}
-			coins = coins.Add(sdk.NewCoin(c.Denom, amount))
-		}
+		coins := acc.Value.Coins
 		if newAddress > "" {
 			res = append(res, BalanceNew{Address: newAddress, Coins: coins})
 		} else {
 			// empty address: no multisig, no module
 			legacyBalance = legacyBalance.Add(coins...)
-			legacyRecords = append(legacyRecords, LegacyBalanceNew{Address: acc.Value.Address, Coins: coins})
+			legacyRecords.AddCoins(acc.Value.Address, coins)
 		}
 	}
 	// legacy_coin_pool
 	res = append(res, BalanceNew{Address: addrTable.GetModule("legacy_coin_pool").address, Coins: legacyBalance})
-	return res, legacyRecords, nil
+	return res, nil
 }
 
 func convertCoins(coinsOld []FullCoinOld, addrTable *AddressTable) ([]FullCoinNew, error) {
@@ -115,10 +107,10 @@ func convertCoins(coinsOld []FullCoinOld, addrTable *AddressTable) ([]FullCoinNe
 	return res, nil
 }
 
-func convertMultisigWallets(walletsOld []WalletOld, addrTable *AddressTable) ([]WalletNew, error) {
+func convertMultisigWallets(walletsOld []WalletOld, addrTable *AddressTable, legacyRecords *LegacyRecords) ([]WalletNew, error) {
 	var res []WalletNew
 	for _, wallet := range walletsOld {
-		newWallet := WalletO2N(wallet, addrTable)
+		newWallet := WalletO2N(wallet, addrTable, legacyRecords)
 		res = append(res, newWallet)
 	}
 	return res, nil
@@ -136,10 +128,9 @@ func convertMultisigTransactions(transactionsOld []TransactionOld, addrTable *Ad
 	return res, nil
 }
 
-func convertNFT(collectionsOld map[string]CollectionOld, addrTable *AddressTable) ([]CollectionNew, []NFTNew, error) {
+func convertNFT(collectionsOld map[string]CollectionOld, addrTable *AddressTable, legacyRecords *LegacyRecords) ([]CollectionNew, []NFTNew, error) {
 	var collectionsNew []CollectionNew
 	var nftsNew []NFTNew
-	unknownOwners := 0
 	for _, colOld := range collectionsOld {
 		colNew := CollectionNew{Denom: colOld.Denom}
 		for _, nftOld := range colOld.NFT {
@@ -165,10 +156,11 @@ func convertNFT(collectionsOld map[string]CollectionOld, addrTable *AddressTable
 				}
 				ownerAddress := addrTable.GetAddress(ownerOld.Address)
 				if ownerAddress == "" {
-					unknownOwners++
-					//	return []CollectionNew{}, []NFTNew{}, fmt.Errorf("unknown owner %s for nft %s", ownerOld.Address, nftOld.ID)
+					legacyRecords.AddNFT(ownerOld.Address, colOld.Denom, nftOld.ID)
+					owners = append(owners, OwnerNew{Address: ownerOld.Address, SubTokenIDs: subs})
+				} else {
+					owners = append(owners, OwnerNew{Address: ownerAddress, SubTokenIDs: subs})
 				}
-				owners = append(owners, OwnerNew{Address: ownerAddress, SubTokenIDs: subs})
 			}
 			nftNew.Owners = owners
 			nftsNew = append(nftsNew, nftNew)
@@ -176,6 +168,15 @@ func convertNFT(collectionsOld map[string]CollectionOld, addrTable *AddressTable
 		}
 		collectionsNew = append(collectionsNew, colNew)
 	}
-	fmt.Printf("unknownOwners=%d\n", unknownOwners)
 	return collectionsNew, nftsNew, nil
+}
+
+func convertSubTokens(subsOld []SubTokenOld) (map[string]SubTokensNew, error) {
+	var subsNew = make(map[string]SubTokensNew)
+	for _, sub := range subsOld {
+		newSub := subsNew[sub.NftID]
+		newSub.SubTokens = append(newSub.SubTokens, SubTokenNew{ID: sub.ID, Reserve: sub.Reserve})
+		subsNew[sub.NftID] = newSub
+	}
+	return subsNew, nil
 }

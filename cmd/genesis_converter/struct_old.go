@@ -21,7 +21,14 @@ type GenesisOld struct {
 		} `json:"coin"`
 		NFT struct {
 			Collections map[string]CollectionOld `json:"collections"`
+			SubTokens   []SubTokenOld            `json:"sub_tokens"`
 		} `json:"nft"`
+		Validator struct {
+			Delegations    []DelegationOld      `json:"delegations"`
+			DelegationsNFT []DelegationNFT      `json:"delegations_nft"`
+			UndondingNFT   []UnbondingNFTRecord `json:"nft_unbonding_delegations"`
+			Unbondings     []UnbondingRecord    `json:"unbonding_delegations"`
+		} `json:"validator"`
 	} `json:"app_state"`
 }
 
@@ -38,7 +45,7 @@ type AccountOld struct {
 		Name          string    `json:"name"` //human-readable name for module accounts
 		AccountNumber string    `json:"account_number"`
 		Address       string    `json:"address"`
-		Coins         []CoinOld `json:"coins"`
+		Coins         sdk.Coins `json:"coins"`
 		// public key value is base64 encoded bytes
 		PublicKey interface{} `json:"public_key"` // key can be null, empty string for module account or map[string]interface{}
 		Sequence  string      `json:"sequence"`
@@ -118,4 +125,57 @@ type NFTOld struct {
 type OwnerOld struct {
 	Address     string   `json:"address"`
 	SubTokenIds []uint64 `json:"sub_token_ids"`
+}
+
+type SubTokenOld struct {
+	Denom   string `json:"collection_denom"`
+	NftID   string `json:"nft_id"`
+	Reserve string `json:"reserve"`
+	ID      string `json:"token_id"`
+}
+
+///////////////////////////
+// Validator
+///////////////////////////
+type DelegationNFT struct {
+	Coin             sdk.Coin `json:"coin"`
+	DelegatorAddress string   `json:"delegator_address"`
+	Denom            string   `json:"denom"`
+	SubTokenIds      []string `json:"sub_token_ids"`
+	TokenID          string   `json:"token_id"`
+	Validator        string   `json:"validator_address"`
+}
+
+type UnbondingNFTRecord struct {
+	DelegatorAddress string              `json:"delegator_address"`
+	Validator        string              `json:"validator_address"`
+	Entries          []UnbondingNFTEntry `json:"entries"`
+}
+
+type UnbondingNFTEntry struct {
+	// TODO: complete
+	Denom       string   `json:"denom"`
+	TokenID     string   `json:"token_id"`
+	SubTokenIds []string `json:"sub_token_ids"`
+}
+
+type DelegationOld struct {
+	Coin             sdk.Coin `json:"coin"`
+	DelegatorAddress string   `json:"delegator_address"`
+	Validator        string   `json:"validator_address"`
+	TokensBase       string   `json:"tokens_base"`
+}
+
+type UnbondingRecord struct {
+	DelegatorAddress string           `json:"delegator_address"`
+	Validator        string           `json:"validator_address"`
+	Entries          []UnbondingEntry `json:"entries"`
+}
+
+type UnbondingEntry struct {
+	// TODO: complete
+	Value struct {
+		Balance        sdk.Coin `json:"balance"`
+		InitialBalance sdk.Coin `json:"initial_balance"`
+	} `json:"value"`
 }
