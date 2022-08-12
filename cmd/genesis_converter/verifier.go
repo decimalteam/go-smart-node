@@ -88,6 +88,9 @@ func verifyCoinsVolume(coinsOld []FullCoinOld, accsOld []AccountOld,
 	delegations []DelegationOld, unbondings []UnbondingRecord) []CoinDiff {
 	fullSum := sdk.NewCoins()
 	for _, acc := range accsOld {
+		if acc.Value.Name == "bonded_tokens_pool" || acc.Value.Name == "not_bonded_tokens_pool" {
+			continue
+		}
 		fullSum = fullSum.Add(acc.Value.Coins...)
 	}
 	for _, del := range delegations {

@@ -158,8 +158,8 @@ func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
 		gsOld.AppState.Validator.Delegations, gsOld.AppState.Validator.Unbondings)
 	for _, diff := range coinDiffs {
 		if !diff.BCSum.Equal(diff.Volume) {
-			fmt.Printf("%s invalid coin volume (sum in blockchain, volume in storage):  %s != %s (GT:%v)\n",
-				diff.Symbol, diff.BCSum.String(), diff.Volume.String(), diff.BCSum.GT(diff.Volume))
+			fmt.Printf("%s invalid coin volume (sum in blockchain, volume in storage):  %s != %s (dif:%v)\n",
+				diff.Symbol, diff.BCSum.String(), diff.Volume.String(), diff.BCSum.Sub(diff.Volume))
 		}
 	}
 	return gsNew, Statistic{}, nil
