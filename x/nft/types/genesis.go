@@ -48,13 +48,9 @@ func SubTokensInvariantCheck(nfts []BaseNFT, subTokens map[string]SubTokens) (st
 	for _, nft := range nfts {
 		subTokenLength := 0
 
+		// validate: sub tokens count equal to count from owners
 		for _, owner := range nft.GetOwners() {
 			subTokenLength += owner.SubTokenIDs.Len()
-			for _, subToken := range subTokens[nft.ID].SubTokens {
-				if !owner.SubTokenIDs.Has(subToken.ID) {
-					return fmt.Sprintf("unknown sub token id %d for nft %s", subToken.ID, nft.ID), true
-				}
-			}
 		}
 
 		if subTokenLength != len(subTokens[nft.ID].SubTokens) {
@@ -62,6 +58,17 @@ func SubTokensInvariantCheck(nfts []BaseNFT, subTokens map[string]SubTokens) (st
 				"invalid sub tokens len for nft %s (nft len: %d, sub tokens len %d)",
 				nft.ID, subTokenLength, len(subTokens[nft.ID].SubTokens),
 			), true
+		}
+
+		// validate: all subtokens have owners
+		for _, subToken := range subTokens[nft.ID].SubTokens {
+			subTokenHasOwner := false
+			for _, owner := range nft.GetOwners() {
+				subTokenHasOwner = subTokenHasOwner || owner.SubTokenIDs.Has(subToken.ID)
+			}
+			if !subTokenHasOwner {
+				return fmt.Sprintf("unknown sub token id %d for nft %s", subToken.ID, nft.ID), true
+			}
 		}
 	}
 

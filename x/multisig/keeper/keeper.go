@@ -96,6 +96,27 @@ func (k Keeper) GetWallets(ctx sdk.Context, owner string) (wallets []types.Walle
 	return
 }
 
+// GetAllWallets returns all multisig wallets metadata.
+func (k Keeper) GetAllWallets(ctx sdk.Context) (wallets []types.Wallet, err error) {
+	store := ctx.KVStore(k.storeKey)
+
+	for iterator := sdk.KVStorePrefixIterator(store, []byte(types.KeyPrefixWallet)); iterator.Valid(); iterator.Next() {
+		var wallet types.Wallet
+		value := iterator.Value()
+		if len(value) == 0 {
+			err = fmt.Errorf("empty value in the key-value store")
+			return
+		}
+		err = k.cdc.UnmarshalLengthPrefixed(value, &wallet)
+		if err != nil {
+			return
+		}
+		wallets = append(wallets, wallet)
+	}
+
+	return
+}
+
 ////////////////////////////////////////////////////////////////
 // Transaction
 ////////////////////////////////////////////////////////////////
@@ -139,6 +160,26 @@ func (k Keeper) GetTransactions(ctx sdk.Context, wallet string) (transactions []
 		if tx.Wallet == wallet {
 			transactions = append(transactions, tx)
 		}
+	}
+
+	return
+}
+
+func (k Keeper) GetAllTransactions(ctx sdk.Context) (transactions []types.Transaction, err error) {
+	store := ctx.KVStore(k.storeKey)
+
+	for iterator := sdk.KVStorePrefixIterator(store, []byte(types.KeyPrefixTransaction)); iterator.Valid(); iterator.Next() {
+		var tx types.Transaction
+		value := iterator.Value()
+		if len(value) == 0 {
+			err = fmt.Errorf("empty value in the key-value store")
+			return
+		}
+		err = k.cdc.UnmarshalLengthPrefixed(value, &tx)
+		if err != nil {
+			return
+		}
+		transactions = append(transactions, tx)
 	}
 
 	return
