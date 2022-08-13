@@ -34,20 +34,13 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, gs types.GenesisState) {
 		k.SetCheck(ctx, &check)
 		// TODO: Is that enough?
 	}
-
-	for _, balance := range gs.LegacyBalances {
-		// TODO: Validate firstly
-		k.SetLegacyBalance(ctx, balance)
-		// TODO: Is that enough?
-	}
 }
 
 // ExportGenesis returns the module's exported genesis.
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	return &types.GenesisState{
-		Params:         k.GetParams(ctx),
-		Coins:          k.GetCoins(ctx),
-		Checks:         k.GetChecks(ctx),
-		LegacyBalances: k.GetLegacyBalances(ctx),
+		Params: k.GetParams(ctx),
+		Coins:  k.GetCoins(ctx),
+		Checks: k.GetChecks(ctx),
 	}
 }

@@ -15,50 +15,71 @@ service Msg {
 message MsgCreateTransaction {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   string sender = 1 [
+    (gogoproto.jsontag) = "sender",
     (gogoproto.moretags) = "yaml:\"sender\""
   ];
   string wallet = 2 [
+    (gogoproto.jsontag) = "wallet",
     (gogoproto.moretags) = "yaml:\"wallet\""
   ];
   string receiver = 3 [
+    (gogoproto.jsontag) = "receiver",
     (gogoproto.moretags) = "yaml:\"receiver\""
   ];
   repeated cosmos.base.v1beta1.Coin coins = 4 [
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
     (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "coins",
     (gogoproto.moretags) = "yaml:\"coins\""
   ];
 }
 
-message MsgCreateTransactionResponse {}
+message MsgCreateTransactionResponse {
+  string txID = 1 [
+    (gogoproto.jsontag) = "tx_id",
+    (gogoproto.moretags) = "yaml:\"tx_id\""
+  ];  
+}
 
 message MsgCreateWallet {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   string sender = 1 [
+    (gogoproto.jsontag) = "sender",
     (gogoproto.moretags) = "yaml:\"sender\""
   ];
   repeated string owners = 2 [
+    (gogoproto.jsontag) = "owners",
     (gogoproto.moretags) = "yaml:\"owners\""
   ];
   repeated uint64 weights = 3 [
     (gogoproto.moretags) = "yaml:\"weights\""
   ];
   uint64 threshold = 4 [
+    (gogoproto.jsontag) = "threshold",
     (gogoproto.moretags) = "yaml:\"threshold\""
   ];
 }
 
-message MsgCreateWalletResponse {}
+message MsgCreateWalletResponse {
+  string wallet = 1 [
+    (gogoproto.jsontag) = "wallet",
+    (gogoproto.moretags) = "yaml:\"wallet\""    
+  ];
+}
 
 message MsgSignTransaction {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   string sender = 1 [
+    (gogoproto.jsontag) = "sender",
     (gogoproto.moretags) = "yaml:\"sender\""
   ];
   string txID = 2 [

@@ -13,11 +13,14 @@ import (
 // Fee constants in units (10^15)
 const (
 	// completed
-	sendCoinFee         = 10
-	sendMultiCoinAddFee = 5
-	buyCoinFee          = 100
-	sellCoinFee         = 100
-	createCoinFee       = 100
+	sendCoinFee          = 10
+	sendMultiCoinAddFee  = 5
+	buyCoinFee           = 100
+	sellCoinFee          = 100
+	createCoinFee        = 100
+	createWalletFee      = 100
+	createTransactionFee = 100
+	signTransactionFee   = 100
 	// future
 	declareCandidateFee = 10000
 	editCandidateFee    = 10000
@@ -29,10 +32,6 @@ const (
 	burnFee = 10
 
 	//redeemCheckFee = 30
-
-	createWalletFee      = 100
-	createTransactionFee = 100
-	signTransactionFee   = 100
 
 	htltFee = 33000
 )

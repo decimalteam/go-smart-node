@@ -1,0 +1,21 @@
+syntax = "proto3";
+package decimal.legacy.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/legacy/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // stub need to generate client
+  rpc Stub(QueryStubRequest) returns (QueryStubResponse) {
+    option (google.api.http).get = "/legacy/v1/legacy";
+  }
+}
+
+message QueryStubRequest {
+}
+
+message QueryStubResponse {
+}
