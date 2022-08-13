@@ -3,11 +3,13 @@ package ante
 import (
 	"fmt"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	multisigTypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	nftTypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	swapTypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Fee constants in units (10^15)
@@ -58,6 +60,12 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec) (sdk.Int, er
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *coinTypes.MsgUpdateCoin:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *multisigTypes.MsgCreateWallet:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(createWalletFee)
+		case *multisigTypes.MsgCreateTransaction:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(createTransactionFee)
+		case *multisigTypes.MsgSignTransaction:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(signTransactionFee)
 		case *swapTypes.MsgSwapInitialize:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *swapTypes.MsgSwapRedeem:
