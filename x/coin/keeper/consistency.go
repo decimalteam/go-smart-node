@@ -46,3 +46,33 @@ func (k *Keeper) CheckFutureChanges(ctx sdk.Context, coinInfo types.Coin, amount
 	}
 	return nil
 }
+
+// same as above, but check only volume
+// need for burn operation, because this doest not change reserve
+func (k *Keeper) CheckFutureVolumeChanges(ctx sdk.Context, coinInfo types.Coin, amount sdk.Int) error {
+	// no need to chech base coin
+	if coinInfo.Symbol == k.GetBaseDenom(ctx) {
+		return nil
+	}
+
+	// simple check new volume
+	newVolume := coinInfo.Volume.Add(amount)
+	if newVolume.LT(types.MinCoinSupply) {
+		return types.ErrTxBreaksMinVolumeLimit(newVolume.String(), types.MinCoinSupply.String())
+	}
+	if newVolume.GT(coinInfo.LimitVolume) {
+		return types.ErrTxBreaksVolumeLimit(newVolume.String(), coinInfo.LimitVolume.String())
+	}
+	// for sell/deduct need include auth.FeeCollectorName balance for coin
+	// because this balance will be burned
+	if amount.IsNegative() {
+		coinInCollector := k.bankKeeper.GetBalance(ctx, sdkAuthTypes.NewModuleAddress(sdkAuthTypes.FeeCollectorName), coinInfo.Symbol)
+		futureAmountToBurn := coinInCollector.Amount.Add(amount.Neg())
+		// check for minimal volume
+		newVolume = coinInfo.Volume.Sub(futureAmountToBurn)
+		if newVolume.LT(types.MinCoinSupply) {
+			return types.ErrTxBreaksMinVolumeLimit(newVolume.String(), types.MinCoinSupply.String())
+		}
+	}
+	return nil
+}
