@@ -8,9 +8,10 @@ import (
 	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	"github.com/cosmos/cosmos-sdk/codec"
+	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
-	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -20,7 +21,7 @@ var _ types.MsgServer = &Keeper{}
 // Keeper implements the module data storaging.
 type Keeper struct {
 	cdc      codec.BinaryCodec
-	storeKey sdk.StoreKey
+	storeKey store.StoreKey
 
 	bankKeeper     types.BankKeeper
 	nftKeeper      types.NftKeeper
@@ -32,7 +33,7 @@ type Keeper struct {
 // NewKeeper creates new Keeper instance.
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeKey sdk.StoreKey,
+	storeKey store.StoreKey,
 	bankKeeper types.BankKeeper,
 	nftKeeper types.NftKeeper,
 	multisigKeeper types.MultisigKeeper,

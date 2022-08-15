@@ -7,7 +7,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
-	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 )
 
 type GenesisNew struct {

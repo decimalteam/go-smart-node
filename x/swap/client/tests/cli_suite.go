@@ -13,10 +13,10 @@ import (
 	sdkTx "github.com/cosmos/cosmos-sdk/types/tx"
 	signingtypes "github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
+	etherminthd "github.com/evmos/ethermint/crypto/hd"
+	"github.com/evmos/ethermint/encoding"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
-	etherminthd "github.com/tharsis/ethermint/crypto/hd"
-	"github.com/tharsis/ethermint/encoding"
 )
 
 // helper set up functions

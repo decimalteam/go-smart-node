@@ -1,12 +1,14 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"fmt"
+	"strconv"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/tendermint/tendermint/libs/log"
-	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 
@@ -15,7 +17,7 @@ import (
 
 // Keeper maintains the link to data storage and exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	storeKey sdk.StoreKey // Unexposed key to access store from sdk.Context
+	storeKey store.StoreKey // Unexposed key to access store from sdk.Context
 
 	cdc codec.BinaryCodec // The amino codec for binary encoding/decoding.
 
@@ -25,7 +27,7 @@ type Keeper struct {
 }
 
 // NewKeeper creates new instances of the nft Keeper
-func NewKeeper(cdc codec.BinaryCodec, storeKey sdk.StoreKey, bankKeeper keeper.Keeper, baseDenom string) *Keeper {
+func NewKeeper(cdc codec.BinaryCodec, storeKey store.StoreKey, bankKeeper keeper.Keeper, baseDenom string) *Keeper {
 	return &Keeper{
 		storeKey:   storeKey,
 		cdc:        cdc,

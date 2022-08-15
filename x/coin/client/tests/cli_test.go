@@ -13,10 +13,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	etherminthd "github.com/evmos/ethermint/crypto/hd"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	tmcli "github.com/tendermint/tendermint/libs/cli"
-	etherminthd "github.com/tharsis/ethermint/crypto/hd"
 	"io/ioutil"
 	"testing"
 )

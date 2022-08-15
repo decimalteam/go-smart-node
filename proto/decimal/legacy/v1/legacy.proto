@@ -33,7 +33,6 @@ message LegacyRecord {
 
   // multisig wallets addresses
   repeated string wallets = 4 [
-    (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "wallets",
     (gogoproto.moretags) = "yaml:\"wallets\""
   ];

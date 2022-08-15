@@ -1,12 +1,10 @@
 package coin
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/client/rest"
 	"context"
 	"encoding/json"
 	"fmt"
 
-	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
@@ -75,11 +73,6 @@ func (b AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEnc
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
 	}
 	return genesisState.Validate()
-}
-
-// RegisterRESTRoutes registers the module's REST service handlers.
-func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {
-	rest.RegisterHandlers(clientCtx, rtr)
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
@@ -151,7 +144,7 @@ func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
 	return keeper.NewQuerier(am.keeper, amino)
 }
 
-// RegisterServices registers a GRPC query service to respond to the module-specific GRPC queries.
+// RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), am.keeper)
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)

@@ -15,10 +15,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cosmosAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	cosmosBankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/strings"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	feemarkettypes "github.com/tharsis/ethermint/x/feemarket/types"
 )
 
 func TestInitGenesisForLegacy(t *testing.T) {

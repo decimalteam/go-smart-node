@@ -12,7 +12,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 
-	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 )
 
 func init() {

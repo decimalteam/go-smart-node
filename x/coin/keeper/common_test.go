@@ -6,8 +6,8 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	feemarkettypes "github.com/tharsis/ethermint/x/feemarket/types"
 )
 
 // createTestInput Returns a simapp with custom StakingKeeper

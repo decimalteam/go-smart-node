@@ -8,6 +8,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	auth "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bank "github.com/cosmos/cosmos-sdk/x/bank/keeper"
@@ -20,7 +21,7 @@ import (
 // Keeper implements the module data storaging.
 type Keeper struct {
 	cdc      codec.BinaryCodec
-	storeKey sdk.StoreKey
+	storeKey store.StoreKey
 	ps       paramtypes.Subspace
 
 	accountKeeper auth.AccountKeeperI
@@ -35,7 +36,7 @@ type Keeper struct {
 // NewKeeper creates new Keeper instance.
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeKey sdk.StoreKey,
+	storeKey store.StoreKey,
 	ps paramtypes.Subspace,
 	accountKeeper auth.AccountKeeperI,
 	bankKeeper bank.Keeper,

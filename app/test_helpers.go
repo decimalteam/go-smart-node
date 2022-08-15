@@ -1,15 +1,11 @@
 package app
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
-
-	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -17,18 +13,22 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/cosmos/ibc-go/v3/testing/simapp"
+	ibctesting "github.com/cosmos/ibc-go/v5/testing"
+	"github.com/cosmos/ibc-go/v5/testing/simapp"
 
-	"github.com/tharsis/ethermint/encoding"
-	feemarkettypes "github.com/tharsis/ethermint/x/feemarket/types"
+	"github.com/evmos/ethermint/encoding"
+	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 
 // DefaultTestingAppInit defines the IBC application used for testing
-//var DefaultTestingAppInit func() (ibctesting.TestingApp, map[string]json.RawMessage) = SetupTestingApp
+var DefaultTestingAppInit func() (ibctesting.TestingApp, map[string]json.RawMessage) = SetupTestingApp
 
 // DefaultConsensusParams defines the default Tendermint consensus params used in DSC testing.
 var DefaultConsensusParams = &abci.ConsensusParams{
@@ -93,12 +93,12 @@ func Setup(
 }
 
 // SetupTestingApp initializes the IBC-go testing application
-//func SetupTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
-//	db := dbm.NewMemDB()
-//	cfg := encoding.MakeConfig(ModuleBasics)
-//	app := NewDSC(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5, cfg, simapp.EmptyAppOptions{})
-//	return app, NewDefaultGenesisState()
-//}
+func SetupTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
+	db := dbm.NewMemDB()
+	cfg := encoding.MakeConfig(ModuleBasics)
+	app := NewDSC(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5, cfg, simapp.EmptyAppOptions{})
+	return app, NewDefaultGenesisState()
+}
 
 // AddTestAddrs constructs and returns accNum amount of accounts with an
 // initial balance of accAmt in random order
@@ -161,7 +161,7 @@ func createIncrementalAccounts(accNum int) []sdk.AccAddress {
 		buffer.WriteString("A58856F0FD53BF058B4909A21AEC019107BA6") // base address string
 
 		buffer.WriteString(numString) // adding on final two digits to make addresses unique
-		res, _ := sdk.AccAddressFromHex(buffer.String())
+		res, _ := sdk.AccAddressFromHexUnsafe(buffer.String())
 		bech := res.String()
 		addr, _ := TestAddr(buffer.String(), bech)
 
@@ -206,7 +206,7 @@ func ConvertAddrsToValAddrs(addrs []sdk.AccAddress) []sdk.ValAddress {
 }
 
 func TestAddr(addr string, bech string) (sdk.AccAddress, error) {
-	res, err := sdk.AccAddressFromHex(addr)
+	res, err := sdk.AccAddressFromHexUnsafe(addr)
 	if err != nil {
 		return nil, err
 	}

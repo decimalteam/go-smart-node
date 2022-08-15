@@ -1,7 +1,8 @@
 version: v1
-build:
-  excludes:
-    - google/protobuf
+deps:
+  - buf.build/cosmos/cosmos-proto
+  - buf.build/cosmos/gogo-proto
+  - buf.build/googleapis/googleapis
 lint:
   use:
     - DEFAULT
@@ -18,20 +19,18 @@ lint:
     - RPC_REQUEST_RESPONSE_UNIQUE
     - COMMENT_MESSAGE
   ignore:
-    - gogoproto
     - google
-    - proofs.proto
-    - tendermint
     - cosmos
-    - cosmos_proto
-    - ibc
     - ethermint
-    - evmos
+    - ibc
+    - tendermint
+    - proofs.proto
 breaking:
   use:
     - FILE
   ignore:
-    - gogoproto
     - google
+    - cosmos
+    - ethermint
+    - ibc
     - tendermint
-    - cosmos_proto

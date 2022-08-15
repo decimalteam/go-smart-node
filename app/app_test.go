@@ -13,7 +13,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/simapp"
 
-	"github.com/tharsis/ethermint/encoding"
+	"github.com/evmos/ethermint/encoding"
 )
 
 func TestDSCExport(t *testing.T) {

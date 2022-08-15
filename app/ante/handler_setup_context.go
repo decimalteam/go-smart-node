@@ -4,12 +4,11 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkErrors "github.com/cosmos/cosmos-sdk/types/errors"
-	authAnte "github.com/cosmos/cosmos-sdk/x/auth/ante"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// This is fork of standart cosmos sdk SetUpContextDecorator
-// except: SetGasMeter uses our commissionGasMeter
+// This is fork of standard cosmos-sdk SetUpContextDecorator
+// except: SetGasMeter uses proprietary commissionGasMeter
 // see IMPORTANT LINE below
 
 // SetUpContextDecorator sets the GasMeter in the Context and wraps the next AnteHandler with a defer clause
@@ -23,18 +22,17 @@ func NewSetUpContextDecorator() SetUpContextDecorator {
 	return SetUpContextDecorator{}
 }
 
-func (sud SetUpContextDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
-	simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
-	// all transactions must implement GasTx
-	gasTx, ok := tx.(authAnte.GasTx)
+func (sud SetUpContextDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+	// all transactions must implement FeeTx
+	feeTx, ok := tx.(sdk.Fee)
 	if !ok {
 		// Set a gas meter with limit 0 as to prevent an infinite gas meter attack
 		// during runTx.
 		newCtx = SetGasMeter(simulate, ctx, 0)
-		return newCtx, sdkErrors.Wrap(sdkErrors.ErrTxDecode, "Tx must be GasTx")
+		return newCtx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be GasTx")
 	}
 
-	newCtx = SetGasMeter(simulate, ctx, gasTx.GetGas())
+	newCtx = SetGasMeter(simulate, ctx, feeTx.GetGas())
 
 	// Decorator will catch an OutOfGasPanic caused in the next antehandler
 	// AnteHandlers must have their own defer/recover in order for the BaseApp
@@ -47,9 +45,9 @@ func (sud SetUpContextDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 			case sdk.ErrorOutOfGas:
 				log := fmt.Sprintf(
 					"out of gas in location: %v; gasWanted: %d, gasUsed: %d",
-					rType.Descriptor, gasTx.GetGas(), newCtx.GasMeter().GasConsumed())
+					rType.Descriptor, feeTx.GetGas(), newCtx.GasMeter().GasConsumed())
 
-				err = sdkErrors.Wrap(sdkErrors.ErrOutOfGas, log)
+				err = sdkerrors.Wrap(sdkerrors.ErrOutOfGas, log)
 			default:
 				panic(r)
 			}

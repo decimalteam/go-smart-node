@@ -1,13 +1,17 @@
 package upgrade_test
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/app"
-	"bitbucket.org/decimalteam/go-smart-node/x/upgrade/keeper"
-	"bitbucket.org/decimalteam/go-smart-node/x/upgrade/types"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	feemarkettypes "github.com/tharsis/ethermint/x/feemarket/types"
+
+	"github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
+	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
+
+	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+
+	"bitbucket.org/decimalteam/go-smart-node/app"
 )
 
 // getBaseAppWithCustomKeeper Returns a simapp with custom CoinKeeper
@@ -27,6 +31,7 @@ func getBaseAppWithCustomKeeper(skip map[int64]bool) (*codec.LegacyAmino, *app.D
 		appCodec,
 		app.DefaultNodeHome,
 		dsc.BaseApp,
+		app.UpgraderAddress,
 	)
 
 	return codec.NewLegacyAmino(), dsc, ctx

@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
+	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	auth "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	cosmosAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -14,7 +15,7 @@ import (
 // Keeper implements the module data storaging.
 type Keeper struct {
 	cdc        codec.BinaryCodec
-	storeKey   sdk.StoreKey
+	storeKey   store.StoreKey
 	paramSpace paramtypes.Subspace
 
 	accountKeeper auth.AccountKeeperI
@@ -24,7 +25,7 @@ type Keeper struct {
 // NewKeeper creates new Keeper instance.
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeKey sdk.StoreKey,
+	storeKey store.StoreKey,
 	ps paramtypes.Subspace,
 	accountKeeper auth.AccountKeeperI,
 	bankKeeper bank.Keeper,

@@ -1,13 +1,16 @@
 package keeper
 
 import (
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	feemarkettypes "github.com/tharsis/ethermint/x/feemarket/types"
 )
 
 func GetBaseAppWithCustomKeeper() (*app.DSC, sdk.Context) {
