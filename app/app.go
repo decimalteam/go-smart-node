@@ -86,9 +86,6 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	// IBC
-	ibctransfer "github.com/cosmos/ibc-go/v5/modules/apps/transfer"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v5/modules/apps/transfer/keeper"
-	ibctransfertypes "github.com/cosmos/ibc-go/v5/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v5/modules/core"
 	ibcclient "github.com/cosmos/ibc-go/v5/modules/core/02-client"
 	ibcclientclient "github.com/cosmos/ibc-go/v5/modules/core/02-client/client"
@@ -186,7 +183,6 @@ var (
 		evidence.AppModuleBasic{},
 		// IBC
 		ibc.AppModuleBasic{},
-		ibctransfer.AppModuleBasic{},
 		// Ethermint
 		evm.AppModuleBasic{},
 		feemarket.AppModuleBasic{},
@@ -207,7 +203,6 @@ var (
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
-		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		evmtypes.ModuleName:            {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
 		cointypes.ModuleName:           {authtypes.Minter, authtypes.Burner},
 		nfttypes.ReservedPool:          {authtypes.Minter, authtypes.Burner},
@@ -262,12 +257,10 @@ type DSC struct {
 	EvidenceKeeper   evidencekeeper.Keeper
 
 	// IBC keepers
-	IBCKeeper         *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	IBCTransferKeeper ibctransferkeeper.Keeper
+	IBCKeeper *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
 
 	// Make scoped keepers public for test purposes
-	ScopedIBCKeeper         capabilitykeeper.ScopedKeeper
-	ScopedIBCTransferKeeper capabilitykeeper.ScopedKeeper
+	ScopedIBCKeeper capabilitykeeper.ScopedKeeper
 
 	// Ethermint keepers
 	EvmKeeper       *evmkeeper.Keeper
@@ -339,7 +332,6 @@ func NewDSC(
 		authzkeeper.StoreKey,
 		// IBC keys
 		ibchost.StoreKey,
-		ibctransfertypes.StoreKey,
 		// Ethermint keys
 		evmtypes.StoreKey,
 		feemarkettypes.StoreKey,
@@ -378,7 +370,6 @@ func NewDSC(
 
 	// Grant capabilities for the IBC and IBC-transfer modules
 	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibchost.ModuleName)
-	scopedIBCTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 
 	// Applications that wish to enforce statically created ScopedKeepers should call `Seal`
 	// after creating their scoped modules in `NewApp` with `ScopeToModule`
@@ -503,8 +494,6 @@ func NewDSC(
 		govConfig,
 	)
 
-	ibctransferModule := ibctransfer.NewAppModule(app.IBCTransferKeeper)
-
 	// Create evidence keeper with router
 	app.EvidenceKeeper = *evidencekeeper.NewKeeper(
 		appCodec,
@@ -576,7 +565,6 @@ func NewDSC(
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		// IBC app modules
 		ibc.NewAppModule(app.IBCKeeper),
-		ibctransferModule,
 		// Ethermint app modules
 		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper),
 		feemarket.NewAppModule(app.FeeMarketKeeper),
@@ -605,7 +593,6 @@ func NewDSC(
 		stakingtypes.ModuleName,
 		ibchost.ModuleName,
 		// no-op modules
-		ibctransfertypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
 		govtypes.ModuleName,
@@ -630,7 +617,6 @@ func NewDSC(
 		feemarkettypes.ModuleName,
 		// no-op modules
 		ibchost.ModuleName,
-		ibctransfertypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
@@ -666,7 +652,6 @@ func NewDSC(
 		ibchost.ModuleName,
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
-		ibctransfertypes.ModuleName,
 		authz.ModuleName,
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
@@ -702,7 +687,6 @@ func NewDSC(
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		ibc.NewAppModule(app.IBCKeeper),
-		ibctransferModule,
 		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper),
 		feemarket.NewAppModule(app.FeeMarketKeeper),
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
@@ -753,7 +737,6 @@ func NewDSC(
 	}
 
 	app.ScopedIBCKeeper = scopedIBCKeeper
-	app.ScopedIBCTransferKeeper = scopedIBCTransferKeeper
 
 	// Finally start the tpsCounter.
 	app.tpsCounter = newTPSCounter(logger)
@@ -980,7 +963,6 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govtypesv1.ParamKeyTable())
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	// IBC subspaces
-	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibchost.ModuleName)
 	// Ethermint subspaces
 	paramsKeeper.Subspace(evmtypes.ModuleName)

@@ -1,14 +1,17 @@
 package coin_test
 
 import (
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
 // getBaseAppWithCustomKeeper Returns a simapp with custom CoinKeeper
