@@ -10,11 +10,13 @@ message GenesisState {
   // params defines all the paramaters of related to deposit.
   Params params = 1 [
     (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "params",
     (gogoproto.moretags) = "yaml:\"params\""
   ];
   // swaps defines the swaps active at genesis.
   repeated Swap swaps = 2 [
     (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "swaps",
     (gogoproto.moretags) = "yaml:\"swaps\""
   ];
 }

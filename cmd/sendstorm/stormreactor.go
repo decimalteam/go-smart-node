@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -233,4 +234,29 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 		ui.MultisigBalances[wallet.Address] = balance
 	}
 	reactor.actionReactor.Update(ui)
+}
+
+func (reactor *stormReactor) coins() ([]dscApi.Coin, error) {
+	coins, err := reactor.api.Coins()
+	if err != nil {
+		return []dscApi.Coin{}, err
+	}
+	return coins, nil
+}
+
+// helpers
+func loadMnemonics(fname string) ([]string, error) {
+	var result []string
+	f, err := os.Open(fname)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	fileScanner := bufio.NewScanner(f)
+	fileScanner.Split(bufio.ScanLines)
+	for fileScanner.Scan() {
+		mn := fileScanner.Text()
+		result = append(result, mn)
+	}
+	return result, nil
 }

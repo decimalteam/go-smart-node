@@ -3,13 +3,13 @@ package ante
 import (
 	"fmt"
 
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	multisigTypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	nftTypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	swapTypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
 )
 
 // Fee constants in units (10^15)
@@ -68,6 +68,14 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec) (sdk.Int, er
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(createTransactionFee)
 		case *multisigTypes.MsgSignTransaction:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(signTransactionFee)
+		case *swapTypes.MsgSwapInitialize:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *swapTypes.MsgSwapRedeem:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *swapTypes.MsgChainActivate:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *swapTypes.MsgChainDeactivate:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *nftTypes.MsgMintNFT:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *nftTypes.MsgBurnNFT:
@@ -77,14 +85,6 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec) (sdk.Int, er
 		case *nftTypes.MsgUpdateReserveNFT:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *nftTypes.MsgEditNFTMetadata:
-			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
-		case *govtypes.MsgSubmitProposal:
-			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
-		case *govtypes.MsgDeposit:
-			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
-		case *govtypes.MsgVote:
-			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
-		case *govtypes.MsgVoteWeighted:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		default:
 			return sdk.NewInt(0), ErrUnknownTransaction(fmt.Sprintf("%T", msg))

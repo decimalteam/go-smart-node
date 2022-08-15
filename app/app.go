@@ -144,6 +144,10 @@ import (
 	multisigkeeper "bitbucket.org/decimalteam/go-smart-node/x/multisig/keeper"
 	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 
+	swap "bitbucket.org/decimalteam/go-smart-node/x/swap"
+	swapkeeper "bitbucket.org/decimalteam/go-smart-node/x/swap/keeper"
+	swaptypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
+
 	nft "bitbucket.org/decimalteam/go-smart-node/x/nft"
 	nftkeeper "bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
@@ -222,6 +226,7 @@ var (
 		multisig.AppModuleBasic{},
 		coin.AppModuleBasic{},
 		multisig.AppModuleBasic{},
+		swap.AppModuleBasic{},
 		nft.AppModuleBasic{},
 		legacy.AppModuleBasic{},
 	)
@@ -243,6 +248,8 @@ var (
 		nfttypes.ReservedPool:      {authtypes.Minter, authtypes.Burner},
 		// special account to hold legacy balances
 		legacytypes.LegacyCoinPool: nil,
+		// special account to hold locked coins in swap process
+		swaptypes.SwapPool: nil,
 	}
 
 	// Module accounts that are allowed to receive tokens
@@ -250,6 +257,7 @@ var (
 		distrtypes.ModuleName:      true,
 		incentivestypes.ModuleName: true,
 		cointypes.ModuleName:       true, // TODO: ?
+		swaptypes.SwapPool:         true,
 	}
 )
 
@@ -314,6 +322,7 @@ type DSC struct {
 
 	// Decimal keepers
 	CoinKeeper     coinkeeper.Keeper
+	SwapKeeper     swapkeeper.Keeper
 	MultisigKeeper multisigkeeper.Keeper
 	NFTKeeper      nftkeeper.Keeper
 	LegacyKeeper   legacykeeper.Keeper
@@ -392,6 +401,7 @@ func NewDSC(
 		// Decimal keys
 		cointypes.StoreKey,
 		multisigtypes.StoreKey,
+		swaptypes.StoreKey,
 		nfttypes.StoreKey,
 		legacytypes.StoreKey,
 	)
@@ -706,6 +716,14 @@ func NewDSC(
 		app.MultisigKeeper,
 	)
 
+	swapKeeper := swapkeeper.NewKeeper(
+		appCodec,
+		keys[swaptypes.StoreKey],
+		app.GetSubspace(swaptypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+	)
+	app.SwapKeeper = *swapKeeper
 	/****  Module Options ****/
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
@@ -747,6 +765,7 @@ func NewDSC(
 		// Decimal app modules
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
 		multisig.NewAppModule(appCodec, app.MultisigKeeper, app.AccountKeeper, app.BankKeeper),
+		swap.NewAppModule(appCodec, app.SwapKeeper, app.AccountKeeper, app.BankKeeper),
 		nft.NewAppModule(app.NFTKeeper, app.AccountKeeper),
 		legacy.NewAppModule(app.appCodec, app.LegacyKeeper),
 	)
@@ -787,6 +806,7 @@ func NewDSC(
 		//recoverytypes.ModuleName,
 		cointypes.ModuleName,
 		multisigtypes.ModuleName,
+		swaptypes.ModuleName,
 		nfttypes.ModuleName,
 		legacytypes.ModuleName,
 	)
@@ -822,6 +842,7 @@ func NewDSC(
 		//recoverytypes.ModuleName,
 		cointypes.ModuleName,
 		multisigtypes.ModuleName,
+		swaptypes.ModuleName,
 		nfttypes.ModuleName,
 		legacytypes.ModuleName,
 	)
@@ -862,6 +883,7 @@ func NewDSC(
 		// Decimal modules
 		cointypes.ModuleName,
 		multisigtypes.ModuleName,
+		swaptypes.ModuleName,
 		nfttypes.ModuleName,
 		legacytypes.ModuleName,
 		// NOTE: crisis module must go at the end to check for invariants on each module
@@ -892,6 +914,7 @@ func NewDSC(
 		epochs.NewAppModule(appCodec, app.EpochsKeeper),
 		feemarket.NewAppModule(app.FeeMarketKeeper),
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
+		swap.NewAppModule(appCodec, app.SwapKeeper, app.AccountKeeper, app.BankKeeper),
 	)
 
 	app.sm.RegisterStoreDecoders()
@@ -1182,6 +1205,7 @@ func initParamsKeeper(
 	// Decimal subspaces
 	paramsKeeper.Subspace(cointypes.ModuleName)
 	paramsKeeper.Subspace(multisigtypes.ModuleName)
+	paramsKeeper.Subspace(swaptypes.ModuleName)
 	return paramsKeeper
 }
 
