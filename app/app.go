@@ -145,9 +145,17 @@ import (
 	multisigkeeper "bitbucket.org/decimalteam/go-smart-node/x/multisig/keeper"
 	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 
+	swap "bitbucket.org/decimalteam/go-smart-node/x/swap"
+	swapkeeper "bitbucket.org/decimalteam/go-smart-node/x/swap/keeper"
+	swaptypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
+
 	nft "bitbucket.org/decimalteam/go-smart-node/x/nft"
 	nftkeeper "bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+
+	legacy "bitbucket.org/decimalteam/go-smart-node/x/legacy"
+	legacykeeper "bitbucket.org/decimalteam/go-smart-node/x/legacy/keeper"
+	legacytypes "bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 )
 
 var (
@@ -218,8 +226,10 @@ var (
 		multisig.AppModuleBasic{},
 		coin.AppModuleBasic{},
 		multisig.AppModuleBasic{},
+		swap.AppModuleBasic{},
 		nft.AppModuleBasic{},
 		fee.AppModuleBasic{},
+		legacy.AppModuleBasic{},
 	)
 
 	// Module account permissions
@@ -238,7 +248,9 @@ var (
 		cointypes.ModuleName:       {authtypes.Minter, authtypes.Burner},
 		nfttypes.ReservedPool:      {authtypes.Minter, authtypes.Burner},
 		// special account to hold legacy balances
-		cointypes.LegacyCoinPool: nil,
+		legacytypes.LegacyCoinPool: nil,
+		// special account to hold locked coins in swap process
+		swaptypes.SwapPool: nil,
 	}
 
 	// Module accounts that are allowed to receive tokens
@@ -246,6 +258,7 @@ var (
 		distrtypes.ModuleName:      true,
 		incentivestypes.ModuleName: true,
 		cointypes.ModuleName:       true, // TODO: ?
+		swaptypes.SwapPool:         true,
 	}
 )
 
@@ -309,9 +322,11 @@ type DSC struct {
 
 	// Decimal keepers
 	CoinKeeper     coinkeeper.Keeper
+	SwapKeeper     swapkeeper.Keeper
 	MultisigKeeper multisigkeeper.Keeper
 	NFTKeeper      nftkeeper.Keeper
 	FeeKeeper      feekeeper.Keeper
+	LegacyKeeper   legacykeeper.Keeper
 
 	// Module manager
 	mm *module.Manager
@@ -386,8 +401,10 @@ func NewDSC(
 		// Decimal keys
 		cointypes.StoreKey,
 		multisigtypes.StoreKey,
+		swaptypes.StoreKey,
 		nfttypes.StoreKey,
 		feetypes.StoreKey,
+		legacytypes.StoreKey,
 	)
 
 	// Add the EVM transient store key
@@ -694,6 +711,22 @@ func NewDSC(
 	)
 	app.NFTKeeper = *nftKeeper
 
+	app.LegacyKeeper = *legacykeeper.NewKeeper(
+		appCodec,
+		keys[legacytypes.StoreKey],
+		app.BankKeeper,
+		app.NFTKeeper,
+		app.MultisigKeeper,
+	)
+
+	swapKeeper := swapkeeper.NewKeeper(
+		appCodec,
+		keys[swaptypes.StoreKey],
+		app.GetSubspace(swaptypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+	)
+	app.SwapKeeper = *swapKeeper
 	/****  Module Options ****/
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
@@ -734,8 +767,10 @@ func NewDSC(
 		// Decimal app modules
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
 		multisig.NewAppModule(appCodec, app.MultisigKeeper, app.AccountKeeper, app.BankKeeper),
+		swap.NewAppModule(appCodec, app.SwapKeeper, app.AccountKeeper, app.BankKeeper),
 		nft.NewAppModule(app.NFTKeeper, app.AccountKeeper),
 		fee.NewAppModule(app.FeeKeeper),
+		legacy.NewAppModule(app.appCodec, app.LegacyKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -773,8 +808,10 @@ func NewDSC(
 		//recoverytypes.ModuleName,
 		cointypes.ModuleName,
 		multisigtypes.ModuleName,
+		swaptypes.ModuleName,
 		nfttypes.ModuleName,
 		feetypes.ModuleName,
+		legacytypes.ModuleName,
 	)
 
 	// NOTE: fee market module must go last in order to retrieve the block gas used.
@@ -807,8 +844,10 @@ func NewDSC(
 		//recoverytypes.ModuleName,
 		cointypes.ModuleName,
 		multisigtypes.ModuleName,
+		swaptypes.ModuleName,
 		nfttypes.ModuleName,
 		feetypes.ModuleName,
+		legacytypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -847,8 +886,10 @@ func NewDSC(
 		// Decimal modules
 		cointypes.ModuleName,
 		multisigtypes.ModuleName,
+		swaptypes.ModuleName,
 		nfttypes.ModuleName,
 		feetypes.ModuleName,
+		legacytypes.ModuleName,
 		// NOTE: crisis module must go at the end to check for invariants on each module
 		crisistypes.ModuleName,
 	)
@@ -876,6 +917,7 @@ func NewDSC(
 		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper),
 		epochs.NewAppModule(appCodec, app.EpochsKeeper),
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
+		swap.NewAppModule(appCodec, app.SwapKeeper, app.AccountKeeper, app.BankKeeper),
 	)
 
 	app.sm.RegisterStoreDecoders()
@@ -899,6 +941,7 @@ func NewDSC(
 		//IBCKeeper:       app.IBCKeeper,
 		CoinKeeper:      &app.CoinKeeper,
 		FeeKeeper:       &app.FeeKeeper,
+		LegacyKeeper:    &app.LegacyKeeper,
 		SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 		SigGasConsumer:  SigVerificationGasConsumer,
 		Cdc:             appCodec,
@@ -1166,6 +1209,7 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(cointypes.ModuleName)
 	paramsKeeper.Subspace(feetypes.ModuleName)
 	paramsKeeper.Subspace(multisigtypes.ModuleName)
+	paramsKeeper.Subspace(swaptypes.ModuleName)
 	return paramsKeeper
 }
 

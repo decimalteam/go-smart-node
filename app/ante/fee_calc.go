@@ -3,6 +3,8 @@ package ante
 import (
 	"fmt"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
@@ -10,7 +12,7 @@ import (
 	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	multisigTypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	nftTypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	swapTypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
 )
 
 // Calculate fee in base coin
@@ -43,7 +45,13 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec, params feeTy
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(int64(params.MultisigCreateTransaction))
 		case *multisigTypes.MsgSignTransaction:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(int64(params.MultisigSignTransaction))
-		case *multisigTypes.MsgActualizeLegacyAddress:
+		case *swapTypes.MsgSwapInitialize:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *swapTypes.MsgSwapRedeem:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *swapTypes.MsgChainActivate:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *swapTypes.MsgChainDeactivate:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		// nft
 		case *nftTypes.MsgMintNFT:
