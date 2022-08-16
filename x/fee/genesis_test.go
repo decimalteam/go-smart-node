@@ -29,7 +29,9 @@ func TestDefaultGenesis(t *testing.T) {
 	fee.InitGenesis(ctx, dsc.FeeKeeper, *types.DefaultGenesisState())
 
 	params := dsc.FeeKeeper.GetModuleParams(ctx)
-	price, _ := dsc.FeeKeeper.GetPrice(ctx)
+	price, err := dsc.FeeKeeper.GetPrice(ctx)
+	require.NoError(t, err)
+
 	gs := types.DefaultGenesisState()
 	// check proper genesis initialization
 	require.Equal(t, types.DefaultParams(), params)
@@ -56,7 +58,9 @@ func TestGenesisInit(t *testing.T) {
 	fee.InitGenesis(ctx, dsc.FeeKeeper, gs)
 
 	params := dsc.FeeKeeper.GetModuleParams(ctx)
-	price, _ := dsc.FeeKeeper.GetPrice(ctx)
+	price, err := dsc.FeeKeeper.GetPrice(ctx)
+	require.NoError(t, err)
+
 	// check proper genesis initialization
 	require.Equal(t, "dx1qql8ag4cluz6r4dz28p3w00dnc9w8ueue3x6fd", params.OracleAddress)
 	require.True(t, price.Equal(gs.InitialPrice))
