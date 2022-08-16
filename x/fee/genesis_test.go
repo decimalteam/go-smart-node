@@ -33,7 +33,7 @@ func TestDefaultGenesis(t *testing.T) {
 	gs := types.DefaultGenesisState()
 	// check proper genesis initialization
 	require.Equal(t, types.DefaultParams(), params)
-	require.True(t, price.Equal(gs.IntialPrice))
+	require.True(t, price.Equal(gs.InitialPrice))
 }
 
 func TestGenesisInit(t *testing.T) {
@@ -59,5 +59,5 @@ func TestGenesisInit(t *testing.T) {
 	price, _ := dsc.FeeKeeper.GetPrice(ctx)
 	// check proper genesis initialization
 	require.Equal(t, "dx1qql8ag4cluz6r4dz28p3w00dnc9w8ueue3x6fd", params.OracleAddress)
-	require.True(t, price.Equal(gs.IntialPrice))
+	require.True(t, price.Equal(gs.InitialPrice))
 }

@@ -14,7 +14,7 @@ message MsgSaveBaseDenomPrice {
     (gogoproto.jsontag) = "sender",
     (gogoproto.moretags) = "yaml:\"sender\""  
   ];  
-  string baseDenom = 2 [
+  string base_denom = 2 [
     (gogoproto.jsontag) = "base_denom",
     (gogoproto.moretags) = "yaml:\"base_denom\"" 
   ];
