@@ -3,8 +3,6 @@ package types
 import (
 	fmt "fmt"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
 	"bitbucket.org/decimalteam/go-smart-node/utils/errors"
 )
 
@@ -30,7 +28,7 @@ const (
 	CodeChainNumbersAreSame      uint32 = 306
 )
 
-func ErrInvalidSenderAddress(address string) *sdkerrors.Error {
+func ErrInvalidSenderAddress(address string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidSenderAddress,
@@ -39,7 +37,7 @@ func ErrInvalidSenderAddress(address string) *sdkerrors.Error {
 	)
 }
 
-func ErrSenderIsNotSwapService(address string) *sdkerrors.Error {
+func ErrSenderIsNotSwapService(address string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidSenderAddress,
@@ -48,7 +46,7 @@ func ErrSenderIsNotSwapService(address string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidAmount() *sdkerrors.Error {
+func ErrInvalidAmount() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidAmount,
@@ -56,7 +54,7 @@ func ErrInvalidAmount() *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidChainNumber() *sdkerrors.Error {
+func ErrInvalidChainNumber() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidChainNumber,
@@ -64,7 +62,7 @@ func ErrInvalidChainNumber() *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidChainName() *sdkerrors.Error {
+func ErrInvalidChainName() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidChainName,
@@ -73,7 +71,7 @@ func ErrInvalidChainName() *sdkerrors.Error {
 }
 
 // SwapInitialize
-func ErrChainDoesNotExists(chainNumber string) *sdkerrors.Error {
+func ErrChainDoesNotExists(chainNumber string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeChainDoesNotExists,
@@ -82,7 +80,7 @@ func ErrChainDoesNotExists(chainNumber string) *sdkerrors.Error {
 	)
 }
 
-func ErrInsufficientAccountFunds(address string, coins string) *sdkerrors.Error {
+func ErrInsufficientAccountFunds(address string, coins string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInsufficientAccountFunds,
@@ -93,7 +91,7 @@ func ErrInsufficientAccountFunds(address string, coins string) *sdkerrors.Error 
 }
 
 // SwapRedeem
-func ErrInvalidRecipientAddress(address string) *sdkerrors.Error {
+func ErrInvalidRecipientAddress(address string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidRecipientAddress,
@@ -102,7 +100,7 @@ func ErrInvalidRecipientAddress(address string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidTransactionNumber(transactionNumber string) *sdkerrors.Error {
+func ErrInvalidTransactionNumber(transactionNumber string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidTransactionNumber,
@@ -111,7 +109,7 @@ func ErrInvalidTransactionNumber(transactionNumber string) *sdkerrors.Error {
 	)
 }
 
-func ErrAlreadyRedeemed(hash string) *sdkerrors.Error {
+func ErrAlreadyRedeemed(hash string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeAlreadyRedeemed,
@@ -120,7 +118,7 @@ func ErrAlreadyRedeemed(hash string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidServiceAddress(requiredAddress, givenAddress string) *sdkerrors.Error {
+func ErrInvalidServiceAddress(requiredAddress, givenAddress string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidServiceAddress,
@@ -130,7 +128,7 @@ func ErrInvalidServiceAddress(requiredAddress, givenAddress string) *sdkerrors.E
 	)
 }
 
-func ErrInsufficientPoolFunds(want string, exists string) *sdkerrors.Error {
+func ErrInsufficientPoolFunds(want string, exists string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInsufficientPoolFunds,
@@ -138,7 +136,7 @@ func ErrInsufficientPoolFunds(want string, exists string) *sdkerrors.Error {
 	)
 }
 
-func ErrChainNumbersAreSame() *sdkerrors.Error {
+func ErrChainNumbersAreSame() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeChainNumbersAreSame,
