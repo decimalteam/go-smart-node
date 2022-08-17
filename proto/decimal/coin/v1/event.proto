@@ -37,6 +37,12 @@ message EventBuySellCoin {
     string amount_in_base_coin = 4;
 }
 
+message EventEditCoin {
+    string symbol = 1;
+    string volume = 2;
+    string reserve = 3;    
+}
+
 message EventRedeemCheck {
     string sender = 1;
     string issuer = 2;

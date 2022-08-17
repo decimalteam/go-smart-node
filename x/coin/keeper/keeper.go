@@ -122,12 +122,12 @@ func (k *Keeper) EditCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, vol
 	k.SetCoin(ctx, coin)
 
 	// Emit event
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		types.EventTypeUpdateCoin,
-		sdk.NewAttribute(types.AttributeSymbol, coin.Symbol),
-		sdk.NewAttribute(types.AttributeVolume, coin.Volume.String()),
-		sdk.NewAttribute(types.AttributeReserve, coin.Reserve.String()),
-	))
+	ctx.EventManager().EmitTypedEvent(&types.EventEditCoin{
+		Symbol:  coin.Symbol,
+		Volume:  coin.Volume.String(),
+		Reserve: coin.Reserve.String(),
+	})
+
 }
 
 ////////////////////////////////////////////////////////////////
