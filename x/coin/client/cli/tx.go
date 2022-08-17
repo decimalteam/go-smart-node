@@ -4,6 +4,9 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/cosmos/btcutil/base58"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -13,10 +16,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 	ethereumCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
-	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 	"golang.org/x/crypto/sha3"
-	"strconv"
-	"strings"
 
 	"github.com/spf13/cobra"
 

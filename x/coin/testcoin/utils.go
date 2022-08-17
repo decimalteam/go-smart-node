@@ -1,11 +1,12 @@
 package testcoin
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"crypto/sha256"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethereumCrypto "github.com/ethereum/go-ethereum/crypto"
-	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 )
 
 func CreateNewCheck(chainID, coinAmountStr, nonceStr, password string, dueBlock uint64) types.Check {

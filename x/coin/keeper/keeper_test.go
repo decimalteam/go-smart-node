@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/app"
+	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/testcoin"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -13,9 +14,9 @@ import (
 )
 
 func bootstrapKeeperTest(t *testing.T, numAddrs int, accCoins sdk.Coins) (*app.DSC, sdk.Context, []sdk.AccAddress, []sdk.ValAddress) {
-	_, dsc, ctx := createTestInput()
+	_, dsc, ctx := testkeeper.GetTestAppWithCoinKeeper(t)
 
-	addrDels, addrVals := generateAddresses(dsc, ctx, numAddrs, accCoins)
+	addrDels, addrVals := testkeeper.GenerateAddresses(dsc, ctx, numAddrs, accCoins)
 	require.NotNil(t, addrDels)
 	require.NotNil(t, addrVals)
 

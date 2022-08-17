@@ -1,6 +1,7 @@
 package coin_test
 
 import (
+	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
@@ -15,15 +16,15 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethereumCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 	"github.com/stretchr/testify/require"
-	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
 	"golang.org/x/crypto/sha3"
 )
 
-func bootstrapHandlerGenesisTest(t *testing.T, numAddrs int, accCoins sdk.Coins) (*app.DSC, sdk.Context, []sdk.AccAddress, []sdk.ValAddress) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+func bootstrapHandlerTest(t *testing.T, numAddrs int, accCoins sdk.Coins) (*app.DSC, sdk.Context, []sdk.AccAddress, []sdk.ValAddress) {
+	_, dsc, ctx := testkeeper.GetTestAppWithCoinKeeper(t)
 
-	addrDels, addrVals := generateAddresses(dsc, ctx, numAddrs, accCoins)
+	addrDels, addrVals := testkeeper.GenerateAddresses(dsc, ctx, numAddrs, accCoins)
 	require.NotNil(t, addrDels)
 	require.NotNil(t, addrVals)
 
@@ -44,7 +45,7 @@ var (
 )
 
 func TestCreateCoinHandler(t *testing.T) {
-	dsc, ctx, addrs, _ := bootstrapHandlerGenesisTest(t, 2, sdk.Coins{
+	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 2, sdk.Coins{
 		{
 			Denom:  baseDenom,
 			Amount: baseAmount,
@@ -90,7 +91,7 @@ func TestCreateCoinHandler(t *testing.T) {
 }
 
 func TestUpdateCoinHandler(t *testing.T) {
-	dsc, ctx, addrs, _ := bootstrapHandlerGenesisTest(t, 2, sdk.Coins{
+	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 2, sdk.Coins{
 		{
 			Denom:  baseDenom,
 			Amount: baseAmount,
@@ -123,7 +124,7 @@ func TestUpdateCoinHandler(t *testing.T) {
 }
 
 func TestSendCoinHandler(t *testing.T) {
-	dsc, ctx, addrs, _ := bootstrapHandlerGenesisTest(t, 2, sdk.Coins{
+	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 2, sdk.Coins{
 		{
 			Denom:  baseDenom,
 			Amount: baseAmount,
@@ -146,7 +147,7 @@ func TestSendCoinHandler(t *testing.T) {
 }
 
 func TestMultiSendCoinHandler(t *testing.T) {
-	dsc, ctx, addrs, _ := bootstrapHandlerGenesisTest(t, 4, sdk.Coins{
+	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 4, sdk.Coins{
 		{
 			Denom:  baseDenom,
 			Amount: baseAmount,
@@ -183,7 +184,7 @@ func TestMultiSendCoinHandler(t *testing.T) {
 }
 
 func TestBuyHandler(t *testing.T) {
-	dsc, ctx, addrs, _ := bootstrapHandlerGenesisTest(t, 2, sdk.Coins{
+	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 2, sdk.Coins{
 		{
 			Denom:  baseDenom,
 			Amount: baseAmount,
@@ -230,7 +231,7 @@ func TestBuyHandler(t *testing.T) {
 }
 
 func TestSellHadnler(t *testing.T) {
-	dsc, ctx, addrs, _ := bootstrapHandlerGenesisTest(t, 2, sdk.Coins{
+	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 2, sdk.Coins{
 		{
 			Denom:  baseDenom,
 			Amount: helpers.EtherToWei(sdk.NewInt(100000000000000000)),
@@ -267,7 +268,7 @@ func TestSellHadnler(t *testing.T) {
 }
 
 func TestSellAllHandler(t *testing.T) {
-	dsc, ctx, addrs, _ := bootstrapHandlerGenesisTest(t, 1, sdk.Coins{
+	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 1, sdk.Coins{
 		{
 			Denom:  baseDenom,
 			Amount: helpers.EtherToWei(sdk.NewInt(10000000000000)),
@@ -283,7 +284,7 @@ func TestSellAllHandler(t *testing.T) {
 }
 
 func TestRedeemHandler(t *testing.T) {
-	dsc, ctx, addrs, _ := bootstrapHandlerGenesisTest(t, 2, sdk.Coins{
+	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 2, sdk.Coins{
 		{
 			Denom:  baseDenom,
 			Amount: baseAmount,

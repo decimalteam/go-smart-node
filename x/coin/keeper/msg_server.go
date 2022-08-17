@@ -118,19 +118,17 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 	k.SetCoin(ctx, coin)
 
 	// Emit transaction events
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		sdk.EventTypeMessage,
-		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-		sdk.NewAttribute(sdk.AttributeKeySender, sender.String()),
-		sdk.NewAttribute(types.AttributeSymbol, coinDenom),
-		sdk.NewAttribute(types.AttributeTitle, msg.Title),
-		sdk.NewAttribute(types.AttributeCRR, strconv.FormatUint(msg.CRR, 10)),
-		sdk.NewAttribute(types.AttributeInitVolume, msg.InitialVolume.String()),
-		sdk.NewAttribute(types.AttributeInitReserve, msg.InitialReserve.String()),
-		sdk.NewAttribute(types.AttributeLimitVolume, msg.LimitVolume.String()),
-		sdk.NewAttribute(types.AttributeIdentity, msg.Identity),
-		sdk.NewAttribute(types.AttributeCommissionCreateCoin, feeCoin.String()),
-	))
+	ctx.EventManager().EmitTypedEvent(&types.EventCreateCoin{
+		Sender:               sender.String(),
+		Symbol:               coinDenom,
+		Title:                msg.Title,
+		Crr:                  msg.CRR,
+		InitialVolume:        msg.InitialVolume.String(),
+		InitialReserve:       msg.InitialReserve.String(),
+		LimitVolume:          msg.LimitVolume.String(),
+		Identity:             msg.Identity,
+		CommissionCreateCoin: feeCoin.String(),
+	})
 
 	return &types.MsgCreateCoinResponse{}, nil
 }
@@ -167,14 +165,12 @@ func (k Keeper) UpdateCoin(goCtx context.Context, msg *types.MsgUpdateCoin) (*ty
 	k.SetCoin(ctx, coin)
 
 	// Emit transaction events
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		sdk.EventTypeMessage,
-		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-		sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
-		sdk.NewAttribute(types.AttributeSymbol, coin.Symbol),
-		sdk.NewAttribute(types.AttributeLimitVolume, coin.LimitVolume.String()),
-		sdk.NewAttribute(types.AttributeIdentity, coin.Identity),
-	))
+	ctx.EventManager().EmitTypedEvent(&types.EventUpdateCoin{
+		Sender:      msg.Sender,
+		Symbol:      coin.Symbol,
+		LimitVolume: msg.LimitVolume.String(),
+		Identity:    msg.Identity,
+	})
 
 	return &types.MsgUpdateCoinResponse{}, nil
 }
@@ -205,13 +201,11 @@ func (k Keeper) SendCoin(goCtx context.Context, msg *types.MsgSendCoin) (*types.
 	}
 
 	// Emit transaction events
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		sdk.EventTypeMessage,
-		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-		sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
-		sdk.NewAttribute(types.AttributeReceiver, msg.Receiver),
-		sdk.NewAttribute(types.AttributeCoin, msg.Coin.String()),
-	))
+	ctx.EventManager().EmitTypedEvent(&types.EventSendCoin{
+		Sender:   msg.Sender,
+		Receiver: msg.Receiver,
+		Coin:     msg.Coin.String(),
+	})
 
 	return &types.MsgSendCoinResponse{}, nil
 }
@@ -245,13 +239,11 @@ func (k Keeper) MultiSendCoin(goCtx context.Context, msg *types.MsgMultiSendCoin
 		}
 
 		// Emit transaction events
-		ctx.EventManager().EmitEvent(sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
-			sdk.NewAttribute(types.AttributeReceiver, msg.Sends[i].Receiver),
-			sdk.NewAttribute(types.AttributeCoin, msg.Sends[i].Coin.String()),
-		))
+		ctx.EventManager().EmitTypedEvent(&types.EventSendCoin{
+			Sender:   msg.Sender,
+			Receiver: msg.Sends[i].Receiver,
+			Coin:     msg.Sends[i].Coin.String(),
+		})
 	}
 
 	return &types.MsgMultiSendCoinResponse{}, nil
@@ -449,22 +441,20 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 	}
 
 	// Send check coins from issuer to the transaction sender
-	err = k.bankKeeper.SendCoins(ctx, issuer, sender, sdk.Coins{})
+	err = k.bankKeeper.SendCoins(ctx, issuer, sender, sdk.NewCoins(sdk.NewCoin(coinDenom, coinAmount)))
 	if err != nil {
 		return nil, types.ErrInternal(err.Error())
 	}
 
 	// Emit transaction events
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		sdk.EventTypeMessage,
-		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-		sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
-		sdk.NewAttribute(types.AttributeIssuer, issuer.String()),
-		sdk.NewAttribute(types.AttributeCoin, sdk.NewCoin(coinDenom, coinAmount).String()),
-		sdk.NewAttribute(types.AttributeNonce, new(big.Int).SetBytes(check.Nonce).String()),
-		sdk.NewAttribute(types.AttributeDueBlock, strconv.FormatUint(check.DueBlock, 10)),
-		sdk.NewAttribute(types.AttributeCommissionRedeemCheck, feeCoin.String()),
-	))
+	ctx.EventManager().EmitTypedEvent(&types.EventRedeemCheck{
+		Sender:                msg.Sender,
+		Issuer:                issuer.String(),
+		Coin:                  sdk.NewCoin(coinDenom, coinAmount).String(),
+		Nonce:                 new(big.Int).SetBytes(check.Nonce).String(),
+		DueBlock:              strconv.FormatUint(check.DueBlock, 10),
+		CommissionRedeemCheck: feeCoin.String(),
+	})
 
 	return &types.MsgRedeemCheckResponse{}, nil
 }
@@ -587,14 +577,12 @@ func (k Keeper) buyCoin(
 	}
 
 	// Emit transaction events
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		sdk.EventTypeMessage,
-		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-		sdk.NewAttribute(sdk.AttributeKeySender, sender.String()),
-		sdk.NewAttribute(types.AttributeCoinToBuy, sdk.NewCoin(coinToBuyDenom, amountToBuy).String()),
-		sdk.NewAttribute(types.AttributeCoinToSell, sdk.NewCoin(coinToSellDenom, amountToSell).String()),
-		sdk.NewAttribute(types.AttributeAmountInBaseCoin, amountInBaseCoin.String()),
-	))
+	ctx.EventManager().EmitTypedEvent(&types.EventBuySellCoin{
+		Sender:           sender.String(),
+		CoinToBuy:        sdk.NewCoin(coinToBuyDenom, amountToBuy).String(),
+		CoinToSell:       sdk.NewCoin(coinToSellDenom, amountToSell).String(),
+		AmountInBaseCoin: amountInBaseCoin.String(),
+	})
 
 	return nil
 }
@@ -715,14 +703,12 @@ func (k Keeper) sellCoin(
 	}
 
 	// Emit transaction events
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		sdk.EventTypeMessage,
-		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-		sdk.NewAttribute(sdk.AttributeKeySender, sender.String()),
-		sdk.NewAttribute(types.AttributeCoinToSell, sdk.NewCoin(coinToSellDenom, amountToSell).String()),
-		sdk.NewAttribute(types.AttributeCoinToBuy, sdk.NewCoin(coinToBuyDenom, amountToBuy).String()),
-		sdk.NewAttribute(types.AttributeAmountInBaseCoin, amountInBaseCoin.String()),
-	))
+	ctx.EventManager().EmitTypedEvent(&types.EventBuySellCoin{
+		Sender:           sender.String(),
+		CoinToBuy:        sdk.NewCoin(coinToBuyDenom, amountToBuy).String(),
+		CoinToSell:       sdk.NewCoin(coinToSellDenom, amountToSell).String(),
+		AmountInBaseCoin: amountInBaseCoin.String(),
+	})
 
 	return nil
 }

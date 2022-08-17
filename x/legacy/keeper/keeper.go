@@ -8,9 +8,10 @@ import (
 	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	"github.com/cosmos/cosmos-sdk/codec"
+	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
-	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -20,7 +21,7 @@ var _ types.MsgServer = &Keeper{}
 // Keeper implements the module data storaging.
 type Keeper struct {
 	cdc      codec.BinaryCodec
-	storeKey sdk.StoreKey
+	storeKey store.StoreKey
 
 	bankKeeper     types.BankKeeper
 	nftKeeper      types.NftKeeper
@@ -32,7 +33,7 @@ type Keeper struct {
 // NewKeeper creates new Keeper instance.
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeKey sdk.StoreKey,
+	storeKey store.StoreKey,
 	bankKeeper types.BankKeeper,
 	nftKeeper types.NftKeeper,
 	multisigKeeper types.MultisigKeeper,
@@ -129,6 +130,13 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 		return types.ErrInternal(err.Error())
 	}
 
+	// Emit send event
+	ctx.EventManager().EmitTypedEvent(&types.EventLegacyReturnCoin{
+		OldAddress: legacyAddress,
+		NewAddress: actualAddress,
+		Coins:      record.Coins.String(),
+	})
+
 	// 2. update nft owners
 	for _, nftRecord := range record.Nfts {
 		nft, err := k.nftKeeper.GetNFT(ctx, nftRecord.Denom, nftRecord.Id)
@@ -145,6 +153,13 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 			}
 		}
 		k.nftKeeper.SetNFT(ctx, nftRecord.Denom, nftRecord.Id, nft)
+		// Emit nft event
+		ctx.EventManager().EmitTypedEvent(&types.EventLegacyReturnNFT{
+			OldAddress: legacyAddress,
+			NewAddress: actualAddress,
+			Denom:      nftRecord.Denom,
+			TokenId:    nftRecord.Id,
+		})
 	}
 
 	// 3. update mutisig wallet owners
@@ -160,23 +175,16 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 			}
 		}
 		k.multisigKeeper.SetWallet(ctx, wallet)
+		// Emit nft event
+		ctx.EventManager().EmitTypedEvent(&types.EventLegacyReturnWallet{
+			OldAddress: legacyAddress,
+			NewAddress: actualAddress,
+			Wallet:     walletAddress,
+		})
 	}
 
 	// all complete, delete
 	k.DeleteLegacyRecord(ctx, legacyAddress)
-
-	// TODO; event?
-	// Emit changes event
-	/*
-		ctx.EventManager().EmitEvent(sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
-			sdk.NewAttribute(types.AttributeReceiver, msg.Receiver),
-			sdk.NewAttribute(types.AttributeLegacyAddress, legacyAddress),
-			sdk.NewAttribute(types.AttributeCointToReturn, legacyBalance.Coins.String()),
-		))
-	*/
 
 	// NOTE: BE CAREFUL WITH CACHES, update only during delivery step
 	if !ctx.IsCheckTx() && !ctx.IsReCheckTx() {

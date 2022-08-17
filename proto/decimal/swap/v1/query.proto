@@ -4,8 +4,9 @@ package decimal.swap.v1;
 import "gogoproto/gogo.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "google/api/annotations.proto";
-import "decimal/swap/v1/swap.proto";
 import "cosmos/base/v1beta1/coin.proto";
+
+import "decimal/swap/v1/swap.proto";
 
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/swap/types";
 
