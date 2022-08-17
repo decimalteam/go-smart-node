@@ -48,18 +48,18 @@ func (k Keeper) Mint(
 	creator, owner string,
 	tokenURI string,
 	allowMint bool,
-) (uint64, error) {
+) ([]uint64, error) {
 	subTokenIDs, err := k.GenAndMintSubTokens(ctx, denom, id, reserve, quantity, creator)
 	if err != nil {
-		return 0, err
+		return []uint64{}, err
 	}
 
 	err = k.MintNFTAndCollection(ctx, denom, id, reserve, creator, owner, tokenURI, allowMint, subTokenIDs)
 	if err != nil {
-		return 0, err
+		return []uint64{}, err
 	}
 
-	return subTokenIDs[0], nil
+	return subTokenIDs, nil
 }
 
 func (k Keeper) GenAndMintSubTokens(

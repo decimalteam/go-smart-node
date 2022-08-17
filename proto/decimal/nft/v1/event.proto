@@ -1,0 +1,47 @@
+syntax = "proto3";
+package decimal.nft.v1;
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
+
+message EventMintNFT {
+    string sender = 1;
+    string recipient = 2;
+    // aka collection
+    string denom = 3;
+    // aka id, token_id
+    string nft_id = 4;
+    string token_uri = 5;
+    bool allow_mint = 6;
+    string reserve = 7;
+    repeated uint64 sub_token_ids = 8;
+}
+
+message EventTransferNFT {
+    string sender = 1;
+    string recipient = 2;
+    string denom = 3;
+    string nft_id = 4;
+    repeated uint64 sub_token_ids = 8;
+}
+
+message EventEditNFT {
+    string sender = 1;
+    string denom = 2;
+    string nft_id = 3;
+    string token_uri = 4;
+}
+
+message EventBurnNFT {
+    string sender = 1;
+    string denom = 2;
+    string nft_id = 3;
+    repeated uint64 sub_token_ids = 4;
+}
+
+message EventUpdateReserveNFT {
+    string sender = 1;
+    string denom = 2;
+    string nft_id = 3;
+    repeated uint64 sub_token_ids = 4;
+    string new_reserve = 5;
+}

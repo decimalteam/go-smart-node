@@ -652,17 +652,17 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_QueryCollectionSupply_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"nft", "v1", "supply", "denom"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueryCollectionSupply_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"nft", "v1", "supply", "denom"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QueryOwnerCollections_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 2}, []string{"nft", "v1", "owner"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueryOwnerCollections_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 2}, []string{"nft", "v1", "owner"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QueryCollection_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"nft", "v1", "collection", "denom"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueryCollection_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"nft", "v1", "collection", "denom"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QueryDenoms_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"nft", "v1", "denoms"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueryDenoms_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"nft", "v1", "denoms"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QueryNFT_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 0, 2, 0, 1, 0, 4, 1, 5, 2, 1, 0, 4, 1, 5, 3}, []string{"nft", "v1", "denom", "tokenID"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueryNFT_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 0, 2, 0, 1, 0, 4, 1, 5, 2, 1, 0, 4, 1, 5, 3}, []string{"nft", "v1", "denom", "tokenID"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QuerySubTokens_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 0, 2, 2}, []string{"nft", "v1", "sub_tokens"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QuerySubTokens_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 0, 2, 2}, []string{"nft", "v1", "sub_tokens"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
