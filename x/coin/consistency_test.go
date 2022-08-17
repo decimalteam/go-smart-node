@@ -120,7 +120,7 @@ func runOpSequence(t *testing.T, app *appMain.DSC, ctx sdk.Context, seq []coinOp
 }
 
 func initConsistencyApp(t *testing.T, reserve, volume, limitVolume sdk.Int, crr uint64) (*app.DSC, sdk.Context, []sdk.AccAddress) {
-	app, ctx := bootstrapGenesisTest()
+	app, ctx := bootstrapGenesisTest(t)
 
 	// write genesis
 	params := app.CoinKeeper.GetParams(ctx)

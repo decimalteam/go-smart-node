@@ -2,6 +2,7 @@ package keeper
 
 import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -13,8 +14,8 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
-func GetBaseAppWithCustomKeeper() (*app.DSC, sdk.Context) {
-	dsc := app.Setup(false, feemarkettypes.DefaultGenesisState())
+func GetBaseAppWithCustomKeeper(t *testing.T) (*app.DSC, sdk.Context) {
+	dsc := app.Setup(t, false, feemarkettypes.DefaultGenesisState())
 	ctx := dsc.BaseApp.NewContext(false, tmproto.Header{})
 
 	appCodec := dsc.AppCodec()

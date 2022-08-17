@@ -97,7 +97,7 @@ func (c *cliTestResulter) UnmarshalSignatureJSON([]byte) ([]signingtypes.Signatu
 func (c *cliTestResulter) NewTxBuilder() client.TxBuilder {
 	return c
 }
-func (c *cliTestResulter) WrapTxBuilder(sdk.Tx) (client.TxBuilder, error) {
+func (c *cliTestResulter) WrapTxBuilder(tx sdk.Tx) (client.TxBuilder, error) {
 	return c, nil
 }
 func (c *cliTestResulter) SignModeHandler() signing.SignModeHandler {

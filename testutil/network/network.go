@@ -36,13 +36,13 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
+	ptypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/api"
 	srvconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/cosmos/cosmos-sdk/simapp/params"
-	store "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -120,7 +120,7 @@ func DefaultConfig() Config {
 		AccountTokens:     sdk.TokensFromConsensusPower(1000, ethermint.PowerReduction),
 		StakingTokens:     sdk.TokensFromConsensusPower(900000000000000000, ethermint.PowerReduction),
 		BondedTokens:      sdk.TokensFromConsensusPower(100, ethermint.PowerReduction),
-		PruningStrategy:   store.PruningOptionNothing,
+		PruningStrategy:   ptypes.PruningOptionNothing,
 		CleanupDir:        true,
 		SigningAlgo:       string(hd.EthSecp256k1Type),
 		KeyringOptions:    []keyring.Option{hd.EthSecp256k1Option()},
@@ -135,7 +135,7 @@ func NewAppConstructor(encodingCfg params.EncodingConfig) AppConstructor {
 			val.Ctx.Logger, dbm.NewMemDB(), nil, true, make(map[int64]bool), val.Ctx.Config.RootDir, 0,
 			encodingCfg,
 			simapp.EmptyAppOptions{},
-			baseapp.SetPruning(store.NewPruningOptionsFromString(val.AppConfig.Pruning)),
+			baseapp.SetPruning(ptypes.NewPruningOptionsFromString(val.AppConfig.Pruning)),
 			baseapp.SetMinGasPrices(val.AppConfig.MinGasPrices),
 		)
 	}

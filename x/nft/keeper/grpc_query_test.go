@@ -11,7 +11,7 @@ import (
 )
 
 func TestQueryCollectionSupply(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	sender := app.GetAddrs(dsc, ctx, 1)[0]
 
@@ -59,7 +59,7 @@ func TestQueryCollectionSupply(t *testing.T) {
 }
 
 func TestQueryOwnerCollections(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	sender := app.GetAddrs(dsc, ctx, 1)[0]
 
@@ -149,7 +149,7 @@ func TestQueryOwnerCollections(t *testing.T) {
 }
 
 func TestQueryCollection(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	sender := app.GetAddrs(dsc, ctx, 1)[0]
 
@@ -194,7 +194,7 @@ func TestQueryCollection(t *testing.T) {
 }
 
 func TestQueryNFT(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	sender := app.GetAddrs(dsc, ctx, 1)[0]
 
@@ -231,7 +231,7 @@ func TestQueryNFT(t *testing.T) {
 }
 
 func TestQuerySubTokens(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	sender := app.GetAddrs(dsc, ctx, 1)[0]
 
