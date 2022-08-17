@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	tmcfg "github.com/tendermint/tendermint/config"
 	"io"
 	"os"
 	"path/filepath"
@@ -23,6 +24,7 @@ import (
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/simapp/params"
 	"github.com/cosmos/cosmos-sdk/snapshots"
+	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
@@ -53,7 +55,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	// Initialize client context
 	encodingConfig := encoding.MakeConfig(app.ModuleBasics)
 	initClientCtx := client.Context{}.
-		WithCodec(encodingConfig.Marshaler).
+		WithCodec(encodingConfig.Codec).
 		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
 		WithTxConfig(encodingConfig.TxConfig).
 		WithLegacyAmino(encodingConfig.Amino).
@@ -75,10 +77,10 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			cmd.SetErr(cmd.ErrOrStderr())
 
 			// Disable ledger temporarily
-			useLedger, _ := cmd.Flags().GetBool(flags.FlagUseLedger)
-			if useLedger {
-				return fmt.Errorf("--%s flag passed: Ledger device is currently not supported", flags.FlagUseLedger)
-			}
+			//useLedger, _ := cmd.Flags().GetBool(flags.FlagUseLedger)
+			//if useLedger {
+			//	return fmt.Errorf("--%s flag passed: Ledger device is currently not supported", flags.FlagUseLedger)
+			//}
 
 			initClientCtx, err := client.ReadPersistentCommandFlags(initClientCtx, cmd.Flags())
 			if err != nil {
@@ -97,7 +99,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			// TODO: define our own token
 			customAppTemplate, customAppConfig := initAppConfig()
 
-			return sdkserver.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig)
+			return sdkserver.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig, tmcfg.DefaultConfig())
 		},
 	}
 
@@ -137,7 +139,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	}
 
 	// Add rosetta
-	rootCmd.AddCommand(sdkserver.RosettaCommand(encodingConfig.InterfaceRegistry, encodingConfig.Marshaler))
+	rootCmd.AddCommand(sdkserver.RosettaCommand(encodingConfig.InterfaceRegistry, encodingConfig.Codec))
 
 	return rootCmd, encodingConfig
 }
@@ -265,9 +267,10 @@ func (a appCreator) newApp(logger log.Logger, db dbm.DB, traceStore io.Writer, a
 		baseapp.SetInterBlockCache(cache),
 		baseapp.SetTrace(cast.ToBool(appOpts.Get(sdkserver.FlagTrace))),
 		baseapp.SetIndexEvents(cast.ToStringSlice(appOpts.Get(sdkserver.FlagIndexEvents))),
-		baseapp.SetSnapshotStore(snapshotStore),
-		baseapp.SetSnapshotInterval(cast.ToUint64(appOpts.Get(sdkserver.FlagStateSyncSnapshotInterval))),
-		baseapp.SetSnapshotKeepRecent(cast.ToUint32(appOpts.Get(sdkserver.FlagStateSyncSnapshotKeepRecent))),
+		baseapp.SetSnapshot(snapshotStore, snapshottypes.SnapshotOptions{
+			Interval:   cast.ToUint64(appOpts.Get(sdkserver.FlagStateSyncSnapshotInterval)),
+			KeepRecent: cast.ToUint32(appOpts.Get(sdkserver.FlagStateSyncSnapshotKeepRecent)),
+		}),
 	)
 
 	return dscApp

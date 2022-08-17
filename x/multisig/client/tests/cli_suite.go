@@ -20,27 +20,27 @@ import (
 )
 
 // helper set up functions
-func setUpCliTest(t *testing.T, accCount int) (client.Context, []keyring.Info, *cliTestResulter) {
+func setUpCliTest(t *testing.T, accCount int) (client.Context, []keyring.Record, *cliTestResulter) {
 	var err error
 
 	// make codec and context
 	encCfg := encoding.MakeConfig(app.ModuleBasics)
 	kb, err := keyring.New(sdk.KeyringServiceName(), keyring.BackendMemory, "",
-		nil, []keyring.Option{etherminthd.EthSecp256k1Option()}...)
+		nil, encCfg.Codec, []keyring.Option{etherminthd.EthSecp256k1Option()}...)
 	require.NoError(t, err)
-	clientCtx := client.Context{}.WithKeyring(kb).WithCodec(encCfg.Marshaler)
+	clientCtx := client.Context{}.WithKeyring(kb).WithCodec(encCfg.Codec)
 	clientCtx = clientCtx.WithGenerateOnly(true)
 	clientCtx = clientCtx.WithSignModeStr(flags.SignModeDirect)
 	result := &cliTestResulter{}
 	clientCtx = clientCtx.WithTxConfig(result)
 
 	// add accounts
-	accs := make([]keyring.Info, 0)
+	accs := make([]keyring.Record, 0)
 	for i := 0; i < accCount; i++ {
 		info, _, err := kb.NewMnemonic(fmt.Sprintf("acc%d", i), keyring.English, sdk.FullFundraiserPath,
 			keyring.DefaultBIP39Passphrase, etherminthd.EthSecp256k1)
 		require.NoError(t, err)
-		accs = append(accs, info)
+		accs = append(accs, *info)
 	}
 
 	return clientCtx, accs, result
@@ -51,8 +51,8 @@ func setUpCmd(t *testing.T, cmd *cobra.Command, clientCtx client.Context, from s
 
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, client.ClientContextKey, &clientCtx)
-	err = cmd.Flags().Set(flags.FlagChainID, "decimal_202020-1")
-	require.NoError(t, err)
+	//err = cmd.Flags().Set(flags.FlagChainID, "decimal_202020-1")
+	//require.NoError(t, err)
 	err = cmd.Flags().Set(flags.FlagOffline, "true")
 	require.NoError(t, err)
 	err = cmd.Flags().Set(flags.FlagFrom, from)
@@ -97,7 +97,7 @@ func (c *cliTestResulter) UnmarshalSignatureJSON([]byte) ([]signingtypes.Signatu
 func (c *cliTestResulter) NewTxBuilder() client.TxBuilder {
 	return c
 }
-func (c *cliTestResulter) WrapTxBuilder(sdk.Tx) (client.TxBuilder, error) {
+func (c *cliTestResulter) WrapTxBuilder(tx sdk.Tx) (client.TxBuilder, error) {
 	return c, nil
 }
 func (c *cliTestResulter) SignModeHandler() signing.SignModeHandler {
@@ -115,6 +115,14 @@ func (c *cliTestResulter) SetMsgs(msgs ...sdk.Msg) error {
 func (c *cliTestResulter) SetSignatures(signatures ...signingtypes.SignatureV2) error {
 	return nil
 }
+func (c *cliTestResulter) AddAuxSignerData(data sdkTx.AuxSignerData) error {
+	return nil
+}
+func (c *cliTestResulter) SetFeePayer(feePayer sdk.AccAddress) {
+}
+func (c *cliTestResulter) SetTip(tip *sdkTx.Tip) {
+}
+
 func (c *cliTestResulter) SetMemo(memo string)                     {}
 func (c *cliTestResulter) SetFeeAmount(amount sdk.Coins)           {}
 func (c *cliTestResulter) SetGasLimit(limit uint64)                {}

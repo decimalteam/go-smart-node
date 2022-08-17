@@ -22,7 +22,7 @@ import (
 )
 
 func TestInitGenesisForLegacy(t *testing.T) {
-	app, ctx := getBaseApp()
+	app, ctx := getBaseApp(t)
 
 	publicKey := []byte{0x3, 0x44, 0x8e, 0x6b, 0x3d, 0x50, 0xd6, 0xa3, 0x9c, 0xab, 0x3b, 0xab, 0xaa,
 		0x4a, 0xa2, 0xb0, 0x88, 0x5f, 0x55, 0x6f, 0xe0, 0x5d, 0x71, 0x49, 0x88, 0x5a, 0x5, 0xa0, 0xe7, 0x94, 0xa, 0x7e, 0x4f}
@@ -225,8 +225,8 @@ func TestInitGenesisForLegacy(t *testing.T) {
 	require.False(t, app.LegacyKeeper.IsLegacyAddress(ctx, oldAddress), "check legacy address at end")
 }
 
-func getBaseApp() (*app.DSC, sdk.Context) {
-	dsc := app.Setup(false, feemarkettypes.DefaultGenesisState())
+func getBaseApp(t *testing.T) (*app.DSC, sdk.Context) {
+	dsc := app.Setup(t, false, feemarkettypes.DefaultGenesisState())
 	ctx := dsc.BaseApp.NewContext(false, tmproto.Header{})
 
 	return dsc, ctx

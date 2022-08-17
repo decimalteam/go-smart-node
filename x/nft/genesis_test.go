@@ -19,7 +19,7 @@ const (
 )
 
 func TestInitGenesis(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	genesisState := types.DefaultGenesisState()
 	require.Equal(t, 0, len(genesisState.Collections))
