@@ -10,7 +10,7 @@ option go_package = "bitbucket.org/decimalteam/go-smart-node/x/validator/types";
 // Params defines the parameters for the staking module.
 message Params {
   option (gogoproto.equal)            = true;
-  option (gogoproto.goproto_stringer) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   // unbonding_time is the time duration of unbonding.
   google.protobuf.Duration unbonding_time = 1 [(gogoproto.nullable) = false, (gogoproto.stdduration) = true];

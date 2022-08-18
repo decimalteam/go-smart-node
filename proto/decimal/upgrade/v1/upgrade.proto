@@ -12,7 +12,7 @@ option (gogoproto.goproto_getters_all) = false;
 // Plan specifies information about a planned upgrade and when it should occur.
 message Plan {
   option (gogoproto.equal) = true;
-  option (gogoproto.goproto_stringer) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   // Sets the name for the upgrade. This name will be used by the upgraded
   // version of the software to apply any special "on-upgrade" commands during
@@ -50,7 +50,7 @@ message SoftwareUpgradeProposal {
   option deprecated                   = true;
   option (cosmos_proto.implements_interface) = "cosmos.gov.v1beta1.Content";
   option (gogoproto.equal)            = true;
-  option (gogoproto.goproto_stringer) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   string title       = 1;
   string description = 2;
@@ -65,7 +65,7 @@ message CancelSoftwareUpgradeProposal {
   option deprecated                   = true;
   option (cosmos_proto.implements_interface) = "cosmos.gov.v1beta1.Content";
   option (gogoproto.equal)            = true;
-  option (gogoproto.goproto_stringer) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   string title       = 1;
   string description = 2;
