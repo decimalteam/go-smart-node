@@ -43,7 +43,7 @@ func (k Keeper) SwapInitialize(goCtx context.Context, msg *types.MsgSwapInitiali
 		return nil, err
 	}
 
-	ctx.EventManager().EmitTypedEvent(&types.EventSwapInitialize{
+	err = ctx.EventManager().EmitTypedEvent(&types.EventSwapInitialize{
 		Sender:            msg.Sender,
 		From:              msg.Sender,
 		DestChain:         msg.DestChain,
@@ -52,6 +52,9 @@ func (k Keeper) SwapInitialize(goCtx context.Context, msg *types.MsgSwapInitiali
 		TransactionNumber: msg.TransactionNumber,
 		TokenSymbol:       msg.TokenSymbol,
 	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
 
 	return &types.MsgSwapInitializeResponse{}, nil
 
@@ -107,7 +110,7 @@ func (k Keeper) SwapRedeem(goCtx context.Context, msg *types.MsgSwapRedeem) (*ty
 		return nil, err
 	}
 
-	ctx.EventManager().EmitTypedEvent(&types.EventSwapRedeem{
+	err = ctx.EventManager().EmitTypedEvent(&types.EventSwapRedeem{
 		Sender:            msg.Sender,
 		From:              msg.Sender,
 		DestChain:         msg.DestChain,
@@ -116,6 +119,9 @@ func (k Keeper) SwapRedeem(goCtx context.Context, msg *types.MsgSwapRedeem) (*ty
 		TransactionNumber: msg.TransactionNumber,
 		TokenSymbol:       msg.TokenSymbol,
 	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
 
 	return &types.MsgSwapRedeemResponse{}, nil
 
@@ -132,10 +138,13 @@ func (k Keeper) ChainActivate(goCtx context.Context, msg *types.MsgChainActivate
 
 	k.SetChain(ctx, &chain)
 
-	ctx.EventManager().EmitTypedEvent(&types.EventChainActivate{
+	err := ctx.EventManager().EmitTypedEvent(&types.EventChainActivate{
 		ChainName:   msg.ChainName,
 		ChainNumber: msg.ChainNumber,
 	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
 
 	return &types.MsgChainActivateResponse{}, nil
 }
@@ -151,9 +160,12 @@ func (k Keeper) ChainDeactivate(goCtx context.Context, msg *types.MsgChainDeacti
 	chain.Active = false
 	k.SetChain(ctx, &chain)
 
-	ctx.EventManager().EmitTypedEvent(&types.EventChainDeactivate{
+	err := ctx.EventManager().EmitTypedEvent(&types.EventChainDeactivate{
 		ChainNumber: msg.ChainNumber,
 	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
 
 	return &types.MsgChainDeactivateResponse{}, nil
 }

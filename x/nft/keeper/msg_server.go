@@ -34,7 +34,7 @@ func (k Keeper) MintNFT(c context.Context, msg *types.MsgMintNFT) (*types.MsgMin
 		return nil, err
 	}
 
-	ctx.EventManager().EmitTypedEvent(&types.EventMintNFT{
+	err = ctx.EventManager().EmitTypedEvent(&types.EventMintNFT{
 		Sender:      msg.Sender,
 		Recipient:   msg.Recipient,
 		Denom:       msg.Denom,
@@ -44,6 +44,9 @@ func (k Keeper) MintNFT(c context.Context, msg *types.MsgMintNFT) (*types.MsgMin
 		Reserve:     msg.Reserve.String(),
 		SubTokenIds: SubTokenIds,
 	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
 
 	return &types.MsgMintNFTResponse{}, nil
 }
@@ -56,13 +59,16 @@ func (k Keeper) TransferNFT(c context.Context, msg *types.MsgTransferNFT) (*type
 		return nil, err
 	}
 
-	ctx.EventManager().EmitTypedEvent(&types.EventTransferNFT{
+	err = ctx.EventManager().EmitTypedEvent(&types.EventTransferNFT{
 		Sender:      msg.Sender,
 		Recipient:   msg.Recipient,
 		Denom:       msg.Denom,
 		NftId:       msg.ID,
 		SubTokenIds: msg.SubTokenIDs,
 	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
 
 	return &types.MsgTransferNFTResponse{}, nil
 }
@@ -85,12 +91,15 @@ func (k Keeper) EditNFTMetadata(c context.Context, msg *types.MsgEditNFTMetadata
 		return nil, err
 	}
 
-	ctx.EventManager().EmitTypedEvent(&types.EventEditNFT{
+	err = ctx.EventManager().EmitTypedEvent(&types.EventEditNFT{
 		Sender:   msg.Sender,
 		Denom:    msg.Denom,
 		NftId:    msg.ID,
 		TokenUri: msg.TokenURI,
 	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
 
 	return &types.MsgEditNFTMetadataResponse{}, nil
 }
@@ -113,12 +122,15 @@ func (k Keeper) BurnNFT(c context.Context, msg *types.MsgBurnNFT) (*types.MsgBur
 		return nil, err
 	}
 
-	ctx.EventManager().EmitTypedEvent(&types.EventBurnNFT{
+	err = ctx.EventManager().EmitTypedEvent(&types.EventBurnNFT{
 		Sender:      msg.Sender,
 		Denom:       msg.Denom,
 		NftId:       msg.ID,
 		SubTokenIds: msg.SubTokenIDs,
 	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
 
 	return &types.MsgBurnNFTResponse{}, nil
 }
@@ -141,13 +153,16 @@ func (k Keeper) UpdateReserveNFT(c context.Context, msg *types.MsgUpdateReserveN
 		return nil, err
 	}
 
-	ctx.EventManager().EmitTypedEvent(&types.EventUpdateReserveNFT{
+	err = ctx.EventManager().EmitTypedEvent(&types.EventUpdateReserveNFT{
 		Sender:      msg.Sender,
 		Denom:       msg.Denom,
 		NftId:       msg.ID,
 		SubTokenIds: msg.SubTokenIDs,
 		NewReserve:  msg.NewReserveNFT.String(),
 	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
 
 	return &types.MsgUpdateReserveNFTResponse{}, nil
 }
