@@ -10,13 +10,11 @@ import (
 	"github.com/cosmos/btcutil/base58"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	"github.com/cosmos/cosmos-sdk/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/cosmos/cosmos-sdk/version"
 	ethereumCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
-	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 	"golang.org/x/crypto/sha3"
 
 	"github.com/spf13/cobra"
@@ -547,36 +545,14 @@ $ %s tx coin issue-check 1000del 10 235 123456789 --from mykey
 
 			// Fill check with prepared lock
 			check.Lock = lock
-			kr := clientCtx.Keyring
-
-			privKeyArmored, err := kr.ExportPrivKeyArmor(clientCtx.FromName, passphrase)
-			if err != nil {
-				return types.ErrUnableRetrieveArmoredPkey(clientCtx.FromName, err.Error())
-			}
-			privKey, algo, err := crypto.UnarmorDecryptPrivKey(privKeyArmored, "")
-			if err != nil {
-				return types.ErrUnableRetrievePkey(clientCtx.FromName, err.Error())
-			}
-			if algo != ethsecp256k1.KeyType {
-				return types.ErrUnableRetrieveSECPPkey(clientCtx.FromName, algo)
-			}
-
-			ethPrivKey, ok := privKey.(*ethsecp256k1.PrivKey)
-			if !ok {
-				return types.ErrInvalidPkey()
-			}
-
-			key, err := ethPrivKey.ToECDSA()
-			if err != nil {
-				return err
-			}
 
 			// Sign check by check issuer
 			checkHash = check.Hash()
-			signature, err := ethereumCrypto.Sign(checkHash[:], key)
+			signature, _, err := clientCtx.Keyring.Sign(clientCtx.FromName, checkHash[:])
 			if err != nil {
 				panic(err)
 			}
+
 			check.SetSignature(signature)
 
 			checkBytes, err := rlp.EncodeToBytes(check)
