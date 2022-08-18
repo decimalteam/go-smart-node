@@ -533,7 +533,7 @@ localnet-show-logstream:
 ###############################################################################
 
 PACKAGE_NAME:=bitbucket.org/decimalteam/go-smart-node
-GOLANG_CROSS_VERSION  = v1.17.1
+GOLANG_CROSS_VERSION  = v1.18.5
 GOPATH ?= '$(HOME)/go'
 release-dry-run:
 	docker run \
