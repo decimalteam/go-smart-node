@@ -14,6 +14,7 @@ type (
 	MsgSellCoin      = coinTypes.MsgSellCoin
 	MsgSellAllCoin   = coinTypes.MsgSellAllCoin
 	MsgSendCoin      = coinTypes.MsgSendCoin
+	MsgBurnCoin      = coinTypes.MsgBurnCoin
 	MsgRedeemCheck   = coinTypes.MsgRedeemCheck
 
 	OneSend = coinTypes.Send
@@ -37,6 +38,7 @@ var (
 	NewMsgSellCoin      = coinTypes.NewMsgSellCoin
 	NewMsgSellAllCoin   = coinTypes.NewMsgSellAllCoin
 	NewMsgSendCoin      = coinTypes.NewMsgSendCoin
+	NewMsgBurnCoin      = coinTypes.NewMsgBurnCoin
 	NewMsgRedeemCheck   = coinTypes.NewMsgRedeemCheck
 
 	NewMsgMintNFT          = nftTypes.NewMsgMintNFT

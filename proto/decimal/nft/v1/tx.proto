@@ -2,6 +2,7 @@ syntax = "proto3";
 package decimal.nft.v1;
 
 import "gogoproto/gogo.proto";
+import "cosmos/msg/v1/msg.proto";
 import "cosmos/base/v1beta1/coin.proto";
 
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
@@ -15,6 +16,8 @@ service Msg {
 }
 
 message MsgMintNFT {
+  option (cosmos.msg.v1.signer) = "sender";
+
   string sender = 1 [
     (gogoproto.moretags) = "yaml:\"address\""
   ];
@@ -52,6 +55,8 @@ message MsgMintNFT {
 message MsgMintNFTResponse{}
 
 message MsgTransferNFT {
+  option (cosmos.msg.v1.signer) = "sender";
+
   string sender = 1 [
     (gogoproto.moretags) = "yaml:\"address\""
   ];
@@ -76,6 +81,8 @@ message MsgTransferNFT {
 message MsgTransferNFTResponse {}
 
 message MsgEditNFTMetadata {
+  option (cosmos.msg.v1.signer) = "sender";
+
   string sender = 1 [
     (gogoproto.moretags) = "yaml:\"address\""
   ];
@@ -97,6 +104,8 @@ message MsgEditNFTMetadata {
 message MsgEditNFTMetadataResponse {}
 
 message MsgBurnNFT {
+  option (cosmos.msg.v1.signer) = "sender";
+
   string sender = 1 [
     (gogoproto.moretags) = "yaml:\"address\""
   ];
@@ -118,6 +127,8 @@ message MsgBurnNFT {
 message MsgBurnNFTResponse {}
 
 message MsgUpdateReserveNFT {
+  option (cosmos.msg.v1.signer) = "sender";
+
   string sender = 1 [
     (gogoproto.moretags) = "yaml:\"address\""
   ];

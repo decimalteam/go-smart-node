@@ -15,6 +15,7 @@ var (
 	_ sdk.Msg = &MsgBuyCoin{}
 	_ sdk.Msg = &MsgSellCoin{}
 	_ sdk.Msg = &MsgSellAllCoin{}
+	_ sdk.Msg = &MsgBurnCoin{}
 	_ sdk.Msg = &MsgRedeemCheck{}
 )
 
@@ -26,6 +27,7 @@ const (
 	TypeMsgBuyCoin       = "buy_coin"
 	TypeMsgSellCoin      = "sell_coin"
 	TypeMsgSellAllCoin   = "sell_all_coin"
+	TypeMsgBurnCoin      = "burn_coin"
 	TypeMsgRedeemCheck   = "redeem_check"
 )
 
@@ -425,6 +427,54 @@ func (msg MsgSellAllCoin) ValidateBasic() error {
 	// Denoms of specified coins cannot be the same
 	if msg.CoinToSell.Denom == msg.MinCoinToBuy.Denom {
 		return ErrSameCoin()
+	}
+	return nil
+}
+
+////////////////////////////////////////////////////////////////
+// MsgBurnCoin
+////////////////////////////////////////////////////////////////
+
+// NewMsgSendCoin creates a new instance of MsgSendCoin.
+func NewMsgBurnCoin(
+	sender sdk.AccAddress,
+	coin sdk.Coin,
+) *MsgBurnCoin {
+	return &MsgBurnCoin{
+		Sender: sender.String(),
+		Coin:   coin,
+	}
+}
+
+// Route should return the name of the module.
+func (msg MsgBurnCoin) Route() string { return RouterKey }
+
+// Type should return the action.
+func (msg MsgBurnCoin) Type() string { return TypeMsgSendCoin }
+
+// GetSignBytes encodes the message for signing.
+func (msg *MsgBurnCoin) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
+
+// GetSigners defines whose signature is required.
+func (msg MsgBurnCoin) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil
+	}
+	return []sdk.AccAddress{addr}
+}
+
+// ValidateBasic runs stateless checks on the message.
+func (msg MsgBurnCoin) ValidateBasic() error {
+	// Validate sender
+	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
+		return ErrInvalidSenderAddress(msg.Sender)
+	}
+	// Amount should be positive
+	if !msg.Coin.Amount.IsPositive() {
+		return ErrInvalidAmount()
 	}
 	return nil
 }

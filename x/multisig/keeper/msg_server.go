@@ -38,13 +38,16 @@ func (k Keeper) CreateWallet(goCtx context.Context, msg *types.MsgCreateWallet) 
 	k.SetWallet(ctx, *wallet)
 
 	// Emit transaction events
-	ctx.EventManager().EmitTypedEvent(&types.EventCreateWallet{
+	err = ctx.EventManager().EmitTypedEvent(&types.EventCreateWallet{
 		Sender:    msg.Sender,
 		Wallet:    wallet.Address,
 		Owners:    msg.Owners,
 		Weights:   msg.Weights,
 		Threshold: msg.Threshold,
 	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
 
 	return &types.MsgCreateWalletResponse{
 		Wallet: wallet.Address,
@@ -91,13 +94,16 @@ func (k Keeper) CreateTransaction(goCtx context.Context, msg *types.MsgCreateTra
 	k.SetTransaction(ctx, *transaction)
 
 	// Emit transaction events
-	ctx.EventManager().EmitTypedEvent(&types.EventCreateTransaction{
+	err = ctx.EventManager().EmitTypedEvent(&types.EventCreateTransaction{
 		Sender:      msg.Sender,
 		Wallet:      msg.Wallet,
 		Receiver:    msg.Receiver,
 		Coins:       msg.Coins.String(),
 		Transaction: transaction.Id,
 	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
 
 	// Sign created multisig transaction by the creator
 	_, err = k.SignTransaction(goCtx, &types.MsgSignTransaction{
@@ -183,7 +189,7 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 	}
 
 	// Emit transaction events
-	ctx.EventManager().EmitTypedEvent(&types.EventSignTransaction{
+	err = ctx.EventManager().EmitTypedEvent(&types.EventSignTransaction{
 		Sender:        msg.Sender,
 		Wallet:        wallet.Address,
 		Transaction:   transaction.Id,
@@ -191,6 +197,9 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 		Confirmations: confirmations,
 		Confirmed:     confirmed,
 	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
 
 	return &types.MsgSignTransactionResponse{}, nil
 }

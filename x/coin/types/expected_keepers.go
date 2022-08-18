@@ -54,7 +54,7 @@ type CoinKeeper interface {
 	GetCoin(ctx sdk.Context, symbol string) (coin Coin, err error)
 	GetCoins(ctx sdk.Context) (coins []Coin)
 	SetCoin(ctx sdk.Context, coin Coin)
-	EditCoin(ctx sdk.Context, coin Coin, reserve sdk.Int, volume sdk.Int)
+	EditCoin(ctx sdk.Context, coin Coin, reserve sdk.Int, volume sdk.Int) error
 
 	IsCheckRedeemed(ctx sdk.Context, check *Check) bool
 	GetCheck(ctx sdk.Context, checkHash []byte) (check Check, err error)

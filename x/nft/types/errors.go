@@ -12,6 +12,7 @@ const (
 	// Default coin codespace
 	DefaultCodespace string = ModuleName
 
+	CodeInternal                      CodeType = 100
 	CodeInvalidCollection             CodeType = 101
 	CodeUnknownCollection             CodeType = 102
 	CodeInvalidNFT                    CodeType = 103
@@ -35,6 +36,15 @@ const (
 	CodeNotSetValueLowerNow           CodeType = 121
 	CodeNotEnoughFunds                CodeType = 122
 )
+
+func ErrInternal(err string) error {
+	return errors.Encode(
+		DefaultCodespace,
+		CodeInternal,
+		fmt.Sprintf("Internal error: %s", err),
+		errors.NewParam("error", err),
+	)
+}
 
 func ErrInvalidCollection(denom string) error {
 	return errors.Encode(

@@ -3,9 +3,10 @@ package network
 import (
 	"encoding/json"
 	"fmt"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"path/filepath"
 	"time"
+
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	tmos "github.com/tendermint/tendermint/libs/os"

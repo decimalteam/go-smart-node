@@ -13,7 +13,7 @@
 ## + export PATH="$PATH":"$HOME/.pub-cache/bin"
 #
 ## All protoc dependencies must be installed not in the module scope
-## currently we must use grpc-gateway v1
+## currently we must use grpc-gateway v1 (see protocgen.sh in cosmos sdk)
 # cd ~
 # go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 # go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
@@ -23,6 +23,8 @@
 # go get github.com/regen-network/cosmos-proto@latest # doesn't work in install mode
 # go get github.com/regen-network/cosmos-proto/protoc-gen-gocosmos@latest
 # go get github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@latest
+# go install github.com/regen-network/cosmos-proto/protoc-gen-gocosmos
+# go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
 
 set -eo pipefail
 
@@ -47,6 +49,6 @@ echo "Copying result files..."
 cp -vr ./build/proto/go/bitbucket.org/decimalteam/go-smart-node/x/* ./x/
 #cp -vr ./build/proto/ts/* ./sdk/proto/ts/
 #cp -vr ./build/proto/dart/* ./sdk/proto/dart/
-#rm -rf ./build/proto
+rm -rf ./build/proto
 
 echo "Success!"

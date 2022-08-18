@@ -111,7 +111,7 @@ func (k *Keeper) SetCoin(ctx sdk.Context, coin types.Coin) {
 }
 
 // Edit updates current coin reserve and volume and writes coin to KVStore.
-func (k *Keeper) EditCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, volume sdk.Int) {
+func (k *Keeper) EditCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, volume sdk.Int) error {
 	if !k.IsCoinBase(ctx, coin.Symbol) {
 		k.SetCachedCoin(coin.Symbol)
 	}
@@ -122,12 +122,15 @@ func (k *Keeper) EditCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, vol
 	k.SetCoin(ctx, coin)
 
 	// Emit event
-	ctx.EventManager().EmitTypedEvent(&types.EventEditCoin{
+	err := ctx.EventManager().EmitTypedEvent(&types.EventEditCoin{
 		Symbol:  coin.Symbol,
 		Volume:  coin.Volume.String(),
 		Reserve: coin.Reserve.String(),
 	})
-
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 ////////////////////////////////////////////////////////////////

@@ -131,11 +131,14 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	}
 
 	// Emit send event
-	ctx.EventManager().EmitTypedEvent(&types.EventLegacyReturnCoin{
+	err = ctx.EventManager().EmitTypedEvent(&types.EventLegacyReturnCoin{
 		OldAddress: legacyAddress,
 		NewAddress: actualAddress,
 		Coins:      record.Coins.String(),
 	})
+	if err != nil {
+		return types.ErrInternal(err.Error())
+	}
 
 	// 2. update nft owners
 	for _, nftRecord := range record.Nfts {
@@ -154,12 +157,15 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 		}
 		k.nftKeeper.SetNFT(ctx, nftRecord.Denom, nftRecord.Id, nft)
 		// Emit nft event
-		ctx.EventManager().EmitTypedEvent(&types.EventLegacyReturnNFT{
+		err = ctx.EventManager().EmitTypedEvent(&types.EventLegacyReturnNFT{
 			OldAddress: legacyAddress,
 			NewAddress: actualAddress,
 			Denom:      nftRecord.Denom,
 			TokenId:    nftRecord.Id,
 		})
+		if err != nil {
+			return types.ErrInternal(err.Error())
+		}
 	}
 
 	// 3. update mutisig wallet owners
@@ -176,11 +182,14 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 		}
 		k.multisigKeeper.SetWallet(ctx, wallet)
 		// Emit nft event
-		ctx.EventManager().EmitTypedEvent(&types.EventLegacyReturnWallet{
+		err = ctx.EventManager().EmitTypedEvent(&types.EventLegacyReturnWallet{
 			OldAddress: legacyAddress,
 			NewAddress: actualAddress,
 			Wallet:     walletAddress,
 		})
+		if err != nil {
+			return types.ErrInternal(err.Error())
+		}
 	}
 
 	// all complete, delete

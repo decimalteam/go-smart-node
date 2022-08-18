@@ -19,7 +19,7 @@ type WeightedAG struct {
 func (ar *ActionReactor) Add(generatorName string, weight int64) error {
 	var wag *WeightedAG = &WeightedAG{Weight: weight}
 	switch generatorName {
-	//coin
+	// coin
 	case "CreateCoin":
 		wag.AG = NewCreateCoinGenerator(3, 9, 100, 1000, 1000, 2000, 1000000, 2000000)
 	case "SendCoin":
@@ -32,6 +32,8 @@ func (ar *ActionReactor) Add(generatorName string, weight int64) error {
 		wag.AG = NewMultiSendCoinGenerator(500, 20000, 1, 10)
 	case "UpdateCoin":
 		wag.AG = NewUpdateCoinGenerator(1, 100, "del")
+	case "BurnCoin":
+		wag.AG = NewBurnCoinGenerator(1, 1000)
 	// nft
 	case "MintNFT":
 		wag.AG = NewMintNFTGenerator(1, 100, 100, 1000, 1, 10)
@@ -76,7 +78,6 @@ func (ar *ActionReactor) Generate() Action {
 
 func (ar *ActionReactor) Update(ui UpdateInfo) {
 	for _, wag := range ar.wags {
-		fmt.Printf("update: %T\n", wag.AG)
 		wag.AG.Update(ui)
 	}
 }

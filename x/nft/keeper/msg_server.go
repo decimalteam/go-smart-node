@@ -45,7 +45,7 @@ func (k Keeper) MintNFT(c context.Context, msg *types.MsgMintNFT) (*types.MsgMin
 		SubTokenIDs: subTokenIDs,
 	})
 	if err != nil {
-		return nil, err
+		return nil, types.ErrInternal(err.Error())
 	}
 
 	return &types.MsgMintNFTResponse{}, nil
@@ -67,7 +67,7 @@ func (k Keeper) TransferNFT(c context.Context, msg *types.MsgTransferNFT) (*type
 		SubTokenIDs: msg.SubTokenIDs,
 	})
 	if err != nil {
-		return nil, err
+		return nil, types.ErrInternal(err.Error())
 	}
 
 	return &types.MsgTransferNFTResponse{}, nil
@@ -98,7 +98,7 @@ func (k Keeper) EditNFTMetadata(c context.Context, msg *types.MsgEditNFTMetadata
 		TokenURI: msg.TokenURI,
 	})
 	if err != nil {
-		return nil, err
+		return nil, types.ErrInternal(err.Error())
 	}
 
 	return &types.MsgEditNFTMetadataResponse{}, nil
@@ -129,7 +129,7 @@ func (k Keeper) BurnNFT(c context.Context, msg *types.MsgBurnNFT) (*types.MsgBur
 		SubTokenIDs: msg.SubTokenIDs,
 	})
 	if err != nil {
-		return nil, err
+		return nil, types.ErrInternal(err.Error())
 	}
 
 	return &types.MsgBurnNFTResponse{}, nil
@@ -161,7 +161,7 @@ func (k Keeper) UpdateReserveNFT(c context.Context, msg *types.MsgUpdateReserveN
 		NewReserve:  &msg.NewReserve,
 	})
 	if err != nil {
-		return nil, err
+		return nil, types.ErrInternal(err.Error())
 	}
 
 	return &types.MsgUpdateReserveNFTResponse{}, nil
