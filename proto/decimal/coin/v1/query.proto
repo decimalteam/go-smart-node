@@ -3,6 +3,7 @@ package decimal.coin.v1;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
+import "cosmos_proto/cosmos.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 
 import "decimal/coin/v1/coin.proto";

@@ -1,16 +1,15 @@
 package nft
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/client/cli"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/client/rest"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"context"
 	"encoding/json"
 	"fmt"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/client/cli"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
@@ -52,11 +51,6 @@ func (b AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncoding
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
 	}
 	return genesisState.Validate()
-}
-
-// RegisterRESTRoutes registers rest routes
-func (AppModuleBasic) RegisterRESTRoutes(ctx client.Context, rtr *mux.Router) {
-	rest.RegisterRoutes(ctx, rtr, types.RouterKey)
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
@@ -120,7 +114,7 @@ func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
 	return keeper.NewQuerier(am.keeper, amino)
 }
 
-// RegisterServices registers a GRPC query service to respond to the module-specific GRPC queries.
+// RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), am.keeper)
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)

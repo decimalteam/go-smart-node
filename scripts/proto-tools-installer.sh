@@ -6,9 +6,9 @@ DESTDIR=${DESTDIR:-}
 PREFIX=${PREFIX:-/usr/local}
 UNAME_S="$(uname -s 2>/dev/null)"
 UNAME_M="$(uname -m 2>/dev/null)"
-BUF_VERSION=1.4.0
-PROTOC_VERSION=3.20.1
-PROTOC_GRPC_GATEWAY_VERSION=2.10.0
+BUF_VERSION=1.7.0
+PROTOC_VERSION=21.5
+PROTOC_GRPC_GATEWAY_VERSION=2.11.2
 
 f_abort() {
     local l_rc=$1
@@ -92,7 +92,7 @@ f_install_protoc_gen_gocosmos() {
         return 1
     fi
 
-    go get github.com/regen-network/cosmos-proto/protoc-gen-gocosmos 2>/dev/null
+    go install github.com/regen-network/cosmos-proto/protoc-gen-gocosmos 2>/dev/null
     f_print_done
 }
 
@@ -114,7 +114,7 @@ f_install_protoc_gen_swagger() {
     fi
 
     pushd "${TEMPDIR}" >/dev/null
-    go get github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
+    go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
     npm install -g swagger-combine
     popd >/dev/null
     f_print_done

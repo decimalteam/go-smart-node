@@ -7,7 +7,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	sdkAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	evmTypes "github.com/tharsis/ethermint/x/evm/types"
+	evmTypes "github.com/evmos/ethermint/x/evm/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

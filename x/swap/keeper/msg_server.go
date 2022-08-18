@@ -43,19 +43,18 @@ func (k Keeper) SwapInitialize(goCtx context.Context, msg *types.MsgSwapInitiali
 		return nil, err
 	}
 
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
-			sdk.NewAttribute(types.AttributeKeyFrom, msg.Sender),
-			sdk.NewAttribute(types.AttributeKeyDestChain, strconv.FormatUint(uint64(msg.DestChain), 10)),
-			sdk.NewAttribute(types.AttributeKeyRecipient, msg.Recipient),
-			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
-			sdk.NewAttribute(types.AttributeKeyTransactionNumber, msg.TransactionNumber),
-			sdk.NewAttribute(types.AttributeKeyTokenSymbol, msg.TokenSymbol),
-		),
-	)
+	err = ctx.EventManager().EmitTypedEvent(&types.EventSwapInitialize{
+		Sender:            msg.Sender,
+		From:              msg.Sender,
+		DestChain:         msg.DestChain,
+		Recipient:         msg.Recipient,
+		Amount:            msg.Amount.String(),
+		TransactionNumber: msg.TransactionNumber,
+		TokenSymbol:       msg.TokenSymbol,
+	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
 
 	return &types.MsgSwapInitializeResponse{}, nil
 
@@ -111,19 +110,18 @@ func (k Keeper) SwapRedeem(goCtx context.Context, msg *types.MsgSwapRedeem) (*ty
 		return nil, err
 	}
 
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
-			sdk.NewAttribute(types.AttributeKeyFrom, msg.From),
-			sdk.NewAttribute(types.AttributeKeyDestChain, strconv.FormatUint(uint64(msg.DestChain), 10)),
-			sdk.NewAttribute(types.AttributeKeyRecipient, msg.Recipient),
-			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
-			sdk.NewAttribute(types.AttributeKeyTransactionNumber, msg.TransactionNumber),
-			sdk.NewAttribute(types.AttributeKeyTokenSymbol, msg.TokenSymbol),
-		),
-	)
+	err = ctx.EventManager().EmitTypedEvent(&types.EventSwapRedeem{
+		Sender:            msg.Sender,
+		From:              msg.Sender,
+		DestChain:         msg.DestChain,
+		Recipient:         msg.Recipient,
+		Amount:            msg.Amount.String(),
+		TransactionNumber: msg.TransactionNumber,
+		TokenSymbol:       msg.TokenSymbol,
+	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
 
 	return &types.MsgSwapRedeemResponse{}, nil
 
@@ -140,6 +138,14 @@ func (k Keeper) ChainActivate(goCtx context.Context, msg *types.MsgChainActivate
 
 	k.SetChain(ctx, &chain)
 
+	err := ctx.EventManager().EmitTypedEvent(&types.EventChainActivate{
+		ChainName:   msg.ChainName,
+		ChainNumber: msg.ChainNumber,
+	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
+
 	return &types.MsgChainActivateResponse{}, nil
 }
 
@@ -153,6 +159,13 @@ func (k Keeper) ChainDeactivate(goCtx context.Context, msg *types.MsgChainDeacti
 
 	chain.Active = false
 	k.SetChain(ctx, &chain)
+
+	err := ctx.EventManager().EmitTypedEvent(&types.EventChainDeactivate{
+		ChainNumber: msg.ChainNumber,
+	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
 
 	return &types.MsgChainDeactivateResponse{}, nil
 }

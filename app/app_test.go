@@ -13,14 +13,23 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/simapp"
 
-	"github.com/tharsis/ethermint/encoding"
+	"github.com/evmos/ethermint/encoding"
 )
 
 func TestDSCExport(t *testing.T) {
 	db := dbm.NewMemDB()
-	app := NewDSC(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encoding.MakeConfig(ModuleBasics), simapp.EmptyAppOptions{})
+	//simapp.SetupOptions{
+	//	Logger:             nil,
+	//	DB:                 nil,
+	//	InvCheckPeriod:     0,
+	//	HomePath:           "",
+	//	SkipUpgradeHeights: nil,
+	//	EncConfig:          simappparams.EncodingConfig{},
+	//	AppOpts:            types.AppOptions(),
+	//}
+	app := NewDSC(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5, encoding.MakeConfig(ModuleBasics), simapp.EmptyAppOptions{})
 
-	gs := NewDefaultGenesisState()
+	gs := GenesisStateWithSingleValidator(t, app)
 	stateBytes, err := json.MarshalIndent(gs, "", "  ")
 	require.NoError(t, err)
 

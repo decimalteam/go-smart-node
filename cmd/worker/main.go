@@ -11,7 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/simapp/params"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/tharsis/ethermint/encoding"
+	"github.com/evmos/ethermint/encoding"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	cnfcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"

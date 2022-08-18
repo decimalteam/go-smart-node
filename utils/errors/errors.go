@@ -2,14 +2,18 @@ package errors
 
 import (
 	"encoding/json"
-
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 type Err struct {
 	Description string            `json:"description"`
 	Codespace   string            `json:"codespace"`
+	Code        uint32            `json:"code"`
 	Params      map[string]string `json:"params,omitempty"`
+}
+
+func (e Err) Error() string {
+	bz, _ := json.Marshal(e)
+	return string(bz)
 }
 
 type Param struct {
@@ -24,10 +28,11 @@ func NewParam(key, value string) Param {
 	}
 }
 
-func Encode(codespace string, errorcode uint32, description string, params ...Param) *sdkerrors.Error {
+func Encode(codespace string, errorcode uint32, description string, params ...Param) error {
 	err := Err{
 		Description: description,
 		Codespace:   codespace,
+		Code:        errorcode,
 	}
 
 	if params != nil {
@@ -37,11 +42,5 @@ func Encode(codespace string, errorcode uint32, description string, params ...Pa
 		}
 	}
 
-	result, _ := json.Marshal(err)
-
-	return sdkerrors.New(
-		codespace,
-		errorcode,
-		string(result),
-	)
+	return err
 }

@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -39,15 +38,16 @@ func (k Keeper) CreateWallet(goCtx context.Context, msg *types.MsgCreateWallet) 
 	k.SetWallet(ctx, *wallet)
 
 	// Emit transaction events
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		sdk.EventTypeMessage,
-		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-		sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
-		sdk.NewAttribute(types.AttributeKeyOwners, strings.Join(msg.Owners, ",")),
-		sdk.NewAttribute(types.AttributeKeyWeights, helpers.JoinUints64(msg.Weights)),
-		sdk.NewAttribute(types.AttributeKeyThreshold, strconv.FormatUint(msg.Threshold, 10)),
-		sdk.NewAttribute(types.AttributeKeyWallet, wallet.Address),
-	))
+	err = ctx.EventManager().EmitTypedEvent(&types.EventCreateWallet{
+		Sender:    msg.Sender,
+		Wallet:    wallet.Address,
+		Owners:    msg.Owners,
+		Weights:   msg.Weights,
+		Threshold: msg.Threshold,
+	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
 
 	return &types.MsgCreateWalletResponse{
 		Wallet: wallet.Address,
@@ -93,6 +93,18 @@ func (k Keeper) CreateTransaction(goCtx context.Context, msg *types.MsgCreateTra
 	// Save created multisig transaction to the KVStore
 	k.SetTransaction(ctx, *transaction)
 
+	// Emit transaction events
+	err = ctx.EventManager().EmitTypedEvent(&types.EventCreateTransaction{
+		Sender:      msg.Sender,
+		Wallet:      msg.Wallet,
+		Receiver:    msg.Receiver,
+		Coins:       msg.Coins.String(),
+		Transaction: transaction.Id,
+	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
+
 	// Sign created multisig transaction by the creator
 	_, err = k.SignTransaction(goCtx, &types.MsgSignTransaction{
 		Sender: msg.Sender,
@@ -101,17 +113,6 @@ func (k Keeper) CreateTransaction(goCtx context.Context, msg *types.MsgCreateTra
 	if err != nil {
 		return nil, err
 	}
-
-	// Emit transaction events
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		sdk.EventTypeMessage,
-		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-		sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
-		sdk.NewAttribute(types.AttributeKeyWallet, msg.Wallet),
-		sdk.NewAttribute(types.AttributeKeyReceiver, msg.Receiver),
-		sdk.NewAttribute(types.AttributeKeyCoins, msg.Coins.String()),
-		sdk.NewAttribute(types.AttributeKeyTransaction, transaction.Id),
-	))
 
 	return &types.MsgCreateTransactionResponse{
 		TxID: transaction.Id,
@@ -188,16 +189,17 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 	}
 
 	// Emit transaction events
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		sdk.EventTypeMessage,
-		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-		sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
-		sdk.NewAttribute(types.AttributeKeyWallet, wallet.Address),
-		sdk.NewAttribute(types.AttributeKeyTransaction, msg.TxID),
-		sdk.NewAttribute(types.AttributeKeySignerWeight, strconv.FormatUint(uint64(weight), 10)),
-		sdk.NewAttribute(types.AttributeKeyConfirmations, strconv.FormatUint(uint64(confirmations), 10)),
-		sdk.NewAttribute(types.AttributeKeyConfirmed, strconv.FormatBool(confirmed)),
-	))
+	err = ctx.EventManager().EmitTypedEvent(&types.EventSignTransaction{
+		Sender:        msg.Sender,
+		Wallet:        wallet.Address,
+		Transaction:   transaction.Id,
+		SignerWeight:  weight,
+		Confirmations: confirmations,
+		Confirmed:     confirmed,
+	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
 
 	return &types.MsgSignTransactionResponse{}, nil
 }

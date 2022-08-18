@@ -1,0 +1,26 @@
+syntax = "proto3";
+package decimal.legacy.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/legacy/types";
+
+message EventLegacyReturnCoin {
+    string old_address = 2;
+    string new_address = 3;
+    string coins = 4;
+}
+
+message EventLegacyReturnNFT {
+    string old_address = 2;
+    string new_address = 3;
+    string denom = 4;
+    string token_id = 5;
+}
+
+// multisig wallet return
+message EventLegacyReturnWallet {
+    string old_address = 2;
+    string new_address = 3;
+    string wallet = 4;
+}
