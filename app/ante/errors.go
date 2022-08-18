@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/errors"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // Local code type
@@ -32,7 +31,7 @@ const (
 	CodeCoinVolumeBecomeInsufficient   CodeType = 116
 )
 
-func ErrFeePayerAddressDoesNotExist(feePayer string) *sdkerrors.Error {
+func ErrFeePayerAddressDoesNotExist(feePayer string) error {
 	return errors.Encode(
 		DefaultRootCodespace,
 		CodeFeePayerAddressDoesNotExist,
@@ -41,7 +40,7 @@ func ErrFeePayerAddressDoesNotExist(feePayer string) *sdkerrors.Error {
 	)
 }
 
-func ErrFeeLessThanCommission(feeInBaseCoin, commissionInBaseCoin string) *sdkerrors.Error {
+func ErrFeeLessThanCommission(feeInBaseCoin, commissionInBaseCoin string) error {
 	return errors.Encode(
 		DefaultRootCodespace,
 		CodeFeeLessThanCommission,
@@ -51,7 +50,7 @@ func ErrFeeLessThanCommission(feeInBaseCoin, commissionInBaseCoin string) *sdker
 	)
 }
 
-func ErrFailedToSendCoins(err string) *sdkerrors.Error {
+func ErrFailedToSendCoins(err string) error {
 	return errors.Encode(
 		DefaultRootCodespace,
 		CodeFailedToSendCoins,
@@ -60,7 +59,7 @@ func ErrFailedToSendCoins(err string) *sdkerrors.Error {
 	)
 }
 
-func ErrInsufficientFundsToPayFee(coins, fee string) *sdkerrors.Error {
+func ErrInsufficientFundsToPayFee(coins, fee string) error {
 	return errors.Encode(
 		DefaultRootCodespace,
 		CodeInsufficientFundsToPayFee,
@@ -70,7 +69,7 @@ func ErrInsufficientFundsToPayFee(coins, fee string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidFeeAmount(fee string) *sdkerrors.Error {
+func ErrInvalidFeeAmount(fee string) error {
 	return errors.Encode(
 		DefaultRootCodespace,
 		CodeInvalidFeeAmount,
@@ -79,7 +78,7 @@ func ErrInvalidFeeAmount(fee string) *sdkerrors.Error {
 	)
 }
 
-func ErrCoinDoesNotExist(feeDenom string) *sdkerrors.Error {
+func ErrCoinDoesNotExist(feeDenom string) error {
 	return errors.Encode(
 		DefaultRootCodespace,
 		CodeCoinDoesNotExist,
@@ -88,7 +87,7 @@ func ErrCoinDoesNotExist(feeDenom string) *sdkerrors.Error {
 	)
 }
 
-func ErrNotStdTxType() *sdkerrors.Error {
+func ErrNotStdTxType() error {
 	return errors.Encode(
 		DefaultRootCodespace,
 		CodeNotStdTxType,
@@ -96,7 +95,7 @@ func ErrNotStdTxType() *sdkerrors.Error {
 	)
 }
 
-func ErrNotFeeTxType() *sdkerrors.Error {
+func ErrNotFeeTxType() error {
 	return errors.Encode(
 		DefaultRootCodespace,
 		CodeNotFeeTxType,
@@ -104,7 +103,7 @@ func ErrNotFeeTxType() *sdkerrors.Error {
 	)
 }
 
-func ErrNotGasTxType() *sdkerrors.Error {
+func ErrNotGasTxType() error {
 	return errors.Encode(
 		DefaultRootCodespace,
 		CodeNotGasTxType,
@@ -112,7 +111,7 @@ func ErrNotGasTxType() *sdkerrors.Error {
 	)
 }
 
-func ErrOutOfGas(location, gasWanted, gasUsed string) *sdkerrors.Error {
+func ErrOutOfGas(location, gasWanted, gasUsed string) error {
 	return errors.Encode(
 		DefaultRootCodespace,
 		CodeOutOfGas,
@@ -123,7 +122,7 @@ func ErrOutOfGas(location, gasWanted, gasUsed string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidAddressOfCreatedAccount() *sdkerrors.Error {
+func ErrInvalidAddressOfCreatedAccount() error {
 	return errors.Encode(
 		DefaultRootCodespace,
 		CodeInvalidAddressOfCreatedAccount,
@@ -131,7 +130,7 @@ func ErrInvalidAddressOfCreatedAccount() *sdkerrors.Error {
 	)
 }
 
-func ErrUnableToFindCreatedAccount() *sdkerrors.Error {
+func ErrUnableToFindCreatedAccount() error {
 	return errors.Encode(
 		DefaultRootCodespace,
 		CodeUnableToFindCreatedAccount,
@@ -139,7 +138,7 @@ func ErrUnableToFindCreatedAccount() *sdkerrors.Error {
 	)
 }
 
-func ErrUnknownTransaction(txType string) *sdkerrors.Error {
+func ErrUnknownTransaction(txType string) error {
 	return errors.Encode(
 		DefaultRootCodespace,
 		CodeUnknownTransaction,
@@ -148,7 +147,7 @@ func ErrUnknownTransaction(txType string) *sdkerrors.Error {
 	)
 }
 
-func ErrCoinReserveInsufficient(reserve, commission string) *sdkerrors.Error {
+func ErrCoinReserveInsufficient(reserve, commission string) error {
 	return errors.Encode(
 		DefaultRootCodespace,
 		CodeCoinReserveInsufficient,
@@ -158,7 +157,7 @@ func ErrCoinReserveInsufficient(reserve, commission string) *sdkerrors.Error {
 	)
 }
 
-func ErrCoinReserveBecomeInsufficient(reserve, decreasing, minReserve string) *sdkerrors.Error {
+func ErrCoinReserveBecomeInsufficient(reserve, decreasing, minReserve string) error {
 	return errors.Encode(
 		DefaultRootCodespace,
 		CodeCoinReserveBecomeInsufficient,
@@ -169,7 +168,7 @@ func ErrCoinReserveBecomeInsufficient(reserve, decreasing, minReserve string) *s
 	)
 }
 
-func ErrCoinVolumeBecomeInsufficient(volume, decreasing, minVolume string) *sdkerrors.Error {
+func ErrCoinVolumeBecomeInsufficient(volume, decreasing, minVolume string) error {
 	return errors.Encode(
 		DefaultRootCodespace,
 		CodeCoinVolumeBecomeInsufficient,

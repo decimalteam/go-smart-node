@@ -10,7 +10,7 @@ import (
 )
 
 func TestSetOwnerCollection(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	addrs := app.GetAddrs(dsc, ctx, 1)
 

@@ -56,6 +56,7 @@ contain valid denominations.
 						keyringBackend,
 						clientCtx.HomeDir,
 						inBuf,
+						clientCtx.Codec,
 						dsckr.Option(),
 					)
 					if err != nil {
@@ -70,7 +71,7 @@ contain valid denominations.
 					return fmt.Errorf("failed to get address from Keyring: %w", err)
 				}
 
-				addr = info.GetAddress()
+				addr, _ = info.GetAddress()
 			}
 
 			coins, err := sdk.ParseCoinsNormalized(args[1])

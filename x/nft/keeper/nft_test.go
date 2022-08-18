@@ -9,7 +9,7 @@ import (
 )
 
 func TestSetNFT(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	addrs := app.GetAddrs(dsc, ctx, 2)
 
@@ -77,7 +77,7 @@ func TestSetNFT(t *testing.T) {
 }
 
 func TestHasTokenID(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	addrs := app.GetAddrs(dsc, ctx, 1)
 
@@ -104,7 +104,7 @@ func TestHasTokenID(t *testing.T) {
 }
 
 func TestHasTokenURI(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	addrs := app.GetAddrs(dsc, ctx, 1)
 

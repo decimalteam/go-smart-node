@@ -25,7 +25,7 @@ var (
 )
 
 func TestSetCollections(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	collectionDenomsToStore := []string{firstDenom, secondDenom}
 	for _, denom := range collectionDenomsToStore {
@@ -58,7 +58,7 @@ func TestSetCollections(t *testing.T) {
 }
 
 func TestGetDenoms(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	collectionDenomsToStore := []string{firstDenom, secondDenom}
 	for _, denom := range collectionDenomsToStore {

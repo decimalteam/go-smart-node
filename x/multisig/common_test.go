@@ -18,7 +18,7 @@ import (
 func TestDoubleWallet(t *testing.T) {
 	const addrCount = 100
 
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	_, dsc, ctx := getBaseAppWithCustomKeeper(t)
 	addrs, _ := generateAddresses(dsc, ctx, addrCount,
 		sdk.NewCoins(
 			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
@@ -47,7 +47,7 @@ func TestDoubleWallet(t *testing.T) {
 func TestAccountWithSameAddress(t *testing.T) {
 	const addrCount = 100
 
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	_, dsc, ctx := getBaseAppWithCustomKeeper(t)
 	addrs, _ := generateAddresses(dsc, ctx, addrCount,
 		sdk.NewCoins(
 			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
@@ -82,7 +82,7 @@ func TestAccountWithSameAddress(t *testing.T) {
 func TestLowBalance(t *testing.T) {
 	const addrCount = 100
 
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	_, dsc, ctx := getBaseAppWithCustomKeeper(t)
 	addrs, _ := generateAddresses(dsc, ctx, addrCount,
 		sdk.NewCoins(
 			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
@@ -114,7 +114,7 @@ func TestLowBalance(t *testing.T) {
 func TestSenderNotOwner(t *testing.T) {
 	const addrCount = 100
 
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	_, dsc, ctx := getBaseAppWithCustomKeeper(t)
 	addrs, _ := generateAddresses(dsc, ctx, addrCount,
 		sdk.NewCoins(
 			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
@@ -152,7 +152,7 @@ func TestSenderNotOwner(t *testing.T) {
 func TestSignTransaction(t *testing.T) {
 	const addrCount = 100
 
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	_, dsc, ctx := getBaseAppWithCustomKeeper(t)
 	addrs, _ := generateAddresses(dsc, ctx, addrCount,
 		sdk.NewCoins(
 			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
@@ -209,7 +209,7 @@ func TestSignTransaction(t *testing.T) {
 func TestTryOverspend(t *testing.T) {
 	const addrCount = 100
 
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+	_, dsc, ctx := getBaseAppWithCustomKeeper(t)
 	addrs, _ := generateAddresses(dsc, ctx, addrCount,
 		sdk.NewCoins(
 			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
@@ -276,8 +276,8 @@ func TestTryOverspend(t *testing.T) {
 
 // getBaseAppWithCustomKeeper Returns a simapp with custom keepers
 // to avoid messing with the hooks.
-func getBaseAppWithCustomKeeper() (*codec.LegacyAmino, *app.DSC, sdk.Context) {
-	dsc := app.Setup(false, feemarkettypes.DefaultGenesisState())
+func getBaseAppWithCustomKeeper(t *testing.T) (*codec.LegacyAmino, *app.DSC, sdk.Context) {
+	dsc := app.Setup(t, false, feemarkettypes.DefaultGenesisState())
 	ctx := dsc.BaseApp.NewContext(false, tmproto.Header{})
 
 	appCodec := dsc.AppCodec()

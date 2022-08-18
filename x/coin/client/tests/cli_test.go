@@ -64,7 +64,10 @@ func (s *IntegrationTestSuite) TestCreateCoinCmd() {
 	info, _, err := val.ClientCtx.Keyring.NewMnemonic("createCoin", keyring.English, sdk.FullFundraiserPath, keyring.DefaultBIP39Passphrase, etherminthd.EthSecp256k1)
 	require.NoError(err)
 
-	newAddr := sdk.AccAddress(info.GetPubKey().Address())
+	pk, err := info.GetPubKey()
+	require.NoError(err)
+
+	newAddr := sdk.AccAddress(pk.Address())
 	_, err = MsgSendExec(
 		val.ClientCtx,
 		val.Address,
@@ -148,7 +151,10 @@ func (s *IntegrationTestSuite) TestUpdateCoinCmd() {
 	info, _, err := val.ClientCtx.Keyring.NewMnemonic("updateCoin", keyring.English, sdk.FullFundraiserPath, keyring.DefaultBIP39Passphrase, etherminthd.EthSecp256k1)
 	require.NoError(err)
 
-	newAddr := sdk.AccAddress(info.GetPubKey().Address())
+	pk, err := info.GetPubKey()
+	require.NoError(err)
+
+	newAddr := sdk.AccAddress(pk.Address())
 	_, err = MsgSendExec(
 		val.ClientCtx,
 		val.Address,
@@ -247,7 +253,10 @@ func (s *IntegrationTestSuite) TestBuyCoinCmd() {
 	info, _, err := val.ClientCtx.Keyring.NewMnemonic("newAcc", keyring.English, sdk.FullFundraiserPath, keyring.DefaultBIP39Passphrase, etherminthd.EthSecp256k1)
 	require.NoError(err)
 
-	newAddr := sdk.AccAddress(info.GetPubKey().Address())
+	pk, err := info.GetPubKey()
+	require.NoError(err)
+
+	newAddr := sdk.AccAddress(pk.Address())
 	symbol := "buycoin"
 	_, err = MsgCreateCoinExec(
 		val.ClientCtx,
@@ -349,7 +358,10 @@ func (s *IntegrationTestSuite) TestSellCoinCmd() {
 	info, _, err := val.ClientCtx.Keyring.NewMnemonic("sellCoin", keyring.English, sdk.FullFundraiserPath, keyring.DefaultBIP39Passphrase, etherminthd.EthSecp256k1)
 	require.NoError(err)
 
-	newAddr := sdk.AccAddress(info.GetPubKey().Address())
+	pk, err := info.GetPubKey()
+	require.NoError(err)
+
+	newAddr := sdk.AccAddress(pk.Address())
 
 	symbol := "sellcoin"
 	_, err = MsgCreateCoinExec(
@@ -452,7 +464,10 @@ func (s *IntegrationTestSuite) TestSendCoinCmd() {
 	info, _, err := val.ClientCtx.Keyring.NewMnemonic("sendCoin", keyring.English, sdk.FullFundraiserPath, keyring.DefaultBIP39Passphrase, etherminthd.EthSecp256k1)
 	require.NoError(err)
 
-	newAddr := sdk.AccAddress(info.GetPubKey().Address())
+	pk, err := info.GetPubKey()
+	require.NoError(err)
+	newAddr := sdk.AccAddress(pk.Address())
+
 	testCases := []struct {
 		name      string
 		args      []string
@@ -534,9 +549,18 @@ func (s *IntegrationTestSuite) TestMultisendCmd() {
 	info2, _, err := val.ClientCtx.Keyring.NewMnemonic("multisend3", keyring.English, sdk.FullFundraiserPath, keyring.DefaultBIP39Passphrase, etherminthd.EthSecp256k1)
 	require.NoError(err)
 
-	newAddr := sdk.AccAddress(info.GetPubKey().Address())
-	newAddr1 := sdk.AccAddress(info1.GetPubKey().Address())
-	newAddr2 := sdk.AccAddress(info2.GetPubKey().Address())
+	pk, err := info.GetPubKey()
+	require.NoError(err)
+
+	pk1, err := info1.GetPubKey()
+	require.NoError(err)
+
+	pk2, err := info2.GetPubKey()
+	require.NoError(err)
+
+	newAddr := sdk.AccAddress(pk.Address())
+	newAddr1 := sdk.AccAddress(pk1.Address())
+	newAddr2 := sdk.AccAddress(pk2.Address())
 
 	testCases := []struct {
 		name      string
@@ -654,7 +678,8 @@ func (s *IntegrationTestSuite) TestSellAllCmd() {
 	info, _, err := val.ClientCtx.Keyring.NewMnemonic("sellall", keyring.English, sdk.FullFundraiserPath, keyring.DefaultBIP39Passphrase, etherminthd.EthSecp256k1)
 	require.NoError(err)
 
-	newAddr := info.GetAddress()
+	newAddr, err := info.GetAddress()
+	require.NoError(err)
 	_, err = MsgSendExec(
 		val.ClientCtx,
 		val.Address,
