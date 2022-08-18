@@ -21,7 +21,7 @@ option go_package = "bitbucket.org/decimalteam/go-smart-node/x/validator/types";
 // multiplied by exchange rate.
 message Validator {
   option (gogoproto.equal)            = false;
-  option (gogoproto.goproto_stringer) = false;
+  option (gogoproto.goproto_stringer) = true;
   option (gogoproto.goproto_getters)  = false;
 
   // operator_address defines the address of the validator's operator; bech encoded in JSON.
@@ -95,7 +95,7 @@ enum BondStatus {
 // CommissionRates defines the initial commission rates to be used for creating a validator.
 message CommissionRates {
   option (gogoproto.equal)            = true;
-  option (gogoproto.goproto_stringer) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   // rate is the commission rate charged to delegators, as a fraction.
   string rate = 1 [
@@ -120,7 +120,7 @@ message CommissionRates {
 // Commission defines commission parameters for a given validator.
 message Commission {
   option (gogoproto.equal)            = true;
-  option (gogoproto.goproto_stringer) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   // commission_rates defines the initial commission rates to be used for creating a validator.
   CommissionRates commission_rates = 1 [(gogoproto.embed) = true, (gogoproto.nullable) = false];
@@ -131,7 +131,7 @@ message Commission {
 // Description defines a validator description.
 message Description {
   option (gogoproto.equal)            = true;
-  option (gogoproto.goproto_stringer) = false;
+  option (gogoproto.goproto_stringer) = true;
 
   // moniker defines a human-readable name for the validator.
   string moniker = 1;
@@ -159,6 +159,8 @@ message HistoricalInfo {
 message Pool {
   option (gogoproto.description) = true;
   option (gogoproto.equal)       = true;
+  option (gogoproto.goproto_stringer) = true;
+  
   string not_bonded_tokens       = 1 [
     (cosmos_proto.scalar)  = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",

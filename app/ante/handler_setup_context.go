@@ -7,6 +7,10 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
+type GasTx interface {
+	GetGas() uint64
+}
+
 // This is fork of standard cosmos-sdk SetUpContextDecorator
 // except: SetGasMeter uses proprietary commissionGasMeter
 // see IMPORTANT LINE below
@@ -24,14 +28,13 @@ func NewSetUpContextDecorator() SetUpContextDecorator {
 
 func (sud SetUpContextDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	// all transactions must implement FeeTx
-	feeTx, ok := tx.(sdk.Fee)
+	feeTx, ok := tx.(GasTx)
 	if !ok {
 		// Set a gas meter with limit 0 as to prevent an infinite gas meter attack
 		// during runTx.
 		newCtx = SetGasMeter(simulate, ctx, 0)
-		return newCtx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be GasTx")
+		return newCtx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be GasTx(sdk.Fee)")
 	}
-
 	newCtx = SetGasMeter(simulate, ctx, feeTx.GetGas())
 
 	// Decorator will catch an OutOfGasPanic caused in the next antehandler

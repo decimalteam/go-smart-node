@@ -9,11 +9,13 @@ import (
 const (
 	DefaultCodespace string = ModuleName
 
-	CodeInvalidSenderAddress   uint32 = 100
-	CodeSenderIsNotSwapService uint32 = 101
-	CodeInvalidAmount          uint32 = 102
-	CodeInvalidChainNumber     uint32 = 103
-	CodeInvalidChainName       uint32 = 104
+	CodeInternal uint32 = 100
+
+	CodeInvalidSenderAddress   uint32 = 101
+	CodeSenderIsNotSwapService uint32 = 102
+	CodeInvalidAmount          uint32 = 103
+	CodeInvalidChainNumber     uint32 = 104
+	CodeInvalidChainName       uint32 = 105
 
 	// SwapInitialize
 	CodeChainDoesNotExists       uint32 = 201
@@ -27,6 +29,15 @@ const (
 	CodeInsufficientPoolFunds    uint32 = 305
 	CodeChainNumbersAreSame      uint32 = 306
 )
+
+func ErrInternal(err string) error {
+	return errors.Encode(
+		DefaultCodespace,
+		CodeInternal,
+		fmt.Sprintf("Internal error: %s", err),
+		errors.NewParam("error", err),
+	)
+}
 
 func ErrInvalidSenderAddress(address string) error {
 	return errors.Encode(
