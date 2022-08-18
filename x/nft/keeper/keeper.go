@@ -96,16 +96,10 @@ func (k Keeper) GenAndMintSubTokens(
 		reserve.Amount.Mul(quantity), // reserve * quantity
 	)
 
-	fmt.Println("00000000000000000000000000")
-	fmt.Println(coinToReserve)
-	fmt.Println(creatorAddress)
-
 	err = k.ReserveTokens(ctx, sdk.NewCoins(coinToReserve), creatorAddress)
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println("BBBBBBBBBBBBBBBBBBBBBBB")
 
 	return subTokenIDs, nil
 }

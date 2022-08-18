@@ -96,9 +96,7 @@ message QueryDenomsResponse {
 ////////////////////////////////////////////////////////////////
 
 message QueryNFTRequest {
-  string denom = 1 [
-    (gogoproto.jsontag) = "denom"
-  ];
+  string denom = 1;
   string token_id = 2;
 }
 
