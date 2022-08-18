@@ -1,6 +1,7 @@
 package coin_test
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"testing"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
@@ -208,13 +209,13 @@ func initConsistencyApp(t *testing.T, reserve, volume, limitVolume sdk.Int, crr 
 
 func checkCoin(coinInfo types.Coin) error {
 	if coinInfo.Volume.LT(types.MinCoinSupply) {
-		return types.ErrTxBreaksMinVolumeLimit(coinInfo.Volume.String(), types.MinCoinSupply.String())
+		return errors.TxBreaksMinVolumeLimit
 	}
 	if coinInfo.Volume.GT(coinInfo.LimitVolume) {
-		return types.ErrTxBreaksVolumeLimit(coinInfo.Volume.String(), coinInfo.LimitVolume.String())
+		return errors.TxBreaksVolumeLimit
 	}
 	if coinInfo.Reserve.LT(types.MinCoinReserve) {
-		return types.ErrTxBreaksMinReserveRule(types.MinCoinReserve.String(), coinInfo.Reserve.String())
+		return errors.TxBreaksMinReserveRule
 	}
 	return nil
 }

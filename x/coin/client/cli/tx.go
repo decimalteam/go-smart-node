@@ -4,6 +4,8 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	//"cosmossdk.io/errors"
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"strconv"
 	"strings"
 
@@ -74,12 +76,12 @@ func NewCreateCoinCmd() *cobra.Command {
 
 			crr, err := strconv.ParseUint(args[2], 10, 8)
 			if err != nil {
-				return types.ErrInvalidCRR(args[2])
+				return errors.InvalidCRR
 			}
 
 			err = existCoinSymbol(clientCtx, symbol)
 			if err == nil {
-				return types.ErrCoinAlreadyExists(symbol)
+				return errors.CoinAlreadyExists
 			}
 
 			msg := types.NewMsgCreateCoin(from, title, symbol, crr, initVolume, initReserve, limitVolume, identity)
@@ -132,7 +134,7 @@ $ %s tx coin update del 10000000 "" --from mykey`, version.AppName),
 			}
 
 			if resp.Coin.Creator != from.String() {
-				return types.ErrUpdateOnlyForCreator()
+				return errors.UpdateOnlyForCreator
 			}
 
 			msg := types.NewMsgUpdateCoin(from, symbol, limitVolume, identity)
@@ -374,7 +376,7 @@ $ %s tx coin multisend dx1hs2wdrm87c92rzhq0vgmgrxr6u57xpr2lcygc2 1000del  dx1hs2
 					wantFunds += send.Coin.String() + ", "
 				}
 				wantFunds = strings.TrimSuffix(wantFunds, ", ")
-				return types.ErrInsufficientFunds(wantFunds, balance.String())
+				return errors.InsufficientFunds
 			}
 
 			msg := types.NewMsgMultiSendCoin(from, sends)
@@ -600,14 +602,14 @@ $ %s tx coin redeem-check {check hash} "" --from mykey
 			// Parse provided check from raw bytes to ensure it is valid
 			_, err = types.ParseCheck(checkBytes)
 			if err != nil {
-				return types.ErrInvalidCheck(err.Error())
+				return errors.InvalidCheck.Wrapf("err: %s", err.Error())
 			}
 
 			// Prepare private key from passphrase
 			passphraseHash := sha256.Sum256([]byte(passphrase))
 			passphrasePrivKey, err := ethereumCrypto.ToECDSA(passphraseHash[:])
 			if err != nil {
-				return types.ErrInvalidPassphrase(err.Error())
+				return errors.InvalidPassphrase.Wrapf("err: %s", err.Error())
 			}
 
 			// Prepare bytes to sign by private key generated from passphrase
@@ -617,14 +619,14 @@ $ %s tx coin redeem-check {check hash} "" --from mykey
 				clientCtx.GetFromAddress(),
 			})
 			if err != nil {
-				return types.ErrUnableRPLEncodeCheck(err.Error())
+				return errors.UnableRPLEncodeCheck.Wrapf("err: %s", err.Error())
 			}
 			hw.Sum(receiverAddressHash[:0])
 
 			// Sign receiver address by private key generated from passphrase
 			signature, err := ethereumCrypto.Sign(receiverAddressHash[:], passphrasePrivKey)
 			if err != nil {
-				return types.ErrUnableSignCheck(err.Error())
+				return errors.UnableSignCheck.Wrapf("err: %s", err.Error())
 			}
 			proofBase64 := base64.StdEncoding.EncodeToString(signature)
 
@@ -659,7 +661,7 @@ func parseCoin(clientCtx client.Context, amount string) (sdk.Coin, error) {
 	case err != nil:
 		return coin, err
 	case resp == nil:
-		return coin, types.ErrCoinDoesNotExist(coin.Denom)
+		return coin, errors.CoinDoesNotExist
 	default:
 		return coin, nil
 	}
@@ -674,7 +676,7 @@ func checkBalance(clientCtx client.Context, address sdk.AccAddress, needAmount s
 	amountBalance := balance.Balance.Amount
 
 	if amountBalance.LT(needAmount) {
-		return types.ErrInsufficientFunds(needAmount.String(), amountBalance.String())
+		return errors.InsufficientFunds
 	}
 
 	return nil

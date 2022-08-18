@@ -1,6 +1,7 @@
 package types
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"encoding/hex"
 	"fmt"
 	"regexp"
@@ -29,15 +30,15 @@ func DefaultGenesisState() *GenesisState {
 func (gs *GenesisState) Validate() error {
 	// Check coin title maximum length
 	if len(gs.Params.BaseTitle) > maxCoinNameBytes {
-		return ErrInvalidCoinTitle(gs.Params.BaseTitle)
+		return errors.InvalidCoinTitle
 	}
 	// Check coin symbol for correct regexp
 	if match, _ := regexp.MatchString(allowedCoinSymbols, gs.Params.BaseSymbol); !match {
-		return ErrInvalidCoinSymbol(gs.Params.BaseSymbol)
+		return errors.InvalidCoinSymbol
 	}
 	// Check coin initial volume to be correct
-	if gs.Params.BaseInitialVolume.LT(MinCoinSupply) || gs.Params.BaseInitialVolume.GT(maxCoinSupply) {
-		return ErrInvalidCoinInitialVolume(gs.Params.BaseInitialVolume.String())
+	if gs.Params.BaseInitialVolume.LT(MinCoinSupply) || gs.Params.BaseInitialVolume.GT(MaxCoinSupply) {
+		return errors.InvalidCoinInitialVolume
 	}
 	// Check there are no coins with the same symbol
 	seenSymbols := make(map[string]bool)

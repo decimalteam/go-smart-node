@@ -1,10 +1,9 @@
 package types
 
 import (
-	"regexp"
-	"strconv"
-
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"regexp"
 )
 
 var (
@@ -82,15 +81,15 @@ func (msg MsgCreateCoin) GetSigners() []sdk.AccAddress {
 func (msg MsgCreateCoin) ValidateBasic() error {
 	// Validate sender
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSenderAddress
 	}
 	// Validate coin title
 	if len(msg.Title) > maxCoinNameBytes {
-		return ErrInvalidCoinTitle(msg.Title)
+		return errors.InvalidCoinTitle
 	}
 	// Validate coin symbol
 	if match, _ := regexp.MatchString(allowedCoinSymbols, msg.Symbol); !match {
-		return ErrInvalidCoinSymbol(msg.Symbol)
+		return errors.InvalidCoinSymbol
 	}
 	// TODO: Looks like no need since should be no more possible to create such coins anyway
 	// // Forbid creating coin with symbol DEL in testnet
@@ -101,18 +100,18 @@ func (msg MsgCreateCoin) ValidateBasic() error {
 	// }
 	// Validate coin CRR
 	if msg.CRR < 10 || msg.CRR > 100 {
-		return ErrInvalidCRR(strconv.FormatUint(msg.CRR, 10))
+		return errors.InvalidCRR
 	}
 	// Check coin initial volume to be correct
-	if msg.InitialVolume.LT(MinCoinSupply) || msg.InitialVolume.GT(maxCoinSupply) {
-		return ErrInvalidCoinInitialVolume(msg.InitialVolume.String())
+	if msg.InitialVolume.LT(MinCoinSupply) || msg.InitialVolume.GT(MaxCoinSupply) {
+		return errors.InvalidCoinInitialVolume
 	}
 	if msg.InitialVolume.GT(msg.LimitVolume) {
-		return ErrLimitVolumeBroken(msg.InitialVolume.String(), msg.LimitVolume.String())
+		return errors.LimitVolumeBroken
 	}
 	// Check coin initial reserve to be correct
 	if msg.InitialReserve.LT(MinCoinReserve) {
-		return ErrInvalidCoinInitialReserve(MinCoinReserve.String())
+		return errors.InvalidCoinInitialReserve
 	}
 	return nil
 }
@@ -160,15 +159,15 @@ func (msg MsgUpdateCoin) GetSigners() []sdk.AccAddress {
 func (msg MsgUpdateCoin) ValidateBasic() error {
 	// Validate sender
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSenderAddress
 	}
 	// Validate coin symbol
 	if match, _ := regexp.MatchString(allowedCoinSymbols, msg.Symbol); !match {
-		return ErrInvalidCoinSymbol(msg.Symbol)
+		return errors.InvalidCoinSymbol
 	}
 	// Check coin limit volume to be less than max coin supply
-	if msg.LimitVolume.GT(maxCoinSupply) {
-		return ErrLimitVolumeBroken(msg.LimitVolume.String(), maxCoinSupply.String())
+	if msg.LimitVolume.GT(MaxCoinSupply) {
+		return errors.LimitVolumeBroken
 	}
 	return nil
 }
@@ -214,15 +213,15 @@ func (msg MsgSendCoin) GetSigners() []sdk.AccAddress {
 func (msg MsgSendCoin) ValidateBasic() error {
 	// Validate sender
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSenderAddress
 	}
 	// Validate receiver
 	if _, err := sdk.AccAddressFromBech32(msg.Receiver); err != nil {
-		return ErrInvalidReceiverAddress(msg.Receiver)
+		return errors.InvalidReceiverAddress
 	}
 	// Amount should be positive
 	if msg.Coin.Amount.LT(sdk.NewInt(0)) {
-		return ErrInvalidAmount()
+		return errors.InvalidAmount
 	}
 	return nil
 }
@@ -266,16 +265,16 @@ func (msg MsgMultiSendCoin) GetSigners() []sdk.AccAddress {
 func (msg MsgMultiSendCoin) ValidateBasic() error {
 	// Validate sender
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSenderAddress
 	}
 	for i := range msg.Sends {
 		// Validate receiver
 		if _, err := sdk.AccAddressFromBech32(msg.Sends[i].Receiver); err != nil {
-			return ErrInvalidReceiverAddress(msg.Sends[i].Receiver)
+			return errors.InvalidReceiverAddress
 		}
 		// Amount should be positive
 		if msg.Sends[i].Coin.Amount.LT(sdk.NewInt(0)) {
-			return ErrInvalidAmount()
+			return errors.InvalidAmount
 		}
 	}
 	return nil
@@ -322,11 +321,11 @@ func (msg MsgBuyCoin) GetSigners() []sdk.AccAddress {
 func (msg MsgBuyCoin) ValidateBasic() error {
 	// Validate sender
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSenderAddress
 	}
 	// Denoms of specified coins cannot be the same
 	if msg.CoinToBuy.Denom == msg.MaxCoinToSell.Denom {
-		return ErrSameCoin()
+		return errors.SameCoin
 	}
 	return nil
 }
@@ -372,11 +371,11 @@ func (msg MsgSellCoin) GetSigners() []sdk.AccAddress {
 func (msg MsgSellCoin) ValidateBasic() error {
 	// Validate sender
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSenderAddress
 	}
 	// Denoms of specified coins cannot be the same
 	if msg.CoinToSell.Denom == msg.MinCoinToBuy.Denom {
-		return ErrSameCoin()
+		return errors.SameCoin
 	}
 	return nil
 }
@@ -422,11 +421,11 @@ func (msg MsgSellAllCoin) GetSigners() []sdk.AccAddress {
 func (msg MsgSellAllCoin) ValidateBasic() error {
 	// Validate sender
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSenderAddress
 	}
 	// Denoms of specified coins cannot be the same
 	if msg.CoinToSell.Denom == msg.MinCoinToBuy.Denom {
-		return ErrSameCoin()
+		return errors.SameCoin
 	}
 	return nil
 }
@@ -470,11 +469,11 @@ func (msg MsgBurnCoin) GetSigners() []sdk.AccAddress {
 func (msg MsgBurnCoin) ValidateBasic() error {
 	// Validate sender
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSenderAddress
 	}
 	// Amount should be positive
 	if !msg.Coin.Amount.IsPositive() {
-		return ErrInvalidAmount()
+		return errors.InvalidAmount
 	}
 	return nil
 }
@@ -520,7 +519,7 @@ func (msg MsgRedeemCheck) GetSigners() []sdk.AccAddress {
 func (msg MsgRedeemCheck) ValidateBasic() error {
 	// Validate sender
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSenderAddress
 	}
 	// TODO
 	return nil

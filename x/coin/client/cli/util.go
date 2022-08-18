@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"context"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -17,7 +18,7 @@ func existCoinSymbol(ctx client.Context, symbol string) error {
 	case err != nil:
 		return err
 	case res == nil:
-		return types.ErrCoinDoesNotExist(symbol)
+		return errors.CoinDoesNotExist
 	default:
 		return nil
 	}

@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -40,7 +41,7 @@ func queryCoin(ctx sdk.Context, path []string, _ abci.RequestQuery, k Keeper, le
 
 	coin, err := k.GetCoin(ctx, coinDenom)
 	if err != nil {
-		return nil, types.ErrCoinDoesNotExist(coinDenom)
+		return nil, errors.CoinDoesNotExist
 	}
 
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, coin)
