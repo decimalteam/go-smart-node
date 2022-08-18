@@ -94,7 +94,7 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v5/testing"
 
 	// Ethermint
-	ethante "github.com/evmos/ethermint/app/ante"
+
 	"github.com/evmos/ethermint/encoding"
 	srvflags "github.com/evmos/ethermint/server/flags"
 	ethtypes "github.com/evmos/ethermint/types"
@@ -656,7 +656,6 @@ func NewDSC(
 		slashingtypes.ModuleName,
 		govtypes.ModuleName,
 		ibchost.ModuleName,
-		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
 		authz.ModuleName,
 		feegrant.ModuleName,
@@ -670,6 +669,7 @@ func NewDSC(
 		swaptypes.ModuleName,
 		nfttypes.ModuleName,
 		legacytypes.ModuleName,
+		genutiltypes.ModuleName,
 		// NOTE: crisis module must go at the end to check for invariants on each module
 		crisistypes.ModuleName,
 	)
@@ -712,20 +712,21 @@ func NewDSC(
 
 	maxGasWanted := cast.ToUint64(appOpts.Get(srvflags.EVMMaxTxGasWanted))
 	options := ante.HandlerOptions{
-		Cdc:                    appCodec,
-		AccountKeeper:          app.AccountKeeper,
-		BankKeeper:             app.BankKeeper,
-		IBCKeeper:              app.IBCKeeper,
-		FeeMarketKeeper:        app.FeeMarketKeeper,
-		EvmKeeper:              app.EvmKeeper,
-		FeegrantKeeper:         app.FeeGrantKeeper,
-		CoinKeeper:             &app.CoinKeeper,
-		LegacyKeeper:           &app.LegacyKeeper,
-		SignModeHandler:        encodingConfig.TxConfig.SignModeHandler(),
-		SigGasConsumer:         SigVerificationGasConsumer,
-		MaxTxGasWanted:         maxGasWanted,
-		ExtensionOptionChecker: ethtypes.HasDynamicFeeExtensionOption,
-		TxFeeChecker:           ethante.NewDynamicFeeChecker(app.EvmKeeper),
+		Cdc:             appCodec,
+		AccountKeeper:   app.AccountKeeper,
+		BankKeeper:      app.BankKeeper,
+		IBCKeeper:       app.IBCKeeper,
+		FeeMarketKeeper: app.FeeMarketKeeper,
+		EvmKeeper:       app.EvmKeeper,
+		FeegrantKeeper:  app.FeeGrantKeeper,
+		CoinKeeper:      &app.CoinKeeper,
+		LegacyKeeper:    &app.LegacyKeeper,
+		SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
+		SigGasConsumer:  SigVerificationGasConsumer,
+		MaxTxGasWanted:  maxGasWanted,
+		// TODO: ethermint stopped to use this option and checker
+		//ExtensionOptionChecker: ethtypes.HasDynamicFeeExtensionOption,
+		//TxFeeChecker:           ethante.NewDynamicFeeChecker(app.EvmKeeper),
 	}
 
 	if err := options.Validate(); err != nil {
