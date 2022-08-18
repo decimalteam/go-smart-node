@@ -49,7 +49,7 @@ func GetCmdMintNFT() *cobra.Command {
 
 Example:
 $ %s tx %s mint crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa \
-dx1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p --from mykey
+dx1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p 100 100del true --from mykey
 `,
 				config.AppBinName, types.ModuleName,
 			),
@@ -76,9 +76,9 @@ dx1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p --from mykey
 				return types.ErrInvalidQuantity(args[2])
 			}
 
-			reserve, ok := sdk.NewIntFromString(args[4])
-			if !ok {
-				return types.ErrInvalidQuantity(args[2])
+			coinReserve, err := sdk.ParseCoinNormalized(args[4])
+			if err != nil {
+				return types.ErrInvalidReserve(args[4])
 			}
 
 			var allowMint bool
@@ -86,7 +86,7 @@ dx1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p --from mykey
 				allowMint = true
 			}
 
-			msg := types.NewMsgMintNFT(clientCtx.GetFromAddress(), recipient, tokenID, denom, tokenURI, quantity, reserve, allowMint)
+			msg := types.NewMsgMintNFT(clientCtx.GetFromAddress(), recipient, tokenID, denom, tokenURI, quantity, coinReserve, allowMint)
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
 	}
@@ -238,7 +238,7 @@ func GetCmdUpdateReserveNFT() *cobra.Command {
 			specific id (SHA-256 hex hash).
 
 Example:
-$ %s tx %s update-reserv crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa 1,2 1000 \
+$ %s tx %s update_reserve crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa 1,2 1000del \
 --from mykey
 `,
 				config.AppBinName, types.ModuleName,
@@ -263,11 +263,13 @@ $ %s tx %s update-reserv crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd42
 				}
 				subTokenIDs[i] = subTokenID
 			}
-			newReserve, ok := sdk.NewIntFromString(args[3])
-			if !ok {
-				return types.ErrInvalidQuantity(args[3])
+
+			newCoinReserve, err := sdk.ParseCoinNormalized(args[3])
+			if err != nil {
+				return types.ErrInvalidReserve(args[3])
 			}
-			msg := types.NewMsgUpdateReserveNFT(clientCtx.GetFromAddress(), tokenID, denom, subTokenIDs, newReserve)
+
+			msg := types.NewMsgUpdateReserveNFT(clientCtx.GetFromAddress(), tokenID, denom, subTokenIDs, newCoinReserve)
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
 	}

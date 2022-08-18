@@ -24,7 +24,8 @@ message TokenOwner {
   string address = 1 [
     (gogoproto.moretags) = "yaml:\"address\""
   ];
-  repeated uint64 SubTokenIDs = 2 [
+  repeated uint64 sub_token_ids = 2 [
+    (gogoproto.customname) = "SubTokenIDs",
     (gogoproto.castrepeated) = "SortedUintArray",
     (gogoproto.jsontag) = "sub_token_ids",
     (gogoproto.moretags) = "yaml:\"sub_token_ids\""

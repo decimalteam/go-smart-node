@@ -11,7 +11,8 @@ message Collection {
   string denom = 1 [
     (gogoproto.moretags) = "yaml:\"denom\""
   ];
-  repeated string NFTs = 2 [
+  repeated string nfts = 2 [
+    (gogoproto.customname) = "NFTs",
     (gogoproto.castrepeated) = "SortedStringArray",
     (gogoproto.jsontag) = "nfts",
     (gogoproto.moretags) = "yaml:\"nfts\""
@@ -24,7 +25,8 @@ message OwnerCollection {
   string denom = 1 [
     (gogoproto.moretags) = "yaml:\"denom\""
   ];
-  repeated string NFTs = 2 [
+  repeated string nfrs = 2 [
+    (gogoproto.customname) = "NFTs",
     (gogoproto.castrepeated) = "SortedStringArray",
     (gogoproto.jsontag) = "nfts",
     (gogoproto.moretags) = "yaml:\"nfts\""

@@ -29,7 +29,9 @@ func TestSetSubTokens(t *testing.T) {
 	}
 
 	// Check throw GetSubTokens method
-	storedSubTokens := dsc.NFTKeeper.GetSubTokens(ctx, firstID)
+	storedSubTokens, err := dsc.NFTKeeper.GetSubTokens(ctx, firstID)
+	require.NoError(t, err)
+
 	require.Len(t, subTokensToStore, len(storedSubTokens))
 
 	for _, subTokenToStore := range subTokensToStore {

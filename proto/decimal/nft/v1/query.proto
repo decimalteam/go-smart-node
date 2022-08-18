@@ -31,7 +31,7 @@ service Query {
   }
 
   rpc QueryNFT(QueryNFTRequest) returns (QueryNFTResponse) {
-    option (google.api.http).get = "/nft/v1/nft/nft/{denom}/{tokenID}";
+    option (google.api.http).get = "/nft/v1/nft/nft/{denom}/{token_id}";
   }
 
   rpc QuerySubTokens(QuerySubTokensRequest) returns (QuerySubTokensResponse) {
@@ -61,7 +61,9 @@ message QueryOwnerCollectionsRequest {
 }
 
 message QueryOwnerCollectionsResponse {
-  Owner owner = 1 [ (gogoproto.nullable) = false ];
+  Owner owner = 1 [
+    (gogoproto.nullable) = false
+  ];
 }
 
 ////////////////////////////////////////////////////////////////
@@ -73,7 +75,9 @@ message QueryCollectionRequest {
 }
 
 message QueryCollectionResponse {
-  Collection collection = 1 [ (gogoproto.nullable) = false ];
+  Collection collection = 1 [
+    (gogoproto.nullable) = false
+  ];
 }
 
 ////////////////////////////////////////////////////////////////
@@ -93,11 +97,16 @@ message QueryDenomsResponse {
 
 message QueryNFTRequest {
   string denom = 1;
-  string tokenID = 2;
+  string token_id = 2 [
+    (gogoproto.customname) = "TokenID"
+  ];
 }
 
 message QueryNFTResponse {
-  BaseNFT nft = 1 [ (gogoproto.nullable) = false ];
+  BaseNFT nft = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customname) = "NFT"
+  ];
 }
 
 ////////////////////////////////////////////////////////////////
@@ -106,10 +115,16 @@ message QueryNFTResponse {
 
 message QuerySubTokensRequest {
   string denom = 1;
-  string tokenID = 2;
-  repeated uint64 subTokenIDs = 3;
+  string token_id = 2 [
+    (gogoproto.customname) = "TokenID"
+  ];
+  repeated uint64 sub_token_ids = 3 [
+    (gogoproto.customname) = "SubTokenIDs"
+  ];
 }
 
 message QuerySubTokensResponse {
-  repeated SubToken subTokens = 1 [ (gogoproto.nullable) = false ];
+  repeated SubToken sub_tokens = 1 [
+    (gogoproto.nullable) = false
+  ];
 }

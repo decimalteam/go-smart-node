@@ -10,7 +10,7 @@ import (
 var _ module.AppModuleSimulation = AppModule{}
 
 // RegisterStoreDecoder registers a decoder for nft module's types
-func (AppModule) RegisterStoreDecoder(sdr sdk.StoreDecoderRegistry) {
+func (AppModule) RegisterStoreDecoder(_ sdk.StoreDecoderRegistry) {
 	//sdr[types.StoreKey] = simulation.DecodeStore
 }
 
@@ -20,7 +20,7 @@ func (AppModule) ProposalContents(_ module.SimulationState) []simtypes.WeightedP
 }
 
 // GenerateGenesisState creates a randomized GenState of the nft module.
-func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
+func (AppModule) GenerateGenesisState(_ *module.SimulationState) {
 	//simulation.RandomizedGenState(simState)
 }
 
