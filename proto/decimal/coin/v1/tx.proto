@@ -31,6 +31,9 @@ service Msg {
   // SellAllCoin defines message for selling all specific coin.
   rpc SellAllCoin(MsgSellAllCoin) returns (MsgSellAllCoinResponse);
 
+  // BurnCoin defines message for burning specific coin amount.
+  rpc BurnCoin(MsgBurnCoin) returns (MsgBurnCoinResponse);
+
   // RedeemCheck defines message for redeeming checks.
   rpc RedeemCheck(MsgRedeemCheck) returns (MsgRedeemCheckResponse);
 }
@@ -262,6 +265,26 @@ message MsgSendCoin {
 }
 
 message MsgSendCoinResponse {}
+
+////////////////////////////////////////////////////////////////
+
+message MsgBurnCoin {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender",
+    (gogoproto.moretags) = "yaml:\"sender\""
+  ];
+  cosmos.base.v1beta1.Coin coin = 2 [
+    (gogoproto.jsontag) = "coin",
+    (gogoproto.moretags) = "yaml:\"coin\"",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message MsgBurnCoinResponse {}
 
 ////////////////////////////////////////////////////////////////
 

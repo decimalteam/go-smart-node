@@ -320,6 +320,44 @@ func (k Keeper) SellAllCoin(goCtx context.Context, msg *types.MsgSellAllCoin) (*
 }
 
 ////////////////////////////////////////////////////////////////
+// BurnCoin
+////////////////////////////////////////////////////////////////
+
+func (k Keeper) BurnCoin(goCtx context.Context, msg *types.MsgBurnCoin) (*types.MsgBurnCoinResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// NOTE: It was already validated so no need to check error
+	sender, _ := sdk.AccAddressFromBech32(msg.Sender)
+
+	coin, err := k.GetCoin(ctx, msg.Coin.Denom)
+	if err != nil {
+		return nil, types.ErrCoinDoesNotExist(msg.Coin.Denom)
+	}
+	if !k.IsCoinBase(ctx, msg.Coin.Denom) {
+		// check for limits
+		err = k.CheckFutureVolumeChanges(ctx, coin, msg.Coin.Amount.Neg())
+		if err != nil {
+			return nil, err
+		}
+	}
+	// send to coin module and burn
+	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, types.ModuleName, sdk.NewCoins(msg.Coin))
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
+	err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, sdk.NewCoins(msg.Coin))
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
+	if !k.IsCoinBase(ctx, msg.Coin.Denom) {
+		// change coin volume
+		k.EditCoin(ctx, coin, coin.Reserve, coin.Volume.Sub(msg.Coin.Amount))
+	}
+
+	return &types.MsgBurnCoinResponse{}, nil
+}
+
+////////////////////////////////////////////////////////////////
 // RedeemCheck
 ////////////////////////////////////////////////////////////////
 

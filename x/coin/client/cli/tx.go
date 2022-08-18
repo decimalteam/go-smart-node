@@ -446,6 +446,55 @@ $ %s tx coin sell_all del 100000000tony --from mykey
 	return cmd
 }
 
+func NewBurnCoinCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "burn [coinAmount]",
+		Short: "Burn coin",
+		Long: fmt.Sprintf(`burn coins 
+
+Example: 	
+$ %s tx coin burn 1000del --from mykey
+`, version.AppName),
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			var (
+				from       = clientCtx.GetFromAddress()
+				coinAmount = args[0]
+			)
+
+			coins, err := parseCoin(clientCtx, coinAmount)
+			if err != nil {
+				return err
+			}
+
+			err = checkBalance(clientCtx, from, coins.Amount, coins.Denom)
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgBurnCoin(from, coins)
+			err = msg.ValidateBasic()
+			if err != nil {
+				return err
+			}
+
+			// broadcast tx
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+
+	return cmd
+}
+
 func NewIssueCheckCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "issue-check [coinAmount] [nonce] [dueBlock] [passphrase]",
