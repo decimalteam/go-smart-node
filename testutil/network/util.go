@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"time"
 
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+
 	"github.com/ethereum/go-ethereum/ethclient"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	"github.com/tendermint/tendermint/node"
@@ -24,11 +26,11 @@ import (
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govv1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/tharsis/ethermint/server"
-	evmtypes "github.com/tharsis/ethermint/x/evm/types"
+	"github.com/evmos/ethermint/server"
+	evmtypes "github.com/evmos/ethermint/x/evm/types"
 )
 
 func startInProcess(cfg Config, val *Validator) error {
@@ -106,7 +108,7 @@ func startInProcess(cfg Config, val *Validator) error {
 	}
 
 	if val.AppConfig.GRPC.Enable {
-		grpcSrv, err := servergrpc.StartGRPCServer(val.ClientCtx, app, val.AppConfig.GRPC.Address)
+		grpcSrv, err := servergrpc.StartGRPCServer(val.ClientCtx, app, val.AppConfig.GRPC)
 		if err != nil {
 			return err
 		}
@@ -129,7 +131,33 @@ func startInProcess(cfg Config, val *Validator) error {
 		tmEndpoint := "/websocket"
 		tmRPCAddr := fmt.Sprintf("tcp://%s", val.AppConfig.GRPC.Address)
 
-		val.jsonrpc, val.jsonrpcDone, err = server.StartJSONRPC(val.Ctx, val.ClientCtx, tmRPCAddr, tmEndpoint, *val.AppConfig)
+		/*	var idxer ethermint.EVMTxIndexer
+			if config.JSONRPC.EnableIndexer {
+				idxDB, err := OpenIndexerDB(home, server.GetAppDBBackend(ctx.Viper))
+				if err != nil {
+					logger.Error("failed to open evm indexer DB", "error", err.Error())
+					return err
+				}
+				idxLogger := ctx.Logger.With("module", "evmindex")
+				idxer = indexer.NewKVIndexer(idxDB, idxLogger, clientCtx)
+				indexerService := NewEVMIndexerService(idxer, clientCtx.Client)
+				indexerService.SetLogger(idxLogger)
+
+				errCh := make(chan error)
+				go func() {
+					if err := indexerService.Start(); err != nil {
+						errCh <- err
+					}
+				}()
+
+				select {
+				case err := <-errCh:
+					return err
+				case <-time.After(types.ServerStartTime): // assume server started successfully
+				}
+			}
+		*/
+		val.jsonrpc, val.jsonrpcDone, err = server.StartJSONRPC(val.Ctx, val.ClientCtx, tmRPCAddr, tmEndpoint, val.AppConfig, nil)
 		if err != nil {
 			return err
 		}
@@ -204,7 +232,7 @@ func initGenFiles(cfg Config, genAccounts []authtypes.GenesisAccount, genBalance
 	stakingGenState.Params.BondDenom = cfg.BondDenom
 	cfg.GenesisState[stakingtypes.ModuleName] = cfg.Codec.MustMarshalJSON(&stakingGenState)
 
-	var govGenState govtypes.GenesisState
+	var govGenState govv1types.GenesisState
 	cfg.Codec.MustUnmarshalJSON(cfg.GenesisState[govtypes.ModuleName], &govGenState)
 
 	govGenState.DepositParams.MinDeposit[0].Denom = cfg.BondDenom

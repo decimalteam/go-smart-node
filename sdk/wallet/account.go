@@ -7,9 +7,9 @@ import (
 	decimalTypes "bitbucket.org/decimalteam/go-smart-node/types"
 	cryptoTypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
-	ethermintHd "github.com/tharsis/ethermint/crypto/hd"
-	ethermint "github.com/tharsis/ethermint/types"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
+	ethermintHd "github.com/evmos/ethermint/crypto/hd"
+	ethermint "github.com/evmos/ethermint/types"
 )
 
 // Account contains private key of the account that allows to sign transactions to broadcast to the blockchain.

@@ -1,9 +1,9 @@
 package types
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/utils/errors"
 	"fmt"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	"bitbucket.org/decimalteam/go-smart-node/utils/errors"
 )
 
 type CodeType = uint32
@@ -12,6 +12,7 @@ const (
 	// Default coin codespace
 	DefaultCodespace string = ModuleName
 
+	CodeInternal                      CodeType = 100
 	CodeInvalidCollection             CodeType = 101
 	CodeUnknownCollection             CodeType = 102
 	CodeInvalidNFT                    CodeType = 103
@@ -36,7 +37,16 @@ const (
 	CodeNotEnoughFunds                CodeType = 122
 )
 
-func ErrInvalidCollection(denom string) *sdkerrors.Error {
+func ErrInternal(err string) error {
+	return errors.Encode(
+		DefaultCodespace,
+		CodeInternal,
+		fmt.Sprintf("Internal error: %s", err),
+		errors.NewParam("error", err),
+	)
+}
+
+func ErrInvalidCollection(denom string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidCollection,
@@ -45,7 +55,7 @@ func ErrInvalidCollection(denom string) *sdkerrors.Error {
 	)
 }
 
-func ErrUnknownCollection(denom string) *sdkerrors.Error {
+func ErrUnknownCollection(denom string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeUnknownCollection,
@@ -54,7 +64,7 @@ func ErrUnknownCollection(denom string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidNFT(id string) *sdkerrors.Error {
+func ErrInvalidNFT(id string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidNFT,
@@ -63,7 +73,7 @@ func ErrInvalidNFT(id string) *sdkerrors.Error {
 	)
 }
 
-func ErrUnknownNFT(denom string, id string) *sdkerrors.Error {
+func ErrUnknownNFT(denom string, id string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeUnknownNFT,
@@ -73,7 +83,7 @@ func ErrUnknownNFT(denom string, id string) *sdkerrors.Error {
 	)
 }
 
-func ErrNFTAlreadyExists(id string) *sdkerrors.Error {
+func ErrNFTAlreadyExists(id string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeNFTAlreadyExists,
@@ -82,7 +92,7 @@ func ErrNFTAlreadyExists(id string) *sdkerrors.Error {
 	)
 }
 
-func ErrEmptyMetadata() *sdkerrors.Error {
+func ErrEmptyMetadata() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeEmptyMetadata,
@@ -90,7 +100,7 @@ func ErrEmptyMetadata() *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidQuantity(quantity string) *sdkerrors.Error {
+func ErrInvalidQuantity(quantity string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidQuantity,
@@ -99,7 +109,7 @@ func ErrInvalidQuantity(quantity string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidReserve(reserve string) *sdkerrors.Error {
+func ErrInvalidReserve(reserve string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidReserve,
@@ -108,7 +118,7 @@ func ErrInvalidReserve(reserve string) *sdkerrors.Error {
 	)
 }
 
-func ErrNotAllowedBurn() *sdkerrors.Error {
+func ErrNotAllowedBurn() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeNotAllowedBurn,
@@ -116,7 +126,7 @@ func ErrNotAllowedBurn() *sdkerrors.Error {
 	)
 }
 
-func ErrNotAllowedMint() *sdkerrors.Error {
+func ErrNotAllowedMint() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeNotAllowedMint,
@@ -124,7 +134,7 @@ func ErrNotAllowedMint() *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidDenom(denom string) *sdkerrors.Error {
+func ErrInvalidDenom(denom string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidDenom,
@@ -133,7 +143,7 @@ func ErrInvalidDenom(denom string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidTokenID(name string) *sdkerrors.Error {
+func ErrInvalidTokenID(name string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidTokenID,
@@ -142,7 +152,7 @@ func ErrInvalidTokenID(name string) *sdkerrors.Error {
 	)
 }
 
-func ErrNotUniqueSubTokenIDs() *sdkerrors.Error {
+func ErrNotUniqueSubTokenIDs() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeNotUniqueSubTokenIDs,
@@ -150,7 +160,7 @@ func ErrNotUniqueSubTokenIDs() *sdkerrors.Error {
 	)
 }
 
-func ErrNotUniqueTokenURI() *sdkerrors.Error {
+func ErrNotUniqueTokenURI() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeNotUniqueTokenURI,
@@ -158,7 +168,7 @@ func ErrNotUniqueTokenURI() *sdkerrors.Error {
 	)
 }
 
-func ErrNotUniqueTokenID() *sdkerrors.Error {
+func ErrNotUniqueTokenID() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeNotUniqueTokenID,
@@ -166,7 +176,7 @@ func ErrNotUniqueTokenID() *sdkerrors.Error {
 	)
 }
 
-func ErrOwnerDoesNotOwnSubTokenID(owner string, subTokenID string) *sdkerrors.Error {
+func ErrOwnerDoesNotOwnSubTokenID(owner string, subTokenID string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeOwnerDoesNotOwnSubTokenID,
@@ -176,7 +186,7 @@ func ErrOwnerDoesNotOwnSubTokenID(owner string, subTokenID string) *sdkerrors.Er
 	)
 }
 
-func ErrInvalidSenderAddress(address string) *sdkerrors.Error {
+func ErrInvalidSenderAddress(address string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidSenderAddress,
@@ -185,7 +195,7 @@ func ErrInvalidSenderAddress(address string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidRecipientAddress(address string) *sdkerrors.Error {
+func ErrInvalidRecipientAddress(address string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidRecipientAddress,
@@ -194,7 +204,7 @@ func ErrInvalidRecipientAddress(address string) *sdkerrors.Error {
 	)
 }
 
-func ErrForbiddenToTransferToYourself() *sdkerrors.Error {
+func ErrForbiddenToTransferToYourself() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeForbiddenToTransferToYourself,
@@ -202,7 +212,7 @@ func ErrForbiddenToTransferToYourself() *sdkerrors.Error {
 	)
 }
 
-func ErrNotAllowedUpdateReserve() *sdkerrors.Error {
+func ErrNotAllowedUpdateReserve() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeNotAllowedUpdateNFTReserve,
@@ -210,7 +220,7 @@ func ErrNotAllowedUpdateReserve() *sdkerrors.Error {
 	)
 }
 
-func ErrNotEnoughFunds(reserve string) *sdkerrors.Error {
+func ErrNotEnoughFunds(reserve string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeNotEnoughFunds,
@@ -219,7 +229,7 @@ func ErrNotEnoughFunds(reserve string) *sdkerrors.Error {
 	)
 }
 
-func ErrNotSetValueLowerNow() *sdkerrors.Error {
+func ErrNotSetValueLowerNow() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeNotSetValueLowerNow,

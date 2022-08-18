@@ -4,7 +4,6 @@ import (
 	fmt "fmt"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/errors"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 const (
@@ -43,7 +42,7 @@ const (
 	CodeSignerIsNotOwner         uint32 = 303
 )
 
-func ErrInternal(err string) *sdkerrors.Error {
+func ErrInternal(err string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInternal,
@@ -52,7 +51,7 @@ func ErrInternal(err string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidSender(address string) *sdkerrors.Error {
+func ErrInvalidSender(address string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidSender,
@@ -61,7 +60,7 @@ func ErrInvalidSender(address string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidOwnerCount(count, minCount, maxCount string) *sdkerrors.Error {
+func ErrInvalidOwnerCount(count, minCount, maxCount string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidOwnerCount,
@@ -72,7 +71,7 @@ func ErrInvalidOwnerCount(count, minCount, maxCount string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidOwner(address string) *sdkerrors.Error {
+func ErrInvalidOwner(address string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidOwner,
@@ -81,7 +80,7 @@ func ErrInvalidOwner(address string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidWeightCount(lenMsgWeights string, lenMsgOwners string) *sdkerrors.Error {
+func ErrInvalidWeightCount(lenMsgWeights string, lenMsgOwners string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidWeightCount,
@@ -91,7 +90,7 @@ func ErrInvalidWeightCount(lenMsgWeights string, lenMsgOwners string) *sdkerrors
 	)
 }
 
-func ErrInvalidWeight(weight string, data string) *sdkerrors.Error {
+func ErrInvalidWeight(weight string, data string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidWeight,
@@ -99,7 +98,7 @@ func ErrInvalidWeight(weight string, data string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidThreshold(sumOfWeights, threshold string) *sdkerrors.Error {
+func ErrInvalidThreshold(sumOfWeights, threshold string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidThreshold,
@@ -109,7 +108,7 @@ func ErrInvalidThreshold(sumOfWeights, threshold string) *sdkerrors.Error {
 	)
 }
 
-func ErrWalletAccountNotFound(address string) *sdkerrors.Error {
+func ErrWalletAccountNotFound(address string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeWalletAccountNotFound,
@@ -118,7 +117,7 @@ func ErrWalletAccountNotFound(address string) *sdkerrors.Error {
 	)
 }
 
-func ErrDuplicateOwner(address string) *sdkerrors.Error {
+func ErrDuplicateOwner(address string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeDuplicateOwner,
@@ -127,7 +126,7 @@ func ErrDuplicateOwner(address string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidWallet(address string) *sdkerrors.Error {
+func ErrInvalidWallet(address string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidWallet,
@@ -136,7 +135,7 @@ func ErrInvalidWallet(address string) *sdkerrors.Error {
 	)
 }
 
-func ErrUnableToCreateWallet(err string) *sdkerrors.Error {
+func ErrUnableToCreateWallet(err string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeUnableToCreateWallet,
@@ -145,7 +144,7 @@ func ErrUnableToCreateWallet(err string) *sdkerrors.Error {
 	)
 }
 
-func ErrWalletAlreadyExists(address string) *sdkerrors.Error {
+func ErrWalletAlreadyExists(address string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeWalletAlreadyExists,
@@ -154,7 +153,7 @@ func ErrWalletAlreadyExists(address string) *sdkerrors.Error {
 	)
 }
 
-func ErrAccountAlreadyExists(address string) *sdkerrors.Error {
+func ErrAccountAlreadyExists(address string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeAccountAlreadyExists,
@@ -167,7 +166,7 @@ func ErrAccountAlreadyExists(address string) *sdkerrors.Error {
 // Transaction
 ////////////////////////////////////////////////////////////////
 
-func ErrUnableToCreateTransaction(err string) *sdkerrors.Error {
+func ErrUnableToCreateTransaction(err string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeUnableToCreateTransaction,
@@ -176,7 +175,7 @@ func ErrUnableToCreateTransaction(err string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidTransactionIDPrefix(txID, prefixWant, prefixGot string) *sdkerrors.Error {
+func ErrInvalidTransactionIDPrefix(txID, prefixWant, prefixGot string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidTransactionIDPrefix,
@@ -187,7 +186,7 @@ func ErrInvalidTransactionIDPrefix(txID, prefixWant, prefixGot string) *sdkerror
 	)
 }
 
-func ErrInvalidTransactionIDError(txID, err string) *sdkerrors.Error {
+func ErrInvalidTransactionIDError(txID, err string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidTransactionIDError,
@@ -197,7 +196,7 @@ func ErrInvalidTransactionIDError(txID, err string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidReceiver(address string) *sdkerrors.Error {
+func ErrInvalidReceiver(address string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidReceiver,
@@ -206,7 +205,7 @@ func ErrInvalidReceiver(address string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidAmount(coin, amount string) *sdkerrors.Error {
+func ErrInvalidAmount(coin, amount string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidAmountToSend,
@@ -216,7 +215,7 @@ func ErrInvalidAmount(coin, amount string) *sdkerrors.Error {
 	)
 }
 
-func ErrInsufficientFunds(funds, balance string) *sdkerrors.Error {
+func ErrInsufficientFunds(funds, balance string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInsufficientFunds,
@@ -226,7 +225,7 @@ func ErrInsufficientFunds(funds, balance string) *sdkerrors.Error {
 	)
 }
 
-func ErrNoCoinsToSend() *sdkerrors.Error {
+func ErrNoCoinsToSend() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeNoCoinsToSend,
@@ -234,7 +233,7 @@ func ErrNoCoinsToSend() *sdkerrors.Error {
 	)
 }
 
-func ErrTransactionNotFound(txID string) *sdkerrors.Error {
+func ErrTransactionNotFound(txID string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeTransactionNotFound,
@@ -242,7 +241,7 @@ func ErrTransactionNotFound(txID string) *sdkerrors.Error {
 	)
 }
 
-func ErrAlreadyEnoughSignatures(confirmations, threshold string) *sdkerrors.Error {
+func ErrAlreadyEnoughSignatures(confirmations, threshold string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeAlreadyEnoughSignatures,
@@ -252,7 +251,7 @@ func ErrAlreadyEnoughSignatures(confirmations, threshold string) *sdkerrors.Erro
 	)
 }
 
-func ErrTransactionAlreadySigned(signer string) *sdkerrors.Error {
+func ErrTransactionAlreadySigned(signer string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeTransactionAlreadySigned,
@@ -261,7 +260,7 @@ func ErrTransactionAlreadySigned(signer string) *sdkerrors.Error {
 	)
 }
 
-func ErrSignerIsNotOwner(signer, wallet string) *sdkerrors.Error {
+func ErrSignerIsNotOwner(signer, wallet string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeSignerIsNotOwner,
@@ -271,7 +270,7 @@ func ErrSignerIsNotOwner(signer, wallet string) *sdkerrors.Error {
 	)
 }
 
-func ErrUnablePreformTransaction(txID, err string) *sdkerrors.Error {
+func ErrUnablePreformTransaction(txID, err string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeSignerIsNotOwner,

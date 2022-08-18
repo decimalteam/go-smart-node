@@ -70,6 +70,19 @@ func TestConsistency(t *testing.T) {
 		{opType: "sellAll", adr: adrs[0], amount: baseVolume},
 		{opType: "sellAll", adr: adrs[1], amount: baseVolume},
 	})
+
+	app, ctx, adrs = initConsistencyApp(t, baseReserve, baseVolume, limitVolume, crr)
+	runOpSequence(t, app, ctx, []coinOp{
+		{opType: "fee", adr: adrs[0], amount: helpers.FinneyToWei(sdk.NewInt(100))},
+		{opType: "fee", adr: adrs[1], amount: helpers.FinneyToWei(sdk.NewInt(100))},
+		{opType: "buy", adr: adrs[0], amount: baseVolume},
+		{opType: "buy", adr: adrs[1], amount: baseVolume},
+		{opType: "buy", adr: adrs[0], amount: baseVolume},
+		{opType: "buy", adr: adrs[1], amount: baseVolume},
+		{opType: "validator", adr: nil, amount: sdk.ZeroInt()},
+		{opType: "burn", adr: adrs[0], amount: baseVolume},
+		{opType: "burn", adr: adrs[1], amount: baseVolume},
+	})
 }
 
 type coinOp struct {
@@ -110,6 +123,11 @@ func runOpSequence(t *testing.T, app *appMain.DSC, ctx sdk.Context, seq []coinOp
 				fooCoin,
 				sdk.NewCoin("del", sdk.NewInt(0)),
 			))
+		case "burn":
+			app.CoinKeeper.BurnCoin(sdk.WrapSDKContext(ctx), types.NewMsgBurnCoin(
+				op.adr,
+				fooCoin,
+			))
 		}
 
 		coinInfo, err := app.CoinKeeper.GetCoin(ctx, "foo")
@@ -120,7 +138,7 @@ func runOpSequence(t *testing.T, app *appMain.DSC, ctx sdk.Context, seq []coinOp
 }
 
 func initConsistencyApp(t *testing.T, reserve, volume, limitVolume sdk.Int, crr uint64) (*app.DSC, sdk.Context, []sdk.AccAddress) {
-	app, ctx := bootstrapGenesisTest()
+	app, ctx := bootstrapGenesisTest(t)
 
 	// write genesis
 	params := app.CoinKeeper.GetParams(ctx)

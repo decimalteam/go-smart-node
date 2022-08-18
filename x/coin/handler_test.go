@@ -1,6 +1,7 @@
 package coin_test
 
 import (
+	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
@@ -8,22 +9,24 @@ import (
 	"testing"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
+	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	"bitbucket.org/decimalteam/go-smart-node/x/coin"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/testcoin"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"github.com/cosmos/btcutil/base58"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethereumCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 	"github.com/stretchr/testify/require"
-	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
 	"golang.org/x/crypto/sha3"
 )
 
-func bootstrapHandlerGenesisTest(t *testing.T, numAddrs int, accCoins sdk.Coins) (*app.DSC, sdk.Context, []sdk.AccAddress, []sdk.ValAddress) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+func bootstrapHandlerTest(t *testing.T, numAddrs int, accCoins sdk.Coins) (*app.DSC, sdk.Context, []sdk.AccAddress, []sdk.ValAddress) {
+	_, dsc, ctx := testkeeper.GetTestAppWithCoinKeeper(t)
 
-	addrDels, addrVals := generateAddresses(dsc, ctx, numAddrs, accCoins)
+	addrDels, addrVals := testkeeper.GenerateAddresses(dsc, ctx, numAddrs, accCoins)
 	require.NotNil(t, addrDels)
 	require.NotNil(t, addrVals)
 
@@ -44,7 +47,7 @@ var (
 )
 
 func TestCreateCoinHandler(t *testing.T) {
-	dsc, ctx, addrs, _ := bootstrapHandlerGenesisTest(t, 2, sdk.Coins{
+	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 2, sdk.Coins{
 		{
 			Denom:  baseDenom,
 			Amount: baseAmount,
@@ -90,7 +93,7 @@ func TestCreateCoinHandler(t *testing.T) {
 }
 
 func TestUpdateCoinHandler(t *testing.T) {
-	dsc, ctx, addrs, _ := bootstrapHandlerGenesisTest(t, 2, sdk.Coins{
+	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 2, sdk.Coins{
 		{
 			Denom:  baseDenom,
 			Amount: baseAmount,
@@ -123,7 +126,7 @@ func TestUpdateCoinHandler(t *testing.T) {
 }
 
 func TestSendCoinHandler(t *testing.T) {
-	dsc, ctx, addrs, _ := bootstrapHandlerGenesisTest(t, 2, sdk.Coins{
+	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 2, sdk.Coins{
 		{
 			Denom:  baseDenom,
 			Amount: baseAmount,
@@ -146,7 +149,7 @@ func TestSendCoinHandler(t *testing.T) {
 }
 
 func TestMultiSendCoinHandler(t *testing.T) {
-	dsc, ctx, addrs, _ := bootstrapHandlerGenesisTest(t, 4, sdk.Coins{
+	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 4, sdk.Coins{
 		{
 			Denom:  baseDenom,
 			Amount: baseAmount,
@@ -183,7 +186,7 @@ func TestMultiSendCoinHandler(t *testing.T) {
 }
 
 func TestBuyHandler(t *testing.T) {
-	dsc, ctx, addrs, _ := bootstrapHandlerGenesisTest(t, 2, sdk.Coins{
+	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 2, sdk.Coins{
 		{
 			Denom:  baseDenom,
 			Amount: baseAmount,
@@ -230,7 +233,7 @@ func TestBuyHandler(t *testing.T) {
 }
 
 func TestSellHadnler(t *testing.T) {
-	dsc, ctx, addrs, _ := bootstrapHandlerGenesisTest(t, 2, sdk.Coins{
+	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 2, sdk.Coins{
 		{
 			Denom:  baseDenom,
 			Amount: helpers.EtherToWei(sdk.NewInt(100000000000000000)),
@@ -267,7 +270,7 @@ func TestSellHadnler(t *testing.T) {
 }
 
 func TestSellAllHandler(t *testing.T) {
-	dsc, ctx, addrs, _ := bootstrapHandlerGenesisTest(t, 1, sdk.Coins{
+	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 1, sdk.Coins{
 		{
 			Denom:  baseDenom,
 			Amount: helpers.EtherToWei(sdk.NewInt(10000000000000)),
@@ -282,8 +285,81 @@ func TestSellAllHandler(t *testing.T) {
 	tscoin.SellAllCoin(addr1, validCoin(baseDenom, 10000000000000), validCoin(symbol, 5000), true)
 }
 
-func TestRedeemHandler(t *testing.T) {
+func TestBurnCoinHandler(t *testing.T) {
+	const customSymbol = "somecoin"
+	var customVolume = helpers.EtherToWei(sdk.NewInt(2000))
+	var customReserve = helpers.EtherToWei(sdk.NewInt(1000))
+
 	dsc, ctx, addrs, _ := bootstrapHandlerGenesisTest(t, 2, sdk.Coins{
+		{
+			Denom:  baseDenom,
+			Amount: baseAmount,
+		},
+	})
+
+	handler := coin.NewHandler(dsc.CoinKeeper)
+	_, err := handler(ctx, types.NewMsgCreateCoin(
+		addrs[0],
+		"somecoin",
+		customSymbol,
+		10,
+		customVolume.Mul(sdk.NewInt(10)),
+		customReserve,
+		customVolume.Mul(sdk.NewInt(100)),
+		"",
+	))
+	require.NoError(t, err, "create coin")
+	balance := dsc.BankKeeper.GetBalance(ctx, addrs[0], customSymbol)
+	require.True(t, balance.Amount.Equal(customVolume.Mul(sdk.NewInt(10))), "balance: %s", balance.String())
+
+	_, err = handler(ctx, types.NewMsgBurnCoin(
+		addrs[0],
+		sdk.NewCoin(customSymbol, customVolume),
+	))
+	require.NoError(t, err, "burn coin")
+	balance = dsc.BankKeeper.GetBalance(ctx, addrs[0], customSymbol)
+	require.True(t, balance.Amount.Equal(customVolume.Mul(sdk.NewInt(9))), "balance: %s", balance.String())
+	inf, err := dsc.CoinKeeper.GetCoin(ctx, customSymbol)
+	require.NoError(t, err, "coin info")
+	require.True(t, inf.Reserve.Equal(customReserve), "check reserve")
+
+	//try to burn to break limits
+	_, err = handler(ctx, types.NewMsgBurnCoin(
+		addrs[0],
+		sdk.NewCoin(customSymbol, customVolume.Mul(sdk.NewInt(9))),
+	))
+	require.Error(t, err, "overburn coin")
+	// balance must be same
+	balance = dsc.BankKeeper.GetBalance(ctx, addrs[0], customSymbol)
+	require.True(t, balance.Amount.Equal(customVolume.Mul(sdk.NewInt(9))), "balance: %s", balance.String())
+
+	// burn to minimal volume
+	balance = dsc.BankKeeper.GetBalance(ctx, addrs[0], customSymbol)
+	volumeToBurn := balance.Amount.Sub(types.MinCoinSupply)
+	_, err = handler(ctx, types.NewMsgBurnCoin(
+		addrs[0],
+		sdk.NewCoin(customSymbol, volumeToBurn),
+	))
+	require.NoError(t, err, "burn coin to minimum")
+	inf, err = dsc.CoinKeeper.GetCoin(ctx, customSymbol)
+	require.NoError(t, err, "coin info")
+
+	// this call check MinCoinSupply after burn
+	// If MinCoinSupply is too small, there will be panic
+	formulas.CalculatePurchaseAmount(inf.Volume, inf.Reserve, uint(inf.CRR), helpers.EtherToWei(sdk.NewInt(1)))
+	formulas.CalculatePurchaseAmount(inf.Volume, inf.Reserve, uint(inf.CRR), helpers.FinneyToWei(sdk.NewInt(1)))
+
+	////////
+	// check base coin burning
+	_, err = handler(ctx, types.NewMsgBurnCoin(
+		addrs[1],
+		sdk.NewCoin(baseDenom, helpers.EtherToWei(sdk.NewInt(1))),
+	))
+	require.NoError(t, err, "burn base coin")
+}
+
+func TestRedeemHandler(t *testing.T) {
+	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 2, sdk.Coins{
 		{
 			Denom:  baseDenom,
 			Amount: baseAmount,

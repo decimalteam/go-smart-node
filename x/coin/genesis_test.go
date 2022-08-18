@@ -2,6 +2,7 @@ package coin_test
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/app"
+	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/testcoin"
@@ -13,8 +14,8 @@ import (
 	"testing"
 )
 
-func bootstrapGenesisTest() (*app.DSC, sdk.Context) {
-	_, dsc, ctx := getBaseAppWithCustomKeeper()
+func bootstrapGenesisTest(t *testing.T) (*app.DSC, sdk.Context) {
+	_, dsc, ctx := testkeeper.GetTestAppWithCoinKeeper(t)
 
 	return dsc, ctx
 }
@@ -46,7 +47,7 @@ var (
 )
 
 func TestAppModuleBasic_InitGenesis(t *testing.T) {
-	app, ctx := bootstrapGenesisTest()
+	app, ctx := bootstrapGenesisTest(t)
 
 	// write genesis
 	params := app.CoinKeeper.GetParams(ctx)

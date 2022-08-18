@@ -60,6 +60,8 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec) (sdk.Int, er
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *coinTypes.MsgUpdateCoin:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *coinTypes.MsgBurnCoin:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		case *multisigTypes.MsgCreateWallet:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(createWalletFee)
 		case *multisigTypes.MsgCreateTransaction:

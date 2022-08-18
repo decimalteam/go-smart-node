@@ -43,6 +43,9 @@ func NewHandler(server types.MsgServer) sdk.Handler {
 		case *types.MsgSellAllCoin:
 			res, err := server.SellAllCoin(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgBurnCoin:
+			res, err := server.BurnCoin(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgRedeemCheck:
 			res, err := server.RedeemCheck(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)

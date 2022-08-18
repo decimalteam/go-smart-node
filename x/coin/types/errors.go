@@ -5,8 +5,6 @@ package types
 import (
 	"fmt"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
 	"bitbucket.org/decimalteam/go-smart-node/utils/errors"
 )
 
@@ -69,7 +67,7 @@ const (
 	CodeUnableRetriveSECPPkey    uint32 = 503
 )
 
-func ErrInvalidCRR(crr string) *sdkerrors.Error {
+func ErrInvalidCRR(crr string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidCRR,
@@ -78,7 +76,7 @@ func ErrInvalidCRR(crr string) *sdkerrors.Error {
 	)
 }
 
-func ErrCoinDoesNotExist(symbol string) *sdkerrors.Error {
+func ErrCoinDoesNotExist(symbol string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeCoinDoesNotExist,
@@ -87,7 +85,7 @@ func ErrCoinDoesNotExist(symbol string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidCoinSymbol(symbol string) *sdkerrors.Error {
+func ErrInvalidCoinSymbol(symbol string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidCoinSymbol,
@@ -96,7 +94,7 @@ func ErrInvalidCoinSymbol(symbol string) *sdkerrors.Error {
 	)
 }
 
-func ErrForbiddenCoinSymbol(symbol string) *sdkerrors.Error {
+func ErrForbiddenCoinSymbol(symbol string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeForbiddenCoinSymbol,
@@ -105,7 +103,7 @@ func ErrForbiddenCoinSymbol(symbol string) *sdkerrors.Error {
 	)
 }
 
-func ErrRetrievedAnotherCoin(symbolWant string, symbolRetrieved string) *sdkerrors.Error {
+func ErrRetrievedAnotherCoin(symbolWant string, symbolRetrieved string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeRetrievedAnotherCoin,
@@ -115,7 +113,7 @@ func ErrRetrievedAnotherCoin(symbolWant string, symbolRetrieved string) *sdkerro
 	)
 }
 
-func ErrCoinAlreadyExists(coin string) *sdkerrors.Error {
+func ErrCoinAlreadyExists(coin string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeCoinAlreadyExists,
@@ -124,7 +122,7 @@ func ErrCoinAlreadyExists(coin string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidCoinTitle(title string) *sdkerrors.Error {
+func ErrInvalidCoinTitle(title string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidCoinTitle,
@@ -133,7 +131,7 @@ func ErrInvalidCoinTitle(title string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidCoinInitialVolume(initialVolume string) *sdkerrors.Error {
+func ErrInvalidCoinInitialVolume(initialVolume string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidCoinInitialVolume,
@@ -144,7 +142,7 @@ func ErrInvalidCoinInitialVolume(initialVolume string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidCoinInitialReserve(reserve string) *sdkerrors.Error {
+func ErrInvalidCoinInitialReserve(reserve string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidCoinInitialReserve,
@@ -153,7 +151,7 @@ func ErrInvalidCoinInitialReserve(reserve string) *sdkerrors.Error {
 	)
 }
 
-func ErrInternal(err string) *sdkerrors.Error {
+func ErrInternal(err string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInternal,
@@ -162,7 +160,7 @@ func ErrInternal(err string) *sdkerrors.Error {
 	)
 }
 
-func ErrInsufficientCoinReserve() *sdkerrors.Error {
+func ErrInsufficientCoinReserve() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInsufficientCoinReserve,
@@ -170,7 +168,7 @@ func ErrInsufficientCoinReserve() *sdkerrors.Error {
 	)
 }
 
-func ErrInsufficientFundsToPayCommission(commission string) *sdkerrors.Error {
+func ErrInsufficientFundsToPayCommission(commission string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInsufficientCoinToPayCommission,
@@ -179,7 +177,7 @@ func ErrInsufficientFundsToPayCommission(commission string) *sdkerrors.Error {
 	)
 }
 
-func ErrInsufficientFunds(fundsWant string, fundsExist string) *sdkerrors.Error {
+func ErrInsufficientFunds(fundsWant string, fundsExist string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInsufficientFunds,
@@ -189,7 +187,7 @@ func ErrInsufficientFunds(fundsWant string, fundsExist string) *sdkerrors.Error 
 	)
 }
 
-func ErrCalculateCommission(err string) *sdkerrors.Error {
+func ErrCalculateCommission(err string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeCalculateCommission,
@@ -197,7 +195,7 @@ func ErrCalculateCommission(err string) *sdkerrors.Error {
 	)
 }
 
-func ErrUpdateOnlyForCreator() *sdkerrors.Error {
+func ErrUpdateOnlyForCreator() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeForbiddenUpdate,
@@ -205,7 +203,7 @@ func ErrUpdateOnlyForCreator() *sdkerrors.Error {
 	)
 }
 
-func ErrSameCoin() *sdkerrors.Error {
+func ErrSameCoin() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeSameCoins,
@@ -213,7 +211,7 @@ func ErrSameCoin() *sdkerrors.Error {
 	)
 }
 
-func ErrInsufficientFundsToSellAll() *sdkerrors.Error {
+func ErrInsufficientFundsToSellAll() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInsufficientFundsToSellAll,
@@ -221,7 +219,7 @@ func ErrInsufficientFundsToSellAll() *sdkerrors.Error {
 	)
 }
 
-func ErrTxBreaksMinVolumeLimit(volume string, limitVolume string) *sdkerrors.Error {
+func ErrTxBreaksMinVolumeLimit(volume string, limitVolume string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeTxBreaksMinVolumeLimit,
@@ -231,7 +229,7 @@ func ErrTxBreaksMinVolumeLimit(volume string, limitVolume string) *sdkerrors.Err
 	)
 }
 
-func ErrTxBreaksMinReserveRule(minCoinReserve string, reserve string) *sdkerrors.Error {
+func ErrTxBreaksMinReserveRule(minCoinReserve string, reserve string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeTxBreaksMinReserveLimit,
@@ -241,7 +239,7 @@ func ErrTxBreaksMinReserveRule(minCoinReserve string, reserve string) *sdkerrors
 	)
 }
 
-func ErrMaximumValueToSellReached(amount string, max string) *sdkerrors.Error {
+func ErrMaximumValueToSellReached(amount string, max string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeMaximumValueToSellReached,
@@ -251,7 +249,7 @@ func ErrMaximumValueToSellReached(amount string, max string) *sdkerrors.Error {
 	)
 }
 
-func ErrMinimumValueToBuyReached(amount string, min string) *sdkerrors.Error {
+func ErrMinimumValueToBuyReached(amount string, min string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeMinimumValueToBuyReached,
@@ -261,7 +259,7 @@ func ErrMinimumValueToBuyReached(amount string, min string) *sdkerrors.Error {
 	)
 }
 
-func ErrUpdateBalance(account string, err string) *sdkerrors.Error {
+func ErrUpdateBalance(account string, err string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeUpdateBalance,
@@ -271,7 +269,7 @@ func ErrUpdateBalance(account string, err string) *sdkerrors.Error {
 	)
 }
 
-func ErrLimitVolumeBroken(volume string, limit string) *sdkerrors.Error {
+func ErrLimitVolumeBroken(volume string, limit string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeLimitVolumeBroken,
@@ -281,7 +279,7 @@ func ErrLimitVolumeBroken(volume string, limit string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidAmount() *sdkerrors.Error {
+func ErrInvalidAmount() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidAmount,
@@ -289,7 +287,7 @@ func ErrInvalidAmount() *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidReceiverAddress(address string) *sdkerrors.Error {
+func ErrInvalidReceiverAddress(address string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidReceiverAddress,
@@ -297,7 +295,7 @@ func ErrInvalidReceiverAddress(address string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidSenderAddress(address string) *sdkerrors.Error {
+func ErrInvalidSenderAddress(address string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidSenderAddress,
@@ -305,7 +303,7 @@ func ErrInvalidSenderAddress(address string) *sdkerrors.Error {
 	)
 }
 
-func ErrTxBreaksVolumeLimit(volume string, limitVolume string) *sdkerrors.Error {
+func ErrTxBreaksVolumeLimit(volume string, limitVolume string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeTxBreaksVolumeLimit,
@@ -317,7 +315,7 @@ func ErrTxBreaksVolumeLimit(volume string, limitVolume string) *sdkerrors.Error 
 
 // Redeem check
 
-func ErrInvalidCheck(data string) *sdkerrors.Error {
+func ErrInvalidCheck(data string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidCheck,
@@ -326,7 +324,7 @@ func ErrInvalidCheck(data string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidProof(error string) *sdkerrors.Error {
+func ErrInvalidProof(error string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidProof,
@@ -335,7 +333,7 @@ func ErrInvalidProof(error string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidPassphrase(error string) *sdkerrors.Error {
+func ErrInvalidPassphrase(error string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidPassphrase,
@@ -344,7 +342,7 @@ func ErrInvalidPassphrase(error string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidChainID(wanted string, issued string) *sdkerrors.Error {
+func ErrInvalidChainID(wanted string, issued string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidChainID,
@@ -354,7 +352,7 @@ func ErrInvalidChainID(wanted string, issued string) *sdkerrors.Error {
 	)
 }
 
-func ErrInvalidNonce() *sdkerrors.Error {
+func ErrInvalidNonce() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidNonce,
@@ -362,7 +360,7 @@ func ErrInvalidNonce() *sdkerrors.Error {
 	)
 }
 
-func ErrCheckExpired(block string) *sdkerrors.Error {
+func ErrCheckExpired(block string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeCheckExpired,
@@ -371,7 +369,7 @@ func ErrCheckExpired(block string) *sdkerrors.Error {
 	)
 }
 
-func ErrCheckRedeemed() *sdkerrors.Error {
+func ErrCheckRedeemed() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeCheckRedeemed,
@@ -379,7 +377,7 @@ func ErrCheckRedeemed() *sdkerrors.Error {
 	)
 }
 
-func ErrUnableDecodeCheck(check string) *sdkerrors.Error {
+func ErrUnableDecodeCheck(check string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeUnableDecodeCheck,
@@ -388,7 +386,7 @@ func ErrUnableDecodeCheck(check string) *sdkerrors.Error {
 	)
 }
 
-func ErrUnableRPLEncodeCheck(error string) *sdkerrors.Error {
+func ErrUnableRPLEncodeCheck(error string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeUnableRPLEncodeCheck,
@@ -397,7 +395,7 @@ func ErrUnableRPLEncodeCheck(error string) *sdkerrors.Error {
 	)
 }
 
-func ErrUnableSignCheck(error string) *sdkerrors.Error {
+func ErrUnableSignCheck(error string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeUnableSignCheck,
@@ -406,7 +404,7 @@ func ErrUnableSignCheck(error string) *sdkerrors.Error {
 	)
 }
 
-func ErrUnableDecodeProof() *sdkerrors.Error {
+func ErrUnableDecodeProof() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeUnableDecodeProof,
@@ -414,7 +412,7 @@ func ErrUnableDecodeProof() *sdkerrors.Error {
 	)
 }
 
-func ErrUnableRecoverAddress(error string) *sdkerrors.Error {
+func ErrUnableRecoverAddress(error string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeUnableRecoverAddress,
@@ -423,7 +421,7 @@ func ErrUnableRecoverAddress(error string) *sdkerrors.Error {
 	)
 }
 
-func ErrUnableRecoverLockPkey(error string) *sdkerrors.Error {
+func ErrUnableRecoverLockPkey(error string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeUnableRecoverLockPkey,
@@ -434,7 +432,7 @@ func ErrUnableRecoverLockPkey(error string) *sdkerrors.Error {
 
 // AccountKeys Errors
 
-func ErrInvalidPkey() *sdkerrors.Error {
+func ErrInvalidPkey() error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidPkey,
@@ -442,7 +440,7 @@ func ErrInvalidPkey() *sdkerrors.Error {
 	)
 }
 
-func ErrUnableRetrieveArmoredPkey(name string, error string) *sdkerrors.Error {
+func ErrUnableRetrieveArmoredPkey(name string, error string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeUnableRetriveArmoredPkey,
@@ -452,7 +450,7 @@ func ErrUnableRetrieveArmoredPkey(name string, error string) *sdkerrors.Error {
 	)
 }
 
-func ErrUnableRetrievePkey(name string, error string) *sdkerrors.Error {
+func ErrUnableRetrievePkey(name string, error string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeUnableRetrivePkey,
@@ -462,7 +460,7 @@ func ErrUnableRetrievePkey(name string, error string) *sdkerrors.Error {
 	)
 }
 
-func ErrUnableRetrieveSECPPkey(name string, algo string) *sdkerrors.Error {
+func ErrUnableRetrieveSECPPkey(name string, algo string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeUnableRetriveSECPPkey,

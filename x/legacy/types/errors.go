@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
 	"bitbucket.org/decimalteam/go-smart-node/utils/errors"
 )
 
@@ -21,7 +19,7 @@ const (
 	CodeNoLegacyBalance                uint32 = 105
 )
 
-func ErrInternal(err string) *sdkerrors.Error {
+func ErrInternal(err string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInternal,
@@ -30,7 +28,7 @@ func ErrInternal(err string) *sdkerrors.Error {
 	)
 }
 
-func ErrLegacyDoesNotExist(address string) *sdkerrors.Error {
+func ErrLegacyDoesNotExist(address string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeLegacyDoesNotExist,
@@ -40,7 +38,7 @@ func ErrLegacyDoesNotExist(address string) *sdkerrors.Error {
 }
 
 // Legacy return errors
-func ErrInvalidPublicKeyLength(publicKeyLength int) *sdkerrors.Error {
+func ErrInvalidPublicKeyLength(publicKeyLength int) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeInvalidPublicKeyLength,
@@ -49,7 +47,7 @@ func ErrInvalidPublicKeyLength(publicKeyLength int) *sdkerrors.Error {
 	)
 }
 
-func ErrCannnotGetAddressFromPublicKey(err string) *sdkerrors.Error {
+func ErrCannnotGetAddressFromPublicKey(err string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeCannnotGetAddressFromPublicKey,
@@ -58,7 +56,7 @@ func ErrCannnotGetAddressFromPublicKey(err string) *sdkerrors.Error {
 	)
 }
 
-func ErrNoMatchReceiverAndPKey(expectAddress, gotAddress string) *sdkerrors.Error {
+func ErrNoMatchReceiverAndPKey(expectAddress, gotAddress string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeNoMatchReceiverAndPKey,
@@ -69,7 +67,7 @@ func ErrNoMatchReceiverAndPKey(expectAddress, gotAddress string) *sdkerrors.Erro
 	)
 }
 
-func ErrNoLegacyBalance(receiver, legacyAddress string) *sdkerrors.Error {
+func ErrNoLegacyBalance(receiver, legacyAddress string) error {
 	return errors.Encode(
 		DefaultCodespace,
 		CodeNoLegacyBalance,

@@ -5,6 +5,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -16,19 +17,21 @@ type Helper struct {
 	h sdk.Handler
 	k keeper.Keeper
 
-	Ctx sdk.Context
-	//Commission cointypes.CommissionRates
-	// Coin Denomination
-	//Denom string
+	msgServer   types.MsgServer
+	queryServer types.QueryServer
+	Ctx         sdk.Context
 }
 
 // NewHelper creates staking Handler wrapper for tests
 func NewHelper(t *testing.T, ctx sdk.Context, k keeper.Keeper) *Helper {
 	return &Helper{
-		t:   t,
-		h:   coin.NewHandler(k),
-		k:   k,
-		Ctx: ctx,
+		t: t,
+		h: coin.NewHandler(k),
+		k: k,
+
+		msgServer:   &k,
+		queryServer: &k,
+		Ctx:         ctx,
 	}
 }
 
@@ -126,4 +129,39 @@ func (sh *Helper) GetCoin(symbol string, ok bool) {
 	} else {
 		require.Error(sh.t, err)
 	}
+}
+
+func (sh *Helper) QueryCoins() []types.Coin {
+	resp, err := sh.queryServer.Coins(sh.Ctx, types.NewQueryCoinsRequest(&query.PageRequest{Limit: 1000}))
+	require.NoError(sh.t, err)
+
+	return resp.Coins
+}
+
+func (sh *Helper) QueryCoin(symbol string) types.Coin {
+	resp, err := sh.queryServer.Coin(sh.Ctx, types.NewQueryCoinRequest(symbol))
+	require.NoError(sh.t, err)
+
+	return resp.Coin
+}
+
+func (sh *Helper) QueryChecks() []types.Check {
+	resp, err := sh.queryServer.Checks(sh.Ctx, types.NewQueryChecksRequest(&query.PageRequest{Limit: 1000}))
+	require.NoError(sh.t, err)
+
+	return resp.Checks
+}
+
+func (sh *Helper) QueryCheck(hash []byte) types.Check {
+	resp, err := sh.queryServer.Check(sh.Ctx, types.NewQueryCheckRequest(hash))
+	require.NoError(sh.t, err)
+
+	return resp.Check
+}
+
+func (sh *Helper) QueryParams() types.Params {
+	resp, err := sh.queryServer.Params(sh.Ctx, types.NewQueryParamsRequest())
+	require.NoError(sh.t, err)
+
+	return resp.Params
 }

@@ -49,11 +49,14 @@ func cmdVerify() *cobra.Command {
 				if coinInfo.Symbol == reactor.api.BaseCoin() {
 					continue
 				}
+				diff := "none"
 				bal := balances.AmountOf(coinInfo.Symbol)
 				if !bal.Equal(coinInfo.Volume) {
-					fmt.Printf("Coin '%s' difference: volume=%s, balances=%s\n",
-						coinInfo.Symbol, coinInfo.Volume.String(), bal.String())
+					diff = fmt.Sprintf("volume=%s, balances=%s",
+						coinInfo.Volume.String(), bal.String())
 				}
+				fmt.Printf("coin: (symbol: %s, volume: %s, reserve: %s), difference: %s\n",
+					coinInfo.Symbol, coinInfo.Volume, coinInfo.Reserve, diff)
 			}
 		},
 	}
