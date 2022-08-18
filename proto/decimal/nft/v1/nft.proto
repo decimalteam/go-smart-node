@@ -9,7 +9,6 @@ option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
 message BaseNFT {
   option (gogoproto.equal)           = false;
   option (gogoproto.goproto_getters) = false;
-  option (gogoproto.stringer) = false;
   option (gogoproto.goproto_stringer) = false;
 
   string ID = 1 [
