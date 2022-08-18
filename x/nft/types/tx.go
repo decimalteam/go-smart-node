@@ -2,6 +2,7 @@ package types
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"regexp"
 	"strings"
@@ -15,7 +16,8 @@ import (
 func NewMsgMintNFT(
 	sender, recipient sdk.AccAddress,
 	id, denom, tokenURI string,
-	quantity, reserve sdk.Int,
+	quantity sdkmath.Int,
+	reserve sdk.Coin,
 	allowMint bool,
 ) *MsgMintNFT {
 	return &MsgMintNFT{
@@ -64,7 +66,7 @@ func (m *MsgMintNFT) ValidateBasic() error {
 		return ErrInvalidQuantity(m.Quantity.String())
 	}
 
-	if !m.Reserve.IsPositive() || m.Reserve.LT(MinReserve) {
+	if !m.Reserve.IsPositive() || m.Reserve.Amount.LT(MinReserve) {
 		return ErrInvalidReserve(m.Reserve.String())
 	}
 	if match, _ := regexp.MatchString(regName, m.Denom); !match {
@@ -153,13 +155,13 @@ func (msg *MsgBurnNFT) GetSigners() []sdk.AccAddress {
 /* --------------------------------------------------------------------------- */
 
 // NewUpdateReservNFT is a constructor function for MsgUpdateReservNFT
-func NewMsgUpdateReserveNFT(sender sdk.AccAddress, id string, denom string, subTokenIDs []uint64, newReserveNFT sdk.Int) *MsgUpdateReserveNFT {
+func NewMsgUpdateReserveNFT(sender sdk.AccAddress, id string, denom string, subTokenIDs []uint64, newReserve sdk.Coin) *MsgUpdateReserveNFT {
 	return &MsgUpdateReserveNFT{
-		Sender:        sender.String(),
-		ID:            strings.TrimSpace(id),
-		Denom:         strings.TrimSpace(denom),
-		SubTokenIDs:   subTokenIDs,
-		NewReserveNFT: newReserveNFT,
+		Sender:      sender.String(),
+		ID:          strings.TrimSpace(id),
+		Denom:       strings.TrimSpace(denom),
+		SubTokenIDs: subTokenIDs,
+		NewReserve:  newReserve,
 	}
 }
 
@@ -187,7 +189,7 @@ func (msg *MsgUpdateReserveNFT) ValidateBasic() error {
 		return ErrNotUniqueSubTokenIDs()
 	}
 
-	if msg.NewReserveNFT.IsZero() {
+	if msg.NewReserve.IsZero() {
 		return ErrInvalidReserve("Reserv can not be equal to zero")
 	}
 

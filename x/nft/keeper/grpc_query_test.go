@@ -214,7 +214,7 @@ func TestQueryNFT(t *testing.T) {
 	require.NoError(t, err)
 
 	expectedResponse := types.QueryNFTResponse{
-		Nft: nft,
+		NFT: nft,
 	}
 
 	req := types.QueryNFTRequest{
