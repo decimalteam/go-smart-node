@@ -1,12 +1,13 @@
 package coin_test
 
 import (
-	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
 	"testing"
+
+	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
@@ -290,7 +291,7 @@ func TestBurnCoinHandler(t *testing.T) {
 	var customVolume = helpers.EtherToWei(sdk.NewInt(2000))
 	var customReserve = helpers.EtherToWei(sdk.NewInt(1000))
 
-	dsc, ctx, addrs, _ := bootstrapHandlerGenesisTest(t, 2, sdk.Coins{
+	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 2, sdk.Coins{
 		{
 			Denom:  baseDenom,
 			Amount: baseAmount,
