@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"fmt"
 	"math/rand"
 	"time"
@@ -24,7 +25,7 @@ type UpdateReserveNFTAction struct {
 	creator    string // need for filter
 	id         string
 	denom      string
-	newReserve sdk.Int
+	newReserve sdk.Coin
 	subIds     []uint64
 }
 
@@ -81,7 +82,7 @@ func (gg *UpdateReserveNFTGenerator) Generate() Action {
 			id:         nftToUpdateReserve.ID,
 			denom:      nftToUpdateReserve.Denom,
 			subIds:     subToUpdate,
-			newReserve: newReserve,
+			newReserve: sdk.NewCoin(config.BaseDenom, newReserve),
 		}
 	}
 	return &EmptyAction{}

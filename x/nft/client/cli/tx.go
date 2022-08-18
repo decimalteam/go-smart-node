@@ -41,7 +41,7 @@ func GetTxCmd() *cobra.Command {
 // GetCmdMintNFT is the CLI command for a MintNFT transaction
 func GetCmdMintNFT() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "mint [denom] [token_id] [recipient] [quantity] [reserve] [allow_mint]",
+		Use:   "mint [denom] [token_id] [recipient] [quantity] [reserve] [allow_mint] [token_uri]",
 		Short: "mint an NFT and set the owner to the recipient",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Mint an NFT from a given collection that has a 
@@ -49,7 +49,7 @@ func GetCmdMintNFT() *cobra.Command {
 
 Example:
 $ %s tx %s mint crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa \
-dx1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p 100 100del true --from mykey
+dx1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p 100 100del true "token uri" --from mykey
 `,
 				config.AppBinName, types.ModuleName,
 			),
@@ -70,6 +70,9 @@ dx1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p 100 100del true --from mykey
 			}
 
 			tokenURI := viper.GetString(flagTokenURI)
+			if tokenURI == "" {
+				return types.ErrEmptyTokenURI()
+			}
 
 			quantity, ok := sdk.NewIntFromString(args[3])
 			if !ok {

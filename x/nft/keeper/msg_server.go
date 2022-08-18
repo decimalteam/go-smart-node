@@ -24,7 +24,7 @@ func (k Keeper) MintNFT(c context.Context, msg *types.MsgMintNFT) (*types.MsgMin
 		if k.HasTokenID(ctx, msg.ID) {
 			return nil, types.ErrNotUniqueTokenID()
 		}
-		if msg.Reserve.Amount.LT(types.NewMinReserve) {
+		if msg.Reserve.Amount.LT(types.MinReserve) {
 			return nil, types.ErrInvalidReserve(msg.Reserve.String())
 		}
 	}

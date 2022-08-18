@@ -48,13 +48,13 @@ func (api *API) NFT(denom string, id string) (NFT, error) {
 		context.Background(),
 		&nftTypes.QueryNFTRequest{
 			Denom:   denom,
-			TokenID: id,
+			TokenId: id,
 		},
 	)
 	if err != nil {
 		return NFT{}, err
 	}
-	return NFT{res.Nft, denom}, nil
+	return NFT{res.NFT, denom}, nil
 }
 
 func (api *API) NFTSubTokens(denom string, tokenID string, ids []uint64) ([]SubToken, error) {

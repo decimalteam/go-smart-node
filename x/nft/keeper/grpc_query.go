@@ -84,9 +84,9 @@ func (k Keeper) QueryDenoms(c context.Context, _ *types.QueryDenomsRequest) (*ty
 func (k Keeper) QueryNFT(c context.Context, req *types.QueryNFTRequest) (*types.QueryNFTResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 
-	nft, err := k.GetNFT(ctx, req.Denom, req.TokenID)
+	nft, err := k.GetNFT(ctx, req.Denom, req.TokenId)
 	if err != nil {
-		return nil, types.ErrUnknownNFT(req.Denom, req.TokenID)
+		return nil, types.ErrUnknownNFT(req.Denom, req.TokenId)
 	}
 
 	return &types.QueryNFTResponse{

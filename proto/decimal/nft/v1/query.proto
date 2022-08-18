@@ -96,10 +96,10 @@ message QueryDenomsResponse {
 ////////////////////////////////////////////////////////////////
 
 message QueryNFTRequest {
-  string denom = 1;
-  string token_id = 2 [
-    (gogoproto.customname) = "TokenID"
+  string denom = 1 [
+    (gogoproto.jsontag) = "denom"
   ];
+  string token_id = 2;
 }
 
 message QueryNFTResponse {
