@@ -197,10 +197,6 @@ func (msg MsgChainActivate) ValidateBasic() error {
 		return ErrInvalidSenderAddress(msg.Sender)
 	}
 
-	if msg.Sender != ChainActivatorAddress {
-		return ErrSenderIsNotSwapService(msg.Sender)
-	}
-
 	if msg.ChainNumber == 0 {
 		return ErrInvalidChainNumber()
 	}
@@ -245,10 +241,6 @@ func (msg MsgChainDeactivate) GetSigners() []sdk.AccAddress {
 func (msg MsgChainDeactivate) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return ErrInvalidSenderAddress(msg.Sender)
-	}
-
-	if msg.Sender != ChainActivatorAddress {
-		return ErrSenderIsNotSwapService(msg.Sender)
 	}
 
 	if msg.ChainNumber == 0 {

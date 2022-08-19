@@ -149,9 +149,7 @@ func TestChainActivate(t *testing.T) {
 	cmdcfg.SetBech32Prefixes(cfg)
 	cmdcfg.SetBip44CoinType(cfg)
 
-	sender, err := sdk.AccAddressFromBech32(ChainActivatorAddress)
-	require.NoError(t, err)
-	invalidSender, err := sdk.AccAddressFromBech32("dx1p844kydt9eljvuef4nk52dm6lcgj5c42q4zmvd")
+	sender, err := sdk.AccAddressFromBech32(DefaultSwapServiceAddress)
 	require.NoError(t, err)
 
 	var testCases = []struct {
@@ -167,13 +165,6 @@ func TestChainActivate(t *testing.T) {
 			1,
 			"some blockchain",
 			false,
-		},
-		{
-			"invalid sender",
-			invalidSender,
-			1,
-			"some blockchain",
-			true,
 		},
 		{
 			"invalid chain number",
@@ -210,9 +201,7 @@ func TestChainDeactivate(t *testing.T) {
 	cmdcfg.SetBech32Prefixes(cfg)
 	cmdcfg.SetBip44CoinType(cfg)
 
-	sender, err := sdk.AccAddressFromBech32(ChainActivatorAddress)
-	require.NoError(t, err)
-	invalidSender, err := sdk.AccAddressFromBech32("dx1p844kydt9eljvuef4nk52dm6lcgj5c42q4zmvd")
+	sender, err := sdk.AccAddressFromBech32(DefaultSwapServiceAddress)
 	require.NoError(t, err)
 
 	var testCases = []struct {
@@ -226,12 +215,6 @@ func TestChainDeactivate(t *testing.T) {
 			sender,
 			1,
 			false,
-		},
-		{
-			"invalid sender",
-			invalidSender,
-			1,
-			true,
 		},
 		{
 			"invalid chain number",
