@@ -283,7 +283,7 @@ func TestSellAllHandler(t *testing.T) {
 
 	_ = tscoin.CreateCoin(addr1, title, symbol, crr, helpers.EtherToWei(sdk.NewInt(10000000)), initReserve, limitVolume, "", true)
 
-	tscoin.SellAllCoin(addr1, validCoin(baseDenom, 10000000000000), validCoin(symbol, 5000), true)
+	tscoin.SellAllCoin(addr1, baseDenom, validCoin(symbol, 5000), true)
 }
 
 func TestBurnCoinHandler(t *testing.T) {

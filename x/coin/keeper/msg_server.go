@@ -311,7 +311,7 @@ func (k Keeper) SellAllCoin(goCtx context.Context, msg *types.MsgSellAllCoin) (*
 	sender, _ := sdk.AccAddressFromBech32(msg.Sender)
 
 	// Make sale
-	err := k.sellCoin(ctx, sender, msg.CoinToSell, msg.MinCoinToBuy, true)
+	err := k.sellCoin(ctx, sender, sdk.NewCoin(msg.CoinSymbolToSell, sdk.ZeroInt()), msg.MinCoinToBuy, true)
 	if err != nil {
 		return nil, err
 	}

@@ -55,7 +55,11 @@ func NewCreateCoinCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create [title] [symbol] [crr] [initReserve] [initVolume] [limitVolume] [identity]",
 		Short: "Creates new coin",
-		Args:  cobra.ExactArgs(7),
+		Long: fmt.Sprintf(`Create custom coin. Reserve, volumes must be with all 0 (1 coin = 10^18)
+
+Example: 	
+$ %s tx coin create "title of coin" coin1 20 10000000000 200000000 10000000000000 "coin identity" --from mykey`, version.AppName),
+		Args: cobra.ExactArgs(7),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -103,10 +107,11 @@ func NewUpdateCoinCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update [symbol] [limitVolume] [identity]",
 		Short: "Update custom coin",
-		Long: fmt.Sprintf(`update coin your custom coin parametres 
+		Long: fmt.Sprintf(`Update your custom coin parameters: limit volume and identity.
+Limit volume must be with all 0 (1 coin = 10^18)
 
 Example: 	
-$ %s tx coin update del 10000000 "" --from mykey`, version.AppName),
+$ %s tx coin update coin1 10000000 "some identity" --from mykey`, version.AppName),
 		Args: cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -152,11 +157,11 @@ func NewBuyCoinCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "buy [amountCoinToBuy] [maxAmountCoinToSell]",
 		Short: "Buy coin",
-		Long: fmt.Sprintf(`change one token from your wallet to another 
+		Long: fmt.Sprintf(`Exchange some coin amount from your wallet to another coin.
+Coin amount must be with all 0 (1 coin = 10^18)
 
 Example: 	
-$ %s tx coin buy 1000tony 1000del --from mykey
-`, version.AppName),
+$ %s tx coin buy 10000000000tony 12000000del --from mykey`, version.AppName),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -209,7 +214,12 @@ func NewSellCoinCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "sell [coinAmountToSell] [coinMinAmountToBuy]",
 		Short: "Sell coin",
-		Args:  cobra.ExactArgs(2),
+		Long: fmt.Sprintf(`Exchange some coin amount from your wallet to another coin.
+Coin amount must be with all 0 (1 coin = 10^18)
+
+Example: 	
+$ %s tx coin sell 10000000000tony 12000000del --from mykey`, version.AppName),
+		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -260,7 +270,8 @@ func NewSendCoinCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "send [receiver] [coinAmount] ",
 		Short: "Send coin",
-		Long: fmt.Sprintf(`send coins from one account to other 
+		Long: fmt.Sprintf(`Send coin from one account to other.
+Coin amount must be with all 0 (1 coin = 10^18)
 
 Example: 	
 $ %s tx coin send dx1hs2wdrm87c92rzhq0vgmgrxr6u57xpr2lcygc2 1000del --from mykey
@@ -313,9 +324,10 @@ $ %s tx coin send dx1hs2wdrm87c92rzhq0vgmgrxr6u57xpr2lcygc2 1000del --from mykey
 
 func NewMultiSendCoinCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "multisend [receiver] [coinToSendAmount]...",
+		Use:   "multisend [receiver1] [coinToSend1] [receiver2] [coinToSend2]...",
 		Short: "Multisend coin",
-		Long: fmt.Sprintf(`send coins from one account to others accounts
+		Long: fmt.Sprintf(`Send coins from one account to others accounts
+Coin amount must be with all 0 (1 coin = 10^18)
 
 Example: 	
 $ %s tx coin multisend dx1hs2wdrm87c92rzhq0vgmgrxr6u57xpr2lcygc2 1000del  dx1hs2wdrmrzhq0vgmgrxr87c926u57xpr2lcygc2 1000tony --from mykey
@@ -393,11 +405,12 @@ $ %s tx coin multisend dx1hs2wdrm87c92rzhq0vgmgrxr6u57xpr2lcygc2 1000del  dx1hs2
 func NewSellAllCoinCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "sell-all [coinToSellSymbol] [coinMinAmountToBuy]",
-		Short: "Sell all coin",
-		Long: fmt.Sprintf(`sell all tokens with a specific symbol from your wallet to buy another token
+		Short: "Sell all amount of coin",
+		Long: fmt.Sprintf(`Sell all amount  of coin with a specific symbol from your wallet to buy another coin
+Coin amount must be with all 0 (1 coin = 10^18)
 
 Example: 	
-$ %s tx coin sell_all del 100000000tony --from mykey
+$ %s tx coin sell-all del 100000000tony --from mykey
 `, version.AppName),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -427,7 +440,7 @@ $ %s tx coin sell_all del 100000000tony --from mykey
 				return err
 			}
 
-			msg := types.NewMsgSellAllCoin(from, sdk.NewCoin(coinToSellSymbol, sdk.NewInt(0)), minAmountToBuy)
+			msg := types.NewMsgSellAllCoin(from, coinToSellSymbol, minAmountToBuy)
 			validationErr := msg.ValidateBasic()
 			if validationErr != nil {
 				return validationErr
@@ -446,9 +459,10 @@ $ %s tx coin sell_all del 100000000tony --from mykey
 
 func NewBurnCoinCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "burn [coinAmount]",
-		Short: "Burn coin",
-		Long: fmt.Sprintf(`burn coins 
+		Use:   "burn [coinToBurn]",
+		Short: "Burn specified amount of coin",
+		Long: fmt.Sprintf(`Burn specified amount of coin from your wallet
+Coin amount must be with all 0 (1 coin = 10^18)
 
 Example: 	
 $ %s tx coin burn 1000del --from mykey
@@ -497,10 +511,14 @@ func NewIssueCheckCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "issue-check [coinAmount] [nonce] [dueBlock] [passphrase]",
 		Short: "Issue check",
-		Long: fmt.Sprintf(`Redeem your transaction
+		Long: fmt.Sprintf(`Create a check for cashing with another account
+Coin amount must be with all 0 (1 coin = 10^18).
+'nonce' must be any positive integer.
+'dueBlock' - height (block number) of blockchain until check is valid.
+'passphrase' - secret key. Only receiver must known it.
 
 Example: 	
-$ %s tx coin issue-check 1000del 10 235 123456789 --from mykey
+$ %s tx coin issue-check 1000del 10 235 "some secret" --from mykey
 `, version.AppName),
 		Args: cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -575,10 +593,10 @@ func NewRedeemCheckCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "redeem-check [check] [passphrase]",
 		Short: "Redeem check",
-		Long: fmt.Sprintf(`Check Redeem 
+		Long: fmt.Sprintf(`Redeem check 
 
 Example: 	
-$ %s tx coin redeem-check {check hash} "" --from mykey 
+$ %s tx coin redeem-check 3YEtqixL7ccFTZJaMUHx3T...(result of 'issue-check') "some secret" --from mykey 
 `, version.AppName),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -642,40 +660,4 @@ $ %s tx coin redeem-check {check hash} "" --from mykey
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
-}
-
-func parseCoin(clientCtx client.Context, amount string) (sdk.Coin, error) {
-	var (
-		coin sdk.Coin
-		err  error
-	)
-	coin, err = sdk.ParseCoinNormalized(amount)
-	if err != nil {
-		return coin, err
-	}
-
-	resp, err := getCoin(clientCtx, coin.Denom)
-	switch {
-	case err != nil:
-		return coin, err
-	case resp == nil:
-		return coin, types.ErrCoinDoesNotExist(coin.Denom)
-	default:
-		return coin, nil
-	}
-}
-
-func checkBalance(clientCtx client.Context, address sdk.AccAddress, needAmount sdk.Int, symbol string) error {
-	balance, err := getBalanceWithSymbol(clientCtx, address, symbol)
-	if err != nil {
-		return err
-	}
-
-	amountBalance := balance.Balance.Amount
-
-	if amountBalance.LT(needAmount) {
-		return types.ErrInsufficientFunds(needAmount.String(), amountBalance.String())
-	}
-
-	return nil
 }

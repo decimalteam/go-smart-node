@@ -1,13 +1,14 @@
 package testcoin
 
 import (
+	"testing"
+
 	"bitbucket.org/decimalteam/go-smart-node/x/coin"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 // Helper is a structure which wraps the staking handler
@@ -117,8 +118,8 @@ func (sh *Helper) SellCoin(sender sdk.AccAddress, coinToSell, maxCoinToBuy sdk.C
 }
 
 // SellAllCoin create msg and handler sell all coins request
-func (sh *Helper) SellAllCoin(sender sdk.AccAddress, coinToSell, minCoinToBuy sdk.Coin, ok bool) {
-	msg := types.NewMsgSellAllCoin(sender, coinToSell, minCoinToBuy)
+func (sh *Helper) SellAllCoin(sender sdk.AccAddress, coinSymbolToSell string, minCoinToBuy sdk.Coin, ok bool) {
+	msg := types.NewMsgSellAllCoin(sender, coinSymbolToSell, minCoinToBuy)
 	sh.Handle(sh.Ctx, msg, ok)
 }
 

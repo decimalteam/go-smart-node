@@ -437,13 +437,13 @@ func (msg MsgSellCoin) ValidateBasic() error {
 // NewMsgSellAllCoin creates a new instance of MsgSellAllCoin.
 func NewMsgSellAllCoin(
 	sender sdk.AccAddress,
-	coinToSell sdk.Coin,
+	coinSymbolToSell string,
 	minCoinToBuy sdk.Coin,
 ) *MsgSellAllCoin {
 	return &MsgSellAllCoin{
-		Sender:       sender.String(),
-		CoinToSell:   coinToSell,
-		MinCoinToBuy: minCoinToBuy,
+		Sender:           sender.String(),
+		CoinSymbolToSell: coinSymbolToSell,
+		MinCoinToBuy:     minCoinToBuy,
 	}
 }
 
@@ -474,20 +474,17 @@ func (msg MsgSellAllCoin) ValidateBasic() error {
 		return ErrInvalidSenderAddress(msg.Sender)
 	}
 	// Validate coin symbol
-	if !coinSymbolValidator.MatchString(msg.CoinToSell.Denom) {
-		return ErrInvalidCoinSymbol(msg.CoinToSell.Denom)
+	if !coinSymbolValidator.MatchString(msg.CoinSymbolToSell) {
+		return ErrInvalidCoinSymbol(msg.CoinSymbolToSell)
 	}
 	if !coinSymbolValidator.MatchString(msg.MinCoinToBuy.Denom) {
 		return ErrInvalidCoinSymbol(msg.MinCoinToBuy.Denom)
 	}
 	// Denoms of specified coins cannot be the same
-	if msg.CoinToSell.Denom == msg.MinCoinToBuy.Denom {
+	if msg.CoinSymbolToSell == msg.MinCoinToBuy.Denom {
 		return ErrSameCoin()
 	}
 	// Check amount
-	if !msg.CoinToSell.Amount.IsPositive() {
-		return ErrInvalidAmount()
-	}
 	if !msg.MinCoinToBuy.Amount.IsPositive() {
 		return ErrInvalidAmount()
 	}

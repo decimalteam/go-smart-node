@@ -120,7 +120,7 @@ func runOpSequence(t *testing.T, app *appMain.DSC, ctx sdk.Context, seq []coinOp
 		case "sellAll":
 			app.CoinKeeper.SellAllCoin(sdk.WrapSDKContext(ctx), types.NewMsgSellAllCoin(
 				op.adr,
-				fooCoin,
+				fooCoin.Denom,
 				sdk.NewCoin("del", sdk.NewInt(0)),
 			))
 		case "burn":

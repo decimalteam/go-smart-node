@@ -480,7 +480,6 @@ func TestBuyCoin(t *testing.T) {
 	}
 }
 
-// test Sell and SellAll
 func TestSellCoin(t *testing.T) {
 	initConfig()
 
@@ -540,13 +539,56 @@ func TestSellCoin(t *testing.T) {
 		} else {
 			require.NoError(t, err, tc.tag)
 		}
+	}
+}
 
-		msgA := MsgSellAllCoin{
-			Sender:       tc.sender,
-			CoinToSell:   tc.coinToSell,
-			MinCoinToBuy: tc.minCoinToBuy,
+func TestSellAllCoin(t *testing.T) {
+	initConfig()
+
+	var testCases = []struct {
+		tag              string
+		sender           string
+		coinSymbolToSell string
+		minCoinToBuy     sdk.Coin
+		expectError      bool
+	}{
+		{
+			tag:              "valid sell",
+			sender:           "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			coinSymbolToSell: "del",
+			minCoinToBuy:     sdk.NewCoin("btc", sdk.NewInt(1)),
+			expectError:      false,
+		},
+		{
+			tag:              "invalid sender",
+			sender:           "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn0",
+			coinSymbolToSell: "del",
+			minCoinToBuy:     sdk.NewCoin("btc", sdk.NewInt(1)),
+			expectError:      true,
+		},
+		{
+			tag:              "invalid buy amount",
+			sender:           "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			coinSymbolToSell: "del",
+			minCoinToBuy:     sdk.NewCoin("btc", sdk.NewInt(0)),
+			expectError:      true,
+		},
+		{
+			tag:              "same coin",
+			sender:           "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			coinSymbolToSell: "del",
+			minCoinToBuy:     sdk.NewCoin("del", sdk.NewInt(1)),
+			expectError:      true,
+		},
+	}
+
+	for _, tc := range testCases {
+		msg := MsgSellAllCoin{
+			Sender:           tc.sender,
+			CoinSymbolToSell: tc.coinSymbolToSell,
+			MinCoinToBuy:     tc.minCoinToBuy,
 		}
-		err = msgA.ValidateBasic()
+		err := msg.ValidateBasic()
 		if tc.expectError {
 			require.Error(t, err, tc.tag)
 		} else {
