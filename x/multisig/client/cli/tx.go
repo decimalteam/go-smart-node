@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/version"
 
 	"github.com/spf13/cobra"
 
@@ -37,8 +38,14 @@ func GetTxCmd() *cobra.Command {
 func NewCreateWalletCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create-wallet [owners] [weights] [threshold]",
-		Short: "Creates new multi signature wallet. Owners must be list of addresses splitted by comma; weights must be list of ints,",
-		Args:  cobra.ExactArgs(3),
+		Short: "Creates new multi signature wallet. Owners must be list of addresses splitted by comma; weights must be list of ints.",
+		Long: fmt.Sprintf(`Creates new multisignature wallet.
+Owners must be list of addresses splitted by comma; weights must be list of ints splitted by comma.
+
+Example: 	
+$ %s tx multisig create-wallet dx1a..a,dx1b..b,dx1c..c 1,2,3 5 --from mykey`, version.AppName),
+
+		Args: cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
