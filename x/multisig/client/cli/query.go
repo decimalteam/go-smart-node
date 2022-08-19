@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/spf13/cobra"
 )
 
@@ -37,7 +37,7 @@ func cmdQueryWallet() *cobra.Command {
 		Long: fmt.Sprintf(`Query full information about multisig wallet
 
 Example: 	
-$ %s query multisig wallet dx18c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg3pv33f`, version.AppName),
+$ %s query multisig wallet dx18c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg3pv33f`, config.AppBinName),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -69,7 +69,7 @@ func cmdQueryWallets() *cobra.Command {
 		Long: fmt.Sprintf(`Query full information about multisig wallets with owner
 
 Example: 	
-$ %s query multisig wallets dx18c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg3pv33f`, version.AppName),
+$ %s query multisig wallets dx18c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg3pv33f`, config.AppBinName),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -110,7 +110,7 @@ func cmdQueryTransaction() *cobra.Command {
 		Long: fmt.Sprintf(`Query information about multisig transaction
 
 Example: 	
-$ %s query multisig transaction dx18...`, version.AppName),
+$ %s query multisig transaction dx18...`, config.AppBinName),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -142,7 +142,7 @@ func cmdQueryTransactions() *cobra.Command {
 		Long: fmt.Sprintf(`Query information about multisig transactions by wallet address
 
 Example: 	
-$ %s query multisig transactions dx18c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg3pv33f`, version.AppName),
+$ %s query multisig transactions dx18c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg3pv33f`, config.AppBinName),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)

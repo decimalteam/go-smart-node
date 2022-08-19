@@ -8,12 +8,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/version"
 
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
 
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 )
 
@@ -43,7 +43,7 @@ func NewCreateWalletCmd() *cobra.Command {
 Owners must be list of addresses splitted by comma; weights must be list of ints splitted by comma.
 
 Example: 	
-$ %s tx multisig create-wallet dx1a..a,dx1b..b,dx1c..c 1,2,3 5 --from mykey`, version.AppName),
+$ %s tx %s create-wallet dx1a..a,dx1b..b,dx1c..c 1,2,3 5 --from mykey`, config.AppBinName, types.ModuleName),
 
 		Args: cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -113,7 +113,12 @@ func NewCreateTransactionCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create-transaction [wallet] [receiver] [coins]",
 		Short: "Creates transaction for multisig wallet to send coins. Transaction sender must be in wallet owners",
-		Args:  cobra.ExactArgs(3),
+		Long: fmt.Sprintf(`Creates new transaction to send coins from multisignature wallet to receiver.
+Coins must be comma separated coins.
+
+Example: 	
+$ %s tx %s create-transaction dx1..wallet dx1..receiver 1000del,200tony --from mykey`, config.AppBinName, types.ModuleName),
+		Args: cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -163,7 +168,11 @@ func NewSignTransactionCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "sign-transaction [tx_id]",
 		Short: "Sign transaction for multisig wallet to send coins",
-		Args:  cobra.ExactArgs(1),
+		Long: fmt.Sprintf(`Sign transaction.
+
+Example: 	
+$ %s tx %s sign-transaction dx1..transaction.. --from mykey`, config.AppBinName, types.ModuleName),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {

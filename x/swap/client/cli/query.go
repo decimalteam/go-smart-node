@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/types"
 )
 
@@ -31,7 +32,13 @@ func QueryPoolCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "pool",
 		Short: "Query amount of coins stored in swap pool",
-		Args:  cobra.NoArgs,
+		Long: fmt.Sprintf(`Query amount of coins stored in swap pool
+
+Example:
+$ %s query %s pool
+`, config.AppBinName, types.ModuleName,
+		),
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {

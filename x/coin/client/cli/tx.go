@@ -12,7 +12,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
-	"github.com/cosmos/cosmos-sdk/version"
 	ethereumCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
 	"golang.org/x/crypto/sha3"
@@ -21,6 +20,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 
@@ -58,7 +58,8 @@ func NewCreateCoinCmd() *cobra.Command {
 		Long: fmt.Sprintf(`Create custom coin. Reserve, volumes must be with all 0 (1 coin = 10^18)
 
 Example: 	
-$ %s tx coin create "title of coin" coin1 20 10000000000 200000000 10000000000000 "coin identity" --from mykey`, version.AppName),
+$ %s tx %s create "title of coin" coin1 20 10000000000 200000000 10000000000000 "coin identity" --from mykey`,
+			config.AppBinName, types.ModuleName),
 		Args: cobra.ExactArgs(7),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -111,7 +112,7 @@ func NewUpdateCoinCmd() *cobra.Command {
 Limit volume must be with all 0 (1 coin = 10^18)
 
 Example: 	
-$ %s tx coin update coin1 10000000 "some identity" --from mykey`, version.AppName),
+$ %s tx %s update coin1 10000000 "some identity" --from mykey`, config.AppBinName, types.ModuleName),
 		Args: cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -161,7 +162,7 @@ func NewBuyCoinCmd() *cobra.Command {
 Coin amount must be with all 0 (1 coin = 10^18)
 
 Example: 	
-$ %s tx coin buy 10000000000tony 12000000del --from mykey`, version.AppName),
+$ %s tx %s buy 10000000000tony 12000000del --from mykey`, config.AppBinName, types.ModuleName),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -218,7 +219,7 @@ func NewSellCoinCmd() *cobra.Command {
 Coin amount must be with all 0 (1 coin = 10^18)
 
 Example: 	
-$ %s tx coin sell 10000000000tony 12000000del --from mykey`, version.AppName),
+$ %s tx %s sell 10000000000tony 12000000del --from mykey`, config.AppBinName, types.ModuleName),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -274,8 +275,7 @@ func NewSendCoinCmd() *cobra.Command {
 Coin amount must be with all 0 (1 coin = 10^18)
 
 Example: 	
-$ %s tx coin send dx1hs2wdrm87c92rzhq0vgmgrxr6u57xpr2lcygc2 1000del --from mykey
-`, version.AppName),
+$ %s tx %s send dx1hs2wdrm87c92rzhq0vgmgrxr6u57xpr2lcygc2 1000del --from mykey`, config.AppBinName, types.ModuleName),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -330,8 +330,8 @@ func NewMultiSendCoinCmd() *cobra.Command {
 Coin amount must be with all 0 (1 coin = 10^18)
 
 Example: 	
-$ %s tx coin multisend dx1hs2wdrm87c92rzhq0vgmgrxr6u57xpr2lcygc2 1000del  dx1hs2wdrmrzhq0vgmgrxr87c926u57xpr2lcygc2 1000tony --from mykey
-`, version.AppName),
+$ %s tx %s multisend dx1a..a 1000del dx1b..b 1000tony --from mykey
+`, config.AppBinName, types.ModuleName),
 		Args: cobra.MinimumNArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -410,8 +410,8 @@ func NewSellAllCoinCmd() *cobra.Command {
 Coin amount must be with all 0 (1 coin = 10^18)
 
 Example: 	
-$ %s tx coin sell-all del 100000000tony --from mykey
-`, version.AppName),
+$ %s tx %s sell-all del 100000000tony --from mykey
+`, config.AppBinName, types.ModuleName),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -465,8 +465,8 @@ func NewBurnCoinCmd() *cobra.Command {
 Coin amount must be with all 0 (1 coin = 10^18)
 
 Example: 	
-$ %s tx coin burn 1000del --from mykey
-`, version.AppName),
+$ %s tx %s burn 1000del --from mykey
+`, config.AppBinName, types.ModuleName),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -518,8 +518,8 @@ Coin amount must be with all 0 (1 coin = 10^18).
 'passphrase' - secret key. Only receiver must known it.
 
 Example: 	
-$ %s tx coin issue-check 1000del 10 235 "some secret" --from mykey
-`, version.AppName),
+$ %s tx %s issue-check 1000del 10 235 "some secret" --from mykey
+`, config.AppBinName, types.ModuleName),
 		Args: cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -596,8 +596,8 @@ func NewRedeemCheckCmd() *cobra.Command {
 		Long: fmt.Sprintf(`Redeem check 
 
 Example: 	
-$ %s tx coin redeem-check 3YEtqixL7ccFTZJaMUHx3T...(result of 'issue-check') "some secret" --from mykey 
-`, version.AppName),
+$ %s tx %s redeem-check 3YEtqixL7ccFTZJaMUHx3T...(result of 'issue-check') "some secret" --from mykey 
+`, config.AppBinName, types.ModuleName),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)

@@ -11,8 +11,8 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/version"
 
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 
@@ -42,7 +42,7 @@ func QueryCoinCmd() *cobra.Command {
 		Long: fmt.Sprintf(`Query coin full information 
 
 Example: 	
-$ %s query coin coin del`, version.AppName),
+$ %s query %s coin del`, config.AppBinName, types.ModuleName),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -75,7 +75,7 @@ func QueryCoinsCmd() *cobra.Command {
 		Long: fmt.Sprintf(`Query all coins full information 
 
 Example: 	
-$ %s query coin coins`, version.AppName),
+$ %s query %s coins`, config.AppBinName, types.ModuleName),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -115,7 +115,7 @@ func QueryCheckCmd() *cobra.Command {
 		Long: fmt.Sprintf(`Query check information from blockchain
 
 Example: 	
-$ %s query coin check 3YEtqixL7ccFTZJaMUHx3TgsQEqzrqoj...(result of command 'issue-check')`, version.AppName),
+$ %s query %s check 3YEtqixL7ccFTZJaMUHx3TgsQEqzrqoj...(result of command 'issue-check')`, config.AppBinName, types.ModuleName),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -160,7 +160,7 @@ func QueryChecksCmd() *cobra.Command {
 		Long: fmt.Sprintf(`Query all checks information from blockchain
 
 Example: 	
-$ %s query coin checks`, version.AppName),
+$ %s query %s checks`, config.AppBinName, types.ModuleName),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -199,7 +199,7 @@ func QueryParamsCmd() *cobra.Command {
 		Long: fmt.Sprintf(`Query module params from blockchain
 
 Example: 	
-$ %s query coin params`, version.AppName),
+$ %s query %s params`, config.AppBinName, types.ModuleName),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
