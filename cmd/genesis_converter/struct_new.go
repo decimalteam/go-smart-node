@@ -41,7 +41,7 @@ type GenesisNew struct {
 			SubTokens   map[string]SubTokensNew `json:"subTokens"`
 		} `json:"nft"`
 		Legacy struct {
-			LegacyRecords []LegacyRecordNew `json:"legacyRecords"`
+			LegacyRecords []LegacyRecordNew `json:"legacy_records"`
 		} `json:"legacy"`
 		//
 		Genutils struct {
