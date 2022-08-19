@@ -1,12 +1,11 @@
 package keeper
 
 import (
-	"context"
-	"fmt"
-
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
+	"bitbucket.org/decimalteam/go-smart-node/x/legacy/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
+	"context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -84,7 +83,7 @@ func (k *Keeper) GetLegacyRecord(ctx sdk.Context, legacyAddress string) (types.L
 	key := []byte(legacyAddress)
 	value := store.Get(key)
 	if len(value) == 0 {
-		return result, fmt.Errorf("address '%s' is not found in the key-value store", legacyAddress)
+		return result, errors.NotFoundLegacyAddress
 	}
 	err := k.cdc.UnmarshalLengthPrefixed(value, &result)
 	return result, err
@@ -106,7 +105,7 @@ func (k *Keeper) DeleteLegacyRecord(ctx sdk.Context, legacyAddress string) {
 func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	legacyAddress, err := commonTypes.GetLegacyAddressFromPubKey(pubKeyBytes)
 	if err != nil {
-		return types.ErrCannnotGetAddressFromPublicKey(err.Error())
+		return errors.CannnotGetLegacyAddressFromPublicKey
 	}
 	if !k.addressCache[legacyAddress] {
 		return nil
@@ -114,7 +113,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	actualSdkAddress := sdk.AccAddress(ethsecp256k1.PubKey{Key: pubKeyBytes}.Address())
 	actualAddress, err := bech32.ConvertAndEncode(config.Bech32Prefix, actualSdkAddress)
 	if err != nil {
-		return types.ErrCannnotGetAddressFromPublicKey(err.Error())
+		return errors.CannotGetActualAddressFromPublicKey
 	}
 
 	record, err := k.GetLegacyRecord(ctx, legacyAddress)
@@ -127,7 +126,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	// 1. send coins
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.LegacyCoinPool, actualSdkAddress, record.Coins)
 	if err != nil {
-		return types.ErrInternal(err.Error())
+		return err
 	}
 
 	// Emit send event
@@ -137,7 +136,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 		Coins:      record.Coins.String(),
 	})
 	if err != nil {
-		return types.ErrInternal(err.Error())
+		return errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	// 2. update nft owners
@@ -164,7 +163,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 			TokenId:    nftRecord.Id,
 		})
 		if err != nil {
-			return types.ErrInternal(err.Error())
+			return errors.Internal.Wrapf("err: %s", err.Error())
 		}
 	}
 
@@ -188,7 +187,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 			Wallet:     walletAddress,
 		})
 		if err != nil {
-			return types.ErrInternal(err.Error())
+			return errors.Internal.Wrapf("err: %s", err.Error())
 		}
 	}
 
