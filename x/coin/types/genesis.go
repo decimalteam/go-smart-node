@@ -3,7 +3,6 @@ package types
 import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"encoding/hex"
-	"fmt"
 	"regexp"
 )
 
@@ -44,7 +43,7 @@ func (gs *GenesisState) Validate() error {
 	seenSymbols := make(map[string]bool)
 	for _, coin := range gs.Coins {
 		if seenSymbols[coin.Symbol] {
-			return fmt.Errorf("coin symbol duplicated on genesis: '%s'", coin.Symbol)
+			return errors.DuplicateCoinInGenesis
 		}
 		// Validate coin
 		// if err := coin.Validate(); err != nil {
@@ -58,7 +57,7 @@ func (gs *GenesisState) Validate() error {
 		checkHash := check.HashFull()
 		checkHashStr := hex.EncodeToString(checkHash[:])
 		if seenChecks[checkHashStr] {
-			return fmt.Errorf("check hash duplicated on genesis: '%X'", checkHash[:])
+			return errors.DuplicateCheckInGenesis
 		}
 		// Validate check
 		// if err := check.Validate(); err != nil {

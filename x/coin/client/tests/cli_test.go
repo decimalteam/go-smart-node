@@ -90,7 +90,7 @@ func (s *IntegrationTestSuite) TestCreateCoinCmd() {
 				"TEST",                      //denom
 				"80",                        //crr
 				"1000000000000000000000000", //initReserve
-				"9990000000",                // initVolume
+				"10000000000000000000",      // initVolume
 				"91000000000000000000000",   //limitVolume
 				"",
 				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address.String()),
@@ -104,7 +104,7 @@ func (s *IntegrationTestSuite) TestCreateCoinCmd() {
 				"TEST",                      //denom
 				"800",                       //crr
 				"1000000000000000000000000", //initReserve
-				"9990000000",                // initVolume
+				"10000000000000000000",      // initVolume
 				"91000000000000000000000",   //limitVolume
 				"",
 				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address.String()),
@@ -118,7 +118,7 @@ func (s *IntegrationTestSuite) TestCreateCoinCmd() {
 				"TEST",                      //denom
 				"800",                       //crr
 				"1000000000000000000000000", //initReserve
-				"9990000000",                // initVolume
+				"999000000000000000000",     // initVolume
 				"91000000000000000000000",   //limitVolume
 				"",
 				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address.String()),
@@ -136,6 +136,7 @@ func (s *IntegrationTestSuite) TestCreateCoinCmd() {
 
 			out, err := clitestutil.ExecTestCLICmd(clientCtx, cmd, args)
 			if tc.expectErr {
+				s.T().Log(err)
 				require.Error(err)
 			} else {
 				require.NoError(err, "test: %s\noutput: %s", tc.name, out.String())
@@ -165,7 +166,6 @@ func (s *IntegrationTestSuite) TestUpdateCoinCmd() {
 	)
 	require.NoError(err)
 
-	s.T().Log(val.Address.String())
 	symbol := "CUSTUPDATE"
 	_, err = MsgCreateCoinExec(
 		val.ClientCtx,
@@ -1103,6 +1103,6 @@ func addBasicFlagsForTxCmd(args []string, bondDenom string) []string {
 	return append(args,
 		fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
 		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(bondDenom, helpers.EtherToWei(sdk.NewInt(1)))).String()),
+		fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(bondDenom, helpers.EtherToWei(sdk.NewInt(100)))).String()),
 	)
 }

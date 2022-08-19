@@ -107,7 +107,7 @@ func (msg MsgCreateCoin) ValidateBasic() error {
 		return errors.InvalidCoinInitialVolume
 	}
 	if msg.InitialVolume.GT(msg.LimitVolume) {
-		return errors.LimitVolumeBroken
+		return errors.InvalidLimitVolume
 	}
 	// Check coin initial reserve to be correct
 	if msg.InitialReserve.LT(MinCoinReserve) {
@@ -167,7 +167,7 @@ func (msg MsgUpdateCoin) ValidateBasic() error {
 	}
 	// Check coin limit volume to be less than max coin supply
 	if msg.LimitVolume.GT(MaxCoinSupply) {
-		return errors.LimitVolumeBroken
+		return errors.InvalidLimitVolume
 	}
 	return nil
 }

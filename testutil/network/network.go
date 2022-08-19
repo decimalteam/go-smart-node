@@ -1,6 +1,7 @@
 package network
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bufio"
 	"context"
 	"encoding/json"
@@ -118,7 +119,7 @@ func DefaultConfig() Config {
 		BondDenom:         dscconfig.BaseDenom,
 		MinGasPrices:      fmt.Sprintf("0.000006%s", dscconfig.BaseDenom),
 		AccountTokens:     sdk.TokensFromConsensusPower(1000, ethermint.PowerReduction),
-		StakingTokens:     sdk.TokensFromConsensusPower(900000000000000000, ethermint.PowerReduction),
+		StakingTokens:     helpers.EtherToWei(sdk.NewInt(9000000000000000000).Mul(sdk.NewInt(1000000000))),
 		BondedTokens:      sdk.TokensFromConsensusPower(100, ethermint.PowerReduction),
 		PruningStrategy:   ptypes.PruningOptionNothing,
 		CleanupDir:        true,

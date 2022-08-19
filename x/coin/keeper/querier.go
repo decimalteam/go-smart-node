@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -31,7 +30,7 @@ func NewQuerier(k Keeper, legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
 func queryParams(ctx sdk.Context, _ []string, _ abci.RequestQuery, k Keeper, legacyQuerierCdc *codec.LegacyAmino) ([]byte, error) {
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, k.GetParams(ctx))
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+		return nil, err
 	}
 	return bz, nil
 }
@@ -41,12 +40,12 @@ func queryCoin(ctx sdk.Context, path []string, _ abci.RequestQuery, k Keeper, le
 
 	coin, err := k.GetCoin(ctx, coinDenom)
 	if err != nil {
-		return nil, errors.CoinDoesNotExist
+		return nil, err
 	}
 
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, coin)
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+		return nil, err
 	}
 
 	return bz, nil
@@ -57,7 +56,7 @@ func queryCoins(ctx sdk.Context, _ []string, _ abci.RequestQuery, k Keeper, lega
 
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, coins)
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+		return nil, err
 	}
 
 	return bz, nil
@@ -68,17 +67,17 @@ func queryCheck(ctx sdk.Context, _ []string, req abci.RequestQuery, k Keeper, le
 
 	err := legacyQuerierCdc.UnmarshalJSON(req.Data, params)
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+		return nil, err
 	}
 
 	check, err := k.GetCheck(ctx, params.Hash)
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrNotFound, err.Error()) //TODO: how err write this?
+		return nil, err
 	}
 
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, check)
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+		return nil, err
 	}
 
 	return bz, nil
@@ -89,7 +88,7 @@ func queryChecks(ctx sdk.Context, _ []string, _ abci.RequestQuery, k Keeper, leg
 
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, checks)
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+		return nil, err
 	}
 
 	return bz, nil

@@ -139,7 +139,7 @@ func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper coin
 		// .Neg() becausee coins will be burn in fee collector
 		feeCoin, err := coinKeeper.GetCoin(ctx, fee.Denom)
 		if err != nil {
-			return ErrCoinDoesNotExist(fee.Denom)
+			return err
 		}
 		err = coinKeeper.CheckFutureChanges(ctx, feeCoin, fee.Amount.Neg())
 		if err != nil {

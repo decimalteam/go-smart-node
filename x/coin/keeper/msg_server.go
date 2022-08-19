@@ -53,7 +53,7 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 	feeAmountBase := helpers.EtherToWei(getCreateCoinCommission(coinDenom))
 	feeAmount, feeDenom, err := k.GetCommission(ctx, feeAmountBase)
 	if err != nil {
-		return nil, errors.CalculateCommission.Wrapf("err: %s", err.Error())
+		return nil, err
 	}
 	feeCoin := sdk.NewCoin(feeDenom, feeAmount)
 
@@ -88,25 +88,25 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 		sdk.NewCoins(sdk.NewCoin(baseCoinDenom, msg.InitialReserve)),
 	)
 	if err != nil {
-		return nil, errors.FailedSend
+		return nil, err
 	}
 
 	// Send special fee to the module
 	// TODO: Make sure it is correct way to get fees
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, types.ModuleName, sdk.NewCoins(feeCoin))
 	if err != nil {
-		return nil, errors.Internal.Wrapf("err: %s", err.Error())
+		return nil, err
 	}
 
 	// Mint initial coins to the module and send to the coin creator
 	initialCoins := sdk.NewCoins(sdk.NewCoin(coinDenom, msg.InitialVolume))
 	err = k.bankKeeper.MintCoins(ctx, types.ModuleName, initialCoins)
 	if err != nil {
-		return nil, errors.Internal.Wrapf("err: %s", err.Error())
+		return nil, err
 	}
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, sender, initialCoins)
 	if err != nil {
-		return nil, errors.FailedSend
+		return nil, err
 	}
 
 	// Save coin to the storage
@@ -143,7 +143,7 @@ func (k Keeper) UpdateCoin(goCtx context.Context, msg *types.MsgUpdateCoin) (*ty
 	// Retrieve updating coin
 	coin, err := k.GetCoin(ctx, coinDenom)
 	if err != nil {
-		return nil, errors.CoinDoesNotExist
+		return nil, err
 	}
 
 	// Ensure sender is the coin creator
@@ -153,7 +153,7 @@ func (k Keeper) UpdateCoin(goCtx context.Context, msg *types.MsgUpdateCoin) (*ty
 
 	// Ensure new limit volume is big enough
 	if coin.LimitVolume.GT(msg.LimitVolume) {
-		return nil, errors.LimitVolumeBroken
+		return nil, errors.NewLimitVolumeLess
 	}
 
 	// Update coin metadata
@@ -189,7 +189,7 @@ func (k Keeper) SendCoin(goCtx context.Context, msg *types.MsgSendCoin) (*types.
 	// Retrieve sending coin
 	_, err := k.GetCoin(ctx, coinDenom)
 	if err != nil {
-		return nil, errors.CoinDoesNotExist
+		return nil, err
 	}
 
 	// NOTE: It was already validated so no need to check error
@@ -199,7 +199,7 @@ func (k Keeper) SendCoin(goCtx context.Context, msg *types.MsgSendCoin) (*types.
 	// Send coins from the sender to the recipient
 	err = k.bankKeeper.SendCoins(ctx, sender, receiver, sdk.NewCoins(msg.Coin))
 	if err != nil {
-		return nil, errors.FailedSend
+		return nil, err
 	}
 
 	// Emit transaction events
@@ -234,13 +234,13 @@ func (k Keeper) MultiSendCoin(goCtx context.Context, msg *types.MsgMultiSendCoin
 		// Retrieve sending coin
 		_, err := k.GetCoin(ctx, coinDenom)
 		if err != nil {
-			return nil, errors.CoinDoesNotExist
+			return nil, err
 		}
 
 		// Send coins from the sender to the recipient
 		err = k.bankKeeper.SendCoins(ctx, sender, receiver, sdk.NewCoins(msg.Sends[i].Coin))
 		if err != nil {
-			return nil, errors.FailedSend
+			return nil, err
 		}
 
 		// Emit transaction events
@@ -326,7 +326,7 @@ func (k Keeper) BurnCoin(goCtx context.Context, msg *types.MsgBurnCoin) (*types.
 
 	coin, err := k.GetCoin(ctx, msg.Coin.Denom)
 	if err != nil {
-		return nil, errors.CoinDoesNotExist
+		return nil, err
 	}
 	if !k.IsCoinBase(ctx, msg.Coin.Denom) {
 		// check for limits
@@ -338,11 +338,11 @@ func (k Keeper) BurnCoin(goCtx context.Context, msg *types.MsgBurnCoin) (*types.
 	// send to coin module and burn
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, types.ModuleName, sdk.NewCoins(msg.Coin))
 	if err != nil {
-		return nil, errors.FailedSend
+		return nil, err
 	}
 	err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, sdk.NewCoins(msg.Coin))
 	if err != nil {
-		return nil, errors.FailedBurnCoins
+		return nil, err
 	}
 	if !k.IsCoinBase(ctx, msg.Coin.Denom) {
 		// change coin volume
@@ -366,13 +366,13 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 	// Decode provided check from base58 format to raw bytes
 	checkBytes := base58.Decode(msg.Check)
 	if len(checkBytes) == 0 {
-		return nil, errors.UnableDecodeCheck.Wrapf("base58: %s", msg.Check)
+		return nil, errors.UnableDecodeCheckBase58
 	}
 
 	// Parse provided check from raw bytes to ensure it is valid
 	check, err := types.ParseCheck(checkBytes)
 	if err != nil {
-		return nil, errors.InvalidCheck.Wrapf("err: %s", err.Error())
+		return nil, err
 	}
 	coinDenom := strings.ToLower(check.Coin)
 	coinAmount := check.Amount
@@ -380,19 +380,19 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 	// Decode provided proof from base64 format to raw bytes
 	proof, err := base64.StdEncoding.DecodeString(msg.Proof)
 	if err != nil {
-		return nil, errors.UnableDecodeProof
+		return nil, errors.UnableDecodeProofBase64
 	}
 
 	// Recover issuer address from check signature
 	issuer, err := check.Sender()
 	if err != nil {
-		return nil, errors.UnableRecoverAddress.Wrapf("err: %s", err.Error())
+		return nil, errors.UnableRecoverAddressFromCheck
 	}
 
 	// Retrieve the coin specified in the check
 	coin, err := k.GetCoin(ctx, coinDenom)
 	if err != nil {
-		return nil, errors.CoinDoesNotExist
+		return nil, err
 	}
 
 	// Retrieve issuer's balance of issuing coins
@@ -448,7 +448,7 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 	// Recover public key from check lock
 	publicKeyA, err := check.LockPubKey()
 	if err != nil {
-		return nil, errors.UnableRecoverLockPkey.Wrapf("err: %s", err.Error())
+		return nil, err
 	}
 
 	// Prepare bytes used to recover public key from provided proof
@@ -456,13 +456,16 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 	hw := sha3.NewLegacyKeccak256()
 	err = rlp.Encode(hw, []interface{}{sender})
 	if err != nil {
-		return nil, errors.UnableRPLEncodeCheck.Wrapf("err: %s", err.Error())
+		return nil, errors.UnableRPLEncodeAddress
 
 	}
 	hw.Sum(senderAddressHash[:0])
 
 	// Recover public key from provided proof
 	publicKeyB, err := crypto.Ecrecover(senderAddressHash[:], proof)
+	if err != nil {
+		return nil, errors.FailedToRecoverPKFromSig
+	}
 
 	// Compare both public keys to ensure provided proof is correct
 	if !bytes.Equal(publicKeyA, publicKeyB) {
@@ -476,14 +479,14 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 	// TODO: Make sure it is correct way to get fees
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, issuer, types.ModuleName, sdk.NewCoins(feeCoin))
 	if err != nil {
-		return nil, errors.FailedSend
+		return nil, err
 
 	}
 
 	// Send check coins from issuer to the transaction sender
 	err = k.bankKeeper.SendCoins(ctx, issuer, sender, sdk.NewCoins(sdk.NewCoin(coinDenom, coinAmount)))
 	if err != nil {
-		return nil, errors.FailedSend
+		return nil, err
 	}
 
 	// Emit transaction events
@@ -521,13 +524,13 @@ func (k Keeper) buyCoin(
 	// Retrieve the coin requested to buy
 	coinToBuy, err := k.GetCoin(ctx, coinToBuyDenom)
 	if err != nil {
-		return errors.CoinDoesNotExist
+		return err
 	}
 
 	// Retrieve the coin requested to sell
 	coinToSell, err := k.GetCoin(ctx, coinToSellDenom)
 	if err != nil {
-		return errors.CoinDoesNotExist
+		return err
 	}
 
 	// Ensure supply limit of the coin to buy does not overflow
@@ -584,37 +587,37 @@ func (k Keeper) buyCoin(
 	// Send sold coins from the buyer to the module
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, types.ModuleName, coinsToSell)
 	if err != nil {
-		return errors.FailedSend
+		return err
 	}
 
 	// Burn sold coins from the module
 	err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coinsToSell)
 	if err != nil {
-		return errors.FailedBurnCoins
+		return err
 	}
 
 	// Mint bought coins to the module
 	err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coinsToBuy)
 	if err != nil {
-		return errors.FailedMintCoins
+		return err
 	}
 
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, sender, coinsToBuy)
 	if err != nil {
-		return errors.FailedSend
+		return err
 	}
 
 	// Update coins
 	if !k.IsCoinBase(ctx, coinToSell.Symbol) {
 		err = k.EditCoin(ctx, coinToSell, coinToSell.Reserve.Sub(amountInBaseCoin), coinToSell.Volume.Sub(amountToSell))
 		if err != nil {
-			return errors.Internal.Wrapf("err: %s", err.Error())
+			return err
 		}
 	}
 	if !k.IsCoinBase(ctx, coinToBuy.Symbol) {
 		err = k.EditCoin(ctx, coinToBuy, coinToBuy.Reserve.Add(amountInBaseCoin), coinToBuy.Volume.Add(amountToBuy))
 		if err != nil {
-			return errors.Internal.Wrapf("err: %s", err.Error())
+			return err
 		}
 	}
 
@@ -653,13 +656,13 @@ func (k Keeper) sellCoin(
 	// Retrieve the coin requested to sell
 	coinToSell, err := k.GetCoin(ctx, coinToSellDenom)
 	if err != nil {
-		return errors.CoinDoesNotExist
+		return err
 	}
 
 	// Retrieve the coin requested to buy
 	coinToBuy, err := k.GetCoin(ctx, coinToBuyDenom)
 	if err != nil {
-		return errors.CoinDoesNotExist
+		return err
 	}
 
 	// Ensure that seller account holds enough coins to sell
@@ -714,33 +717,39 @@ func (k Keeper) sellCoin(
 	// Send sold coins from the seller to the module
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, types.ModuleName, coinsToSell)
 	if err != nil {
-		return errors.FailedSend
+		return err
 	}
 
 	// Burn sold coins from the module
 	err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coinsToSell)
 	if err != nil {
-		return errors.FailedBurnCoins
+		return err
 	}
 
 	// Mint bought coins to the module
 	err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coinsToBuy)
 	if err != nil {
-		return errors.FailedMintCoins
+		return err
 	}
 
 	// Send bought coins from the module to the seller
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, sender, coinsToBuy)
 	if err != nil {
-		return errors.FailedSend
+		return err
 	}
 
 	// Update coins
 	if !k.IsCoinBase(ctx, coinToSell.Symbol) {
-		k.EditCoin(ctx, coinToSell, coinToSell.Reserve.Sub(amountInBaseCoin), coinToSell.Volume.Sub(amountToSell))
+		err = k.EditCoin(ctx, coinToSell, coinToSell.Reserve.Sub(amountInBaseCoin), coinToSell.Volume.Sub(amountToSell))
+		if err != nil {
+			return err
+		}
 	}
 	if !k.IsCoinBase(ctx, coinToBuy.Symbol) {
-		k.EditCoin(ctx, coinToBuy, coinToBuy.Reserve.Add(amountInBaseCoin), coinToBuy.Volume.Add(amountToBuy))
+		err = k.EditCoin(ctx, coinToBuy, coinToBuy.Reserve.Add(amountInBaseCoin), coinToBuy.Volume.Add(amountToBuy))
+		if err != nil {
+			return err
+		}
 	}
 
 	// Emit transaction events

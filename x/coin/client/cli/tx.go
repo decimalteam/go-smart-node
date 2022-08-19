@@ -85,10 +85,6 @@ func NewCreateCoinCmd() *cobra.Command {
 			}
 
 			msg := types.NewMsgCreateCoin(from, title, symbol, crr, initVolume, initReserve, limitVolume, identity)
-			err = msg.ValidateBasic()
-			if err != nil {
-				return err
-			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -190,10 +186,6 @@ $ %s tx coin buy 1000tony 1000del --from mykey
 
 			// create msg
 			msg := types.NewMsgBuyCoin(from, coinToBuy, maxAmountToSell)
-			err = msg.ValidateBasic()
-			if err != nil {
-				return err
-			}
 
 			// broadcast tx
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
@@ -242,10 +234,6 @@ func NewSellCoinCmd() *cobra.Command {
 			}
 
 			msg := types.NewMsgSellCoin(from, coinToSell, minAmountToBuy)
-			validationErr := msg.ValidateBasic()
-			if validationErr != nil {
-				return validationErr
-			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -296,10 +284,6 @@ $ %s tx coin send dx1hs2wdrm87c92rzhq0vgmgrxr6u57xpr2lcygc2 1000del --from mykey
 			}
 
 			msg := types.NewMsgSendCoin(from, coins, address)
-			err = msg.ValidateBasic()
-			if err != nil {
-				return err
-			}
 
 			// broadcast tx
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
@@ -430,10 +414,6 @@ $ %s tx coin sell_all del 100000000tony --from mykey
 			}
 
 			msg := types.NewMsgSellAllCoin(from, sdk.NewCoin(coinToSellSymbol, sdk.NewInt(0)), minAmountToBuy)
-			validationErr := msg.ValidateBasic()
-			if validationErr != nil {
-				return validationErr
-			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -478,10 +458,6 @@ $ %s tx coin burn 1000del --from mykey
 			}
 
 			msg := types.NewMsgBurnCoin(from, coins)
-			err = msg.ValidateBasic()
-			if err != nil {
-				return err
-			}
 
 			// broadcast tx
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
@@ -552,14 +528,14 @@ $ %s tx coin issue-check 1000del 10 235 123456789 --from mykey
 			checkHash = check.Hash()
 			signature, _, err := clientCtx.Keyring.Sign(clientCtx.FromName, checkHash[:])
 			if err != nil {
-				panic(err)
+				panic(errors.UnableSignCheck)
 			}
 
 			check.SetSignature(signature)
 
 			checkBytes, err := rlp.EncodeToBytes(check)
 			if err != nil {
-				return err
+				return errors.UnableRPLEncodeToBytesCheck
 			}
 
 			return clientCtx.PrintString(base58.Encode(checkBytes))
@@ -597,19 +573,20 @@ $ %s tx coin redeem-check {check hash} "" --from mykey
 			// Decode provided check from base58 format to raw bytes
 			checkBytes := base58.Decode(checkBase58)
 			if len(checkBytes) == 0 {
+				return errors.UnableDecodeCheckBase58
 			}
 
 			// Parse provided check from raw bytes to ensure it is valid
 			_, err = types.ParseCheck(checkBytes)
 			if err != nil {
-				return errors.InvalidCheck.Wrapf("err: %s", err.Error())
+				return err
 			}
 
 			// Prepare private key from passphrase
 			passphraseHash := sha256.Sum256([]byte(passphrase))
 			passphrasePrivKey, err := ethereumCrypto.ToECDSA(passphraseHash[:])
 			if err != nil {
-				return errors.InvalidPassphrase.Wrapf("err: %s", err.Error())
+				return errors.InvalidPassphrase
 			}
 
 			// Prepare bytes to sign by private key generated from passphrase
@@ -619,23 +596,19 @@ $ %s tx coin redeem-check {check hash} "" --from mykey
 				clientCtx.GetFromAddress(),
 			})
 			if err != nil {
-				return errors.UnableRPLEncodeCheck.Wrapf("err: %s", err.Error())
+				return errors.UnableRPLEncodeAddress
 			}
 			hw.Sum(receiverAddressHash[:0])
 
 			// Sign receiver address by private key generated from passphrase
 			signature, err := ethereumCrypto.Sign(receiverAddressHash[:], passphrasePrivKey)
 			if err != nil {
-				return errors.UnableSignCheck.Wrapf("err: %s", err.Error())
+				return errors.UnableSignCheck
 			}
 			proofBase64 := base64.StdEncoding.EncodeToString(signature)
 
 			// Prepare redeem check message
 			msg := types.NewMsgRedeemCheck(clientCtx.GetFromAddress(), checkBase58, proofBase64)
-			err = msg.ValidateBasic()
-			if err != nil {
-				return err
-			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},

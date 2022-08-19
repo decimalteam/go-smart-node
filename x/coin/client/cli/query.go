@@ -114,13 +114,13 @@ func QueryCheckCmd() *cobra.Command {
 			// Decode provided check from base58 format to raw bytes
 			checkBytes := base58.Decode(args[0])
 			if len(checkBytes) == 0 {
-				return errors.UnableDecodeCheck
+				return errors.UnableDecodeCheckBase58
 			}
 
 			// Parse provided check from raw bytes to ensure it is valid
 			check, err := types.ParseCheck(checkBytes)
 			if err != nil {
-				return errors.InvalidCheck.Wrapf("err: %s", err.Error())
+				return err
 			}
 
 			hash := check.HashFull()
