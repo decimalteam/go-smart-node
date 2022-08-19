@@ -233,7 +233,7 @@ func TestBuyHandler(t *testing.T) {
 	tscoin.BuyCoin(addr2, coinToBuy, maxCoinToSell, false)
 }
 
-func TestSellHadnler(t *testing.T) {
+func TestSellHandler(t *testing.T) {
 	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 2, sdk.Coins{
 		{
 			Denom:  baseDenom,
