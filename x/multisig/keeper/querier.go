@@ -30,11 +30,11 @@ func queryWallet(ctx sdk.Context, path []string, _ abci.RequestQuery, k Keeper, 
 
 	wallet, err := k.GetWallet(ctx, address)
 	if err != nil {
-		return nil, types.ErrWalletAccountNotFound(address)
+		return nil, err
 	}
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, wallet)
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+		return nil, err
 	}
 	return bz, nil
 }
@@ -44,12 +44,12 @@ func queryWallets(ctx sdk.Context, path []string, _ abci.RequestQuery, k Keeper,
 
 	wallets, err := k.GetWallets(ctx, owner)
 	if err != nil {
-		return nil, types.ErrInternal(err.Error())
+		return nil, err
 	}
 
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, wallets)
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+		return nil, err
 	}
 
 	return bz, nil
@@ -60,11 +60,11 @@ func queryTransaction(ctx sdk.Context, path []string, _ abci.RequestQuery, k Kee
 
 	tx, err := k.GetTransaction(ctx, txID)
 	if err != nil {
-		return nil, types.ErrTransactionNotFound(txID)
+		return nil, err
 	}
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, tx)
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+		return nil, err
 	}
 	return bz, nil
 }
@@ -74,12 +74,12 @@ func queryTransactions(ctx sdk.Context, path []string, _ abci.RequestQuery, k Ke
 
 	transactions, err := k.GetTransactions(ctx, wallet)
 	if err != nil {
-		return nil, types.ErrInternal(err.Error())
+		return nil, err
 	}
 
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, transactions)
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+		return nil, err
 	}
 
 	return bz, nil
