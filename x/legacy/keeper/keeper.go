@@ -105,7 +105,7 @@ func (k *Keeper) DeleteLegacyRecord(ctx sdk.Context, legacyAddress string) {
 func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	legacyAddress, err := commonTypes.GetLegacyAddressFromPubKey(pubKeyBytes)
 	if err != nil {
-		return errors.CannnotGetLegacyAddressFromPublicKey
+		return errors.CannotGetLegacyAddressFromPublicKey
 	}
 	if !k.addressCache[legacyAddress] {
 		return nil
@@ -154,7 +154,10 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 				nft.Owners[i].Address = actualAddress
 			}
 		}
-		k.nftKeeper.SetNFT(ctx, nftRecord.Denom, nftRecord.Id, nft)
+		err = k.nftKeeper.SetNFT(ctx, nftRecord.Denom, nftRecord.Id, nft)
+		if err != nil {
+			return err
+		}
 		// Emit nft event
 		err = ctx.EventManager().EmitTypedEvent(&types.EventLegacyReturnNFT{
 			OldAddress: legacyAddress,

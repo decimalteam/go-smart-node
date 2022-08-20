@@ -18,7 +18,7 @@ func (rec *LegacyRecord) Validate() error {
 
 	for _, coin := range rec.Coins {
 		if coin.Amount.IsZero() || coin.Amount.IsNegative() {
-			return errors.OneOfLegacyAddresыСoinsBalanceIsNegativeOrZero
+			return errors.OneOfLegacyAddressCoinsBalanceIsNegativeOrZero
 		}
 	}
 	// wallets addresses must be valid bech32 addresses
