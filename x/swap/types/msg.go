@@ -1,6 +1,7 @@
 package types
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/swap/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -67,22 +68,22 @@ func (msg MsgSwapInitialize) GetSigners() []sdk.AccAddress {
 func (msg MsgSwapInitialize) ValidateBasic() error {
 	// Validate sender
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSenderAddress
 	}
 	if !msg.Amount.IsPositive() {
-		return ErrInvalidAmount()
+		return errors.InvalidAmount
 	}
 	if msg.FromChain == 0 {
-		return ErrInvalidChainNumber()
+		return errors.InvalidChainNumber
 	}
 	if msg.DestChain == 0 {
-		return ErrInvalidChainNumber()
+		return errors.InvalidChainNumber
 	}
 	if msg.FromChain == msg.DestChain {
-		return ErrChainNumbersAreSame()
+		return errors.ChainNumbersAreSame
 	}
 	if _, ok := sdk.NewIntFromString(msg.TransactionNumber); !ok {
-		return ErrInvalidTransactionNumber(msg.TransactionNumber)
+		return errors.InvalidTransactionNumber
 	}
 	return nil
 }
@@ -137,25 +138,25 @@ func (msg MsgSwapRedeem) GetSigners() []sdk.AccAddress {
 
 func (msg MsgSwapRedeem) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSenderAddress
 	}
 	if _, err := sdk.AccAddressFromBech32(msg.Recipient); err != nil {
-		return ErrInvalidRecipientAddress(msg.Recipient)
+		return errors.InvalidRecipientAddress
 	}
 	if !msg.Amount.IsPositive() {
-		return ErrInvalidAmount()
+		return errors.InvalidAmount
 	}
 	if msg.FromChain == 0 {
-		return ErrInvalidChainNumber()
+		return errors.InvalidChainNumber
 	}
 	if msg.DestChain == 0 {
-		return ErrInvalidChainNumber()
+		return errors.InvalidChainNumber
 	}
 	if msg.FromChain == msg.DestChain {
-		return ErrChainNumbersAreSame()
+		return errors.ChainNumbersAreSame
 	}
 	if _, ok := sdk.NewIntFromString(msg.TransactionNumber); !ok {
-		return ErrInvalidTransactionNumber(msg.TransactionNumber)
+		return errors.InvalidTransactionNumber
 	}
 	return nil
 }
@@ -194,19 +195,19 @@ func (msg MsgChainActivate) GetSigners() []sdk.AccAddress {
 
 func (msg MsgChainActivate) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSenderAddress
 	}
 
 	if msg.Sender != ChainActivatorAddress {
-		return ErrSenderIsNotSwapService(msg.Sender)
+		return errors.SenderIsNotSwapService
 	}
 
 	if msg.ChainNumber == 0 {
-		return ErrInvalidChainNumber()
+		return errors.InvalidChainNumber
 	}
 
 	if msg.ChainName == "" {
-		return ErrInvalidChainName()
+		return errors.InvalidChainName
 	}
 
 	return nil
@@ -244,15 +245,15 @@ func (msg MsgChainDeactivate) GetSigners() []sdk.AccAddress {
 
 func (msg MsgChainDeactivate) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSenderAddress
 	}
 
 	if msg.Sender != ChainActivatorAddress {
-		return ErrSenderIsNotSwapService(msg.Sender)
+		return errors.SenderIsNotSwapService
 	}
 
 	if msg.ChainNumber == 0 {
-		return ErrInvalidChainNumber()
+		return errors.InvalidChainNumber
 	}
 
 	return nil
