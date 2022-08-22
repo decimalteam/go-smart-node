@@ -14,7 +14,7 @@ func NewQuerier(k Keeper, legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
 		case types.QueryPool:
 			return queryPool(ctx, path[1:], req, k, legacyQuerierCdc)
 		default:
-			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unknown query path: %s", path[0])
+			return nil, sdkerrors.ErrUnknownRequest
 		}
 	}
 }
@@ -22,7 +22,7 @@ func NewQuerier(k Keeper, legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
 func queryPool(ctx sdk.Context, _ []string, _ abci.RequestQuery, k Keeper, legacyQuerierCdc *codec.LegacyAmino) ([]byte, error) {
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, k.GetLockedFunds(ctx))
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+		return nil, sdkerrors.ErrJSONMarshal
 	}
 	return bz, nil
 }

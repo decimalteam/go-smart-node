@@ -22,7 +22,7 @@ func NewQuerier(k Keeper, legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
 		case types.QueryChecks:
 			return queryChecks(ctx, path[1:], req, k, legacyQuerierCdc)
 		default:
-			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unknown query path: %s", path[0])
+			return nil, sdkerrors.ErrUnknownRequest
 		}
 	}
 }

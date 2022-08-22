@@ -41,28 +41,28 @@ type HandlerOptions struct {
 // Validate checks if the keepers are defined
 func (options HandlerOptions) Validate() error {
 	if options.AccountKeeper == nil {
-		return sdkerrors.Wrap(sdkerrors.ErrLogic, "account keeper is required for AnteHandler")
+		return sdkerrors.ErrLogic.Wrapf("account keeper is required for AnteHandler")
 	}
 	if options.BankKeeper == nil {
-		return sdkerrors.Wrap(sdkerrors.ErrLogic, "bank keeper is required for AnteHandler")
+		return sdkerrors.ErrLogic.Wrapf("bank keeper is required for AnteHandler")
 	}
 	if options.SignModeHandler == nil {
-		return sdkerrors.Wrap(sdkerrors.ErrLogic, "sign mode handler is required for ante builder")
+		return sdkerrors.ErrLogic.Wrapf("sign mode handler is required for ante builder")
 	}
 	if options.FeeMarketKeeper == nil {
-		return sdkerrors.Wrap(sdkerrors.ErrLogic, "fee market keeper is required for AnteHandler")
+		return sdkerrors.ErrLogic.Wrapf("fee market keeper is required for AnteHandler")
 	}
 	if options.EvmKeeper == nil {
-		return sdkerrors.Wrap(sdkerrors.ErrLogic, "evm keeper is required for AnteHandler")
+		return sdkerrors.ErrLogic.Wrapf("evm keeper is required for AnteHandler")
 	}
 	if options.FeegrantKeeper == nil {
-		return sdkerrors.Wrap(sdkerrors.ErrLogic, "feegrant keeper is required for AnteHandler")
+		return sdkerrors.ErrLogic.Wrapf("feegrant keeper is required for AnteHandler")
 	}
 	if options.CoinKeeper == nil {
-		return sdkerrors.Wrap(sdkerrors.ErrLogic, "coin keeper is required for AnteHandler")
+		return sdkerrors.ErrLogic.Wrapf("coin keeper is required for AnteHandler")
 	}
 	if options.LegacyKeeper == nil {
-		return sdkerrors.Wrap(sdkerrors.ErrLogic, "legacy keeper is required for AnteHandler")
+		return sdkerrors.ErrLogic.Wrapf("legacy keeper is required for AnteHandler")
 	}
 	return nil
 }

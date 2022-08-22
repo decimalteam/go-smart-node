@@ -2,7 +2,6 @@ package ante
 
 import (
 	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -33,7 +32,7 @@ func (sud SetUpContextDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 		// Set a gas meter with limit 0 as to prevent an infinite gas meter attack
 		// during runTx.
 		newCtx = SetGasMeter(simulate, ctx, 0)
-		return newCtx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be GasTx(sdk.Fee)")
+		return newCtx, sdkerrors.ErrTxDecode
 	}
 	newCtx = SetGasMeter(simulate, ctx, feeTx.GetGas())
 
@@ -50,7 +49,7 @@ func (sud SetUpContextDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 					"out of gas in location: %v; gasWanted: %d, gasUsed: %d",
 					rType.Descriptor, feeTx.GetGas(), newCtx.GasMeter().GasConsumed())
 
-				err = sdkerrors.Wrap(sdkerrors.ErrOutOfGas, log)
+				err = sdkerrors.ErrOutOfGas.Wrapf(log)
 			default:
 				panic(r)
 			}
