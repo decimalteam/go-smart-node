@@ -48,6 +48,7 @@ type GenesisNew struct {
 			Gentxs []interface{} `json:"gen_txs"`
 		} `json:"genutil"`
 		// other modules
+		Swap         interface{} `json:"swap"`
 		Authz        interface{} `json:"authz"`
 		Capability   interface{} `json:"capability"`
 		Crisis       interface{} `json:"crisis"`
