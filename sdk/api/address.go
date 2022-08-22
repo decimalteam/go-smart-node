@@ -9,6 +9,8 @@ import (
 	bankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	ethermintTypes "github.com/evmos/ethermint/types"
 	"github.com/gogo/protobuf/proto"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // AddressResult contains API response fields.
@@ -25,6 +27,14 @@ func (api *API) Address(address string) (*AddressResult, error) {
 		context.Background(),
 		&authTypes.QueryAccountRequest{address},
 	)
+	// if address is correct bech32, but account not found, just return empty info
+	if status.Code(err) == codes.NotFound {
+		return &AddressResult{
+			ID:      0,
+			Address: address,
+			Nonce:   0,
+		}, nil
+	}
 	if err != nil {
 		return nil, err
 	}

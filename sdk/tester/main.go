@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 //helper function
@@ -18,11 +17,9 @@ func formatAsJSON(obj interface{}) string {
 	return fmt.Sprintf("%s\n", objStr)
 }
 
-var mult = sdk.NewInt(1000000000000000000)
-
 // TODO: split and document
 func main() {
-	api, err := dscApi.NewAPI(dscApi.ConnectionOptions{EndpointHost: "127.0.0.1", Timeout: 40, UseGRPC: true})
+	api, err := dscApi.NewAPI(dscApi.ConnectionOptions{EndpointHost: "127.0.0.1", Timeout: 40})
 	if err != nil {
 		fmt.Printf("connect error: %v\n", err)
 		return
@@ -34,6 +31,7 @@ func main() {
 	}
 	chainID := api.ChainID()
 	fmt.Printf("ChainID=%s\n", chainID)
+	fmt.Printf("BaseCoin=%s\n", api.BaseCoin())
 	for _, addr := range []string{"dx1ag696xwwqlfec2p2v69498w034zw2udh9rr0nr"} {
 		res, err := api.Address(addr)
 		if err != nil {
