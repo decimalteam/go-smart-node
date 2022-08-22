@@ -24,8 +24,6 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 
-//TODO: maybe create recover func and do panics instead of return err
-
 // GetTxCmd returns the transaction commands for the module.
 func GetTxCmd() *cobra.Command {
 	coinCmd := &cobra.Command{
