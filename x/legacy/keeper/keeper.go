@@ -118,7 +118,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	}
 
 	record, err := k.GetLegacyRecord(ctx, legacyAddress)
-	// only error - there is no record
+	// error - only if there is no record
 	// so just stop here and return
 	if err != nil {
 		return nil
@@ -155,7 +155,11 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 				nft.Owners[i].Address = actualAddress
 			}
 		}
-		k.nftKeeper.SetNFT(ctx, nftRecord.Denom, nftRecord.Id, nft)
+		err = k.nftKeeper.SetNFT(ctx, nftRecord.Denom, nftRecord.Id, nft)
+		// error only if collections doesn't exist, but we can't burn without owner
+		if err != nil {
+			continue
+		}
 		// Emit nft event
 		err = ctx.EventManager().EmitTypedEvent(&types.EventLegacyReturnNFT{
 			OldAddress: legacyAddress,
@@ -181,7 +185,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 			}
 		}
 		k.multisigKeeper.SetWallet(ctx, wallet)
-		// Emit nft event
+		// Emit multisig event
 		err = ctx.EventManager().EmitTypedEvent(&types.EventLegacyReturnWallet{
 			OldAddress: legacyAddress,
 			NewAddress: actualAddress,
@@ -196,9 +200,10 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	k.DeleteLegacyRecord(ctx, legacyAddress)
 
 	// NOTE: BE CAREFUL WITH CACHES, update only during delivery step
-	if !ctx.IsCheckTx() && !ctx.IsReCheckTx() {
-		k.RestoreCache(ctx)
-	}
+	// NOTE: cache restores every block, so no need to restore after every ActualizeLegacy
+	// if !ctx.IsCheckTx() && !ctx.IsReCheckTx() {
+	//	k.RestoreCache(ctx)
+	// }
 	return nil
 }
 
