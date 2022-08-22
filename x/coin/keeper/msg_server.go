@@ -354,6 +354,15 @@ func (k Keeper) BurnCoin(goCtx context.Context, msg *types.MsgBurnCoin) (*types.
 		k.EditCoin(ctx, coin, coin.Reserve, coin.Volume.Sub(msg.Coin.Amount))
 	}
 
+	// Emit transaction events
+	err = ctx.EventManager().EmitTypedEvent(&types.EventBurnCoin{
+		Sender: msg.Sender,
+		Coin:   msg.Coin.String(),
+	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
+	}
+
 	return &types.MsgBurnCoinResponse{}, nil
 }
 

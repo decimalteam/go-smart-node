@@ -43,6 +43,11 @@ message EventEditCoin {
     string reserve = 3;    
 }
 
+message EventBurnCoin {
+    string sender = 1;
+    string coin = 2;
+}
+
 message EventRedeemCheck {
     string sender = 1;
     string issuer = 2;

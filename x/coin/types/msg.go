@@ -423,9 +423,10 @@ func (msg MsgSellCoin) ValidateBasic() error {
 	if !msg.CoinToSell.Amount.IsPositive() {
 		return ErrInvalidAmount()
 	}
-	if !msg.MinCoinToBuy.Amount.IsPositive() {
-		return ErrInvalidAmount()
-	}
+	// sdk.Coin amount can not be negative
+	// if msg.MinCoinToBuy.Amount.IsZero() {
+	//	return ErrInvalidAmount()
+	// }
 
 	return nil
 }
