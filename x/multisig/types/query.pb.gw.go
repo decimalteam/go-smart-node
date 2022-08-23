@@ -508,13 +508,13 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_Wallets_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"multisig", "v1", "wallets", "owner"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Wallets_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"decimal", "multisig", "v1", "wallets", "owner"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_Wallet_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"multisig", "v1", "wallet", "address"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Wallet_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"decimal", "multisig", "v1", "wallet", "address"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_Transactions_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"multisig", "v1", "transactions", "address"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Transactions_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"decimal", "multisig", "v1", "transactions", "address"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_Transaction_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"multisig", "v1", "transaction", "id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Transaction_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"decimal", "multisig", "v1", "transaction", "id"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (

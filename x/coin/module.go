@@ -141,7 +141,8 @@ func (am AppModule) QuerierRoute() string {
 
 // LegacyQuerierHandler returns the module's Querier.
 func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
-	return keeper.NewQuerier(am.keeper, amino)
+	return nil
+	//return keeper.NewQuerier(am.keeper, amino)
 }
 
 // RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries.

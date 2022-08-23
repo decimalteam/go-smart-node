@@ -14,17 +14,17 @@ option go_package = "bitbucket.org/decimalteam/go-smart-node/x/swap/types";
 service Query {
   // Retrieves existing swap by hashed secret.
   rpc Swap(QuerySwapRequest) returns (QuerySwapResponse) {
-    option (google.api.http).get = "/swap/v1/swap/{hashedSecret}";
+    option (google.api.http).get = "/decimal/swap/v1/swap/{hashedSecret}";
   }
 
   // Retrieves active swaps.
   rpc ActiveSwaps(QueryActiveSwapsRequest) returns (QueryActiveSwapsResponse) {
-    option (google.api.http).get = "/swap/v1/swaps";
+    option (google.api.http).get = "/decimal/swap/v1/swaps";
   }
 
   // Retrieves amount of coins stored in swap pool.
   rpc Pool(QueryPoolRequest) returns (QueryPoolResponse) {
-    option (google.api.http).get = "/swap/v1/pool";
+    option (google.api.http).get = "/decimal/swap/v1/pool";
   }
 
 }
