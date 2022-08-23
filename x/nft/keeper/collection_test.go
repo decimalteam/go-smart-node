@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -20,8 +21,8 @@ const (
 )
 
 var (
-	firstReserve  sdk.Int = types.NewMinReserve2
-	secondReserve sdk.Int = types.NewMinReserve2.MulRaw(2)
+	firstReserve  = sdk.NewCoin(config.BaseDenom, types.MinReserve)
+	secondReserve = sdk.NewCoin(config.BaseDenom, types.MinReserve.MulRaw(2))
 )
 
 func TestSetCollections(t *testing.T) {
@@ -67,6 +68,7 @@ func TestGetDenoms(t *testing.T) {
 	}
 
 	// Check throw GetDenoms method
-	storedDenoms := dsc.NFTKeeper.GetDenoms(ctx)
+	storedDenoms, err := dsc.NFTKeeper.GetDenoms(ctx)
+	require.NoError(t, err)
 	require.Equal(t, collectionDenomsToStore, storedDenoms)
 }

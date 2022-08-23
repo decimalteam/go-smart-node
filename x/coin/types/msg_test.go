@@ -512,13 +512,6 @@ func TestSellCoin(t *testing.T) {
 			expectError:  true,
 		},
 		{
-			tag:          "invalid buy amount",
-			sender:       "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
-			coinToSell:   sdk.NewCoin("del", sdk.NewInt(1)),
-			minCoinToBuy: sdk.NewCoin("btc", sdk.NewInt(0)),
-			expectError:  true,
-		},
-		{
 			tag:          "same coin",
 			sender:       "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
 			coinToSell:   sdk.NewCoin("del", sdk.NewInt(1)),

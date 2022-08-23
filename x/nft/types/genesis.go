@@ -9,7 +9,7 @@ import (
 func NewGenesisState(collections []Collection, nfts []BaseNFT, subTokens map[string]SubTokens) *GenesisState {
 	return &GenesisState{
 		Collections: collections,
-		Nfts:        nfts,
+		NFTs:        nfts,
 		SubTokens:   subTokens,
 	}
 }
@@ -22,11 +22,11 @@ func DefaultGenesisState() *GenesisState {
 // Validate performs basic validation of nfts genesis data returning an
 // error for any failed validation criteria.
 func (m GenesisState) Validate() error {
-	msg, failed := SupplyInvariantCheck(m.Collections, m.Nfts)
+	msg, failed := SupplyInvariantCheck(m.Collections, m.NFTs)
 	if failed {
 		return errors.New(msg)
 	}
-	msg, failed = SubTokensInvariantCheck(m.Nfts, m.SubTokens)
+	msg, failed = SubTokensInvariantCheck(m.NFTs, m.SubTokens)
 	if failed {
 		return errors.New(msg)
 	}

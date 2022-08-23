@@ -1,9 +1,10 @@
 package types
 
 import (
+	"testing"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 const (
@@ -17,7 +18,7 @@ const (
 )
 
 var (
-	firstReserve sdk.Int = NewMinReserve2
+	firstReserve sdk.Coin = sdk.NewCoin("del", MinReserve)
 )
 
 func TestOwnerCollectionAdd(t *testing.T) {

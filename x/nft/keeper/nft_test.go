@@ -52,7 +52,9 @@ func TestSetNFT(t *testing.T) {
 	}
 
 	// Check throw GetNFTs method
-	storedNFTs := dsc.NFTKeeper.GetNFTs(ctx)
+	storedNFTs, err := dsc.NFTKeeper.GetNFTs(ctx)
+	require.NoError(t, err)
+
 	require.Len(t, nftsToStore, len(storedNFTs))
 
 	for _, nftToStore := range nftsToStore {

@@ -253,15 +253,15 @@ func request_Query_QueryNFT_0(ctx context.Context, marshaler runtime.Marshaler, 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "denom", err)
 	}
 
-	val, ok = pathParams["tokenID"]
+	val, ok = pathParams["token_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "tokenID")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "token_id")
 	}
 
-	protoReq.TokenID, err = runtime.String(val)
+	protoReq.TokenId, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "tokenID", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "token_id", err)
 	}
 
 	msg, err := client.QueryNFT(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -291,15 +291,15 @@ func local_request_Query_QueryNFT_0(ctx context.Context, marshaler runtime.Marsh
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "denom", err)
 	}
 
-	val, ok = pathParams["tokenID"]
+	val, ok = pathParams["token_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "tokenID")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "token_id")
 	}
 
-	protoReq.TokenID, err = runtime.String(val)
+	protoReq.TokenId, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "tokenID", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "token_id", err)
 	}
 
 	msg, err := server.QueryNFT(ctx, &protoReq)
@@ -660,7 +660,7 @@ var (
 
 	pattern_Query_QueryDenoms_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"nft", "v1", "denoms"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QueryNFT_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 0, 2, 0, 1, 0, 4, 1, 5, 2, 1, 0, 4, 1, 5, 3}, []string{"nft", "v1", "denom", "tokenID"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_QueryNFT_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 0, 2, 0, 1, 0, 4, 1, 5, 2, 1, 0, 4, 1, 5, 3}, []string{"nft", "v1", "denom", "token_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_Query_QuerySubTokens_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 0, 2, 2}, []string{"nft", "v1", "sub_tokens"}, "", runtime.AssumeColonVerbOpt(true)))
 )
