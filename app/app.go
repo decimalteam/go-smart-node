@@ -578,7 +578,7 @@ func NewDSC(
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
 		multisig.NewAppModule(appCodec, app.MultisigKeeper, app.AccountKeeper, app.BankKeeper),
 		swap.NewAppModule(appCodec, app.SwapKeeper, app.AccountKeeper, app.BankKeeper),
-		nft.NewAppModule(app.NFTKeeper, app.AccountKeeper),
+		nft.NewAppModule(app.NFTKeeper),
 		legacy.NewAppModule(app.appCodec, app.LegacyKeeper),
 	)
 

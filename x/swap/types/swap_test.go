@@ -88,7 +88,7 @@ func TestEcrecover(t *testing.T) {
 				S:       S,
 				Vb:      sdk.NewInt(int64(msg.V)).BigInt(),
 			},
-			ethcmn.HexToAddress(CheckingAddress),
+			ethcmn.HexToAddress(DefaultCheckingAddress),
 			false,
 		},
 	}
@@ -100,8 +100,8 @@ func TestEcrecover(t *testing.T) {
 				t.Errorf("Ecrecover() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if hex.EncodeToString(got.Bytes()) != CheckingAddress {
-				t.Errorf("Ecrecover() got = %v, want %v", hex.EncodeToString(got.Bytes()), CheckingAddress)
+			if hex.EncodeToString(got.Bytes()) != DefaultCheckingAddress {
+				t.Errorf("Ecrecover() got = %v, want %v", hex.EncodeToString(got.Bytes()), DefaultCheckingAddress)
 			}
 		})
 	}

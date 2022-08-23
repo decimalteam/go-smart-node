@@ -1,16 +1,17 @@
 package keeper_test
 
 import (
+	"context"
+	"fmt"
+	"testing"
+
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/testcoin"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-	"context"
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func bootstrapKeeperTest(t *testing.T, numAddrs int, accCoins sdk.Coins) (*app.DSC, sdk.Context, []sdk.AccAddress, []sdk.ValAddress) {
@@ -187,7 +188,7 @@ func TestKeeper_Helpers(t *testing.T) {
 }
 
 func TestKeeper_CoinCache(t *testing.T) {
-	dsc, _, _, _ := bootstrapKeeperTest(t, 1, sdk.Coins{
+	dsc, ctx, _, _ := bootstrapKeeperTest(t, 1, sdk.Coins{
 		{
 			Denom:  baseDenom,
 			Amount: baseAmount,
@@ -195,12 +196,12 @@ func TestKeeper_CoinCache(t *testing.T) {
 	})
 
 	// set coin cache
-	dsc.CoinKeeper.SetCachedCoin(baseDenom)
+	dsc.CoinKeeper.SetCachedCoin(ctx, baseDenom)
 	// get coin cache
 	ok := dsc.CoinKeeper.GetCoinCache(baseDenom)
 	require.True(t, ok)
 	// clear coin cache
-	dsc.CoinKeeper.ClearCoinCache()
+	dsc.CoinKeeper.ClearCoinCache(ctx)
 	ok = dsc.CoinKeeper.GetCoinCache(baseDenom)
 	require.False(t, ok)
 }

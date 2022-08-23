@@ -69,15 +69,25 @@ message Chain {
 }
 
 message Params {
-  int64 lockedTimeOut = 1 [
+  int64 locked_time_out = 1 [
     (gogoproto.casttype) = "time.Duration",
     (gogoproto.jsontag) = "locked_time_out",
     (gogoproto.moretags) = "yaml:\"locked_time_out\""
   ];
 
-  int64 lockedTimeIn = 2 [
+  int64 locked_time_in = 2 [
     (gogoproto.casttype) = "time.Duration",
     (gogoproto.jsontag) = "locked_time_in",
     (gogoproto.moretags) = "yaml:\"locked_time_in\""
+  ];
+
+  string service_address = 3 [
+    (gogoproto.jsontag) = "service_address",
+    (gogoproto.moretags) = "yaml:\"service_address\""    
+  ];
+  
+  string checking_address = 4 [
+    (gogoproto.jsontag) = "checking_address",
+    (gogoproto.moretags) = "yaml:\"checking_address\""    
   ];
 }

@@ -226,10 +226,9 @@ message MsgSellAllCoin {
     (gogoproto.jsontag) = "sender",
     (gogoproto.moretags) = "yaml:\"sender\""
   ];
-  cosmos.base.v1beta1.Coin coin_to_sell = 2 [
-    (gogoproto.jsontag) = "coin_to_sell",
-    (gogoproto.moretags) = "yaml:\"coin_to_sell\"",
-    (gogoproto.nullable) = false
+  string coin_symbol_to_sell = 2 [
+    (gogoproto.jsontag) = "coin_symbol_to_sell",
+    (gogoproto.moretags) = "yaml:\"coin_symbol_to_sell\""
   ];
   cosmos.base.v1beta1.Coin min_coin_to_buy = 3 [
     (gogoproto.jsontag) = "min_coin_to_buy",

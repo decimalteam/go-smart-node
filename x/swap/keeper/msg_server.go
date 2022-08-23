@@ -88,8 +88,10 @@ func (k Keeper) SwapRedeem(goCtx context.Context, msg *types.MsgSwapRedeem) (*ty
 		return nil, err
 	}
 
-	if hex.EncodeToString(address.Bytes()) != types.CheckingAddress {
-		return nil, types.ErrInvalidServiceAddress(types.CheckingAddress, hex.EncodeToString(address.Bytes()))
+	params := k.GetParams(ctx)
+
+	if hex.EncodeToString(address.Bytes()) != params.CheckingAddress {
+		return nil, types.ErrInvalidServiceAddress(params.CheckingAddress, hex.EncodeToString(address.Bytes()))
 	}
 
 	k.SetSwap(ctx, hash)
@@ -129,6 +131,12 @@ func (k Keeper) SwapRedeem(goCtx context.Context, msg *types.MsgSwapRedeem) (*ty
 
 func (k Keeper) ChainActivate(goCtx context.Context, msg *types.MsgChainActivate) (*types.MsgChainActivateResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	params := k.GetParams(ctx)
+	if msg.Sender != params.ServiceAddress {
+		return nil, types.ErrSenderIsNotSwapService(msg.Sender)
+	}
+
 	chain, found := k.GetChain(ctx, msg.ChainNumber)
 	if found {
 		chain.Active = true
@@ -151,6 +159,11 @@ func (k Keeper) ChainActivate(goCtx context.Context, msg *types.MsgChainActivate
 
 func (k Keeper) ChainDeactivate(goCtx context.Context, msg *types.MsgChainDeactivate) (*types.MsgChainDeactivateResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	params := k.GetParams(ctx)
+	if msg.Sender != params.ServiceAddress {
+		return nil, types.ErrSenderIsNotSwapService(msg.Sender)
+	}
 
 	chain, found := k.GetChain(ctx, msg.ChainNumber)
 	if !found {

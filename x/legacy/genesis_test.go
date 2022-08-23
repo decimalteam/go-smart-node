@@ -222,7 +222,7 @@ func TestInitGenesisForLegacy(t *testing.T) {
 	// check kepeer end state
 	_, err = app.LegacyKeeper.GetLegacyRecord(ctx, oldAddress)
 	require.Error(t, err, "must no record")
-	require.False(t, app.LegacyKeeper.IsLegacyAddress(ctx, oldAddress), "check legacy address at end")
+	//require.False(t, app.LegacyKeeper.IsLegacyAddress(ctx, oldAddress), "check legacy address at end")
 }
 
 func getBaseApp(t *testing.T) (*app.DSC, sdk.Context) {

@@ -75,17 +75,13 @@ type AppModule struct {
 	AppModuleBasic
 
 	keeper keeper.Keeper
-
-	// Account keeper is used for testing purposes only
-	accountKeeper types.AccountKeeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(keeper keeper.Keeper, accountKeeper types.AccountKeeper) AppModule {
+func NewAppModule(keeper keeper.Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,
-		accountKeeper:  accountKeeper,
 	}
 }
 

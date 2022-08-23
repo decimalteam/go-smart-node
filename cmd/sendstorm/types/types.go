@@ -15,7 +15,6 @@ type StormAccount struct {
 	currentBalance sdk.Coins
 	dirty          bool // marks last transaction failure and need to update balance + nonce
 	feeDenom       string
-	maxGas         uint64
 	mu             sync.Mutex
 }
 
@@ -28,7 +27,6 @@ func NewStormAccount(mnemonic string, api *dscApi.API) (*StormAccount, error) {
 	}
 	result.api = api
 	result.feeDenom = api.BaseCoin()
-	result.maxGas = 0   // TODO: it's temporary / api.MaxGas()
 	result.dirty = true // need to get balance and nonce
 	return &result, nil
 }
@@ -83,10 +81,6 @@ func (sa *StormAccount) Address() string {
 
 func (sa *StormAccount) FeeDenom() string {
 	return sa.feeDenom
-}
-
-func (sa *StormAccount) MaxGas() uint64 {
-	return sa.maxGas
 }
 
 func (sa *StormAccount) Account() *dscWallet.Account {

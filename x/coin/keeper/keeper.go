@@ -113,7 +113,7 @@ func (k *Keeper) SetCoin(ctx sdk.Context, coin types.Coin) {
 // Edit updates current coin reserve and volume and writes coin to KVStore.
 func (k *Keeper) EditCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, volume sdk.Int) error {
 	if !k.IsCoinBase(ctx, coin.Symbol) {
-		k.SetCachedCoin(coin.Symbol)
+		k.SetCachedCoin(ctx, coin.Symbol)
 	}
 
 	// Update coin reserve and volume
@@ -262,13 +262,21 @@ func (k *Keeper) GetCoinCache(symbol string) bool {
 	return ok
 }
 
-func (k *Keeper) SetCachedCoin(coin string) {
+func (k *Keeper) SetCachedCoin(ctx sdk.Context, coin string) {
+	if ctx.IsCheckTx() || ctx.IsReCheckTx() {
+		// No need to set the cache in cases of check and recheck txs
+		return
+	}
 	defer k.coinCacheMutex.Unlock()
 	k.coinCacheMutex.Lock()
 	k.coinCache[coin] = true
 }
 
-func (k *Keeper) ClearCoinCache() {
+func (k *Keeper) ClearCoinCache(ctx sdk.Context) {
+	if ctx.IsCheckTx() || ctx.IsReCheckTx() {
+		// No need to set the cache in cases of check and recheck txs
+		return
+	}
 	defer k.coinCacheMutex.Unlock()
 	k.coinCacheMutex.Lock()
 	for key := range k.coinCache {

@@ -1,7 +1,6 @@
 package types
 
 import (
-	"regexp"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -89,7 +88,7 @@ func (msg MsgCreateCoin) ValidateBasic() error {
 		return ErrInvalidCoinTitle(msg.Title)
 	}
 	// Validate coin symbol
-	if match, _ := regexp.MatchString(allowedCoinSymbols, msg.Symbol); !match {
+	if !coinSymbolValidator.MatchString(msg.Symbol) {
 		return ErrInvalidCoinSymbol(msg.Symbol)
 	}
 	// TODO: Looks like no need since should be no more possible to create such coins anyway
@@ -113,6 +112,10 @@ func (msg MsgCreateCoin) ValidateBasic() error {
 	// Check coin initial reserve to be correct
 	if msg.InitialReserve.LT(MinCoinReserve) {
 		return ErrInvalidCoinInitialReserve(MinCoinReserve.String())
+	}
+	// Check limit volume
+	if msg.LimitVolume.GT(maxCoinSupply) {
+		return ErrLimitVolumeBroken(msg.LimitVolume.String(), maxCoinSupply.String())
 	}
 	return nil
 }
@@ -163,7 +166,7 @@ func (msg MsgUpdateCoin) ValidateBasic() error {
 		return ErrInvalidSenderAddress(msg.Sender)
 	}
 	// Validate coin symbol
-	if match, _ := regexp.MatchString(allowedCoinSymbols, msg.Symbol); !match {
+	if !coinSymbolValidator.MatchString(msg.Symbol) {
 		return ErrInvalidCoinSymbol(msg.Symbol)
 	}
 	// Check coin limit volume to be less than max coin supply
@@ -216,12 +219,19 @@ func (msg MsgSendCoin) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return ErrInvalidSenderAddress(msg.Sender)
 	}
+	// Validate coin symbol
+	if !coinSymbolValidator.MatchString(msg.Coin.Denom) {
+		return ErrInvalidCoinSymbol(msg.Coin.Denom)
+	}
 	// Validate receiver
 	if _, err := sdk.AccAddressFromBech32(msg.Receiver); err != nil {
 		return ErrInvalidReceiverAddress(msg.Receiver)
 	}
+	if msg.Sender == msg.Receiver {
+		return ErrInvalidReceiverAddress(msg.Receiver)
+	}
 	// Amount should be positive
-	if msg.Coin.Amount.LT(sdk.NewInt(0)) {
+	if !msg.Coin.Amount.IsPositive() {
 		return ErrInvalidAmount()
 	}
 	return nil
@@ -268,14 +278,24 @@ func (msg MsgMultiSendCoin) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return ErrInvalidSenderAddress(msg.Sender)
 	}
+	if len(msg.Sends) == 0 {
+		return ErrInvalidAmount()
+	}
 	for i := range msg.Sends {
 		// Validate receiver
 		if _, err := sdk.AccAddressFromBech32(msg.Sends[i].Receiver); err != nil {
 			return ErrInvalidReceiverAddress(msg.Sends[i].Receiver)
 		}
-		// Amount should be positive
-		if msg.Sends[i].Coin.Amount.LT(sdk.NewInt(0)) {
+		if msg.Sender == msg.Sends[i].Receiver {
+			return ErrInvalidReceiverAddress(msg.Sends[i].Receiver)
+		}
+		// Check amount
+		if !msg.Sends[i].Coin.Amount.IsPositive() {
 			return ErrInvalidAmount()
+		}
+		// Validate coin symbol
+		if !coinSymbolValidator.MatchString(msg.Sends[i].Coin.Denom) {
+			return ErrInvalidCoinSymbol(msg.Sends[i].Coin.Denom)
 		}
 	}
 	return nil
@@ -328,6 +348,20 @@ func (msg MsgBuyCoin) ValidateBasic() error {
 	if msg.CoinToBuy.Denom == msg.MaxCoinToSell.Denom {
 		return ErrSameCoin()
 	}
+	// Validate coin symbol
+	if !coinSymbolValidator.MatchString(msg.CoinToBuy.Denom) {
+		return ErrInvalidCoinSymbol(msg.CoinToBuy.Denom)
+	}
+	if !coinSymbolValidator.MatchString(msg.MaxCoinToSell.Denom) {
+		return ErrInvalidCoinSymbol(msg.MaxCoinToSell.Denom)
+	}
+	// Check amount
+	if !msg.CoinToBuy.Amount.IsPositive() {
+		return ErrInvalidAmount()
+	}
+	if !msg.MaxCoinToSell.Amount.IsPositive() {
+		return ErrInvalidAmount()
+	}
 	return nil
 }
 
@@ -378,6 +412,22 @@ func (msg MsgSellCoin) ValidateBasic() error {
 	if msg.CoinToSell.Denom == msg.MinCoinToBuy.Denom {
 		return ErrSameCoin()
 	}
+	// Validate coin symbol
+	if !coinSymbolValidator.MatchString(msg.CoinToSell.Denom) {
+		return ErrInvalidCoinSymbol(msg.CoinToSell.Denom)
+	}
+	if !coinSymbolValidator.MatchString(msg.MinCoinToBuy.Denom) {
+		return ErrInvalidCoinSymbol(msg.MinCoinToBuy.Denom)
+	}
+	// Check amount
+	if !msg.CoinToSell.Amount.IsPositive() {
+		return ErrInvalidAmount()
+	}
+	// sdk.Coin amount can not be negative
+	// if msg.MinCoinToBuy.Amount.IsZero() {
+	//	return ErrInvalidAmount()
+	// }
+
 	return nil
 }
 
@@ -388,13 +438,13 @@ func (msg MsgSellCoin) ValidateBasic() error {
 // NewMsgSellAllCoin creates a new instance of MsgSellAllCoin.
 func NewMsgSellAllCoin(
 	sender sdk.AccAddress,
-	coinToSell sdk.Coin,
+	coinSymbolToSell string,
 	minCoinToBuy sdk.Coin,
 ) *MsgSellAllCoin {
 	return &MsgSellAllCoin{
-		Sender:       sender.String(),
-		CoinToSell:   coinToSell,
-		MinCoinToBuy: minCoinToBuy,
+		Sender:           sender.String(),
+		CoinSymbolToSell: coinSymbolToSell,
+		MinCoinToBuy:     minCoinToBuy,
 	}
 }
 
@@ -424,9 +474,20 @@ func (msg MsgSellAllCoin) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return ErrInvalidSenderAddress(msg.Sender)
 	}
+	// Validate coin symbol
+	if !coinSymbolValidator.MatchString(msg.CoinSymbolToSell) {
+		return ErrInvalidCoinSymbol(msg.CoinSymbolToSell)
+	}
+	if !coinSymbolValidator.MatchString(msg.MinCoinToBuy.Denom) {
+		return ErrInvalidCoinSymbol(msg.MinCoinToBuy.Denom)
+	}
 	// Denoms of specified coins cannot be the same
-	if msg.CoinToSell.Denom == msg.MinCoinToBuy.Denom {
+	if msg.CoinSymbolToSell == msg.MinCoinToBuy.Denom {
 		return ErrSameCoin()
+	}
+	// Check amount
+	if !msg.MinCoinToBuy.Amount.IsPositive() {
+		return ErrInvalidAmount()
 	}
 	return nil
 }
@@ -471,6 +532,10 @@ func (msg MsgBurnCoin) ValidateBasic() error {
 	// Validate sender
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return ErrInvalidSenderAddress(msg.Sender)
+	}
+	// Validate coin symbol
+	if !coinSymbolValidator.MatchString(msg.Coin.Denom) {
+		return ErrInvalidCoinSymbol(msg.Coin.Denom)
 	}
 	// Amount should be positive
 	if !msg.Coin.Amount.IsPositive() {

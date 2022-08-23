@@ -1,12 +1,13 @@
 package cli
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/client/tx"
 	"strconv"
 	"strings"
+
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -45,11 +46,11 @@ func GetCmdMintNFT() *cobra.Command {
 		Short: "mint an NFT and set the owner to the recipient",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Mint an NFT from a given collection that has a 
-			specific id (SHA-256 hex hash) and set the ownership to a specific address.
+specific id (SHA-256 hex hash) and set the ownership to a specific address.
 
 Example:
 $ %s tx %s mint crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa \
-dx1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p 100 100del true --from mykey
+dx1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p --from mykey
 `,
 				config.AppBinName, types.ModuleName,
 			),
@@ -106,12 +107,12 @@ func GetCmdTransferNFT() *cobra.Command {
 		Short: "transfer a NFT to a recipient",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Transfer a NFT from a given collection that has a 
-			specific id (SHA-256 hex hash) to a specific recipient.
+specific id (SHA-256 hex hash) to a specific recipient.
 
 Example:
 $ %s tx %s transfer 
 dx1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p dx1l2rsakp388kuv9k8qzq6lrm9taddae7fpx59wm \
-crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa \
+crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa 1,2 \
 --from mykey
 `,
 				config.AppBinName, types.ModuleName,
@@ -160,7 +161,7 @@ func GetCmdEditNFTMetadata() *cobra.Command {
 		Short: "edit the metadata of an NFT",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Edit the metadata of an NFT from a given collection that has a 
-			specific id (SHA-256 hex hash).
+specific id (SHA-256 hex hash).
 
 Example:
 $ %s tx %s edit-metadata crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa \
@@ -199,7 +200,7 @@ func GetCmdBurnNFT() *cobra.Command {
 			specific id (SHA-256 hex hash).
 
 Example:
-$ %s tx %s burn crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa \
+$ %s tx %s burn crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa 2,3\
 --from mykey
 `,
 				config.AppBinName, types.ModuleName,
