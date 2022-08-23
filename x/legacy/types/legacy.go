@@ -30,35 +30,3 @@ func (rec *LegacyRecord) Validate() error {
 	}
 	return nil
 }
-
-/*
-// ValidateBasic runs stateless checks on the message.
-func (msg MsgReturnLegacyBalance) ValidateBasic() error {
-	// Validate sender
-	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
-	}
-	// Validate receiver
-	if _, err := sdk.AccAddressFromBech32(msg.Receiver); err != nil {
-		return ErrInvalidReceiverAddress(msg.Receiver)
-	}
-	// Validate public key
-	if len(msg.PublicKeyBytes) != ethsecp256k1.PubKeySize {
-		return ErrInvalidPublicKeyLength(len(msg.PublicKeyBytes))
-	}
-	// Validate receiver and public key
-	address, err := bech32.ConvertAndEncode(config.Bech32Prefix, ethsecp256k1.PubKey{Key: msg.PublicKeyBytes}.Address())
-	if err != nil {
-		return ErrCannnotGetAddressFromPublicKey(err.Error())
-	}
-	if address != msg.Receiver {
-		return ErrNoMatchReceiverAndPKey(msg.Receiver, address)
-	}
-	// Validate old address
-	_, err = commonTypes.GetLegacyAddressFromPubKey(msg.PublicKeyBytes)
-	if err != nil {
-		return ErrCannnotGetAddressFromPublicKey(err.Error())
-	}
-	return nil
-}
-*/

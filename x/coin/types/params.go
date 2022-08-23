@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
@@ -23,11 +24,10 @@ func ParamKeyTable() paramtypes.KeyTable {
 
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
-	volume, _ := sdk.NewIntFromString("340000000000000000000000000")
 	return Params{
 		BaseTitle:         "Decimal coin",
 		BaseSymbol:        "del",
-		BaseInitialVolume: volume,
+		BaseInitialVolume: helpers.EtherToWei(sdk.NewInt(340_000_000)),
 	}
 }
 
@@ -68,9 +68,12 @@ func validateBaseTitle(i interface{}) error {
 }
 
 func validateBaseSymbol(i interface{}) error {
-	_, ok := i.(string)
+	symbol, ok := i.(string)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	if !coinSymbolValidator.MatchString(symbol) {
+		return ErrForbiddenCoinSymbol(symbol)
 	}
 	// TODO
 	return nil

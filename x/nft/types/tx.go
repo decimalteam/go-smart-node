@@ -1,10 +1,12 @@
 package types
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkmath "cosmossdk.io/math"
+
 	"regexp"
 	"strings"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 /* --------------------------------------------------------------------------- */
@@ -15,7 +17,8 @@ import (
 func NewMsgMintNFT(
 	sender, recipient sdk.AccAddress,
 	id, denom, tokenURI string,
-	quantity, reserve sdk.Int,
+	quantity sdkmath.Int,
+	reserve sdk.Coin,
 	allowMint bool,
 ) *MsgMintNFT {
 	return &MsgMintNFT{
@@ -29,13 +32,6 @@ func NewMsgMintNFT(
 		AllowMint: allowMint,
 	}
 }
-
-const regName = "^[a-zA-Z0-9_-]{1,255}$"
-
-var MinReserve = sdk.NewInt(100)
-
-var NewMinReserve = helpers.BipToPip(sdk.NewInt(100))
-var NewMinReserve2 = helpers.BipToPip(sdk.NewInt(1))
 
 // Route Implements Msg
 func (m *MsgMintNFT) Route() string { return RouterKey }
@@ -64,7 +60,7 @@ func (m *MsgMintNFT) ValidateBasic() error {
 		return ErrInvalidQuantity(m.Quantity.String())
 	}
 
-	if !m.Reserve.IsPositive() || m.Reserve.LT(MinReserve) {
+	if !m.Reserve.IsPositive() || m.Reserve.Amount.LT(MinReserve) {
 		return ErrInvalidReserve(m.Reserve.String())
 	}
 	if match, _ := regexp.MatchString(regName, m.Denom); !match {
@@ -153,13 +149,13 @@ func (msg *MsgBurnNFT) GetSigners() []sdk.AccAddress {
 /* --------------------------------------------------------------------------- */
 
 // NewUpdateReservNFT is a constructor function for MsgUpdateReservNFT
-func NewMsgUpdateReserveNFT(sender sdk.AccAddress, id string, denom string, subTokenIDs []uint64, newReserveNFT sdk.Int) *MsgUpdateReserveNFT {
+func NewMsgUpdateReserveNFT(sender sdk.AccAddress, id string, denom string, subTokenIDs []uint64, newReserve sdk.Coin) *MsgUpdateReserveNFT {
 	return &MsgUpdateReserveNFT{
-		Sender:        sender.String(),
-		ID:            strings.TrimSpace(id),
-		Denom:         strings.TrimSpace(denom),
-		SubTokenIDs:   subTokenIDs,
-		NewReserveNFT: newReserveNFT,
+		Sender:      sender.String(),
+		ID:          strings.TrimSpace(id),
+		Denom:       strings.TrimSpace(denom),
+		SubTokenIDs: subTokenIDs,
+		NewReserve:  newReserve,
 	}
 }
 
@@ -187,7 +183,7 @@ func (msg *MsgUpdateReserveNFT) ValidateBasic() error {
 		return ErrNotUniqueSubTokenIDs()
 	}
 
-	if msg.NewReserveNFT.IsZero() {
+	if msg.NewReserve.IsZero() {
 		return ErrInvalidReserve("Reserv can not be equal to zero")
 	}
 

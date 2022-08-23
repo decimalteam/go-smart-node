@@ -306,7 +306,7 @@ func (k Keeper) SellAllCoin(goCtx context.Context, msg *types.MsgSellAllCoin) (*
 	sender, _ := sdk.AccAddressFromBech32(msg.Sender)
 
 	// Make sale
-	err := k.sellCoin(ctx, sender, msg.CoinToSell, msg.MinCoinToBuy, true)
+	err := k.sellCoin(ctx, sender, sdk.NewCoin(msg.CoinSymbolToSell, sdk.ZeroInt()), msg.MinCoinToBuy, true)
 	if err != nil {
 		return nil, err
 	}
@@ -347,6 +347,15 @@ func (k Keeper) BurnCoin(goCtx context.Context, msg *types.MsgBurnCoin) (*types.
 	if !k.IsCoinBase(ctx, msg.Coin.Denom) {
 		// change coin volume
 		k.EditCoin(ctx, coin, coin.Reserve, coin.Volume.Sub(msg.Coin.Amount))
+	}
+
+	// Emit transaction events
+	err = ctx.EventManager().EmitTypedEvent(&types.EventBurnCoin{
+		Sender: msg.Sender,
+		Coin:   msg.Coin.String(),
+	})
+	if err != nil {
+		return nil, types.ErrInternal(err.Error())
 	}
 
 	return &types.MsgBurnCoinResponse{}, nil

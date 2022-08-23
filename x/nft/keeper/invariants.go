@@ -26,7 +26,10 @@ func AllInvariants(k Keeper) sdk.Invariant {
 func SupplyInvariant(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
 		collections := k.GetCollections(ctx)
-		nfts := k.GetNFTs(ctx)
+		nfts, err := k.GetNFTs(ctx)
+		if err != nil {
+			panic(err)
+		}
 
 		msg, invariant := types.SupplyInvariantCheck(collections, nfts)
 

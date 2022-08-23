@@ -2,9 +2,11 @@ package keeper_test
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/app"
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -46,11 +48,15 @@ func TestMintNFT(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, expectedNFT, storedNFT)
 
-	storedOwnerCollections := dsc.NFTKeeper.GetOwnerCollections(ctx, sender)
+	storedOwnerCollections, err := dsc.NFTKeeper.GetOwnerCollections(ctx, sender)
+	require.NoError(t, err)
+
 	require.Len(t, storedOwnerCollections, len(expectedOwnerCollections))
 	require.Equal(t, expectedOwnerCollections, storedOwnerCollections)
 
-	storedSubTokens := dsc.NFTKeeper.GetSubTokens(ctx, expectedNFT.ID)
+	storedSubTokens, err := dsc.NFTKeeper.GetSubTokens(ctx, expectedNFT.ID)
+	require.NoError(t, err)
+
 	require.Len(t, storedSubTokens, len(expectedSubTokens))
 	require.Equal(t, expectedSubTokens, storedSubTokens)
 
@@ -191,7 +197,7 @@ func TestMintNFTValidation(t *testing.T) {
 			firstID,
 			sender.String(),
 			firstTokenURI,
-			sdk.NewInt(0),
+			sdk.NewCoin(config.BaseDenom, sdkmath.ZeroInt()),
 			true,
 		)
 
@@ -331,7 +337,9 @@ func TestBurnNFT(t *testing.T) {
 	creatorSubTokens = storedNFT.GetOwners().GetOwner(sender.String()).GetSubTokenIDs()
 	require.Len(t, creatorSubTokens, 0)
 
-	storedSubTokens := dsc.NFTKeeper.GetSubTokens(ctx, nft.ID)
+	storedSubTokens, err := dsc.NFTKeeper.GetSubTokens(ctx, nft.ID)
+	require.NoError(t, err)
+
 	require.Len(t, storedSubTokens, 0)
 
 	invariantMsg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
@@ -358,7 +366,9 @@ func TestUpdateNFTReserve(t *testing.T) {
 	require.NoError(t, err)
 
 	// Check sub tokens reserve before update
-	storedSubTokens := dsc.NFTKeeper.GetSubTokens(ctx, nft.ID)
+	storedSubTokens, err := dsc.NFTKeeper.GetSubTokens(ctx, nft.ID)
+	require.NoError(t, err)
+
 	require.Len(t, storedSubTokens, subTokenIDs.Len())
 	for i, storedSubToken := range storedSubTokens {
 		require.Equal(t, types.NewSubToken(
@@ -368,17 +378,19 @@ func TestUpdateNFTReserve(t *testing.T) {
 	}
 
 	msg := types.MsgUpdateReserveNFT{
-		Sender:        sender.String(),
-		ID:            nft.ID,
-		Denom:         collectionDenom,
-		SubTokenIDs:   subTokenIDs,
-		NewReserveNFT: secondReserve,
+		Sender:      sender.String(),
+		ID:          nft.ID,
+		Denom:       collectionDenom,
+		SubTokenIDs: subTokenIDs,
+		NewReserve:  secondReserve,
 	}
 	_, err = dsc.NFTKeeper.UpdateReserveNFT(sdk.WrapSDKContext(ctx), &msg)
 	require.NoError(t, err)
 
 	// Check sub tokens reserve after update
-	storedSubTokens = dsc.NFTKeeper.GetSubTokens(ctx, nft.ID)
+	storedSubTokens, err = dsc.NFTKeeper.GetSubTokens(ctx, nft.ID)
+	require.NoError(t, err)
+
 	require.Len(t, storedSubTokens, subTokenIDs.Len())
 	for i, storedSubToken := range storedSubTokens {
 		require.Equal(t, types.NewSubToken(

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/hex"
 	"math/big"
+	"strconv"
 	"strings"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/types"
@@ -88,7 +89,9 @@ func (k Keeper) SwapRedeem(goCtx context.Context, msg *types.MsgSwapRedeem) (*ty
 		return nil, err
 	}
 
-	if hex.EncodeToString(address.Bytes()) != types.CheckingAddress {
+	params := k.GetParams(ctx)
+
+	if hex.EncodeToString(address.Bytes()) != params.CheckingAddress {
 		return nil, errors.InvalidServiceAddress
 	}
 
@@ -129,6 +132,12 @@ func (k Keeper) SwapRedeem(goCtx context.Context, msg *types.MsgSwapRedeem) (*ty
 
 func (k Keeper) ChainActivate(goCtx context.Context, msg *types.MsgChainActivate) (*types.MsgChainActivateResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	params := k.GetParams(ctx)
+	if msg.Sender != params.ServiceAddress {
+		return nil, errors.SenderIsNotSwapService
+	}
+
 	chain, found := k.GetChain(ctx, msg.ChainNumber)
 	if found {
 		chain.Active = true
@@ -151,6 +160,11 @@ func (k Keeper) ChainActivate(goCtx context.Context, msg *types.MsgChainActivate
 
 func (k Keeper) ChainDeactivate(goCtx context.Context, msg *types.MsgChainDeactivate) (*types.MsgChainDeactivateResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	params := k.GetParams(ctx)
+	if msg.Sender != params.ServiceAddress {
+		return nil, errors.SenderIsNotSwapService
+	}
 
 	chain, found := k.GetChain(ctx, msg.ChainNumber)
 	if !found {

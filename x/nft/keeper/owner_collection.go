@@ -14,14 +14,17 @@ func (k Keeper) SetOwnerCollectionByDenom(ctx sdk.Context, owner sdk.AccAddress,
 }
 
 // GetOwnerCollections gets all the ID Collections owned by an address
-func (k Keeper) GetOwnerCollections(ctx sdk.Context, address sdk.AccAddress) []types.OwnerCollection {
+func (k Keeper) GetOwnerCollections(ctx sdk.Context, address sdk.AccAddress) ([]types.OwnerCollection, error) {
 	var collections []types.OwnerCollection
-	k.iterateOwnerCollections(ctx, address, func(collection types.OwnerCollection) (stop bool) {
+	err := k.iterateOwnerCollections(ctx, address, func(collection types.OwnerCollection) (stop bool) {
 		collections = append(collections, collection)
 		return false
-	},
-	)
-	return collections
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return collections, nil
 }
 
 // GetOwnerCollectionByDenom gets the ID Collection owned by an address of a specific denom
@@ -44,11 +47,9 @@ func (k Keeper) iterateOwnerCollections(
 	ctx sdk.Context,
 	address sdk.AccAddress,
 	handler func(ownerCollection types.OwnerCollection) (stop bool),
-) {
+) error {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.GetOwnerCollectionsKey(address))
-
-	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var idCollection types.OwnerCollection
 		k.cdc.MustUnmarshalLengthPrefixed(iterator.Value(), &idCollection)
@@ -56,4 +57,11 @@ func (k Keeper) iterateOwnerCollections(
 			break
 		}
 	}
+
+	err := iterator.Close()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

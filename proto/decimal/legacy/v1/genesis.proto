@@ -9,7 +9,7 @@ option go_package = "bitbucket.org/decimalteam/go-smart-node/x/legacy/types";
 // GenesisState defines the module's genesis state.
 message GenesisState {
   // legacy records
-  repeated LegacyRecord legacyRecords = 1 [
+  repeated LegacyRecord legacy_records = 1 [
     (gogoproto.jsontag) = "legacy_records",
     (gogoproto.moretags) = "yaml:\"legacy_records\"",
     (gogoproto.nullable) = false

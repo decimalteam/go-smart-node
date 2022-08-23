@@ -72,5 +72,5 @@ type ResponseSubTokens []ResponseSubToken
 
 type ResponseSubToken struct {
 	ID      uint64
-	Reserve sdk.Int
+	Reserve sdk.Coin
 }

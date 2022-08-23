@@ -1,12 +1,13 @@
 package cli
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"context"
 	"fmt"
 	"strconv"
 	"strings"
+
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 
 	"github.com/spf13/cobra"
 
@@ -151,11 +152,11 @@ func cmdQueryDenoms() *cobra.Command {
 		Short: "queries all denominations of all collections of NFTs",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Gets all denominations of all the available collections of NFTs that
-			are stored on the chain.
+are stored on the chain.
 
-			Example:
-			$ %s query %s denoms
-			`, config.AppBinName, types.ModuleName,
+Example:
+$ %s query %s denoms
+`, config.AppBinName, types.ModuleName,
 			),
 		),
 		Args: cobra.ExactArgs(0),
@@ -205,7 +206,7 @@ $ %s query %s token crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f
 			tokenID := args[1]
 			req := &types.QueryNFTRequest{
 				Denom:   denom,
-				TokenID: tokenID,
+				TokenId: tokenID,
 			}
 
 			res, err := queryClient.QueryNFT(context.Background(), req)
@@ -221,8 +222,14 @@ $ %s query %s token crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f
 func cmdQuerySubTokens() *cobra.Command {
 	return &cobra.Command{
 		Use:   "sub_tokens [denom] [token_id] [sub_token_ids]",
-		Short: "query a single NFT from a collection",
-		Args:  cobra.ExactArgs(3),
+		Short: "query a sub tokens information of single NFT from a collection",
+		Long: fmt.Sprintf(`Get sub tokens of NFT from a collection that has the given ID (SHA-256 hex hash).
+
+Example:
+$ %s query %s sub_tokens crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa 1,2,3
+`, config.AppBinName, types.ModuleName,
+		),
+		Args: cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
