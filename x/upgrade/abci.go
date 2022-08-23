@@ -79,20 +79,22 @@ func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
 			return
 		}
 		/*
-			ubuntu/20.04 : [
-				"4e1058b090deec1f599dbaca6e59f918accc553df567f9e009b611bcd58efce2"
-			]
+			{
+			  "binaries": {
+			    "darwin/arm64": "http://127.0.0.1:8080/50/darwin/dscd?checksum=sha256:1ca5d7c987196f6d6fd9101c138dec210211b0fcbfacde26a5a97abd1668dd89"
+			  }
+			}
 		*/
-		hashes, ok := mapping[osArchForURL()]
+		system, ok := mapping[osArchForURL()]
 		if !ok {
 			logger.Error(fmt.Sprintf("error: plan mapping[os] for '%s' undefined", osArchForURL()))
 			return
 		}
 		// example:
-		// from "http://127.0.0.1/95000/dscd"
-		// to "http://127.0.0.1/95000/linux/ubuntu/20.04/dscd"
-		newUrl := resolveDownloadURL(fmt.Sprintf("%s/%s", plan.Name, config.AppBinName))
-		if newUrl == "" {
+		// from http://127.0.0.1:8080/50/darwin/dscd?checksum=sha256:1ca5d7c987196f6d6fd9101c138dec210211b0fcbfacde26a5a97abd1668dd89
+		// to "http://127.0.0.1:8080/50/darwin/dscd", 1ca5d7c987196f6d6fd9101c138dec210211b0fcbfacde26a5a97abd1668dd89
+		newUrl, checksum := resolveDownloadURL(system)
+		if newUrl == "" || checksum == "" {
 			logger.Error("error: failed with generate url")
 			return
 		}
@@ -106,7 +108,7 @@ func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
 		downloadName := getDownloadFileName(config.AppBinName)
 
 		if _, err := os.Stat(downloadName); os.IsNotExist(err) {
-			go DownloadSecured(ctx, newUrl, downloadName, hashes[0])
+			go DownloadSecured(ctx, newUrl, downloadName, checksum)
 		}
 	}
 

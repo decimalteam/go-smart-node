@@ -7,12 +7,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"syscall"
 
 	"gopkg.in/ini.v1"
@@ -92,21 +91,20 @@ func getDownloadFileName(name string) string {
 }
 
 // resolveDownloadURL returns exact URL to download correct binary.
-func resolveDownloadURL(s string) string {
-	// example: "linux/ubuntu/20.04"
-	u, err := url.Parse(osArchForURL())
-	if err != nil {
-		return ""
+func resolveDownloadURL(s string) (string, string) {
+	// http://127.0.0.1:8080/50/darwin/dscd.zip?checksum=sha256:815e41394be57eb2a830ef184dbb4b574b41d422e68e3eab5df7292a30243746
+	fmt.Println(s)
+	pathParts := strings.Split(s, "?")
+	if len(pathParts) < 2 {
+		return "", ""
+	}
+	// checksum=sha256:815e41394be57eb2a830ef184dbb4b574b41d422e68e3eab5df7292a30243746
+	checksumParts := strings.Split(pathParts[1], ":")
+	if len(checksumParts) < 2 {
+		return "", ""
 	}
 
-	// example: "http://127.0.0.1/90500/decd"
-	myUrl, err := url.Parse(s)
-	if err != nil {
-		return ""
-	}
-
-	// result: "http://127.0.0.1/90500/linux/ubuntu/20.04/decd"
-	return fmt.Sprintf("%s/%s", myUrl.ResolveReference(u), path.Base(myUrl.Path))
+	return pathParts[0], checksumParts[1]
 }
 
 // doesPageExist checks if the page at provided URL exists.
@@ -142,7 +140,9 @@ func changeBinary(plan types.Plan) error {
 		return fmt.Errorf("error: mapping[os] undefined")
 	}
 
-	if !checkFile(downloadName, hashes[0]) {
+	_, checksum := resolveDownloadURL(hashes)
+
+	if !checkFile(downloadName, checksum) {
 		os.Remove(downloadName)
 		return fmt.Errorf("error: hash does not match")
 	}
@@ -199,22 +199,7 @@ func isRunSuccess(path string) bool {
 
 // osArchForURL detects and returns OS to create an URL.
 func osArchForURL() string {
-	switch runtime.GOOS {
-	case "windows", "darwin":
-		return runtime.GOOS
-	case "linux":
-		distr := readOSRelease("ID")
-		if distr == "" {
-			distr = "<unknown>"
-		}
-		version := readOSRelease("VERSION_ID")
-		if version == "" {
-			version = "<unknown>"
-		}
-		return fmt.Sprintf("linux/%s/%s", distr, version)
-	default:
-		return runtime.GOOS
-	}
+	return fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH)
 }
 
 // readOSRelease reads the file under /etc/os-release to get the distribution name or version.
@@ -228,11 +213,15 @@ func readOSRelease(key string) string {
 }
 
 // planMapping returns plans info as map.
-func planMapping(plan types.Plan) map[string][]string {
-	var mapping map[string][]string
+func planMapping(plan types.Plan) map[string]string {
+	var mapping map[string]map[string]string
 	err := json.Unmarshal([]byte(plan.Info), &mapping)
 	if err != nil {
 		return nil
 	}
-	return mapping
+	if _, ok := mapping["binaries"]; !ok {
+		return nil
+	}
+
+	return mapping["binaries"]
 }
