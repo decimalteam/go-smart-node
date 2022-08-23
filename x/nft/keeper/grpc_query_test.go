@@ -1,13 +1,14 @@
 package keeper_test
 
 import (
+	"testing"
+
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestQueryCollectionSupply(t *testing.T) {
@@ -219,7 +220,7 @@ func TestQueryNFT(t *testing.T) {
 
 	req := types.QueryNFTRequest{
 		Denom:   collectionDenom,
-		TokenID: nft.ID,
+		TokenId: nft.ID,
 	}
 
 	res, err := dsc.NFTKeeper.QueryNFT(sdk.WrapSDKContext(ctx), &req)
