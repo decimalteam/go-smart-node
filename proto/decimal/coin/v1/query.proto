@@ -17,27 +17,27 @@ service Query {
 
   // Retrieves existing coin by specific symbol.
   rpc Coin(QueryCoinRequest) returns (QueryCoinResponse) {
-    option (google.api.http).get = "/coin/v1/coin/{symbol}";
+    option (google.api.http).get = "/decimal/coin/v1/coin/{symbol}";
   }
 
   // Retrieves all existing coins.
   rpc Coins(QueryCoinsRequest) returns (QueryCoinsResponse) {
-    option (google.api.http).get = "/coin/v1/coins";
+    option (google.api.http).get = "/decimal/coin/v1/coins";
   }
 
   // Retrieves existing check by specific hash.
   rpc Check(QueryCheckRequest) returns (QueryCheckResponse) {
-    option (google.api.http).get = "/coin/v1/check/{hash}";
+    option (google.api.http).get = "/decimal/coin/v1/check/{hash}";
   }
 
   // Retrieves all existing checks.
   rpc Checks(QueryChecksRequest) returns (QueryChecksResponse) {
-    option (google.api.http).get = "/coin/v1/checks";
+    option (google.api.http).get = "/decimal/coin/v1/checks";
   }
 
   // Retrieves the module params.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/coin/v1/params";
+    option (google.api.http).get = "/decimal/coin/v1/params";
   }
 }
 

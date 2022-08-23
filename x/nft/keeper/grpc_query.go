@@ -1,12 +1,15 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/errors"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"context"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/errors"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
 var _ types.QueryServer = Keeper{}
@@ -40,17 +43,10 @@ func (k Keeper) QueryOwnerCollections(c context.Context, req *types.QueryOwnerCo
 	owner := types.Owner{
 		Address: req.GetOwner(),
 	}
-	if req.Denom == "" {
-		owner.Collections, err = k.GetOwnerCollections(ctx, ownerAddress)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		collection, found := k.GetOwnerCollectionByDenom(ctx, ownerAddress, req.Denom)
-		if !found {
-			collection = types.NewOwnerCollection(req.Denom, []string{})
-		}
-		owner.Collections = append(owner.Collections, collection)
+
+	owner.Collections, err = k.GetOwnerCollections(ctx, ownerAddress)
+	if err != nil {
+		return nil, err
 	}
 
 	return &types.QueryOwnerCollectionsResponse{Owner: owner}, nil
@@ -99,12 +95,9 @@ func (k Keeper) QuerySubTokens(c context.Context, req *types.QuerySubTokensReque
 	ctx := sdk.UnwrapSDKContext(c)
 
 	var subTokens []types.SubToken
-	for _, id := range req.SubTokenIDs {
-		subToken, ok := k.GetSubToken(ctx, req.TokenID, id)
-		if !ok {
-			continue
-		}
-		subTokens = append(subTokens, subToken)
+	subTokens, err := k.GetSubTokens(ctx, req.TokenID)
+	if err != nil {
+		return nil, err
 	}
 
 	return &types.QuerySubTokensResponse{
