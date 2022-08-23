@@ -7,7 +7,7 @@ import (
 )
 
 // NewBaseNFT creates a new NFT instance
-func NewBaseNFT(id string, creator, tokenURI string, reserve sdk.Int, allowMint bool) BaseNFT {
+func NewBaseNFT(id string, creator, tokenURI string, reserve sdk.Coin, allowMint bool) BaseNFT {
 	return BaseNFT{
 		ID:        id,
 		TokenURI:  strings.TrimSpace(tokenURI),
@@ -46,7 +46,7 @@ func (bnft BaseNFT) SetOwners(owners TokenOwners) BaseNFT {
 	return bnft
 }
 
-func (bnft BaseNFT) GetReserve() sdk.Int {
+func (bnft BaseNFT) GetReserve() sdk.Coin {
 	return bnft.Reserve
 }
 

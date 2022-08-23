@@ -190,7 +190,7 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 			return
 		}
 		for i := range subtokens {
-			ui.NFTSubTokenReserves[stormActions.NFTSubTokenKey{Denom: nft.Denom, TokenID: nft.ID, ID: subtokens[i].ID}] = subtokens[i].Reserve
+			ui.NFTSubTokenReserves[stormActions.NFTSubTokenKey{Denom: nft.Denom, TokenID: nft.ID, ID: subtokens[i].ID}] = subtokens[i].Reserve.Amount
 		}
 	}
 	// multisig wallets

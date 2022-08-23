@@ -35,6 +35,8 @@ const (
 	CodeNotAllowedUpdateNFTReserve    CodeType = 120
 	CodeNotSetValueLowerNow           CodeType = 121
 	CodeNotEnoughFunds                CodeType = 122
+	CodeWrongReserveCoinDenom         CodeType = 123
+	CodeEmptyTokenURI                 CodeType = 124
 )
 
 func ErrInternal(err string) error {
@@ -168,6 +170,14 @@ func ErrNotUniqueTokenURI() error {
 	)
 }
 
+func ErrEmptyTokenURI() error {
+	return errors.Encode(
+		DefaultCodespace,
+		CodeEmptyTokenURI,
+		"empty tokenURI",
+	)
+}
+
 func ErrNotUniqueTokenID() error {
 	return errors.Encode(
 		DefaultCodespace,
@@ -217,6 +227,15 @@ func ErrNotAllowedUpdateReserve() error {
 		DefaultCodespace,
 		CodeNotAllowedUpdateNFTReserve,
 		"only the creator can update reserve a token",
+	)
+}
+
+func ErrWrongReserveCoinDenom(denom string) error {
+	return errors.Encode(
+		DefaultCodespace,
+		CodeWrongReserveCoinDenom,
+		"wrong reserve coin denom",
+		errors.NewParam("denom", denom),
 	)
 }
 

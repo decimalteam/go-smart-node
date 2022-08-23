@@ -45,13 +45,17 @@ func (k Keeper) GetNFT(ctx sdk.Context, denom, id string) (types.BaseNFT, error)
 }
 
 // GetNFTs returns all matched NFTs
-func (k Keeper) GetNFTs(ctx sdk.Context) (nfts []types.BaseNFT) {
-	k.iterateNFTs(ctx, func(nft types.BaseNFT) (stop bool) {
+func (k Keeper) GetNFTs(ctx sdk.Context) ([]types.BaseNFT, error) {
+	var nfts []types.BaseNFT
+	err := k.iterateNFTs(ctx, func(nft types.BaseNFT) (stop bool) {
 		nfts = append(nfts, nft)
 		return false
 	})
+	if err != nil {
+		return nil, err
+	}
 
-	return
+	return nfts, nil
 }
 
 // HasTokenID check if nft exists
@@ -77,10 +81,9 @@ func (k Keeper) setTokenURI(ctx sdk.Context, tokenURI string) {
 }
 
 // iterateNFTs iterates over NFTs and performs a function
-func (k Keeper) iterateNFTs(ctx sdk.Context, handler func(collection types.BaseNFT) (stop bool)) {
+func (k Keeper) iterateNFTs(ctx sdk.Context, handler func(collection types.BaseNFT) (stop bool)) error {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.NFTKeyPrefix)
-	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var nft types.BaseNFT
 		k.cdc.MustUnmarshalLengthPrefixed(iterator.Value(), &nft)
@@ -88,4 +91,11 @@ func (k Keeper) iterateNFTs(ctx sdk.Context, handler func(collection types.BaseN
 			break
 		}
 	}
+
+	err := iterator.Close()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

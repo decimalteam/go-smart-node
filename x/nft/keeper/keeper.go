@@ -1,17 +1,18 @@
 package keeper
 
 import (
+	sdkerrors "cosmossdk.io/errors"
 	"fmt"
 	"strconv"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	store "github.com/cosmos/cosmos-sdk/store/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -44,7 +45,8 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 func (k Keeper) Mint(
 	ctx sdk.Context,
 	denom, id string,
-	reserve, quantity sdk.Int,
+	reserve sdk.Coin,
+	quantity sdkmath.Int,
 	creator, owner string,
 	tokenURI string,
 	allowMint bool,
@@ -65,7 +67,8 @@ func (k Keeper) Mint(
 func (k Keeper) GenAndMintSubTokens(
 	ctx sdk.Context,
 	denom, id string,
-	reserve, quantity sdk.Int,
+	reserve sdk.Coin,
+	quantity sdkmath.Int,
 	creator string,
 ) (types.SortedUintArray, error) {
 	nft, err := k.GetNFT(ctx, denom, id)
@@ -89,8 +92,8 @@ func (k Keeper) GenAndMintSubTokens(
 	}
 
 	coinToReserve := sdk.NewCoin(
-		*k.BaseDenom,
-		reserve.Mul(quantity), // reserve * quantity
+		reserve.Denom,
+		reserve.Amount.Mul(quantity), // reserve * quantity
 	)
 
 	err = k.ReserveTokens(ctx, sdk.NewCoins(coinToReserve), creatorAddress)
@@ -115,7 +118,7 @@ func (k Keeper) MintSubTokens(
 func (k Keeper) MintNFTAndCollection(
 	ctx sdk.Context,
 	denom, id string,
-	reserve sdk.Int,
+	reserve sdk.Coin,
 	creator, owner string,
 	tokenURI string,
 	allowMint bool,
@@ -247,7 +250,7 @@ func (k Keeper) DeleteNFTSubTokens(ctx sdk.Context, denom, id string, subTokenID
 		if !ok {
 			return fmt.Errorf("subToken with ID = %d not found", subTokenIDToDelete)
 		}
-		reserveForReturn = reserveForReturn.Add(subToken.Reserve)
+		reserveForReturn = reserveForReturn.Add(subToken.Reserve.Amount)
 		k.RemoveSubToken(ctx, id, subTokenIDToDelete)
 	}
 
@@ -263,7 +266,9 @@ func (k Keeper) DeleteNFTSubTokens(ctx sdk.Context, denom, id string, subTokenID
 		return err
 	}
 
-	coinsToReturn := sdk.NewCoins(sdk.NewCoin(*k.BaseDenom, reserveForReturn))
+	coinsToReturn := sdk.NewCoins(
+		sdk.NewCoin(nft.Reserve.Denom, reserveForReturn),
+	)
 
 	err = k.ReturnTokensTo(ctx, coinsToReturn, ownerAddress)
 	if err != nil {
@@ -274,16 +279,20 @@ func (k Keeper) DeleteNFTSubTokens(ctx sdk.Context, denom, id string, subTokenID
 }
 
 // UpdateNFTReserve increases the minimum reserve of the NFT token
-func (k Keeper) UpdateNFTReserve(ctx sdk.Context, denom, id string, subTokenIDs []uint64, newReserve sdk.Int) error {
+func (k Keeper) UpdateNFTReserve(ctx sdk.Context, denom, id string, subTokenIDs []uint64, newReserve sdk.Coin) error {
 	nft, err := k.GetNFT(ctx, denom, id)
 	if err != nil {
 		return err
 	}
 
+	if nft.Reserve.Denom != newReserve.Denom {
+		return types.ErrWrongReserveCoinDenom(newReserve.Denom)
+	}
+
 	owner := nft.GetOwners().GetOwner(nft.GetCreator())
 	ownerSubTokenIDs := owner.GetSubTokenIDs()
 
-	reserveForRefill := sdk.NewInt(0)
+	var reserveForRefill sdk.Coin
 
 	for _, subTokenID := range subTokenIDs {
 		if ownerSubTokenIDs.Find(subTokenID) == -1 {
@@ -300,11 +309,11 @@ func (k Keeper) UpdateNFTReserve(ctx sdk.Context, denom, id string, subTokenIDs 
 			return types.ErrNotSetValueLowerNow()
 		}
 
-		if subToken.Reserve.GT(newReserve) {
+		if newReserve.IsLT(subToken.Reserve) {
 			return types.ErrNotSetValueLowerNow()
 		}
 
-		reserveForRefill = reserveForRefill.Add(newReserve.Sub(subToken.Reserve))
+		reserveForRefill = newReserve.Sub(subToken.Reserve)
 
 		k.SetSubToken(ctx, id, types.SubToken{
 			ID:      subTokenID,
@@ -317,7 +326,7 @@ func (k Keeper) UpdateNFTReserve(ctx sdk.Context, denom, id string, subTokenIDs 
 		return err
 	}
 
-	coinsToReserve := sdk.NewCoins(sdk.NewCoin(*k.BaseDenom, reserveForRefill))
+	coinsToReserve := sdk.NewCoins(reserveForRefill)
 	err = k.ReserveTokens(ctx, coinsToReserve, ownerAddress)
 	if err != nil {
 		return types.ErrNotEnoughFunds(reserveForRefill.String())

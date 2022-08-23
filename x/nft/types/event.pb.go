@@ -5,6 +5,8 @@ package types
 
 import (
 	fmt "fmt"
+	types "github.com/cosmos/cosmos-sdk/types"
+	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
 	math "math"
@@ -28,11 +30,11 @@ type EventMintNFT struct {
 	// aka collection
 	Denom string `protobuf:"bytes,3,opt,name=denom,proto3" json:"denom,omitempty"`
 	// aka id, token_id
-	NftId       string   `protobuf:"bytes,4,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
-	TokenUri    string   `protobuf:"bytes,5,opt,name=token_uri,json=tokenUri,proto3" json:"token_uri,omitempty"`
+	NFTID       string   `protobuf:"bytes,4,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
+	TokenURI    string   `protobuf:"bytes,5,opt,name=token_uri,json=tokenUri,proto3" json:"token_uri,omitempty"`
 	AllowMint   bool     `protobuf:"varint,6,opt,name=allow_mint,json=allowMint,proto3" json:"allow_mint,omitempty"`
 	Reserve     string   `protobuf:"bytes,7,opt,name=reserve,proto3" json:"reserve,omitempty"`
-	SubTokenIds []uint64 `protobuf:"varint,8,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
+	SubTokenIDs []uint64 `protobuf:"varint,8,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
 }
 
 func (m *EventMintNFT) Reset()         { *m = EventMintNFT{} }
@@ -89,16 +91,16 @@ func (m *EventMintNFT) GetDenom() string {
 	return ""
 }
 
-func (m *EventMintNFT) GetNftId() string {
+func (m *EventMintNFT) GetNFTID() string {
 	if m != nil {
-		return m.NftId
+		return m.NFTID
 	}
 	return ""
 }
 
-func (m *EventMintNFT) GetTokenUri() string {
+func (m *EventMintNFT) GetTokenURI() string {
 	if m != nil {
-		return m.TokenUri
+		return m.TokenURI
 	}
 	return ""
 }
@@ -117,9 +119,9 @@ func (m *EventMintNFT) GetReserve() string {
 	return ""
 }
 
-func (m *EventMintNFT) GetSubTokenIds() []uint64 {
+func (m *EventMintNFT) GetSubTokenIDs() []uint64 {
 	if m != nil {
-		return m.SubTokenIds
+		return m.SubTokenIDs
 	}
 	return nil
 }
@@ -128,8 +130,8 @@ type EventTransferNFT struct {
 	Sender      string   `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
 	Recipient   string   `protobuf:"bytes,2,opt,name=recipient,proto3" json:"recipient,omitempty"`
 	Denom       string   `protobuf:"bytes,3,opt,name=denom,proto3" json:"denom,omitempty"`
-	NftId       string   `protobuf:"bytes,4,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
-	SubTokenIds []uint64 `protobuf:"varint,8,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
+	NFTID       string   `protobuf:"bytes,4,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
+	SubTokenIDs []uint64 `protobuf:"varint,8,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
 }
 
 func (m *EventTransferNFT) Reset()         { *m = EventTransferNFT{} }
@@ -186,16 +188,16 @@ func (m *EventTransferNFT) GetDenom() string {
 	return ""
 }
 
-func (m *EventTransferNFT) GetNftId() string {
+func (m *EventTransferNFT) GetNFTID() string {
 	if m != nil {
-		return m.NftId
+		return m.NFTID
 	}
 	return ""
 }
 
-func (m *EventTransferNFT) GetSubTokenIds() []uint64 {
+func (m *EventTransferNFT) GetSubTokenIDs() []uint64 {
 	if m != nil {
-		return m.SubTokenIds
+		return m.SubTokenIDs
 	}
 	return nil
 }
@@ -203,8 +205,8 @@ func (m *EventTransferNFT) GetSubTokenIds() []uint64 {
 type EventEditNFT struct {
 	Sender   string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
 	Denom    string `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
-	NftId    string `protobuf:"bytes,3,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
-	TokenUri string `protobuf:"bytes,4,opt,name=token_uri,json=tokenUri,proto3" json:"token_uri,omitempty"`
+	NFTID    string `protobuf:"bytes,3,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
+	TokenURI string `protobuf:"bytes,4,opt,name=token_uri,json=tokenUri,proto3" json:"token_uri,omitempty"`
 }
 
 func (m *EventEditNFT) Reset()         { *m = EventEditNFT{} }
@@ -254,16 +256,16 @@ func (m *EventEditNFT) GetDenom() string {
 	return ""
 }
 
-func (m *EventEditNFT) GetNftId() string {
+func (m *EventEditNFT) GetNFTID() string {
 	if m != nil {
-		return m.NftId
+		return m.NFTID
 	}
 	return ""
 }
 
-func (m *EventEditNFT) GetTokenUri() string {
+func (m *EventEditNFT) GetTokenURI() string {
 	if m != nil {
-		return m.TokenUri
+		return m.TokenURI
 	}
 	return ""
 }
@@ -271,8 +273,8 @@ func (m *EventEditNFT) GetTokenUri() string {
 type EventBurnNFT struct {
 	Sender      string   `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
 	Denom       string   `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
-	NftId       string   `protobuf:"bytes,3,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
-	SubTokenIds []uint64 `protobuf:"varint,4,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
+	NFTID       string   `protobuf:"bytes,3,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
+	SubTokenIDs []uint64 `protobuf:"varint,4,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
 }
 
 func (m *EventBurnNFT) Reset()         { *m = EventBurnNFT{} }
@@ -322,26 +324,26 @@ func (m *EventBurnNFT) GetDenom() string {
 	return ""
 }
 
-func (m *EventBurnNFT) GetNftId() string {
+func (m *EventBurnNFT) GetNFTID() string {
 	if m != nil {
-		return m.NftId
+		return m.NFTID
 	}
 	return ""
 }
 
-func (m *EventBurnNFT) GetSubTokenIds() []uint64 {
+func (m *EventBurnNFT) GetSubTokenIDs() []uint64 {
 	if m != nil {
-		return m.SubTokenIds
+		return m.SubTokenIDs
 	}
 	return nil
 }
 
 type EventUpdateReserveNFT struct {
-	Sender      string   `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	Denom       string   `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
-	NftId       string   `protobuf:"bytes,3,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
-	SubTokenIds []uint64 `protobuf:"varint,4,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
-	NewReserve  string   `protobuf:"bytes,5,opt,name=new_reserve,json=newReserve,proto3" json:"new_reserve,omitempty"`
+	Sender      string      `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	Denom       string      `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
+	NFTID       string      `protobuf:"bytes,3,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
+	SubTokenIDs []uint64    `protobuf:"varint,4,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
+	NewReserve  *types.Coin `protobuf:"bytes,5,opt,name=new_reserve,json=newReserve,proto3" json:"new_reserve,omitempty"`
 }
 
 func (m *EventUpdateReserveNFT) Reset()         { *m = EventUpdateReserveNFT{} }
@@ -391,25 +393,25 @@ func (m *EventUpdateReserveNFT) GetDenom() string {
 	return ""
 }
 
-func (m *EventUpdateReserveNFT) GetNftId() string {
+func (m *EventUpdateReserveNFT) GetNFTID() string {
 	if m != nil {
-		return m.NftId
+		return m.NFTID
 	}
 	return ""
 }
 
-func (m *EventUpdateReserveNFT) GetSubTokenIds() []uint64 {
+func (m *EventUpdateReserveNFT) GetSubTokenIDs() []uint64 {
 	if m != nil {
-		return m.SubTokenIds
+		return m.SubTokenIDs
 	}
 	return nil
 }
 
-func (m *EventUpdateReserveNFT) GetNewReserve() string {
+func (m *EventUpdateReserveNFT) GetNewReserve() *types.Coin {
 	if m != nil {
 		return m.NewReserve
 	}
-	return ""
+	return nil
 }
 
 func init() {
@@ -423,33 +425,38 @@ func init() {
 func init() { proto.RegisterFile("decimal/nft/v1/event.proto", fileDescriptor_2c3c554044bdd8a5) }
 
 var fileDescriptor_2c3c554044bdd8a5 = []byte{
-	// 403 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x53, 0xcb, 0x6e, 0xd3, 0x40,
-	0x14, 0xcd, 0x34, 0x69, 0x9a, 0x4c, 0x01, 0xa1, 0x11, 0x45, 0x23, 0x1e, 0x26, 0xf2, 0x2a, 0x9b,
-	0xda, 0xaa, 0xfa, 0x07, 0x95, 0x8a, 0xd4, 0x45, 0x59, 0x58, 0xe9, 0x86, 0x8d, 0x65, 0x67, 0xae,
-	0xab, 0x51, 0xe3, 0x3b, 0xd6, 0xcc, 0xb5, 0x0d, 0x7f, 0xc1, 0x96, 0x25, 0x7f, 0xc3, 0xb2, 0x4b,
-	0x96, 0x28, 0x59, 0xf2, 0x13, 0x28, 0x63, 0x17, 0x84, 0x0a, 0x88, 0x05, 0xca, 0xf2, 0x9e, 0xa3,
-	0x99, 0x73, 0xce, 0x7d, 0xf0, 0x67, 0x0a, 0x96, 0xba, 0xcc, 0x56, 0x31, 0x16, 0x14, 0x37, 0x27,
-	0x31, 0x34, 0x80, 0x14, 0x55, 0xd6, 0x90, 0x11, 0x8f, 0x7a, 0x2e, 0xc2, 0x82, 0xa2, 0xe6, 0x24,
-	0xfc, 0xc6, 0xf8, 0x83, 0xf3, 0x2d, 0x7f, 0xa9, 0x91, 0xde, 0xbc, 0x5e, 0x88, 0xa7, 0x7c, 0xec,
-	0x00, 0x15, 0x58, 0xc9, 0x66, 0x6c, 0x3e, 0x4d, 0xfa, 0x4a, 0xbc, 0xe0, 0x53, 0x0b, 0x4b, 0x5d,
-	0x69, 0x40, 0x92, 0x7b, 0x9e, 0xfa, 0x09, 0x88, 0x27, 0x7c, 0x5f, 0x01, 0x9a, 0x52, 0x0e, 0x3d,
-	0xd3, 0x15, 0xe2, 0x88, 0x8f, 0xb1, 0xa0, 0x54, 0x2b, 0x39, 0xea, 0x60, 0x2c, 0xe8, 0x42, 0x89,
-	0xe7, 0x7c, 0x4a, 0xe6, 0x06, 0x30, 0xad, 0xad, 0x96, 0xfb, 0x9e, 0x99, 0x78, 0xe0, 0xca, 0x6a,
-	0xf1, 0x92, 0xf3, 0x6c, 0xb5, 0x32, 0x6d, 0x5a, 0x6a, 0x24, 0x39, 0x9e, 0xb1, 0xf9, 0x24, 0x99,
-	0x7a, 0x64, 0xeb, 0x50, 0x48, 0x7e, 0x60, 0xc1, 0x81, 0x6d, 0x40, 0x1e, 0xf8, 0x97, 0x77, 0xa5,
-	0x08, 0xf9, 0x43, 0x57, 0xe7, 0x69, 0xf7, 0xb3, 0x56, 0x4e, 0x4e, 0x66, 0xc3, 0xf9, 0x28, 0x39,
-	0x74, 0x75, 0xbe, 0xd8, 0x62, 0x17, 0xca, 0x85, 0x1f, 0x19, 0x7f, 0xec, 0xd3, 0x2e, 0x6c, 0x86,
-	0xae, 0x00, 0xbb, 0xa3, 0xc4, 0xff, 0xe2, 0xad, 0xea, 0x07, 0x71, 0xae, 0xf4, 0x5f, 0x07, 0xf1,
-	0x43, 0x78, 0xef, 0xf7, 0xc2, 0xc3, 0x3f, 0xb6, 0x7a, 0xf4, 0x6b, 0xab, 0xc3, 0xb6, 0x57, 0x3c,
-	0xab, 0x2d, 0xfe, 0x37, 0xc5, 0x7b, 0x51, 0x47, 0xf7, 0xa3, 0x7e, 0x62, 0xfc, 0xc8, 0x2b, 0x5f,
-	0x55, 0x2a, 0x23, 0x48, 0xba, 0x09, 0xee, 0xd2, 0x82, 0x78, 0xc5, 0x0f, 0x11, 0xda, 0xf4, 0x6e,
-	0x97, 0xba, 0x2d, 0xe4, 0x08, 0x6d, 0x6f, 0xe6, 0xec, 0xf2, 0xf3, 0x3a, 0x60, 0xb7, 0xeb, 0x80,
-	0x7d, 0x5d, 0x07, 0xec, 0xc3, 0x26, 0x18, 0xdc, 0x6e, 0x82, 0xc1, 0x97, 0x4d, 0x30, 0x78, 0x7b,
-	0x9a, 0x6b, 0xca, 0xeb, 0xe5, 0x0d, 0x50, 0x64, 0xec, 0x75, 0xdc, 0x1f, 0x14, 0x41, 0x56, 0xc6,
-	0xd7, 0xe6, 0xd8, 0x95, 0x99, 0xa5, 0x63, 0x34, 0x0a, 0xe2, 0x77, 0xfe, 0x00, 0xe9, 0x7d, 0x05,
-	0x2e, 0x1f, 0xfb, 0xf3, 0x3b, 0xfd, 0x1e, 0x00, 0x00, 0xff, 0xff, 0x4c, 0x31, 0x31, 0xeb, 0x9c,
-	0x03, 0x00, 0x00,
+	// 494 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x94, 0xbf, 0x8e, 0xd3, 0x4e,
+	0x10, 0xc7, 0xe3, 0xfc, 0xbb, 0x64, 0x73, 0xbf, 0x1f, 0x68, 0x75, 0x20, 0x13, 0x81, 0x13, 0xa5,
+	0x0a, 0xc5, 0x79, 0x15, 0xd2, 0x51, 0x86, 0xbb, 0x93, 0x52, 0xdc, 0x15, 0x26, 0x69, 0x68, 0x2c,
+	0xdb, 0x3b, 0x8e, 0x56, 0x17, 0xef, 0x46, 0xbb, 0x6b, 0x07, 0x1e, 0x81, 0x0e, 0x09, 0xf1, 0x28,
+	0xbc, 0x03, 0xe5, 0x95, 0x57, 0x45, 0xc8, 0x79, 0x11, 0xe4, 0xb5, 0x03, 0x05, 0xe8, 0x74, 0x42,
+	0x02, 0xd1, 0x79, 0xe6, 0xbb, 0xf2, 0x7e, 0x76, 0x66, 0xbe, 0x83, 0xfa, 0x14, 0x22, 0x96, 0x04,
+	0x6b, 0xc2, 0x63, 0x4d, 0xb2, 0x09, 0x81, 0x0c, 0xb8, 0x76, 0x37, 0x52, 0x68, 0x81, 0xff, 0xaf,
+	0x34, 0x97, 0xc7, 0xda, 0xcd, 0x26, 0xfd, 0x93, 0x95, 0x58, 0x09, 0x23, 0x91, 0xe2, 0xab, 0x3c,
+	0xd5, 0x77, 0x22, 0xa1, 0x12, 0xa1, 0x48, 0x18, 0x28, 0x20, 0xd9, 0x24, 0x04, 0x1d, 0x4c, 0x48,
+	0x24, 0x18, 0x2f, 0xf5, 0xd1, 0xa7, 0x3a, 0x3a, 0x3e, 0x2f, 0xfe, 0x7a, 0xc9, 0xb8, 0xbe, 0xba,
+	0x58, 0xe0, 0xc7, 0xa8, 0xad, 0x80, 0x53, 0x90, 0xb6, 0x35, 0xb4, 0xc6, 0x5d, 0xaf, 0x8a, 0xf0,
+	0x53, 0xd4, 0x95, 0x10, 0xb1, 0x0d, 0x03, 0xae, 0xed, 0xba, 0x91, 0x7e, 0x24, 0xf0, 0x09, 0x6a,
+	0x51, 0xe0, 0x22, 0xb1, 0x1b, 0x46, 0x29, 0x03, 0x3c, 0x44, 0x6d, 0x1e, 0x6b, 0x9f, 0x51, 0xbb,
+	0x59, 0xa4, 0x67, 0xdd, 0x7c, 0x37, 0x68, 0x5d, 0x5d, 0x2c, 0xe6, 0x67, 0x5e, 0x8b, 0xc7, 0x7a,
+	0x4e, 0xf1, 0x73, 0xd4, 0xd5, 0xe2, 0x1a, 0xb8, 0x9f, 0x4a, 0x66, 0xb7, 0xcc, 0xa1, 0xe3, 0x7c,
+	0x37, 0xe8, 0x2c, 0x8a, 0xe4, 0xd2, 0x9b, 0x7b, 0x1d, 0x23, 0x2f, 0x25, 0xc3, 0xcf, 0x10, 0x0a,
+	0xd6, 0x6b, 0xb1, 0xf5, 0x13, 0xc6, 0xb5, 0xdd, 0x1e, 0x5a, 0xe3, 0x8e, 0xd7, 0x35, 0x99, 0x02,
+	0x1d, 0xdb, 0xe8, 0x48, 0x82, 0x02, 0x99, 0x81, 0x7d, 0x64, 0x18, 0x0e, 0x21, 0x9e, 0xa2, 0xff,
+	0x54, 0x1a, 0xfa, 0xe5, 0x3d, 0x8c, 0x2a, 0xbb, 0x33, 0x6c, 0x8c, 0x9b, 0xb3, 0x07, 0xf9, 0x6e,
+	0xd0, 0x7b, 0x9d, 0x86, 0xe6, 0xaa, 0xf9, 0x99, 0xf2, 0x7a, 0xea, 0x10, 0x50, 0x35, 0xfa, 0x6c,
+	0xa1, 0x87, 0xa6, 0x2e, 0x0b, 0x19, 0x70, 0x15, 0x83, 0xfc, 0xfb, 0xb5, 0xf9, 0x2d, 0xee, 0xf7,
+	0x56, 0xd5, 0xcf, 0x73, 0xca, 0xee, 0xec, 0xe7, 0x77, 0xaa, 0xfa, 0xaf, 0xa9, 0x1a, 0xf7, 0xe9,
+	0x58, 0xf3, 0xae, 0x8e, 0x8d, 0x3e, 0x1e, 0x58, 0x66, 0xa9, 0xe4, 0x7f, 0x82, 0xe5, 0xa7, 0x0a,
+	0x35, 0xef, 0x51, 0xa1, 0x5b, 0x0b, 0x3d, 0x32, 0x54, 0xcb, 0x0d, 0x0d, 0x34, 0x78, 0xe5, 0x94,
+	0xfc, 0x2b, 0x78, 0xf8, 0x25, 0xea, 0x71, 0xd8, 0xfa, 0x87, 0x59, 0x2e, 0x3c, 0xd1, 0x7b, 0xf1,
+	0xc4, 0x2d, 0x6d, 0xec, 0x16, 0x36, 0x76, 0x2b, 0x1b, 0xbb, 0xaf, 0x04, 0xe3, 0x1e, 0xe2, 0xb0,
+	0xad, 0xde, 0x30, 0xbb, 0xfc, 0x92, 0x3b, 0xd6, 0x4d, 0xee, 0x58, 0x5f, 0x73, 0xc7, 0xfa, 0xb0,
+	0x77, 0x6a, 0x37, 0x7b, 0xa7, 0x76, 0xbb, 0x77, 0x6a, 0x6f, 0xa6, 0x21, 0xd3, 0x61, 0x1a, 0x5d,
+	0x83, 0x76, 0x85, 0x5c, 0x91, 0x6a, 0x75, 0x68, 0x08, 0x12, 0xb2, 0x12, 0xa7, 0x2a, 0x09, 0xa4,
+	0x3e, 0xe5, 0x82, 0x02, 0x79, 0x6b, 0x56, 0x8d, 0x7e, 0xb7, 0x01, 0x15, 0xb6, 0xcd, 0x8a, 0x98,
+	0x7e, 0x0b, 0x00, 0x00, 0xff, 0xff, 0x67, 0x41, 0xde, 0x24, 0x86, 0x04, 0x00, 0x00,
 }
 
 func (m *EventMintNFT) Marshal() (dAtA []byte, err error) {
@@ -472,10 +479,10 @@ func (m *EventMintNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.SubTokenIds) > 0 {
-		dAtA2 := make([]byte, len(m.SubTokenIds)*10)
+	if len(m.SubTokenIDs) > 0 {
+		dAtA2 := make([]byte, len(m.SubTokenIDs)*10)
 		var j1 int
-		for _, num := range m.SubTokenIds {
+		for _, num := range m.SubTokenIDs {
 			for num >= 1<<7 {
 				dAtA2[j1] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -507,17 +514,17 @@ func (m *EventMintNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x30
 	}
-	if len(m.TokenUri) > 0 {
-		i -= len(m.TokenUri)
-		copy(dAtA[i:], m.TokenUri)
-		i = encodeVarintEvent(dAtA, i, uint64(len(m.TokenUri)))
+	if len(m.TokenURI) > 0 {
+		i -= len(m.TokenURI)
+		copy(dAtA[i:], m.TokenURI)
+		i = encodeVarintEvent(dAtA, i, uint64(len(m.TokenURI)))
 		i--
 		dAtA[i] = 0x2a
 	}
-	if len(m.NftId) > 0 {
-		i -= len(m.NftId)
-		copy(dAtA[i:], m.NftId)
-		i = encodeVarintEvent(dAtA, i, uint64(len(m.NftId)))
+	if len(m.NFTID) > 0 {
+		i -= len(m.NFTID)
+		copy(dAtA[i:], m.NFTID)
+		i = encodeVarintEvent(dAtA, i, uint64(len(m.NFTID)))
 		i--
 		dAtA[i] = 0x22
 	}
@@ -565,10 +572,10 @@ func (m *EventTransferNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.SubTokenIds) > 0 {
-		dAtA4 := make([]byte, len(m.SubTokenIds)*10)
+	if len(m.SubTokenIDs) > 0 {
+		dAtA4 := make([]byte, len(m.SubTokenIDs)*10)
 		var j3 int
-		for _, num := range m.SubTokenIds {
+		for _, num := range m.SubTokenIDs {
 			for num >= 1<<7 {
 				dAtA4[j3] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -583,10 +590,10 @@ func (m *EventTransferNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x42
 	}
-	if len(m.NftId) > 0 {
-		i -= len(m.NftId)
-		copy(dAtA[i:], m.NftId)
-		i = encodeVarintEvent(dAtA, i, uint64(len(m.NftId)))
+	if len(m.NFTID) > 0 {
+		i -= len(m.NFTID)
+		copy(dAtA[i:], m.NFTID)
+		i = encodeVarintEvent(dAtA, i, uint64(len(m.NFTID)))
 		i--
 		dAtA[i] = 0x22
 	}
@@ -634,17 +641,17 @@ func (m *EventEditNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.TokenUri) > 0 {
-		i -= len(m.TokenUri)
-		copy(dAtA[i:], m.TokenUri)
-		i = encodeVarintEvent(dAtA, i, uint64(len(m.TokenUri)))
+	if len(m.TokenURI) > 0 {
+		i -= len(m.TokenURI)
+		copy(dAtA[i:], m.TokenURI)
+		i = encodeVarintEvent(dAtA, i, uint64(len(m.TokenURI)))
 		i--
 		dAtA[i] = 0x22
 	}
-	if len(m.NftId) > 0 {
-		i -= len(m.NftId)
-		copy(dAtA[i:], m.NftId)
-		i = encodeVarintEvent(dAtA, i, uint64(len(m.NftId)))
+	if len(m.NFTID) > 0 {
+		i -= len(m.NFTID)
+		copy(dAtA[i:], m.NFTID)
+		i = encodeVarintEvent(dAtA, i, uint64(len(m.NFTID)))
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -685,10 +692,10 @@ func (m *EventBurnNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.SubTokenIds) > 0 {
-		dAtA6 := make([]byte, len(m.SubTokenIds)*10)
+	if len(m.SubTokenIDs) > 0 {
+		dAtA6 := make([]byte, len(m.SubTokenIDs)*10)
 		var j5 int
-		for _, num := range m.SubTokenIds {
+		for _, num := range m.SubTokenIDs {
 			for num >= 1<<7 {
 				dAtA6[j5] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -703,10 +710,10 @@ func (m *EventBurnNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x22
 	}
-	if len(m.NftId) > 0 {
-		i -= len(m.NftId)
-		copy(dAtA[i:], m.NftId)
-		i = encodeVarintEvent(dAtA, i, uint64(len(m.NftId)))
+	if len(m.NFTID) > 0 {
+		i -= len(m.NFTID)
+		copy(dAtA[i:], m.NFTID)
+		i = encodeVarintEvent(dAtA, i, uint64(len(m.NFTID)))
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -747,35 +754,40 @@ func (m *EventUpdateReserveNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.NewReserve) > 0 {
-		i -= len(m.NewReserve)
-		copy(dAtA[i:], m.NewReserve)
-		i = encodeVarintEvent(dAtA, i, uint64(len(m.NewReserve)))
+	if m.NewReserve != nil {
+		{
+			size, err := m.NewReserve.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintEvent(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x2a
 	}
-	if len(m.SubTokenIds) > 0 {
-		dAtA8 := make([]byte, len(m.SubTokenIds)*10)
-		var j7 int
-		for _, num := range m.SubTokenIds {
+	if len(m.SubTokenIDs) > 0 {
+		dAtA9 := make([]byte, len(m.SubTokenIDs)*10)
+		var j8 int
+		for _, num := range m.SubTokenIDs {
 			for num >= 1<<7 {
-				dAtA8[j7] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA9[j8] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j7++
+				j8++
 			}
-			dAtA8[j7] = uint8(num)
-			j7++
+			dAtA9[j8] = uint8(num)
+			j8++
 		}
-		i -= j7
-		copy(dAtA[i:], dAtA8[:j7])
-		i = encodeVarintEvent(dAtA, i, uint64(j7))
+		i -= j8
+		copy(dAtA[i:], dAtA9[:j8])
+		i = encodeVarintEvent(dAtA, i, uint64(j8))
 		i--
 		dAtA[i] = 0x22
 	}
-	if len(m.NftId) > 0 {
-		i -= len(m.NftId)
-		copy(dAtA[i:], m.NftId)
-		i = encodeVarintEvent(dAtA, i, uint64(len(m.NftId)))
+	if len(m.NFTID) > 0 {
+		i -= len(m.NFTID)
+		copy(dAtA[i:], m.NFTID)
+		i = encodeVarintEvent(dAtA, i, uint64(len(m.NFTID)))
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -825,11 +837,11 @@ func (m *EventMintNFT) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovEvent(uint64(l))
 	}
-	l = len(m.NftId)
+	l = len(m.NFTID)
 	if l > 0 {
 		n += 1 + l + sovEvent(uint64(l))
 	}
-	l = len(m.TokenUri)
+	l = len(m.TokenURI)
 	if l > 0 {
 		n += 1 + l + sovEvent(uint64(l))
 	}
@@ -840,9 +852,9 @@ func (m *EventMintNFT) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovEvent(uint64(l))
 	}
-	if len(m.SubTokenIds) > 0 {
+	if len(m.SubTokenIDs) > 0 {
 		l = 0
-		for _, e := range m.SubTokenIds {
+		for _, e := range m.SubTokenIDs {
 			l += sovEvent(uint64(e))
 		}
 		n += 1 + sovEvent(uint64(l)) + l
@@ -868,13 +880,13 @@ func (m *EventTransferNFT) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovEvent(uint64(l))
 	}
-	l = len(m.NftId)
+	l = len(m.NFTID)
 	if l > 0 {
 		n += 1 + l + sovEvent(uint64(l))
 	}
-	if len(m.SubTokenIds) > 0 {
+	if len(m.SubTokenIDs) > 0 {
 		l = 0
-		for _, e := range m.SubTokenIds {
+		for _, e := range m.SubTokenIDs {
 			l += sovEvent(uint64(e))
 		}
 		n += 1 + sovEvent(uint64(l)) + l
@@ -896,11 +908,11 @@ func (m *EventEditNFT) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovEvent(uint64(l))
 	}
-	l = len(m.NftId)
+	l = len(m.NFTID)
 	if l > 0 {
 		n += 1 + l + sovEvent(uint64(l))
 	}
-	l = len(m.TokenUri)
+	l = len(m.TokenURI)
 	if l > 0 {
 		n += 1 + l + sovEvent(uint64(l))
 	}
@@ -921,13 +933,13 @@ func (m *EventBurnNFT) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovEvent(uint64(l))
 	}
-	l = len(m.NftId)
+	l = len(m.NFTID)
 	if l > 0 {
 		n += 1 + l + sovEvent(uint64(l))
 	}
-	if len(m.SubTokenIds) > 0 {
+	if len(m.SubTokenIDs) > 0 {
 		l = 0
-		for _, e := range m.SubTokenIds {
+		for _, e := range m.SubTokenIDs {
 			l += sovEvent(uint64(e))
 		}
 		n += 1 + sovEvent(uint64(l)) + l
@@ -949,19 +961,19 @@ func (m *EventUpdateReserveNFT) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovEvent(uint64(l))
 	}
-	l = len(m.NftId)
+	l = len(m.NFTID)
 	if l > 0 {
 		n += 1 + l + sovEvent(uint64(l))
 	}
-	if len(m.SubTokenIds) > 0 {
+	if len(m.SubTokenIDs) > 0 {
 		l = 0
-		for _, e := range m.SubTokenIds {
+		for _, e := range m.SubTokenIDs {
 			l += sovEvent(uint64(e))
 		}
 		n += 1 + sovEvent(uint64(l)) + l
 	}
-	l = len(m.NewReserve)
-	if l > 0 {
+	if m.NewReserve != nil {
+		l = m.NewReserve.Size()
 		n += 1 + l + sovEvent(uint64(l))
 	}
 	return n
@@ -1100,7 +1112,7 @@ func (m *EventMintNFT) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NftId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field NFTID", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1128,11 +1140,11 @@ func (m *EventMintNFT) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.NftId = string(dAtA[iNdEx:postIndex])
+			m.NFTID = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 5:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TokenUri", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field TokenURI", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1160,7 +1172,7 @@ func (m *EventMintNFT) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.TokenUri = string(dAtA[iNdEx:postIndex])
+			m.TokenURI = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 6:
 			if wireType != 0 {
@@ -1231,7 +1243,7 @@ func (m *EventMintNFT) Unmarshal(dAtA []byte) error {
 						break
 					}
 				}
-				m.SubTokenIds = append(m.SubTokenIds, v)
+				m.SubTokenIDs = append(m.SubTokenIDs, v)
 			} else if wireType == 2 {
 				var packedLen int
 				for shift := uint(0); ; shift += 7 {
@@ -1266,8 +1278,8 @@ func (m *EventMintNFT) Unmarshal(dAtA []byte) error {
 					}
 				}
 				elementCount = count
-				if elementCount != 0 && len(m.SubTokenIds) == 0 {
-					m.SubTokenIds = make([]uint64, 0, elementCount)
+				if elementCount != 0 && len(m.SubTokenIDs) == 0 {
+					m.SubTokenIDs = make([]uint64, 0, elementCount)
 				}
 				for iNdEx < postIndex {
 					var v uint64
@@ -1285,10 +1297,10 @@ func (m *EventMintNFT) Unmarshal(dAtA []byte) error {
 							break
 						}
 					}
-					m.SubTokenIds = append(m.SubTokenIds, v)
+					m.SubTokenIDs = append(m.SubTokenIDs, v)
 				}
 			} else {
-				return fmt.Errorf("proto: wrong wireType = %d for field SubTokenIds", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field SubTokenIDs", wireType)
 			}
 		default:
 			iNdEx = preIndex
@@ -1438,7 +1450,7 @@ func (m *EventTransferNFT) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NftId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field NFTID", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1466,7 +1478,7 @@ func (m *EventTransferNFT) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.NftId = string(dAtA[iNdEx:postIndex])
+			m.NFTID = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 8:
 			if wireType == 0 {
@@ -1485,7 +1497,7 @@ func (m *EventTransferNFT) Unmarshal(dAtA []byte) error {
 						break
 					}
 				}
-				m.SubTokenIds = append(m.SubTokenIds, v)
+				m.SubTokenIDs = append(m.SubTokenIDs, v)
 			} else if wireType == 2 {
 				var packedLen int
 				for shift := uint(0); ; shift += 7 {
@@ -1520,8 +1532,8 @@ func (m *EventTransferNFT) Unmarshal(dAtA []byte) error {
 					}
 				}
 				elementCount = count
-				if elementCount != 0 && len(m.SubTokenIds) == 0 {
-					m.SubTokenIds = make([]uint64, 0, elementCount)
+				if elementCount != 0 && len(m.SubTokenIDs) == 0 {
+					m.SubTokenIDs = make([]uint64, 0, elementCount)
 				}
 				for iNdEx < postIndex {
 					var v uint64
@@ -1539,10 +1551,10 @@ func (m *EventTransferNFT) Unmarshal(dAtA []byte) error {
 							break
 						}
 					}
-					m.SubTokenIds = append(m.SubTokenIds, v)
+					m.SubTokenIDs = append(m.SubTokenIDs, v)
 				}
 			} else {
-				return fmt.Errorf("proto: wrong wireType = %d for field SubTokenIds", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field SubTokenIDs", wireType)
 			}
 		default:
 			iNdEx = preIndex
@@ -1660,7 +1672,7 @@ func (m *EventEditNFT) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NftId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field NFTID", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1688,11 +1700,11 @@ func (m *EventEditNFT) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.NftId = string(dAtA[iNdEx:postIndex])
+			m.NFTID = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TokenUri", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field TokenURI", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1720,7 +1732,7 @@ func (m *EventEditNFT) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.TokenUri = string(dAtA[iNdEx:postIndex])
+			m.TokenURI = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -1838,7 +1850,7 @@ func (m *EventBurnNFT) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NftId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field NFTID", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1866,7 +1878,7 @@ func (m *EventBurnNFT) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.NftId = string(dAtA[iNdEx:postIndex])
+			m.NFTID = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
 			if wireType == 0 {
@@ -1885,7 +1897,7 @@ func (m *EventBurnNFT) Unmarshal(dAtA []byte) error {
 						break
 					}
 				}
-				m.SubTokenIds = append(m.SubTokenIds, v)
+				m.SubTokenIDs = append(m.SubTokenIDs, v)
 			} else if wireType == 2 {
 				var packedLen int
 				for shift := uint(0); ; shift += 7 {
@@ -1920,8 +1932,8 @@ func (m *EventBurnNFT) Unmarshal(dAtA []byte) error {
 					}
 				}
 				elementCount = count
-				if elementCount != 0 && len(m.SubTokenIds) == 0 {
-					m.SubTokenIds = make([]uint64, 0, elementCount)
+				if elementCount != 0 && len(m.SubTokenIDs) == 0 {
+					m.SubTokenIDs = make([]uint64, 0, elementCount)
 				}
 				for iNdEx < postIndex {
 					var v uint64
@@ -1939,10 +1951,10 @@ func (m *EventBurnNFT) Unmarshal(dAtA []byte) error {
 							break
 						}
 					}
-					m.SubTokenIds = append(m.SubTokenIds, v)
+					m.SubTokenIDs = append(m.SubTokenIDs, v)
 				}
 			} else {
-				return fmt.Errorf("proto: wrong wireType = %d for field SubTokenIds", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field SubTokenIDs", wireType)
 			}
 		default:
 			iNdEx = preIndex
@@ -2060,7 +2072,7 @@ func (m *EventUpdateReserveNFT) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NftId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field NFTID", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2088,7 +2100,7 @@ func (m *EventUpdateReserveNFT) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.NftId = string(dAtA[iNdEx:postIndex])
+			m.NFTID = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
 			if wireType == 0 {
@@ -2107,7 +2119,7 @@ func (m *EventUpdateReserveNFT) Unmarshal(dAtA []byte) error {
 						break
 					}
 				}
-				m.SubTokenIds = append(m.SubTokenIds, v)
+				m.SubTokenIDs = append(m.SubTokenIDs, v)
 			} else if wireType == 2 {
 				var packedLen int
 				for shift := uint(0); ; shift += 7 {
@@ -2142,8 +2154,8 @@ func (m *EventUpdateReserveNFT) Unmarshal(dAtA []byte) error {
 					}
 				}
 				elementCount = count
-				if elementCount != 0 && len(m.SubTokenIds) == 0 {
-					m.SubTokenIds = make([]uint64, 0, elementCount)
+				if elementCount != 0 && len(m.SubTokenIDs) == 0 {
+					m.SubTokenIDs = make([]uint64, 0, elementCount)
 				}
 				for iNdEx < postIndex {
 					var v uint64
@@ -2161,16 +2173,16 @@ func (m *EventUpdateReserveNFT) Unmarshal(dAtA []byte) error {
 							break
 						}
 					}
-					m.SubTokenIds = append(m.SubTokenIds, v)
+					m.SubTokenIDs = append(m.SubTokenIDs, v)
 				}
 			} else {
-				return fmt.Errorf("proto: wrong wireType = %d for field SubTokenIds", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field SubTokenIDs", wireType)
 			}
 		case 5:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field NewReserve", wireType)
 			}
-			var stringLen uint64
+			var msglen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvent
@@ -2180,23 +2192,27 @@ func (m *EventUpdateReserveNFT) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				msglen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if msglen < 0 {
 				return ErrInvalidLengthEvent
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + msglen
 			if postIndex < 0 {
 				return ErrInvalidLengthEvent
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.NewReserve = string(dAtA[iNdEx:postIndex])
+			if m.NewReserve == nil {
+				m.NewReserve = &types.Coin{}
+			}
+			if err := m.NewReserve.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

@@ -23,7 +23,7 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) {
 		}
 	}
 
-	for _, nft := range data.Nfts {
+	for _, nft := range data.NFTs {
 		denom := nftDenoms[nft.GetID()]
 
 		for _, owner := range nft.GetOwners() {
@@ -39,11 +39,17 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) {
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	collections := k.GetCollections(ctx)
 
-	nfts := k.GetNFTs(ctx)
+	nfts, err := k.GetNFTs(ctx)
+	if err != nil {
+		panic(err)
+	}
 
 	subTokens := make(map[string]types.SubTokens)
 	for _, nft := range nfts {
-		nftSubTokens := k.GetSubTokens(ctx, nft.GetID())
+		nftSubTokens, err := k.GetSubTokens(ctx, nft.GetID())
+		if err != nil {
+			panic(err)
+		}
 		subTokens[nft.GetID()] = types.SubTokens{
 			SubTokens: nftSubTokens,
 		}

@@ -2,9 +2,11 @@ package nft_test
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/app"
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"testing"
 	"time"
 
@@ -23,7 +25,7 @@ func TestInitGenesis(t *testing.T) {
 
 	genesisState := types.DefaultGenesisState()
 	require.Equal(t, 0, len(genesisState.Collections))
-	require.Equal(t, 0, len(genesisState.Nfts))
+	require.Equal(t, 0, len(genesisState.NFTs))
 	require.Equal(t, 0, len(genesisState.SubTokens))
 
 	denoms := []string{firstDenom, secondDenom, thirdDenom}
@@ -48,26 +50,26 @@ func TestInitGenesis(t *testing.T) {
 		for j, nftID := range collection.NFTs {
 			address := app.GetAddrs(dsc, ctx, 1)[0]
 			tokenURI := time.Now().String()
-			nft := types.NewBaseNFT(
+			baseNFT := types.NewBaseNFT(
 				nftID,
 				address.String(),
 				tokenURI,
-				types.NewMinReserve2,
+				sdk.NewCoin(config.BaseDenom, types.MinReserve),
 				true,
 			)
 
-			subTokenIDs := nft.GenSubTokenIDs(subTokenAmount)
+			subTokenIDs := baseNFT.GenSubTokenIDs(subTokenAmount)
 			firstTokenOwner := types.NewTokenOwner(address.String(), subTokenIDs)
-			nft = nft.SetOwners(nft.GetOwners().SetOwner(firstTokenOwner))
+			baseNFT = baseNFT.SetOwners(baseNFT.GetOwners().SetOwner(firstTokenOwner))
 
-			nfts[i*nftsAmount+j] = nft
+			nfts[i*nftsAmount+j] = baseNFT
 
 			// prepare sub tokens map
-			subTokens[nft.ID] = types.SubTokens{
+			subTokens[baseNFT.ID] = types.SubTokens{
 				SubTokens: make([]types.SubToken, subTokenIDs.Len()),
 			}
 			for q, subTokenID := range subTokenIDs {
-				subTokens[nft.ID].SubTokens[q] = types.NewSubToken(subTokenID, nft.Reserve)
+				subTokens[baseNFT.ID].SubTokens[q] = types.NewSubToken(subTokenID, baseNFT.Reserve)
 			}
 		}
 	}
@@ -81,7 +83,9 @@ func TestInitGenesis(t *testing.T) {
 	storedCollections := dsc.NFTKeeper.GetCollections(ctx)
 	compareCollections(t, storedCollections, collections)
 
-	storedNFTs := dsc.NFTKeeper.GetNFTs(ctx)
+	storedNFTs, err := dsc.NFTKeeper.GetNFTs(ctx)
+	require.NoError(t, err)
+
 	compareNFTs(t, storedNFTs, nfts)
 
 	exportedGenesisState := nft.ExportGenesis(ctx, dsc.NFTKeeper)
@@ -91,8 +95,8 @@ func TestInitGenesis(t *testing.T) {
 	require.Len(t, exportedGenesisState.Collections, len(collections))
 	compareCollections(t, exportedGenesisState.Collections, collections)
 
-	require.Len(t, exportedGenesisState.Nfts, len(nfts))
-	compareNFTs(t, exportedGenesisState.Nfts, nfts)
+	require.Len(t, exportedGenesisState.NFTs, len(nfts))
+	compareNFTs(t, exportedGenesisState.NFTs, nfts)
 
 	require.Equal(t, exportedGenesisState.SubTokens, subTokens)
 }

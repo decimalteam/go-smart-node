@@ -40,7 +40,10 @@ func (k Keeper) QueryOwnerCollections(c context.Context, req *types.QueryOwnerCo
 		Address: req.GetOwner(),
 	}
 	if req.Denom == "" {
-		owner.Collections = k.GetOwnerCollections(ctx, ownerAddress)
+		owner.Collections, err = k.GetOwnerCollections(ctx, ownerAddress)
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		collection, found := k.GetOwnerCollectionByDenom(ctx, ownerAddress, req.Denom)
 		if !found {
@@ -68,7 +71,10 @@ func (k Keeper) QueryCollection(c context.Context, req *types.QueryCollectionReq
 func (k Keeper) QueryDenoms(c context.Context, _ *types.QueryDenomsRequest) (*types.QueryDenomsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 
-	denoms := k.GetDenoms(ctx)
+	denoms, err := k.GetDenoms(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	return &types.QueryDenomsResponse{
 		Denoms: denoms,
@@ -78,13 +84,13 @@ func (k Keeper) QueryDenoms(c context.Context, _ *types.QueryDenomsRequest) (*ty
 func (k Keeper) QueryNFT(c context.Context, req *types.QueryNFTRequest) (*types.QueryNFTResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 
-	nft, err := k.GetNFT(ctx, req.Denom, req.TokenID)
+	nft, err := k.GetNFT(ctx, req.Denom, req.TokenId)
 	if err != nil {
-		return nil, types.ErrUnknownNFT(req.Denom, req.TokenID)
+		return nil, types.ErrUnknownNFT(req.Denom, req.TokenId)
 	}
 
 	return &types.QueryNFTResponse{
-		Nft: nft,
+		NFT: nft,
 	}, nil
 }
 
