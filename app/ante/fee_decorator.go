@@ -38,7 +38,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 	// initial check for transaction
 	feeTx, ok := tx.(sdk.FeeTx)
 	if !ok {
-		return ctx, ErrNotFeeTxType()
+		return ctx, NotFeeTxType
 	}
 
 	if addr := fd.accountKeeper.GetModuleAddress(sdkAuthTypes.FeeCollectorName); addr == nil {
@@ -55,7 +55,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 	baseDenom := fd.coinKeeper.GetBaseDenom(ctx)
 
 	if feePayerAcc == nil {
-		return ctx, ErrFeePayerAddressDoesNotExist(feeTx.FeePayer().String())
+		return ctx, FeePayerAddressDoesNotExist
 	}
 
 	// fee from transaction is zero (empty), we deduct calculated fee from payer
@@ -89,20 +89,19 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 		}
 
 		if coinInfo.Reserve.LT(commissionInBaseCoin) {
-			return ctx, ErrCoinReserveInsufficient(coinInfo.Reserve.String(), commissionInBaseCoin.String())
+			return ctx, CoinReserveInsufficient
 		}
 
 		feeInBaseCoin = formulas.CalculateSaleReturn(coinInfo.Volume, coinInfo.Reserve,
 			uint(coinInfo.CRR), feeFromTx[0].Amount)
 
 		if coinInfo.Reserve.Sub(feeInBaseCoin).LT(coinTypes.MinCoinReserve) {
-			return ctx, ErrCoinReserveBecomeInsufficient(coinInfo.Reserve.String(), feeInBaseCoin.String(),
-				coinTypes.MinCoinReserve.String())
+			return ctx, CoinReserveBecomeInsufficient
 		}
 	}
 
 	if feeInBaseCoin.LT(commissionInBaseCoin) {
-		return ctx, ErrFeeLessThanCommission(feeInBaseCoin.String(), commissionInBaseCoin.String())
+		return ctx, FeeLessThanCommission
 	}
 
 	// deduct the fees
@@ -125,13 +124,13 @@ func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper coin
 	feePayerAddress sdk.AccAddress, fee sdk.Coin) error {
 
 	if !fee.IsValid() {
-		return ErrInvalidFeeAmount(fee.String())
+		return InvalidFeeAmount
 	}
 
 	// verify the account has enough funds to pay fee
 	balance := bankKeeper.GetBalance(ctx, feePayerAddress, fee.Denom)
 	if balance.Amount.LT(fee.Amount) {
-		return ErrInsufficientFundsToPayFee(balance.String(), fee.String())
+		return InsufficientFundsToPayFee
 	}
 
 	// verify for future coin burning: we must keep minimal volume and reserve
@@ -149,7 +148,7 @@ func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper coin
 
 	err := bankKeeper.SendCoinsFromAccountToModule(ctx, feePayerAddress, sdkAuthTypes.FeeCollectorName, sdk.NewCoins(fee))
 	if err != nil {
-		return ErrFailedToSendCoins(err.Error())
+		return FailedToSendCoins
 	}
 
 	return nil

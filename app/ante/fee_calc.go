@@ -1,8 +1,6 @@
 package ante
 
 import (
-	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
@@ -87,7 +85,7 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec) (sdk.Int, er
 		case *nftTypes.MsgEditNFTMetadata:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		default:
-			return sdk.NewInt(0), ErrUnknownTransaction(fmt.Sprintf("%T", msg))
+			return sdk.NewInt(0), UnknownTransaction
 		}
 	}
 
