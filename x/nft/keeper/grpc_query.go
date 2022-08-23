@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -19,7 +20,7 @@ func (k Keeper) QueryCollectionSupply(c context.Context, req *types.QueryCollect
 
 	collection, found := k.GetCollection(ctx, req.Denom)
 	if !found {
-		return nil, types.ErrUnknownCollection(req.Denom)
+		return nil, errors.UnknownCollection
 	}
 
 	return &types.QueryCollectionSupplyResponse{Supply: int64(collection.Supply())}, nil
@@ -60,7 +61,7 @@ func (k Keeper) QueryCollection(c context.Context, req *types.QueryCollectionReq
 
 	collection, found := k.GetCollection(ctx, req.Denom)
 	if !found {
-		return nil, types.ErrUnknownCollection(req.Denom)
+		return nil, errors.UnknownCollection
 	}
 
 	return &types.QueryCollectionResponse{
@@ -86,7 +87,7 @@ func (k Keeper) QueryNFT(c context.Context, req *types.QueryNFTRequest) (*types.
 
 	nft, err := k.GetNFT(ctx, req.Denom, req.TokenId)
 	if err != nil {
-		return nil, types.ErrUnknownNFT(req.Denom, req.TokenId)
+		return nil, errors.UnknownNFT
 	}
 
 	return &types.QueryNFTResponse{

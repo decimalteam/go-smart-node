@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -9,7 +10,7 @@ import (
 func (k Keeper) SetNFT(ctx sdk.Context, denom, id string, nft types.BaseNFT) error {
 	_, found := k.GetCollection(ctx, denom)
 	if !found {
-		return types.ErrUnknownCollection(denom)
+		return errors.UnknownCollection
 	}
 
 	store := ctx.KVStore(k.storeKey)
@@ -27,14 +28,14 @@ func (k Keeper) SetNFT(ctx sdk.Context, denom, id string, nft types.BaseNFT) err
 func (k Keeper) GetNFT(ctx sdk.Context, denom, id string) (types.BaseNFT, error) {
 	_, found := k.GetCollection(ctx, denom)
 	if !found {
-		return types.BaseNFT{}, types.ErrUnknownCollection(denom)
+		return types.BaseNFT{}, errors.UnknownCollection
 	}
 
 	store := ctx.KVStore(k.storeKey)
 	nftKey := types.GetNFTKey(id)
 	bz := store.Get(nftKey)
 	if bz == nil {
-		return types.BaseNFT{}, types.ErrUnknownNFT(denom, id)
+		return types.BaseNFT{}, errors.UnknownNFT
 	}
 
 	var nft types.BaseNFT

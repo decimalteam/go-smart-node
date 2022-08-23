@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -72,17 +73,17 @@ dx1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p --from mykey
 
 			tokenURI := viper.GetString(flagTokenURI)
 			if tokenURI == "" {
-				return types.ErrEmptyTokenURI()
+				return errors.EmptyTokenURI
 			}
 
 			quantity, ok := sdk.NewIntFromString(args[3])
 			if !ok {
-				return types.ErrInvalidQuantity(args[2])
+				return errors.InvalidQuantity
 			}
 
 			coinReserve, err := sdk.ParseCoinNormalized(args[4])
 			if err != nil {
-				return types.ErrInvalidReserve(args[4])
+				return errors.InvalidReserve
 			}
 
 			var allowMint bool
@@ -270,7 +271,7 @@ $ %s tx %s update_reserve crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd4
 
 			newCoinReserve, err := sdk.ParseCoinNormalized(args[3])
 			if err != nil {
-				return types.ErrInvalidReserve(args[3])
+				return errors.InvalidReserve
 			}
 
 			msg := types.NewMsgUpdateReserveNFT(clientCtx.GetFromAddress(), tokenID, denom, subTokenIDs, newCoinReserve)
