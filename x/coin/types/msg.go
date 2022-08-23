@@ -113,8 +113,8 @@ func (msg MsgCreateCoin) ValidateBasic() error {
 		return errors.InvalidCoinInitialReserve
 	}
 	// Check limit volume
-	if msg.LimitVolume.GT(maxCoinSupply) {
-		return errors.LimitVolumeBroken
+	if msg.LimitVolume.GT(MaxCoinSupply) {
+		return errors.InvalidLimitVolume
 	}
 	return nil
 }
@@ -475,10 +475,10 @@ func (msg MsgSellAllCoin) ValidateBasic() error {
 	}
 	// Validate coin symbol
 	if !coinSymbolValidator.MatchString(msg.CoinSymbolToSell) {
-		return ErrInvalidCoinSymbol(msg.CoinSymbolToSell)
+		return errors.InvalidCoinSymbol
 	}
 	if !coinSymbolValidator.MatchString(msg.MinCoinToBuy.Denom) {
-		return ErrInvalidCoinSymbol(msg.MinCoinToBuy.Denom)
+		return errors.InvalidCoinSymbol
 	}
 	// Denoms of specified coins cannot be the same
 	if msg.CoinSymbolToSell == msg.MinCoinToBuy.Denom {

@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/hex"
 	"math/big"
-	"strconv"
 	"strings"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/types"

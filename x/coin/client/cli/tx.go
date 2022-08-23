@@ -1,11 +1,10 @@
 package cli
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
-	//"cosmossdk.io/errors"
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"strconv"
 	"strings"
 
@@ -638,39 +637,3 @@ $ %s tx %s redeem-check 3YEtqixL7ccFTZJaMUHx3T...(result of 'issue-check') "some
 
 	return cmd
 }
-
-func parseCoin(clientCtx client.Context, amount string) (sdk.Coin, error) {
-	var (
-		coin sdk.Coin
-		err  error
-	)
-	coin, err = sdk.ParseCoinNormalized(amount)
-	if err != nil {
-		return coin, err
-	}
-
-	resp, err := getCoin(clientCtx, coin.Denom)
-	switch {
-	case err != nil:
-		return coin, err
-	case resp == nil:
-		return coin, errors.CoinDoesNotExist
-	default:
-		return coin, nil
-	}
-}
-
-//func checkBalance(clientCtx client.Context, address sdk.AccAddress, needAmount sdk.Int, symbol string) error {
-//	balance, err := getBalanceWithSymbol(clientCtx, address, symbol)
-//	if err != nil {
-//		return err
-//	}
-//
-//	amountBalance := balance.Balance.Amount
-//
-//	if amountBalance.LT(needAmount) {
-//		return errors.InsufficientFunds
-//	}
-//
-//	return nil
-//}
