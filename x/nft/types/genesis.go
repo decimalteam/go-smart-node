@@ -1,7 +1,8 @@
 package types
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/errors"
+	"errors"
+	"fmt"
 )
 
 // NewGenesisState creates a new genesis state.
@@ -21,30 +22,29 @@ func DefaultGenesisState() *GenesisState {
 // Validate performs basic validation of nfts genesis data returning an
 // error for any failed validation criteria.
 func (m GenesisState) Validate() error {
-	if err := SupplyInvariantCheck(m.Collections, m.NFTs); err != nil {
-		return err
+	msg, failed := SupplyInvariantCheck(m.Collections, m.NFTs)
+	if failed {
+		return errors.New(msg)
 	}
-
-	if err := SubTokensInvariantCheck(m.NFTs, m.SubTokens); err != nil {
-		return err
+	msg, failed = SubTokensInvariantCheck(m.NFTs, m.SubTokens)
+	if failed {
+		return errors.New(msg)
 	}
 
 	return nil
 }
 
-func SupplyInvariantCheck(collections []Collection, nfts []BaseNFT) error {
+func SupplyInvariantCheck(collections []Collection, nfts []BaseNFT) (string, bool) {
 	totalSupply := 0
 	for _, collection := range collections {
 		totalSupply += collection.Supply()
 	}
-	if len(nfts) != totalSupply {
-		return errors.NftSupply
-	}
+	broken := len(nfts) != totalSupply
 
-	return nil
+	return fmt.Sprintf("nft supply invariants found (total supply: %d, nfts: %d)", totalSupply, len(nfts)), broken
 }
 
-func SubTokensInvariantCheck(nfts []BaseNFT, subTokens map[string]SubTokens) error {
+func SubTokensInvariantCheck(nfts []BaseNFT, subTokens map[string]SubTokens) (string, bool) {
 	for _, nft := range nfts {
 		subTokenLength := 0
 
@@ -54,7 +54,10 @@ func SubTokensInvariantCheck(nfts []BaseNFT, subTokens map[string]SubTokens) err
 		}
 
 		if subTokenLength != len(subTokens[nft.ID].SubTokens) {
-			return errors.InvalidSubTokensLen
+			return fmt.Sprintf(
+				"invalid sub tokens len for nft %s (nft len: %d, sub tokens len %d)",
+				nft.ID, subTokenLength, len(subTokens[nft.ID].SubTokens),
+			), true
 		}
 
 		// validate: all subtokens have owners
@@ -64,10 +67,10 @@ func SubTokensInvariantCheck(nfts []BaseNFT, subTokens map[string]SubTokens) err
 				subTokenHasOwner = subTokenHasOwner || owner.SubTokenIDs.Has(subToken.ID)
 			}
 			if !subTokenHasOwner {
-				return errors.UnknownSubTokenForNFT
+				return fmt.Sprintf("unknown sub token id %d for nft %s", subToken.ID, nft.ID), true
 			}
 		}
 	}
 
-	return nil
+	return "", false
 }

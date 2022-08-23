@@ -355,7 +355,7 @@ func (k Keeper) BurnCoin(goCtx context.Context, msg *types.MsgBurnCoin) (*types.
 		Coin:   msg.Coin.String(),
 	})
 	if err != nil {
-		return nil, types.ErrInternal(err.Error())
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	return &types.MsgBurnCoinResponse{}, nil

@@ -60,7 +60,6 @@ func (m *MsgMintNFT) ValidateBasic() error {
 	if !m.Quantity.IsPositive() {
 		return errors.InvalidQuantity
 	}
-
 	if !m.Reserve.IsPositive() || m.Reserve.Amount.LT(MinReserve) {
 		return errors.InvalidReserve
 	}

@@ -1,12 +1,11 @@
 package errors
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	"cosmossdk.io/errors"
 	"fmt"
 )
 
-var codespace = types.ModuleName
+var codespace = "multisig"
 
 const (
 	minOwnerCount = 2

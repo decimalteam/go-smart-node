@@ -1,11 +1,10 @@
 package errors
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"cosmossdk.io/errors"
 )
 
-var codespace = types.ModuleName
+var codespace = "nft"
 
 var (
 	Internal                      = errors.New(codespace, 1, "internal error")

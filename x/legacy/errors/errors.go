@@ -1,11 +1,10 @@
 package errors
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	"cosmossdk.io/errors"
 )
 
-var codespace = types.ModuleName
+var codespace = "legacy"
 
 var (
 	Internal                                       = errors.New(codespace, 1, "internal error")

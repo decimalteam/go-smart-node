@@ -2,13 +2,12 @@ package errors
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"cosmossdk.io/errors"
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var codespace = types.ModuleName
+var codespace = "coin"
 
 const (
 	allowedCoinSymbols = "^[a-zA-Z][a-zA-Z0-9]{2,9}$"
