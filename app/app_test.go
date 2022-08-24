@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/encoding"
 	"encoding/json"
 	"os"
 	"testing"
@@ -10,10 +11,6 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
-
-	"github.com/cosmos/cosmos-sdk/simapp"
-
-	"github.com/evmos/ethermint/encoding"
 )
 
 func TestDSCExport(t *testing.T) {
@@ -27,7 +24,7 @@ func TestDSCExport(t *testing.T) {
 	//	EncConfig:          simappparams.EncodingConfig{},
 	//	AppOpts:            types.AppOptions(),
 	//}
-	app := NewDSC(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5, encoding.MakeConfig(ModuleBasics), simapp.EmptyAppOptions{})
+	app := NewDSC(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5, encoding.MakeConfig(ModuleBasics), EmptyAppOptions{})
 
 	gs := GenesisStateWithSingleValidator(t, app)
 	stateBytes, err := json.MarshalIndent(gs, "", "  ")
@@ -44,7 +41,7 @@ func TestDSCExport(t *testing.T) {
 	app.Commit()
 
 	// Making a new app object with the db, so that initchain hasn't been called
-	app2 := NewDSC(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encoding.MakeConfig(ModuleBasics), simapp.EmptyAppOptions{})
+	app2 := NewDSC(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encoding.MakeConfig(ModuleBasics), EmptyAppOptions{})
 	_, err = app2.ExportAppStateAndValidators(false, []string{})
 	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
 }

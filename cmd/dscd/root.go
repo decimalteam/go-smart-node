@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/encoding"
 	"errors"
 	"fmt"
 	tmcfg "github.com/tendermint/tendermint/config"
@@ -22,7 +23,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	sdkserver "github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
-	"github.com/cosmos/cosmos-sdk/simapp/params"
 	"github.com/cosmos/cosmos-sdk/snapshots"
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store"
@@ -35,7 +35,6 @@ import (
 
 	ethermintclient "github.com/evmos/ethermint/client"
 	"github.com/evmos/ethermint/client/debug"
-	"github.com/evmos/ethermint/encoding"
 	ethermintserver "github.com/evmos/ethermint/server"
 	servercfg "github.com/evmos/ethermint/server/config"
 	srvflags "github.com/evmos/ethermint/server/flags"
@@ -50,7 +49,7 @@ const (
 )
 
 // NewRootCmd creates a new root command for dscd. It is called once in the main function.
-func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
+func NewRootCmd() (*cobra.Command, encoding.EncodingConfig) {
 
 	// Initialize client context
 	encodingConfig := encoding.MakeConfig(app.ModuleBasics)
@@ -218,7 +217,7 @@ func initAppConfig() (string, interface{}) {
 }
 
 type appCreator struct {
-	encCfg params.EncodingConfig
+	encCfg encoding.EncodingConfig
 }
 
 // newApp is an appCreator

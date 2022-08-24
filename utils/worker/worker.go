@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/encoding"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -18,15 +19,13 @@ import (
 	rpc "github.com/tendermint/tendermint/rpc/client/http"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 
-	"github.com/cosmos/cosmos-sdk/simapp/params"
-
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
 type Worker struct {
 	ctx         context.Context
 	httpClient  *http.Client
-	cdc         params.EncodingConfig
+	cdc         encoding.EncodingConfig
 	logger      log.Logger
 	config      *Config
 	hostname    string
@@ -43,7 +42,7 @@ type Config struct {
 	WorkersCount    int
 }
 
-func NewWorker(cdc params.EncodingConfig, logger log.Logger, config *Config) (*Worker, error) {
+func NewWorker(cdc encoding.EncodingConfig, logger log.Logger, config *Config) (*Worker, error) {
 	hostname, err := os.Hostname()
 	if err != nil {
 		return nil, err

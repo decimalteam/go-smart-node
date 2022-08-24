@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/encoding"
 	dsctestutil "bitbucket.org/decimalteam/go-smart-node/testutil/dsc"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -29,7 +30,6 @@ import (
 
 	"github.com/cosmos/ibc-go/v5/testing/simapp"
 
-	"github.com/evmos/ethermint/encoding"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
@@ -337,4 +337,12 @@ func GenesisStateWithValSet(codec codec.Codec, genesisState map[string]json.RawM
 	genesisState[banktypes.ModuleName] = codec.MustMarshalJSON(bankGenesis)
 
 	return genesisState, nil
+}
+
+// EmptyAppOptions is a stub implementing AppOptions
+type EmptyAppOptions struct{}
+
+// Get implements AppOptions
+func (ao EmptyAppOptions) Get(o string) interface{} {
+	return nil
 }

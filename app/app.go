@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/encoding"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -26,9 +27,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
+	serversdktypes "github.com/cosmos/cosmos-sdk/server/types"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
-	"github.com/cosmos/cosmos-sdk/simapp"
-	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
 	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -95,7 +95,6 @@ import (
 
 	// Ethermint
 
-	"github.com/evmos/ethermint/encoding"
 	srvflags "github.com/evmos/ethermint/server/flags"
 	ethtypes "github.com/evmos/ethermint/types"
 
@@ -150,6 +149,38 @@ var (
 	// TestnetChainIDPrefix defines the EVM EIP155 chain ID prefix for Decimal testnet.
 	TestnetChainIDPrefix = fmt.Sprintf("%s_%d", cmdcfg.AppName, cmdcfg.TestnetChainID)
 )
+
+type App interface {
+	// The assigned name of the app.
+	Name() string
+
+	// The application types codec.
+	// NOTE: This shoult be sealed before being returned.
+	LegacyAmino() *codec.LegacyAmino
+
+	// Application updates every begin block.
+	BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock
+
+	// Application updates every end block.
+	EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock
+
+	// Application update at chain (i.e app) initialization.
+	InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain
+
+	// Loads the app at a given height.
+	LoadHeight(height int64) error
+
+	// Exports the state of the application for a genesis file.
+	ExportAppStateAndValidators(
+		forZeroHeight bool, jailAllowedAddrs []string,
+	) (serversdktypes.ExportedApp, error)
+
+	// All the registered module account addreses.
+	ModuleAccountAddrs() map[string]bool
+
+	// Helper for the simulation framework.
+	SimulationManager() *module.SimulationManager
+}
 
 var (
 	// ModuleBasics defines the module BasicManager is in charge of setting up basic,
@@ -220,7 +251,7 @@ var (
 
 var (
 	_ servertypes.Application = (*DSC)(nil)
-	_ simapp.App              = (*DSC)(nil)
+	_ App                     = (*DSC)(nil)
 	_ ibctesting.TestingApp   = (*DSC)(nil)
 )
 
@@ -294,7 +325,7 @@ func NewDSC(
 	skipUpgradeHeights map[int64]bool,
 	homePath string,
 	invCheckPeriod uint,
-	encodingConfig simappparams.EncodingConfig,
+	encodingConfig encoding.EncodingConfig,
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *DSC {
@@ -786,7 +817,7 @@ func (app *DSC) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliverTx
 
 // InitChainer updates at chain initialization.
 func (app *DSC) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-	var gs simapp.GenesisState
+	var gs GenesisState
 	if err := json.Unmarshal(req.AppStateBytes, &gs); err != nil {
 		panic(err)
 	}
