@@ -187,13 +187,11 @@ var (
 		evm.AppModuleBasic{},
 		feemarket.AppModuleBasic{},
 		// Decimal
-		nft.AppModuleBasic{},
-		multisig.AppModuleBasic{},
 		coin.AppModuleBasic{},
+		legacy.AppModuleBasic{},
+		nft.AppModuleBasic{},
 		multisig.AppModuleBasic{},
 		swap.AppModuleBasic{},
-		nft.AppModuleBasic{},
-		legacy.AppModuleBasic{},
 	)
 
 	// Module account permissions
