@@ -13,29 +13,29 @@ option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
 
 // Query defines the gRPC querier service.
 service Query {
-  // Retrieves existing coin by specific symbol.
+  // Retrieves collection supply by denom
   rpc QueryCollectionSupply(QueryCollectionSupplyRequest) returns (QueryCollectionSupplyResponse) {
-    option (google.api.http).get = "/nft/v1/supply/{denom}";
+    option (google.api.http).get = "/decimal/nft/v1/supply/{denom}";
   }
 
   rpc QueryOwnerCollections(QueryOwnerCollectionsRequest) returns (QueryOwnerCollectionsResponse) {
-    option (google.api.http).get = "/nft/v1/owner/{owner}";
+    option (google.api.http).get = "/decimal/nft/v1/collections_by_owner/{owner}";
   }
 
   rpc QueryCollection(QueryCollectionRequest) returns (QueryCollectionResponse) {
-    option (google.api.http).get = "/nft/v1/collection/{denom}";
+    option (google.api.http).get = "/decimal/nft/v1/collection/{denom}";
   }
 
   rpc QueryDenoms(QueryDenomsRequest) returns (QueryDenomsResponse) {
-    option (google.api.http).get = "/nft/v1/denoms";
+    option (google.api.http).get = "/decimal/nft/v1/denoms";
   }
 
   rpc QueryNFT(QueryNFTRequest) returns (QueryNFTResponse) {
-    option (google.api.http).get = "/nft/v1/nft/nft/{denom}/{token_id}";
+    option (google.api.http).get = "/decimal/nft/v1/nft/{denom}/{token_id}";
   }
 
   rpc QuerySubTokens(QuerySubTokensRequest) returns (QuerySubTokensResponse) {
-    option (google.api.http).get = "/nft/v1/nft/sub_tokens";
+    option (google.api.http).get = "/decimal/nft/v1/sub_tokens/{denom}/{token_id}";
   }
 }
 
@@ -57,7 +57,6 @@ message QueryCollectionSupplyResponse {
 
 message QueryOwnerCollectionsRequest {
   string owner = 1;
-  string denom = 2;
 }
 
 message QueryOwnerCollectionsResponse {
@@ -115,9 +114,6 @@ message QuerySubTokensRequest {
   string denom = 1;
   string token_id = 2 [
     (gogoproto.customname) = "TokenID"
-  ];
-  repeated uint64 sub_token_ids = 3 [
-    (gogoproto.customname) = "SubTokenIDs"
   ];
 }
 

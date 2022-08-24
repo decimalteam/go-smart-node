@@ -125,28 +125,6 @@ func TestQueryOwnerCollections(t *testing.T) {
 		require.Equal(t, expectedResponse, *res)
 	})
 
-	t.Run("with denom", func(t *testing.T) {
-		expectedResponse := types.QueryOwnerCollectionsResponse{
-			Owner: types.Owner{
-				Address: sender.String(),
-				Collections: []types.OwnerCollection{
-					{
-						Denom: firstCollectionDenom,
-						NFTs:  types.SortedStringArray{firstNFT.ID, secondNFT.ID},
-					},
-				},
-			},
-		}
-
-		req := types.QueryOwnerCollectionsRequest{
-			Owner: sender.String(),
-			Denom: firstCollectionDenom,
-		}
-
-		res, err := dsc.NFTKeeper.QueryOwnerCollections(sdk.WrapSDKContext(ctx), &req)
-		require.NoError(t, err)
-		require.Equal(t, expectedResponse, *res)
-	})
 }
 
 func TestQueryCollection(t *testing.T) {
@@ -260,9 +238,8 @@ func TestQuerySubTokens(t *testing.T) {
 	}
 
 	req := types.QuerySubTokensRequest{
-		Denom:       collectionDenom,
-		TokenID:     nft.ID,
-		SubTokenIDs: subTokenIDs,
+		Denom:   collectionDenom,
+		TokenID: nft.ID,
 	}
 
 	res, err := dsc.NFTKeeper.QuerySubTokens(sdk.WrapSDKContext(ctx), &req)
