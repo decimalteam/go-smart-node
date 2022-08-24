@@ -1,10 +1,10 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/swap/errors"
 	"context"
 	"encoding/hex"
 	"math/big"
-	"strconv"
 	"strings"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/types"
@@ -17,17 +17,17 @@ func (k Keeper) SwapInitialize(goCtx context.Context, msg *types.MsgSwapInitiali
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	if !k.HasChain(ctx, msg.DestChain) {
-		return nil, types.ErrChainDoesNotExists(strconv.FormatUint(uint64(msg.DestChain), 10))
+		return nil, errors.ChainDoesNotExists
 	}
 	if !k.HasChain(ctx, msg.FromChain) {
-		return nil, types.ErrChainDoesNotExists(strconv.FormatUint(uint64(msg.FromChain), 10))
+		return nil, errors.ChainDoesNotExists
 	}
 
 	funds := sdk.NewCoins(sdk.NewCoin(strings.ToLower(msg.TokenSymbol), msg.Amount))
 
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
-		return nil, types.ErrInvalidSenderAddress(msg.Sender)
+		return nil, errors.InvalidSenderAddress
 	}
 
 	ok, err := k.CheckBalance(ctx, sender, funds)
@@ -35,7 +35,7 @@ func (k Keeper) SwapInitialize(goCtx context.Context, msg *types.MsgSwapInitiali
 		return nil, err
 	}
 	if !ok {
-		return nil, types.ErrInsufficientAccountFunds(msg.Sender, funds.String())
+		return nil, errors.InsufficientAccountFunds
 	}
 
 	err = k.LockFunds(ctx, sender, funds)
@@ -53,7 +53,7 @@ func (k Keeper) SwapInitialize(goCtx context.Context, msg *types.MsgSwapInitiali
 		TokenSymbol:       msg.TokenSymbol,
 	})
 	if err != nil {
-		return nil, types.ErrInternal(err.Error())
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	return &types.MsgSwapInitializeResponse{}, nil
@@ -65,7 +65,7 @@ func (k Keeper) SwapRedeem(goCtx context.Context, msg *types.MsgSwapRedeem) (*ty
 
 	transactionNumber, ok := sdk.NewIntFromString(msg.TransactionNumber)
 	if !ok {
-		return nil, types.ErrInvalidTransactionNumber(msg.TransactionNumber)
+		return nil, errors.InvalidTransactionNumber
 	}
 
 	hash, err := types.GetHash(transactionNumber, msg.TokenSymbol, msg.Amount, msg.Recipient, msg.FromChain, msg.DestChain)
@@ -74,7 +74,7 @@ func (k Keeper) SwapRedeem(goCtx context.Context, msg *types.MsgSwapRedeem) (*ty
 	}
 
 	if k.HasSwap(ctx, hash) {
-		return nil, types.ErrAlreadyRedeemed(hash.String())
+		return nil, errors.AlreadyRedeemed
 	}
 
 	R := big.NewInt(0)
@@ -91,7 +91,7 @@ func (k Keeper) SwapRedeem(goCtx context.Context, msg *types.MsgSwapRedeem) (*ty
 	params := k.GetParams(ctx)
 
 	if hex.EncodeToString(address.Bytes()) != params.CheckingAddress {
-		return nil, types.ErrInvalidServiceAddress(params.CheckingAddress, hex.EncodeToString(address.Bytes()))
+		return nil, errors.InvalidServiceAddress
 	}
 
 	k.SetSwap(ctx, hash)
@@ -99,12 +99,12 @@ func (k Keeper) SwapRedeem(goCtx context.Context, msg *types.MsgSwapRedeem) (*ty
 	funds := sdk.NewCoins(sdk.NewCoin(strings.ToLower(msg.TokenSymbol), msg.Amount))
 
 	if !k.CheckPoolFunds(ctx, funds) {
-		return nil, types.ErrInsufficientPoolFunds(funds.String(), k.GetLockedFunds(ctx).String())
+		return nil, errors.InsufficientPoolFunds
 	}
 
 	recipient, err := sdk.AccAddressFromBech32(msg.Recipient)
 	if err != nil {
-		return nil, types.ErrInvalidSenderAddress(msg.Recipient)
+		return nil, errors.InvalidSenderAddress
 	}
 
 	err = k.UnlockFunds(ctx, recipient, funds)
@@ -122,7 +122,7 @@ func (k Keeper) SwapRedeem(goCtx context.Context, msg *types.MsgSwapRedeem) (*ty
 		TokenSymbol:       msg.TokenSymbol,
 	})
 	if err != nil {
-		return nil, types.ErrInternal(err.Error())
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	return &types.MsgSwapRedeemResponse{}, nil
@@ -134,7 +134,7 @@ func (k Keeper) ChainActivate(goCtx context.Context, msg *types.MsgChainActivate
 
 	params := k.GetParams(ctx)
 	if msg.Sender != params.ServiceAddress {
-		return nil, types.ErrSenderIsNotSwapService(msg.Sender)
+		return nil, errors.SenderIsNotSwapService
 	}
 
 	chain, found := k.GetChain(ctx, msg.ChainNumber)
@@ -151,7 +151,7 @@ func (k Keeper) ChainActivate(goCtx context.Context, msg *types.MsgChainActivate
 		ChainNumber: msg.ChainNumber,
 	})
 	if err != nil {
-		return nil, types.ErrInternal(err.Error())
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	return &types.MsgChainActivateResponse{}, nil
@@ -162,12 +162,12 @@ func (k Keeper) ChainDeactivate(goCtx context.Context, msg *types.MsgChainDeacti
 
 	params := k.GetParams(ctx)
 	if msg.Sender != params.ServiceAddress {
-		return nil, types.ErrSenderIsNotSwapService(msg.Sender)
+		return nil, errors.SenderIsNotSwapService
 	}
 
 	chain, found := k.GetChain(ctx, msg.ChainNumber)
 	if !found {
-		return nil, types.ErrChainDoesNotExists(strconv.FormatUint(uint64(msg.ChainNumber), 10))
+		return nil, errors.ChainDoesNotExists
 	}
 
 	chain.Active = false
@@ -177,7 +177,7 @@ func (k Keeper) ChainDeactivate(goCtx context.Context, msg *types.MsgChainDeacti
 		ChainNumber: msg.ChainNumber,
 	})
 	if err != nil {
-		return nil, types.ErrInternal(err.Error())
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	return &types.MsgChainDeactivateResponse{}, nil

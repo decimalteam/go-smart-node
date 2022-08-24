@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"context"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -18,7 +19,7 @@ func existCoinSymbol(ctx client.Context, symbol string) error {
 	case err != nil:
 		return err
 	case res == nil:
-		return types.ErrCoinDoesNotExist(symbol)
+		return errors.CoinDoesNotExist
 	default:
 		return nil
 	}
@@ -57,7 +58,7 @@ func parseCoin(clientCtx client.Context, amount string) (sdk.Coin, error) {
 	case err != nil:
 		return coin, err
 	case resp == nil:
-		return coin, types.ErrCoinDoesNotExist(coin.Denom)
+		return coin, errors.CoinDoesNotExist
 	default:
 		return coin, nil
 	}
@@ -72,7 +73,7 @@ func checkBalance(clientCtx client.Context, address sdk.AccAddress, needAmount s
 	amountBalance := balance.Balance.Amount
 
 	if amountBalance.LT(needAmount) {
-		return types.ErrInsufficientFunds(needAmount.String(), amountBalance.String())
+		return errors.InsufficientFunds
 	}
 
 	return nil

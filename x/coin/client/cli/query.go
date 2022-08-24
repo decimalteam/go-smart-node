@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"context"
 	"fmt"
 	"strings"
@@ -127,13 +128,13 @@ $ %s query %s check 3YEtqixL7ccFTZJaMUHx3TgsQEqzrqoj...(result of command 'issue
 			// Decode provided check from base58 format to raw bytes
 			checkBytes := base58.Decode(args[0])
 			if len(checkBytes) == 0 {
-				return types.ErrUnableDecodeCheck(args[0])
+				return errors.UnableDecodeCheckBase58
 			}
 
 			// Parse provided check from raw bytes to ensure it is valid
 			check, err := types.ParseCheck(checkBytes)
 			if err != nil {
-				return types.ErrInvalidCheck(err.Error())
+				return err
 			}
 
 			hash := check.HashFull()

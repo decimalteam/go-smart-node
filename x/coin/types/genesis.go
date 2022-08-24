@@ -1,8 +1,8 @@
 package types
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"encoding/hex"
-	"fmt"
 	"regexp"
 )
 
@@ -29,21 +29,21 @@ func DefaultGenesisState() *GenesisState {
 func (gs *GenesisState) Validate() error {
 	// Check coin title maximum length
 	if len(gs.Params.BaseTitle) > maxCoinNameBytes {
-		return ErrInvalidCoinTitle(gs.Params.BaseTitle)
+		return errors.InvalidCoinTitle
 	}
 	// Check coin symbol for correct regexp
 	if match, _ := regexp.MatchString(allowedCoinSymbols, gs.Params.BaseSymbol); !match {
-		return ErrInvalidCoinSymbol(gs.Params.BaseSymbol)
+		return errors.InvalidCoinSymbol
 	}
 	// Check coin initial volume to be correct
-	if gs.Params.BaseInitialVolume.LT(MinCoinSupply) || gs.Params.BaseInitialVolume.GT(maxCoinSupply) {
-		return ErrInvalidCoinInitialVolume(gs.Params.BaseInitialVolume.String())
+	if gs.Params.BaseInitialVolume.LT(MinCoinSupply) || gs.Params.BaseInitialVolume.GT(MaxCoinSupply) {
+		return errors.InvalidCoinInitialVolume
 	}
 	// Check there are no coins with the same symbol
 	seenSymbols := make(map[string]bool)
 	for _, coin := range gs.Coins {
 		if seenSymbols[coin.Symbol] {
-			return fmt.Errorf("coin symbol duplicated on genesis: '%s'", coin.Symbol)
+			return errors.DuplicateCoinInGenesis
 		}
 		// Validate coin
 		// if err := coin.Validate(); err != nil {
@@ -57,7 +57,7 @@ func (gs *GenesisState) Validate() error {
 		checkHash := check.HashFull()
 		checkHashStr := hex.EncodeToString(checkHash[:])
 		if seenChecks[checkHashStr] {
-			return fmt.Errorf("check hash duplicated on genesis: '%X'", checkHash[:])
+			return errors.DuplicateCheckInGenesis
 		}
 		// Validate check
 		// if err := check.Validate(); err != nil {

@@ -24,7 +24,7 @@ func (lad LegacyActualizerDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 	simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	sigTx, ok := tx.(authsigning.SigVerifiableTx)
 	if !ok {
-		return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "invalid transaction type")
+		return ctx, sdkerrors.ErrTxDecode
 	}
 	pubkeys, err := sigTx.GetPubKeys()
 	if err != nil {

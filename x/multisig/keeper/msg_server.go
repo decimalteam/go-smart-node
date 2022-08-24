@@ -1,8 +1,8 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/multisig/errors"
 	"context"
-	"strconv"
 	"strings"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
@@ -15,23 +15,23 @@ func (k Keeper) CreateWallet(goCtx context.Context, msg *types.MsgCreateWallet) 
 	// Create new multisig wallet
 	wallet, err := types.NewWallet(msg.Owners, msg.Weights, msg.Threshold, ctx.TxBytes())
 	if err != nil {
-		return nil, types.ErrUnableToCreateWallet(err.Error())
+		return nil, errors.UnableToCreateWallet
 	}
 
 	// Ensure multisig wallet with the address does not exist
 	_, err = k.GetWallet(ctx, wallet.Address)
 	if err == nil {
-		return nil, types.ErrWalletAlreadyExists(wallet.Address)
+		return nil, errors.WalletAlreadyExists
 	}
 
 	adr, err := sdk.AccAddressFromBech32(wallet.Address)
 	if err != nil {
-		return nil, types.ErrInvalidWallet(wallet.Address)
+		return nil, errors.InvalidWallet
 	}
 	// Ensure account with multisig address does not exist
 	existingAccount := k.accountKeeper.GetAccount(ctx, adr)
 	if existingAccount != nil && !existingAccount.GetAddress().Empty() {
-		return nil, types.ErrAccountAlreadyExists(wallet.Address)
+		return nil, errors.AccountAlreadyExists
 	}
 
 	// Save created multisig wallet to the KVStore
@@ -46,7 +46,7 @@ func (k Keeper) CreateWallet(goCtx context.Context, msg *types.MsgCreateWallet) 
 		Threshold: msg.Threshold,
 	})
 	if err != nil {
-		return nil, types.ErrInternal(err.Error())
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	return &types.MsgCreateWalletResponse{
@@ -60,11 +60,11 @@ func (k Keeper) CreateTransaction(goCtx context.Context, msg *types.MsgCreateTra
 	// Retrieve multisig wallet from the KVStore
 	wallet, err := k.GetWallet(ctx, msg.Wallet)
 	if err != nil {
-		return nil, types.ErrWalletAccountNotFound(msg.Wallet)
+		return nil, err
 	}
 	adr, err := sdk.AccAddressFromBech32(wallet.Address)
 	if err != nil {
-		return nil, types.ErrInvalidWallet(wallet.Address)
+		return nil, errors.InvalidWallet
 	}
 	// Retrieve coins hold on the multisig wallet
 	walletCoins := k.bankKeeper.GetAllBalances(ctx, adr)
@@ -73,7 +73,7 @@ func (k Keeper) CreateTransaction(goCtx context.Context, msg *types.MsgCreateTra
 	for _, coin := range msg.Coins {
 		coinName := strings.ToLower(coin.Denom)
 		if walletCoins.AmountOf(coinName).LT(coin.Amount) {
-			return nil, types.ErrInsufficientFunds(coin.String(), sdk.NewCoin(coinName, walletCoins.AmountOf(coinName)).String())
+			return nil, errors.InsufficientFunds
 		}
 	}
 
@@ -87,7 +87,7 @@ func (k Keeper) CreateTransaction(goCtx context.Context, msg *types.MsgCreateTra
 		ctx.TxBytes(),
 	)
 	if err != nil {
-		return nil, types.ErrUnableToCreateTransaction(err.Error())
+		return nil, err
 	}
 
 	// Save created multisig transaction to the KVStore
@@ -102,7 +102,7 @@ func (k Keeper) CreateTransaction(goCtx context.Context, msg *types.MsgCreateTra
 		Transaction: transaction.Id,
 	})
 	if err != nil {
-		return nil, types.ErrInternal(err.Error())
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	// Sign created multisig transaction by the creator
@@ -125,13 +125,13 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 	// Retrieve multisig transaction from the KVStore
 	transaction, err := k.GetTransaction(ctx, msg.TxID)
 	if err != nil {
-		return nil, types.ErrTransactionNotFound(msg.TxID)
+		return nil, err
 	}
 
 	// Retrieve multisig wallet from the KVStore
 	wallet, err := k.GetWallet(ctx, transaction.Wallet)
 	if err != nil {
-		return nil, types.ErrWalletAccountNotFound(transaction.Wallet)
+		return nil, err
 	}
 
 	// Calculate current weight of signatures
@@ -144,7 +144,7 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 
 	// Ensure current weight of signatures is not enough
 	if confirmations >= wallet.Threshold {
-		return nil, types.ErrAlreadyEnoughSignatures(strconv.FormatUint(confirmations, 10), strconv.FormatUint(wallet.Threshold, 10))
+		return nil, errors.AlreadyEnoughSignatures
 	}
 
 	// Append the signature to the multisig transaction
@@ -155,7 +155,7 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 			continue
 		}
 		if transaction.Signers[i] != "" {
-			return nil, types.ErrTransactionAlreadySigned(msg.Sender)
+			return nil, errors.TransactionAlreadySigned
 		}
 		signed = true
 		weight = wallet.Weights[i]
@@ -164,7 +164,7 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 		break
 	}
 	if !signed {
-		return nil, types.ErrSignerIsNotOwner(msg.Sender, transaction.Wallet)
+		return nil, errors.SignerIsNotOwner
 	}
 
 	// Save updated multisig transaction to the KVStore
@@ -175,16 +175,16 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 	if confirmed {
 		wAdr, err := sdk.AccAddressFromBech32(wallet.Address)
 		if err != nil {
-			return nil, types.ErrInvalidWallet(wallet.Address)
+			return nil, errors.InvalidWallet
 		}
 		rAdr, err := sdk.AccAddressFromBech32(transaction.Receiver)
 		if err != nil {
-			return nil, types.ErrInvalidReceiver(transaction.Receiver)
+			return nil, errors.InvalidReceiver
 		}
 		// Perform transaction
 		err = k.bankKeeper.SendCoins(ctx, wAdr, rAdr, transaction.Coins)
 		if err != nil {
-			return nil, types.ErrUnablePreformTransaction(transaction.Id, err.Error())
+			return nil, err
 		}
 	}
 
@@ -198,7 +198,7 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 		Confirmed:     confirmed,
 	})
 	if err != nil {
-		return nil, types.ErrInternal(err.Error())
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	return &types.MsgSignTransactionResponse{}, nil

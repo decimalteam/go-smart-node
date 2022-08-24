@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
@@ -77,19 +78,15 @@ $ %s tx %s create "title of coin" coin1 20 10000000000 200000000 10000000000000 
 
 			crr, err := strconv.ParseUint(args[2], 10, 8)
 			if err != nil {
-				return types.ErrInvalidCRR(args[2])
+				return errors.InvalidCRR
 			}
 
 			err = existCoinSymbol(clientCtx, symbol)
 			if err == nil {
-				return types.ErrCoinAlreadyExists(symbol)
+				return errors.CoinAlreadyExists
 			}
 
 			msg := types.NewMsgCreateCoin(from, title, symbol, crr, initVolume, initReserve, limitVolume, identity)
-			err = msg.ValidateBasic()
-			if err != nil {
-				return err
-			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -136,7 +133,7 @@ $ %s tx %s update coin1 10000000 "some identity" --from mykey`, config.AppBinNam
 			}
 
 			if resp.Coin.Creator != from.String() {
-				return types.ErrUpdateOnlyForCreator()
+				return errors.UpdateOnlyForCreator
 			}
 
 			msg := types.NewMsgUpdateCoin(from, symbol, limitVolume, identity)
@@ -192,10 +189,6 @@ $ %s tx %s buy 10000000000tony 12000000del --from mykey`, config.AppBinName, typ
 
 			// create msg
 			msg := types.NewMsgBuyCoin(from, coinToBuy, maxAmountToSell)
-			err = msg.ValidateBasic()
-			if err != nil {
-				return err
-			}
 
 			// broadcast tx
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
@@ -249,10 +242,6 @@ $ %s tx %s sell 10000000000tony 12000000del --from mykey`, config.AppBinName, ty
 			}
 
 			msg := types.NewMsgSellCoin(from, coinToSell, minAmountToBuy)
-			validationErr := msg.ValidateBasic()
-			if validationErr != nil {
-				return validationErr
-			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -303,10 +292,6 @@ $ %s tx %s send dx1hs2wdrm87c92rzhq0vgmgrxr6u57xpr2lcygc2 1000del --from mykey`,
 			}
 
 			msg := types.NewMsgSendCoin(from, coins, address)
-			err = msg.ValidateBasic()
-			if err != nil {
-				return err
-			}
 
 			// broadcast tx
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
@@ -384,7 +369,7 @@ $ %s tx %s multisend dx1a..a 1000del dx1b..b 1000tony --from mykey
 					wantFunds += send.Coin.String() + ", "
 				}
 				wantFunds = strings.TrimSuffix(wantFunds, ", ")
-				return types.ErrInsufficientFunds(wantFunds, balance.String())
+				return errors.InsufficientFunds
 			}
 
 			msg := types.NewMsgMultiSendCoin(from, sends)
@@ -488,10 +473,6 @@ $ %s tx %s burn 1000del --from mykey
 			}
 
 			msg := types.NewMsgBurnCoin(from, coins)
-			err = msg.ValidateBasic()
-			if err != nil {
-				return err
-			}
 
 			// broadcast tx
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
@@ -566,14 +547,14 @@ $ %s tx %s issue-check 1000del 10 235 "some secret" --from mykey
 			checkHash = check.Hash()
 			signature, _, err := clientCtx.Keyring.Sign(clientCtx.FromName, checkHash[:])
 			if err != nil {
-				panic(err)
+				panic(errors.UnableSignCheck)
 			}
 
 			check.SetSignature(signature)
 
 			checkBytes, err := rlp.EncodeToBytes(check)
 			if err != nil {
-				return err
+				return errors.UnableRPLEncodeToBytesCheck
 			}
 
 			return clientCtx.PrintString(base58.Encode(checkBytes))
@@ -611,19 +592,20 @@ $ %s tx %s redeem-check 3YEtqixL7ccFTZJaMUHx3T...(result of 'issue-check') "some
 			// Decode provided check from base58 format to raw bytes
 			checkBytes := base58.Decode(checkBase58)
 			if len(checkBytes) == 0 {
+				return errors.UnableDecodeCheckBase58
 			}
 
 			// Parse provided check from raw bytes to ensure it is valid
 			_, err = types.ParseCheck(checkBytes)
 			if err != nil {
-				return types.ErrInvalidCheck(err.Error())
+				return err
 			}
 
 			// Prepare private key from passphrase
 			passphraseHash := sha256.Sum256([]byte(passphrase))
 			passphrasePrivKey, err := ethereumCrypto.ToECDSA(passphraseHash[:])
 			if err != nil {
-				return types.ErrInvalidPassphrase(err.Error())
+				return errors.InvalidPassphrase
 			}
 
 			// Prepare bytes to sign by private key generated from passphrase
@@ -633,23 +615,19 @@ $ %s tx %s redeem-check 3YEtqixL7ccFTZJaMUHx3T...(result of 'issue-check') "some
 				clientCtx.GetFromAddress(),
 			})
 			if err != nil {
-				return types.ErrUnableRPLEncodeCheck(err.Error())
+				return errors.UnableRPLEncodeAddress
 			}
 			hw.Sum(receiverAddressHash[:0])
 
 			// Sign receiver address by private key generated from passphrase
 			signature, err := ethereumCrypto.Sign(receiverAddressHash[:], passphrasePrivKey)
 			if err != nil {
-				return types.ErrUnableSignCheck(err.Error())
+				return errors.UnableSignCheck
 			}
 			proofBase64 := base64.StdEncoding.EncodeToString(signature)
 
 			// Prepare redeem check message
 			msg := types.NewMsgRedeemCheck(clientCtx.GetFromAddress(), checkBase58, proofBase64)
-			err = msg.ValidateBasic()
-			if err != nil {
-				return err
-			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},

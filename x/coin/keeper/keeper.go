@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -72,7 +73,7 @@ func (k *Keeper) GetCoin(ctx sdk.Context, symbol string) (coin types.Coin, err e
 	key := append(types.KeyPrefixCoin, []byte(strings.ToLower(symbol))...)
 	value := store.Get(key)
 	if len(value) == 0 {
-		err = fmt.Errorf("coin %s is not found in the key-value store", strings.ToLower(symbol))
+		err = errors.CoinDoesNotExist
 		return
 	}
 	err = k.cdc.UnmarshalLengthPrefixed(value, &coin)
@@ -128,7 +129,7 @@ func (k *Keeper) EditCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, vol
 		Reserve: coin.Reserve.String(),
 	})
 	if err != nil {
-		return err
+		return errors.Internal.Wrapf("err: %s", err.Error())
 	}
 	return nil
 }
@@ -154,7 +155,7 @@ func (k *Keeper) GetCheck(ctx sdk.Context, checkHash []byte) (check types.Check,
 	key := append(types.KeyPrefixCheck, checkHash...)
 	value := store.Get(key)
 	if len(value) == 0 {
-		err = fmt.Errorf("check with hash %X is not found in the key-value store", checkHash)
+		err = errors.CheckDoesNotExist
 		return
 	}
 	err = k.cdc.UnmarshalLengthPrefixed(value, &check)
@@ -240,9 +241,7 @@ func (k *Keeper) GetCommission(ctx sdk.Context, feeAmountBase sdk.Int) (sdk.Int,
 		}
 
 		if coin.Reserve.LT(feeAmountBase) {
-			return sdk.Int{}, "", fmt.Errorf(
-				"coin reserve balance is not sufficient for transaction. Has: %s, required %s",
-				coin.Reserve.String(), feeAmountBase.String())
+			return sdk.Int{}, "", errors.InsufficientCoinReserve
 		}
 
 		feeAmount = formulas.CalculateSaleAmount(coin.Volume, coin.Reserve, uint(coin.CRR), feeAmountBase)

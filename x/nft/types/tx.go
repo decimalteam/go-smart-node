@@ -1,6 +1,7 @@
 package types
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/errors"
 	sdkmath "cosmossdk.io/math"
 
 	"regexp"
@@ -43,31 +44,30 @@ func (m *MsgMintNFT) Type() string { return "mint_nft" }
 func (m *MsgMintNFT) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(m.Sender)
 	if err != nil {
-		return ErrInvalidSenderAddress(m.Sender)
+		return errors.InvalidSender
 	}
 	_, err = sdk.AccAddressFromBech32(m.Recipient)
 	if err != nil {
-		return ErrInvalidRecipientAddress(m.Recipient)
+		return errors.InvalidRecipientAddress
 	}
 
 	if strings.TrimSpace(m.Denom) == "" {
-		return ErrInvalidDenom(m.Denom)
+		return errors.InvalidDenom
 	}
 	if strings.TrimSpace(m.ID) == "" {
-		return ErrInvalidNFT(m.ID)
+		return errors.InvalidNFT
 	}
 	if !m.Quantity.IsPositive() {
-		return ErrInvalidQuantity(m.Quantity.String())
+		return errors.InvalidQuantity
 	}
-
 	if !m.Reserve.IsPositive() || m.Reserve.Amount.LT(MinReserve) {
-		return ErrInvalidReserve(m.Reserve.String())
+		return errors.InvalidReserve
 	}
 	if match, _ := regexp.MatchString(regName, m.Denom); !match {
-		return ErrInvalidDenom(m.Denom)
+		return errors.InvalidDenom
 	}
 	if match, _ := regexp.MatchString(regName, m.ID); !match {
-		return ErrInvalidTokenID(m.ID)
+		return errors.InvalidTokenID
 	}
 
 	return nil
@@ -113,16 +113,16 @@ func (msg *MsgBurnNFT) Type() string { return "burn_nft" }
 func (msg *MsgBurnNFT) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSender
 	}
 	if strings.TrimSpace(msg.Denom) == "" {
-		return ErrInvalidDenom(msg.Denom)
+		return errors.InvalidDenom
 	}
 	if strings.TrimSpace(msg.ID) == "" {
-		return ErrInvalidNFT(msg.ID)
+		return errors.InvalidNFT
 	}
 	if !CheckUnique(msg.SubTokenIDs) {
-		return ErrNotUniqueSubTokenIDs()
+		return errors.NotUniqueSubTokenIDs
 	}
 
 	return nil
@@ -169,22 +169,22 @@ func (msg *MsgUpdateReserveNFT) Type() string { return "update_nft_reserve" }
 func (msg *MsgUpdateReserveNFT) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSender
 	}
 
 	if strings.TrimSpace(msg.Denom) == "" {
 
-		return ErrInvalidDenom(msg.Denom)
+		return errors.InvalidDenom
 	}
 	if strings.TrimSpace(msg.ID) == "" {
-		return ErrInvalidNFT(msg.ID)
+		return errors.InvalidNFT
 	}
 	if !CheckUnique(msg.SubTokenIDs) {
-		return ErrNotUniqueSubTokenIDs()
+		return errors.NotUniqueSubTokenIDs
 	}
 
 	if msg.NewReserve.IsZero() {
-		return ErrInvalidReserve("Reserv can not be equal to zero")
+		return errors.InvalidReserve
 	}
 
 	return nil
@@ -230,28 +230,28 @@ func (msg *MsgTransferNFT) Type() string { return "transfer_nft" }
 // ValidateBasic Implements Msg.
 func (msg *MsgTransferNFT) ValidateBasic() error {
 	if strings.TrimSpace(msg.Denom) == "" {
-		return ErrInvalidCollection(msg.Denom)
+		return errors.InvalidCollection
 	}
 
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSender
 	}
 
 	recipient, err := sdk.AccAddressFromBech32(msg.Recipient)
 	if err != nil {
-		return ErrInvalidRecipientAddress(msg.Recipient)
+		return errors.InvalidRecipientAddress
 	}
 
 	if sender.Equals(recipient) {
-		return ErrForbiddenToTransferToYourself()
+		return errors.ForbiddenToTransferToYourself
 	}
 
 	if strings.TrimSpace(msg.ID) == "" {
-		return ErrInvalidCollection(msg.ID)
+		return errors.InvalidCollection
 	}
 	if !CheckUnique(msg.SubTokenIDs) {
-		return ErrNotUniqueSubTokenIDs()
+		return errors.NotUniqueSubTokenIDs
 	}
 
 	return nil
@@ -297,14 +297,14 @@ func (msg *MsgEditNFTMetadata) Type() string { return "edit_nft_metadata" }
 func (msg *MsgEditNFTMetadata) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSender
 	}
 
 	if strings.TrimSpace(msg.Denom) == "" {
-		return ErrInvalidDenom(msg.Denom)
+		return errors.InvalidDenom
 	}
 	if strings.TrimSpace(msg.ID) == "" {
-		return ErrInvalidNFT(msg.ID)
+		return errors.InvalidNFT
 	}
 	return nil
 }

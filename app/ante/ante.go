@@ -36,10 +36,7 @@ func NewAnteHandler(options HandlerOptions) sdk.AnteHandler {
 					// cosmos-sdk tx with dynamic fee extension
 					anteHandler = newCosmosAnteHandler(options)
 				default:
-					return ctx, sdkerrors.Wrapf(
-						sdkerrors.ErrUnknownExtensionOptions,
-						"rejecting tx with unsupported extension option: %s", typeURL,
-					)
+					return ctx, sdkerrors.ErrUnknownExtensionOptions
 				}
 
 				return anteHandler(ctx, tx, sim)
@@ -51,7 +48,7 @@ func NewAnteHandler(options HandlerOptions) sdk.AnteHandler {
 		case sdk.Tx:
 			anteHandler = newCosmosAnteHandler(options)
 		default:
-			return ctx, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "invalid transaction type: %T", tx)
+			return ctx, sdkerrors.ErrUnknownRequest
 		}
 
 		return anteHandler(ctx, tx, sim)

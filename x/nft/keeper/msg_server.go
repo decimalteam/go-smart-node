@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/errors"
 	"context"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
@@ -15,17 +16,17 @@ func (k Keeper) MintNFT(c context.Context, msg *types.MsgMintNFT) (*types.MsgMin
 	nft, err := k.GetNFT(ctx, msg.Denom, msg.ID)
 	if err == nil {
 		if nft.GetCreator() != msg.Sender || !nft.GetAllowMint() {
-			return nil, types.ErrNotAllowedMint()
+			return nil, errors.NotAllowedMint
 		}
 	} else {
 		if k.HasTokenURI(ctx, msg.TokenURI) {
-			return nil, types.ErrNotUniqueTokenURI()
+			return nil, errors.NotUniqueTokenURI
 		}
 		if k.HasTokenID(ctx, msg.ID) {
-			return nil, types.ErrNotUniqueTokenID()
+			return nil, errors.NotUniqueTokenID
 		}
 		if msg.Reserve.Amount.LT(types.MinReserve) {
-			return nil, types.ErrInvalidReserve(msg.Reserve.String())
+			return nil, errors.InvalidReserve
 		}
 	}
 
@@ -45,7 +46,7 @@ func (k Keeper) MintNFT(c context.Context, msg *types.MsgMintNFT) (*types.MsgMin
 		SubTokenIDs: subTokenIDs,
 	})
 	if err != nil {
-		return nil, types.ErrInternal(err.Error())
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	return &types.MsgMintNFTResponse{}, nil
@@ -67,7 +68,7 @@ func (k Keeper) TransferNFT(c context.Context, msg *types.MsgTransferNFT) (*type
 		SubTokenIDs: msg.SubTokenIDs,
 	})
 	if err != nil {
-		return nil, types.ErrInternal(err.Error())
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	return &types.MsgTransferNFTResponse{}, nil
@@ -82,7 +83,7 @@ func (k Keeper) EditNFTMetadata(c context.Context, msg *types.MsgEditNFTMetadata
 	}
 
 	if nft.GetCreator() != msg.Sender {
-		return nil, types.ErrNotAllowedMint()
+		return nil, errors.NotAllowedMint
 	}
 
 	// update NFT
@@ -98,7 +99,7 @@ func (k Keeper) EditNFTMetadata(c context.Context, msg *types.MsgEditNFTMetadata
 		TokenURI: msg.TokenURI,
 	})
 	if err != nil {
-		return nil, types.ErrInternal(err.Error())
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	return &types.MsgEditNFTMetadataResponse{}, nil
@@ -113,7 +114,7 @@ func (k Keeper) BurnNFT(c context.Context, msg *types.MsgBurnNFT) (*types.MsgBur
 	}
 
 	if nft.GetCreator() != msg.Sender {
-		return nil, types.ErrNotAllowedBurn()
+		return nil, errors.NotAllowedBurn
 	}
 
 	// remove NFT
@@ -129,7 +130,7 @@ func (k Keeper) BurnNFT(c context.Context, msg *types.MsgBurnNFT) (*types.MsgBur
 		SubTokenIDs: msg.SubTokenIDs,
 	})
 	if err != nil {
-		return nil, types.ErrInternal(err.Error())
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	return &types.MsgBurnNFTResponse{}, nil
@@ -144,7 +145,7 @@ func (k Keeper) UpdateReserveNFT(c context.Context, msg *types.MsgUpdateReserveN
 	}
 
 	if nft.GetCreator() != msg.Sender {
-		return nil, types.ErrNotAllowedUpdateReserve()
+		return nil, errors.NotAllowedUpdateReserve
 	}
 
 	// update reserve nft
@@ -161,7 +162,7 @@ func (k Keeper) UpdateReserveNFT(c context.Context, msg *types.MsgUpdateReserveN
 		NewReserve:  &msg.NewReserve,
 	})
 	if err != nil {
-		return nil, types.ErrInternal(err.Error())
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	return &types.MsgUpdateReserveNFTResponse{}, nil

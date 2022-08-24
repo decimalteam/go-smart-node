@@ -1,6 +1,7 @@
 package types
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"fmt"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
@@ -73,7 +74,7 @@ func validateBaseSymbol(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 	if !coinSymbolValidator.MatchString(symbol) {
-		return ErrForbiddenCoinSymbol(symbol)
+		return errors.InvalidCoinSymbol
 	}
 	// TODO
 	return nil

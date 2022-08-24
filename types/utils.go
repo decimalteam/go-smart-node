@@ -53,12 +53,12 @@ func IsSupportedKey(pubkey cryptotypes.PubKey) bool {
 func GetDecimalAddressFromBech32(address string) (sdk.AccAddress, error) {
 	bech32Prefix := strings.SplitN(address, "1", 2)[0]
 	if bech32Prefix == address {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid bech32 address: %s", address)
+		return nil, sdkerrors.ErrInvalidAddress
 	}
 
 	addressBz, err := sdk.GetFromBech32(address, bech32Prefix)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid address %s, %s", address, err.Error())
+		return nil, sdkerrors.ErrInvalidAddress
 	}
 
 	// safety check: shouldn't happen
