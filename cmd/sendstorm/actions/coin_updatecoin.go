@@ -1,6 +1,7 @@
 package actions
 
 import (
+	sdkmath "cosmossdk.io/math"
 	"fmt"
 	"math/rand"
 	"time"
@@ -26,7 +27,7 @@ type UpdateCoinGenerator struct {
 type UpdateCoinAction struct {
 	creator        sdk.AccAddress
 	symbol         string
-	newLimitVolume sdk.Int
+	newLimitVolume sdkmath.Int
 	newIdentity    string
 }
 

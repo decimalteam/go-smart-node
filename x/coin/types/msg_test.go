@@ -36,9 +36,9 @@ func TestCreateCoin(t *testing.T) {
 		title          string
 		symbol         string
 		crr            uint64
-		initialVolume  sdk.Int
-		initialReserve sdk.Int
-		limitVolume    sdk.Int
+		initialVolume  sdkmath.Int
+		initialReserve sdkmath.Int
+		limitVolume    sdkmath.Int
 		identity       string
 		expectError    bool
 	}{
@@ -215,7 +215,7 @@ func TestUpdateCoin(t *testing.T) {
 		tag         string
 		sender      string
 		symbol      string
-		limitVolume sdk.Int
+		limitVolume sdkmath.Int
 		identity    string
 		expectError bool
 	}{

@@ -1,6 +1,7 @@
 package actions
 
 import (
+	sdkmath "cosmossdk.io/math"
 	"fmt"
 	"math/rand"
 	"time"
@@ -45,7 +46,7 @@ func (asg *SellCoinGenerator) Update(ui UpdateInfo) {
 
 func (asg *SellCoinGenerator) Generate() Action {
 	var coinInfo dscApi.Coin
-	var amountToSell sdk.Int
+	var amountToSell sdkmath.Int
 	var coinName string
 	if len(asg.knownCoins) == 1 {
 		return &EmptyAction{}

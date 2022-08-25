@@ -1,6 +1,7 @@
 package ante
 
 import (
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
@@ -37,7 +38,7 @@ const (
 )
 
 // Calculate fee in base coin
-func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec) (sdk.Int, error) {
+func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec) (sdkmath.Int, error) {
 	commissionInBaseCoin := sdk.ZeroInt()
 	commissionInBaseCoin = commissionInBaseCoin.AddRaw(txBytesLen * 2)
 	for _, msg := range msgs {

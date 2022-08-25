@@ -1,6 +1,7 @@
 package types
 
 import (
+	sdkmath "cosmossdk.io/math"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -54,7 +55,7 @@ type CoinKeeper interface {
 	GetCoin(ctx sdk.Context, symbol string) (coin Coin, err error)
 	GetCoins(ctx sdk.Context) (coins []Coin)
 	SetCoin(ctx sdk.Context, coin Coin)
-	EditCoin(ctx sdk.Context, coin Coin, reserve sdk.Int, volume sdk.Int) error
+	EditCoin(ctx sdk.Context, coin Coin, reserve sdkmath.Int, volume sdkmath.Int) error
 
 	IsCheckRedeemed(ctx sdk.Context, check *Check) bool
 	GetCheck(ctx sdk.Context, checkHash []byte) (check Check, err error)
@@ -67,5 +68,5 @@ type CoinKeeper interface {
 	// need for fee deduction
 	IsCoinBase(ctx sdk.Context, symbol string) bool
 	GetBaseDenom(ctx sdk.Context) string
-	CheckFutureChanges(ctx sdk.Context, coinInfo Coin, amount sdk.Int) error
+	CheckFutureChanges(ctx sdk.Context, coinInfo Coin, amount sdkmath.Int) error
 }

@@ -2,6 +2,7 @@ package types
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/errors"
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -27,7 +28,7 @@ const (
 func NewMsgSwapInitialize(
 	sender sdk.AccAddress,
 	recipient string,
-	amount sdk.Int,
+	amount sdkmath.Int,
 	tokenSymbol string,
 	transactionNumber string,
 	fromChain uint32,
@@ -96,7 +97,7 @@ func NewMsgSwapRedeem(
 	sender sdk.AccAddress,
 	from string,
 	recipient string,
-	amount sdk.Int,
+	amount sdkmath.Int,
 	tokenSymbol string,
 	transactionNumber string,
 	fromChain uint32,

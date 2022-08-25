@@ -2,13 +2,13 @@ package actions
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	sdkmath "cosmossdk.io/math"
 	"fmt"
 	"math/rand"
 	"time"
 
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
-
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -28,7 +28,7 @@ type MintNFTAction struct {
 	id        string
 	denom     string
 	tokenURI  string
-	quantity  sdk.Int
+	quantity  sdkmath.Int
 	reserve   sdk.Coin
 	allowMint bool
 }

@@ -2,6 +2,7 @@ package actions
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	sdkmath "cosmossdk.io/math"
 	"fmt"
 	"math/rand"
 	"time"
@@ -17,7 +18,7 @@ import (
 type UpdateReserveNFTGenerator struct {
 	increaseBottom, increaseUp int64 // value in 10^18 (del)
 	knownNFT                   []dscApi.NFT
-	knownSubtokenReserves      map[NFTSubTokenKey]sdk.Int
+	knownSubtokenReserves      map[NFTSubTokenKey]sdkmath.Int
 	rnd                        *rand.Rand
 }
 

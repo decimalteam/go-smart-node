@@ -1,6 +1,7 @@
 package tx
 
 import (
+	sdkmath "cosmossdk.io/math"
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -31,7 +32,7 @@ func BuildTransaction(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom
 	oldFee := sdk.ZeroInt()
 	newFee := sdk.OneInt()
 	for !oldFee.Equal(newFee) {
-		oldFee = sdk.ZeroInt().Add(newFee) //=copy, sdk.Int is reference type
+		oldFee = sdk.ZeroInt().Add(newFee) //=copy, sdkmath.Int is reference type
 		newFee, err = calculateFee(acc, msgs, memo, feeDenom, oldFee)
 		if err != nil {
 			return nil, err
@@ -44,7 +45,7 @@ func BuildTransaction(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom
 	return txc, nil
 }
 
-func calculateFee(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom string, fee sdk.Int) (sdk.Int, error) {
+func calculateFee(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom string, fee sdkmath.Int) (sdkmath.Int, error) {
 	txc, err := newTxConstructor(msgs, memo)
 	txc.SetFeeAmount(sdk.NewCoins(sdk.NewCoin(feeDenom, fee)))
 	err = txc.SignTransaction(acc)

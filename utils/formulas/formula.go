@@ -1,6 +1,7 @@
 package formulas
 
 import (
+	sdkmath "cosmossdk.io/math"
 	"math/big"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -10,7 +11,7 @@ import (
 
 // CalculatePurchaseReturn calculates amount of coin that user will receive by depositing given amount of BIP.
 // Return = supply * ((1 + deposit / reserve) ^ (crr / 100) - 1)
-func CalculatePurchaseReturn(supply sdk.Int, reserve sdk.Int, crr uint, deposit sdk.Int) sdk.Int {
+func CalculatePurchaseReturn(supply sdkmath.Int, reserve sdkmath.Int, crr uint, deposit sdkmath.Int) sdkmath.Int {
 	if deposit.Sign() == 0 {
 		return sdk.NewInt(0)
 	}
@@ -37,7 +38,7 @@ func CalculatePurchaseReturn(supply sdk.Int, reserve sdk.Int, crr uint, deposit 
 
 // CalculatePurchaseAmount is the reversed version of function CalculatePurchaseReturn.
 // Deposit = reserve * (((wantReceive + supply) / supply)^(100/c) - 1)
-func CalculatePurchaseAmount(supply sdk.Int, reserve sdk.Int, crr uint, wantReceive sdk.Int) sdk.Int {
+func CalculatePurchaseAmount(supply sdkmath.Int, reserve sdkmath.Int, crr uint, wantReceive sdkmath.Int) sdkmath.Int {
 	if wantReceive.Sign() == 0 {
 		return sdk.NewInt(0)
 	}
@@ -64,7 +65,7 @@ func CalculatePurchaseAmount(supply sdk.Int, reserve sdk.Int, crr uint, wantRece
 
 // CalculateSaleReturn returns amount of BIP user will receive by depositing given amount of coins.
 // Return = reserve * (1 - (1 - sellAmount / supply) ^ (100 / crr))
-func CalculateSaleReturn(supply sdk.Int, reserve sdk.Int, crr uint, sellAmount sdk.Int) sdk.Int {
+func CalculateSaleReturn(supply sdkmath.Int, reserve sdkmath.Int, crr uint, sellAmount sdkmath.Int) sdkmath.Int {
 	// special case for 0 sell amount
 	if sellAmount.Sign() == 0 {
 		return sdk.NewInt(0)
@@ -97,7 +98,7 @@ func CalculateSaleReturn(supply sdk.Int, reserve sdk.Int, crr uint, sellAmount s
 
 // CalculateSaleAmount is the reversed version of function CalculateSaleReturn.
 // Deposit = -(-1 + (-(wantReceive - reserve)/reserve)^(1/crr)) * supply
-func CalculateSaleAmount(supply sdk.Int, reserve sdk.Int, crr uint, wantReceive sdk.Int) sdk.Int {
+func CalculateSaleAmount(supply sdkmath.Int, reserve sdkmath.Int, crr uint, wantReceive sdkmath.Int) sdkmath.Int {
 	if wantReceive.Sign() == 0 {
 		return sdk.NewInt(0)
 	}

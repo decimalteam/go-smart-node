@@ -89,7 +89,7 @@ func TestConsistency(t *testing.T) {
 type coinOp struct {
 	opType string // fee, validator (=burn), buy, sell, sellAll
 	adr    sdk.AccAddress
-	amount sdk.Int
+	amount sdkmath.Int
 }
 
 func runOpSequence(t *testing.T, app *appMain.DSC, ctx sdk.Context, seq []coinOp) {
@@ -138,7 +138,7 @@ func runOpSequence(t *testing.T, app *appMain.DSC, ctx sdk.Context, seq []coinOp
 
 }
 
-func initConsistencyApp(t *testing.T, reserve, volume, limitVolume sdk.Int, crr uint64) (*app.DSC, sdk.Context, []sdk.AccAddress) {
+func initConsistencyApp(t *testing.T, reserve, volume, limitVolume sdkmath.Int, crr uint64) (*app.DSC, sdk.Context, []sdk.AccAddress) {
 	app, ctx := bootstrapGenesisTest(t)
 
 	// write genesis

@@ -3,7 +3,6 @@ package types
 import (
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/errors"
 	sdkmath "cosmossdk.io/math"
-
 	"regexp"
 	"strings"
 

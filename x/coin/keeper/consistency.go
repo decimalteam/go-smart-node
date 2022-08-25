@@ -4,6 +4,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
@@ -13,7 +14,7 @@ import (
 // It includes check balance of auth.FeeCollectorName
 // Positive amount = buy = increase volume and reserve
 // Negative amount = sell/deduct = decrease volume and reserve
-func (k *Keeper) CheckFutureChanges(ctx sdk.Context, coinInfo types.Coin, amount sdk.Int) error {
+func (k *Keeper) CheckFutureChanges(ctx sdk.Context, coinInfo types.Coin, amount sdkmath.Int) error {
 	// no need to chech base coin
 	if coinInfo.Symbol == k.GetBaseDenom(ctx) {
 		return nil
@@ -49,7 +50,7 @@ func (k *Keeper) CheckFutureChanges(ctx sdk.Context, coinInfo types.Coin, amount
 
 // same as above, but check only volume
 // need for burn operation, because this doest not change reserve
-func (k *Keeper) CheckFutureVolumeChanges(ctx sdk.Context, coinInfo types.Coin, amount sdk.Int) error {
+func (k *Keeper) CheckFutureVolumeChanges(ctx sdk.Context, coinInfo types.Coin, amount sdkmath.Int) error {
 	// no need to chech base coin
 	if coinInfo.Symbol == k.GetBaseDenom(ctx) {
 		return nil

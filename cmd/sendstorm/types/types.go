@@ -1,6 +1,7 @@
 package types
 
 import (
+	sdkmath "cosmossdk.io/math"
 	"fmt"
 	"sync"
 
@@ -66,7 +67,7 @@ func (sa *StormAccount) IncrementSequence() {
 	sa.account.IncrementSequence()
 }
 
-func (sa *StormAccount) BalanceForCoin(denom string) sdk.Int {
+func (sa *StormAccount) BalanceForCoin(denom string) sdkmath.Int {
 	for _, b := range sa.currentBalance {
 		if b.Denom == denom {
 			return b.Amount

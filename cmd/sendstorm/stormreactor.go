@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	sdkmath "cosmossdk.io/math"
 	"fmt"
 	"log"
 	"os"
@@ -171,7 +172,7 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 	}
 	ui.NFTs = nfts
 	// nft subtokens
-	ui.NFTSubTokenReserves = make(map[stormActions.NFTSubTokenKey]sdk.Int)
+	ui.NFTSubTokenReserves = make(map[stormActions.NFTSubTokenKey]sdkmath.Int)
 	for _, nft := range ui.NFTs {
 		subIds := []uint64{}
 		for _, o := range nft.Owners {

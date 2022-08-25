@@ -1,6 +1,7 @@
 package main
 
 import (
+	sdkmath "cosmossdk.io/math"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -80,8 +81,8 @@ func verifySubtokens(subsOld []SubTokenOld, collectionsOld map[string]Collection
 
 type CoinDiff struct {
 	Symbol string
-	Volume sdk.Int
-	BCSum  sdk.Int
+	Volume sdkmath.Int
+	BCSum  sdkmath.Int
 }
 
 func verifyCoinsVolume(coinsOld []FullCoinOld, accsOld []AccountOld,

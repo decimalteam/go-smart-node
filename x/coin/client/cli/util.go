@@ -3,6 +3,7 @@ package cli
 import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"context"
+	sdkmath "cosmossdk.io/math"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -64,7 +65,7 @@ func parseCoin(clientCtx client.Context, amount string) (sdk.Coin, error) {
 	}
 }
 
-func checkBalance(clientCtx client.Context, address sdk.AccAddress, needAmount sdk.Int, symbol string) error {
+func checkBalance(clientCtx client.Context, address sdk.AccAddress, needAmount sdkmath.Int, symbol string) error {
 	balance, err := getBalanceWithSymbol(clientCtx, address, symbol)
 	if err != nil {
 		return err

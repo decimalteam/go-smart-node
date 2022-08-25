@@ -2,6 +2,7 @@ package types
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -39,9 +40,9 @@ func NewMsgCreateCoin(
 	title string,
 	symbol string,
 	crr uint64,
-	initVolume sdk.Int,
-	initReserve sdk.Int,
-	limitVolume sdk.Int,
+	initVolume sdkmath.Int,
+	initReserve sdkmath.Int,
+	limitVolume sdkmath.Int,
 	identity string,
 ) *MsgCreateCoin {
 	return &MsgCreateCoin{
@@ -127,7 +128,7 @@ func (msg MsgCreateCoin) ValidateBasic() error {
 func NewMsgUpdateCoin(
 	sender sdk.AccAddress,
 	symbol string,
-	limitVolume sdk.Int,
+	limitVolume sdkmath.Int,
 	identity string,
 ) *MsgUpdateCoin {
 	return &MsgUpdateCoin{

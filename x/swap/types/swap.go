@@ -2,18 +2,19 @@ package types
 
 import (
 	"bytes"
+	sdkmath "cosmossdk.io/math"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common/math"
 	"math/big"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethcmn "github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-func GetHash(transactionNumber sdk.Int, tokenSymbol string, amount sdk.Int, recipient string,
+func GetHash(transactionNumber sdkmath.Int, tokenSymbol string, amount sdkmath.Int, recipient string,
 	fromChain, destChain uint32) (Hash, error) {
 	var hash [32]byte
 

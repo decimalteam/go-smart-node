@@ -4,6 +4,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"bytes"
 	"context"
+	sdkmath "cosmossdk.io/math"
 	"encoding/base64"
 	"math/big"
 	"strconv"
@@ -775,7 +776,7 @@ func (k Keeper) sellCoin(
 	return nil
 }
 
-func getCreateCoinCommission(symbol string) sdk.Int {
+func getCreateCoinCommission(symbol string) sdkmath.Int {
 	switch len(symbol) {
 	case 3:
 		return sdk.NewInt(1_000_000)

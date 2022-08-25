@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
+	sdkmath "cosmossdk.io/math"
 	"fmt"
 	"strings"
 	"sync"
@@ -112,7 +113,7 @@ func (k *Keeper) SetCoin(ctx sdk.Context, coin types.Coin) {
 }
 
 // Edit updates current coin reserve and volume and writes coin to KVStore.
-func (k *Keeper) EditCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, volume sdk.Int) error {
+func (k *Keeper) EditCoin(ctx sdk.Context, coin types.Coin, reserve sdkmath.Int, volume sdkmath.Int) error {
 	if !k.IsCoinBase(ctx, coin.Symbol) {
 		k.SetCachedCoin(ctx, coin.Symbol)
 	}
@@ -222,7 +223,7 @@ func (k *Keeper) IsCoinBase(ctx sdk.Context, symbol string) bool {
 	return k.GetBaseDenom(ctx) == symbol
 }
 
-func (k *Keeper) GetCommission(ctx sdk.Context, feeAmountBase sdk.Int) (sdk.Int, string, error) {
+func (k *Keeper) GetCommission(ctx sdk.Context, feeAmountBase sdkmath.Int) (sdkmath.Int, string, error) {
 	baseCoinDenom := k.GetBaseDenom(ctx)
 
 	var feeDenom string
@@ -237,11 +238,11 @@ func (k *Keeper) GetCommission(ctx sdk.Context, feeAmountBase sdk.Int) (sdk.Int,
 	if feeDenom != baseCoinDenom {
 		coin, err := k.GetCoin(ctx, feeDenom)
 		if err != nil {
-			return sdk.Int{}, "", err
+			return sdkmath.Int{}, "", err
 		}
 
 		if coin.Reserve.LT(feeAmountBase) {
-			return sdk.Int{}, "", errors.InsufficientCoinReserve
+			return sdkmath.Int{}, "", errors.InsufficientCoinReserve
 		}
 
 		feeAmount = formulas.CalculateSaleAmount(coin.Volume, coin.Reserve, uint(coin.CRR), feeAmountBase)

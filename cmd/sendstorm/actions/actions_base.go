@@ -1,6 +1,7 @@
 package actions
 
 import (
+	sdkmath "cosmossdk.io/math"
 	"fmt"
 	"math/rand"
 	"time"
@@ -47,7 +48,7 @@ type UpdateInfo struct {
 	Addresses            []string
 	FullCoins            []dscApi.Coin
 	NFTs                 []dscApi.NFT
-	NFTSubTokenReserves  map[NFTSubTokenKey]sdk.Int
+	NFTSubTokenReserves  map[NFTSubTokenKey]sdkmath.Int
 	MultisigWallets      []dscApi.MultisigWallet
 	MultisigTransactions []dscApi.MultisigTransaction
 	MultisigBalances     map[string]sdk.Coins

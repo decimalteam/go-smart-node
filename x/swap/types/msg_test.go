@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +23,7 @@ func TestSwapRedeem(t *testing.T) {
 		tag               string
 		sender            sdk.AccAddress
 		recipient         string
-		amount            sdk.Int
+		amount            sdkmath.Int
 		tokenSymbol       string
 		transactionNumber string
 		fromChain         uint32

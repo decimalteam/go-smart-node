@@ -2,6 +2,7 @@ package types
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
+	sdkmath "cosmossdk.io/math"
 	"fmt"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
@@ -36,7 +37,7 @@ func DefaultParams() Params {
 func NewParams(
 	baseTitle string,
 	baseSymbol string,
-	baseInitialVolume sdk.Int,
+	baseInitialVolume sdkmath.Int,
 ) Params {
 	return Params{
 		BaseTitle:         baseTitle,
@@ -81,7 +82,7 @@ func validateBaseSymbol(i interface{}) error {
 }
 
 func validateBaseInitialVolume(i interface{}) error {
-	_, ok := i.(sdk.Int)
+	_, ok := i.(sdkmath.Int)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}

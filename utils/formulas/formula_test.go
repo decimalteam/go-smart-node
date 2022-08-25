@@ -7,11 +7,11 @@ import (
 )
 
 type PurchaseReturnData struct {
-	Supply  sdk.Int
-	Reserve sdk.Int
+	Supply  sdkmath.Int
+	Reserve sdkmath.Int
 	Crr     uint
-	Deposit sdk.Int
-	Result  sdk.Int
+	Deposit sdkmath.Int
+	Result  sdkmath.Int
 }
 
 func TestCalculatePurchaseReturn(t *testing.T) {
@@ -49,11 +49,11 @@ func TestCalculatePurchaseReturn(t *testing.T) {
 }
 
 type PurchaseAmountData struct {
-	Supply      sdk.Int
-	Reserve     sdk.Int
+	Supply      sdkmath.Int
+	Reserve     sdkmath.Int
 	Crr         uint
-	WantReceive sdk.Int
-	Deposit     sdk.Int
+	WantReceive sdkmath.Int
+	Deposit     sdkmath.Int
 }
 
 func TestCalculatePurchaseAmount(t *testing.T) {
@@ -91,11 +91,11 @@ func TestCalculatePurchaseAmount(t *testing.T) {
 }
 
 type CalculateSaleReturnData struct {
-	Supply     sdk.Int
-	Reserve    sdk.Int
+	Supply     sdkmath.Int
+	Reserve    sdkmath.Int
 	Crr        uint
-	SellAmount sdk.Int
-	Result     sdk.Int
+	SellAmount sdkmath.Int
+	Result     sdkmath.Int
 }
 
 func TestCalculateSaleReturn(t *testing.T) {
@@ -140,11 +140,11 @@ func TestCalculateSaleReturn(t *testing.T) {
 }
 
 type CalculateBuyDepositData struct {
-	Supply      sdk.Int
-	Reserve     sdk.Int
+	Supply      sdkmath.Int
+	Reserve     sdkmath.Int
 	Crr         uint
-	WantReceive sdk.Int
-	Result      sdk.Int
+	WantReceive sdkmath.Int
+	Result      sdkmath.Int
 }
 
 func TestCalculateBuyDeposit(t *testing.T) {

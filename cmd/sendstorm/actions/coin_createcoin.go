@@ -1,6 +1,7 @@
 package actions
 
 import (
+	sdkmath "cosmossdk.io/math"
 	"fmt"
 	"math/rand"
 	"time"
@@ -26,9 +27,9 @@ type CreateCoinAction struct {
 	title       string
 	symbol      string
 	crr         uint64
-	initVolume  sdk.Int
-	initReserve sdk.Int
-	limitVolume sdk.Int
+	initVolume  sdkmath.Int
+	initReserve sdkmath.Int
+	limitVolume sdkmath.Int
 	identity    string
 }
 

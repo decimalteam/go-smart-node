@@ -15,7 +15,8 @@ import (
 func TestEcrecover(t *testing.T) {
 	_config := sdk.GetConfig()
 	_config.SetCoinType(60)
-	_config.SetFullFundraiserPath("44'/60'/0'/0/0")
+	_config.SetPurpose(44)
+	//_config.SetFullFundraiserPath("44'/60'/0'/0/0")
 	_config.SetBech32PrefixForAccount(config.Bech32PrefixAccAddr, config.Bech32PrefixAccPub)
 	_config.SetBech32PrefixForValidator(config.Bech32PrefixValAddr, config.Bech32PrefixValPub)
 	_config.SetBech32PrefixForConsensusNode(config.Bech32PrefixConsAddr, config.Bech32PrefixConsPub)
