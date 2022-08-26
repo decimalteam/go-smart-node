@@ -14,7 +14,7 @@ import (
 )
 
 func TestSavePrice(t *testing.T) {
-	dsc := app.Setup(false, nil)
+	dsc := app.Setup(t, false, nil)
 	ctx := dsc.BaseApp.NewContext(false, tmproto.Header{})
 
 	appCodec := dsc.AppCodec()

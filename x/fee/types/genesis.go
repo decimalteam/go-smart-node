@@ -1,6 +1,9 @@
 package types
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
+import (
+	"bitbucket.org/decimalteam/go-smart-node/x/fee/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
 
 // NewGenesisState creates a new genesis state.
 func NewGenesisState(params Params, initialPrice sdk.Dec) GenesisState {
@@ -19,7 +22,7 @@ func DefaultGenesisState() *GenesisState {
 
 func (gs *GenesisState) Validate() error {
 	if gs.InitialPrice.LTE(sdk.ZeroDec()) {
-		return ErrWrongPrice(gs.InitialPrice.String())
+		return errors.WrongPrice
 	}
 	return gs.Params.Validate()
 }

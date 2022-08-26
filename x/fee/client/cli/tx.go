@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/fee/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 
@@ -38,7 +39,7 @@ func GetCmdSaveBaseDenomPrice() *cobra.Command {
 
 			price, err := sdk.NewDecFromStr(args[1])
 			if err != nil {
-				return types.ErrWrongPrice(args[1])
+				return errors.WrongPrice
 			}
 
 			msg := types.NewMsgSaveBaseDenomPrice(clientCtx.GetFromAddress().String(), args[0], price)

@@ -13,7 +13,7 @@ import (
 )
 
 func TestDefaultGenesis(t *testing.T) {
-	dsc := app.Setup(false, nil)
+	dsc := app.Setup(t, false, nil)
 	ctx := dsc.BaseApp.NewContext(false, tmproto.Header{})
 
 	appCodec := dsc.AppCodec()
@@ -39,7 +39,7 @@ func TestDefaultGenesis(t *testing.T) {
 }
 
 func TestGenesisInit(t *testing.T) {
-	dsc := app.Setup(false, nil)
+	dsc := app.Setup(t, false, nil)
 	ctx := dsc.BaseApp.NewContext(false, tmproto.Header{})
 
 	appCodec := dsc.AppCodec()

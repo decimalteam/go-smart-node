@@ -1,6 +1,7 @@
 package types
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/fee/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -33,7 +34,7 @@ func (m *MsgSaveBaseDenomPrice) ValidateBasic() error {
 		return err
 	}
 	if !m.Price.IsPositive() {
-		return ErrWrongPrice(m.Price.String())
+		return errors.WrongPrice
 	}
 	return nil
 }

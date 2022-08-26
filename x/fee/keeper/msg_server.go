@@ -1,8 +1,10 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	"context"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/fee/errors"
+	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -13,12 +15,12 @@ func (k Keeper) SaveBaseDenomPrice(c context.Context, msg *types.MsgSaveBaseDeno
 
 	params := k.GetModuleParams(ctx)
 	if msg.Sender != params.OracleAddress {
-		return nil, types.ErrUnknownOracle(msg.Sender)
+		return nil, errors.UnknownOracle
 	}
 
 	err := k.SavePrice(ctx, msg.Price)
 	if err != nil {
-		return nil, types.ErrSavingError(err.Error())
+		return nil, errors.SavingError
 	}
 
 	ctx.EventManager().EmitEvents(sdk.Events{

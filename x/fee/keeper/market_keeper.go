@@ -5,7 +5,7 @@ import (
 
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	feemarkettypes "github.com/tharsis/ethermint/x/feemarket/types"
+	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 )
 
 // implementation of interface FeeMarketKeeper
@@ -27,4 +27,10 @@ func (k Keeper) GetParams(ctx sdk.Context) feemarkettypes.Params {
 		ElasticityMultiplier:     1,
 		EnableHeight:             0,
 	}
+}
+
+func (k Keeper) AddTransientGasWanted(ctx sdk.Context, gasWanted uint64) (uint64, error) {
+	// TODO: this function is used in NewGasWantedDecorator
+	// Do we need implement?
+	return 0, nil
 }
