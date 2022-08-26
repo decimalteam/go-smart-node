@@ -207,7 +207,6 @@ var (
 		nft.AppModuleBasic{},
 		multisig.AppModuleBasic{},
 		swap.AppModuleBasic{},
-
 		fee.AppModuleBasic{},
 	)
 
