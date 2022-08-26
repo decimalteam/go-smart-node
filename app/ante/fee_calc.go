@@ -12,7 +12,7 @@ import (
 )
 
 // Calculate fee in base coin
-func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec, params feeTypes.Params) (sdk.Int, error) {
+func CalculateFee(msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params feeTypes.Params) (sdk.Int, error) {
 	commissionInBaseCoin := sdk.ZeroInt()
 	commissionInBaseCoin = commissionInBaseCoin.AddRaw(txBytesLen * int64(params.ByteFee))
 	for _, msg := range msgs {
@@ -72,8 +72,8 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, factor sdk.Dec, params feeTy
 	}
 
 	commissionInBaseCoin = helpers.FinneyToWei(commissionInBaseCoin)
-	// change commission according to factor
-	commissionInBaseCoin = factor.MulInt(commissionInBaseCoin).RoundInt()
+	// change commission according to DEL price
+	commissionInBaseCoin = sdk.OneDec().MulInt(commissionInBaseCoin).Quo(delPrice).RoundInt()
 	// TODO: special gas value for special transactions
 	return commissionInBaseCoin, nil
 }

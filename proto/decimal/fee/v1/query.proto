@@ -10,7 +10,7 @@ option go_package = "bitbucket.org/decimalteam/go-smart-node/x/fee/types";
 service Query {
   // Retrieves existing coin by specific symbol.
   rpc QueryBaseDenomPrice(QueryBaseDenomPriceRequest) returns (QueryBaseDenomPriceResponse) {
-    option (google.api.http).get = "/fee/v1/price";
+    option (google.api.http).get = "/decimal/fee/v1/price";
   }
 }
 

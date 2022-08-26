@@ -12,9 +12,16 @@ import (
 // for evm module
 var _ types.FeeMarketKeeper = Keeper{}
 
+var defaultBase = sdk.NewInt(1000000000)
+
 func (k Keeper) GetBaseFee(ctx sdk.Context) *big.Int {
-	// TODO: implement
-	return big.NewInt(1000000000) // default base fee from feemarket module
+	price, err := k.GetPrice(ctx)
+	if err != nil {
+		// fallback to default price
+		return defaultBase.BigInt()
+	}
+	fee := sdk.OneDec().MulInt(defaultBase).Quo(price).RoundInt()
+	return fee.BigInt()
 }
 
 func (k Keeper) GetParams(ctx sdk.Context) feemarkettypes.Params {
@@ -26,6 +33,7 @@ func (k Keeper) GetParams(ctx sdk.Context) feemarkettypes.Params {
 		BaseFeeChangeDenominator: 1,
 		ElasticityMultiplier:     1,
 		EnableHeight:             0,
+		MinGasPrice:              sdk.ZeroDec(),
 	}
 }
 

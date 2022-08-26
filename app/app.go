@@ -678,16 +678,16 @@ func NewDSC(
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
+		// fee decimal replacer
+		feetypes.ModuleName,
 		// Ethermint modules
 		evmtypes.ModuleName,
 		//recoverytypes.ModuleName,
-		evmtypes.ModuleName,
 		// Decimal modules
 		cointypes.ModuleName,
 		multisigtypes.ModuleName,
 		swaptypes.ModuleName,
 		nfttypes.ModuleName,
-		feetypes.ModuleName,
 		legacytypes.ModuleName,
 		genutiltypes.ModuleName,
 		// NOTE: crisis module must go at the end to check for invariants on each module
