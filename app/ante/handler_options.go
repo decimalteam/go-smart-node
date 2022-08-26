@@ -14,25 +14,28 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v5/modules/core/keeper"
 
 	ethante "github.com/evmos/ethermint/app/ante"
+	evmante "github.com/evmos/ethermint/app/ante"
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
 
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	legacytypes "bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 )
 
 // HandlerOptions defines the list of module keepers required to run the Decimal AnteHandler decorators.
 type HandlerOptions struct {
-	Cdc                    codec.BinaryCodec
 	AccountKeeper          evmtypes.AccountKeeper
 	BankKeeper             evmtypes.BankKeeper
 	IBCKeeper              *ibckeeper.Keeper
 	FeeMarketKeeper        evmtypes.FeeMarketKeeper
-	EvmKeeper              ethante.EVMKeeper
+	EvmKeeper              evmante.EVMKeeper
 	FeegrantKeeper         authante.FeegrantKeeper
 	CoinKeeper             cointypes.CoinKeeper
 	LegacyKeeper           legacytypes.LegacyKeeper
+	FeeKeeper              feetypes.FeeKeeper
 	SignModeHandler        authsigning.SignModeHandler
 	SigGasConsumer         func(meter sdk.GasMeter, sig signing.SignatureV2, params authtypes.Params) error
+	Cdc                    codec.BinaryCodec
 	MaxTxGasWanted         uint64
 	ExtensionOptionChecker authante.ExtensionOptionChecker
 	TxFeeChecker           authante.TxFeeChecker
@@ -62,7 +65,7 @@ func (options HandlerOptions) Validate() error {
 		return sdkerrors.ErrLogic.Wrapf("coin keeper is required for AnteHandler")
 	}
 	if options.LegacyKeeper == nil {
-		return sdkerrors.ErrLogic.Wrapf("legacy keeper is required for AnteHandler")
+		return sdkerrors.Wrap(sdkerrors.ErrLogic, "legacy keeper is required for AnteHandler")
 	}
 	return nil
 }
@@ -96,7 +99,7 @@ func newCosmosAnteHandler(options HandlerOptions) sdk.AnteHandler {
 		authante.NewTxTimeoutHeightDecorator(),
 		authante.NewValidateMemoDecorator(options.AccountKeeper),
 		authante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		NewFeeDecorator(options.CoinKeeper, options.BankKeeper, options.AccountKeeper),
+		NewFeeDecorator(options.CoinKeeper, options.BankKeeper, options.AccountKeeper, options.FeeKeeper),
 		NewValidatorCommissionDecorator(options.Cdc),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		authante.NewSetPubKeyDecorator(options.AccountKeeper),
@@ -123,7 +126,7 @@ func newCosmosAnteHandlerEip712(options HandlerOptions) sdk.AnteHandler {
 		authante.NewTxTimeoutHeightDecorator(),
 		authante.NewValidateMemoDecorator(options.AccountKeeper),
 		authante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		NewFeeDecorator(options.CoinKeeper, options.BankKeeper, options.AccountKeeper),
+		NewFeeDecorator(options.CoinKeeper, options.BankKeeper, options.AccountKeeper, options.FeeKeeper),
 		NewValidatorCommissionDecorator(options.Cdc),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		authante.NewSetPubKeyDecorator(options.AccountKeeper),

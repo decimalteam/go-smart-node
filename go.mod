@@ -30,7 +30,7 @@ require (
 	github.com/tendermint/tm-db v0.6.7
 	go.opencensus.io v0.23.0
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
-	google.golang.org/genproto v0.0.0-20220812140447-cec7f5303424
+	google.golang.org/genproto v0.0.0-20220815135757-37a418bb8959
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/ini.v1 v1.66.6

@@ -103,9 +103,12 @@ import (
 	evm "github.com/evmos/ethermint/x/evm"
 	evmkeeper "github.com/evmos/ethermint/x/evm/keeper"
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
-	feemarket "github.com/evmos/ethermint/x/feemarket"
-	feemarketkeeper "github.com/evmos/ethermint/x/feemarket/keeper"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+
+	//claimskeeper "github.com/tharsis/evmos/v3/x/claims/keeper"
+	//claimstypes "github.com/tharsis/evmos/v3/x/claims/types"
+
+	//recoverytypes "github.com/tharsis/evmos/v3/x/recovery/types"
 
 	// Unnamed import of statik for swagger UI spport
 	// _ "bitbucket.org/decimalteam/go-smart-node/client/docs/statik"
@@ -118,18 +121,27 @@ import (
 	coin "bitbucket.org/decimalteam/go-smart-node/x/coin"
 	coinkeeper "bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-	legacy "bitbucket.org/decimalteam/go-smart-node/x/legacy"
-	legacykeeper "bitbucket.org/decimalteam/go-smart-node/x/legacy/keeper"
-	legacytypes "bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
+
+	fee "bitbucket.org/decimalteam/go-smart-node/x/fee"
+	feekeeper "bitbucket.org/decimalteam/go-smart-node/x/fee/keeper"
+	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
+
 	multisig "bitbucket.org/decimalteam/go-smart-node/x/multisig"
 	multisigkeeper "bitbucket.org/decimalteam/go-smart-node/x/multisig/keeper"
 	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
-	nft "bitbucket.org/decimalteam/go-smart-node/x/nft"
-	nftkeeper "bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
-	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+
 	swap "bitbucket.org/decimalteam/go-smart-node/x/swap"
 	swapkeeper "bitbucket.org/decimalteam/go-smart-node/x/swap/keeper"
 	swaptypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
+
+	nft "bitbucket.org/decimalteam/go-smart-node/x/nft"
+	nftkeeper "bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
+	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+
+	legacy "bitbucket.org/decimalteam/go-smart-node/x/legacy"
+	legacykeeper "bitbucket.org/decimalteam/go-smart-node/x/legacy/keeper"
+	legacytypes "bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
+
 	upgrade "bitbucket.org/decimalteam/go-smart-node/x/upgrade"
 )
 
@@ -185,13 +197,17 @@ var (
 		ibc.AppModuleBasic{},
 		// Ethermint
 		evm.AppModuleBasic{},
-		feemarket.AppModuleBasic{},
+		// Evmos
+		//claims.AppModuleBasic{},
+		//recovery.AppModuleBasic{},
+
 		// Decimal
 		coin.AppModuleBasic{},
 		legacy.AppModuleBasic{},
 		nft.AppModuleBasic{},
 		multisig.AppModuleBasic{},
 		swap.AppModuleBasic{},
+		fee.AppModuleBasic{},
 	)
 
 	// Module account permissions
@@ -261,14 +277,14 @@ type DSC struct {
 	ScopedIBCKeeper capabilitykeeper.ScopedKeeper
 
 	// Ethermint keepers
-	EvmKeeper       *evmkeeper.Keeper
-	FeeMarketKeeper feemarketkeeper.Keeper
+	EvmKeeper *evmkeeper.Keeper
 
 	// Decimal keepers
 	CoinKeeper     coinkeeper.Keeper
 	SwapKeeper     swapkeeper.Keeper
 	MultisigKeeper multisigkeeper.Keeper
 	NFTKeeper      nftkeeper.Keeper
+	FeeKeeper      feekeeper.Keeper
 	LegacyKeeper   legacykeeper.Keeper
 
 	// Module manager
@@ -332,12 +348,12 @@ func NewDSC(
 		ibchost.StoreKey,
 		// Ethermint keys
 		evmtypes.StoreKey,
-		feemarkettypes.StoreKey,
 		// Decimal keys
 		cointypes.StoreKey,
 		multisigtypes.StoreKey,
 		swaptypes.StoreKey,
 		nfttypes.StoreKey,
+		feetypes.StoreKey,
 		legacytypes.StoreKey,
 		upgradetypes.StoreKey,
 	)
@@ -436,11 +452,12 @@ func NewDSC(
 	)
 
 	// Create Ethermint keepers
-	app.FeeMarketKeeper = feemarketkeeper.NewKeeper(
+	app.FeeKeeper = *feekeeper.NewKeeper(
 		appCodec,
-		app.GetSubspace(feemarkettypes.ModuleName),
-		keys[feemarkettypes.StoreKey],
-		tkeys[feemarkettypes.TransientKey],
+		keys[feetypes.StoreKey],
+		app.GetSubspace(feetypes.ModuleName),
+		app.BankKeeper,
+		cmdcfg.BaseDenom,
 	)
 	app.EvmKeeper = evmkeeper.NewKeeper(
 		appCodec,
@@ -450,7 +467,7 @@ func NewDSC(
 		app.AccountKeeper,
 		app.BankKeeper,
 		&app.StakingKeeper,
-		app.FeeMarketKeeper,
+		app.FeeKeeper,
 		cast.ToString(appOpts.Get(srvflags.EVMTracer)),
 	)
 	app.EvmKeeper = app.EvmKeeper.SetHooks(
@@ -571,12 +588,13 @@ func NewDSC(
 		ibc.NewAppModule(app.IBCKeeper),
 		// Ethermint app modules
 		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper),
-		feemarket.NewAppModule(app.FeeMarketKeeper),
+
 		// Decimal app modules
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
 		multisig.NewAppModule(appCodec, app.MultisigKeeper, app.AccountKeeper, app.BankKeeper),
 		swap.NewAppModule(appCodec, app.SwapKeeper, app.AccountKeeper, app.BankKeeper),
 		nft.NewAppModule(app.NFTKeeper),
+		fee.NewAppModule(app.FeeKeeper),
 		legacy.NewAppModule(app.appCodec, app.LegacyKeeper),
 	)
 
@@ -589,7 +607,6 @@ func NewDSC(
 	app.mm.SetOrderBeginBlockers(
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
-		feemarkettypes.ModuleName,
 		evmtypes.ModuleName,
 		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
@@ -609,6 +626,7 @@ func NewDSC(
 		multisigtypes.ModuleName,
 		swaptypes.ModuleName,
 		nfttypes.ModuleName,
+		feetypes.ModuleName,
 		legacytypes.ModuleName,
 	)
 
@@ -618,7 +636,7 @@ func NewDSC(
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		evmtypes.ModuleName,
-		feemarkettypes.ModuleName,
+		//claimstypes.ModuleName,
 		// no-op modules
 		ibchost.ModuleName,
 		capabilitytypes.ModuleName,
@@ -636,6 +654,7 @@ func NewDSC(
 		multisigtypes.ModuleName,
 		swaptypes.ModuleName,
 		nfttypes.ModuleName,
+		feetypes.ModuleName,
 		legacytypes.ModuleName,
 	)
 
@@ -659,8 +678,11 @@ func NewDSC(
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
+		// fee decimal replacer
+		feetypes.ModuleName,
 		// Ethermint modules
-		evmtypes.ModuleName, feemarkettypes.ModuleName,
+		evmtypes.ModuleName,
+		//recoverytypes.ModuleName,
 		// Decimal modules
 		cointypes.ModuleName,
 		multisigtypes.ModuleName,
@@ -692,7 +714,6 @@ func NewDSC(
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		ibc.NewAppModule(app.IBCKeeper),
 		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper),
-		feemarket.NewAppModule(app.FeeMarketKeeper),
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
 		swap.NewAppModule(appCodec, app.SwapKeeper, app.AccountKeeper, app.BankKeeper),
 	)
@@ -713,11 +734,12 @@ func NewDSC(
 		Cdc:             appCodec,
 		AccountKeeper:   app.AccountKeeper,
 		BankKeeper:      app.BankKeeper,
-		IBCKeeper:       app.IBCKeeper,
-		FeeMarketKeeper: app.FeeMarketKeeper,
 		EvmKeeper:       app.EvmKeeper,
+		FeeMarketKeeper: app.FeeKeeper,
 		FeegrantKeeper:  app.FeeGrantKeeper,
+		IBCKeeper:       app.IBCKeeper,
 		CoinKeeper:      &app.CoinKeeper,
+		FeeKeeper:       &app.FeeKeeper,
 		LegacyKeeper:    &app.LegacyKeeper,
 		SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 		SigGasConsumer:  SigVerificationGasConsumer,
@@ -971,9 +993,10 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(ibchost.ModuleName)
 	// Ethermint subspaces
 	paramsKeeper.Subspace(evmtypes.ModuleName)
-	paramsKeeper.Subspace(feemarkettypes.ModuleName)
+	//paramsKeeper.Subspace(recoverytypes.ModuleName)
 	// Decimal subspaces
 	paramsKeeper.Subspace(cointypes.ModuleName)
+	paramsKeeper.Subspace(feetypes.ModuleName)
 	paramsKeeper.Subspace(multisigtypes.ModuleName)
 	paramsKeeper.Subspace(swaptypes.ModuleName)
 	return paramsKeeper

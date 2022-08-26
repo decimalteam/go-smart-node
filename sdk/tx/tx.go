@@ -14,6 +14,7 @@ import (
 
 	appAnte "bitbucket.org/decimalteam/go-smart-node/app/ante"
 	"bitbucket.org/decimalteam/go-smart-node/sdk/wallet"
+	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 )
 
 // TxConstruct is used in process of building, signing and sending transactions
@@ -57,7 +58,8 @@ func calculateFee(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom str
 		// with zero fee, decimal node will calculate correct fee itself
 		return sdk.ZeroInt(), err
 	}
-	newFee, err := appAnte.CalculateFee(msgs, int64(len(bz)), sdk.OneDec())
+	// TODO: in future need to get feeTypes.Param by api query
+	newFee, err := appAnte.CalculateFee(msgs, int64(len(bz)), sdk.OneDec(), feeTypes.DefaultParams())
 	if err != nil {
 		// with zero fee, decimal node will calculate correct fee itself
 		return sdk.ZeroInt(), err
