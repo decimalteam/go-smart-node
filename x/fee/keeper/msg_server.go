@@ -23,13 +23,15 @@ func (k Keeper) SaveBaseDenomPrice(c context.Context, msg *types.MsgSaveBaseDeno
 		return nil, errors.SavingError
 	}
 
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeBaseDenomSaved,
-			sdk.NewAttribute(types.AttributeKeyPrice, msg.Price.String()),
-			sdk.NewAttribute(types.AttributeKeyDenom, msg.BaseDenom),
-		),
-	})
+	err = ctx.EventManager().EmitTypedEvent(
+		&types.EventBaseDenomPriceSaved{
+			Price: msg.Price.String(),
+			Denom: msg.BaseDenom,
+		},
+	)
+	if err != nil {
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
+	}
 
 	return &types.MsgSaveBaseDenomPriceResponse{}, nil
 }
