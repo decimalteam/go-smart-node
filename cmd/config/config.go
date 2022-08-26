@@ -2,11 +2,12 @@ package config
 
 import (
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"os"
 	"path/filepath"
 
-	ethermint "github.com/tharsis/ethermint/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	ethermint "github.com/evmos/ethermint/types"
 )
 
 const (

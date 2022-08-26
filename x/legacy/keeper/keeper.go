@@ -1,16 +1,16 @@
 package keeper
 
 import (
-	"context"
-	"fmt"
-
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
+	"bitbucket.org/decimalteam/go-smart-node/x/legacy/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
+	"context"
 	"github.com/cosmos/cosmos-sdk/codec"
+	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
-	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -20,7 +20,7 @@ var _ types.MsgServer = &Keeper{}
 // Keeper implements the module data storaging.
 type Keeper struct {
 	cdc      codec.BinaryCodec
-	storeKey sdk.StoreKey
+	storeKey store.StoreKey
 
 	bankKeeper     types.BankKeeper
 	nftKeeper      types.NftKeeper
@@ -32,7 +32,7 @@ type Keeper struct {
 // NewKeeper creates new Keeper instance.
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeKey sdk.StoreKey,
+	storeKey store.StoreKey,
 	bankKeeper types.BankKeeper,
 	nftKeeper types.NftKeeper,
 	multisigKeeper types.MultisigKeeper,
@@ -83,7 +83,7 @@ func (k *Keeper) GetLegacyRecord(ctx sdk.Context, legacyAddress string) (types.L
 	key := []byte(legacyAddress)
 	value := store.Get(key)
 	if len(value) == 0 {
-		return result, fmt.Errorf("address '%s' is not found in the key-value store", legacyAddress)
+		return result, errors.NotFoundLegacyAddress
 	}
 	err := k.cdc.UnmarshalLengthPrefixed(value, &result)
 	return result, err
@@ -105,7 +105,7 @@ func (k *Keeper) DeleteLegacyRecord(ctx sdk.Context, legacyAddress string) {
 func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	legacyAddress, err := commonTypes.GetLegacyAddressFromPubKey(pubKeyBytes)
 	if err != nil {
-		return types.ErrCannnotGetAddressFromPublicKey(err.Error())
+		return errors.CannotGetLegacyAddressFromPublicKey
 	}
 	if !k.addressCache[legacyAddress] {
 		return nil
@@ -113,11 +113,11 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	actualSdkAddress := sdk.AccAddress(ethsecp256k1.PubKey{Key: pubKeyBytes}.Address())
 	actualAddress, err := bech32.ConvertAndEncode(config.Bech32Prefix, actualSdkAddress)
 	if err != nil {
-		return types.ErrCannnotGetAddressFromPublicKey(err.Error())
+		return errors.CannotGetActualAddressFromPublicKey
 	}
 
 	record, err := k.GetLegacyRecord(ctx, legacyAddress)
-	// only error - there is no record
+	// error - only if there is no record
 	// so just stop here and return
 	if err != nil {
 		return nil
@@ -126,7 +126,17 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	// 1. send coins
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.LegacyCoinPool, actualSdkAddress, record.Coins)
 	if err != nil {
-		return types.ErrInternal(err.Error())
+		return err
+	}
+
+	// Emit send event
+	err = ctx.EventManager().EmitTypedEvent(&types.EventLegacyReturnCoin{
+		OldAddress: legacyAddress,
+		NewAddress: actualAddress,
+		Coins:      record.Coins.String(),
+	})
+	if err != nil {
+		return errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	// 2. update nft owners
@@ -144,7 +154,21 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 				nft.Owners[i].Address = actualAddress
 			}
 		}
-		k.nftKeeper.SetNFT(ctx, nftRecord.Denom, nftRecord.Id, nft)
+		err = k.nftKeeper.SetNFT(ctx, nftRecord.Denom, nftRecord.Id, nft)
+		// error only if collections doesn't exist, but we can't burn without owner
+		if err != nil {
+			continue
+		}
+		// Emit nft event
+		err = ctx.EventManager().EmitTypedEvent(&types.EventLegacyReturnNFT{
+			OldAddress: legacyAddress,
+			NewAddress: actualAddress,
+			Denom:      nftRecord.Denom,
+			TokenId:    nftRecord.Id,
+		})
+		if err != nil {
+			return errors.Internal.Wrapf("err: %s", err.Error())
+		}
 	}
 
 	// 3. update mutisig wallet owners
@@ -160,28 +184,25 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 			}
 		}
 		k.multisigKeeper.SetWallet(ctx, wallet)
+		// Emit multisig event
+		err = ctx.EventManager().EmitTypedEvent(&types.EventLegacyReturnWallet{
+			OldAddress: legacyAddress,
+			NewAddress: actualAddress,
+			Wallet:     walletAddress,
+		})
+		if err != nil {
+			return errors.Internal.Wrapf("err: %s", err.Error())
+		}
 	}
 
 	// all complete, delete
 	k.DeleteLegacyRecord(ctx, legacyAddress)
 
-	// TODO; event?
-	// Emit changes event
-	/*
-		ctx.EventManager().EmitEvent(sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Sender),
-			sdk.NewAttribute(types.AttributeReceiver, msg.Receiver),
-			sdk.NewAttribute(types.AttributeLegacyAddress, legacyAddress),
-			sdk.NewAttribute(types.AttributeCointToReturn, legacyBalance.Coins.String()),
-		))
-	*/
-
 	// NOTE: BE CAREFUL WITH CACHES, update only during delivery step
-	if !ctx.IsCheckTx() && !ctx.IsReCheckTx() {
-		k.RestoreCache(ctx)
-	}
+	// NOTE: cache restores every block, so no need to restore after every ActualizeLegacy
+	// if !ctx.IsCheckTx() && !ctx.IsReCheckTx() {
+	//	k.RestoreCache(ctx)
+	// }
 	return nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"time"
 
 	"bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	"github.com/spf13/cobra"
@@ -98,6 +99,14 @@ func cmdRun() *cobra.Command {
 					// TODO: Update() returns error
 					go acc.UpdateNumberSequence()
 					continue
+				}
+				if doCommitTx {
+					time.Sleep(time.Second)
+					txRes, err := reactor.api.Transaction(res.Hash)
+					if err != nil {
+						fmt.Printf("api.Transaction = %v\n", err)
+					}
+					fmt.Printf("TxResult = %v\n\n\n", txRes)
 				}
 				acc.IncrementSequence()
 				go acc.UpdateBalance()

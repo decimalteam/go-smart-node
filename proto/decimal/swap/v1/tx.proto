@@ -2,6 +2,8 @@ syntax = "proto3";
 package decimal.swap.v1;
 
 import "gogoproto/gogo.proto";
+import "cosmos/msg/v1/msg.proto";
+
 import "cosmos/base/v1beta1/coin.proto";
 
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/swap/types";
@@ -18,6 +20,8 @@ service Msg {
 ///////////////////
 
 message MsgSwapInitialize {
+  option (cosmos.msg.v1.signer) = "sender";
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
@@ -66,6 +70,8 @@ message MsgSwapInitializeResponse {}
 ///////////////////
 
 message MsgSwapRedeem {
+  option (cosmos.msg.v1.signer) = "sender";
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;  
 
@@ -136,6 +142,8 @@ message MsgSwapRedeemResponse {}
 ///////////////////
 
 message MsgChainActivate {
+  option (cosmos.msg.v1.signer) = "sender";
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;  
 
@@ -162,6 +170,8 @@ message MsgChainActivateResponse {}
 ///////////////////
 
 message MsgChainDeactivate {
+  option (cosmos.msg.v1.signer) = "sender";
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;  
 

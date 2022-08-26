@@ -14,22 +14,22 @@ service Query {
 
   // Retrieves existing wallets by owner address.
   rpc Wallets(QueryWalletsRequest) returns (QueryWalletsResponse) {
-    option (google.api.http).get = "/multisig/v1/wallets/{owner}";
+    option (google.api.http).get = "/decimal/multisig/v1/wallets/{owner}";
   }
 
   // Retrieves existing wallet by address.
   rpc Wallet(QueryWalletRequest) returns (QueryWalletResponse) {
-    option (google.api.http).get = "/multisig/v1/wallet/{address}";
+    option (google.api.http).get = "/decimal/multisig/v1/wallet/{address}";
   }
 
   // Retrieves existing transactions by wallet address.
   rpc Transactions(QueryTransactionsRequest) returns (QueryTransactionsResponse) {
-    option (google.api.http).get = "/multisig/v1/transactions/{address}";
+    option (google.api.http).get = "/decimal/multisig/v1/transactions/{address}";
   }
 
   // Retrieves existing transaction by id.
   rpc Transaction(QueryTransactionRequest) returns (QueryTransactionResponse) {
-    option (google.api.http).get = "/multisig/v1/transaction/{id}";
+    option (google.api.http).get = "/decimal/multisig/v1/transaction/{id}";
   }
 }
 

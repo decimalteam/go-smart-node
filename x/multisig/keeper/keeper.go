@@ -1,12 +1,14 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/multisig/errors"
 	"fmt"
 
 	"github.com/tendermint/tendermint/libs/log"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	"github.com/cosmos/cosmos-sdk/codec"
+	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	auth "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bank "github.com/cosmos/cosmos-sdk/x/bank/keeper"
@@ -16,7 +18,7 @@ import (
 // Keeper implements the module data storaging.
 type Keeper struct {
 	cdc      codec.BinaryCodec
-	storeKey sdk.StoreKey
+	storeKey store.StoreKey
 	ps       paramtypes.Subspace
 
 	accountKeeper auth.AccountKeeperI
@@ -26,7 +28,7 @@ type Keeper struct {
 // NewKeeper creates a multisig keeper
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeKey sdk.StoreKey,
+	storeKey store.StoreKey,
 	ps paramtypes.Subspace,
 	accountKeeper auth.AccountKeeperI,
 	bankKeeper bank.Keeper,
@@ -55,7 +57,7 @@ func (k Keeper) GetWallet(ctx sdk.Context, address string) (wallet types.Wallet,
 	key := append(types.KeyPrefixWallet, []byte(address)...)
 	value := store.Get(key)
 	if len(value) == 0 {
-		err = fmt.Errorf("wallet %s is not found in the key-value store", address)
+		err = errors.WalletNotFound
 		return
 	}
 	err = k.cdc.UnmarshalLengthPrefixed(value, &wallet)
@@ -78,7 +80,7 @@ func (k Keeper) GetWallets(ctx sdk.Context, owner string) (wallets []types.Walle
 		var wallet types.Wallet
 		value := iterator.Value()
 		if len(value) == 0 {
-			err = fmt.Errorf("empty value in the key-value store")
+			err = errors.EmptyValueInKVStore
 			return
 		}
 		err = k.cdc.UnmarshalLengthPrefixed(value, &wallet)
@@ -104,7 +106,7 @@ func (k Keeper) GetAllWallets(ctx sdk.Context) (wallets []types.Wallet, err erro
 		var wallet types.Wallet
 		value := iterator.Value()
 		if len(value) == 0 {
-			err = fmt.Errorf("empty value in the key-value store")
+			err = errors.EmptyValueInKVStore
 			return
 		}
 		err = k.cdc.UnmarshalLengthPrefixed(value, &wallet)
@@ -127,7 +129,7 @@ func (k Keeper) GetTransaction(ctx sdk.Context, txID string) (transaction types.
 	key := append(types.KeyPrefixTransaction, []byte(txID)...)
 	value := store.Get(key)
 	if len(value) == 0 {
-		err = fmt.Errorf("transaction %s is not found in the key-value store", txID)
+		err = errors.TransactionNotFound
 		return
 	}
 	err = k.cdc.UnmarshalLengthPrefixed(value, &transaction)
@@ -150,7 +152,7 @@ func (k Keeper) GetTransactions(ctx sdk.Context, wallet string) (transactions []
 		var tx types.Transaction
 		value := iterator.Value()
 		if len(value) == 0 {
-			err = fmt.Errorf("empty value in the key-value store")
+			err = errors.EmptyValueInKVStore
 			return
 		}
 		err = k.cdc.UnmarshalLengthPrefixed(value, &tx)
@@ -172,7 +174,7 @@ func (k Keeper) GetAllTransactions(ctx sdk.Context) (transactions []types.Transa
 		var tx types.Transaction
 		value := iterator.Value()
 		if len(value) == 0 {
-			err = fmt.Errorf("empty value in the key-value store")
+			err = errors.EmptyValueInKVStore
 			return
 		}
 		err = k.cdc.UnmarshalLengthPrefixed(value, &tx)

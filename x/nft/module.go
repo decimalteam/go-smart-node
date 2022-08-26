@@ -1,16 +1,15 @@
 package nft
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/client/cli"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/client/rest"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"context"
 	"encoding/json"
 	"fmt"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/client/cli"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
@@ -54,11 +53,6 @@ func (b AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncoding
 	return genesisState.Validate()
 }
 
-// RegisterRESTRoutes registers rest routes
-func (AppModuleBasic) RegisterRESTRoutes(ctx client.Context, rtr *mux.Router) {
-	rest.RegisterRoutes(ctx, rtr, types.RouterKey)
-}
-
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(c client.Context, serveMux *runtime.ServeMux) {
 	if err := types.RegisterQueryHandlerClient(context.Background(), serveMux, types.NewQueryClient(c)); err != nil {
@@ -81,17 +75,13 @@ type AppModule struct {
 	AppModuleBasic
 
 	keeper keeper.Keeper
-
-	// Account keeper is used for testing purposes only
-	accountKeeper types.AccountKeeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(keeper keeper.Keeper, accountKeeper types.AccountKeeper) AppModule {
+func NewAppModule(keeper keeper.Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,
-		accountKeeper:  accountKeeper,
 	}
 }
 
@@ -116,11 +106,11 @@ func (AppModule) QuerierRoute() string {
 }
 
 // LegacyQuerierHandler returns the module's Querier.
-func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
-	return keeper.NewQuerier(am.keeper, amino)
+func (am AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier {
+	return nil
 }
 
-// RegisterServices registers a GRPC query service to respond to the module-specific GRPC queries.
+// RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), am.keeper)
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)

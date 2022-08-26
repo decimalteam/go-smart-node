@@ -6,7 +6,7 @@ import (
 
 	authante "github.com/cosmos/cosmos-sdk/x/auth/ante"
 
-	ethante "github.com/tharsis/ethermint/app/ante"
+	ethante "github.com/evmos/ethermint/app/ante"
 )
 
 // NewAnteHandler returns an ante handler responsible for attempting to route an
@@ -30,25 +30,25 @@ func NewAnteHandler(options HandlerOptions) sdk.AnteHandler {
 					// handle as *evmtypes.MsgEthereumTx
 					anteHandler = newEthAnteHandler(options)
 				case "/ethermint.types.v1.ExtensionOptionsWeb3Tx":
-					// handle as normal Cosmos SDK tx, except signature is checked for EIP712 representation
+					// handle as normal Decimal SDK tx, except signature is checked for EIP712 representation
 					anteHandler = newCosmosAnteHandlerEip712(options)
+				case "/ethermint.types.v1.ExtensionOptionDynamicFeeTx":
+					// cosmos-sdk tx with dynamic fee extension
+					anteHandler = newCosmosAnteHandler(options)
 				default:
-					return ctx, sdkerrors.Wrapf(
-						sdkerrors.ErrUnknownExtensionOptions,
-						"rejecting tx with unsupported extension option: %s", typeURL,
-					)
+					return ctx, sdkerrors.ErrUnknownExtensionOptions
 				}
 
 				return anteHandler(ctx, tx, sim)
 			}
 		}
 
-		// handle as totally normal Cosmos SDK tx
+		// handle as totally normal Decimal SDK tx
 		switch tx.(type) {
 		case sdk.Tx:
 			anteHandler = newCosmosAnteHandler(options)
 		default:
-			return ctx, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "invalid transaction type: %T", tx)
+			return ctx, sdkerrors.ErrUnknownRequest
 		}
 
 		return anteHandler(ctx, tx, sim)

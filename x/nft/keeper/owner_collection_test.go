@@ -10,7 +10,7 @@ import (
 )
 
 func TestSetOwnerCollection(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	addrs := app.GetAddrs(dsc, ctx, 1)
 
@@ -24,7 +24,9 @@ func TestSetOwnerCollection(t *testing.T) {
 	}
 
 	// Check throw GetOwnerCollections method
-	storedOwnerCollections := dsc.NFTKeeper.GetOwnerCollections(ctx, addrs[0])
+	storedOwnerCollections, err := dsc.NFTKeeper.GetOwnerCollections(ctx, addrs[0])
+	require.NoError(t, err)
+
 	require.Len(t, storedOwnerCollections, len(ownerCollectionsToStore))
 
 	for _, ownerCollectionToStore := range ownerCollectionsToStore {

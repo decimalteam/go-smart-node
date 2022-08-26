@@ -1,6 +1,7 @@
 package coin_test
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"testing"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
@@ -70,6 +71,19 @@ func TestConsistency(t *testing.T) {
 		{opType: "sellAll", adr: adrs[0], amount: baseVolume},
 		{opType: "sellAll", adr: adrs[1], amount: baseVolume},
 	})
+
+	app, ctx, adrs = initConsistencyApp(t, baseReserve, baseVolume, limitVolume, crr)
+	runOpSequence(t, app, ctx, []coinOp{
+		{opType: "fee", adr: adrs[0], amount: helpers.FinneyToWei(sdk.NewInt(100))},
+		{opType: "fee", adr: adrs[1], amount: helpers.FinneyToWei(sdk.NewInt(100))},
+		{opType: "buy", adr: adrs[0], amount: baseVolume},
+		{opType: "buy", adr: adrs[1], amount: baseVolume},
+		{opType: "buy", adr: adrs[0], amount: baseVolume},
+		{opType: "buy", adr: adrs[1], amount: baseVolume},
+		{opType: "validator", adr: nil, amount: sdk.ZeroInt()},
+		{opType: "burn", adr: adrs[0], amount: baseVolume},
+		{opType: "burn", adr: adrs[1], amount: baseVolume},
+	})
 }
 
 type coinOp struct {
@@ -107,8 +121,13 @@ func runOpSequence(t *testing.T, app *appMain.DSC, ctx sdk.Context, seq []coinOp
 		case "sellAll":
 			app.CoinKeeper.SellAllCoin(sdk.WrapSDKContext(ctx), types.NewMsgSellAllCoin(
 				op.adr,
-				fooCoin,
+				fooCoin.Denom,
 				sdk.NewCoin("del", sdk.NewInt(0)),
+			))
+		case "burn":
+			app.CoinKeeper.BurnCoin(sdk.WrapSDKContext(ctx), types.NewMsgBurnCoin(
+				op.adr,
+				fooCoin,
 			))
 		}
 
@@ -120,7 +139,7 @@ func runOpSequence(t *testing.T, app *appMain.DSC, ctx sdk.Context, seq []coinOp
 }
 
 func initConsistencyApp(t *testing.T, reserve, volume, limitVolume sdk.Int, crr uint64) (*app.DSC, sdk.Context, []sdk.AccAddress) {
-	app, ctx := bootstrapGenesisTest()
+	app, ctx := bootstrapGenesisTest(t)
 
 	// write genesis
 	params := app.CoinKeeper.GetParams(ctx)
@@ -190,13 +209,13 @@ func initConsistencyApp(t *testing.T, reserve, volume, limitVolume sdk.Int, crr 
 
 func checkCoin(coinInfo types.Coin) error {
 	if coinInfo.Volume.LT(types.MinCoinSupply) {
-		return types.ErrTxBreaksMinVolumeLimit(coinInfo.Volume.String(), types.MinCoinSupply.String())
+		return errors.TxBreaksMinVolumeLimit
 	}
 	if coinInfo.Volume.GT(coinInfo.LimitVolume) {
-		return types.ErrTxBreaksVolumeLimit(coinInfo.Volume.String(), coinInfo.LimitVolume.String())
+		return errors.TxBreaksVolumeLimit
 	}
 	if coinInfo.Reserve.LT(types.MinCoinReserve) {
-		return types.ErrTxBreaksMinReserveRule(types.MinCoinReserve.String(), coinInfo.Reserve.String())
+		return errors.TxBreaksMinReserveRule
 	}
 	return nil
 }

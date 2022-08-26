@@ -1,12 +1,12 @@
 package cli
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
+
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 
 	"github.com/spf13/cobra"
 
@@ -71,16 +71,14 @@ $ %s query %s supply crypto-kitties
 // GetCmdQueryOwner queries all the NFTs owned by an account
 func cmdQueryOwner() *cobra.Command {
 	return &cobra.Command{
-		Use:   "owner [account_address] [denom]",
+		Use:   "owner [account_address]",
 		Short: "get the NFTs owned by an account address",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Get the NFTs owned by an account address optionally filtered by the denom of the NFTs.
+			fmt.Sprintf(`Get the NFTs owned by an account address.
 
 Example:
 $ %s query %s owner cosmos1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p
-$ %s query %s owner cosmos1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p crypto-kitties
-`, config.AppBinName, types.ModuleName, config.AppBinName, types.ModuleName,
-			),
+`, config.AppBinName, types.ModuleName),
 		),
 		Args: cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -93,9 +91,6 @@ $ %s query %s owner cosmos1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p crypto-kitties
 
 			req := &types.QueryOwnerCollectionsRequest{
 				Owner: args[0],
-			}
-			if len(args) > 1 {
-				req.Denom = args[1]
 			}
 
 			res, err := queryClient.QueryOwnerCollections(context.Background(), req)
@@ -151,11 +146,11 @@ func cmdQueryDenoms() *cobra.Command {
 		Short: "queries all denominations of all collections of NFTs",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Gets all denominations of all the available collections of NFTs that
-			are stored on the chain.
+are stored on the chain.
 
-			Example:
-			$ %s query %s denoms
-			`, config.AppBinName, types.ModuleName,
+Example:
+$ %s query %s denoms
+`, config.AppBinName, types.ModuleName,
 			),
 		),
 		Args: cobra.ExactArgs(0),
@@ -205,7 +200,7 @@ $ %s query %s token crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f
 			tokenID := args[1]
 			req := &types.QueryNFTRequest{
 				Denom:   denom,
-				TokenID: tokenID,
+				TokenId: tokenID,
 			}
 
 			res, err := queryClient.QueryNFT(context.Background(), req)
@@ -220,9 +215,15 @@ $ %s query %s token crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f
 
 func cmdQuerySubTokens() *cobra.Command {
 	return &cobra.Command{
-		Use:   "sub_tokens [denom] [token_id] [sub_token_ids]",
-		Short: "query a single NFT from a collection",
-		Args:  cobra.ExactArgs(3),
+		Use:   "sub_tokens [denom] [token_id]",
+		Short: "query a sub tokens information of single NFT from a collection",
+		Long: fmt.Sprintf(`Get sub tokens of NFT from a collection that has the given ID (SHA-256 hex hash).
+
+Example:
+$ %s query %s sub_tokens crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa
+`, config.AppBinName, types.ModuleName,
+		),
+		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -234,20 +235,9 @@ func cmdQuerySubTokens() *cobra.Command {
 			denom := args[0]
 			tokenID := args[1]
 
-			subTokenIDsStr := strings.Split(args[2], ",")
-			subTokenIDs := make([]uint64, len(subTokenIDsStr))
-			for i, d := range subTokenIDsStr {
-				subTokenID, err := strconv.ParseUint(d, 10, 64)
-				if err != nil {
-					return fmt.Errorf("invalid subTokenID")
-				}
-				subTokenIDs[i] = subTokenID
-			}
-
 			req := &types.QuerySubTokensRequest{
-				Denom:       denom,
-				TokenID:     tokenID,
-				SubTokenIDs: subTokenIDs,
+				Denom:   denom,
+				TokenID: tokenID,
 			}
 
 			res, err := queryClient.QuerySubTokens(context.Background(), req)
