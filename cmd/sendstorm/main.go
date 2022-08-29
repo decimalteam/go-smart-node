@@ -31,6 +31,7 @@ func main() {
 	rootCmd.AddCommand(
 		cmdGenerate(),
 		cmdFaucet(),
+		cmdFaucetExt(),
 		cmdRun(),
 		cmdVerify(),
 	)
