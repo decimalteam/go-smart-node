@@ -53,15 +53,11 @@ type GenesisNew struct {
 		Capability   interface{} `json:"capability"`
 		Crisis       interface{} `json:"crisis"`
 		Distribution interface{} `json:"distribution"`
-		Epochs       interface{} `json:"epochs"`
-		Erc20        interface{} `json:"erc20"`
 		Evidence     interface{} `json:"evidence"`
 		Evm          interface{} `json:"evm"`
 		Feegrant     interface{} `json:"feegrant"`
-		Feemarket    interface{} `json:"feemarket"`
+		Fee          interface{} `json:"customfee"`
 		Gov          interface{} `json:"gov"`
-		Incentives   interface{} `json:"incentives"`
-		Inflation    interface{} `json:"inflation"`
 		Params       interface{} `json:"params"`
 		Slashing     interface{} `json:"slashing"`
 		Staking      interface{} `json:"staking"`
