@@ -1,8 +1,7 @@
 package types
 
 import (
-	"strconv"
-
+	"bitbucket.org/decimalteam/go-smart-node/x/multisig/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 )
@@ -61,40 +60,37 @@ func (msg MsgCreateWallet) GetSigners() []sdk.AccAddress {
 func (msg MsgCreateWallet) ValidateBasic() error {
 	// Validate sender
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return ErrInvalidSender(msg.Sender)
+		return errors.InvalidSender
 	}
 	// Validate owner count
 	if len(msg.Owners) < MinOwnerCount || len(msg.Owners) > MaxOwnerCount {
-		return ErrInvalidOwnerCount(strconv.Itoa(len(msg.Owners)), strconv.Itoa(MinOwnerCount), strconv.Itoa(MaxOwnerCount))
+		return errors.InvalidOwnerCount
 	}
 	// Validate weight count
 	if len(msg.Owners) != len(msg.Weights) {
-		return ErrInvalidWeightCount(strconv.Itoa(len(msg.Weights)), strconv.Itoa(len(msg.Owners)))
+		return errors.InvalidWeightCount
 	}
 	// Validate owners (ensure there are no duplicates)
 	owners := make(map[string]bool, len(msg.Owners))
 	for i := 0; i < len(msg.Owners); i++ {
 		if _, err := sdk.AccAddressFromBech32(msg.Owners[i]); err != nil {
-			return ErrInvalidOwner(msg.Owners[i])
+			return errors.InvalidOwner
 		}
 		if owners[msg.Owners[i]] {
-			return ErrDuplicateOwner(msg.Owners[i])
+			return errors.DuplicateOwner
 		}
 		owners[msg.Owners[i]] = true
 	}
 	// Validate weights
 	var sumOfWeights uint64
 	for i := 0; i < len(msg.Weights); i++ {
-		if msg.Weights[i] < MinWeight {
-			return ErrInvalidWeight(strconv.Itoa(MinWeight), "less")
-		}
-		if msg.Weights[i] > MaxWeight {
-			return ErrInvalidWeight(strconv.Itoa(MaxWeight), "greater")
+		if msg.Weights[i] < MinWeight || msg.Weights[i] > MaxWeight {
+			return errors.InvalidWeight
 		}
 		sumOfWeights += msg.Weights[i]
 	}
 	if sumOfWeights < msg.Threshold {
-		return ErrInvalidThreshold(strconv.FormatUint(sumOfWeights, 10), strconv.FormatUint(msg.Threshold, 10))
+		return errors.InvalidThreshold
 	}
 	return nil
 }
@@ -141,22 +137,22 @@ func (msg *MsgCreateTransaction) GetSigners() []sdk.AccAddress {
 // ValidateBasic performs basic validation of the message.
 func (msg *MsgCreateTransaction) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return ErrInvalidSender(msg.Sender)
+		return errors.InvalidSender
 	}
 	if _, err := sdk.AccAddressFromBech32(msg.Wallet); err != nil {
-		return ErrInvalidWallet(msg.Wallet)
+		return errors.InvalidWallet
 	}
 	if _, err := sdk.AccAddressFromBech32(msg.Receiver); err != nil {
-		return ErrInvalidReceiver(msg.Receiver)
+		return errors.InvalidReceiver
 	}
 	if len(msg.Coins) == 0 {
-		return ErrNoCoinsToSend()
+		return errors.NoCoinsToSend
 	}
 	// Check to amount should be positive, but sdk.Coin cannot be negative
 	// and sdk.Coins cannot cointain coins zero amount
 	for _, coin := range msg.Coins {
 		if coin.Amount.LTE(sdk.ZeroInt()) {
-			return ErrInvalidAmount(coin.Denom, coin.Amount.String())
+			return errors.InvalidAmount
 		}
 	}
 	return nil
@@ -199,14 +195,14 @@ func (msg *MsgSignTransaction) GetSigners() []sdk.AccAddress {
 // ValidateBasic performs basic validation of the message.
 func (msg *MsgSignTransaction) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return ErrInvalidSender(msg.Sender)
+		return errors.InvalidSender
 	}
 	prefix, _, err := bech32.DecodeAndConvert(msg.TxID)
 	if err != nil {
-		return ErrInvalidTransactionIDError(msg.TxID, err.Error())
+		return errors.InvalidTransactionIDError
 	}
 	if prefix != MultisigTransactionIDPrefix {
-		return ErrInvalidTransactionIDPrefix(msg.TxID, MultisigTransactionIDPrefix, prefix)
+		return errors.InvalidTransactionIDPrefix
 	}
 	// TODO: TxID length
 	return nil

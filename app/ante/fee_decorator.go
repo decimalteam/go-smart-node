@@ -6,8 +6,9 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdkAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	evmTypes "github.com/tharsis/ethermint/x/evm/types"
+	evmTypes "github.com/evmos/ethermint/x/evm/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -16,14 +17,16 @@ type FeeDecorator struct {
 	coinKeeper    coinTypes.CoinKeeper
 	bankKeeper    evmTypes.BankKeeper
 	accountKeeper evmTypes.AccountKeeper
+	feeKeeper     feeTypes.FeeKeeper
 }
 
 // NewFeeDecorator creates new FeeDecorator to deduct fee
-func NewFeeDecorator(ck coinTypes.CoinKeeper, bk evmTypes.BankKeeper, ak evmTypes.AccountKeeper) FeeDecorator {
+func NewFeeDecorator(ck coinTypes.CoinKeeper, bk evmTypes.BankKeeper, ak evmTypes.AccountKeeper, fk feeTypes.FeeKeeper) FeeDecorator {
 	return FeeDecorator{
 		coinKeeper:    ck,
 		bankKeeper:    bk,
 		accountKeeper: ak,
+		feeKeeper:     fk,
 	}
 }
 
@@ -38,14 +41,18 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 	// initial check for transaction
 	feeTx, ok := tx.(sdk.FeeTx)
 	if !ok {
-		return ctx, ErrNotFeeTxType()
+		return ctx, NotFeeTxType
 	}
 
 	if addr := fd.accountKeeper.GetModuleAddress(sdkAuthTypes.FeeCollectorName); addr == nil {
 		panic(fmt.Sprintf("%s module account has not been set", sdkAuthTypes.FeeCollectorName))
 	}
 
-	commissionInBaseCoin, err := CalculateFee(tx.GetMsgs(), int64(len(ctx.TxBytes())), sdk.OneDec())
+	delPrice, err := fd.feeKeeper.GetPrice(ctx)
+	if err != nil {
+		return ctx, err
+	}
+	commissionInBaseCoin, err := CalculateFee(tx.GetMsgs(), int64(len(ctx.TxBytes())), delPrice, fd.feeKeeper.GetModuleParams(ctx))
 	if err != nil {
 		return ctx, err
 	}
@@ -55,7 +62,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 	baseDenom := fd.coinKeeper.GetBaseDenom(ctx)
 
 	if feePayerAcc == nil {
-		return ctx, ErrFeePayerAddressDoesNotExist(feeTx.FeePayer().String())
+		return ctx, FeePayerAddressDoesNotExist
 	}
 
 	// fee from transaction is zero (empty), we deduct calculated fee from payer
@@ -89,20 +96,19 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 		}
 
 		if coinInfo.Reserve.LT(commissionInBaseCoin) {
-			return ctx, ErrCoinReserveInsufficient(coinInfo.Reserve.String(), commissionInBaseCoin.String())
+			return ctx, CoinReserveInsufficient
 		}
 
 		feeInBaseCoin = formulas.CalculateSaleReturn(coinInfo.Volume, coinInfo.Reserve,
 			uint(coinInfo.CRR), feeFromTx[0].Amount)
 
 		if coinInfo.Reserve.Sub(feeInBaseCoin).LT(coinTypes.MinCoinReserve) {
-			return ctx, ErrCoinReserveBecomeInsufficient(coinInfo.Reserve.String(), feeInBaseCoin.String(),
-				coinTypes.MinCoinReserve.String())
+			return ctx, CoinReserveBecomeInsufficient
 		}
 	}
 
 	if feeInBaseCoin.LT(commissionInBaseCoin) {
-		return ctx, ErrFeeLessThanCommission(feeInBaseCoin.String(), commissionInBaseCoin.String())
+		return ctx, FeeLessThanCommission
 	}
 
 	// deduct the fees
@@ -125,13 +131,13 @@ func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper coin
 	feePayerAddress sdk.AccAddress, fee sdk.Coin) error {
 
 	if !fee.IsValid() {
-		return ErrInvalidFeeAmount(fee.String())
+		return InvalidFeeAmount
 	}
 
 	// verify the account has enough funds to pay fee
 	balance := bankKeeper.GetBalance(ctx, feePayerAddress, fee.Denom)
 	if balance.Amount.LT(fee.Amount) {
-		return ErrInsufficientFundsToPayFee(balance.String(), fee.String())
+		return InsufficientFundsToPayFee
 	}
 
 	// verify for future coin burning: we must keep minimal volume and reserve
@@ -139,7 +145,7 @@ func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper coin
 		// .Neg() becausee coins will be burn in fee collector
 		feeCoin, err := coinKeeper.GetCoin(ctx, fee.Denom)
 		if err != nil {
-			return ErrCoinDoesNotExist(fee.Denom)
+			return err
 		}
 		err = coinKeeper.CheckFutureChanges(ctx, feeCoin, fee.Amount.Neg())
 		if err != nil {
@@ -149,7 +155,7 @@ func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper coin
 
 	err := bankKeeper.SendCoinsFromAccountToModule(ctx, feePayerAddress, sdkAuthTypes.FeeCollectorName, sdk.NewCoins(fee))
 	if err != nil {
-		return ErrFailedToSendCoins(err.Error())
+		return FailedToSendCoins
 	}
 
 	return nil

@@ -1,0 +1,72 @@
+syntax = "proto3";
+package decimal.nft.v1;
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
+
+message EventMintNFT {
+    string sender = 1;
+    string recipient = 2;
+    // aka collection
+    string denom = 3;
+    // aka id, token_id
+    string nft_id = 4 [
+        (gogoproto.customname) = "NFTID"
+    ];
+    string token_uri = 5 [
+        (gogoproto.customname) = "TokenURI"
+    ];
+    bool allow_mint = 6;
+    string reserve = 7;
+    repeated uint64 sub_token_ids = 8 [
+        (gogoproto.customname) = "SubTokenIDs"
+    ];
+}
+
+message EventTransferNFT {
+    string sender = 1;
+    string recipient = 2;
+    string denom = 3;
+    string nft_id = 4 [
+        (gogoproto.customname) = "NFTID"
+    ];
+    repeated uint64 sub_token_ids = 8 [
+        (gogoproto.customname) = "SubTokenIDs"
+    ];
+}
+
+message EventEditNFT {
+    string sender = 1;
+    string denom = 2;
+    string nft_id = 3 [
+        (gogoproto.customname) = "NFTID"
+    ];
+    string token_uri = 4 [
+        (gogoproto.customname) = "TokenURI"
+    ];
+}
+
+message EventBurnNFT {
+    string sender = 1;
+    string denom = 2;
+    string nft_id = 3 [
+        (gogoproto.customname) = "NFTID"
+    ];
+    repeated uint64 sub_token_ids = 4 [
+        (gogoproto.customname) = "SubTokenIDs"
+    ];
+}
+
+message EventUpdateReserveNFT {
+    string sender = 1;
+    string denom = 2;
+    string nft_id = 3 [
+        (gogoproto.customname) = "NFTID"
+    ];
+    repeated uint64 sub_token_ids = 4 [
+        (gogoproto.customname) = "SubTokenIDs"
+    ];
+    cosmos.base.v1beta1.Coin new_reserve = 5;
+}

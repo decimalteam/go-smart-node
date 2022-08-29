@@ -1,8 +1,8 @@
 package types
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"crypto/ecdsa"
-	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"io"
@@ -22,17 +22,13 @@ const HashLength = 32
 // Hash represents the 32 byte Keccak256 hash of arbitrary data.
 type Hash [HashLength]byte
 
-var (
-	ErrInvalidSig = errors.New("invalid transaction v, r, s values")
-)
-
 func ParseCheck(buf []byte) (check *Check, err error) {
 	err = rlp.DecodeBytes(buf, &check)
 	if err != nil {
-		return nil, err
+		return nil, errors.DecodeRLP
 	}
 	if check.S.BigInt() == nil || check.R.BigInt() == nil || check.V.BigInt() == nil {
-		err = errors.New("incorrect tx signature")
+		err = errors.InvalidCheckSig
 		return
 	}
 	return
@@ -50,10 +46,10 @@ func (c *Check) LockPubKey() ([]byte, error) {
 	hash := c.HashWithoutLock()
 	pub, err := crypto.Ecrecover(hash[:], sig)
 	if err != nil {
-		return nil, err
+		return nil, errors.UnableRecoverLockPkey
 	}
 	if len(pub) == 0 || pub[0] != 4 {
-		return nil, errors.New("invalid public key")
+		return nil, errors.InvalidPubKey
 	}
 	return pub, nil
 }
@@ -62,7 +58,7 @@ func (c *Check) Sign(prv *ecdsa.PrivateKey) error {
 	h := c.Hash()
 	sig, err := crypto.Sign(h[:], prv)
 	if err != nil {
-		return err
+		return errors.UnableSignCheck
 	}
 	c.SetSignature(sig)
 	return nil
@@ -107,11 +103,11 @@ func rlpHash(x interface{}) (h Hash) {
 
 func recoverPlain(sighash Hash, rb, sb, vb *big.Int) (sdk.AccAddress, error) {
 	if vb.BitLen() > 8 {
-		return sdk.AccAddress{}, ErrInvalidSig
+		return sdk.AccAddress{}, errors.InvalidCheckSig
 	}
 	v := byte(vb.Uint64() - 27)
 	if !crypto.ValidateSignatureValues(v, rb, sb, true) {
-		return sdk.AccAddress{}, ErrInvalidSig
+		return sdk.AccAddress{}, errors.InvalidCheckSig
 	}
 	// encode the signature in uncompressed format
 	r, s := rb.Bytes(), sb.Bytes()
@@ -122,10 +118,10 @@ func recoverPlain(sighash Hash, rb, sb, vb *big.Int) (sdk.AccAddress, error) {
 	// recover the public key from the signature
 	pub, err := crypto.Ecrecover(sighash[:], sig)
 	if err != nil {
-		return sdk.AccAddress{}, err
+		return sdk.AccAddress{}, errors.FailedToRecoverPKFromSig
 	}
 	if len(pub) == 0 || pub[0] != 4 {
-		return sdk.AccAddress{}, errors.New("invalid public key")
+		return sdk.AccAddress{}, errors.InvalidPubKey
 	}
 	var addr common.Address
 	copy(addr[:], crypto.Keccak256(pub[1:])[12:])
@@ -156,7 +152,7 @@ type rlpCheck struct {
 }
 
 func (c *Check) EncodeRLP(w io.Writer) error {
-	return rlp.Encode(w, rlpCheck{
+	if err := rlp.Encode(w, rlpCheck{
 		ChainID:  c.ChainID,
 		Coin:     c.Coin,
 		Amount:   c.Amount.BigInt(),
@@ -166,7 +162,10 @@ func (c *Check) EncodeRLP(w io.Writer) error {
 		V:        c.V.BigInt(),
 		R:        c.R.BigInt(),
 		S:        c.S.BigInt(),
-	})
+	}); err != nil {
+		return errors.UnableRPLEncodeCheck
+	}
+	return nil
 }
 
 func (c *Check) DecodeRLP(st *rlp.Stream) error {

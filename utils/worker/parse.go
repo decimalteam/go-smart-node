@@ -19,7 +19,7 @@ func (w *Worker) parseTxInfo(tx sdk.Tx) (txInfo TxInfo) {
 	}
 	for _, rawMsg := range tx.GetMsgs() {
 		params := make(map[string]interface{})
-		err := json.Unmarshal(w.cdc.Marshaler.MustMarshalJSON(rawMsg), &params)
+		err := json.Unmarshal(w.cdc.Codec.MustMarshalJSON(rawMsg), &params)
 		w.panicError(err)
 		var msg TxMsg
 		msg.Type = sdk.MsgTypeURL(rawMsg)

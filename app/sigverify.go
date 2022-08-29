@@ -13,7 +13,7 @@ import (
 	authante "github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 )
 
 var _ authante.SignatureVerificationGasConsumer = SigVerificationGasConsumer
@@ -49,12 +49,12 @@ func SigVerificationGasConsumer(
 		// Cosmos SDK keys
 		// TODO: Is it needed to support?
 		// meter.ConsumeGas(params.SigVerifyCostSecp256k1, "ante verify: secp256k1")
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidPubKey, "secp256k1 public keys are unsupported")
+		return sdkerrors.ErrInvalidPubKey
 
 	case *ed25519.PubKey:
 		// Validator keys
 		meter.ConsumeGas(params.SigVerifyCostED25519, "ante verify: ed25519")
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidPubKey, "ED25519 public keys are unsupported")
+		return sdkerrors.ErrInvalidPubKey
 
 	case multisig.PubKey:
 		// Multisig keys
@@ -65,7 +65,7 @@ func SigVerificationGasConsumer(
 		return ConsumeMultisignatureVerificationGas(meter, multisignature, pubkey, params, sig.Sequence)
 
 	default:
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidPubKey, "unrecognized/unsupported public key type: %T", pubkey)
+		return sdkerrors.ErrInvalidPubKey
 	}
 }
 

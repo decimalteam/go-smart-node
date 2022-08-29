@@ -1,10 +1,13 @@
 package types
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/errors"
+	sdkmath "cosmossdk.io/math"
+
 	"regexp"
 	"strings"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 /* --------------------------------------------------------------------------- */
@@ -15,7 +18,8 @@ import (
 func NewMsgMintNFT(
 	sender, recipient sdk.AccAddress,
 	id, denom, tokenURI string,
-	quantity, reserve sdk.Int,
+	quantity sdkmath.Int,
+	reserve sdk.Coin,
 	allowMint bool,
 ) *MsgMintNFT {
 	return &MsgMintNFT{
@@ -30,13 +34,6 @@ func NewMsgMintNFT(
 	}
 }
 
-const regName = "^[a-zA-Z0-9_-]{1,255}$"
-
-var MinReserve = sdk.NewInt(100)
-
-var NewMinReserve = helpers.BipToPip(sdk.NewInt(100))
-var NewMinReserve2 = helpers.BipToPip(sdk.NewInt(1))
-
 // Route Implements Msg
 func (m *MsgMintNFT) Route() string { return RouterKey }
 
@@ -47,31 +44,30 @@ func (m *MsgMintNFT) Type() string { return "mint_nft" }
 func (m *MsgMintNFT) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(m.Sender)
 	if err != nil {
-		return ErrInvalidSenderAddress(m.Sender)
+		return errors.InvalidSender
 	}
 	_, err = sdk.AccAddressFromBech32(m.Recipient)
 	if err != nil {
-		return ErrInvalidRecipientAddress(m.Recipient)
+		return errors.InvalidRecipientAddress
 	}
 
 	if strings.TrimSpace(m.Denom) == "" {
-		return ErrInvalidDenom(m.Denom)
+		return errors.InvalidDenom
 	}
 	if strings.TrimSpace(m.ID) == "" {
-		return ErrInvalidNFT(m.ID)
+		return errors.InvalidNFT
 	}
 	if !m.Quantity.IsPositive() {
-		return ErrInvalidQuantity(m.Quantity.String())
+		return errors.InvalidQuantity
 	}
-
-	if !m.Reserve.IsPositive() || m.Reserve.LT(MinReserve) {
-		return ErrInvalidReserve(m.Reserve.String())
+	if !m.Reserve.IsPositive() || m.Reserve.Amount.LT(MinReserve) {
+		return errors.InvalidReserve
 	}
 	if match, _ := regexp.MatchString(regName, m.Denom); !match {
-		return ErrInvalidDenom(m.Denom)
+		return errors.InvalidDenom
 	}
 	if match, _ := regexp.MatchString(regName, m.ID); !match {
-		return ErrInvalidTokenID(m.ID)
+		return errors.InvalidTokenID
 	}
 
 	return nil
@@ -117,16 +113,16 @@ func (msg *MsgBurnNFT) Type() string { return "burn_nft" }
 func (msg *MsgBurnNFT) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSender
 	}
 	if strings.TrimSpace(msg.Denom) == "" {
-		return ErrInvalidDenom(msg.Denom)
+		return errors.InvalidDenom
 	}
 	if strings.TrimSpace(msg.ID) == "" {
-		return ErrInvalidNFT(msg.ID)
+		return errors.InvalidNFT
 	}
 	if !CheckUnique(msg.SubTokenIDs) {
-		return ErrNotUniqueSubTokenIDs()
+		return errors.NotUniqueSubTokenIDs
 	}
 
 	return nil
@@ -153,13 +149,13 @@ func (msg *MsgBurnNFT) GetSigners() []sdk.AccAddress {
 /* --------------------------------------------------------------------------- */
 
 // NewUpdateReservNFT is a constructor function for MsgUpdateReservNFT
-func NewMsgUpdateReserveNFT(sender sdk.AccAddress, id string, denom string, subTokenIDs []uint64, newReserveNFT sdk.Int) *MsgUpdateReserveNFT {
+func NewMsgUpdateReserveNFT(sender sdk.AccAddress, id string, denom string, subTokenIDs []uint64, newReserve sdk.Coin) *MsgUpdateReserveNFT {
 	return &MsgUpdateReserveNFT{
-		Sender:        sender.String(),
-		ID:            strings.TrimSpace(id),
-		Denom:         strings.TrimSpace(denom),
-		SubTokenIDs:   subTokenIDs,
-		NewReserveNFT: newReserveNFT,
+		Sender:      sender.String(),
+		ID:          strings.TrimSpace(id),
+		Denom:       strings.TrimSpace(denom),
+		SubTokenIDs: subTokenIDs,
+		NewReserve:  newReserve,
 	}
 }
 
@@ -173,22 +169,22 @@ func (msg *MsgUpdateReserveNFT) Type() string { return "update_nft_reserve" }
 func (msg *MsgUpdateReserveNFT) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSender
 	}
 
 	if strings.TrimSpace(msg.Denom) == "" {
 
-		return ErrInvalidDenom(msg.Denom)
+		return errors.InvalidDenom
 	}
 	if strings.TrimSpace(msg.ID) == "" {
-		return ErrInvalidNFT(msg.ID)
+		return errors.InvalidNFT
 	}
 	if !CheckUnique(msg.SubTokenIDs) {
-		return ErrNotUniqueSubTokenIDs()
+		return errors.NotUniqueSubTokenIDs
 	}
 
-	if msg.NewReserveNFT.IsZero() {
-		return ErrInvalidReserve("Reserv can not be equal to zero")
+	if msg.NewReserve.IsZero() {
+		return errors.InvalidReserve
 	}
 
 	return nil
@@ -234,28 +230,28 @@ func (msg *MsgTransferNFT) Type() string { return "transfer_nft" }
 // ValidateBasic Implements Msg.
 func (msg *MsgTransferNFT) ValidateBasic() error {
 	if strings.TrimSpace(msg.Denom) == "" {
-		return ErrInvalidCollection(msg.Denom)
+		return errors.InvalidCollection
 	}
 
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSender
 	}
 
 	recipient, err := sdk.AccAddressFromBech32(msg.Recipient)
 	if err != nil {
-		return ErrInvalidRecipientAddress(msg.Recipient)
+		return errors.InvalidRecipientAddress
 	}
 
 	if sender.Equals(recipient) {
-		return ErrForbiddenToTransferToYourself()
+		return errors.ForbiddenToTransferToYourself
 	}
 
 	if strings.TrimSpace(msg.ID) == "" {
-		return ErrInvalidCollection(msg.ID)
+		return errors.InvalidCollection
 	}
 	if !CheckUnique(msg.SubTokenIDs) {
-		return ErrNotUniqueSubTokenIDs()
+		return errors.NotUniqueSubTokenIDs
 	}
 
 	return nil
@@ -301,14 +297,14 @@ func (msg *MsgEditNFTMetadata) Type() string { return "edit_nft_metadata" }
 func (msg *MsgEditNFTMetadata) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
-		return ErrInvalidSenderAddress(msg.Sender)
+		return errors.InvalidSender
 	}
 
 	if strings.TrimSpace(msg.Denom) == "" {
-		return ErrInvalidDenom(msg.Denom)
+		return errors.InvalidDenom
 	}
 	if strings.TrimSpace(msg.ID) == "" {
-		return ErrInvalidNFT(msg.ID)
+		return errors.InvalidNFT
 	}
 	return nil
 }

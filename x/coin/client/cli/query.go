@@ -1,16 +1,19 @@
 package cli
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"context"
 	"fmt"
-	"github.com/cosmos/btcutil/base58"
 	"strings"
+
+	"github.com/cosmos/btcutil/base58"
 
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 
@@ -37,7 +40,11 @@ func QueryCoinCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "coin [symbol]",
 		Short: "Query specific coin by symbol (denom)",
-		Args:  cobra.ExactArgs(1),
+		Long: fmt.Sprintf(`Query coin full information 
+
+Example: 	
+$ %s query %s coin del`, config.AppBinName, types.ModuleName),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -66,7 +73,11 @@ func QueryCoinsCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "coins",
 		Short: "Query all existing coins",
-		Args:  cobra.NoArgs,
+		Long: fmt.Sprintf(`Query all coins full information 
+
+Example: 	
+$ %s query %s coins`, config.AppBinName, types.ModuleName),
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -102,7 +113,11 @@ func QueryCheckCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "check [hash]",
 		Short: "Query specific check by hash in hex format",
-		Args:  cobra.ExactArgs(1),
+		Long: fmt.Sprintf(`Query check information from blockchain
+
+Example: 	
+$ %s query %s check 3YEtqixL7ccFTZJaMUHx3TgsQEqzrqoj...(result of command 'issue-check')`, config.AppBinName, types.ModuleName),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -113,13 +128,13 @@ func QueryCheckCmd() *cobra.Command {
 			// Decode provided check from base58 format to raw bytes
 			checkBytes := base58.Decode(args[0])
 			if len(checkBytes) == 0 {
-				return types.ErrUnableDecodeCheck(args[0])
+				return errors.UnableDecodeCheckBase58
 			}
 
 			// Parse provided check from raw bytes to ensure it is valid
 			check, err := types.ParseCheck(checkBytes)
 			if err != nil {
-				return types.ErrInvalidCheck(err.Error())
+				return err
 			}
 
 			hash := check.HashFull()
@@ -143,7 +158,11 @@ func QueryChecksCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "checks",
 		Short: "Query all existing checks",
-		Args:  cobra.NoArgs,
+		Long: fmt.Sprintf(`Query all checks information from blockchain
+
+Example: 	
+$ %s query %s checks`, config.AppBinName, types.ModuleName),
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -178,7 +197,11 @@ func QueryParamsCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "params",
 		Short: fmt.Sprintf("Query the current parameters of the module %s", types.ModuleName),
-		Args:  cobra.NoArgs,
+		Long: fmt.Sprintf(`Query module params from blockchain
+
+Example: 	
+$ %s query %s params`, config.AppBinName, types.ModuleName),
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {

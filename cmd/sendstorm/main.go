@@ -8,11 +8,10 @@ import (
 )
 
 const (
-	mnemonicsFlag  = "mnemonics_file"
-	nodeFlag       = "node"
-	tendermintPort = "tport"
-	turnOnDebug    = "debug"
-	commitFlag     = "commit"
+	mnemonicsFlag = "mnemonics_file"
+	nodeFlag      = "node"
+	turnOnDebug   = "debug"
+	commitFlag    = "commit"
 )
 
 func main() {
@@ -26,13 +25,13 @@ func main() {
 
 	rootCmd.PersistentFlags().String(mnemonicsFlag, "mnemonics.cfg", "path to mnemonics file")
 	rootCmd.PersistentFlags().String(nodeFlag, "localhost", "hostname or IP of decimal node without http:// or port")
-	rootCmd.PersistentFlags().Int(tendermintPort, 26657, "tendermint RPC port of decimal node")
 	rootCmd.PersistentFlags().Bool(turnOnDebug, false, "write api requests/responses to sendstorm.log")
 	rootCmd.PersistentFlags().Bool(commitFlag, false, "use broadcast_tx_commit (wait for block completion) for transaction sending (very slow)")
 
 	rootCmd.AddCommand(
 		cmdGenerate(),
 		cmdFaucet(),
+		cmdFaucetExt(),
 		cmdRun(),
 		cmdVerify(),
 	)

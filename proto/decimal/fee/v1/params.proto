@@ -1,0 +1,114 @@
+syntax = "proto3";
+package decimal.fee.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/fee/types";
+
+// Params defines calculation constants for the module.
+// Naming convention: <module_name><transaction_as_verb><something_additional>
+// Parameters measurement is units (10^15)
+message Params {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = false;
+
+  // 1 byte fee
+  // commission part by transaction size
+  uint64 byte_fee = 1 [
+    (gogoproto.jsontag) = "byte_fee",
+    (gogoproto.moretags) = "yaml:\"byte_fee\""
+  ];  
+
+  // coin transactions fees
+  uint64 coin_send = 2 [
+    (gogoproto.jsontag) = "coin_send",
+    (gogoproto.moretags) = "yaml:\"coin_send\""
+  ];
+  uint64 coin_send_multi_addition = 3 [
+    (gogoproto.jsontag) = "coin_send_multi_addition",
+    (gogoproto.moretags) = "yaml:\"coin_send_multi_addition\""
+  ];
+  uint64 coin_buy = 4 [
+    (gogoproto.jsontag) = "coin_buy",
+    (gogoproto.moretags) = "yaml:\"coin_buy\""
+  ];
+  uint64 coin_sell = 5 [
+    (gogoproto.jsontag) = "coin_sell",
+    (gogoproto.moretags) = "yaml:\"coin_sell\""
+  ];
+
+  // common transaction commission
+  uint64 coin_create = 6 [
+    (gogoproto.jsontag) = "coin_create",
+    (gogoproto.moretags) = "yaml:\"coin_create\""
+  ];
+
+  // special commission depends on coin symbol length
+  uint64 coin_create_length3 = 7 [
+    (gogoproto.jsontag) = "coin_create_length_3",
+    (gogoproto.moretags) = "yaml:\"coin_create_length_3\""
+  ];  
+  uint64 coin_create_length4 = 8 [
+    (gogoproto.jsontag) = "coin_create_length_4",
+    (gogoproto.moretags) = "yaml:\"coin_create_length_4\""
+  ];  
+  uint64 coin_create_length5 = 9 [
+    (gogoproto.jsontag) = "coin_create_length_5",
+    (gogoproto.moretags) = "yaml:\"coin_create_length_5\""
+  ];  
+  uint64 coin_create_length6 = 10 [
+    (gogoproto.jsontag) = "coin_create_length_6",
+    (gogoproto.moretags) = "yaml:\"coin_create_length_6\""
+  ];  
+  uint64 coin_create_length_other = 11 [
+    (gogoproto.jsontag) = "coin_create_length_other",
+    (gogoproto.moretags) = "yaml:\"coin_create_length_other\""
+  ];  
+
+  // multisignature wallets
+  uint64 multisig_create_wallet = 12 [
+    (gogoproto.jsontag) = "multisig_create_wallet",
+    (gogoproto.moretags) = "yaml:\"multisig_create_wallet\""
+  ];    
+  uint64 multisig_create_transaction = 13 [
+    (gogoproto.jsontag) = "multisig_create_transaction",
+    (gogoproto.moretags) = "yaml:\"multisig_create_transaction\""
+  ];    
+  uint64 multisig_sign_transaction = 14 [
+    (gogoproto.jsontag) = "multisig_sign_transaction",
+    (gogoproto.moretags) = "yaml:\"multisig_sign_transaction\""
+  ];    
+
+  // validator operations
+  uint64 validator_declare_candidate = 15 [
+    (gogoproto.jsontag) = "validator_declare_candidate",
+    (gogoproto.moretags) = "yaml:\"validator_declare_candidate\""    
+  ];
+  uint64 validator_edit_candidate = 16 [
+    (gogoproto.jsontag) = "validator_edit_candidate",
+    (gogoproto.moretags) = "yaml:\"validator_edit_candidate\""    
+  ];
+  uint64 validator_delegate = 17 [
+    (gogoproto.jsontag) = "validator_delegate",
+    (gogoproto.moretags) = "yaml:\"validator_delegate\""    
+  ];
+  uint64 validator_unbond = 18 [
+    (gogoproto.jsontag) = "validator_unbond",
+    (gogoproto.moretags) = "yaml:\"validator_unbond\""    
+  ];
+  uint64 validator_set_online = 19 [
+    (gogoproto.jsontag) = "validator_set_online",
+    (gogoproto.moretags) = "yaml:\"validator_set_online\""    
+  ];
+  uint64 validator_set_offline = 20 [
+    (gogoproto.jsontag) = "validator_set_offline",
+    (gogoproto.moretags) = "yaml:\"validator_set_offline\""    
+  ];
+
+  // fee params
+  string oracle_address = 21 [
+    (gogoproto.jsontag) = "oracle_address",
+    (gogoproto.moretags) = "yaml:\"oracle_address\""   
+  ];
+}

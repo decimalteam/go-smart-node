@@ -2,6 +2,8 @@ syntax = "proto3";
 package decimal.nft.v1;
 
 import "gogoproto/gogo.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos/base/v1beta1/coin.proto";
 
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
 
@@ -14,15 +16,18 @@ service Msg {
 }
 
 message MsgMintNFT {
+  option (cosmos.msg.v1.signer) = "sender";
+
   string sender = 1 [
     (gogoproto.moretags) = "yaml:\"address\""
   ];
   string recipient = 2 [
     (gogoproto.moretags) = "yaml:\"recipient\""
   ];
-  string ID = 3 [
+  string id = 3 [
     (gogoproto.jsontag) = "id",
-    (gogoproto.moretags) = "yaml:\"id\""
+    (gogoproto.moretags) = "yaml:\"id\"",
+    (gogoproto.customname) = "ID"
   ];
   string denom = 4 [
     (gogoproto.moretags) = "yaml:\"denom\""
@@ -32,17 +37,17 @@ message MsgMintNFT {
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"quantity\""
   ];
-  string tokenURI = 6 [
+  string token_uri = 6 [
     (gogoproto.jsontag) = "token_uri",
-    (gogoproto.moretags) = "yaml:\"token_uri\""
+    (gogoproto.moretags) = "yaml:\"token_uri\"",
+    (gogoproto.customname) = "TokenURI"
   ];
-  string reserve = 7 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+  cosmos.base.v1beta1.Coin reserve = 7 [
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "reserve",
     (gogoproto.moretags) = "yaml:\"reserve\""
   ];
-  bool allowMint = 8 [
+  bool allow_mint = 8 [
     (gogoproto.moretags) = "yaml:\"allow_mint\""
   ];
 }
@@ -50,85 +55,100 @@ message MsgMintNFT {
 message MsgMintNFTResponse{}
 
 message MsgTransferNFT {
+  option (cosmos.msg.v1.signer) = "sender";
+
   string sender = 1 [
     (gogoproto.moretags) = "yaml:\"address\""
   ];
   string recipient = 2 [
     (gogoproto.moretags) = "yaml:\"recipient\""
   ];
-  string ID = 3 [
+  string id = 3 [
     (gogoproto.jsontag) = "id",
-    (gogoproto.moretags) = "yaml:\"id\""
+    (gogoproto.moretags) = "yaml:\"id\"",
+    (gogoproto.customname) = "ID"
   ];
   string denom = 4 [
     (gogoproto.moretags) = "yaml:\"denom\""
   ];
-  repeated uint64 subTokenIDs = 5 [
+  repeated uint64 sub_token_ids = 5 [
     (gogoproto.jsontag) = "sub_token_ids",
-    (gogoproto.moretags) = "yaml:\"sub_token_ids\""
+    (gogoproto.moretags) = "yaml:\"sub_token_ids\"",
+    (gogoproto.customname) = "SubTokenIDs"
   ];
 }
 
 message MsgTransferNFTResponse {}
 
 message MsgEditNFTMetadata {
+  option (cosmos.msg.v1.signer) = "sender";
+
   string sender = 1 [
     (gogoproto.moretags) = "yaml:\"address\""
   ];
-  string ID = 2 [
+  string id = 2 [
     (gogoproto.jsontag) = "id",
-    (gogoproto.moretags) = "yaml:\"id\""
+    (gogoproto.moretags) = "yaml:\"id\"",
+    (gogoproto.customname) = "ID"
   ];
   string denom = 3 [
     (gogoproto.moretags) = "yaml:\"denom\""
   ];
-  string tokenURI = 4 [
+  string token_uri = 4 [
     (gogoproto.jsontag) = "token_uri",
-    (gogoproto.moretags) = "yaml:\"token_uri\""
+    (gogoproto.moretags) = "yaml:\"token_uri\"",
+    (gogoproto.customname) = "TokenURI"
   ];
 }
 
 message MsgEditNFTMetadataResponse {}
 
 message MsgBurnNFT {
+  option (cosmos.msg.v1.signer) = "sender";
+
   string sender = 1 [
     (gogoproto.moretags) = "yaml:\"address\""
   ];
-  string ID = 2 [
+  string id = 2 [
     (gogoproto.jsontag) = "id",
-    (gogoproto.moretags) = "yaml:\"id\""
+    (gogoproto.moretags) = "yaml:\"id\"",
+    (gogoproto.customname) = "ID"
   ];
   string denom = 3 [
     (gogoproto.moretags) = "yaml:\"denom\""
   ];
-  repeated uint64 subTokenIDs = 4 [
+  repeated uint64 sub_token_ids = 4 [
     (gogoproto.jsontag) = "sub_token_ids",
-    (gogoproto.moretags) = "yaml:\"sub_token_ids\""
+    (gogoproto.moretags) = "yaml:\"sub_token_ids\"",
+    (gogoproto.customname) = "SubTokenIDs"
   ];
 }
 
 message MsgBurnNFTResponse {}
 
 message MsgUpdateReserveNFT {
+  option (cosmos.msg.v1.signer) = "sender";
+
   string sender = 1 [
     (gogoproto.moretags) = "yaml:\"address\""
   ];
-  string ID = 2 [
+  string id = 2 [
     (gogoproto.jsontag) = "id",
-    (gogoproto.moretags) = "yaml:\"id\""
+    (gogoproto.moretags) = "yaml:\"id\"",
+    (gogoproto.customname) = "ID"
   ];
   string denom = 3 [
     (gogoproto.moretags) = "yaml:\"denom\""
   ];
-  repeated uint64 subTokenIDs = 4 [
+  repeated uint64 sub_token_ids = 4 [
     (gogoproto.jsontag) = "sub_token_ids",
-    (gogoproto.moretags) = "yaml:\"sub_token_ids\""
+    (gogoproto.moretags) = "yaml:\"sub_token_ids\"",
+    (gogoproto.customname) = "SubTokenIDs"
   ];
-  string newReserveNFT = 5 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+  cosmos.base.v1beta1.Coin new_reserve = 5 [
     (gogoproto.nullable) = false,
-    (gogoproto.jsontag) = "new_reserve_nft",
-    (gogoproto.moretags) = "yaml:\"new_reserve_nft\""
+    (gogoproto.jsontag) = "new_reserve",
+    (gogoproto.moretags) = "yaml:\"new_reserve\""
   ];
 }
 

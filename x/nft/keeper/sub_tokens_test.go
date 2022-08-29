@@ -8,7 +8,7 @@ import (
 )
 
 func TestSetSubTokens(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	subToken1 := types.NewSubToken(
 		1,
@@ -29,7 +29,9 @@ func TestSetSubTokens(t *testing.T) {
 	}
 
 	// Check throw GetSubTokens method
-	storedSubTokens := dsc.NFTKeeper.GetSubTokens(ctx, firstID)
+	storedSubTokens, err := dsc.NFTKeeper.GetSubTokens(ctx, firstID)
+	require.NoError(t, err)
+
 	require.Len(t, subTokensToStore, len(storedSubTokens))
 
 	for _, subTokenToStore := range subTokensToStore {
@@ -54,7 +56,7 @@ func TestSetSubTokens(t *testing.T) {
 }
 
 func TestUpdateSubToken(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	subToken := types.NewSubToken(
 		1,
@@ -76,7 +78,7 @@ func TestUpdateSubToken(t *testing.T) {
 }
 
 func TestRemoveSubTokens(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	subToken := types.NewSubToken(
 		1,

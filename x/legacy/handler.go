@@ -21,7 +21,7 @@ func NewHandler(server types.MsgServer) sdk.Handler {
 			}
 		}()
 		// Handle the message
-		errMsg := fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg)
-		return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
+		//errMsg := fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg)
+		return nil, sdkerrors.ErrUnknownRequest
 	}
 }

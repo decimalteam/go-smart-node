@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -8,6 +9,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	auth "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bank "github.com/cosmos/cosmos-sdk/x/bank/keeper"
@@ -20,7 +22,7 @@ import (
 // Keeper implements the module data storaging.
 type Keeper struct {
 	cdc      codec.BinaryCodec
-	storeKey sdk.StoreKey
+	storeKey store.StoreKey
 	ps       paramtypes.Subspace
 
 	accountKeeper auth.AccountKeeperI
@@ -35,7 +37,7 @@ type Keeper struct {
 // NewKeeper creates new Keeper instance.
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeKey sdk.StoreKey,
+	storeKey store.StoreKey,
 	ps paramtypes.Subspace,
 	accountKeeper auth.AccountKeeperI,
 	bankKeeper bank.Keeper,
@@ -71,7 +73,7 @@ func (k *Keeper) GetCoin(ctx sdk.Context, symbol string) (coin types.Coin, err e
 	key := append(types.KeyPrefixCoin, []byte(strings.ToLower(symbol))...)
 	value := store.Get(key)
 	if len(value) == 0 {
-		err = fmt.Errorf("coin %s is not found in the key-value store", strings.ToLower(symbol))
+		err = errors.CoinDoesNotExist
 		return
 	}
 	err = k.cdc.UnmarshalLengthPrefixed(value, &coin)
@@ -110,9 +112,9 @@ func (k *Keeper) SetCoin(ctx sdk.Context, coin types.Coin) {
 }
 
 // Edit updates current coin reserve and volume and writes coin to KVStore.
-func (k *Keeper) EditCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, volume sdk.Int) {
+func (k *Keeper) EditCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, volume sdk.Int) error {
 	if !k.IsCoinBase(ctx, coin.Symbol) {
-		k.SetCachedCoin(coin.Symbol)
+		k.SetCachedCoin(ctx, coin.Symbol)
 	}
 
 	// Update coin reserve and volume
@@ -121,12 +123,15 @@ func (k *Keeper) EditCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, vol
 	k.SetCoin(ctx, coin)
 
 	// Emit event
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		types.EventTypeUpdateCoin,
-		sdk.NewAttribute(types.AttributeSymbol, coin.Symbol),
-		sdk.NewAttribute(types.AttributeVolume, coin.Volume.String()),
-		sdk.NewAttribute(types.AttributeReserve, coin.Reserve.String()),
-	))
+	err := ctx.EventManager().EmitTypedEvent(&types.EventEditCoin{
+		Symbol:  coin.Symbol,
+		Volume:  coin.Volume.String(),
+		Reserve: coin.Reserve.String(),
+	})
+	if err != nil {
+		return errors.Internal.Wrapf("err: %s", err.Error())
+	}
+	return nil
 }
 
 ////////////////////////////////////////////////////////////////
@@ -150,7 +155,7 @@ func (k *Keeper) GetCheck(ctx sdk.Context, checkHash []byte) (check types.Check,
 	key := append(types.KeyPrefixCheck, checkHash...)
 	value := store.Get(key)
 	if len(value) == 0 {
-		err = fmt.Errorf("check with hash %X is not found in the key-value store", checkHash)
+		err = errors.CheckDoesNotExist
 		return
 	}
 	err = k.cdc.UnmarshalLengthPrefixed(value, &check)
@@ -236,9 +241,7 @@ func (k *Keeper) GetCommission(ctx sdk.Context, feeAmountBase sdk.Int) (sdk.Int,
 		}
 
 		if coin.Reserve.LT(feeAmountBase) {
-			return sdk.Int{}, "", fmt.Errorf(
-				"coin reserve balance is not sufficient for transaction. Has: %s, required %s",
-				coin.Reserve.String(), feeAmountBase.String())
+			return sdk.Int{}, "", errors.InsufficientCoinReserve
 		}
 
 		feeAmount = formulas.CalculateSaleAmount(coin.Volume, coin.Reserve, uint(coin.CRR), feeAmountBase)
@@ -258,13 +261,21 @@ func (k *Keeper) GetCoinCache(symbol string) bool {
 	return ok
 }
 
-func (k *Keeper) SetCachedCoin(coin string) {
+func (k *Keeper) SetCachedCoin(ctx sdk.Context, coin string) {
+	if ctx.IsCheckTx() || ctx.IsReCheckTx() {
+		// No need to set the cache in cases of check and recheck txs
+		return
+	}
 	defer k.coinCacheMutex.Unlock()
 	k.coinCacheMutex.Lock()
 	k.coinCache[coin] = true
 }
 
-func (k *Keeper) ClearCoinCache() {
+func (k *Keeper) ClearCoinCache(ctx sdk.Context) {
+	if ctx.IsCheckTx() || ctx.IsReCheckTx() {
+		// No need to set the cache in cases of check and recheck txs
+		return
+	}
 	defer k.coinCacheMutex.Unlock()
 	k.coinCacheMutex.Lock()
 	for key := range k.coinCache {

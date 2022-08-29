@@ -29,10 +29,6 @@ func (reactor *stormReactor) initApi(flags *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
-	tPort, err := flags.GetInt(tendermintPort)
-	if err != nil {
-		return err
-	}
 	debug, err := flags.GetBool(turnOnDebug)
 	if err != nil {
 		return err
@@ -49,11 +45,8 @@ func (reactor *stormReactor) initApi(flags *pflag.FlagSet) error {
 	}
 
 	reactor.api, err = dscApi.NewAPI(dscApi.ConnectionOptions{
-		EndpointHost:   nodeHost,
-		TendermintPort: tPort,
-		Timeout:        10,
-		Debug:          debug,
-		UseGRPC:        true,
+		EndpointHost: nodeHost,
+		Timeout:      10,
 	})
 	if err != nil {
 		return err
@@ -190,7 +183,7 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 			return
 		}
 		for i := range subtokens {
-			ui.NFTSubTokenReserves[stormActions.NFTSubTokenKey{Denom: nft.Denom, TokenID: nft.ID, ID: subtokens[i].ID}] = subtokens[i].Reserve
+			ui.NFTSubTokenReserves[stormActions.NFTSubTokenKey{Denom: nft.Denom, TokenID: nft.ID, ID: subtokens[i].ID}] = subtokens[i].Reserve.Amount
 		}
 	}
 	// multisig wallets
@@ -215,7 +208,6 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 	}
 	// multisig transactions
 	for _, wallet := range ui.MultisigWallets {
-		fmt.Printf("call api.MultisigTransactionsByWallet(%s)\n", wallet.Address)
 		txs, err := reactor.api.MultisigTransactionsByWallet(wallet.Address)
 		if err != nil {
 			fmt.Println(err)
@@ -225,7 +217,6 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 	}
 	// multisig balances
 	for _, wallet := range ui.MultisigWallets {
-		fmt.Printf("call api.AddressBalance(%s)\n", wallet.Address)
 		balance, err := reactor.api.AddressBalance(wallet.Address)
 		if err != nil {
 			fmt.Println(err)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -33,7 +34,11 @@ func cmdQueryWallet() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "wallet [address]",
 		Short: "Query multisig wallet by address",
-		Args:  cobra.ExactArgs(1),
+		Long: fmt.Sprintf(`Query full information about multisig wallet
+
+Example: 	
+$ %s query multisig wallet dx18c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg3pv33f`, config.AppBinName),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -61,7 +66,11 @@ func cmdQueryWallets() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "wallets [owner]",
 		Short: "Query all multisig wallets by owner",
-		Args:  cobra.ExactArgs(1),
+		Long: fmt.Sprintf(`Query full information about multisig wallets with owner
+
+Example: 	
+$ %s query multisig wallets dx18c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg3pv33f`, config.AppBinName),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -98,7 +107,11 @@ func cmdQueryTransaction() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "transaction [tx_id]",
 		Short: "Query multisig transaction by id",
-		Args:  cobra.ExactArgs(1),
+		Long: fmt.Sprintf(`Query information about multisig transaction
+
+Example: 	
+$ %s query multisig transaction dx18...`, config.AppBinName),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -126,7 +139,11 @@ func cmdQueryTransactions() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "transactions [wallet]",
 		Short: "Query all multisig transactions by wallet address",
-		Args:  cobra.ExactArgs(1),
+		Long: fmt.Sprintf(`Query information about multisig transactions by wallet address
+
+Example: 	
+$ %s query multisig transactions dx18c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg3pv33f`, config.AppBinName),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {

@@ -131,23 +131,6 @@
       "index": "1",
       "owners": []
     },
-    "claims": {
-      "params": {
-        "enable_claims": true,
-        "airdrop_start_time": "0001-01-01T00:00:00Z",
-        "duration_until_decay": "2629800s",
-        "duration_of_decay": "5259600s",
-        "claims_denom": "del",
-        "authorized_channels": [
-          "channel-0",
-          "channel-3"
-        ],
-        "evm_channels": [
-          "channel-2"
-        ]
-      },
-      "claims_records": []
-    },
     "coin": {
       "params": {
         "base_title": "Decimal coin",
@@ -163,6 +146,32 @@
         "amount": "1000"
       }
     },
+    "customfee": {
+      "params": {
+        "byte_fee": "2",
+        "coin_send": "10",
+        "coin_send_multi_addition": "5",
+        "coin_buy": "100",
+        "coin_sell": "100",
+        "coin_create": "100",
+        "coin_create_length3": "1000000",
+        "coin_create_length4": "100000",
+        "coin_create_length5": "10000",
+        "coin_create_length6": "1000",
+        "coin_create_length_other": "100",
+        "multisig_create_wallet": "100",
+        "multisig_create_transaction": "100",
+        "multisig_sign_transaction": "100",
+        "validator_declare_candidate": "10000",
+        "validator_edit_candidate": "10000",
+        "validator_delegate": "200",
+        "validator_unbond": "200",
+        "validator_set_online": "100",
+        "validator_set_offline": "100",
+        "oracle_address": "dx1gczphl4h9aqrzy237jfm97elu66dam2w05xrrc"
+      },
+      "initial_price": "0.040000000000000000"
+    },    
     "distribution": {
       "params": {
         "community_tax": "0.020000000000000000",
@@ -181,35 +190,6 @@
       "validator_current_rewards": [],
       "delegator_starting_infos": [],
       "validator_slash_events": []
-    },
-    "epochs": {
-      "epochs": [
-        {
-          "identifier": "week",
-          "start_time": "0001-01-01T00:00:00Z",
-          "duration": "604800s",
-          "current_epoch": "0",
-          "current_epoch_start_time": "0001-01-01T00:00:00Z",
-          "epoch_counting_started": false,
-          "current_epoch_start_height": "0"
-        },
-        {
-          "identifier": "day",
-          "start_time": "0001-01-01T00:00:00Z",
-          "duration": "86400s",
-          "current_epoch": "0",
-          "current_epoch_start_time": "0001-01-01T00:00:00Z",
-          "epoch_counting_started": false,
-          "current_epoch_start_height": "0"
-        }
-      ]
-    },
-    "erc20": {
-      "params": {
-        "enable_erc20": true,
-        "enable_evm_hook": true
-      },
-      "token_pairs": []
     },
     "evidence": {
       "evidence": []
@@ -237,7 +217,8 @@
           "berlin_block": "0",
           "london_block": "0",
           "arrow_glacier_block": "0",
-          "merge_fork_block": "0"
+          "gray_glacier_block": "0",
+          "merge_netsplit_block": "0"
         }
       }
     },
@@ -250,7 +231,9 @@
         "base_fee_change_denominator": 8,
         "elasticity_multiplier": 2,
         "enable_height": "0",
-        "base_fee": "100000000"
+        "base_fee": "100000000",
+        "min_gas_price": "0.000000000000000000",
+        "min_gas_multiplier": "0.500000000000000000"
       },
       "block_gas": "0"
     },
@@ -314,7 +297,7 @@
             }
           },
           "signatures": [
-            "wA8/IHRPVtMy3ZRAtxcNq1By1ztFlojsAQbKPuV7iFBToyThqBBRnl5aIaSA/z0C+YnpfdRbsMtMBuyG627h/gA="
+            "jfZLYBwL+IRsMDbjiEQuq5OEleSvQ8aCTqwRFEEJgSs185VfHkxfFn68RPVXUB44hF+fUmb+8bBezLp/p7thDgE="
           ]
         },
         {
@@ -375,7 +358,7 @@
             }
           },
           "signatures": [
-            "gu5reF7OOLlR4X1FJRO+eqSNbAWaVMA5S4SDOKEFWG8lJPAdGJUiXJiKcvR2EhT5hbOaQeyjoO7J7T+aDAZl4gA="
+            "vDCte7odNM5nYLcS8pZ9qCrYT2PgYaQIBdAQZdIPB/FZWEWnph3dgrjnTpf4MPlMxqaDmvwf7fUjAiA0MYxgmwE="
           ]
         },
         {
@@ -436,7 +419,7 @@
             }
           },
           "signatures": [
-            "uXRALZSztfbfZszdNYaNPFCyeIowHQhy2H/YuVoueJpkVxJyn1vkcMTa7qofWk5W8ujb9ADolhGEgOkAj9zSEwA="
+            "/r68hU7gWGi+sz7BawXnlrxDrZWFMaFouLnyHaPXfn0z+BcG7/YAxyM71B7WtBINi2VLwiT0AwWAHQP6ChHCvwA="
           ]
         }
       ]
@@ -497,45 +480,19 @@
         "next_channel_sequence": "0"
       }
     },
-    "incentives": {
-      "params": {
-        "enable_incentives": true,
-        "allocation_limit": "0.050000000000000000",
-        "incentives_epoch_identifier": "week",
-        "reward_scaler": "1.200000000000000000"
-      },
-      "incentives": [],
-      "gas_meters": []
+    "legacy": {
+        "legacyRecords": []
     },
-    "inflation": {
-      "params": {
-        "mint_denom": "del",
-        "exponential_calculation": {
-          "a": "300000000.000000000000000000",
-          "r": "0.500000000000000000",
-          "c": "9375000.000000000000000000",
-          "bonding_target": "0.660000000000000000",
-          "max_variance": "0.000000000000000000"
-        },
-        "inflation_distribution": {
-          "staking_rewards": "0.533333334000000000",
-          "usage_incentives": "0.333333333000000000",
-          "community_pool": "0.133333333000000000"
-        },
-        "enable_inflation": true
-      },
-      "period": "0",
-      "epoch_identifier": "day",
-      "epochs_per_period": "365",
-      "skipped_epochs": "0"
+    "multisig": {
+        "transactions": [],
+        "wallets": []
+    },
+    "nft": {
+        "collections": [],
+        "nfts": [],
+        "subTokens": {}
     },
     "params": null,
-    "recovery": {
-      "params": {
-        "enable_recovery": true,
-        "packet_timeout_duration": "14400s"
-      }
-    },
     "slashing": {
       "params": {
         "signed_blocks_window": "100",
@@ -553,7 +510,8 @@
         "max_validators": 100,
         "max_entries": 7,
         "historical_entries": 10000,
-        "bond_denom": "del"
+        "bond_denom": "del",
+        "min_commission_rate": "0.000000000000000000"
       },
       "last_total_power": "0",
       "last_validator_powers": [],
@@ -562,14 +520,6 @@
       "unbonding_delegations": [],
       "redelegations": [],
       "exported": false
-    },
-    "transfer": {
-      "port_id": "transfer",
-      "denom_traces": [],
-      "params": {
-        "send_enabled": true,
-        "receive_enabled": true
-      }
     },
     "upgrade": {},
     "vesting": {}

@@ -5,8 +5,10 @@ import (
 	"time"
 
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
+	dscWallet "bitbucket.org/decimalteam/go-smart-node/sdk/wallet"
 	helpers "bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/go-resty/resty/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -95,6 +97,51 @@ func cmdFaucet() *cobra.Command {
 	cmd.PersistentFlags().String("faucet_mnemonic", "", "faucet mnemonic")
 	cmd.PersistentFlags().BoolVar(&onlyEmpty, "only_empty", true, "send coins to account with zero balance")
 	cmd.PersistentFlags().Int64Var(&amountToSend, "amount", 10000, "amount of base coins to send")
+
+	return cmd
+}
+
+// use external devnet/testnet faucet
+func cmdFaucetExt() *cobra.Command {
+	var cmd = &cobra.Command{
+		Use:   "faucet-ext",
+		Short: "Send some base coins to accounts",
+		Run: func(cmd *cobra.Command, args []string) {
+			//
+			err := cmd.Flags().Parse(args)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			mnemonicsFile, err := cmd.Flags().GetString(mnemonicsFlag)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			mnemonics, err := loadMnemonics(mnemonicsFile)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			// do action
+			client := resty.New().SetHostURL("https://devnet-dec2.console.decimalchain.com/api/faucet")
+			for i, mnemonic := range mnemonics {
+				acc, err := dscWallet.NewAccountFromMnemonicWords(mnemonic, "")
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+				fmt.Printf("account (%d) %s query\n", i, acc.Address())
+				resp, err := client.R().SetBody(map[string]string{"address": acc.Address()}).Post("https://devnet-dec2.console.decimalchain.com/api/faucet")
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+				fmt.Printf("account (%d) %s result: %s\n", i, acc.Address(), resp.Status())
+			}
+		},
+	}
 
 	return cmd
 }

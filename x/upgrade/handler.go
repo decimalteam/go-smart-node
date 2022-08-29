@@ -1,11 +1,12 @@
 package upgrade
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/upgrade/keeper"
-	"bitbucket.org/decimalteam/go-smart-node/x/upgrade/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+	"github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
+	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
 // NewSoftwareUpgradeProposalHandler creates a governance handler to manage new proposal types.
@@ -21,7 +22,7 @@ func NewSoftwareUpgradeProposalHandler(k keeper.Keeper) govtypes.Handler {
 			return handleCancelSoftwareUpgradeProposal(ctx, k, c)
 
 		default:
-			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized software upgrade proposal content type: %T", c)
+			return sdkerrors.ErrUnknownRequest
 		}
 	}
 }

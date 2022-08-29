@@ -1,6 +1,7 @@
 package types
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/multisig/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"golang.org/x/crypto/sha3"
@@ -42,7 +43,7 @@ func NewTransaction(wallet, receiver string, coins sdk.Coins, signersCount int, 
 	bz := sha3.Sum256(sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&t)))
 	id, err := bech32.ConvertAndEncode(MultisigTransactionIDPrefix, bz[12:])
 	if err != nil {
-		return nil, err
+		return nil, errors.UnableToCreateTransaction
 	}
 
 	return &Transaction{

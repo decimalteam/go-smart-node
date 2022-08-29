@@ -7,7 +7,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
-	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 )
 
 type GenesisNew struct {
@@ -41,26 +41,23 @@ type GenesisNew struct {
 			SubTokens   map[string]SubTokensNew `json:"subTokens"`
 		} `json:"nft"`
 		Legacy struct {
-			LegacyRecords []LegacyRecordNew `json:"legacyRecords"`
+			LegacyRecords []LegacyRecordNew `json:"legacy_records"`
 		} `json:"legacy"`
 		//
 		Genutils struct {
 			Gentxs []interface{} `json:"gen_txs"`
 		} `json:"genutil"`
 		// other modules
+		Swap         interface{} `json:"swap"`
 		Authz        interface{} `json:"authz"`
 		Capability   interface{} `json:"capability"`
 		Crisis       interface{} `json:"crisis"`
 		Distribution interface{} `json:"distribution"`
-		Epochs       interface{} `json:"epochs"`
-		Erc20        interface{} `json:"erc20"`
 		Evidence     interface{} `json:"evidence"`
 		Evm          interface{} `json:"evm"`
 		Feegrant     interface{} `json:"feegrant"`
-		Feemarket    interface{} `json:"feemarket"`
+		Fee          interface{} `json:"customfee"`
 		Gov          interface{} `json:"gov"`
-		Incentives   interface{} `json:"incentives"`
-		Inflation    interface{} `json:"inflation"`
 		Params       interface{} `json:"params"`
 		Slashing     interface{} `json:"slashing"`
 		Staking      interface{} `json:"staking"`

@@ -1,0 +1,26 @@
+syntax = "proto3";
+package decimal.fee.v1;
+
+import "gogoproto/gogo.proto";
+import "decimal/fee/v1/params.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/fee/types";
+
+// GenesisState defines the module's genesis state.
+message GenesisState {
+
+  // module parameters
+  Params params = 1 [
+    (gogoproto.jsontag) = "params",
+    (gogoproto.moretags) = "yaml:\"params\"",
+    (gogoproto.nullable) = false
+  ];
+
+  // initial price
+  string initial_price = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.jsontag) = "initial_price",
+    (gogoproto.moretags) = "yaml:\"initial_price\"",
+    (gogoproto.nullable) = false
+  ];
+}

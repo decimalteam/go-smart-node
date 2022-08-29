@@ -14,13 +14,18 @@ func (k Keeper) SetSubToken(ctx sdk.Context, nftID string, subToken types.SubTok
 	store.Set(subTokenKey, bz)
 }
 
-func (k Keeper) GetSubTokens(ctx sdk.Context, nftID string) (subTokens []types.SubToken) {
-	k.iterateSubTokens(ctx, nftID, func(subToken types.SubToken) (stop bool) {
+func (k Keeper) GetSubTokens(ctx sdk.Context, nftID string) ([]types.SubToken, error) {
+	var subTokens []types.SubToken
+
+	err := k.iterateSubTokens(ctx, nftID, func(subToken types.SubToken) (stop bool) {
 		subTokens = append(subTokens, subToken)
 		return false
 	})
+	if err != nil {
+		return nil, err
+	}
 
-	return
+	return subTokens, nil
 }
 
 func (k Keeper) GetSubToken(ctx sdk.Context, nftID string, subTokenID uint64) (types.SubToken, bool) {
@@ -43,10 +48,9 @@ func (k Keeper) RemoveSubToken(ctx sdk.Context, nftID string, subTokenID uint64)
 	store.Delete(subTokenKey)
 }
 
-func (k Keeper) iterateSubTokens(ctx sdk.Context, nftID string, handler func(subToken types.SubToken) (stop bool)) {
+func (k Keeper) iterateSubTokens(ctx sdk.Context, nftID string, handler func(subToken types.SubToken) (stop bool)) error {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.GetSubTokensKey(nftID))
-	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var subToken types.SubToken
 		k.cdc.MustUnmarshalLengthPrefixed(iterator.Value(), &subToken)
@@ -54,4 +58,10 @@ func (k Keeper) iterateSubTokens(ctx sdk.Context, nftID string, handler func(sub
 			break
 		}
 	}
+	err := iterator.Close()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

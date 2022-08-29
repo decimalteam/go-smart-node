@@ -1,17 +1,18 @@
 package keeper_test
 
 import (
+	"testing"
+
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestQueryCollectionSupply(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	sender := app.GetAddrs(dsc, ctx, 1)[0]
 
@@ -59,7 +60,7 @@ func TestQueryCollectionSupply(t *testing.T) {
 }
 
 func TestQueryOwnerCollections(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	sender := app.GetAddrs(dsc, ctx, 1)[0]
 
@@ -124,32 +125,10 @@ func TestQueryOwnerCollections(t *testing.T) {
 		require.Equal(t, expectedResponse, *res)
 	})
 
-	t.Run("with denom", func(t *testing.T) {
-		expectedResponse := types.QueryOwnerCollectionsResponse{
-			Owner: types.Owner{
-				Address: sender.String(),
-				Collections: []types.OwnerCollection{
-					{
-						Denom: firstCollectionDenom,
-						NFTs:  types.SortedStringArray{firstNFT.ID, secondNFT.ID},
-					},
-				},
-			},
-		}
-
-		req := types.QueryOwnerCollectionsRequest{
-			Owner: sender.String(),
-			Denom: firstCollectionDenom,
-		}
-
-		res, err := dsc.NFTKeeper.QueryOwnerCollections(sdk.WrapSDKContext(ctx), &req)
-		require.NoError(t, err)
-		require.Equal(t, expectedResponse, *res)
-	})
 }
 
 func TestQueryCollection(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	sender := app.GetAddrs(dsc, ctx, 1)[0]
 
@@ -194,7 +173,7 @@ func TestQueryCollection(t *testing.T) {
 }
 
 func TestQueryNFT(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	sender := app.GetAddrs(dsc, ctx, 1)[0]
 
@@ -214,12 +193,12 @@ func TestQueryNFT(t *testing.T) {
 	require.NoError(t, err)
 
 	expectedResponse := types.QueryNFTResponse{
-		Nft: nft,
+		NFT: nft,
 	}
 
 	req := types.QueryNFTRequest{
 		Denom:   collectionDenom,
-		TokenID: nft.ID,
+		TokenId: nft.ID,
 	}
 
 	res, err := dsc.NFTKeeper.QueryNFT(sdk.WrapSDKContext(ctx), &req)
@@ -231,7 +210,7 @@ func TestQueryNFT(t *testing.T) {
 }
 
 func TestQuerySubTokens(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper()
+	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
 
 	sender := app.GetAddrs(dsc, ctx, 1)[0]
 
@@ -259,9 +238,8 @@ func TestQuerySubTokens(t *testing.T) {
 	}
 
 	req := types.QuerySubTokensRequest{
-		Denom:       collectionDenom,
-		TokenID:     nft.ID,
-		SubTokenIDs: subTokenIDs,
+		Denom:   collectionDenom,
+		TokenID: nft.ID,
 	}
 
 	res, err := dsc.NFTKeeper.QuerySubTokens(sdk.WrapSDKContext(ctx), &req)

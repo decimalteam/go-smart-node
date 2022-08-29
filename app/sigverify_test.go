@@ -16,11 +16,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 
-	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
-	"github.com/tharsis/ethermint/encoding"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 )
 
 func generatePubKeysAndSignatures(n int, msg []byte, _ bool) (pubkeys []cryptotypes.PubKey, signatures [][]byte) {
@@ -57,9 +55,6 @@ func TestConsumeSignatureVerificationGas(t *testing.T) {
 	params := authtypes.DefaultParams()
 	msg := []byte{1, 2, 3, 4}
 
-	encodingConfig := encoding.MakeConfig(ModuleBasics)
-	cdc := encodingConfig.Amino
-
 	p := authtypes.DefaultParams()
 	pkSet1, sigSet1 := generatePubKeysAndSignatures(5, msg, false)
 	multisigKey1 := kmultisig.NewLegacyAminoPubKey(2, pkSet1)
@@ -67,10 +62,11 @@ func TestConsumeSignatureVerificationGas(t *testing.T) {
 	expectedCost1 := expectedGasCostByKeys(pkSet1)
 
 	for i := 0; i < len(pkSet1); i++ {
-		stdSig := legacytx.StdSignature{PubKey: pkSet1[i], Signature: sigSet1[i]}
-		sigV2, err := legacytx.StdSignatureToSignatureV2(cdc, stdSig)
-		require.NoError(t, err)
-		err = multisig.AddSignatureV2(multisignature1, sigV2, pkSet1)
+		sigV2 := signing.SignatureV2{
+			PubKey: pkSet1[i],
+			Data:   &signing.SingleSignatureData{SignMode: signing.SignMode_SIGN_MODE_DIRECT, Signature: sigSet1[i]},
+		}
+		err := multisig.AddSignatureV2(multisignature1, sigV2, pkSet1)
 		require.NoError(t, err)
 	}
 

@@ -2,12 +2,13 @@ package types
 
 import (
 	"crypto/sha256"
+	"testing"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethereumCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 	"github.com/stretchr/testify/assert"
-	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
-	"testing"
 )
 
 func TestParseCheck(t *testing.T) {

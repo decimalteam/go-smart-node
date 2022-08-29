@@ -1,0 +1,30 @@
+syntax = "proto3";
+package decimal.fee.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/fee/types";
+
+service Msg {
+  rpc SaveBaseDenomPrice(MsgSaveBaseDenomPrice) returns (MsgSaveBaseDenomPriceResponse);
+}
+
+message MsgSaveBaseDenomPrice {
+  string sender = 1 [
+    (gogoproto.jsontag) = "sender",
+    (gogoproto.moretags) = "yaml:\"sender\""  
+  ];  
+  string base_denom = 2 [
+    (gogoproto.jsontag) = "base_denom",
+    (gogoproto.moretags) = "yaml:\"base_denom\"" 
+  ];
+  string price = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.jsontag) = "price",
+    (gogoproto.moretags) = "yaml:\"price\"",      
+    (gogoproto.nullable) = false
+  ];
+
+}
+
+message MsgSaveBaseDenomPriceResponse{}
