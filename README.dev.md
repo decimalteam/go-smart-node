@@ -15,13 +15,26 @@
 - варианты взаимодействия с нодой: cli, rest, grpc
 - cli сделан модульно, конкретные команды и использование флагов прописаны в модулях; есть наши модули, есть модули cosmos
 - пример работы с grpc можно увидеть в sdk
-- rest признан устаревшим
-- проверка транзакций осуществляется в AnteHandler; есть наши, но оснвная часть - cosmos, ethermint
+- rest признан устаревшим, сейчас rest по порту 1317 - это надстройка над GRPC, ендпоинты можно увидеть в query.proto модулей
+- проверка транзакций осуществляется в AnteHandler; есть наши, но основная часть - cosmos, ethermint
 
+# Подключение своей ноды к devnet
+
+0) Код ноды должна быть той же версии (коммита), что и devnet, либо без измненений в логике приложений
+
+1) Собрать ноду через `make install`
+
+2) Выполнить команду `dscd init <node moniker> --chain-id <chain id from genesis>`
+
+3) Скопировать с devnet и положить в `$HOME/.decimal/daemon/config` файлы genesis.json, addrbook.json
+
+4) Запустить ноду `dscd start`, пойдет синхронизация
+
+5) После синхронизации можно запрашивать данные с ноды, отправлять транзакции
 
 # Добавление нового модуля
 
-В proto/decimal/<module>/<version> создать .proto файлы с декларациями (минимум):
+В proto/decimal/&lt;module&gt;/&lt;version&gt; создать .proto файлы с декларациями (минимум):
 
 *) genesis.proto
 
@@ -48,7 +61,7 @@ option go_package = "bitbucket.org/decimalteam/go-smart-node/x/*/types";
 message GenesisState {}
 ```
 
-Структура модуля. Дерево от x/<module>.
+Структура модуля. Дерево от x/&lt;module&gt;.
 
 ```
 .
@@ -83,7 +96,7 @@ message GenesisState {}
 
 # Добавление нового типа и транзакции
 
-В proto/decimal/<module>/<version> создать .proto файл с декларацией типа.
+В proto/decimal/&lt;module&gt;/&lt;version&gt; создать .proto файл с декларацией типа.
 Если тип участвует в генезисе, в транзакциях, в результатах запроса - поправить:
 
 - genesis.proto
@@ -99,7 +112,7 @@ message GenesisState {}
 
 ### Процедура генерации типов с cosmos 0.46
 
-1) Установить утилиты для генерации. Команды описаны в комментарии в `./scripts/protocgen.sh`
+1) Установить buf, protobuf v3 и утилиты для генерации. Команды описаны в комментарии в `./scripts/protocgen.sh`
 
 2) Для доступа к https://buf.build/ потребуется VPN
 
@@ -109,7 +122,7 @@ message GenesisState {}
 
 - в генезисе в дефолтные параметры генезиса, в InitGenesis, создаем функцию валидации и пр. в genesis.go и types/genesis.go
 - всё сохранение-получение и обработка транзакций в keeper: keeper.go, msg_server.go
-- не забыть добавить транзации в handler.go
+- добавить транзации в handler.go
 
 # Запуск ноды как единственной в локальном блокчейне
 
