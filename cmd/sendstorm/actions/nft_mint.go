@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"fmt"
 	"math/rand"
 	"time"
@@ -20,6 +19,7 @@ type MintNFTGenerator struct {
 	reserveBottom, reserveUp       int64 // in 10^18
 	quantityBottom, quantityUp     int64
 	knownAddresses                 []string
+	knownCoins                     []string
 	rnd                            *rand.Rand
 }
 
@@ -50,6 +50,7 @@ func NewMintNFTGenerator(
 
 func (gg *MintNFTGenerator) Update(ui UpdateInfo) {
 	gg.knownAddresses = ui.Addresses
+	gg.knownCoins = ui.Coins
 }
 
 func (gg *MintNFTGenerator) Generate() Action {
@@ -63,7 +64,7 @@ func (gg *MintNFTGenerator) Generate() Action {
 		tokenURI:  RandomString(gg.rnd, RandomRange(gg.rnd, gg.textLengthBottom, gg.textLengthUp), charsAll),
 		quantity:  sdk.NewInt(RandomRange(gg.rnd, gg.quantityBottom, gg.quantityUp)),
 		reserve: sdk.NewCoin(
-			config.BaseDenom,
+			RandomChoice(gg.rnd, gg.knownCoins),
 			helpers.EtherToWei(sdk.NewInt(RandomRange(gg.rnd, gg.reserveBottom, gg.reserveUp))),
 		),
 		allowMint: gg.rnd.Int31n(2) == 0,
@@ -76,7 +77,7 @@ func (aa *MintNFTAction) ChooseAccounts(saList []*stormTypes.StormAccount) []*st
 		if saList[i].IsDirty() {
 			continue
 		}
-		if saList[i].BalanceForCoin(saList[i].FeeDenom()).LT(aa.reserve.Amount) {
+		if saList[i].BalanceForCoin(aa.reserve.Denom).LT(aa.reserve.Amount.Mul(aa.quantity)) {
 			continue
 		}
 		res = append(res, saList[i])

@@ -33,6 +33,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgSellCoin{},
 		&MsgSellAllCoin{},
 		&MsgRedeemCheck{},
+		&MsgBurnCoin{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
