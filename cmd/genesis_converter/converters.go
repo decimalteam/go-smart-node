@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -85,6 +86,11 @@ func convertBalances(accsOld []AccountOld, addrTable *AddressTable, legacyRecord
 				return []BalanceNew{}, fmt.Errorf("address %s: unknown module name '%s'", acc.Value.Address, acc.Value.Name)
 			}
 		}
+
+		if acc.Value.Name == stakingtypes.NotBondedPoolName || acc.Value.Name == stakingtypes.BondedPoolName {
+			acc.Value.Coins = sdk.NewCoins()
+		}
+
 		coins := acc.Value.Coins
 		if newAddress > "" {
 			res = append(res, BalanceNew{Address: newAddress, Coins: coins})
@@ -184,6 +190,10 @@ func convertNFT(collectionsOld map[string]CollectionOld, addrTable *AddressTable
 				} else {
 					owners = append(owners, OwnerNew{Address: ownerAddress, SubTokenIDs: subs})
 				}
+			}
+			if len(owners) == 0 {
+				fmt.Printf("nft without owners: nft_id %s , collection %s\n", nftNew.ID, colNew.Denom)
+				continue
 			}
 			nftNew.Owners = owners
 			nftsNew = append(nftsNew, nftNew)
