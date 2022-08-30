@@ -22,7 +22,7 @@ func (k Keeper) QueryBaseDenomPrice(c context.Context, req *types.QueryBaseDenom
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryBaseDenomPriceResponse{Price: price}, nil
+	return &types.QueryBaseDenomPriceResponse{Price: price.String()}, nil
 }
 
 func (k Keeper) QueryParams(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {

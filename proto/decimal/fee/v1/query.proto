@@ -28,11 +28,11 @@ message QueryBaseDenomPriceRequest {
 }
 
 message QueryBaseDenomPriceResponse {
+  // NOTE: cosmos sdk types.Dec panics during protobuf decode
+  // string is workaround
   string price = 1 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "price",
-    (gogoproto.moretags) = "yaml:\"price\"",      
-    (gogoproto.nullable) = false    
+    (gogoproto.moretags) = "yaml:\"price\""
   ];
 }
 
