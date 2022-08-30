@@ -1,10 +1,11 @@
 package actions
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"fmt"
 	"math/rand"
 	"time"
+
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
@@ -106,7 +107,7 @@ func (aa *UpdateReserveNFTAction) ChooseAccounts(saList []*stormTypes.StormAccou
 	return res
 }
 
-func (aa *UpdateReserveNFTAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, error) {
+func (aa *UpdateReserveNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stormTypes.FeeConfiguration) ([]byte, error) {
 	sender, err := sdk.AccAddressFromBech32(sa.Address())
 	if err != nil {
 		return nil, err
@@ -119,7 +120,7 @@ func (aa *UpdateReserveNFTAction) GenerateTx(sa *stormTypes.StormAccount) ([]byt
 		aa.subIds,
 		aa.newReserve,
 	)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom())
+	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
 	if err != nil {
 		return nil, err
 	}

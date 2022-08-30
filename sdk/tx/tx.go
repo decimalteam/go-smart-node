@@ -24,18 +24,24 @@ type TxConstructor struct {
 }
 
 // BuildTransaction creates transaction builder with automatic fee calculation
-func BuildTransaction(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom string) (*TxConstructor, error) {
+// if delPrice is zero, fee amount will be set to zero - this mean that
+// DSC node will calculate fee during transaction execution
+func BuildTransaction(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom string, delPrice sdk.Dec, params feeTypes.Params) (*TxConstructor, error) {
 	txc, err := newTxConstructor(msgs, memo)
 	if err != nil {
 		return nil, err
 	}
 	oldFee := sdk.ZeroInt()
 	newFee := sdk.OneInt()
-	for !oldFee.Equal(newFee) {
-		oldFee = sdk.ZeroInt().Add(newFee) //=copy, sdk.Int is reference type
-		newFee, err = calculateFee(acc, msgs, memo, feeDenom, oldFee)
-		if err != nil {
-			return nil, err
+	if delPrice.IsZero() {
+		newFee = sdk.ZeroInt()
+	} else {
+		for !oldFee.Equal(newFee) {
+			oldFee = sdk.ZeroInt().Add(newFee) // = copy, sdk.Int is reference type
+			newFee, err = calculateFee(acc, msgs, memo, feeDenom, oldFee, delPrice, params)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	txc.SetFeeAmount(sdk.NewCoins(sdk.NewCoin(feeDenom, newFee)))
@@ -45,7 +51,7 @@ func BuildTransaction(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom
 	return txc, nil
 }
 
-func calculateFee(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom string, fee sdk.Int) (sdk.Int, error) {
+func calculateFee(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom string, fee sdk.Int, delPrice sdk.Dec, params feeTypes.Params) (sdk.Int, error) {
 	txc, err := newTxConstructor(msgs, memo)
 	txc.SetFeeAmount(sdk.NewCoins(sdk.NewCoin(feeDenom, fee)))
 	err = txc.SignTransaction(acc)
@@ -59,7 +65,7 @@ func calculateFee(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom str
 		return sdk.ZeroInt(), err
 	}
 	// TODO: in future need to get feeTypes.Param by api query
-	newFee, err := appAnte.CalculateFee(msgs, int64(len(bz)), sdk.OneDec(), feeTypes.DefaultParams())
+	newFee, err := appAnte.CalculateFee(msgs, int64(len(bz)), delPrice, params)
 	if err != nil {
 		// with zero fee, decimal node will calculate correct fee itself
 		return sdk.ZeroInt(), err

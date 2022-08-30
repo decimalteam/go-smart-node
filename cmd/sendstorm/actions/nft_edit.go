@@ -66,7 +66,7 @@ func (aa *EditNFTAction) ChooseAccounts(saList []*stormTypes.StormAccount) []*st
 	return res
 }
 
-func (aa *EditNFTAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, error) {
+func (aa *EditNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stormTypes.FeeConfiguration) ([]byte, error) {
 	sender, err := sdk.AccAddressFromBech32(sa.Address())
 	if err != nil {
 		return nil, err
@@ -78,7 +78,7 @@ func (aa *EditNFTAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, error)
 		aa.denom,
 		aa.newTokenUri,
 	)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom())
+	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
 	if err != nil {
 		return nil, err
 	}

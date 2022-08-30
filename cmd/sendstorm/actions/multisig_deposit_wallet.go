@@ -69,7 +69,7 @@ func (aa *DepositMultisigWalletAction) ChooseAccounts(saList []*stormTypes.Storm
 	return res
 }
 
-func (aa *DepositMultisigWalletAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, error) {
+func (aa *DepositMultisigWalletAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stormTypes.FeeConfiguration) ([]byte, error) {
 	sender, err := sdk.AccAddressFromBech32(sa.Address())
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (aa *DepositMultisigWalletAction) GenerateTx(sa *stormTypes.StormAccount) (
 	}
 
 	msg := dscTx.NewMsgSendCoin(sender, aa.coin, receiver)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom())
+	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
 	if err != nil {
 		return nil, err
 	}

@@ -22,6 +22,7 @@ type stormReactor struct {
 	api           *dscApi.API
 	actionReactor *stormActions.ActionReactor
 	limiter       *stormActions.TPSLimiter
+	feeConfig     *stormTypes.FeeConfiguration
 }
 
 func (reactor *stormReactor) initApi(flags *pflag.FlagSet) error {
@@ -52,6 +53,11 @@ func (reactor *stormReactor) initApi(flags *pflag.FlagSet) error {
 		return err
 	}
 	err = reactor.api.GetParameters()
+	if err != nil {
+		return err
+	}
+	reactor.feeConfig = stormTypes.NewFeeConfiguration()
+	err = reactor.feeConfig.Update(reactor.api)
 	if err != nil {
 		return err
 	}

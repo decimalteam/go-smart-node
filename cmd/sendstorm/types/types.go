@@ -6,6 +6,7 @@ import (
 
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	dscWallet "bitbucket.org/decimalteam/go-smart-node/sdk/wallet"
+	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -85,4 +86,27 @@ func (sa *StormAccount) FeeDenom() string {
 
 func (sa *StormAccount) Account() *dscWallet.Account {
 	return sa.account
+}
+
+/////////////////////////
+// Fee configuration
+/////////////////////////
+
+type FeeConfiguration struct {
+	DelPrice sdk.Dec
+	Params   feeTypes.Params
+}
+
+func NewFeeConfiguration() *FeeConfiguration {
+	return &FeeConfiguration{}
+}
+
+func (fc *FeeConfiguration) Update(api *dscApi.API) error {
+	delPrice, params, err := api.GetFeeParams()
+	if err != nil {
+		return err
+	}
+	fc.DelPrice = delPrice
+	fc.Params = params
+	return nil
 }

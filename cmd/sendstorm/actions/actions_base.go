@@ -21,7 +21,7 @@ type Action interface {
 	// need to decrease count of invalid actions, required ownership of coin/nft, coin balance etc...
 	ChooseAccounts(saList []*stormTypes.StormAccount) []*stormTypes.StormAccount
 	// generate signed transaction data
-	GenerateTx(sa *stormTypes.StormAccount) ([]byte, error)
+	GenerateTx(sa *stormTypes.StormAccount, feeConfig *stormTypes.FeeConfiguration) ([]byte, error)
 	// for debug puprposes
 	String() string
 }
@@ -33,7 +33,7 @@ func (ea *EmptyAction) ChooseAccounts(saList []*stormTypes.StormAccount) []*stor
 	return []*stormTypes.StormAccount{}
 }
 
-func (ea *EmptyAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, error) {
+func (ea *EmptyAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stormTypes.FeeConfiguration) ([]byte, error) {
 	return nil, fmt.Errorf("empty action")
 }
 

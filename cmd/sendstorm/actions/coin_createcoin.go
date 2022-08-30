@@ -92,7 +92,7 @@ func (ac *CreateCoinAction) ChooseAccounts(saList []*stormTypes.StormAccount) []
 	return res
 }
 
-func (ac *CreateCoinAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, error) {
+func (ac *CreateCoinAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stormTypes.FeeConfiguration) ([]byte, error) {
 	sender, err := sdk.AccAddressFromBech32(sa.Address())
 	if err != nil {
 		return nil, err
@@ -108,7 +108,7 @@ func (ac *CreateCoinAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, err
 		ac.limitVolume,
 		ac.identity,
 	)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom())
+	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
 	if err != nil {
 		return nil, err
 	}

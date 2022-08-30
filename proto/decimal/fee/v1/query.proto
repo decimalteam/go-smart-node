@@ -3,6 +3,7 @@ package decimal.fee.v1;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
+import "decimal/fee/v1/params.proto";
 
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/fee/types";
 
@@ -11,6 +12,11 @@ service Query {
   // Retrieves existing coin by specific symbol.
   rpc QueryBaseDenomPrice(QueryBaseDenomPriceRequest) returns (QueryBaseDenomPriceResponse) {
     option (google.api.http).get = "/decimal/fee/v1/price";
+  }
+
+  // 
+  rpc QueryParams(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/decimal/fee/v1/params";
   }
 }
 
@@ -26,6 +32,21 @@ message QueryBaseDenomPriceResponse {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "price",
     (gogoproto.moretags) = "yaml:\"price\"",      
+    (gogoproto.nullable) = false    
+  ];
+}
+
+////////////////////////////////////////////////////////////////
+// Params
+////////////////////////////////////////////////////////////////
+
+message QueryParamsRequest {
+}
+
+message QueryParamsResponse {
+  Params params = 1 [
+    (gogoproto.jsontag) = "params",
+    (gogoproto.moretags) = "yaml:\"params\"",      
     (gogoproto.nullable) = false    
   ];
 }

@@ -24,3 +24,14 @@ func (k Keeper) QueryBaseDenomPrice(c context.Context, req *types.QueryBaseDenom
 
 	return &types.QueryBaseDenomPriceResponse{Price: price}, nil
 }
+
+func (k Keeper) QueryParams(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+	ctx := sdk.UnwrapSDKContext(c)
+
+	params := k.GetModuleParams(ctx)
+
+	return &types.QueryParamsResponse{Params: params}, nil
+}

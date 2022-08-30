@@ -72,7 +72,7 @@ func cmdRun() *cobra.Command {
 				if !reactor.limiter.CanMake() {
 					continue
 				}
-				bytesToSend, err := action.GenerateTx(acc)
+				bytesToSend, err := action.GenerateTx(acc, reactor.feeConfig)
 				if err != nil {
 					fmt.Println(err)
 					return

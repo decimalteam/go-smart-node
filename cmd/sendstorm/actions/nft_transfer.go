@@ -67,7 +67,7 @@ func (aa *TransferNFTAction) ChooseAccounts(saList []*stormTypes.StormAccount) [
 	return res
 }
 
-func (aa *TransferNFTAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, error) {
+func (aa *TransferNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stormTypes.FeeConfiguration) ([]byte, error) {
 	sender, err := sdk.AccAddressFromBech32(sa.Address())
 	if err != nil {
 		return nil, err
@@ -84,7 +84,7 @@ func (aa *TransferNFTAction) GenerateTx(sa *stormTypes.StormAccount) ([]byte, er
 		aa.id,
 		aa.subIds,
 	)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom())
+	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
 	if err != nil {
 		return nil, err
 	}
