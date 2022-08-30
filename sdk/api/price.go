@@ -18,6 +18,10 @@ func (api *API) GetFeeParams() (sdk.Dec, feeTypes.Params, error) {
 	if err != nil {
 		return sdk.ZeroDec(), feeTypes.DefaultParams(), err
 	}
+	price, err := sdk.NewDecFromStr(resp.Price)
+	if err != nil {
+		return sdk.ZeroDec(), feeTypes.DefaultParams(), err
+	}
 	// 2. params
 	respP, err := client.QueryParams(
 		context.Background(),
@@ -26,5 +30,5 @@ func (api *API) GetFeeParams() (sdk.Dec, feeTypes.Params, error) {
 	if err != nil {
 		return sdk.ZeroDec(), feeTypes.DefaultParams(), err
 	}
-	return resp.Price, respP.Params, nil
+	return price, respP.Params, nil
 }
