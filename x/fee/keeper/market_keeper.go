@@ -25,6 +25,7 @@ func (k Keeper) GetBaseFee(ctx sdk.Context) *big.Int {
 }
 
 func (k Keeper) GetParams(ctx sdk.Context) feemarkettypes.Params {
+	// TODO: watch for new params
 	return feemarkettypes.Params{
 		// we always have base fee
 		NoBaseFee: false,
@@ -33,7 +34,9 @@ func (k Keeper) GetParams(ctx sdk.Context) feemarkettypes.Params {
 		BaseFeeChangeDenominator: 1,
 		ElasticityMultiplier:     1,
 		EnableHeight:             0,
-		MinGasPrice:              sdk.ZeroDec(),
+		// see ethermint - x/feemarket/types/params.go
+		MinGasPrice:      feemarkettypes.DefaultMinGasPrice,
+		MinGasMultiplier: feemarkettypes.DefaultMinGasMultiplier,
 	}
 }
 
