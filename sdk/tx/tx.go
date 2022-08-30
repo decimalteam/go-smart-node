@@ -14,7 +14,6 @@ import (
 
 	appAnte "bitbucket.org/decimalteam/go-smart-node/app/ante"
 	"bitbucket.org/decimalteam/go-smart-node/sdk/wallet"
-	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 )
 
 // TxConstruct is used in process of building, signing and sending transactions
@@ -26,7 +25,7 @@ type TxConstructor struct {
 // BuildTransaction creates transaction builder with automatic fee calculation
 // if delPrice is zero, fee amount will be set to zero - this mean that
 // DSC node will calculate fee during transaction execution
-func BuildTransaction(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom string, delPrice sdk.Dec, params feeTypes.Params) (*TxConstructor, error) {
+func BuildTransaction(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom string, delPrice sdk.Dec, params FeeParams) (*TxConstructor, error) {
 	txc, err := newTxConstructor(msgs, memo)
 	if err != nil {
 		return nil, err
@@ -51,7 +50,7 @@ func BuildTransaction(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom
 	return txc, nil
 }
 
-func calculateFee(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom string, fee sdk.Int, delPrice sdk.Dec, params feeTypes.Params) (sdk.Int, error) {
+func calculateFee(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom string, fee sdk.Int, delPrice sdk.Dec, params FeeParams) (sdk.Int, error) {
 	txc, err := newTxConstructor(msgs, memo)
 	txc.SetFeeAmount(sdk.NewCoins(sdk.NewCoin(feeDenom, fee)))
 	err = txc.SignTransaction(acc)

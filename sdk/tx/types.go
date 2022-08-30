@@ -2,11 +2,14 @@ package tx
 
 import (
 	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	multisigTypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	nftTypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
 type (
+	FeeParams = feeTypes.Params
+
 	MsgCreateCoin    = coinTypes.MsgCreateCoin
 	MsgUpdateCoin    = coinTypes.MsgUpdateCoin
 	MsgMultiSendCoin = coinTypes.MsgMultiSendCoin
@@ -50,4 +53,6 @@ var (
 	NewMsgCreateWallet      = multisigTypes.NewMsgCreateWallet
 	NewMsgCreateTransaction = multisigTypes.NewMsgCreateTransaction
 	NewMsgSignTransaction   = multisigTypes.NewMsgSignTransaction
+
+	DefaultFeeParams = feeTypes.DefaultParams
 )
