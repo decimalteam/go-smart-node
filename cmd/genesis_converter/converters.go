@@ -160,11 +160,12 @@ func convertNFT(collectionsOld map[string]CollectionOld, addrTable *AddressTable
 			if creatorAddress == "" {
 				return []CollectionNew{}, []NFTNew{}, fmt.Errorf("unknown creator %s for nft %s", nftOld.Creator, nftOld.ID)
 			}
+			reserve, _ := sdk.NewIntFromString(nftOld.Reserve)
 			nftNew := NFTNew{
 				ID:        nftOld.ID,
 				AllowMint: nftOld.AllowMint,
 				Creator:   creatorAddress,
-				Reserve:   nftOld.Reserve,
+				Reserve:   sdk.NewCoin("del", reserve),
 				TokenURI:  nftOld.TokenURI,
 			}
 			owners := []OwnerNew{}
@@ -197,7 +198,8 @@ func convertSubTokens(subsOld []SubTokenOld) (map[string]SubTokensNew, error) {
 	var subsNew = make(map[string]SubTokensNew)
 	for _, sub := range subsOld {
 		newSub := subsNew[sub.NftID]
-		newSub.SubTokens = append(newSub.SubTokens, SubTokenNew{ID: sub.ID, Reserve: sub.Reserve})
+		reserve, _ := sdk.NewIntFromString(sub.Reserve)
+		newSub.SubTokens = append(newSub.SubTokens, SubTokenNew{ID: sub.ID, Reserve: sdk.NewCoin("del", reserve)})
 		subsNew[sub.NftID] = newSub
 	}
 	return subsNew, nil

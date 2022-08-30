@@ -44,9 +44,7 @@ type GenesisNew struct {
 			LegacyRecords []LegacyRecordNew `json:"legacy_records"`
 		} `json:"legacy"`
 		//
-		Genutils struct {
-			Gentxs []interface{} `json:"gen_txs"`
-		} `json:"genutil"`
+		Genutil interface{} `json:"genutil"`
 		// other modules
 		Swap         interface{} `json:"swap"`
 		Authz        interface{} `json:"authz"`
@@ -58,6 +56,7 @@ type GenesisNew struct {
 		Feegrant     interface{} `json:"feegrant"`
 		Fee          interface{} `json:"customfee"`
 		Gov          interface{} `json:"gov"`
+		IBC          interface{} `json:"ibc"`
 		Params       interface{} `json:"params"`
 		Slashing     interface{} `json:"slashing"`
 		Staking      interface{} `json:"staking"`
@@ -287,20 +286,20 @@ func TransactionO2N(tx TransactionOld, addrTable *AddressTable) TransactionNew {
 
 type CollectionNew struct {
 	Denom string   `json:"denom"`
-	NFTs  []string `json:"NFTs"`
+	NFTs  []string `json:"nfts"`
 }
 
 type NFTNew struct {
-	ID        string     `json:"ID"`
-	AllowMint bool       `json:"allowMint"`
+	ID        string     `json:"id"`
+	AllowMint bool       `json:"allow_mint"`
 	Creator   string     `json:"creator"`
-	Reserve   string     `json:"reserve"`
-	TokenURI  string     `json:"tokenURI"`
+	Reserve   sdk.Coin   `json:"reserve"`
+	TokenURI  string     `json:"token_uri"`
 	Owners    []OwnerNew `json:"owners"`
 }
 
 type OwnerNew struct {
-	SubTokenIDs []string `json:"SubTokenIDs"`
+	SubTokenIDs []string `json:"sub_token_ids"`
 	Address     string   `json:"address"`
 }
 
@@ -309,6 +308,6 @@ type SubTokensNew struct {
 }
 
 type SubTokenNew struct {
-	ID      string `json:"ID"`
-	Reserve string `json:"reserve"`
+	ID      string   `json:"id"`
+	Reserve sdk.Coin `json:"reserve"`
 }
