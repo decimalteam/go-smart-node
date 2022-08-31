@@ -26,18 +26,15 @@ func (k Keeper) GetBaseFee(ctx sdk.Context) *big.Int {
 
 func (k Keeper) GetParams(ctx sdk.Context) feemarkettypes.Params {
 	// TODO: watch for new params
-	return feemarkettypes.Params{
-		// we always have base fee
-		NoBaseFee: false,
-		BaseFee:   sdk.NewIntFromBigInt(k.GetBaseFee(ctx)),
-		// these parameters is using inside feemarket module
-		BaseFeeChangeDenominator: 1,
-		ElasticityMultiplier:     1,
-		EnableHeight:             0,
-		// see ethermint - x/feemarket/types/params.go
-		MinGasPrice:      feemarkettypes.DefaultMinGasPrice,
-		MinGasMultiplier: feemarkettypes.DefaultMinGasMultiplier,
-	}
+	return feemarkettypes.NewParams(
+		false,                                  //noBaseFee bool,
+		1,                                      //baseFeeChangeDenom,
+		1,                                      //elasticityMultiplier uint32,
+		k.GetBaseFee(ctx).Uint64(),             //baseFee uint64,
+		0,                                      //enableHeight int64,
+		feemarkettypes.DefaultMinGasPrice,      //minGasPrice sdk.Dec,
+		feemarkettypes.DefaultMinGasMultiplier, //minGasPriceMultiplier sdk.Dec,
+	)
 }
 
 func (k Keeper) AddTransientGasWanted(ctx sdk.Context, gasWanted uint64) (uint64, error) {

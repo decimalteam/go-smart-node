@@ -19,6 +19,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+
+	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 )
 
 var (
@@ -124,6 +126,8 @@ func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), am.keeper)
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	// feemarket QueryServer need for ethermint internals - eth_gasPrice
+	feemarkettypes.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 }
 
 // ConsensusVersion implements ConsensusVersion.
