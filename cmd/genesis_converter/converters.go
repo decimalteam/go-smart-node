@@ -67,6 +67,19 @@ func convertAccounts(accsOld []AccountOld, addrTable *AddressTable) ([]interface
 	return res, nil
 }
 
+// convert tDEL to DEL
+func convertTDEL(coins sdk.Coins) sdk.Coins {
+	var result = sdk.NewCoins()
+	for _, coin := range coins {
+		if coin.Denom == "tdel" {
+			result = result.Add(sdk.NewCoin("del", coin.Amount))
+		} else {
+			result = result.Add(coin)
+		}
+	}
+	return result
+}
+
 func convertBalances(accsOld []AccountOld, addrTable *AddressTable, legacyRecords *LegacyRecords) ([]BalanceNew, error) {
 	var res []BalanceNew
 	var legacyBalance = sdk.NewCoins()
@@ -88,7 +101,7 @@ func convertBalances(accsOld []AccountOld, addrTable *AddressTable, legacyRecord
 			}
 		}
 
-		coins := acc.Value.Coins
+		coins := convertTDEL(acc.Value.Coins)
 		// TODO: return when correct staking starts work
 		if acc.Value.Name == "not_bonded_tokens_pool" || acc.Value.Name == "bonded_tokens_pool" {
 			fmt.Printf("set '%s' module account balance to zero\n", acc.Value.Name)
@@ -182,9 +195,22 @@ func convertNFT(collectionsOld map[string]CollectionOld, addrTable *AddressTable
 				if len(ownerOld.SubTokenIds) == 0 {
 					continue
 				}
-				subs := make([]string, len(ownerOld.SubTokenIds))
-				for i, s := range ownerOld.SubTokenIds {
-					subs[i] = strconv.FormatUint(s, 10)
+				subs := make([]string, 0, len(ownerOld.SubTokenIds))
+				for _, s := range ownerOld.SubTokenIds {
+					// check subtoken id already owned
+					owned := false
+					subID := strconv.FormatUint(s, 10)
+					for _, o := range owners {
+						if strings.StringInSlice(subID, o.SubTokenIDs) {
+							owned = true
+							break
+						}
+					}
+					if owned {
+						fmt.Printf("ntf: %s, sub: %s already owned\n", nftOld.ID, subID)
+					} else {
+						subs = append(subs, subID)
+					}
 				}
 				ownerAddress := addrTable.GetAddress(ownerOld.Address)
 				if ownerAddress == "" {
