@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"sort"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/tendermint/tendermint/libs/strings"
 )
 
 func prepareAddressTable(gs *GenesisOld) (*AddressTable, error) {
@@ -87,11 +88,13 @@ func convertBalances(accsOld []AccountOld, addrTable *AddressTable, legacyRecord
 			}
 		}
 
-		if acc.Value.Name == stakingtypes.NotBondedPoolName || acc.Value.Name == stakingtypes.BondedPoolName {
-			acc.Value.Coins = sdk.NewCoins()
+		coins := acc.Value.Coins
+		// TODO: return when correct staking starts work
+		if acc.Value.Name == "not_bonded_tokens_pool" || acc.Value.Name == "bonded_tokens_pool" {
+			fmt.Printf("set '%s' module account balance to zero\n", acc.Value.Name)
+			coins = sdk.NewCoins()
 		}
 
-		coins := acc.Value.Coins
 		if newAddress > "" {
 			res = append(res, BalanceNew{Address: newAddress, Coins: coins})
 		} else {
@@ -199,16 +202,30 @@ func convertNFT(collectionsOld map[string]CollectionOld, addrTable *AddressTable
 			nftsNew = append(nftsNew, nftNew)
 			colNew.NFTs = append(colNew.NFTs, nftNew.ID)
 		}
+		sort.Slice(colNew.NFTs, func(i, j int) bool {
+			return colNew.NFTs[i] < colNew.NFTs[j]
+		})
 		collectionsNew = append(collectionsNew, colNew)
 	}
 	return collectionsNew, nftsNew, nil
 }
 
-func convertSubTokens(subsOld []SubTokenOld) (map[string]SubTokensNew, error) {
+func convertSubTokens(subsOld []SubTokenOld, nfts []NFTNew) (map[string]SubTokensNew, error) {
+	// prepare existsing subtokens
+	var existingSubs = make(map[string][]string)
+	for _, nft := range nfts {
+		for _, owner := range nft.Owners {
+			existingSubs[nft.ID] = append(existingSubs[nft.ID], owner.SubTokenIDs...)
+		}
+	}
 	var subsNew = make(map[string]SubTokensNew)
 	for _, sub := range subsOld {
 		newSub := subsNew[sub.NftID]
 		reserve, _ := sdk.NewIntFromString(sub.Reserve)
+		if !strings.StringInSlice(sub.ID, existingSubs[sub.NftID]) {
+			fmt.Printf("skip (not owned) nft: %s, subtoken: %s\n", sub.NftID, sub.ID)
+			continue
+		}
 		newSub.SubTokens = append(newSub.SubTokens, SubTokenNew{ID: sub.ID, Reserve: sdk.NewCoin("del", reserve)})
 		subsNew[sub.NftID] = newSub
 	}

@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 func copyParams(gs *GenesisNew, gsSource *GenesisNew) {
 	gs.GenesisTime = gsSource.GenesisTime
 	gs.AppHash = gsSource.AppHash
@@ -9,6 +11,7 @@ func copyParams(gs *GenesisNew, gsSource *GenesisNew) {
 	// modules
 	gs.AppState.Auth.Params = gsSource.AppState.Auth.Params
 	gs.AppState.Coin.Params = gsSource.AppState.Coin.Params
+	gs.AppState.Bank.Params = gsSource.AppState.Bank.Params
 	//
 	gs.AppState.Genutil = gsSource.AppState.Genutil
 	gs.AppState.Swap = gsSource.AppState.Swap
@@ -27,4 +30,14 @@ func copyParams(gs *GenesisNew, gsSource *GenesisNew) {
 	gs.AppState.Upgrade = gsSource.AppState.Upgrade
 	gs.AppState.Vesting = gsSource.AppState.Vesting
 	gs.AppState.IBC = gsSource.AppState.IBC
+
+	// Copy accounts and balances
+	for _, acc := range gsSource.AppState.Auth.Accounts {
+		fmt.Printf("copy account from source: %+v\n", acc)
+		gs.AppState.Auth.Accounts = append(gs.AppState.Auth.Accounts, acc)
+	}
+	for _, bal := range gsSource.AppState.Bank.Balances {
+		fmt.Printf("copy balance from source: %+v\n", bal)
+		gs.AppState.Bank.Balances = append(gs.AppState.Bank.Balances, bal)
+	}
 }

@@ -42,7 +42,7 @@ func writeGenesisNew(fpath string, gs *GenesisNew) {
 		panic(fmt.Errorf("file %s error: %s", fpath, err.Error()))
 	}
 	defer f.Close()
-	data, err := json.Marshal(gs)
+	data, err := json.MarshalIndent(gs, "", "  ")
 	if err != nil {
 		panic(fmt.Errorf("marshal new genesis error: %s", err.Error()))
 	}
@@ -137,7 +137,7 @@ func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
 		return GenesisNew{}, Statistic{}, err
 	}
 	gsNew.AppState.NFT.SubTokens, err =
-		convertSubTokens(gsOld.AppState.NFT.SubTokens)
+		convertSubTokens(gsOld.AppState.NFT.SubTokens, gsNew.AppState.NFT.NFTs)
 	if err != nil {
 		return GenesisNew{}, Statistic{}, err
 	}
@@ -162,5 +162,8 @@ func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
 				diff.Symbol, diff.BCSum.String(), diff.Volume.String(), diff.BCSum.Sub(diff.Volume))
 		}
 	}
+	// validate NFT colections
+	verifyNFTSupply(gsNew.AppState.NFT.Collections, gsNew.AppState.NFT.NFTs)
+
 	return gsNew, Statistic{}, nil
 }
