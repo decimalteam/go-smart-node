@@ -264,7 +264,7 @@ type TransactionNew struct {
 
 func TransactionO2N(tx TransactionOld, addrTable *AddressTable) TransactionNew {
 	var result = TransactionNew{
-		Coins:     tx.Coins,
+		Coins:     convertTDEL(tx.Coins),
 		ID:        tx.ID,
 		Receiver:  addrTable.GetAddress(tx.Receiver),
 		CreatedAt: "0", // field looking unused
