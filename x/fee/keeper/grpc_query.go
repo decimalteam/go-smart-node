@@ -74,8 +74,7 @@ func (k Keeper) Params(c context.Context, _ *feemarkettypes.QueryParamsRequest) 
 
 // BlockGas implements the Query/BlockGas gRPC method
 func (k Keeper) BlockGas(c context.Context, _ *feemarkettypes.QueryBlockGasRequest) (*feemarkettypes.QueryBlockGasResponse, error) {
-	// TODO: do we need something
-
+	// TODO: rework when ethermint starts use BlockGas from EVM
 	return &feemarkettypes.QueryBlockGasResponse{
 		Gas: 0,
 	}, nil
