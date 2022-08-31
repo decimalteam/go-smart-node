@@ -45,9 +45,7 @@ func SupplyInvariantCheck(collections []Collection, nfts []BaseNFT) (string, boo
 }
 
 func SubTokensInvariantCheck(nfts []BaseNFT, subTokens map[string]SubTokens) (string, bool) {
-	// TODO: temporary turn off this, because nfts subtokens are delegated to validator
-	return "", false
-
+	// TODO: correct when validator module appear
 	for _, nft := range nfts {
 		subTokenLength := 0
 

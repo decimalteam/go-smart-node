@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -114,4 +115,28 @@ func verifyCoinsVolume(coinsOld []FullCoinOld, accsOld []AccountOld,
 		result = append(result, diff)
 	}
 	return result
+}
+
+func verifyNFTSupply(collections []CollectionNew, nfts []NFTNew) {
+	var nftDenoms = make(map[string]string)
+	var collSupply int
+	for _, coll := range collections {
+		for _, nft := range coll.NFTs {
+			_, ok := nftDenoms[nft]
+			if ok {
+				panic(fmt.Sprintf("duplicate nft %s", nft))
+			}
+			nftDenoms[nft] = coll.Denom
+		}
+		collSupply += len(coll.NFTs)
+	}
+	for _, nft := range nfts {
+		_, ok := nftDenoms[nft.ID]
+		if !ok {
+			fmt.Printf("nft %s not found in collection\n", nft.ID)
+		}
+	}
+
+	fmt.Printf("??? coll supply != len(ntfs): %d != %d\n", collSupply, len(nfts))
+
 }
