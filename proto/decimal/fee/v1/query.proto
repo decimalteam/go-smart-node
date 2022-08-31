@@ -15,7 +15,7 @@ service Query {
   }
 
   // 
-  rpc QueryParams(QueryParamsRequest) returns (QueryParamsResponse) {
+  rpc QueryModuleParams(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/decimal/fee/v1/params";
   }
 }

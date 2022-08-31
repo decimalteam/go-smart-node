@@ -23,7 +23,7 @@ func (api *API) GetFeeParams() (sdk.Dec, feeTypes.Params, error) {
 		return sdk.ZeroDec(), feeTypes.DefaultParams(), err
 	}
 	// 2. params
-	respP, err := client.QueryParams(
+	respP, err := client.QueryModuleParams(
 		context.Background(),
 		&feeTypes.QueryParamsRequest{},
 	)
