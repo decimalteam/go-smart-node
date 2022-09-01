@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"
+	"github.com/spf13/viper"
 
 	// Tendermint
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -30,6 +31,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/simapp"
 	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
 	store "github.com/cosmos/cosmos-sdk/store/types"
+	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -297,6 +299,10 @@ type DSC struct {
 	configurator module.Configurator
 
 	tpsCounter *tpsCounter
+
+	// application options is *viper.Viper
+	// need for proper telemetry initialization
+	appOpts servertypes.AppOptions
 }
 
 // NewDSC returns a reference to a new initialized Ethermint application.
@@ -372,6 +378,7 @@ func NewDSC(
 		keys:              keys,
 		tkeys:             tkeys,
 		memKeys:           memKeys,
+		appOpts:           appOpts,
 	}
 
 	// Init params keeper and subspaces
@@ -914,6 +921,29 @@ func (app *DSC) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 	if apiConfig.Swagger {
 		RegisterSwaggerAPI(clientCtx, apiSvr.Router)
 	}
+
+	// TODO: remove after telemetry support in ethermint
+	// this is workaround for ethermint startInProcess
+	// ethermint.startInProcess does not initialize telemetry
+	v, ok := app.appOpts.(*viper.Viper)
+	if !ok {
+		app.Logger().Error("can't convert appOpts to viper")
+		return
+	}
+	cfg, err := config.ParseConfig(v)
+	if err != nil {
+		app.Logger().Error("can't parse config: ", err)
+		return
+	}
+	if cfg.API.Enable && cfg.Telemetry.Enabled {
+		metrics, err := telemetry.New(cfg.Telemetry)
+		if err != nil {
+			app.Logger().Error("can't create telemetry: ", err)
+			return
+		}
+		apiSvr.SetTelemetry(metrics)
+	}
+
 }
 
 func (app *DSC) RegisterTxService(clientCtx client.Context) {
