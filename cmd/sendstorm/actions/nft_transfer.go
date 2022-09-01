@@ -44,6 +44,17 @@ func (gg *TransferNFTGenerator) Generate() Action {
 	i = int(RandomRange(gg.rnd, 0, int64(len(nftToTransfer.Owners))))
 	tokenOwner := nftToTransfer.Owners[i]
 	subIds := RandomSublist(gg.rnd, tokenOwner.SubTokenIDs)
+	var recipient = RandomChoice(gg.rnd, gg.knownAddresses)
+	for j := 0; j < 10; j++ {
+		// 10 attempts to get recipient != owner
+		if j == 9 {
+			return &EmptyAction{}
+		}
+		if recipient != tokenOwner.Address {
+			break
+		}
+		recipient = RandomChoice(gg.rnd, gg.knownAddresses)
+	}
 	return &TransferNFTAction{
 		owner:     tokenOwner.Address,
 		recipient: RandomChoice(gg.rnd, gg.knownAddresses),
