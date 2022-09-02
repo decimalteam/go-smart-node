@@ -457,6 +457,7 @@ func NewDSC(
 		keys[feetypes.StoreKey],
 		app.GetSubspace(feetypes.ModuleName),
 		app.BankKeeper,
+		app.BaseApp,
 		cmdcfg.BaseDenom,
 	)
 	app.EvmKeeper = evmkeeper.NewKeeper(

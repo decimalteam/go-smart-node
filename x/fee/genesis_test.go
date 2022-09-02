@@ -23,6 +23,7 @@ func TestDefaultGenesis(t *testing.T) {
 		dsc.GetKey(types.StoreKey),
 		dsc.GetSubspace(types.ModuleName),
 		dsc.BankKeeper,
+		dsc.BaseApp,
 		config.BaseDenom,
 	)
 
@@ -49,6 +50,7 @@ func TestGenesisInit(t *testing.T) {
 		dsc.GetKey(types.StoreKey),
 		dsc.GetSubspace(types.ModuleName),
 		dsc.BankKeeper,
+		dsc.BaseApp,
 		config.BaseDenom,
 	)
 

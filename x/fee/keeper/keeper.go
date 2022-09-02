@@ -10,6 +10,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 
+	baseapp "github.com/cosmos/cosmos-sdk/baseapp"
 	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -21,6 +22,7 @@ type Keeper struct {
 	ps       paramtypes.Subspace
 
 	bankKeeper keeper.Keeper
+	baseApp    *baseapp.BaseApp
 
 	baseDenom *string
 }
@@ -31,6 +33,7 @@ func NewKeeper(
 	storeKey store.StoreKey,
 	ps paramtypes.Subspace,
 	bankKeeper keeper.Keeper,
+	baseApp *baseapp.BaseApp,
 	baseDenom string,
 ) *Keeper {
 	// set KeyTable if it has not already been set
@@ -43,6 +46,7 @@ func NewKeeper(
 		ps:         ps,
 		bankKeeper: bankKeeper,
 		baseDenom:  &baseDenom,
+		baseApp:    baseApp,
 	}
 }
 
