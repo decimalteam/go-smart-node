@@ -107,15 +107,15 @@ func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
 		return GenesisNew{}, Statistic{}, err
 	}
 	gsNew.AppState.Auth.Accounts = accsNew
-	// balances
-	legacyRecords := NewLegacyRecords()
-	gsNew.AppState.Bank.Balances, err =
-		convertBalances(gsOld.AppState.Auth.Accounts, addrTable, legacyRecords)
+	// coins
+	gsNew.AppState.Coin.Coins, err = convertCoins(gsOld.AppState.Coin.Coins, addrTable)
 	if err != nil {
 		return GenesisNew{}, Statistic{}, err
 	}
-	// coins
-	gsNew.AppState.Coin.Coins, err = convertCoins(gsOld.AppState.Coin.Coins, addrTable)
+	// balances
+	legacyRecords := NewLegacyRecords()
+	gsNew.AppState.Bank.Balances, err =
+		convertBalances(gsOld.AppState.Auth.Accounts, addrTable, legacyRecords, gsNew.AppState.Coin.Coins)
 	if err != nil {
 		return GenesisNew{}, Statistic{}, err
 	}
@@ -126,7 +126,7 @@ func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
 	}
 	// transactions
 	gsNew.AppState.Multisig.Transactions, err =
-		convertMultisigTransactions(gsOld.AppState.Multisig.Transactions, addrTable, gsOld.AppState.Multisig.Wallets)
+		convertMultisigTransactions(gsOld.AppState.Multisig.Transactions, addrTable, gsOld.AppState.Multisig.Wallets, gsNew.AppState.Coin.Coins)
 	if err != nil {
 		return GenesisNew{}, Statistic{}, err
 	}

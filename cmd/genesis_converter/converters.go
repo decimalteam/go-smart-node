@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strconv"
 
+	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/libs/strings"
 )
@@ -68,9 +69,12 @@ func convertAccounts(accsOld []AccountOld, addrTable *AddressTable) ([]interface
 }
 
 // convert tDEL to DEL
-func convertTDEL(coins sdk.Coins) sdk.Coins {
+func filterCoins(coins sdk.Coins, coinSymbols map[string]bool) sdk.Coins {
 	var result = sdk.NewCoins()
 	for _, coin := range coins {
+		if !coinSymbols[coin.Denom] {
+			continue
+		}
 		if coin.Denom == "tdel" {
 			result = result.Add(sdk.NewCoin("del", coin.Amount))
 		} else {
@@ -80,7 +84,13 @@ func convertTDEL(coins sdk.Coins) sdk.Coins {
 	return result
 }
 
-func convertBalances(accsOld []AccountOld, addrTable *AddressTable, legacyRecords *LegacyRecords) ([]BalanceNew, error) {
+func convertBalances(accsOld []AccountOld, addrTable *AddressTable, legacyRecords *LegacyRecords, coins []FullCoinNew) ([]BalanceNew, error) {
+	// coin symbol cache to skip unexisting coins
+	var coinSymbols = make(map[string]bool)
+	for _, c := range coins {
+		coinSymbols[c.Symbol] = true
+	}
+
 	var res []BalanceNew
 	var legacyBalance = sdk.NewCoins()
 	for _, acc := range accsOld {
@@ -101,7 +111,7 @@ func convertBalances(accsOld []AccountOld, addrTable *AddressTable, legacyRecord
 			}
 		}
 
-		coins := convertTDEL(acc.Value.Coins)
+		coins := filterCoins(acc.Value.Coins, coinSymbols)
 		// TODO: return when correct staking starts work
 		if acc.Value.Name == "not_bonded_tokens_pool" || acc.Value.Name == "bonded_tokens_pool" {
 			fmt.Printf("set '%s' module account balance to zero\n", acc.Value.Name)
@@ -121,9 +131,43 @@ func convertBalances(accsOld []AccountOld, addrTable *AddressTable, legacyRecord
 	return res, nil
 }
 
+func validCoinLimits(coin FullCoinOld) bool {
+	var result = true
+	// volume
+	v, _ := sdk.NewIntFromString(coin.Volume)
+	if v.LT(coinTypes.MinCoinSupply) {
+		fmt.Printf("coin %s: volume < MinCoinSupply\n", coin.Symbol)
+		result = false
+	}
+	if v.GT(coinTypes.MaxCoinSupply) {
+		fmt.Printf("coin %s: volume > MaxCoinSupply\n", coin.Symbol)
+		result = false
+	}
+	// limit volume
+	v, _ = sdk.NewIntFromString(coin.LimitVolume)
+	if v.LT(coinTypes.MinCoinSupply) {
+		fmt.Printf("coin %s: limit_volume < MinCoinSupply\n", coin.Symbol)
+		result = false
+	}
+	if v.GT(coinTypes.MaxCoinSupply) {
+		fmt.Printf("coin %s: limit_volume > MaxCoinSupply\n", coin.Symbol)
+		result = false
+	}
+	// reserve
+	v, _ = sdk.NewIntFromString(coin.Reserve)
+	if v.LT(coinTypes.MinCoinReserve) {
+		fmt.Printf("coin %s: reserve < MinCoinReserve\n", coin.Symbol)
+		result = false
+	}
+	return result
+}
+
 func convertCoins(coinsOld []FullCoinOld, addrTable *AddressTable) ([]FullCoinNew, error) {
 	var res []FullCoinNew
 	for _, coin := range coinsOld {
+		if coin.Symbol != "tdel" && coin.Symbol != "del" && !validCoinLimits(coin) {
+			continue
+		}
 		res = append(res, FullCoinO2N(coin, addrTable))
 	}
 	return res, nil
@@ -150,7 +194,12 @@ func isTxIncomplete(tx TransactionOld, wallet WalletOld) bool {
 	return wsum >= threshold
 }
 
-func convertMultisigTransactions(transactionsOld []TransactionOld, addrTable *AddressTable, walletsOld []WalletOld) ([]TransactionNew, error) {
+func convertMultisigTransactions(transactionsOld []TransactionOld, addrTable *AddressTable, walletsOld []WalletOld, coins []FullCoinNew) ([]TransactionNew, error) {
+	// coin symbol cache to skip unexisting coins
+	var coinSymbols = make(map[string]bool)
+	for _, c := range coins {
+		coinSymbols[c.Symbol] = true
+	}
 	var res []TransactionNew
 	for _, txOld := range transactionsOld {
 		if addrTable.GetAddress(txOld.Receiver) == "" {
@@ -166,7 +215,11 @@ func convertMultisigTransactions(transactionsOld []TransactionOld, addrTable *Ad
 		if isTxIncomplete(txOld, wallet) {
 			continue
 		}
-		newTx := TransactionO2N(txOld, addrTable)
+		newTx := TransactionO2N(txOld, addrTable, coinSymbols)
+		if newTx.Coins.Empty() {
+			fmt.Printf("skip multisig transaction %s - empty coins\n", txOld.ID)
+			continue
+		}
 		res = append(res, newTx)
 	}
 	return res, nil

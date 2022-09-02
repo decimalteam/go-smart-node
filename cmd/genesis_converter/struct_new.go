@@ -262,9 +262,9 @@ type TransactionNew struct {
 	Signers   []string  `json:"signers"`
 }
 
-func TransactionO2N(tx TransactionOld, addrTable *AddressTable) TransactionNew {
+func TransactionO2N(tx TransactionOld, addrTable *AddressTable, coinSymbols map[string]bool) TransactionNew {
 	var result = TransactionNew{
-		Coins:     convertTDEL(tx.Coins),
+		Coins:     filterCoins(tx.Coins, coinSymbols),
 		ID:        tx.ID,
 		Receiver:  addrTable.GetAddress(tx.Receiver),
 		CreatedAt: "0", // field looking unused
