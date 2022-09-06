@@ -1,11 +1,13 @@
 package keeper
 
 import (
+	"context"
+
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
-	"context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -130,7 +132,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	}
 
 	// Emit send event
-	err = ctx.EventManager().EmitTypedEvent(&types.EventLegacyReturnCoin{
+	err = events.EmitTypedEvent(ctx, &types.EventLegacyReturnCoin{
 		OldAddress: legacyAddress,
 		NewAddress: actualAddress,
 		Coins:      record.Coins.String(),
@@ -160,7 +162,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 			continue
 		}
 		// Emit nft event
-		err = ctx.EventManager().EmitTypedEvent(&types.EventLegacyReturnNFT{
+		err = events.EmitTypedEvent(ctx, &types.EventLegacyReturnNFT{
 			OldAddress: legacyAddress,
 			NewAddress: actualAddress,
 			Denom:      nftRecord.Denom,
@@ -185,7 +187,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 		}
 		k.multisigKeeper.SetWallet(ctx, wallet)
 		// Emit multisig event
-		err = ctx.EventManager().EmitTypedEvent(&types.EventLegacyReturnWallet{
+		err = events.EmitTypedEvent(ctx, &types.EventLegacyReturnWallet{
 			OldAddress: legacyAddress,
 			NewAddress: actualAddress,
 			Wallet:     walletAddress,

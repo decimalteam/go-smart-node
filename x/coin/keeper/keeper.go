@@ -1,10 +1,11 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"fmt"
 	"strings"
 	"sync"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -15,6 +16,7 @@ import (
 	bank "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
@@ -123,7 +125,7 @@ func (k *Keeper) EditCoin(ctx sdk.Context, coin types.Coin, reserve sdk.Int, vol
 	k.SetCoin(ctx, coin)
 
 	// Emit event
-	err := ctx.EventManager().EmitTypedEvent(&types.EventEditCoin{
+	err := events.EmitTypedEvent(ctx, &types.EventEditCoin{
 		Symbol:  coin.Symbol,
 		Volume:  coin.Volume.String(),
 		Reserve: coin.Reserve.String(),

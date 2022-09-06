@@ -1,8 +1,10 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/errors"
 	"context"
+
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/errors"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -35,7 +37,7 @@ func (k Keeper) MintNFT(c context.Context, msg *types.MsgMintNFT) (*types.MsgMin
 		return nil, err
 	}
 
-	err = ctx.EventManager().EmitTypedEvent(&types.EventMintNFT{
+	err = events.EmitTypedEvent(ctx, &types.EventMintNFT{
 		Sender:      msg.Sender,
 		Recipient:   msg.Recipient,
 		Denom:       msg.Denom,
@@ -60,7 +62,7 @@ func (k Keeper) TransferNFT(c context.Context, msg *types.MsgTransferNFT) (*type
 		return nil, err
 	}
 
-	err = ctx.EventManager().EmitTypedEvent(&types.EventTransferNFT{
+	err = events.EmitTypedEvent(ctx, &types.EventTransferNFT{
 		Sender:      msg.Sender,
 		Recipient:   msg.Recipient,
 		Denom:       msg.Denom,
@@ -92,7 +94,7 @@ func (k Keeper) EditNFTMetadata(c context.Context, msg *types.MsgEditNFTMetadata
 		return nil, err
 	}
 
-	err = ctx.EventManager().EmitTypedEvent(&types.EventEditNFT{
+	err = events.EmitTypedEvent(ctx, &types.EventEditNFT{
 		Sender:   msg.Sender,
 		Denom:    msg.Denom,
 		NFTID:    msg.ID,
@@ -123,7 +125,7 @@ func (k Keeper) BurnNFT(c context.Context, msg *types.MsgBurnNFT) (*types.MsgBur
 		return nil, err
 	}
 
-	err = ctx.EventManager().EmitTypedEvent(&types.EventBurnNFT{
+	err = events.EmitTypedEvent(ctx, &types.EventBurnNFT{
 		Sender:      msg.Sender,
 		Denom:       msg.Denom,
 		NFTID:       msg.ID,
@@ -154,7 +156,7 @@ func (k Keeper) UpdateReserveNFT(c context.Context, msg *types.MsgUpdateReserveN
 		return nil, err
 	}
 
-	err = ctx.EventManager().EmitTypedEvent(&types.EventUpdateReserveNFT{
+	err = events.EmitTypedEvent(ctx, &types.EventUpdateReserveNFT{
 		Sender:      msg.Sender,
 		Denom:       msg.Denom,
 		NFTID:       msg.ID,
