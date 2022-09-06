@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"bytes"
 	"context"
 	"encoding/base64"
@@ -9,12 +8,15 @@ import (
 	"strconv"
 	"strings"
 
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
+
 	"github.com/cosmos/btcutil/base58"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
 	"golang.org/x/crypto/sha3"
 
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -113,7 +115,7 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 	k.SetCoin(ctx, coin)
 
 	// Emit transaction events
-	err = ctx.EventManager().EmitTypedEvent(&types.EventCreateCoin{
+	err = events.EmitTypedEvent(ctx, &types.EventCreateCoin{
 		Sender:               sender.String(),
 		Symbol:               coinDenom,
 		Title:                msg.Title,
@@ -164,7 +166,7 @@ func (k Keeper) UpdateCoin(goCtx context.Context, msg *types.MsgUpdateCoin) (*ty
 	k.SetCoin(ctx, coin)
 
 	// Emit transaction events
-	err = ctx.EventManager().EmitTypedEvent(&types.EventUpdateCoin{
+	err = events.EmitTypedEvent(ctx, &types.EventUpdateCoin{
 		Sender:      msg.Sender,
 		Symbol:      coin.Symbol,
 		LimitVolume: msg.LimitVolume.String(),
@@ -203,7 +205,7 @@ func (k Keeper) SendCoin(goCtx context.Context, msg *types.MsgSendCoin) (*types.
 	}
 
 	// Emit transaction events
-	err = ctx.EventManager().EmitTypedEvent(&types.EventSendCoin{
+	err = events.EmitTypedEvent(ctx, &types.EventSendCoin{
 		Sender:   msg.Sender,
 		Receiver: msg.Receiver,
 		Coin:     msg.Coin.String(),
@@ -244,7 +246,7 @@ func (k Keeper) MultiSendCoin(goCtx context.Context, msg *types.MsgMultiSendCoin
 		}
 
 		// Emit transaction events
-		err = ctx.EventManager().EmitTypedEvent(&types.EventSendCoin{
+		err = events.EmitTypedEvent(ctx, &types.EventSendCoin{
 			Sender:   msg.Sender,
 			Receiver: msg.Sends[i].Receiver,
 			Coin:     msg.Sends[i].Coin.String(),
@@ -350,7 +352,7 @@ func (k Keeper) BurnCoin(goCtx context.Context, msg *types.MsgBurnCoin) (*types.
 	}
 
 	// Emit transaction events
-	err = ctx.EventManager().EmitTypedEvent(&types.EventBurnCoin{
+	err = events.EmitTypedEvent(ctx, &types.EventBurnCoin{
 		Sender: msg.Sender,
 		Coin:   msg.Coin.String(),
 	})
@@ -499,7 +501,7 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 	}
 
 	// Emit transaction events
-	err = ctx.EventManager().EmitTypedEvent(&types.EventRedeemCheck{
+	err = events.EmitTypedEvent(ctx, &types.EventRedeemCheck{
 		Sender:                msg.Sender,
 		Issuer:                issuer.String(),
 		Coin:                  sdk.NewCoin(coinDenom, coinAmount).String(),
@@ -631,7 +633,7 @@ func (k Keeper) buyCoin(
 	}
 
 	// Emit transaction events
-	err = ctx.EventManager().EmitTypedEvent(&types.EventBuySellCoin{
+	err = events.EmitTypedEvent(ctx, &types.EventBuySellCoin{
 		Sender:           sender.String(),
 		CoinToBuy:        sdk.NewCoin(coinToBuyDenom, amountToBuy).String(),
 		CoinToSell:       sdk.NewCoin(coinToSellDenom, amountToSell).String(),
@@ -762,7 +764,7 @@ func (k Keeper) sellCoin(
 	}
 
 	// Emit transaction events
-	err = ctx.EventManager().EmitTypedEvent(&types.EventBuySellCoin{
+	err = events.EmitTypedEvent(ctx, &types.EventBuySellCoin{
 		Sender:           sender.String(),
 		CoinToBuy:        sdk.NewCoin(coinToBuyDenom, amountToBuy).String(),
 		CoinToSell:       sdk.NewCoin(coinToSellDenom, amountToSell).String(),

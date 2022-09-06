@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -23,7 +24,7 @@ func (k Keeper) SaveBaseDenomPrice(c context.Context, msg *types.MsgSaveBaseDeno
 		return nil, errors.SavingError
 	}
 
-	err = ctx.EventManager().EmitTypedEvent(
+	err = events.EmitTypedEvent(ctx,
 		&types.EventBaseDenomPriceSaved{
 			Price: msg.Price.String(),
 			Denom: msg.BaseDenom,

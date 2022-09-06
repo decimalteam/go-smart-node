@@ -1,11 +1,13 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/swap/errors"
 	"context"
 	"encoding/hex"
 	"math/big"
 	"strings"
+
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
+	"bitbucket.org/decimalteam/go-smart-node/x/swap/errors"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -43,7 +45,7 @@ func (k Keeper) SwapInitialize(goCtx context.Context, msg *types.MsgSwapInitiali
 		return nil, err
 	}
 
-	err = ctx.EventManager().EmitTypedEvent(&types.EventSwapInitialize{
+	err = events.EmitTypedEvent(ctx, &types.EventSwapInitialize{
 		Sender:            msg.Sender,
 		From:              msg.Sender,
 		DestChain:         msg.DestChain,
@@ -112,7 +114,7 @@ func (k Keeper) SwapRedeem(goCtx context.Context, msg *types.MsgSwapRedeem) (*ty
 		return nil, err
 	}
 
-	err = ctx.EventManager().EmitTypedEvent(&types.EventSwapRedeem{
+	err = events.EmitTypedEvent(ctx, &types.EventSwapRedeem{
 		Sender:            msg.Sender,
 		From:              msg.Sender,
 		DestChain:         msg.DestChain,
@@ -146,7 +148,7 @@ func (k Keeper) ChainActivate(goCtx context.Context, msg *types.MsgChainActivate
 
 	k.SetChain(ctx, &chain)
 
-	err := ctx.EventManager().EmitTypedEvent(&types.EventChainActivate{
+	err := events.EmitTypedEvent(ctx, &types.EventChainActivate{
 		ChainName:   msg.ChainName,
 		ChainNumber: msg.ChainNumber,
 	})
@@ -173,7 +175,7 @@ func (k Keeper) ChainDeactivate(goCtx context.Context, msg *types.MsgChainDeacti
 	chain.Active = false
 	k.SetChain(ctx, &chain)
 
-	err := ctx.EventManager().EmitTypedEvent(&types.EventChainDeactivate{
+	err := events.EmitTypedEvent(ctx, &types.EventChainDeactivate{
 		ChainNumber: msg.ChainNumber,
 	})
 	if err != nil {

@@ -1,9 +1,11 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/multisig/errors"
 	"context"
 	"strings"
+
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
+	"bitbucket.org/decimalteam/go-smart-node/x/multisig/errors"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -38,7 +40,7 @@ func (k Keeper) CreateWallet(goCtx context.Context, msg *types.MsgCreateWallet) 
 	k.SetWallet(ctx, *wallet)
 
 	// Emit transaction events
-	err = ctx.EventManager().EmitTypedEvent(&types.EventCreateWallet{
+	err = events.EmitTypedEvent(ctx, &types.EventCreateWallet{
 		Sender:    msg.Sender,
 		Wallet:    wallet.Address,
 		Owners:    msg.Owners,
@@ -94,7 +96,7 @@ func (k Keeper) CreateTransaction(goCtx context.Context, msg *types.MsgCreateTra
 	k.SetTransaction(ctx, *transaction)
 
 	// Emit transaction events
-	err = ctx.EventManager().EmitTypedEvent(&types.EventCreateTransaction{
+	err = events.EmitTypedEvent(ctx, &types.EventCreateTransaction{
 		Sender:      msg.Sender,
 		Wallet:      msg.Wallet,
 		Receiver:    msg.Receiver,
@@ -189,7 +191,7 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 	}
 
 	// Emit transaction events
-	err = ctx.EventManager().EmitTypedEvent(&types.EventSignTransaction{
+	err = events.EmitTypedEvent(ctx, &types.EventSignTransaction{
 		Sender:        msg.Sender,
 		Wallet:        wallet.Address,
 		Transaction:   transaction.Id,
