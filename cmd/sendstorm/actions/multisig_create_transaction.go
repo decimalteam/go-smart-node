@@ -37,7 +37,11 @@ func NewCreateMultisigTransactionGenerator(bottomRange, upperRange int64) *Creat
 }
 
 func (gg *CreateMultisigTransactionGenerator) Update(ui UpdateInfo) {
-	gg.knownAddresses = ui.Addresses
+	gg.knownAddresses = make([]string, 0, len(ui.Addresses)+len(ui.MultisigWallets))
+	gg.knownAddresses = append(gg.knownAddresses, ui.Addresses...)
+	for _, w := range ui.MultisigWallets {
+		gg.knownAddresses = append(gg.knownAddresses, w.Address)
+	}
 	gg.knownWallets = ui.MultisigWallets
 	gg.knownMultisigBalances = ui.MultisigBalances
 }
@@ -57,7 +61,7 @@ func (gg *CreateMultisigTransactionGenerator) Generate() Action {
 	if upperLimit > gg.upperRange {
 		upperLimit = gg.upperRange
 	}
-	if upperLimit < gg.bottomRange {
+	if upperLimit <= gg.bottomRange {
 		return &EmptyAction{}
 	}
 	amount := helpers.FinneyToWei(sdk.NewInt(RandomRange(gg.rnd, gg.bottomRange, upperLimit)))
