@@ -144,6 +144,9 @@ func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
 	// legacy records
 	var records []LegacyRecordNew
 	for _, v := range legacyRecords.data {
+		if v.Coins.Len() == 0 && len(v.NFTs) == 0 && len(v.Wallets) == 0 {
+			continue
+		}
 		records = append(records, *v)
 	}
 	gsNew.AppState.Legacy.LegacyRecords = records

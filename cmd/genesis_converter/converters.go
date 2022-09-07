@@ -131,8 +131,19 @@ func convertBalances(accsOld []AccountOld, addrTable *AddressTable, legacyRecord
 	return res, nil
 }
 
-func validCoinLimits(coin FullCoinOld) bool {
+func validCoinParams(coin FullCoinOld) bool {
 	var result = true
+	// crr
+	crr, err := strconv.ParseUint(coin.CRR, 10, 64)
+	if err != nil {
+		fmt.Printf("coin %s: crr '%s' error: %s\n", coin.Symbol, coin.CRR, err)
+		result = false
+	} else {
+		if crr < 10 || crr > 100 {
+			fmt.Printf("coin %s: invalid crr: %d\n", coin.Symbol, crr)
+			result = false
+		}
+	}
 	// volume
 	v, _ := sdk.NewIntFromString(coin.Volume)
 	if v.LT(coinTypes.MinCoinSupply) {
@@ -165,7 +176,7 @@ func validCoinLimits(coin FullCoinOld) bool {
 func convertCoins(coinsOld []FullCoinOld, addrTable *AddressTable) ([]FullCoinNew, error) {
 	var res []FullCoinNew
 	for _, coin := range coinsOld {
-		if coin.Symbol != "tdel" && coin.Symbol != "del" && !validCoinLimits(coin) {
+		if coin.Symbol != "del" && !validCoinParams(coin) {
 			continue
 		}
 		res = append(res, FullCoinO2N(coin, addrTable))
