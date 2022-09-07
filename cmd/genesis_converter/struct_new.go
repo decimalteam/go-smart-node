@@ -161,13 +161,17 @@ type FullCoinNew struct {
 }
 
 func FullCoinO2N(coin FullCoinOld, addrTable *AddressTable) FullCoinNew {
+	symbol := coin.Symbol
+	if symbol == "tdel" {
+		symbol = "del"
+	}
 	return FullCoinNew{
 		CRR:         coin.CRR,
 		Creator:     addrTable.GetAddress(coin.Creator),
 		Identity:    coin.Identity,
 		LimitVolume: coin.LimitVolume,
 		Reserve:     coin.Reserve,
-		Symbol:      coin.Symbol,
+		Symbol:      symbol,
 		Title:       coin.Title,
 		Volume:      coin.Volume,
 	}
