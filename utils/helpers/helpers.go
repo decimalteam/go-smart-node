@@ -9,6 +9,7 @@ import (
 
 	"github.com/dustin/go-humanize"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -19,27 +20,37 @@ var (
 	sdkE18 = sdk.NewIntFromBigInt(bigE18)
 )
 
-func BipToPip(bip sdk.Int) sdk.Int {
+func BipToPip(bip sdkmath.Int) sdkmath.Int {
 	return bip.Mul(sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)))
 }
 
+// DecToIntWithE18 converts Dec to Int (dec*10^18 and truncate)
+func DecToIntWithE18(dec sdk.Dec) sdkmath.Int {
+	return dec.MulInt(sdkE18).TruncateInt()
+}
+
+// DecToDecWithE18 converts Dec to Dec*10^18
+func DecToDecWithE18(dec sdk.Dec) sdk.Dec {
+	return dec.MulInt(sdkE18)
+}
+
 // EtherToWei convert number 1 to 1 * 10^18
-func EtherToWei(ether sdk.Int) sdk.Int {
+func EtherToWei(ether sdkmath.Int) sdkmath.Int {
 	return ether.Mul(sdkE18)
 }
 
 // FinneyToWei convert number 1 to 1 * 10^15
-func FinneyToWei(finney sdk.Int) sdk.Int {
+func FinneyToWei(finney sdkmath.Int) sdkmath.Int {
 	return finney.Mul(sdkE15)
 }
 
 // WeiToFinney convert 1 * 10^15 to 1
-func WeiToFinney(wei sdk.Int) sdk.Int {
+func WeiToFinney(wei sdkmath.Int) sdkmath.Int {
 	return wei.Quo(sdkE15)
 }
 
 // WeiToEther convert 1 * 10^18 to 1
-func WeiToEther(wei sdk.Int) sdk.Int {
+func WeiToEther(wei sdkmath.Int) sdkmath.Int {
 	return wei.Quo(sdkE18)
 }
 

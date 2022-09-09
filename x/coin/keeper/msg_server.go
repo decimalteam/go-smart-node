@@ -20,6 +20,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	sdkmath "cosmossdk.io/math"
 )
 
 var _ types.MsgServer = &Keeper{}
@@ -52,7 +53,11 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 	}
 
 	// Calculate special fee for creating custom coin
-	feeAmountBase := helpers.EtherToWei(getCreateCoinCommission(coinDenom))
+	feeAmountBase, err := k.getCreateCoinCommission(ctx, coinDenom)
+	if err != nil {
+		return nil, err
+	}
+
 	feeAmount, feeDenom, err := k.GetCommission(ctx, feeAmountBase)
 	if err != nil {
 		return nil, err
@@ -777,16 +782,27 @@ func (k Keeper) sellCoin(
 	return nil
 }
 
-func getCreateCoinCommission(symbol string) sdk.Int {
+func (k Keeper) getCreateCoinCommission(ctx sdk.Context, symbol string) (sdkmath.Int, error) {
+	price, err := k.feeKeeper.GetPrice(ctx)
+	if err != nil {
+		return sdkmath.Int{}, err
+	}
+
+	params := k.feeKeeper.GetModuleParams(ctx)
+
+	var createCoinFee sdk.Dec
 	switch len(symbol) {
 	case 3:
-		return sdk.NewInt(1_000_000)
+		createCoinFee = params.CoinCreateLength3
 	case 4:
-		return sdk.NewInt(100_000)
+		createCoinFee = params.CoinCreateLength4
 	case 5:
-		return sdk.NewInt(10_000)
+		createCoinFee = params.CoinCreateLength5
 	case 6:
-		return sdk.NewInt(1000)
+		createCoinFee = params.CoinCreateLength6
+	default:
+		createCoinFee = params.CoinCreateLengthOther
 	}
-	return sdk.NewInt(100)
+
+	return helpers.DecToIntWithE18(createCoinFee.Quo(price)), nil
 }

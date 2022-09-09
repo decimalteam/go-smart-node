@@ -16,7 +16,7 @@ func NewGenesisState(params Params, initialPrice sdk.Dec) GenesisState {
 func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
 		Params:       DefaultParams(),
-		InitialPrice: sdk.OneDec(),
+		InitialPrice: sdk.NewDecWithPrec(4, 2),
 	}
 }
 

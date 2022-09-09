@@ -36,8 +36,10 @@ var (
 	PSKeyValidatorUnbond           = []byte("ValidatorUnbond")
 	PSKeyValidatorSetOnline        = []byte("ValidatorSetOnline")
 	PSKeyValidatorSetOffline       = []byte("ValidatorSetOffline")
-	//
+	// oracle key
 	PSKeyOracleAddress = []byte("OracleAddress")
+	// evm tx keys
+	PSKeyEvmGasPrice = []byte("EvmGasPrice")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -50,34 +52,38 @@ func ParamKeyTable() paramtypes.KeyTable {
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return Params{
-		ByteFee: 2,
+		// byte fee in usd*10^-18
+		ByteFee: sdk.MustNewDecFromStr("0.001"),
 		// coin transactions fees
-		CoinSend:              10,
-		CoinSendMultiAddition: 5,
-		CoinBuy:               100,
-		CoinSell:              100,
+		// byte fee in usd*10^-3
+		CoinSend:              sdk.MustNewDecFromStr("0.082"),
+		CoinSendMultiAddition: sdk.MustNewDecFromStr("0.04"),
+		CoinBuy:               sdk.MustNewDecFromStr("0.8"),
+		CoinSell:              sdk.MustNewDecFromStr("0.8"),
 		// common transaction commission
-		CoinCreate: 100,
+		CoinCreate: sdk.MustNewDecFromStr("0.008"), // x8
 		// special commission depends on coin symbol length
-		CoinCreateLength3:     1_000_000,
-		CoinCreateLength4:     100_000,
-		CoinCreateLength5:     10_000,
-		CoinCreateLength6:     1_000,
-		CoinCreateLengthOther: 100,
+		CoinCreateLength3:     sdk.MustNewDecFromStr("100000"),
+		CoinCreateLength4:     sdk.MustNewDecFromStr("10000"),
+		CoinCreateLength5:     sdk.MustNewDecFromStr("1000"),
+		CoinCreateLength6:     sdk.MustNewDecFromStr("100"),
+		CoinCreateLengthOther: sdk.MustNewDecFromStr("10"),
 		// multisignature wallets
-		MultisigCreateWallet:      100,
-		MultisigCreateTransaction: 100,
-		MultisigSignTransaction:   100,
+		MultisigCreateWallet:      sdk.MustNewDecFromStr("0.1"),
+		MultisigCreateTransaction: sdk.MustNewDecFromStr("0.1"),
+		MultisigSignTransaction:   sdk.MustNewDecFromStr("0.1"),
 		// validator operations
-		ValidatorDeclareCandidate: 10_000,
-		ValidatorEditCandidate:    10_000,
-		ValidatorDelegate:         200,
-		ValidatorUnbond:           200,
-		ValidatorSetOnline:        100,
-		ValidatorSetOffline:       100,
+		ValidatorDeclareCandidate: sdk.MustNewDecFromStr("10"),
+		ValidatorEditCandidate:    sdk.MustNewDecFromStr("10"),
+		ValidatorDelegate:         sdk.MustNewDecFromStr("0.2"),
+		ValidatorUnbond:           sdk.MustNewDecFromStr("0.2"),
+		ValidatorSetOnline:        sdk.MustNewDecFromStr("0.1"),
+		ValidatorSetOffline:       sdk.MustNewDecFromStr("0.1"),
 		// oracle
 		// NOTE: default address is []byte{0}
 		OracleAddress: "dx1qqjrdrw8",
+		// evm min gas price in usd*10^-18
+		EvmGasPrice: sdk.MustNewDecFromStr("0.000019047619047619"),
 	}
 }
 
@@ -111,6 +117,8 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(PSKeyValidatorSetOffline, &p.ValidatorSetOffline, validateUint64),
 		// oracle
 		paramtypes.NewParamSetPair(PSKeyOracleAddress, &p.OracleAddress, validateAddress),
+		// evm
+		paramtypes.NewParamSetPair(PSKeyEvmGasPrice, &p.EvmGasPrice, validateUint64),
 	}
 }
 

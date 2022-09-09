@@ -112,9 +112,7 @@ message QueryNFTResponse {
 
 message QuerySubTokensRequest {
   string denom = 1;
-  string token_id = 2 [
-    (gogoproto.customname) = "TokenID"
-  ];
+  string token_id = 2;
 }
 
 message QuerySubTokensResponse {

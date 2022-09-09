@@ -15,100 +15,148 @@ message Params {
 
   // 1 byte fee
   // commission part by transaction size
-  uint64 byte_fee = 1 [
+  string byte_fee = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "byte_fee",
-    (gogoproto.moretags) = "yaml:\"byte_fee\""
+    (gogoproto.moretags) = "yaml:\"byte_fee\"",
+    (gogoproto.nullable) = false
   ];  
 
   // coin transactions fees
-  uint64 coin_send = 2 [
+  string coin_send = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "coin_send",
-    (gogoproto.moretags) = "yaml:\"coin_send\""
+    (gogoproto.moretags) = "yaml:\"coin_send\"",
+    (gogoproto.nullable) = false
   ];
-  uint64 coin_send_multi_addition = 3 [
+  string coin_send_multi_addition = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "coin_send_multi_addition",
-    (gogoproto.moretags) = "yaml:\"coin_send_multi_addition\""
+    (gogoproto.moretags) = "yaml:\"coin_send_multi_addition\"",
+    (gogoproto.nullable) = false
   ];
-  uint64 coin_buy = 4 [
+  string coin_buy = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "coin_buy",
-    (gogoproto.moretags) = "yaml:\"coin_buy\""
+    (gogoproto.moretags) = "yaml:\"coin_buy\"",
+    (gogoproto.nullable) = false
   ];
-  uint64 coin_sell = 5 [
+  string coin_sell = 5 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "coin_sell",
-    (gogoproto.moretags) = "yaml:\"coin_sell\""
+    (gogoproto.moretags) = "yaml:\"coin_sell\"",
+    (gogoproto.nullable) = false
   ];
 
   // common transaction commission
-  uint64 coin_create = 6 [
+  string coin_create = 6 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "coin_create",
-    (gogoproto.moretags) = "yaml:\"coin_create\""
+    (gogoproto.moretags) = "yaml:\"coin_create\"",
+    (gogoproto.nullable) = false
   ];
 
   // special commission depends on coin symbol length
-  uint64 coin_create_length3 = 7 [
+  string coin_create_length3 = 7 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "coin_create_length_3",
-    (gogoproto.moretags) = "yaml:\"coin_create_length_3\""
+    (gogoproto.moretags) = "yaml:\"coin_create_length_3\"",
+    (gogoproto.nullable) = false
   ];  
-  uint64 coin_create_length4 = 8 [
+  string coin_create_length4 = 8 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "coin_create_length_4",
-    (gogoproto.moretags) = "yaml:\"coin_create_length_4\""
+    (gogoproto.moretags) = "yaml:\"coin_create_length_4\"",
+    (gogoproto.nullable) = false
   ];  
-  uint64 coin_create_length5 = 9 [
+  string coin_create_length5 = 9 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "coin_create_length_5",
-    (gogoproto.moretags) = "yaml:\"coin_create_length_5\""
+    (gogoproto.moretags) = "yaml:\"coin_create_length_5\"",
+    (gogoproto.nullable) = false
   ];  
-  uint64 coin_create_length6 = 10 [
+  string coin_create_length6 = 10 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "coin_create_length_6",
-    (gogoproto.moretags) = "yaml:\"coin_create_length_6\""
+    (gogoproto.moretags) = "yaml:\"coin_create_length_6\"",
+    (gogoproto.nullable) = false
   ];  
-  uint64 coin_create_length_other = 11 [
+  string coin_create_length_other = 11 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "coin_create_length_other",
-    (gogoproto.moretags) = "yaml:\"coin_create_length_other\""
+    (gogoproto.moretags) = "yaml:\"coin_create_length_other\"",
+    (gogoproto.nullable) = false
   ];  
 
   // multisignature wallets
-  uint64 multisig_create_wallet = 12 [
+  string multisig_create_wallet = 12 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "multisig_create_wallet",
-    (gogoproto.moretags) = "yaml:\"multisig_create_wallet\""
+    (gogoproto.moretags) = "yaml:\"multisig_create_wallet\"",
+    (gogoproto.nullable) = false
   ];    
-  uint64 multisig_create_transaction = 13 [
+  string multisig_create_transaction = 13 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "multisig_create_transaction",
-    (gogoproto.moretags) = "yaml:\"multisig_create_transaction\""
+    (gogoproto.moretags) = "yaml:\"multisig_create_transaction\"",
+    (gogoproto.nullable) = false
   ];    
-  uint64 multisig_sign_transaction = 14 [
+  string multisig_sign_transaction = 14 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "multisig_sign_transaction",
-    (gogoproto.moretags) = "yaml:\"multisig_sign_transaction\""
+    (gogoproto.moretags) = "yaml:\"multisig_sign_transaction\"",
+    (gogoproto.nullable) = false
   ];    
 
   // validator operations
-  uint64 validator_declare_candidate = 15 [
+  string validator_declare_candidate = 15 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "validator_declare_candidate",
-    (gogoproto.moretags) = "yaml:\"validator_declare_candidate\""    
+    (gogoproto.moretags) = "yaml:\"validator_declare_candidate\"",
+    (gogoproto.nullable) = false
   ];
-  uint64 validator_edit_candidate = 16 [
+  string validator_edit_candidate = 16 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "validator_edit_candidate",
-    (gogoproto.moretags) = "yaml:\"validator_edit_candidate\""    
+    (gogoproto.moretags) = "yaml:\"validator_edit_candidate\"",
+    (gogoproto.nullable) = false
   ];
-  uint64 validator_delegate = 17 [
+  string validator_delegate = 17 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "validator_delegate",
-    (gogoproto.moretags) = "yaml:\"validator_delegate\""    
+    (gogoproto.moretags) = "yaml:\"validator_delegate\"",
+    (gogoproto.nullable) = false
   ];
-  uint64 validator_unbond = 18 [
+  string validator_unbond = 18 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "validator_unbond",
-    (gogoproto.moretags) = "yaml:\"validator_unbond\""    
+    (gogoproto.moretags) = "yaml:\"validator_unbond\"",
+    (gogoproto.nullable) = false
   ];
-  uint64 validator_set_online = 19 [
+  string validator_set_online = 19 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "validator_set_online",
-    (gogoproto.moretags) = "yaml:\"validator_set_online\""    
+    (gogoproto.moretags) = "yaml:\"validator_set_online\"",
+    (gogoproto.nullable) = false
   ];
-  uint64 validator_set_offline = 20 [
+  string validator_set_offline = 20 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.jsontag) = "validator_set_offline",
-    (gogoproto.moretags) = "yaml:\"validator_set_offline\""    
+    (gogoproto.moretags) = "yaml:\"validator_set_offline\"",
+    (gogoproto.nullable) = false
   ];
 
   // fee params
   string oracle_address = 21 [
     (gogoproto.jsontag) = "oracle_address",
     (gogoproto.moretags) = "yaml:\"oracle_address\""   
+  ];
+
+  // evm tx commissions
+  string evm_gas_price = 22 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.jsontag) = "evm_gas_price",
+    (gogoproto.moretags) = "yaml:\"evm_gas_price\"",
+    (gogoproto.nullable) = false
   ];
 }

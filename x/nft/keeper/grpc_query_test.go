@@ -239,7 +239,7 @@ func TestQuerySubTokens(t *testing.T) {
 
 	req := types.QuerySubTokensRequest{
 		Denom:   collectionDenom,
-		TokenID: nft.ID,
+		TokenId: nft.ID,
 	}
 
 	res, err := dsc.NFTKeeper.QuerySubTokens(sdk.WrapSDKContext(ctx), &req)

@@ -73,9 +73,9 @@ func (options HandlerOptions) Validate() error {
 // newCosmosAnteHandler creates the default ante handler for Ethereum transactions
 func newEthAnteHandler(options HandlerOptions) sdk.AnteHandler {
 	return sdk.ChainAnteDecorators(
-		ethante.NewEthSetUpContextDecorator(options.EvmKeeper),                         // outermost AnteDecorator. SetUpContext must be called first
-		ethante.NewEthMempoolFeeDecorator(options.EvmKeeper),                           // Check eth effective gas price against minimal-gas-prices
-		ethante.NewEthMinGasPriceDecorator(options.FeeMarketKeeper, options.EvmKeeper), // Check eth effective gas price against the global MinGasPrice
+		ethante.NewEthSetUpContextDecorator(options.EvmKeeper),                 // outermost AnteDecorator. SetUpContext must be called first
+		ethante.NewEthMempoolFeeDecorator(options.EvmKeeper),                   // Check eth effective gas price against minimal-gas-prices
+		NewEthMinGasPriceDecorator(options.FeeMarketKeeper, options.EvmKeeper), // Check eth effective gas price against the global MinGasPrice
 		ethante.NewEthValidateBasicDecorator(options.EvmKeeper),
 		ethante.NewEthSigVerificationDecorator(options.EvmKeeper),
 		ethante.NewEthAccountVerificationDecorator(options.AccountKeeper, options.EvmKeeper),
@@ -94,7 +94,6 @@ func newCosmosAnteHandler(options HandlerOptions) sdk.AnteHandler {
 		ethante.RejectMessagesDecorator{}, // reject MsgEthereumTxs
 		NewSetUpContextDecorator(),
 		authante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
-		ethante.NewMinGasPriceDecorator(options.FeeMarketKeeper, options.EvmKeeper),
 		authante.NewValidateBasicDecorator(),
 		authante.NewTxTimeoutHeightDecorator(),
 		authante.NewValidateMemoDecorator(options.AccountKeeper),

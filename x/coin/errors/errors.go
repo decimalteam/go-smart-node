@@ -30,7 +30,7 @@ var (
 	InvalidCoinInitialReserve     = errors.New(codespace, 107, fmt.Sprintf("coin initial reserve should be greater than or equal to reserve %s", minCoinReserve))
 	NewLimitVolumeLess            = errors.New(codespace, 108, "new limit volume should be grater than old limit volume")
 	UpdateOnlyForCreator          = errors.New(codespace, 109, "updating allowed only for creator of coin")
-	InvalidLimitVolume            = errors.New(codespace, 110, fmt.Sprintf("volume limit should be less or equal than %s", maxCoinSupply.String()))
+	InvalidLimitVolume            = errors.New(codespace, 110, fmt.Sprintf("volume limit should be greater than initial volume and less or equal than %s", maxCoinSupply.String()))
 	InvalidAmount                 = errors.New(codespace, 111, "amount should be greater than 0")
 	SameCoin                      = errors.New(codespace, 112, "can't operating same coins")
 	InvalidReceiverAddress        = errors.New(codespace, 113, "invalid receiver address:")

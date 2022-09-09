@@ -237,7 +237,7 @@ $ %s query %s sub_tokens crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd42
 
 			req := &types.QuerySubTokensRequest{
 				Denom:   denom,
-				TokenID: tokenID,
+				TokenId: tokenID,
 			}
 
 			res, err := queryClient.QuerySubTokens(context.Background(), req)

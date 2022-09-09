@@ -10,13 +10,13 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 
-	store "github.com/cosmos/cosmos-sdk/store/types"
+	sdkstore "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Keeper maintains the link to data storage and exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	storeKey store.StoreKey    // Unexposed key to access store from sdk.Context
+	storeKey sdkstore.StoreKey // Unexposed key to access store from sdk.Context
 	cdc      codec.BinaryCodec // The amino codec for binary encoding/decoding.
 	ps       paramtypes.Subspace
 
@@ -28,7 +28,7 @@ type Keeper struct {
 // NewKeeper creates new instances of the nft Keeper
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeKey store.StoreKey,
+	storeKey sdkstore.StoreKey,
 	ps paramtypes.Subspace,
 	bankKeeper keeper.Keeper,
 	baseDenom string,
