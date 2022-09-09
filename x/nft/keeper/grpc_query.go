@@ -95,7 +95,7 @@ func (k Keeper) QuerySubTokens(c context.Context, req *types.QuerySubTokensReque
 	ctx := sdk.UnwrapSDKContext(c)
 
 	var subTokens []types.SubToken
-	subTokens, err := k.GetSubTokens(ctx, req.TokenId)
+	subTokens, err := k.GetSubTokens(ctx, req.TokenID)
 	if err != nil {
 		return nil, err
 	}

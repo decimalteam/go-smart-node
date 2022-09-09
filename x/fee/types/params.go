@@ -52,7 +52,6 @@ func ParamKeyTable() paramtypes.KeyTable {
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return Params{
-		// byte fee in usd*10^-18
 		ByteFee: sdk.MustNewDecFromStr("0.001"),
 		// coin transactions fees
 		// byte fee in usd*10^-3
@@ -90,35 +89,35 @@ func DefaultParams() Params {
 // ParamSetPairs returns the parameter set pairs.
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(PSKeyByteFee, &p.ByteFee, validateUint64),
+		paramtypes.NewParamSetPair(PSKeyByteFee, &p.ByteFee, validateDec),
 		// coin transactions fees
-		paramtypes.NewParamSetPair(PSKeyCoinSend, &p.CoinSend, validateUint64),
-		paramtypes.NewParamSetPair(PSKeyCoinSendMultiAddition, &p.CoinSendMultiAddition, validateUint64),
-		paramtypes.NewParamSetPair(PSKeyCoinBuy, &p.CoinBuy, validateUint64),
-		paramtypes.NewParamSetPair(PSKeyCoinSell, &p.CoinSell, validateUint64),
+		paramtypes.NewParamSetPair(PSKeyCoinSend, &p.CoinSend, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinSendMultiAddition, &p.CoinSendMultiAddition, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinBuy, &p.CoinBuy, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinSell, &p.CoinSell, validateDec),
 		// common transaction commission
-		paramtypes.NewParamSetPair(PSKeyCoinCreate, &p.CoinCreate, validateUint64),
+		paramtypes.NewParamSetPair(PSKeyCoinCreate, &p.CoinCreate, validateDec),
 		// special commission depends on coin symbol length
-		paramtypes.NewParamSetPair(PSKeyCoinCreateLength3, &p.CoinCreateLength3, validateUint64),
-		paramtypes.NewParamSetPair(PSKeyCoinCreateLength4, &p.CoinCreateLength4, validateUint64),
-		paramtypes.NewParamSetPair(PSKeyCoinCreateLength5, &p.CoinCreateLength5, validateUint64),
-		paramtypes.NewParamSetPair(PSKeyCoinCreateLength6, &p.CoinCreateLength6, validateUint64),
-		paramtypes.NewParamSetPair(PSKeyCoinCreateLengthOther, &p.CoinCreateLengthOther, validateUint64),
+		paramtypes.NewParamSetPair(PSKeyCoinCreateLength3, &p.CoinCreateLength3, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinCreateLength4, &p.CoinCreateLength4, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinCreateLength5, &p.CoinCreateLength5, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinCreateLength6, &p.CoinCreateLength6, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinCreateLengthOther, &p.CoinCreateLengthOther, validateDec),
 		// multisignature wallets
-		paramtypes.NewParamSetPair(PSKeyMultisigCreateWallet, &p.MultisigCreateWallet, validateUint64),
-		paramtypes.NewParamSetPair(PSKeyMultisigCreateTransaction, &p.MultisigCreateTransaction, validateUint64),
-		paramtypes.NewParamSetPair(PSKeyMultisigSignTransaction, &p.MultisigSignTransaction, validateUint64),
+		paramtypes.NewParamSetPair(PSKeyMultisigCreateWallet, &p.MultisigCreateWallet, validateDec),
+		paramtypes.NewParamSetPair(PSKeyMultisigCreateTransaction, &p.MultisigCreateTransaction, validateDec),
+		paramtypes.NewParamSetPair(PSKeyMultisigSignTransaction, &p.MultisigSignTransaction, validateDec),
 		// validator operations
-		paramtypes.NewParamSetPair(PSKeyValidatorDeclareCandidate, &p.ValidatorDeclareCandidate, validateUint64),
-		paramtypes.NewParamSetPair(PSKeyValidatorEditCandidate, &p.ValidatorEditCandidate, validateUint64),
-		paramtypes.NewParamSetPair(PSKeyValidatorDelegate, &p.ValidatorDelegate, validateUint64),
-		paramtypes.NewParamSetPair(PSKeyValidatorUnbond, &p.ValidatorUnbond, validateUint64),
-		paramtypes.NewParamSetPair(PSKeyValidatorSetOnline, &p.ValidatorSetOnline, validateUint64),
-		paramtypes.NewParamSetPair(PSKeyValidatorSetOffline, &p.ValidatorSetOffline, validateUint64),
+		paramtypes.NewParamSetPair(PSKeyValidatorDeclareCandidate, &p.ValidatorDeclareCandidate, validateDec),
+		paramtypes.NewParamSetPair(PSKeyValidatorEditCandidate, &p.ValidatorEditCandidate, validateDec),
+		paramtypes.NewParamSetPair(PSKeyValidatorDelegate, &p.ValidatorDelegate, validateDec),
+		paramtypes.NewParamSetPair(PSKeyValidatorUnbond, &p.ValidatorUnbond, validateDec),
+		paramtypes.NewParamSetPair(PSKeyValidatorSetOnline, &p.ValidatorSetOnline, validateDec),
+		paramtypes.NewParamSetPair(PSKeyValidatorSetOffline, &p.ValidatorSetOffline, validateDec),
 		// oracle
 		paramtypes.NewParamSetPair(PSKeyOracleAddress, &p.OracleAddress, validateAddress),
 		// evm
-		paramtypes.NewParamSetPair(PSKeyEvmGasPrice, &p.EvmGasPrice, validateUint64),
+		paramtypes.NewParamSetPair(PSKeyEvmGasPrice, &p.EvmGasPrice, validateDec),
 	}
 }
 
@@ -138,11 +137,12 @@ func (p *Params) String() string {
 	return string(out)
 }
 
-func validateUint64(i interface{}) error {
-	_, ok := i.(uint64)
+func validateDec(i interface{}) error {
+	_, ok := i.(sdk.Dec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
+
 	return nil
 }
 

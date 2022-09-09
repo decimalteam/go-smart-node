@@ -63,7 +63,7 @@ func (api *API) NFTSubTokens(denom string, tokenID string, ids []uint64) ([]SubT
 		context.Background(),
 		&nftTypes.QuerySubTokensRequest{
 			Denom:   denom,
-			TokenId: tokenID,
+			TokenID: tokenID,
 		},
 	)
 	if err != nil {
