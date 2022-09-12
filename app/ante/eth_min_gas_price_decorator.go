@@ -9,11 +9,10 @@ import (
 	"math/big"
 )
 
+// EthMinGasPriceDecorator is the copy of evmos decorator, but with fixed error type
 // EthMinGasPriceDecorator will check if the transaction's fee is at least as large
 // as the MinGasPrices param. If fee is too low, decorator returns error and tx
 // is rejected. This applies to both CheckTx and DeliverTx and regardless
-// if London hard fork or fee market params (EIP-1559) are enabled.
-// If fee is high enough, then call next AnteHandler
 type EthMinGasPriceDecorator struct {
 	feesKeeper evmante.FeeMarketKeeper
 	evmKeeper  evmante.EVMKeeper
@@ -74,6 +73,7 @@ func (empd EthMinGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 		fee := sdk.NewDecFromBigInt(feeAmt)
 
 		if fee.LT(requiredFee) {
+			// It's necessary to use .String() method to convert Int (64 bits of uint64 may not be enough for Int)
 			return ctx, sdkerrors.Wrapf(
 				sdkerrors.ErrInsufficientFee,
 				"provided fee < minimum global fee (%s < %s). Please increase the priority tip (for EIP-1559 txs) or the gas prices (for access list or legacy txs)",
