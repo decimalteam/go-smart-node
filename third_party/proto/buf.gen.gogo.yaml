@@ -1,0 +1,14 @@
+version: v1
+plugins:
+  - name: gocosmos
+    out: ../../build/third_party/proto/go
+    opt: plugins=grpc,Mgoogle/protobuf/any.proto=github.com/cosmos/cosmos-sdk/codec/types
+  - name: grpc-gateway
+    out: ../../build/third_party/proto/go
+    opt: logtostderr=true
+    #,allow_colon_final_segments=true
+
+# TODO: Currently docs are written to the same file for each proto, fix it somehow
+# - name: doc
+#   out: ../../build/third_party/docs/api
+#   opt: docs/protodoc-markdown.tmpl,proto-docs.md

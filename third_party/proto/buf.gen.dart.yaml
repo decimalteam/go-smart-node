@@ -1,0 +1,4 @@
+version: v1
+plugins:
+  - name: dart
+    out: ../../build/third_party/proto/dart

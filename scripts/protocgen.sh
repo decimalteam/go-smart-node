@@ -11,6 +11,10 @@
 ## Install dart plugin:
 ## + dart pub global activate protoc_plugin
 ## + export PATH="$PATH":"$HOME/.pub-cache/bin"
+## Install php plugin:
+## + sudo apt install php-common libapache2-mod-php php-cli
+## + # install php composer here...
+## + composer require "protobuf-php/protobuf-plugin"
 #
 ## All protoc dependencies must be installed not in the module scope
 ## currently we must use grpc-gateway v1 (see protocgen.sh in cosmos sdk)
@@ -30,25 +34,48 @@ set -eo pipefail
 
 echo "Generating gogo proto code..."
 cd proto
+buf build -v # looks like unnecessary
 proto_dirs=$(find ./decimal -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
 for dir in $proto_dirs; do
   files=$(find "${dir}" -maxdepth 1 -name '*.proto')
   for file in $files; do
     if grep "option go_package" "$file" &> /dev/null ; then
       echo "  $file"
-      buf build -v # looks like unnecessary
       buf generate --template buf.gen.gogo.yaml -v "$file"
-      #buf generate --template buf.gen.ts.yaml -v "$file"
-      #buf generate --template buf.gen.dart.yaml -v "$file"
+      buf generate --template buf.gen.ts.yaml -v "$file"
+      buf generate --template buf.gen.dart.yaml -v "$file"
+      buf generate --template buf.gen.php.yaml -v "$file"
     fi
   done
 done
 cd ..
 
+echo "Generating third party proto code..."
+cd third_party/proto
+buf build -v # looks like unnecessary
+proto_libs=$(find . -maxdepth 2 -path -prune -o -print0 | xargs -0 -n1 dirname | sort | uniq)
+for lib in $proto_libs; do
+  proto_dirs=$(find "$lib" -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
+  for dir in $proto_dirs; do
+    files=$(find "${dir}" -maxdepth 1 -name '*.proto')
+    for file in $files; do
+      if grep "option go_package" "$file" &> /dev/null ; then
+        echo "  $file"
+        buf generate --template buf.gen.gogo.yaml -v "$file"
+        buf generate --template buf.gen.ts.yaml -v "$file"
+        buf generate --template buf.gen.dart.yaml -v "$file"
+        buf generate --template buf.gen.php.yaml -v "$file"
+      fi
+    done
+  done
+done
+cd ../..
+
 echo "Copying result files..."
 cp -vr ./build/proto/go/bitbucket.org/decimalteam/go-smart-node/x/* ./x/
-#cp -vr ./build/proto/ts/* ./sdk/proto/ts/
-#cp -vr ./build/proto/dart/* ./sdk/proto/dart/
+cp -vr ./build/proto/ts/* ./sdk/proto/ts/
+cp -vr ./build/proto/dart/* ./sdk/proto/dart/
+cp -vr ./build/proto/php/* ./sdk/proto/php/
 rm -rf ./build/proto
 
 echo "Success!"
