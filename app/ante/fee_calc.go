@@ -2,6 +2,10 @@ package ante
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	ibcTransfer "github.com/cosmos/ibc-go/v5/modules/apps/transfer/types"
+	ibcCoreClientTypes "github.com/cosmos/ibc-go/v5/modules/core/02-client/types"
+	ibcCoreConnectionTypes "github.com/cosmos/ibc-go/v5/modules/core/03-connection/types"
+	ibcCoreChannelTypes "github.com/cosmos/ibc-go/v5/modules/core/04-channel/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -65,6 +69,44 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee
 
 		// fee
 		case *feeTypes.MsgSaveBaseDenomPrice:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+
+		// ibc client
+		case *ibcCoreClientTypes.MsgCreateClient:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *ibcCoreClientTypes.MsgUpdateClient:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *ibcCoreClientTypes.MsgSubmitMisbehaviour:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *ibcCoreClientTypes.MsgUpgradeClient:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+
+		// ibc connection
+		case *ibcCoreConnectionTypes.MsgConnectionOpenInit:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *ibcCoreConnectionTypes.MsgConnectionOpenConfirm:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *ibcCoreConnectionTypes.MsgConnectionOpenAck:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *ibcCoreConnectionTypes.MsgConnectionOpenTry:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+
+		//ibc channel
+		case *ibcCoreChannelTypes.MsgChannelOpenInit:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *ibcCoreChannelTypes.MsgChannelOpenConfirm:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *ibcCoreChannelTypes.MsgChannelOpenAck:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *ibcCoreChannelTypes.MsgChannelOpenTry:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *ibcCoreChannelTypes.MsgChannelCloseInit:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+		case *ibcCoreChannelTypes.MsgChannelCloseConfirm:
+			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
+
+		// ibc transfer
+		case *ibcTransfer.MsgTransfer:
 			commissionInBaseCoin = commissionInBaseCoin.AddRaw(0)
 		default:
 			return sdk.NewInt(0), UnknownTransaction

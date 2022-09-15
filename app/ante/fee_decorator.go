@@ -87,7 +87,6 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 
 	// fee from transaction not empty
 	feeInBaseCoin := feeFromTx[0].Amount
-
 	// calculate fee in base coin to check enough amount of fee
 	if feeFromTx[0].Denom != baseDenom {
 		coinInfo, err := fd.coinKeeper.GetCoin(ctx, feeFromTx[0].Denom)
@@ -106,7 +105,6 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 			return ctx, CoinReserveBecomeInsufficient
 		}
 	}
-
 	if feeInBaseCoin.LT(commissionInBaseCoin) {
 		return ctx, FeeLessThanCommission
 	}
