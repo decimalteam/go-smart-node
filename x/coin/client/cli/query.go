@@ -11,7 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
@@ -42,7 +42,7 @@ func cmdQueryCoins() *cobra.Command {
 		Long: fmt.Sprintf(`Query all coins full information 
 
 Example: 	
-$ %s query %s coins`, config.AppBinName, types.ModuleName),
+$ %s query %s coins`, cmdcfg.AppBinName, types.ModuleName),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -82,7 +82,7 @@ func cmdQueryCoin() *cobra.Command {
 		Long: fmt.Sprintf(`Query coin full information 
 
 Example: 	
-$ %s query %s coin del`, config.AppBinName, types.ModuleName),
+$ %s query %s coin del`, cmdcfg.AppBinName, types.ModuleName),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -115,7 +115,7 @@ func cmdQueryChecks() *cobra.Command {
 		Long: fmt.Sprintf(`Query all checks information from blockchain
 
 Example: 	
-$ %s query %s checks`, config.AppBinName, types.ModuleName),
+$ %s query %s checks`, cmdcfg.AppBinName, types.ModuleName),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -154,7 +154,7 @@ func cmdQueryCheck() *cobra.Command {
 		Long: fmt.Sprintf(`Query check information from blockchain
 
 Example: 	
-$ %s query %s check 3YEtqixL7ccFTZJaMUHx3TgsQEqzrqoj...(result of command 'issue-check')`, config.AppBinName, types.ModuleName),
+$ %s query %s check 3YEtqixL7ccFTZJaMUHx3TgsQEqzrqoj...(result of command 'issue-check')`, cmdcfg.AppBinName, types.ModuleName),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -199,7 +199,7 @@ func cmdQueryParams() *cobra.Command {
 		Long: fmt.Sprintf(`Query module params from blockchain
 
 Example: 	
-$ %s query %s params`, config.AppBinName, types.ModuleName),
+$ %s query %s params`, cmdcfg.AppBinName, types.ModuleName),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)

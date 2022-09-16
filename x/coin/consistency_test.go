@@ -12,7 +12,7 @@ import (
 
 	appMain "bitbucket.org/decimalteam/go-smart-node/app"
 	appAnte "bitbucket.org/decimalteam/go-smart-node/app/ante"
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin"
@@ -145,10 +145,10 @@ func initConsistencyApp(t *testing.T, reserve, volume, limitVolume sdkmath.Int, 
 
 	// write genesis
 	params := app.CoinKeeper.GetParams(ctx)
-	adr1, err := sdk.Bech32ifyAddressBytes(config.Bech32Prefix, []byte("adr1"))
+	adr1, err := sdk.Bech32ifyAddressBytes(cmdcfg.Bech32Prefix, []byte("adr1"))
 	require.NoError(t, err, "adr1 to bech32")
 
-	adr2, err := sdk.Bech32ifyAddressBytes(config.Bech32Prefix, []byte("adr2"))
+	adr2, err := sdk.Bech32ifyAddressBytes(cmdcfg.Bech32Prefix, []byte("adr2"))
 	require.NoError(t, err, "adr2 to bech32")
 
 	coins := []types.Coin{

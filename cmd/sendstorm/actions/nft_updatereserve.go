@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
@@ -83,7 +83,7 @@ func (gg *UpdateReserveNFTGenerator) Generate() Action {
 			id:         nftToUpdateReserve.ID,
 			denom:      nftToUpdateReserve.Denom,
 			subIds:     subToUpdate,
-			newReserve: sdk.NewCoin(config.BaseDenom, newReserve),
+			newReserve: sdk.NewCoin(cmdcfg.BaseDenom, newReserve),
 		}
 	}
 	return &EmptyAction{}

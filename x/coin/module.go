@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
+
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
@@ -56,8 +57,8 @@ func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 }
 
 // RegisterInterfaces registers the module's interface types.
-func (AppModuleBasic) RegisterInterfaces(interfaceRegistry codectypes.InterfaceRegistry) {
-	types.RegisterInterfaces(interfaceRegistry)
+func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
+	types.RegisterInterfaces(registry)
 }
 
 // DefaultGenesis returns the module's default genesis state.
@@ -66,16 +67,16 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 }
 
 // ValidateGenesis performs genesis state validation for the module.
-func (b AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
-	var genesisState types.GenesisState
-	if err := cdc.UnmarshalJSON(bz, &genesisState); err != nil {
+func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
+	var gs types.GenesisState
+	if err := cdc.UnmarshalJSON(bz, &gs); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
 	}
-	return genesisState.Validate()
+	return gs.Validate()
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
-func (b AppModuleBasic) RegisterGRPCGatewayRoutes(c client.Context, serveMux *runtime.ServeMux) {
+func (AppModuleBasic) RegisterGRPCGatewayRoutes(c client.Context, serveMux *runtime.ServeMux) {
 	if err := types.RegisterQueryHandlerClient(context.Background(), serveMux, types.NewQueryClient(c)); err != nil {
 		panic(err)
 	}
@@ -104,7 +105,7 @@ type AppModule struct {
 	bankKeeper    types.BankKeeper
 }
 
-// NewAppModule creates a new AppModule Object
+// NewAppModule creates a new AppModule instance.
 func NewAppModule(
 	cdc codec.Codec,
 	keeper keeper.Keeper,
@@ -125,17 +126,20 @@ func (AppModule) Name() string {
 }
 
 // Route returns the module's message routing key.
-func (am AppModule) Route() sdk.Route {
-	return sdk.NewRoute(types.RouterKey, NewHandler(&am.keeper))
+// Deprecated: use RegisterServices instead.
+func (AppModule) Route() sdk.Route {
+	return sdk.Route{}
 }
 
 // QuerierRoute returns the module's query routing key.
-func (am AppModule) QuerierRoute() string {
-	return types.RouterKey
+// Deprecated: use RegisterServices instead.
+func (AppModule) QuerierRoute() string {
+	return types.QuerierRoute
 }
 
 // LegacyQuerierHandler returns the module's Querier.
-func (am AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier {
+// Deprecated: use RegisterServices instead.
+func (AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier {
 	return nil
 }
 
@@ -146,7 +150,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 }
 
 // RegisterInvariants registers the module's invariants.
-func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
+func (AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {
 	//
 }
 
@@ -164,19 +168,17 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 	return cdc.MustMarshalJSON(gs)
 }
 
-// ConsensusVersion implements ConsensusVersion.
+// ConsensusVersion returns the consensus state-breaking version for the module.
 func (am AppModule) ConsensusVersion() uint64 {
 	return am.AppModuleBasic.ConsensusVersion()
 }
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the module.
-func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
-	fmt.Println(" BeginBlock")
-	fmt.Println(ctx.GasMeter().String())
-	fmt.Println()
+func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {
+	//
 }
 
 // EndBlock executes all ABCI EndBlock logic respective to the module.
-func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }

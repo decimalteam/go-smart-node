@@ -1,16 +1,18 @@
 package nft_test
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/app"
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"bitbucket.org/decimalteam/go-smart-node/app"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
 // nolint: deadcode unused
@@ -54,7 +56,7 @@ func TestInitGenesis(t *testing.T) {
 				nftID,
 				address.String(),
 				tokenURI,
-				sdk.NewCoin(config.BaseDenom, types.MinReserve),
+				sdk.NewCoin(cmdcfg.BaseDenom, types.MinReserve),
 				true,
 			)
 

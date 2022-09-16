@@ -58,7 +58,7 @@ import (
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
-	dscconfig "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
@@ -115,8 +115,8 @@ func DefaultConfig() Config {
 		TimeoutCommit:     2 * time.Second,
 		ChainID:           fmt.Sprintf("decimal_%d-1", tmrand.Int63n(9999999999999)+1),
 		NumValidators:     4,
-		BondDenom:         dscconfig.BaseDenom,
-		MinGasPrices:      fmt.Sprintf("0.000006%s", dscconfig.BaseDenom),
+		BondDenom:         cmdcfg.BaseDenom,
+		MinGasPrices:      fmt.Sprintf("0.000006%s", cmdcfg.BaseDenom),
 		AccountTokens:     sdk.TokensFromConsensusPower(1000, ethermint.PowerReduction),
 		StakingTokens:     helpers.EtherToWei(sdk.NewInt(9000000000000000000).Mul(sdk.NewInt(1000000000))),
 		BondedTokens:      sdk.TokensFromConsensusPower(100, ethermint.PowerReduction),

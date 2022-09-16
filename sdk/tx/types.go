@@ -8,8 +8,7 @@ import (
 )
 
 type (
-	DefaultFeeParams = feetypes.DefaultParams
-	FeeParams        = feetypes.Params
+	FeeParams = feetypes.Params
 )
 
 type (

@@ -9,15 +9,15 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
-// RegisterInvariants registers all staking invariants
-func RegisterInvariants(ir sdk.InvariantRegistry, k Keeper) {
-	ir.RegisterRoute(types.ModuleName, "module-accounts", ModuleAccountInvariants(k))
-	ir.RegisterRoute(types.ModuleName, "nonnegative-power", NonNegativePowerInvariant(k))
-	ir.RegisterRoute(types.ModuleName, "positive-delegation", PositiveDelegationInvariant(k))
-	ir.RegisterRoute(types.ModuleName, "delegator-shares", DelegatorSharesInvariant(k))
+// RegisterInvariants registers all the module's invariants.
+func RegisterInvariants(registry sdk.InvariantRegistry, k Keeper) {
+	registry.RegisterRoute(types.ModuleName, "module-accounts", ModuleAccountInvariants(k))
+	registry.RegisterRoute(types.ModuleName, "nonnegative-power", NonNegativePowerInvariant(k))
+	registry.RegisterRoute(types.ModuleName, "positive-delegation", PositiveDelegationInvariant(k))
+	registry.RegisterRoute(types.ModuleName, "delegator-shares", DelegatorSharesInvariant(k))
 }
 
-// AllInvariants runs all invariants of the staking module.
+// AllInvariants runs all invariants of the module.
 func AllInvariants(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
 		res, stop := ModuleAccountInvariants(k)(ctx)

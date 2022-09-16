@@ -12,7 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
@@ -51,7 +51,7 @@ Example:
 $ %s tx %s mint crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa \
 dx1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p --from mykey
 `,
-				config.AppBinName, types.ModuleName,
+				cmdcfg.AppBinName, types.ModuleName,
 			),
 		),
 		Args: cobra.ExactArgs(6),
@@ -110,7 +110,7 @@ Example:
 $ %s tx %s update_uri d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa \
 --tokenURI path_to_token_URI_JSON --from mykey
 `,
-				config.AppBinName, types.ModuleName,
+				cmdcfg.AppBinName, types.ModuleName,
 			),
 		),
 		Args: cobra.ExactArgs(1),
@@ -144,7 +144,7 @@ Example:
 $ %s tx %s update_reserve d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa 1,2 1000del \
 --from mykey
 `,
-				config.AppBinName, types.ModuleName,
+				cmdcfg.AppBinName, types.ModuleName,
 			),
 		),
 		Args: cobra.ExactArgs(3),
@@ -190,7 +190,7 @@ dx1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p dx1l2rsakp388kuv9k8qzq6lrm9taddae7fpx5
 crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa 1,2 \
 --from mykey
 `,
-				config.AppBinName, types.ModuleName,
+				cmdcfg.AppBinName, types.ModuleName,
 			),
 		),
 		Args: cobra.ExactArgs(4),
@@ -240,7 +240,7 @@ Example:
 $ %s tx %s burn crypto-kitties d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa 2,3\
 --from mykey
 `,
-				config.AppBinName, types.ModuleName,
+				cmdcfg.AppBinName, types.ModuleName,
 			),
 		),
 		Args: cobra.ExactArgs(2),

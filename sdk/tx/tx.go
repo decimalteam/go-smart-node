@@ -3,13 +3,13 @@ package tx
 import (
 	"fmt"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
-	codecTypes "github.com/cosmos/cosmos-sdk/codec/types"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
-	signingTypes "github.com/cosmos/cosmos-sdk/types/tx/signing"
-	authSigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
+	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	authTx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 
 	appAnte "bitbucket.org/decimalteam/go-smart-node/app/ante"
@@ -36,7 +36,7 @@ func BuildTransaction(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom
 		newFee = sdk.ZeroInt()
 	} else {
 		for !oldFee.Equal(newFee) {
-			oldFee = sdk.ZeroInt().Add(newFee) // = copy, sdk.Int is reference type
+			oldFee = sdk.ZeroInt().Add(newFee) // = copy, sdkmath.Int is reference type
 			newFee, err = calculateFee(acc, msgs, memo, feeDenom, oldFee, delPrice, params)
 			if err != nil {
 				return nil, err
@@ -50,8 +50,12 @@ func BuildTransaction(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom
 	return txc, nil
 }
 
-func calculateFee(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom string, fee sdk.Int, delPrice sdk.Dec, params FeeParams) (sdk.Int, error) {
+func calculateFee(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom string, fee sdkmath.Int, delPrice sdk.Dec, params FeeParams) (sdkmath.Int, error) {
 	txc, err := newTxConstructor(msgs, memo)
+	if err != nil {
+		// with zero fee, decimal node will calculate correct fee itself
+		return sdk.ZeroInt(), err
+	}
 	txc.SetFeeAmount(sdk.NewCoins(sdk.NewCoin(feeDenom, fee)))
 	err = txc.SignTransaction(acc)
 	if err != nil {
@@ -74,7 +78,7 @@ func calculateFee(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom str
 
 func newTxConstructor(msgs []sdk.Msg, memo string) (*TxConstructor, error) {
 	// 1. create TxBuilder
-	interfaceRegistry := codecTypes.NewInterfaceRegistry()
+	interfaceRegistry := codectypes.NewInterfaceRegistry()
 	marshaler := codec.NewProtoCodec(interfaceRegistry)
 	txConfig := authTx.NewTxConfig(marshaler, authTx.DefaultSignModes)
 	txBuilder := txConfig.NewTxBuilder()
@@ -93,7 +97,7 @@ func (constructor *TxConstructor) SetFeeAmount(coins sdk.Coins) {
 
 // SignTransaction signs transaction and appends signature to transaction signatures.
 func (constructor *TxConstructor) SignTransaction(acc *wallet.Account) error {
-	const signMode = signingTypes.SignMode_SIGN_MODE_DIRECT
+	const signMode = signing.SignMode_SIGN_MODE_DIRECT
 	// Check chain ID, account number and sequence
 	if acc.ChainID() == "" {
 		return fmt.Errorf("chain ID is not set up")
@@ -112,15 +116,15 @@ func (constructor *TxConstructor) SignTransaction(acc *wallet.Account) error {
 
 	// 3. signing
 	// signerData need to get bytesToSign
-	signerData := authSigning.SignerData{
+	signerData := authsigning.SignerData{
 		ChainID:       acc.ChainID(),
 		AccountNumber: acc.AccountNumber(),
 		Sequence:      acc.Sequence(),
 	}
 	// sig need for builder
-	sig := signingTypes.SignatureV2{
+	sig := signing.SignatureV2{
 		PubKey: acc.PubKey(),
-		Data: &signingTypes.SingleSignatureData{
+		Data: &signing.SingleSignatureData{
 			SignMode:  signMode,
 			Signature: nil,
 		},

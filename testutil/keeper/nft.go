@@ -10,7 +10,7 @@ import (
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
@@ -25,7 +25,7 @@ func GetBaseAppWithCustomKeeper(t *testing.T) (*app.DSC, sdk.Context) {
 		appCodec,
 		dsc.GetKey(types.StoreKey),
 		dsc.BankKeeper,
-		config.BaseDenom,
+		cmdcfg.BaseDenom,
 	)
 
 	return dsc, ctx

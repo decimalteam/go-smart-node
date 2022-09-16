@@ -30,8 +30,8 @@ var (
 	defaultMinSelfDelegation       = "1"
 )
 
-// NewTxCmd returns a root CLI command handler for all x/staking transaction commands.
-func NewTxCmd() *cobra.Command {
+// GetTxCmd returns a root CLI command handler for all x/staking transaction commands.
+func GetTxCmd() *cobra.Command {
 	stakingTxCmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      "Staking transaction subcommands",

@@ -9,7 +9,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
@@ -41,7 +41,7 @@ func cmdQueryCollections() *cobra.Command {
 Example:
 $ %s query %s collections
 $ %s query %s collections dx1c6r9smnxccxlnf7rmxze9pajs0l2d3sftdvr32
-`, config.AppBinName, types.ModuleName, config.AppBinName, types.ModuleName,
+`, cmdcfg.AppBinName, types.ModuleName, cmdcfg.AppBinName, types.ModuleName,
 			),
 		),
 		Args: cobra.RangeArgs(0, 1),
@@ -80,7 +80,7 @@ func cmdQueryCollection() *cobra.Command {
 
 Example:
 $ %s query %s collection dx1c6r9smnxccxlnf7rmxze9pajs0l2d3sftdvr32 crypto-kitties
-`, config.AppBinName, types.ModuleName,
+`, cmdcfg.AppBinName, types.ModuleName,
 			),
 		),
 		Args: cobra.ExactArgs(2),
@@ -113,7 +113,7 @@ func cmdQueryToken() *cobra.Command {
 
 Example:
 $ %s query %s token d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa
-`, config.AppBinName, types.ModuleName,
+`, cmdcfg.AppBinName, types.ModuleName,
 			),
 		),
 		Args: cobra.ExactArgs(1),
@@ -145,7 +145,7 @@ func cmdQuerySubToken() *cobra.Command {
 
 Example:
 $ %s query %s sub-token d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa 1
-`, config.AppBinName, types.ModuleName,
+`, cmdcfg.AppBinName, types.ModuleName,
 			),
 		),
 		Args: cobra.ExactArgs(2),

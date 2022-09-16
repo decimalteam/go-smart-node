@@ -21,7 +21,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
 
 // DownloadSecured downloads file from provided URL to the specified path and checks it's hash.
@@ -132,7 +132,7 @@ func changeBinary(plan types.Plan) error {
 
 	currPath := filepath.Dir(ex)
 
-	downloadName := getDownloadFileName(config.AppBinName)
+	downloadName := getDownloadFileName(cmdcfg.AppBinName)
 	if _, err := os.Stat(downloadName); os.IsNotExist(err) {
 		return err
 	}
@@ -147,7 +147,7 @@ func changeBinary(plan types.Plan) error {
 		return fmt.Errorf("error: hash does not match")
 	}
 
-	currBin := filepath.Join(currPath, config.AppBinName)
+	currBin := filepath.Join(currPath, cmdcfg.AppBinName)
 	mode, err := getMode(currBin)
 	if err != nil {
 		os.Remove(downloadName)
