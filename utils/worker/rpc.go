@@ -46,7 +46,7 @@ func (w *Worker) fetchBlockSize(height int64, ch chan int) {
 	ch <- result.BlockMetas[0].BlockSize
 }
 
-func (w *Worker) fetchBlockTxs(height int64, total int, ch chan []Tx) {
+func (w *Worker) fetchBlockTxs(height int64, total int, ea *EventAccumulator, ch chan []Tx) {
 	query := fmt.Sprintf("tx.height=%d", height)
 	page, perPage := 1, 100
 
@@ -81,6 +81,16 @@ func (w *Worker) fetchBlockTxs(height int64, total int, ch chan []Tx) {
 			result.GasWanted = tx.TxResult.GasWanted
 
 			results = append(results, result)
+
+			// process events for successful transactions
+			if tx.TxResult.Code == 0 {
+				for _, event := range tx.TxResult.Events {
+					err := ea.AddEvent(event, tx.Hash.String(), tx.Height)
+					if err != nil {
+						w.panicError(err)
+					}
+				}
+			}
 		}
 
 		if len(result.Txs) > 0 {

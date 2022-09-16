@@ -9,3 +9,8 @@ message EventBaseDenomPriceSaved {
     string price = 1;
     string denom = 2;
 }
+
+message EventPayCommission {
+    string sender = 1;
+    string coin = 2;
+}

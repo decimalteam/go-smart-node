@@ -3,9 +3,11 @@ package ante
 import (
 	"fmt"
 
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	feeErrors "bitbucket.org/decimalteam/go-smart-node/x/fee/errors"
 	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdkAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	evmTypes "github.com/evmos/ethermint/x/evm/types"
@@ -156,6 +158,19 @@ func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper coin
 	err := bankKeeper.SendCoinsFromAccountToModule(ctx, feePayerAddress, sdkAuthTypes.FeeCollectorName, sdk.NewCoins(fee))
 	if err != nil {
 		return FailedToSendCoins
+	}
+
+	// delivery mode
+	if !ctx.IsCheckTx() && !ctx.IsReCheckTx() {
+		// Emit fee deduction event
+		// need for correct balance calculation for external services
+		err = events.EmitTypedEvent(ctx, &feeTypes.EventPayCommission{
+			Sender: feePayerAddress.String(),
+			Coin:   fee.String(),
+		})
+		if err != nil {
+			return feeErrors.Internal.Wrapf("err: %s", err.Error())
+		}
 	}
 
 	return nil
