@@ -19,7 +19,7 @@ import (
 
 var _ types.MsgServer = &Keeper{}
 
-// Keeper implements the module data storaging.
+// Keeper maintains the link to data storage and exposes getter/setter methods for the various parts of the state machine.
 type Keeper struct {
 	cdc      codec.BinaryCodec
 	storeKey store.StoreKey
@@ -209,7 +209,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 }
 
 // Stub
-func (k Keeper) Stub(c context.Context, req *types.QueryStubRequest) (*types.QueryStubResponse, error) {
+func (k *Keeper) Stub(c context.Context, req *types.QueryStubRequest) (*types.QueryStubResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}

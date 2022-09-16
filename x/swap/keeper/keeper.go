@@ -12,7 +12,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/types"
 )
 
-// Keeper implements the module data storaging.
+// Keeper maintains the link to data storage and exposes getter/setter methods for the various parts of the state machine.
 type Keeper struct {
 	cdc        codec.BinaryCodec
 	storeKey   store.StoreKey

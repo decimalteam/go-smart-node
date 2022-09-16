@@ -21,9 +21,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
-func init() {
-	types.RegisterLegacyAminoCodec(codec.NewLegacyAmino())
-}
+// TODO: Is this necessary?
+// func init() {
+// 	types.RegisterLegacyAminoCodec(codec.NewLegacyAmino())
+// }
 
 var (
 	_ module.AppModule      = AppModule{}
@@ -79,7 +80,9 @@ func NewAppModule(keeper keeper.Keeper) AppModule {
 }
 
 // RegisterInvariants does nothing, there are no invariants to enforce
-func (AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
+func (AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {
+	//
+}
 
 // Deprecated: Route returns the message routing key for the upgrade module.
 func (AppModule) Route() sdk.Route {

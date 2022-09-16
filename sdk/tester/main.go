@@ -8,7 +8,7 @@ import (
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 )
 
-//helper function
+// helper function
 func formatAsJSON(obj interface{}) string {
 	objStr, err := json.MarshalIndent(obj, "", "    ")
 	if err != nil {
@@ -80,8 +80,8 @@ func main() {
 			}
 			tx, err := dscTx.BuildTransaction(faucet, []sdk.Msg{dscTx.NewMsgSendCoin(
 				faucet.SdkAddress(),
-				sdk.NewCoin(api.BaseCoin(), helpers.EtherToWei(sdk.NewInt(10))),
 				w.SdkAddress(),
+				sdk.NewCoin(api.BaseCoin(), helpers.EtherToWei(sdk.NewInt(10))),
 			)}, "some send", api.BaseCoin())
 			if err != nil {
 				fmt.Printf("BuildTransaction error: %v\n", err)

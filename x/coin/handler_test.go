@@ -7,21 +7,26 @@ import (
 	"fmt"
 	"testing"
 
-	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
+	"github.com/stretchr/testify/require"
+
+	"golang.org/x/crypto/sha3"
+
+	ethereumCrypto "github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/rlp"
+
+	sdkmath "cosmossdk.io/math"
+	"github.com/cosmos/btcutil/base58"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
+	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/testcoin"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-	"github.com/cosmos/btcutil/base58"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	ethereumCrypto "github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/rlp"
-	"github.com/evmos/ethermint/crypto/ethsecp256k1"
-	"github.com/stretchr/testify/require"
-	"golang.org/x/crypto/sha3"
 )
 
 func bootstrapHandlerTest(t *testing.T, numAddrs int, accCoins sdk.Coins) (*app.DSC, sdk.Context, []sdk.AccAddress, []sdk.ValAddress) {
@@ -36,15 +41,15 @@ func bootstrapHandlerTest(t *testing.T, numAddrs int, accCoins sdk.Coins) (*app.
 
 var (
 	baseDenom  = "del"
-	baseAmount = helpers.EtherToWei(sdk.NewInt(1000000000000))
+	baseAmount = helpers.EtherToWei(sdkmath.NewInt(1000000000000))
 
 	// valid test coin params
-	title              = "Its Test Coin"
-	symbol             = "tstcoin"
-	crr         uint64 = 50
-	initVolume         = helpers.EtherToWei(sdk.NewInt(1000))
-	initReserve        = helpers.EtherToWei(sdk.NewInt(10000))
-	limitVolume        = helpers.EtherToWei(sdk.NewInt(10000000000000000))
+	denom       = "tstcoin"
+	title       = "Its Test Coin"
+	crr         = uint64(50)
+	initVolume  = helpers.EtherToWei(sdkmath.NewInt(1000))
+	initReserve = helpers.EtherToWei(sdkmath.NewInt(10000))
+	limitVolume = helpers.EtherToWei(sdkmath.NewInt(10000000000000000))
 )
 
 func TestCreateCoinHandler(t *testing.T) {
@@ -59,22 +64,22 @@ func TestCreateCoinHandler(t *testing.T) {
 	addr2 := addrs[1]
 
 	// create coin
-	coin := tscoin.CreateCoin(addr1, title, symbol, crr, initVolume, initReserve, limitVolume, "", true)
+	coin := tscoin.CreateCoin(addr1, title, denom, crr, initVolume, initReserve, limitVolume, "", true)
 
 	// check store with coin equals
-	storeCoin, err := dsc.CoinKeeper.GetCoin(ctx, coin.Symbol)
+	storeCoin, err := dsc.CoinKeeper.GetCoin(ctx, coin.Denom)
 	require.NoError(t, err)
 	require.True(t, coin.Equal(storeCoin))
 
-	// create coin with exist symbol
-	_ = tscoin.CreateCoin(addr1, title, symbol, crr, initVolume, initReserve, limitVolume, "", false)
+	// create coin with exist denom
+	_ = tscoin.CreateCoin(addr1, title, denom, crr, initVolume, initReserve, limitVolume, "", false)
 
 	// create coin with custom fee coin
 	ctxWithFee := tscoin.Ctx
-	ctxWithFee = ctxWithFee.WithContext(context.WithValue(ctxWithFee.Context(), "fee", sdk.Coins{
+	ctxWithFee = ctxWithFee.WithContext(context.WithValue(ctxWithFee.Context(), types.ContextFeeKey{}, sdk.Coins{
 		{
-			Denom:  symbol,
-			Amount: helpers.EtherToWei(sdk.NewInt(100)),
+			Denom:  denom,
+			Amount: helpers.EtherToWei(sdkmath.NewInt(100)),
 		},
 	}))
 
@@ -105,25 +110,25 @@ func TestUpdateCoinHandler(t *testing.T) {
 	addr2 := addrs[1]
 
 	// create coin
-	_ = tscoin.CreateCoin(addr1, title, symbol, crr, initVolume, initReserve, limitVolume, "", true)
+	_ = tscoin.CreateCoin(addr1, title, denom, crr, initVolume, initReserve, limitVolume, "", true)
 
 	// update coin
-	newLimitVolume := limitVolume.Add(helpers.EtherToWei(sdk.NewInt(1009000)))
-	tscoin.UpdateCoin(addr1, symbol, newLimitVolume, "", true)
+	newLimitVolume := limitVolume.Add(helpers.EtherToWei(sdkmath.NewInt(1009000)))
+	tscoin.UpdateCoin(addr1, denom, newLimitVolume, "", true)
 
-	storeCoin, err := dsc.CoinKeeper.GetCoin(ctx, symbol)
+	storeCoin, err := dsc.CoinKeeper.GetCoin(ctx, denom)
 	require.NoError(t, err)
 	require.True(t, storeCoin.LimitVolume.Equal(newLimitVolume))
 
 	// update coin not from creator
-	tscoin.UpdateCoin(addr2, symbol, newLimitVolume, "", false)
+	tscoin.UpdateCoin(addr2, denom, newLimitVolume, "", false)
 
 	// update not exist coin
 	tscoin.UpdateCoin(addr1, "notExistCoin", newLimitVolume, "", false)
 
 	// update with less limit volume
-	lessLimitVolume := newLimitVolume.Sub(helpers.EtherToWei(sdk.NewInt(10000)))
-	tscoin.UpdateCoin(addr1, symbol, lessLimitVolume, "", false)
+	lessLimitVolume := newLimitVolume.Sub(helpers.EtherToWei(sdkmath.NewInt(10000)))
+	tscoin.UpdateCoin(addr1, denom, lessLimitVolume, "", false)
 }
 
 func TestSendCoinHandler(t *testing.T) {
@@ -167,23 +172,23 @@ func TestMultiSendCoinHandler(t *testing.T) {
 	var (
 		coin1 = validCoin(baseDenom, 100)
 
-		send1 = types.Send{
-			Coin:     coin1,
-			Receiver: addr2.String(),
+		send1 = types.MultiSendEntry{
+			Recipient: addr2.String(),
+			Coin:      coin1,
 		}
-		send2 = types.Send{
-			Coin:     coin1,
-			Receiver: addr3.String(),
+		send2 = types.MultiSendEntry{
+			Recipient: addr3.String(),
+			Coin:      coin1,
 		}
-		invalidSend1 = types.Send{
-			Coin:     invalidCoin(),
-			Receiver: addr4.String(),
+		invalidSend1 = types.MultiSendEntry{
+			Recipient: addr4.String(),
+			Coin:      invalidCoin(),
 		}
 	)
 
-	tscoin.MultiSendCoin(addr1, []types.Send{send1, send2}, true)
-	tscoin.MultiSendCoin(addr1, []types.Send{invalidSend1}, false)
-	tscoin.MultiSendCoin(emptyBalanceAddr, []types.Send{send1, send2}, false)
+	tscoin.MultiSendCoin(addr1, []types.MultiSendEntry{send1, send2}, true)
+	tscoin.MultiSendCoin(addr1, []types.MultiSendEntry{invalidSend1}, false)
+	tscoin.MultiSendCoin(emptyBalanceAddr, []types.MultiSendEntry{send1, send2}, false)
 }
 
 func TestBuyHandler(t *testing.T) {
@@ -200,35 +205,35 @@ func TestBuyHandler(t *testing.T) {
 
 	var (
 		coinToBuy     = validCoin(baseDenom, 10)
-		maxCoinToSell = validCoin(symbol, 10000)
+		maxCoinToSell = validCoin(denom, 10000)
 
-		coinToBuy2     = validCoin(symbol, 100)
+		coinToBuy2     = validCoin(denom, 100)
 		maxCoinToSell2 = validCoin(baseDenom, 10)
 
 		secondTestCoin = "buycointest"
 	)
 
-	_ = tscoin.CreateCoin(addr1, title, symbol, crr, helpers.EtherToWei(sdk.NewInt(10000000)), initReserve, limitVolume, "", true)
-	_ = tscoin.CreateCoin(addr1, "Its second test coin", secondTestCoin, crr, helpers.EtherToWei(sdk.NewInt(10000)), helpers.EtherToWei(sdk.NewInt(10000000)), limitVolume, "", true)
+	_ = tscoin.CreateCoin(addr1, title, denom, crr, helpers.EtherToWei(sdkmath.NewInt(10000000)), initReserve, limitVolume, "", true)
+	_ = tscoin.CreateCoin(addr1, "Its second test coin", secondTestCoin, crr, helpers.EtherToWei(sdkmath.NewInt(10000)), helpers.EtherToWei(sdkmath.NewInt(10000000)), limitVolume, "", true)
 
 	// valid requests
 	tscoin.BuyCoin(addr1, coinToBuy, maxCoinToSell, true)
 	tscoin.BuyCoin(addr1, coinToBuy2, maxCoinToSell2, true)
 
 	// overflow limit volume
-	tscoin.BuyCoin(addr1, validCoin(symbol, 10000000000000000), validCoin(baseDenom, 10), false)
+	tscoin.BuyCoin(addr1, validCoin(denom, 10000000000000000), validCoin(baseDenom, 10), false)
 	// coin to buy does not exist
 	tscoin.BuyCoin(addr1, invalidCoin(), maxCoinToSell, false)
 	// coin to sell does not exist
 	tscoin.BuyCoin(addr1, coinToBuy, invalidCoin(), false)
 	// base coin reserve in custom coin less than amount to buy
-	tscoin.BuyCoin(addr1, validCoin(baseDenom, 100000), validCoin(symbol, 100000000), false)
+	tscoin.BuyCoin(addr1, validCoin(baseDenom, 100000), validCoin(denom, 100000000), false)
 	// custom coin reserve is less than amount to buy
-	tscoin.BuyCoin(addr1, validCoin(secondTestCoin, 1000000000000), validCoin(symbol, 100000000), false)
+	tscoin.BuyCoin(addr1, validCoin(secondTestCoin, 1000000000000), validCoin(denom, 100000000), false)
 	// maxAmountToSell is less than real amount to sell
-	tscoin.BuyCoin(addr1, validCoin(baseDenom, 1000), validCoin(symbol, 100), false)
+	tscoin.BuyCoin(addr1, validCoin(baseDenom, 1000), validCoin(denom, 100), false)
 	// reserve after sell is less than minReserve for coin
-	tscoin.BuyCoin(addr1, validCoin(baseDenom, 9001), validCoin(symbol, 1000000000), false)
+	tscoin.BuyCoin(addr1, validCoin(baseDenom, 9001), validCoin(denom, 1000000000), false)
 	// addr dont have tokens for sell
 	tscoin.BuyCoin(addr2, coinToBuy, maxCoinToSell, false)
 }
@@ -237,7 +242,7 @@ func TestSellHandler(t *testing.T) {
 	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 2, sdk.Coins{
 		{
 			Denom:  baseDenom,
-			Amount: helpers.EtherToWei(sdk.NewInt(100000000000000000)),
+			Amount: helpers.EtherToWei(sdkmath.NewInt(100000000000000000)),
 		},
 	})
 
@@ -249,23 +254,23 @@ func TestSellHandler(t *testing.T) {
 		secondCustomCoin = "secondcustomcoin"
 	)
 
-	_ = tscoin.CreateCoin(addr1, title, symbol, crr, helpers.EtherToWei(sdk.NewInt(10000000)), initReserve, limitVolume, "", true)
-	_ = tscoin.CreateCoin(addr1, "Its second custom coin", secondCustomCoin, crr, helpers.EtherToWei(sdk.NewInt(10000000)), helpers.EtherToWei(sdk.NewInt(5000)), helpers.EtherToWei(sdk.NewInt(100000000000)), "", true)
+	_ = tscoin.CreateCoin(addr1, title, denom, crr, helpers.EtherToWei(sdkmath.NewInt(10000000)), initReserve, limitVolume, "", true)
+	_ = tscoin.CreateCoin(addr1, "Its second custom coin", secondCustomCoin, crr, helpers.EtherToWei(sdkmath.NewInt(10000000)), helpers.EtherToWei(sdkmath.NewInt(5000)), helpers.EtherToWei(sdkmath.NewInt(100000000000)), "", true)
 
-	tscoin.SellCoin(addr1, validCoin(baseDenom, 100), validCoin(symbol, 10000), true)
-	tscoin.SellCoin(addr1, validCoin(secondCustomCoin, 100000), validCoin(symbol, 1000), true)
-	tscoin.SellCoin(addr1, validCoin(symbol, 100000), validCoin(symbol, 1000), true)
+	tscoin.SellCoin(addr1, validCoin(baseDenom, 100), validCoin(denom, 10000), true)
+	tscoin.SellCoin(addr1, validCoin(secondCustomCoin, 100000), validCoin(denom, 1000), true)
+	tscoin.SellCoin(addr1, validCoin(denom, 100000), validCoin(denom, 1000), true)
 
 	// coin to buy does not exist
 	tscoin.SellCoin(addr1, invalidCoin(), validCoin(baseDenom, 10000), false)
 	// coin to sell does not exist
 	tscoin.SellCoin(addr1, validCoin(baseDenom, 10000), invalidCoin(), false)
 	// addr not have tokenst to sell
-	tscoin.SellCoin(addr2, validCoin(baseDenom, 100), validCoin(symbol, 100000), false)
+	tscoin.SellCoin(addr2, validCoin(baseDenom, 100), validCoin(denom, 100000), false)
 	// custom coin reserve less than minCoinReserve
-	tscoin.SellCoin(addr1, validCoin(symbol, 10000000000), validCoin(baseDenom, 10000), false)
+	tscoin.SellCoin(addr1, validCoin(denom, 10000000000), validCoin(baseDenom, 10000), false)
 	// custom coin to sell reserve is less than minCoinReserve
-	tscoin.SellCoin(addr1, validCoin(symbol, 10000000), validCoin(baseDenom, 9001), false)
+	tscoin.SellCoin(addr1, validCoin(denom, 10000000), validCoin(baseDenom, 9001), false)
 	// custom coin to buy supply less than this limit volume
 	tscoin.SellCoin(addr1, validCoin(baseDenom, 10000000000000000), validCoin(secondCustomCoin, 100000000000), false)
 }
@@ -274,22 +279,22 @@ func TestSellAllHandler(t *testing.T) {
 	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 1, sdk.Coins{
 		{
 			Denom:  baseDenom,
-			Amount: helpers.EtherToWei(sdk.NewInt(10000000000000)),
+			Amount: helpers.EtherToWei(sdkmath.NewInt(10000000000000)),
 		},
 	})
 
 	tscoin := testcoin.NewHelper(t, ctx, dsc.CoinKeeper)
 	addr1 := addrs[0]
 
-	_ = tscoin.CreateCoin(addr1, title, symbol, crr, helpers.EtherToWei(sdk.NewInt(10000000)), initReserve, limitVolume, "", true)
+	_ = tscoin.CreateCoin(addr1, title, denom, crr, helpers.EtherToWei(sdkmath.NewInt(10000000)), initReserve, limitVolume, "", true)
 
-	tscoin.SellAllCoin(addr1, baseDenom, validCoin(symbol, 5000), true)
+	tscoin.SellAllCoin(addr1, baseDenom, validCoin(denom, 5000), true)
 }
 
 func TestBurnCoinHandler(t *testing.T) {
-	const customSymbol = "somecoin"
-	var customVolume = helpers.EtherToWei(sdk.NewInt(2000))
-	var customReserve = helpers.EtherToWei(sdk.NewInt(1000))
+	const customDenom = "somecoin"
+	var customVolume = helpers.EtherToWei(sdkmath.NewInt(2000))
+	var customReserve = helpers.EtherToWei(sdkmath.NewInt(1000))
 
 	dsc, ctx, addrs, _ := bootstrapHandlerTest(t, 2, sdk.Coins{
 		{
@@ -301,60 +306,60 @@ func TestBurnCoinHandler(t *testing.T) {
 	handler := coin.NewHandler(dsc.CoinKeeper)
 	_, err := handler(ctx, types.NewMsgCreateCoin(
 		addrs[0],
+		customDenom,
 		"somecoin",
-		customSymbol,
 		10,
-		customVolume.Mul(sdk.NewInt(10)),
+		customVolume.Mul(sdkmath.NewInt(10)),
 		customReserve,
-		customVolume.Mul(sdk.NewInt(100)),
+		customVolume.Mul(sdkmath.NewInt(100)),
 		"",
 	))
 	require.NoError(t, err, "create coin")
-	balance := dsc.BankKeeper.GetBalance(ctx, addrs[0], customSymbol)
-	require.True(t, balance.Amount.Equal(customVolume.Mul(sdk.NewInt(10))), "balance: %s", balance.String())
+	balance := dsc.BankKeeper.GetBalance(ctx, addrs[0], customDenom)
+	require.True(t, balance.Amount.Equal(customVolume.Mul(sdkmath.NewInt(10))), "balance: %s", balance.String())
 
 	_, err = handler(ctx, types.NewMsgBurnCoin(
 		addrs[0],
-		sdk.NewCoin(customSymbol, customVolume),
+		sdk.NewCoin(customDenom, customVolume),
 	))
 	require.NoError(t, err, "burn coin")
-	balance = dsc.BankKeeper.GetBalance(ctx, addrs[0], customSymbol)
-	require.True(t, balance.Amount.Equal(customVolume.Mul(sdk.NewInt(9))), "balance: %s", balance.String())
-	inf, err := dsc.CoinKeeper.GetCoin(ctx, customSymbol)
+	balance = dsc.BankKeeper.GetBalance(ctx, addrs[0], customDenom)
+	require.True(t, balance.Amount.Equal(customVolume.Mul(sdkmath.NewInt(9))), "balance: %s", balance.String())
+	inf, err := dsc.CoinKeeper.GetCoin(ctx, customDenom)
 	require.NoError(t, err, "coin info")
 	require.True(t, inf.Reserve.Equal(customReserve), "check reserve")
 
 	//try to burn to break limits
 	_, err = handler(ctx, types.NewMsgBurnCoin(
 		addrs[0],
-		sdk.NewCoin(customSymbol, customVolume.Mul(sdk.NewInt(9))),
+		sdk.NewCoin(customDenom, customVolume.Mul(sdkmath.NewInt(9))),
 	))
 	require.Error(t, err, "overburn coin")
 	// balance must be same
-	balance = dsc.BankKeeper.GetBalance(ctx, addrs[0], customSymbol)
-	require.True(t, balance.Amount.Equal(customVolume.Mul(sdk.NewInt(9))), "balance: %s", balance.String())
+	balance = dsc.BankKeeper.GetBalance(ctx, addrs[0], customDenom)
+	require.True(t, balance.Amount.Equal(customVolume.Mul(sdkmath.NewInt(9))), "balance: %s", balance.String())
 
 	// burn to minimal volume
-	balance = dsc.BankKeeper.GetBalance(ctx, addrs[0], customSymbol)
+	balance = dsc.BankKeeper.GetBalance(ctx, addrs[0], customDenom)
 	volumeToBurn := balance.Amount.Sub(types.MinCoinSupply)
 	_, err = handler(ctx, types.NewMsgBurnCoin(
 		addrs[0],
-		sdk.NewCoin(customSymbol, volumeToBurn),
+		sdk.NewCoin(customDenom, volumeToBurn),
 	))
 	require.NoError(t, err, "burn coin to minimum")
-	inf, err = dsc.CoinKeeper.GetCoin(ctx, customSymbol)
+	inf, err = dsc.CoinKeeper.GetCoin(ctx, customDenom)
 	require.NoError(t, err, "coin info")
 
 	// this call check MinCoinSupply after burn
 	// If MinCoinSupply is too small, there will be panic
-	formulas.CalculatePurchaseAmount(inf.Volume, inf.Reserve, uint(inf.CRR), helpers.EtherToWei(sdk.NewInt(1)))
-	formulas.CalculatePurchaseAmount(inf.Volume, inf.Reserve, uint(inf.CRR), helpers.FinneyToWei(sdk.NewInt(1)))
+	formulas.CalculatePurchaseAmount(inf.Volume, inf.Reserve, uint(inf.CRR), helpers.EtherToWei(sdkmath.NewInt(1)))
+	formulas.CalculatePurchaseAmount(inf.Volume, inf.Reserve, uint(inf.CRR), helpers.FinneyToWei(sdkmath.NewInt(1)))
 
 	////////
 	// check base coin burning
 	_, err = handler(ctx, types.NewMsgBurnCoin(
 		addrs[1],
-		sdk.NewCoin(baseDenom, helpers.EtherToWei(sdk.NewInt(1))),
+		sdk.NewCoin(baseDenom, helpers.EtherToWei(sdkmath.NewInt(1))),
 	))
 	require.NoError(t, err, "burn base coin")
 }
@@ -373,7 +378,7 @@ func TestRedeemHandler(t *testing.T) {
 
 	check1, priv, proof := createNewCheck(t, ctx.ChainID(), "1000del", "9", "", 10)
 	addCoinToAddr(t, ctx, dsc, sdk.AccAddress(priv.PubKey().Address()), sdk.Coins{validCoin(baseDenom, 1000000000000)})
-	customCoin := tscoin.CreateCoin(addr1, title, symbol, crr, helpers.EtherToWei(sdk.NewInt(10000000)), initReserve, limitVolume, "", true)
+	customCoin := tscoin.CreateCoin(addr1, title, denom, crr, helpers.EtherToWei(sdkmath.NewInt(10000000)), initReserve, limitVolume, "", true)
 
 	tscoin.CheckRedeem(sdk.AccAddress(priv.PubKey().Address()), checkToRlpString(t, check1), proof, true)
 
@@ -385,24 +390,22 @@ func TestRedeemHandler(t *testing.T) {
 	tscoin.CheckRedeem(sdk.AccAddress(priv.PubKey().Address()), checkToRlpString(t, check1), "invalidProof-%^", false)
 	// invalid sender check
 	invalidCheck1 := check1
-	invR := sdk.NewInt(7)
-	invalidCheck1.R = &invR
+	invR := sdkmath.NewInt(7)
+	invalidCheck1.R = invR
 	tscoin.CheckRedeem(sdk.AccAddress(priv.PubKey().Address()), checkToRlpString(t, invalidCheck1), proof, false)
 	// invalid coin Denom
 	invalidCheck1.R = check1.R
-	invalidCheck1.Coin = "invalidCoin"
+	invalidCheck1.Coin = sdk.NewCoin("invalidCoin", sdkmath.NewInt(0))
 	tscoin.CheckRedeem(sdk.AccAddress(priv.PubKey().Address()), checkToRlpString(t, invalidCheck1), proof, false)
 	// addr balance less than checkCoinAmount
-	invalidCheck1.Coin = baseDenom
-	invalidCheck1.Amount = helpers.EtherToWei(sdk.NewInt(10000000000000))
+	invalidCheck1.Coin = sdk.NewCoin(baseDenom, helpers.EtherToWei(sdkmath.NewInt(10000000000000)))
 	tscoin.CheckRedeem(sdk.AccAddress(priv.PubKey().Address()), checkToRlpString(t, invalidCheck1), proof, false)
 	// addr custom coin balance less than checkCreateFeeAmount
-	invalidCheck1.Coin = customCoin.Symbol
-	invalidCheck1.Amount = helpers.EtherToWei(sdk.NewInt(100))
+	invalidCheck1.Coin = sdk.NewCoin(customCoin.Denom, helpers.EtherToWei(sdkmath.NewInt(100)))
 	tscoin.CheckRedeem(sdk.AccAddress(priv.PubKey().Address()), checkToRlpString(t, invalidCheck1), proof, false)
 	// if custom coin enough, then baseCoin balance less than FeeAmount
-	check2, priv2, proof2 := createNewCheck(t, ctx.ChainID(), fmt.Sprintf("1000%s", customCoin.Symbol), "9", "", 10)
-	addCoinToAddr(t, ctx, dsc, sdk.AccAddress(priv2.PubKey().Address()), sdk.Coins{validCoin(customCoin.Symbol, 1000000000000)})
+	check2, priv2, proof2 := createNewCheck(t, ctx.ChainID(), fmt.Sprintf("1000%s", customCoin.Denom), "9", "", 10)
+	addCoinToAddr(t, ctx, dsc, sdk.AccAddress(priv2.PubKey().Address()), sdk.Coins{validCoin(customCoin.Denom, 1000000000000)})
 	tscoin.CheckRedeem(sdk.AccAddress(priv2.PubKey().Address()), checkToRlpString(t, check2), proof2, false)
 	// addr base coin check amount enough, then balance less than checkAmount+feeAmount
 	check3, priv3, proof3 := createNewCheck(t, ctx.ChainID(), fmt.Sprintf("1000000000000000000000000000000%s", baseDenom), "9", "", 10)
@@ -428,10 +431,10 @@ func TestRedeemHandler(t *testing.T) {
 // helper functions
 ///////////////////
 
-func createNewCheck(t *testing.T, chainID, coinAmountStr, nonceStr, password string, dueBlock uint64) (types.Check, ethsecp256k1.PrivKey, string) {
+func createNewCheck(t *testing.T, chainID, coinStr, nonceStr, password string, dueBlock uint64) (types.Check, ethsecp256k1.PrivKey, string) {
 	var (
-		coinAmount, _ = sdk.ParseCoinNormalized(coinAmountStr)
-		nonce, _      = sdk.NewIntFromString(nonceStr)
+		coin, _  = sdk.ParseCoinNormalized(coinStr)
+		nonce, _ = sdk.NewIntFromString(nonceStr)
 	)
 
 	priv, _ := ethsecp256k1.GenerateKey()
@@ -442,8 +445,7 @@ func createNewCheck(t *testing.T, chainID, coinAmountStr, nonceStr, password str
 
 	check := &types.Check{
 		ChainID:  chainID,
-		Coin:     coinAmount.Denom,
-		Amount:   coinAmount.Amount,
+		Coin:     coin,
 		Nonce:    nonce.BigInt().Bytes(),
 		DueBlock: dueBlock,
 	}

@@ -3,9 +3,11 @@ package events
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	proto "github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/require"
+
+	proto "github.com/gogo/protobuf/proto"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	multisigTypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 )

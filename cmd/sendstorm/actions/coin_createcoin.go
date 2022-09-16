@@ -100,8 +100,8 @@ func (ac *CreateCoinAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *s
 
 	msg := dscTx.NewMsgCreateCoin(
 		sender,
-		ac.title,
 		ac.symbol,
+		ac.title,
 		ac.crr,
 		ac.initVolume,
 		ac.initReserve,

@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"sync"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	dscWallet "bitbucket.org/decimalteam/go-smart-node/sdk/wallet"
 	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type StormAccount struct {

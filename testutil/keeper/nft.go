@@ -1,8 +1,9 @@
 package keeper
 
 import (
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"testing"
+
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 

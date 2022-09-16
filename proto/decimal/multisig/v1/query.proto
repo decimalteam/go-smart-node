@@ -33,10 +33,6 @@ service Query {
   }
 }
 
-////////////////////////////////////////////////////////////////
-// QueryWallets
-////////////////////////////////////////////////////////////////
-
 message QueryWalletsRequest {
   string owner = 1;
   cosmos.base.query.v1beta1.PageRequest pagination = 2;
@@ -47,10 +43,6 @@ message QueryWalletsResponse {
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
-////////////////////////////////////////////////////////////////
-// QueryWallet
-////////////////////////////////////////////////////////////////
-
 message QueryWalletRequest {
   string address = 1;
 }
@@ -58,10 +50,6 @@ message QueryWalletRequest {
 message QueryWalletResponse {
   Wallet wallet = 1 [ (gogoproto.nullable) = false ];
 }
-
-////////////////////////////////////////////////////////////////
-// QueryTransactions
-////////////////////////////////////////////////////////////////
 
 message QueryTransactionsRequest {
   string address = 1;
@@ -72,10 +60,6 @@ message QueryTransactionsResponse {
   repeated Transaction transactions = 1 [ (gogoproto.nullable) = false ];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
-
-////////////////////////////////////////////////////////////////
-// QueryTransaction
-////////////////////////////////////////////////////////////////
 
 message QueryTransactionRequest {
   string id = 1;

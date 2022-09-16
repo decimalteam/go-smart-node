@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"google.golang.org/grpc"
 
-	config "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	tmservice "github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 )
@@ -101,8 +101,8 @@ func (api *API) grpcGetParameters() error {
 // Init global cosmos sdk config
 // Do not seal config or rework to use sealed config
 func initConfig() {
-	cfg := sdk.GetConfig()
-	cfg.SetBech32PrefixForAccount(config.Bech32PrefixAccAddr, config.Bech32PrefixAccPub)
-	cfg.SetBech32PrefixForValidator(config.Bech32PrefixValAddr, config.Bech32PrefixValPub)
-	cfg.SetBech32PrefixForConsensusNode(config.Bech32PrefixConsAddr, config.Bech32PrefixConsPub)
+	config := sdk.GetConfig()
+	config.SetBech32PrefixForAccount(cmdcfg.Bech32PrefixAccAddr, cmdcfg.Bech32PrefixAccPub)
+	config.SetBech32PrefixForValidator(cmdcfg.Bech32PrefixValAddr, cmdcfg.Bech32PrefixValPub)
+	config.SetBech32PrefixForConsensusNode(cmdcfg.Bech32PrefixConsAddr, cmdcfg.Bech32PrefixConsPub)
 }

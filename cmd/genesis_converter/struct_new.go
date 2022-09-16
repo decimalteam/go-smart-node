@@ -4,10 +4,12 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
+
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
 
 type GenesisNew struct {
@@ -100,7 +102,7 @@ func AccountO2N(acc AccountOld) (AccountNew, error) {
 	res.BaseAccount.PublicKey.Key = base64.RawStdEncoding.EncodeToString(pubkeyBytes)
 	// address
 	pubkey := ethsecp256k1.PubKey{Key: pubkeyBytes}
-	res.BaseAccount.Address, err = bech32.ConvertAndEncode(config.Bech32PrefixAccAddr, pubkey.Address())
+	res.BaseAccount.Address, err = bech32.ConvertAndEncode(cmdcfg.Bech32PrefixAccAddr, pubkey.Address())
 	if err != nil {
 		return AccountNew{}, err
 	}
@@ -177,9 +179,9 @@ func FullCoinO2N(coin FullCoinOld, addrTable *AddressTable) FullCoinNew {
 	}
 }
 
-///////////////////////////
+// /////////////////////////
 // Legacy
-///////////////////////////
+// /////////////////////////
 type LegacyRecordNew struct {
 	Address string      `json:"address"`
 	Coins   sdk.Coins   `json:"coins"`

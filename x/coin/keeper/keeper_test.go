@@ -5,13 +5,16 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/testcoin"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/require"
 )
 
 func bootstrapKeeperTest(t *testing.T, numAddrs int, accCoins sdk.Coins) (*app.DSC, sdk.Context, []sdk.AccAddress, []sdk.ValAddress) {
@@ -26,7 +29,7 @@ func bootstrapKeeperTest(t *testing.T, numAddrs int, accCoins sdk.Coins) (*app.D
 
 var (
 	baseDenom  = "del"
-	baseAmount = helpers.EtherToWei(sdk.NewInt(1000000000000))
+	baseAmount = helpers.EtherToWei(sdkmath.NewInt(1000000000000))
 )
 
 func TestKeeper_Coin(t *testing.T) {
@@ -37,14 +40,14 @@ func TestKeeper_Coin(t *testing.T) {
 		},
 	})
 
-	symbol := "testcoin"
+	denom := "testcoin"
 	newCoin := types.Coin{
+		Denom:       denom,
 		Title:       "test keeper coin functions coin",
-		Symbol:      symbol,
 		CRR:         50,
-		Reserve:     helpers.EtherToWei(sdk.NewInt(5000)),
-		Volume:      helpers.EtherToWei(sdk.NewInt(10000)),
-		LimitVolume: helpers.EtherToWei(sdk.NewInt(1000000000)),
+		Reserve:     helpers.EtherToWei(sdkmath.NewInt(5000)),
+		Volume:      helpers.EtherToWei(sdkmath.NewInt(10000)),
+		LimitVolume: helpers.EtherToWei(sdkmath.NewInt(1000000000)),
 		Creator:     addrs[0].String(),
 		Identity:    "",
 	}
@@ -53,18 +56,18 @@ func TestKeeper_Coin(t *testing.T) {
 	dsc.CoinKeeper.SetCoin(ctx, newCoin)
 
 	// check get exist coin
-	getCoin, err := dsc.CoinKeeper.GetCoin(ctx, symbol)
+	getCoin, err := dsc.CoinKeeper.GetCoin(ctx, denom)
 	require.NoError(t, err)
 	require.True(t, getCoin.Equal(newCoin))
 	// check get not exist coin
-	_, err = dsc.CoinKeeper.GetCoin(ctx, "not exist symbol")
+	_, err = dsc.CoinKeeper.GetCoin(ctx, "not exist coin")
 	require.Error(t, err)
 	// check get coins
 	coins := dsc.CoinKeeper.GetCoins(ctx)
 	require.Equal(t, 2, len(coins))
 
-	// edit coin
-	dsc.CoinKeeper.EditCoin(ctx, getCoin, helpers.EtherToWei(sdk.NewInt(1000000001)), helpers.EtherToWei(sdk.NewInt(10002)))
+	// update coin volume and reserve
+	dsc.CoinKeeper.UpdateCoinVR(ctx, getCoin.Denom, helpers.EtherToWei(sdkmath.NewInt(10002)), helpers.EtherToWei(sdkmath.NewInt(1000000001)))
 }
 
 func TestKeeper_Check(t *testing.T) {
@@ -113,7 +116,7 @@ func TestKeeper_Params(t *testing.T) {
 
 func TestKeeper_Helpers(t *testing.T) {
 	custCoinDenom := "custcoin"
-	//custCoinAmount := helpers.EtherToWei(sdk.NewInt(10000))
+	//custCoinAmount := helpers.EtherToWei(sdkmath.NewInt(10000))
 
 	dsc, ctx, addrs, _ := bootstrapKeeperTest(t, 1, sdk.Coins{
 		{
@@ -123,12 +126,12 @@ func TestKeeper_Helpers(t *testing.T) {
 	})
 
 	newCoin := types.Coin{
+		Denom:       custCoinDenom,
 		Title:       "test keeper coin functions coin",
-		Symbol:      custCoinDenom,
 		CRR:         50,
-		Reserve:     helpers.EtherToWei(sdk.NewInt(5000)),
-		Volume:      helpers.EtherToWei(sdk.NewInt(10000)),
-		LimitVolume: helpers.EtherToWei(sdk.NewInt(1000000000)),
+		Reserve:     helpers.EtherToWei(sdkmath.NewInt(5000)),
+		Volume:      helpers.EtherToWei(sdkmath.NewInt(10000)),
+		LimitVolume: helpers.EtherToWei(sdkmath.NewInt(1000000000)),
 		Creator:     addrs[0].String(),
 		Identity:    "",
 	}
@@ -144,64 +147,45 @@ func TestKeeper_Helpers(t *testing.T) {
 
 	// commission calculate ----
 	// fee with base coin
-	_, _, err := dsc.CoinKeeper.GetCommission(ctx, helpers.EtherToWei(sdk.NewInt(10)))
+	_, _, err := dsc.CoinKeeper.GetCommission(ctx, helpers.EtherToWei(sdkmath.NewInt(10)))
 	require.NoError(t, err)
 
 	// fee with custom coin
 	ctxWithFee := ctx
-	ctxWithFee = ctx.WithContext(context.WithValue(ctx.Context(), "fee", sdk.Coins{
+	ctxWithFee = ctx.WithContext(context.WithValue(ctx.Context(), types.ContextFeeKey{}, sdk.Coins{
 		{
 			Denom:  custCoinDenom,
-			Amount: helpers.EtherToWei(sdk.NewInt(100)),
+			Amount: helpers.EtherToWei(sdkmath.NewInt(100)),
 		},
 	}))
 	require.NotNil(t, ctxWithFee.Context())
 
-	_, _, err = dsc.CoinKeeper.GetCommission(ctxWithFee, helpers.EtherToWei(sdk.NewInt(10)))
+	_, _, err = dsc.CoinKeeper.GetCommission(ctxWithFee, helpers.EtherToWei(sdkmath.NewInt(10)))
 	require.NoError(t, err)
 
 	// fee custom coin not exist
 	ctxWithNotExistCoinFee := ctx
-	ctxWithNotExistCoinFee = ctx.WithContext(context.WithValue(ctx.Context(), "fee", sdk.Coins{
+	ctxWithNotExistCoinFee = ctx.WithContext(context.WithValue(ctx.Context(), types.ContextFeeKey{}, sdk.Coins{
 		{
 			Denom:  "notexistcoin",
-			Amount: helpers.EtherToWei(sdk.NewInt(100)),
+			Amount: helpers.EtherToWei(sdkmath.NewInt(100)),
 		},
 	}))
 	require.NotNil(t, ctxWithNotExistCoinFee.Context())
 
-	_, _, err = dsc.CoinKeeper.GetCommission(ctxWithNotExistCoinFee, helpers.EtherToWei(sdk.NewInt(10)))
+	_, _, err = dsc.CoinKeeper.GetCommission(ctxWithNotExistCoinFee, helpers.EtherToWei(sdkmath.NewInt(10)))
 	require.Error(t, err)
 
 	// fee custom coin reserve less than need fee base coin amount
 	ctxWithLessReserveFee := ctx
-	ctxWithLessReserveFee = ctx.WithContext(context.WithValue(ctx.Context(), "fee", sdk.Coins{
+	ctxWithLessReserveFee = ctx.WithContext(context.WithValue(ctx.Context(), types.ContextFeeKey{}, sdk.Coins{
 		{
 			Denom:  custCoinDenom,
-			Amount: helpers.EtherToWei(sdk.NewInt(1000)),
+			Amount: helpers.EtherToWei(sdkmath.NewInt(1000)),
 		},
 	}))
 	require.NotNil(t, ctxWithLessReserveFee.Context())
 
-	_, _, err = dsc.CoinKeeper.GetCommission(ctxWithLessReserveFee, helpers.EtherToWei(sdk.NewInt(1000000000)))
+	_, _, err = dsc.CoinKeeper.GetCommission(ctxWithLessReserveFee, helpers.EtherToWei(sdkmath.NewInt(1000000000)))
 	require.Error(t, err)
-}
-
-func TestKeeper_CoinCache(t *testing.T) {
-	dsc, ctx, _, _ := bootstrapKeeperTest(t, 1, sdk.Coins{
-		{
-			Denom:  baseDenom,
-			Amount: baseAmount,
-		},
-	})
-
-	// set coin cache
-	dsc.CoinKeeper.SetCachedCoin(ctx, baseDenom)
-	// get coin cache
-	ok := dsc.CoinKeeper.GetCoinCache(baseDenom)
-	require.True(t, ok)
-	// clear coin cache
-	dsc.CoinKeeper.ClearCoinCache(ctx)
-	ok = dsc.CoinKeeper.GetCoinCache(baseDenom)
-	require.False(t, ok)
 }

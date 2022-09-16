@@ -3,10 +3,12 @@ package events
 import (
 	"encoding/json"
 
+	proto "github.com/gogo/protobuf/proto"
+
+	abci "github.com/tendermint/tendermint/abci/types"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	proto "github.com/gogo/protobuf/proto"
-	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 // THIS IS WORKAROUND FORK OF Cosmos SDK TypedEventToEvent

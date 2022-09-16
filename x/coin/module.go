@@ -15,7 +15,6 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/client/cli"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
@@ -101,7 +100,7 @@ type AppModule struct {
 	AppModuleBasic
 
 	keeper        keeper.Keeper
-	accountKeeper authkeeper.AccountKeeper
+	accountKeeper types.AccountKeeper
 	bankKeeper    types.BankKeeper
 }
 
@@ -109,7 +108,7 @@ type AppModule struct {
 func NewAppModule(
 	cdc codec.Codec,
 	keeper keeper.Keeper,
-	accountKeeper authkeeper.AccountKeeper,
+	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 ) AppModule {
 	return AppModule{
@@ -125,13 +124,9 @@ func (AppModule) Name() string {
 	return types.ModuleName
 }
 
-func (am AppModule) NewHandler() sdk.Handler {
-	return NewHandler(&am.keeper)
-}
-
 // Route returns the module's message routing key.
 func (am AppModule) Route() sdk.Route {
-	return sdk.NewRoute(types.RouterKey, am.NewHandler())
+	return sdk.NewRoute(types.RouterKey, NewHandler(&am.keeper))
 }
 
 // QuerierRoute returns the module's query routing key.
@@ -159,7 +154,7 @@ func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	var gs types.GenesisState
 	cdc.MustUnmarshalJSON(data, &gs)
-	InitGenesis(ctx, am.keeper, gs)
+	InitGenesis(ctx, am.keeper, &gs)
 	return []abci.ValidatorUpdate{}
 }
 

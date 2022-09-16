@@ -1,33 +1,33 @@
 package cli
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
 	"strconv"
-	"strings"
 
+	"github.com/spf13/cobra"
+	"golang.org/x/crypto/sha3"
+
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/rlp"
+
+	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/btcutil/base58"
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
-	ethereumCrypto "github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/rlp"
-	"golang.org/x/crypto/sha3"
-
-	"github.com/spf13/cobra"
-
-	"github.com/cosmos/cosmos-sdk/client"
 
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 
 // GetTxCmd returns the transaction commands for the module.
 func GetTxCmd() *cobra.Command {
-	coinCmd := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      fmt.Sprintf("%s transactions subcommands", types.ModuleName),
 		DisableFlagParsing:         true,
@@ -35,29 +35,30 @@ func GetTxCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	coinCmd.AddCommand(
-		NewCreateCoinCmd(),
-		NewUpdateCoinCmd(),
-		NewBuyCoinCmd(),
-		NewSellCoinCmd(),
-		NewSendCoinCmd(),
-		NewMultiSendCoinCmd(),
-		NewSellAllCoinCmd(),
-		NewIssueCheckCmd(),
-		NewRedeemCheckCmd(),
+	cmd.AddCommand(
+		cmdCreateCoin(),
+		cmdUpdateCoin(),
+		cmdSendCoin(),
+		cmdMultiSendCoin(),
+		cmdBuyCoin(),
+		cmdSellCoin(),
+		cmdSellAllCoin(),
+		cmdBurnCoin(),
+		cmdIssueCheck(),
+		cmdRedeemCheck(),
 	)
 
-	return coinCmd
+	return cmd
 }
 
-func NewCreateCoinCmd() *cobra.Command {
+func cmdCreateCoin() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "create [title] [symbol] [crr] [initReserve] [initVolume] [limitVolume] [identity]",
+		Use:   "create [denom] [title] [crr] [initReserve] [initVolume] [limitVolume] [identity]",
 		Short: "Creates new coin",
 		Long: fmt.Sprintf(`Create custom coin. Reserve, volumes must be with all 0 (1 coin = 10^18)
 
 Example: 	
-$ %s tx %s create "title of coin" coin1 20 10000000000 200000000 10000000000000 "coin identity" --from mykey`,
+$ %s tx %s create coin1 "title of coin" 20 10000000000 200000000 10000000000000 "coin identity" --from mykey`,
 			config.AppBinName, types.ModuleName),
 		Args: cobra.ExactArgs(7),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -68,8 +69,8 @@ $ %s tx %s create "title of coin" coin1 20 10000000000 200000000 10000000000000 
 
 			var (
 				from           = clientCtx.GetFromAddress()
-				title          = args[0]
-				symbol         = args[1]
+				denom          = args[0]
+				title          = args[1]
 				initReserve, _ = sdk.NewIntFromString(args[3])
 				initVolume, _  = sdk.NewIntFromString(args[4])
 				limitVolume, _ = sdk.NewIntFromString(args[5])
@@ -81,12 +82,12 @@ $ %s tx %s create "title of coin" coin1 20 10000000000 200000000 10000000000000 
 				return errors.InvalidCRR
 			}
 
-			err = existCoinSymbol(clientCtx, symbol)
+			err = existCoinDenom(clientCtx, denom)
 			if err == nil {
 				return errors.CoinAlreadyExists
 			}
 
-			msg := types.NewMsgCreateCoin(from, title, symbol, crr, initVolume, initReserve, limitVolume, identity)
+			msg := types.NewMsgCreateCoin(from, denom, title, crr, initVolume, initReserve, limitVolume, identity)
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -99,9 +100,9 @@ $ %s tx %s create "title of coin" coin1 20 10000000000 200000000 10000000000000 
 	return cmd
 }
 
-func NewUpdateCoinCmd() *cobra.Command {
+func cmdUpdateCoin() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "update [symbol] [limitVolume] [identity]",
+		Use:   "update [denom] [limitVolume] [identity]",
 		Short: "Update custom coin",
 		Long: fmt.Sprintf(`Update your custom coin parameters: limit volume and identity.
 Limit volume must be with all 0 (1 coin = 10^18)
@@ -117,7 +118,7 @@ $ %s tx %s update coin1 10000000 "some identity" --from mykey`, config.AppBinNam
 
 			var (
 				from     = clientCtx.GetFromAddress()
-				symbol   = args[0]
+				denom    = args[0]
 				identity = args[2]
 			)
 
@@ -127,7 +128,7 @@ $ %s tx %s update coin1 10000000 "some identity" --from mykey`, config.AppBinNam
 			}
 
 			// Check if coin does not exist yet
-			resp, err := getCoin(clientCtx, symbol)
+			resp, err := getCoin(clientCtx, denom)
 			if err != nil {
 				return err
 			}
@@ -136,7 +137,7 @@ $ %s tx %s update coin1 10000000 "some identity" --from mykey`, config.AppBinNam
 				return errors.UpdateOnlyForCreator
 			}
 
-			msg := types.NewMsgUpdateCoin(from, symbol, limitVolume, identity)
+			msg := types.NewMsgUpdateCoin(from, denom, limitVolume, identity)
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -149,7 +150,133 @@ $ %s tx %s update coin1 10000000 "some identity" --from mykey`, config.AppBinNam
 	return cmd
 }
 
-func NewBuyCoinCmd() *cobra.Command {
+func cmdSendCoin() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "send [recipient] [coinAmount] ",
+		Short: "Send coin",
+		Long: fmt.Sprintf(`Send coin from one account to other.
+Coin amount must be with all 0 (1 coin = 10^18)
+
+Example: 	
+$ %s tx %s send dx1hs2wdrm87c92rzhq0vgmgrxr6u57xpr2lcygc2 1000del --from mykey`, config.AppBinName, types.ModuleName),
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			var (
+				from       = clientCtx.GetFromAddress()
+				addressStr = args[0]
+				coinAmount = args[1]
+			)
+
+			coins, err := parseCoin(clientCtx, coinAmount)
+			if err != nil {
+				return err
+			}
+
+			address, err := sdk.AccAddressFromBech32(addressStr)
+			if err != nil {
+				return err
+			}
+
+			err = checkBalance(clientCtx, from, coins.Amount, coins.Denom)
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgSendCoin(from, address, coins)
+
+			// broadcast tx
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+
+	return cmd
+}
+
+func cmdMultiSendCoin() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "multisend [recipient1] [coinToSend1] [recipient2] [coinToSend2]...",
+		Short: "Multisend coin",
+		Long: fmt.Sprintf(`Send coins from one account to others accounts
+Coin amount must be with all 0 (1 coin = 10^18)
+
+Example: 	
+$ %s tx %s multisend dx1a..a 1000del dx1b..b 1000tony --from mykey
+`, config.AppBinName, types.ModuleName),
+		Args: cobra.MinimumNArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			var (
+				from    = clientCtx.GetFromAddress()
+				argsLen = len(args)
+				sends   = make([]types.MultiSendEntry, 0)
+				coins   = make([]sdk.Coin, 0)
+			)
+
+			if argsLen%2 != 0 {
+				return fmt.Errorf(
+					"the number of arguments must be even, put either %d or %d",
+					argsLen-1, argsLen+1,
+				)
+			}
+
+			for i := 0; i < argsLen; i += 2 {
+				recipient, err := sdk.AccAddressFromBech32(args[i])
+				if err != nil {
+					return err
+				}
+
+				coin, err := parseCoin(clientCtx, args[i+1])
+				if err != nil {
+					return err
+				}
+
+				send := types.MultiSendEntry{
+					Recipient: recipient.String(),
+					Coin:      coin,
+				}
+
+				sends = append(sends, send)
+				coins = append(coins, coin)
+			}
+
+			// Check if enough balance
+			balances, err := getBalances(clientCtx, from, &query.PageRequest{})
+			if err != nil {
+				return err
+			}
+
+			balance := balances.Balances
+			if !balance.IsAllGTE(coins) {
+				return errors.InsufficientFunds
+			}
+
+			msg := types.NewMsgMultiSendCoin(from, sends)
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+
+	return cmd
+}
+
+func cmdBuyCoin() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "buy [amountCoinToBuy] [maxAmountCoinToSell]",
 		Short: "Buy coin",
@@ -202,7 +329,7 @@ $ %s tx %s buy 10000000000tony 12000000del --from mykey`, config.AppBinName, typ
 	return cmd
 }
 
-func NewSellCoinCmd() *cobra.Command {
+func cmdSellCoin() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "sell [coinAmountToSell] [coinMinAmountToBuy]",
 		Short: "Sell coin",
@@ -254,142 +381,11 @@ $ %s tx %s sell 10000000000tony 12000000del --from mykey`, config.AppBinName, ty
 	return cmd
 }
 
-func NewSendCoinCmd() *cobra.Command {
+func cmdSellAllCoin() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "send [receiver] [coinAmount] ",
-		Short: "Send coin",
-		Long: fmt.Sprintf(`Send coin from one account to other.
-Coin amount must be with all 0 (1 coin = 10^18)
-
-Example: 	
-$ %s tx %s send dx1hs2wdrm87c92rzhq0vgmgrxr6u57xpr2lcygc2 1000del --from mykey`, config.AppBinName, types.ModuleName),
-		Args: cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			var (
-				from       = clientCtx.GetFromAddress()
-				addressStr = args[0]
-				coinAmount = args[1]
-			)
-
-			coins, err := parseCoin(clientCtx, coinAmount)
-			if err != nil {
-				return err
-			}
-
-			address, err := sdk.AccAddressFromBech32(addressStr)
-			if err != nil {
-				return err
-			}
-
-			err = checkBalance(clientCtx, from, coins.Amount, coins.Denom)
-			if err != nil {
-				return err
-			}
-
-			msg := types.NewMsgSendCoin(from, coins, address)
-
-			// broadcast tx
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
-		},
-	}
-
-	flags.AddTxFlagsToCmd(cmd)
-
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
-
-	return cmd
-}
-
-func NewMultiSendCoinCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "multisend [receiver1] [coinToSend1] [receiver2] [coinToSend2]...",
-		Short: "Multisend coin",
-		Long: fmt.Sprintf(`Send coins from one account to others accounts
-Coin amount must be with all 0 (1 coin = 10^18)
-
-Example: 	
-$ %s tx %s multisend dx1a..a 1000del dx1b..b 1000tony --from mykey
-`, config.AppBinName, types.ModuleName),
-		Args: cobra.MinimumNArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			var (
-				from    = clientCtx.GetFromAddress()
-				argsLen = len(args)
-				sends   = make([]types.Send, 0)
-				coins   = make([]sdk.Coin, 0)
-			)
-
-			if argsLen%2 != 0 {
-				return fmt.Errorf(
-					"the number of arguments must be even, put either %d or %d",
-					argsLen-1, argsLen+1,
-				)
-			}
-
-			for i := 0; i < argsLen; i += 2 {
-				receiver, err := sdk.AccAddressFromBech32(args[i])
-				if err != nil {
-					return err
-				}
-
-				coin, err := parseCoin(clientCtx, args[i+1])
-				if err != nil {
-					return err
-				}
-
-				send := types.Send{
-					Receiver: receiver.String(),
-					Coin:     coin,
-				}
-
-				sends = append(sends, send)
-				coins = append(coins, coin)
-			}
-
-			// Check if enough balance
-			balances, err := getBalances(clientCtx, from, &query.PageRequest{})
-			if err != nil {
-				return err
-			}
-
-			balance := balances.Balances
-			if !balance.IsAllGTE(coins) {
-				var wantFunds string
-				for _, send := range sends {
-					wantFunds += send.Coin.String() + ", "
-				}
-				wantFunds = strings.TrimSuffix(wantFunds, ", ")
-				return errors.InsufficientFunds
-			}
-
-			msg := types.NewMsgMultiSendCoin(from, sends)
-
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
-		},
-	}
-
-	flags.AddTxFlagsToCmd(cmd)
-
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
-
-	return cmd
-}
-
-func NewSellAllCoinCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "sell-all [coinToSellSymbol] [coinMinAmountToBuy]",
+		Use:   "sell-all [coinDenomToSell] [coinMinAmountToBuy]",
 		Short: "Sell all amount of coin",
-		Long: fmt.Sprintf(`Sell all amount  of coin with a specific symbol from your wallet to buy another coin
+		Long: fmt.Sprintf(`Sell all amount  of coin with a specific denom from your wallet to buy another coin
 Coin amount must be with all 0 (1 coin = 10^18)
 
 Example: 	
@@ -404,7 +400,7 @@ $ %s tx %s sell-all del 100000000tony --from mykey
 
 			var (
 				from               = clientCtx.GetFromAddress()
-				coinToSellSymbol   = args[0]
+				coinDenomToSell    = args[0]
 				coinMinAmountToBuy = args[1]
 			)
 
@@ -413,17 +409,17 @@ $ %s tx %s sell-all del 100000000tony --from mykey
 				return err
 			}
 
-			err = existCoinSymbol(clientCtx, coinToSellSymbol)
+			err = existCoinDenom(clientCtx, coinDenomToSell)
 			if err != nil {
 				return err
 			}
 
-			err = checkBalance(clientCtx, from, sdk.NewInt(1), coinToSellSymbol)
+			err = checkBalance(clientCtx, from, sdkmath.NewInt(1), coinDenomToSell)
 			if err != nil {
 				return err
 			}
 
-			msg := types.NewMsgSellAllCoin(from, coinToSellSymbol, minAmountToBuy)
+			msg := types.NewMsgSellAllCoin(from, coinDenomToSell, minAmountToBuy)
 			validationErr := msg.ValidateBasic()
 			if validationErr != nil {
 				return validationErr
@@ -440,7 +436,7 @@ $ %s tx %s sell-all del 100000000tony --from mykey
 	return cmd
 }
 
-func NewBurnCoinCmd() *cobra.Command {
+func cmdBurnCoin() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "burn [coinToBurn]",
 		Short: "Burn specified amount of coin",
@@ -486,7 +482,7 @@ $ %s tx %s burn 1000del --from mykey
 	return cmd
 }
 
-func NewIssueCheckCmd() *cobra.Command {
+func cmdIssueCheck() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "issue-check [coinAmount] [nonce] [dueBlock] [passphrase]",
 		Short: "Issue check",
@@ -494,7 +490,7 @@ func NewIssueCheckCmd() *cobra.Command {
 Coin amount must be with all 0 (1 coin = 10^18).
 'nonce' must be any positive integer.
 'dueBlock' - height (block number) of blockchain until check is valid.
-'passphrase' - secret key. Only receiver must known it.
+'passphrase' - secret key. Only recipient must known it.
 
 Example: 	
 $ %s tx %s issue-check 1000del 10 235 "some secret" --from mykey
@@ -508,9 +504,9 @@ $ %s tx %s issue-check 1000del 10 235 "some secret" --from mykey
 
 			// get args
 			var (
-				coinAmountStr = args[0]
-				nonce, _      = sdk.NewIntFromString(args[1])
-				passphrase    = args[3]
+				coinStr    = args[0]
+				nonce, _   = sdk.NewIntFromString(args[1])
+				passphrase = args[3]
 			)
 			dueBlock, err := strconv.ParseUint(args[2], 10, 64)
 			if err != nil {
@@ -518,27 +514,26 @@ $ %s tx %s issue-check 1000del 10 235 "some secret" --from mykey
 			}
 
 			// parse tokens and check if such a coin exists
-			coinAmount, err := parseCoin(clientCtx, coinAmountStr)
+			coin, err := parseCoin(clientCtx, coinStr)
 			if err != nil {
 				return err
 			}
 
 			// Prepare private key from passphrase
 			passphraseHash := sha256.Sum256([]byte(passphrase))
-			passphrasePrivKey, _ := ethereumCrypto.ToECDSA(passphraseHash[:])
+			passphrasePrivKey, _ := crypto.ToECDSA(passphraseHash[:])
 
 			// Prepare check without lock
 			check := &types.Check{
 				ChainID:  clientCtx.ChainID,
-				Coin:     coinAmount.Denom,
-				Amount:   coinAmount.Amount,
+				Coin:     coin,
 				Nonce:    nonce.BigInt().Bytes(),
 				DueBlock: dueBlock,
 			}
 
 			// Prepare check lock
 			checkHash := check.HashWithoutLock()
-			lock, _ := ethereumCrypto.Sign(checkHash[:], passphrasePrivKey)
+			lock, _ := crypto.Sign(checkHash[:], passphrasePrivKey)
 
 			// Fill check with prepared lock
 			check.Lock = lock
@@ -554,7 +549,7 @@ $ %s tx %s issue-check 1000del 10 235 "some secret" --from mykey
 
 			checkBytes, err := rlp.EncodeToBytes(check)
 			if err != nil {
-				return errors.UnableRPLEncodeToBytesCheck
+				return errors.UnableRLPEncodeToBytesCheck
 			}
 
 			return clientCtx.PrintString(base58.Encode(checkBytes))
@@ -568,7 +563,7 @@ $ %s tx %s issue-check 1000del 10 235 "some secret" --from mykey
 	return cmd
 }
 
-func NewRedeemCheckCmd() *cobra.Command {
+func cmdRedeemCheck() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "redeem-check [check] [passphrase]",
 		Short: "Redeem check",
@@ -603,7 +598,7 @@ $ %s tx %s redeem-check 3YEtqixL7ccFTZJaMUHx3T...(result of 'issue-check') "some
 
 			// Prepare private key from passphrase
 			passphraseHash := sha256.Sum256([]byte(passphrase))
-			passphrasePrivKey, err := ethereumCrypto.ToECDSA(passphraseHash[:])
+			passphrasePrivKey, err := crypto.ToECDSA(passphraseHash[:])
 			if err != nil {
 				return errors.InvalidPassphrase
 			}
@@ -615,12 +610,12 @@ $ %s tx %s redeem-check 3YEtqixL7ccFTZJaMUHx3T...(result of 'issue-check') "some
 				clientCtx.GetFromAddress(),
 			})
 			if err != nil {
-				return errors.UnableRPLEncodeAddress
+				return errors.UnableRLPEncodeAddress
 			}
 			hw.Sum(receiverAddressHash[:0])
 
 			// Sign receiver address by private key generated from passphrase
-			signature, err := ethereumCrypto.Sign(receiverAddressHash[:], passphrasePrivKey)
+			signature, err := crypto.Sign(receiverAddressHash[:], passphrasePrivKey)
 			if err != nil {
 				return errors.UnableSignCheck
 			}

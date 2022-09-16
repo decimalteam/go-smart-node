@@ -4,121 +4,120 @@ package decimal.nft.v1;
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 
-import "decimal/nft/v1/owner.proto";
-import "decimal/nft/v1/collection.proto";
+import "cosmos_proto/cosmos.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+
 import "decimal/nft/v1/nft.proto";
-import "decimal/nft/v1/sub_token.proto";
 
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
 
 // Query defines the gRPC querier service.
 service Query {
-  // Retrieves collection supply by denom
-  rpc QueryCollectionSupply(QueryCollectionSupplyRequest) returns (QueryCollectionSupplyResponse) {
-    option (google.api.http).get = "/decimal/nft/v1/supply/{denom}";
+  // Collections queries all NFT collections.
+  // Response does not contain any info about NFT tokens.
+  rpc Collections(QueryCollectionsRequest) returns (QueryCollectionsResponse) {
+    option (google.api.http).get = "/decimal/nft/v1/collections";
   }
 
-  rpc QueryOwnerCollections(QueryOwnerCollectionsRequest) returns (QueryOwnerCollectionsResponse) {
-    option (google.api.http).get = "/decimal/nft/v1/collections_by_owner/{owner}";
+  // CollectionsByCreator queries all NFT collections created by specified creator address.
+  // Response does not contain any info about NFT sub-tokens.
+  rpc CollectionsByCreator(QueryCollectionsByCreatorRequest) returns (QueryCollectionsByCreatorResponse) {
+    option (google.api.http).get = "/decimal/nft/v1/collections/{creator}";
   }
 
-  rpc QueryCollection(QueryCollectionRequest) returns (QueryCollectionResponse) {
-    option (google.api.http).get = "/decimal/nft/v1/collection/{denom}";
+  // Collection queries the NFT collection by specified creator address and collection denom.
+  // Response does not contain any info about NFT sub-tokens.
+  rpc Collection(QueryCollectionRequest) returns (QueryCollectionResponse) {
+    option (google.api.http).get = "/decimal/nft/v1/collection/{creator}/{denom}";
   }
 
-  rpc QueryDenoms(QueryDenomsRequest) returns (QueryDenomsResponse) {
-    option (google.api.http).get = "/decimal/nft/v1/denoms";
+  // Token queries the NFT token by specified unique token ID.
+  // Response contains full info about the NFT token with containing NFT sub-tokens.
+  rpc Token(QueryTokenRequest) returns (QueryTokenResponse) {
+    option (google.api.http).get = "/decimal/nft/v1/token/{token_id}";
   }
 
-  rpc QueryNFT(QueryNFTRequest) returns (QueryNFTResponse) {
-    option (google.api.http).get = "/decimal/nft/v1/nft/{denom}/{token_id}";
-  }
-
-  rpc QuerySubTokens(QuerySubTokensRequest) returns (QuerySubTokensResponse) {
-    option (google.api.http).get = "/decimal/nft/v1/sub_tokens/{denom}/{token_id}";
+  // SubToken queries the NFT sub-token by specified unique token ID and sub-token ID.
+  // Response contains full info about the NFT sub-tokens.
+  rpc SubToken(QuerySubTokenRequest) returns (QuerySubTokenResponse) {
+    option (google.api.http).get = "/decimal/nft/v1/tokens/{token_id}/{sub_token_id}";
   }
 }
 
-////////////////////////////////////////////////////////////////
-// Supply
-////////////////////////////////////////////////////////////////
-
-message QueryCollectionSupplyRequest {
-  string denom = 1;
+// QueryCollectionsRequest is request type for Query/Collections RPC method.
+message QueryCollectionsRequest {
+  // pagination defines an optional pagination for the request.
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
 }
 
-message QueryCollectionSupplyResponse {
-  int64 supply = 1;
+// QueryCollectionsResponse is response type for the Query/Collections RPC method.
+// NOTE: Response does not contain any info about NFT tokens.
+message QueryCollectionsResponse {
+  // collections contains all the queried collections.
+  repeated Collection collections = 1 [ (gogoproto.nullable) = false ];
+
+  // pagination defines the pagination in the response.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
-////////////////////////////////////////////////////////////////
-// Owner collections
-////////////////////////////////////////////////////////////////
+// QueryCollectionsByCreatorRequest is request type for Query/CollectionsByCreator RPC method.
+message QueryCollectionsByCreatorRequest {
+  // creator defines the NFT collection creator address.
+  string creator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 
-message QueryOwnerCollectionsRequest {
-  string owner = 1;
+  // pagination defines an optional pagination for the request.
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 
-message QueryOwnerCollectionsResponse {
-  Owner owner = 1 [
-    (gogoproto.nullable) = false
-  ];
+// QueryCollectionsByCreatorResponse is response type for the Query/CollectionsByCreator RPC method.
+// NOTE: Response does not contain any info about NFT sub-tokens.
+message QueryCollectionsByCreatorResponse {
+  // collections contains all the queried collections.
+  repeated Collection collections = 1 [ (gogoproto.nullable) = false ];
+
+  // pagination defines the pagination in the response.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
-////////////////////////////////////////////////////////////////
-// Collections
-////////////////////////////////////////////////////////////////
-
+// QueryCollectionRequest is request type for Query/Collection RPC method.
 message QueryCollectionRequest {
-  string denom = 1;
+  // creator defines the NFT collection creator address.
+  string creator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // denom defines NFT collection name.
+  string denom = 2;
 }
 
+// QueryCollectionResponse is response type for the Query/Collection RPC method.
+// NOTE: Response does not contain any info about NFT sub-tokens.
 message QueryCollectionResponse {
-  Collection collection = 1 [
-    (gogoproto.nullable) = false
-  ];
+  // collection contains the queried NFT collection.
+  Collection collection = 1 [ (gogoproto.nullable) = false ];
 }
 
-////////////////////////////////////////////////////////////////
-// Denoms
-////////////////////////////////////////////////////////////////
-
-message QueryDenomsRequest {
+// QueryTokenRequest is request type for Query/Token RPC method.
+message QueryTokenRequest {
+  // token_id defines NFT token ID.
+  string token_id = 1;
 }
 
-message QueryDenomsResponse {
-  repeated string denoms = 1;
+// QueryTokenResponse is response type for the Query/Token RPC method.
+// NOTE: Response contains info about NFT collection and full info about the NFT token with containing NFT sub-tokens.
+message QueryTokenResponse {
+  // token contains the queried NFT token.
+  Token token = 1 [ (gogoproto.nullable) = false ];
 }
 
-////////////////////////////////////////////////////////////////
-// NFT
-////////////////////////////////////////////////////////////////
-
-message QueryNFTRequest {
-  string denom = 1;
-  string token_id = 2;
+// QuerySubTokenRequest is request type for Query/SubToken RPC method.
+message QuerySubTokenRequest {
+  // token_id defines NFT token ID.
+  string token_id = 1;
+  // sub_token_id defines NFT sub-token ID.
+  string sub_token_id = 2;
 }
 
-message QueryNFTResponse {
-  BaseNFT nft = 1 [
-    (gogoproto.nullable) = false,
-    (gogoproto.customname) = "NFT"
-  ];
-}
-
-////////////////////////////////////////////////////////////////
-// SubTokens
-////////////////////////////////////////////////////////////////
-
-message QuerySubTokensRequest {
-  string denom = 1;
-  string token_id = 2 [
-    (gogoproto.customname) = "TokenID"
-  ];
-}
-
-message QuerySubTokensResponse {
-  repeated SubToken sub_tokens = 1 [
-    (gogoproto.nullable) = false
-  ];
+// QuerySubTokenResponse is response type for the Query/SubToken RPC method.
+// NOTE: Response contains info about single NFT sub-token.
+message QuerySubTokenResponse {
+  // sub_token contains the queried NFT sub-token.
+  SubToken sub_token = 1 [ (gogoproto.nullable) = false ];
 }

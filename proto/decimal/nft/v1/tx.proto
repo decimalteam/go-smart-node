@@ -2,154 +2,94 @@ syntax = "proto3";
 package decimal.nft.v1;
 
 import "gogoproto/gogo.proto";
-import "cosmos/msg/v1/msg.proto";
+
+import "cosmos_proto/cosmos.proto";
 import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/msg/v1/msg.proto";
 
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
 
+// Msg defines the nft Msg service.
 service Msg {
-  rpc MintNFT(MsgMintNFT) returns (MsgMintNFTResponse);
-  rpc TransferNFT(MsgTransferNFT) returns (MsgTransferNFTResponse);
-  rpc EditNFTMetadata(MsgEditNFTMetadata) returns (MsgEditNFTMetadataResponse);
-  rpc BurnNFT(MsgBurnNFT) returns (MsgBurnNFTResponse);
-  rpc UpdateReserveNFT(MsgUpdateReserveNFT) returns (MsgUpdateReserveNFTResponse);
+  // MintToken defines message for creating new NFT token or minting additional NFT sub-tokens.
+  rpc MintToken(MsgMintToken) returns (MsgMintTokenResponse);
+
+  // UpdateToken defines message for NFT token modifying.
+  rpc UpdateToken(MsgUpdateToken) returns (MsgUpdateTokenResponse);
+
+  // UpdateReserve defines message for NFT token's reserve updating.
+  rpc UpdateReserve(MsgUpdateReserve) returns (MsgUpdateReserveResponse);
+
+  // SendToken defines message for transferring NFT sub-tokens.
+  rpc SendToken(MsgSendToken) returns (MsgSendTokenResponse);
+
+  // BurnToken defines message for burning NFT sub-tokens.
+  rpc BurnToken(MsgBurnToken) returns (MsgBurnTokenResponse);
 }
 
-message MsgMintNFT {
+// MsgMintToken defines a SDK message for creating a new NFT token or mint additional NFT sub-tokens.
+message MsgMintToken {
   option (cosmos.msg.v1.signer) = "sender";
 
-  string sender = 1 [
-    (gogoproto.moretags) = "yaml:\"address\""
-  ];
-  string recipient = 2 [
-    (gogoproto.moretags) = "yaml:\"recipient\""
-  ];
-  string id = 3 [
-    (gogoproto.jsontag) = "id",
-    (gogoproto.moretags) = "yaml:\"id\"",
-    (gogoproto.customname) = "ID"
-  ];
-  string denom = 4 [
-    (gogoproto.moretags) = "yaml:\"denom\""
-  ];
-  string quantity = 5 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"quantity\""
-  ];
-  string token_uri = 6 [
-    (gogoproto.jsontag) = "token_uri",
-    (gogoproto.moretags) = "yaml:\"token_uri\"",
-    (gogoproto.customname) = "TokenURI"
-  ];
-  cosmos.base.v1beta1.Coin reserve = 7 [
-    (gogoproto.nullable) = false,
-    (gogoproto.jsontag) = "reserve",
-    (gogoproto.moretags) = "yaml:\"reserve\""
-  ];
-  bool allow_mint = 8 [
-    (gogoproto.moretags) = "yaml:\"allow_mint\""
-  ];
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string denom = 2;
+  string token_id = 3 [ (gogoproto.customname) = "TokenID" ];
+  string token_uri = 4 [ (gogoproto.customname) = "TokenURI" ];
+  bool allow_mint = 5;
+  string recipient = 6 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  uint32 quantity = 7;
+  cosmos.base.v1beta1.Coin reserve = 8 [ (gogoproto.nullable) = false ];
 }
 
-message MsgMintNFTResponse{}
+// MsgMintTokenResponse defines the Msg/MintToken response type.
+message MsgMintTokenResponse {}
 
-message MsgTransferNFT {
+// MsgUpdateToken defines a SDK message for modifying existing NFT token.
+message MsgUpdateToken {
   option (cosmos.msg.v1.signer) = "sender";
 
-  string sender = 1 [
-    (gogoproto.moretags) = "yaml:\"address\""
-  ];
-  string recipient = 2 [
-    (gogoproto.moretags) = "yaml:\"recipient\""
-  ];
-  string id = 3 [
-    (gogoproto.jsontag) = "id",
-    (gogoproto.moretags) = "yaml:\"id\"",
-    (gogoproto.customname) = "ID"
-  ];
-  string denom = 4 [
-    (gogoproto.moretags) = "yaml:\"denom\""
-  ];
-  repeated uint64 sub_token_ids = 5 [
-    (gogoproto.jsontag) = "sub_token_ids",
-    (gogoproto.moretags) = "yaml:\"sub_token_ids\"",
-    (gogoproto.customname) = "SubTokenIDs"
-  ];
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string token_id = 2 [ (gogoproto.customname) = "TokenID" ];
+  string token_uri = 3 [ (gogoproto.customname) = "TokenURI" ];
 }
 
-message MsgTransferNFTResponse {}
+// MsgUpdateTokenResponse defines the Msg/UpdateToken response type.
+message MsgUpdateTokenResponse {}
 
-message MsgEditNFTMetadata {
+// MsgUpdateReserve defines a SDK message for modifying existing NFT sub-token's reserve.
+message MsgUpdateReserve {
   option (cosmos.msg.v1.signer) = "sender";
 
-  string sender = 1 [
-    (gogoproto.moretags) = "yaml:\"address\""
-  ];
-  string id = 2 [
-    (gogoproto.jsontag) = "id",
-    (gogoproto.moretags) = "yaml:\"id\"",
-    (gogoproto.customname) = "ID"
-  ];
-  string denom = 3 [
-    (gogoproto.moretags) = "yaml:\"denom\""
-  ];
-  string token_uri = 4 [
-    (gogoproto.jsontag) = "token_uri",
-    (gogoproto.moretags) = "yaml:\"token_uri\"",
-    (gogoproto.customname) = "TokenURI"
-  ];
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string token_id = 2 [ (gogoproto.customname) = "TokenID" ];
+  repeated uint32 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
+  cosmos.base.v1beta1.Coin reserve = 5 [ (gogoproto.nullable) = false ];
 }
 
-message MsgEditNFTMetadataResponse {}
+// MsgUpdateReserveResponse defines the Msg/UpdateReserve response type.
+message MsgUpdateReserveResponse {}
 
-message MsgBurnNFT {
+// MsgSendToken defines a SDK message for transferring NFT sub-token.
+message MsgSendToken {
   option (cosmos.msg.v1.signer) = "sender";
 
-  string sender = 1 [
-    (gogoproto.moretags) = "yaml:\"address\""
-  ];
-  string id = 2 [
-    (gogoproto.jsontag) = "id",
-    (gogoproto.moretags) = "yaml:\"id\"",
-    (gogoproto.customname) = "ID"
-  ];
-  string denom = 3 [
-    (gogoproto.moretags) = "yaml:\"denom\""
-  ];
-  repeated uint64 sub_token_ids = 4 [
-    (gogoproto.jsontag) = "sub_token_ids",
-    (gogoproto.moretags) = "yaml:\"sub_token_ids\"",
-    (gogoproto.customname) = "SubTokenIDs"
-  ];
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string token_id = 2 [ (gogoproto.customname) = "TokenID" ];
+  repeated uint32 sub_token_ids = 3 [ (gogoproto.customname) = "SubTokenIDs" ];
+  string recipient = 4 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 }
 
-message MsgBurnNFTResponse {}
+// MsgSendTokenResponse defines the Msg/SendToken response type.
+message MsgSendTokenResponse {}
 
-message MsgUpdateReserveNFT {
+// MsgBurnToken defines a SDK message for burning NFT sub-token.
+message MsgBurnToken {
   option (cosmos.msg.v1.signer) = "sender";
 
-  string sender = 1 [
-    (gogoproto.moretags) = "yaml:\"address\""
-  ];
-  string id = 2 [
-    (gogoproto.jsontag) = "id",
-    (gogoproto.moretags) = "yaml:\"id\"",
-    (gogoproto.customname) = "ID"
-  ];
-  string denom = 3 [
-    (gogoproto.moretags) = "yaml:\"denom\""
-  ];
-  repeated uint64 sub_token_ids = 4 [
-    (gogoproto.jsontag) = "sub_token_ids",
-    (gogoproto.moretags) = "yaml:\"sub_token_ids\"",
-    (gogoproto.customname) = "SubTokenIDs"
-  ];
-  cosmos.base.v1beta1.Coin new_reserve = 5 [
-    (gogoproto.nullable) = false,
-    (gogoproto.jsontag) = "new_reserve",
-    (gogoproto.moretags) = "yaml:\"new_reserve\""
-  ];
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string token_id = 2 [ (gogoproto.customname) = "TokenID" ];
+  repeated uint32 sub_token_ids = 3 [ (gogoproto.customname) = "SubTokenIDs" ];
 }
 
-message MsgUpdateReserveNFTResponse{}
+// MsgBurnTokenResponse defines the Msg/BurnToken response type.
+message MsgBurnTokenResponse {}

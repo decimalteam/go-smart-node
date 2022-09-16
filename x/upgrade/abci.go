@@ -2,12 +2,7 @@ package upgrade
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -178,33 +173,4 @@ func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
 // BuildUpgradeNeededMsg prints the message that notifies that an upgrade is needed.
 func BuildUpgradeNeededMsg(plan types.Plan) string {
 	return fmt.Sprintf("UPGRADE \"%s\" NEEDED at %s: %s", plan.Name, plan.DueAt(), plan.Info)
-}
-
-func loadVersion(urlPath string) string {
-	const fileVersion = "version.txt"
-
-	// example: "version.txt"
-	u, err := url.Parse(fileVersion)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// example: "https://testnet-repo.decimalchain.com/95000"
-	base, err := u.Parse(urlPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// result: "https://testnet-repo.decimalchain.com/version.txt"
-	resp, err := http.Get(base.ResolveReference(u).String())
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	return strings.TrimSpace(string(body))
 }

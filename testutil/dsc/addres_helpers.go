@@ -1,11 +1,16 @@
 package dsc
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	coinkeeper "bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
-	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"bytes"
 	"fmt"
+	"strconv"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	//tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	tmtypes "github.com/tendermint/tendermint/types"
+
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/testutil/mock"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -13,13 +18,12 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-	"github.com/evmos/ethermint/crypto/ethsecp256k1"
-	"github.com/stretchr/testify/require"
-	"strconv"
 
-	//tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	tmtypes "github.com/tendermint/tendermint/types"
-	"testing"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
+
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	coinkeeper "bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 
 type GenerateAccountStrategy func(int) []sdk.AccAddress

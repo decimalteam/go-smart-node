@@ -12,15 +12,9 @@ import (
 //
 // The actual codec used for serialization should be provided to modules/coin and
 // defined at the application level.
-var (
-	Amino     = codec.NewLegacyAmino()
-	ModuleCdc = codec.NewProtoCodec(cdctypes.NewInterfaceRegistry())
-)
+var ModuleCdc = codec.NewProtoCodec(cdctypes.NewInterfaceRegistry())
 
-// RegisterCodec registers concrete implementations of specific inferfaces.
-func RegisterCodec(cdc *codec.LegacyAmino) {}
-
-// RegisterInterfaces registers concrete implementations of specific inferfaces.
+// RegisterInterfaces registers concrete implementations of specific interfaces.
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 
 	registry.RegisterImplementations(
@@ -32,8 +26,8 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgBuyCoin{},
 		&MsgSellCoin{},
 		&MsgSellAllCoin{},
-		&MsgRedeemCheck{},
 		&MsgBurnCoin{},
+		&MsgRedeemCheck{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)

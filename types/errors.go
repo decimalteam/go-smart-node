@@ -4,7 +4,7 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 )
 
-// RootCodespace is the codespace for all errors defined in this package
+// RootCodespace is the codespace for all errors defined in the project.
 const RootCodespace = "decimal"
 
 // root error codes for Decimal

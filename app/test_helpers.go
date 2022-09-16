@@ -1,31 +1,29 @@
 package app
 
 import (
-	dsctestutil "bitbucket.org/decimalteam/go-smart-node/testutil/dsc"
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"bytes"
-	"cosmossdk.io/math"
 	"encoding/json"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/codec"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"strconv"
+	"testing"
+	"time"
+
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	"strconv"
-	"testing"
-	"time"
 
+	sdkmath "cosmossdk.io/math"
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	"github.com/cosmos/ibc-go/v5/testing/simapp"
 
@@ -33,6 +31,9 @@ import (
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	dsctestutil "bitbucket.org/decimalteam/go-smart-node/testutil/dsc"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 
 func init() {
@@ -305,7 +306,7 @@ func GenesisStateWithValSet(codec codec.Codec, genesisState map[string]json.RawM
 			UnbondingHeight:   int64(0),
 			UnbondingTime:     time.Unix(0, 0).UTC(),
 			Commission:        stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
-			MinSelfDelegation: math.ZeroInt(),
+			MinSelfDelegation: sdkmath.ZeroInt(),
 		}
 		validators = append(validators, validator)
 		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress(), val.Address.Bytes(), sdk.OneDec()))

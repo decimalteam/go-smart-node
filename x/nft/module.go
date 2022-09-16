@@ -5,19 +5,20 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/client/cli"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
-	"github.com/cosmos/cosmos-sdk/client"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/client/cli"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
 var (
@@ -33,6 +34,7 @@ func (AppModuleBasic) Name() string {
 }
 
 func (AppModuleBasic) RegisterLegacyAminoCodec(_ *codec.LegacyAmino) {
+	//
 }
 
 func (AppModuleBasic) RegisterInterfaces(interfaceRegistry codectypes.InterfaceRegistry) {
@@ -125,7 +127,7 @@ func (am AppModule) ConsensusVersion() uint64 {
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	cdc.MustUnmarshalJSON(data, &genesisState)
-	InitGenesis(ctx, am.keeper, genesisState)
+	InitGenesis(ctx, am.keeper, &genesisState)
 	return []abci.ValidatorUpdate{}
 }
 

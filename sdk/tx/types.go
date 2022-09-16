@@ -19,8 +19,7 @@ type (
 	MsgSendCoin      = coinTypes.MsgSendCoin
 	MsgBurnCoin      = coinTypes.MsgBurnCoin
 	MsgRedeemCheck   = coinTypes.MsgRedeemCheck
-
-	OneSend = coinTypes.Send
+	MultiSendEntry   = coinTypes.MultiSendEntry
 
 	MsgMintNFT          = nftTypes.MsgMintNFT
 	MsgBurnNFT          = nftTypes.MsgBurnNFT

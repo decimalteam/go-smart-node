@@ -6,16 +6,17 @@ import (
 	"io"
 	"os"
 
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
 
 // Init global cosmos sdk config
 func initConfig() {
 	cfg := sdk.GetConfig()
-	cfg.SetBech32PrefixForAccount(config.Bech32PrefixAccAddr, config.Bech32PrefixAccPub)
-	cfg.SetBech32PrefixForValidator(config.Bech32PrefixValAddr, config.Bech32PrefixValPub)
-	cfg.SetBech32PrefixForConsensusNode(config.Bech32PrefixConsAddr, config.Bech32PrefixConsPub)
+	cfg.SetBech32PrefixForAccount(cmdcfg.Bech32PrefixAccAddr, cmdcfg.Bech32PrefixAccPub)
+	cfg.SetBech32PrefixForValidator(cmdcfg.Bech32PrefixValAddr, cmdcfg.Bech32PrefixValPub)
+	cfg.SetBech32PrefixForConsensusNode(cmdcfg.Bech32PrefixConsAddr, cmdcfg.Bech32PrefixConsPub)
 }
 
 func readGenesisNew(fpath string) *GenesisNew {

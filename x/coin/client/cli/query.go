@@ -1,19 +1,18 @@
 package cli
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"context"
 	"fmt"
 	"strings"
 
-	"github.com/cosmos/btcutil/base58"
-
 	"github.com/spf13/cobra"
 
+	"github.com/cosmos/btcutil/base58"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 
@@ -27,49 +26,16 @@ func GetQueryCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 	cmd.AddCommand(
-		QueryCoinCmd(),
-		QueryCoinsCmd(),
-		QueryCheckCmd(),
-		QueryChecksCmd(),
-		QueryParamsCmd(),
+		cmdQueryCoins(),
+		cmdQueryCoin(),
+		cmdQueryChecks(),
+		cmdQueryCheck(),
+		cmdQueryParams(),
 	)
 	return cmd
 }
 
-func QueryCoinCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "coin [symbol]",
-		Short: "Query specific coin by symbol (denom)",
-		Long: fmt.Sprintf(`Query coin full information 
-
-Example: 	
-$ %s query %s coin del`, config.AppBinName, types.ModuleName),
-		Args: cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			queryClient := types.NewQueryClient(clientCtx)
-
-			req := &types.QueryCoinRequest{
-				Symbol: strings.ToLower(args[0]),
-			}
-
-			res, err := queryClient.Coin(context.Background(), req)
-			if err != nil {
-				return err
-			}
-
-			return clientCtx.PrintProto(res)
-		},
-	}
-	flags.AddQueryFlagsToCmd(cmd)
-	return cmd
-}
-
-func QueryCoinsCmd() *cobra.Command {
+func cmdQueryCoins() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "coins",
 		Short: "Query all existing coins",
@@ -109,7 +75,79 @@ $ %s query %s coins`, config.AppBinName, types.ModuleName),
 	return cmd
 }
 
-func QueryCheckCmd() *cobra.Command {
+func cmdQueryCoin() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "coin [denom]",
+		Short: "Query specific coin by denom",
+		Long: fmt.Sprintf(`Query coin full information 
+
+Example: 	
+$ %s query %s coin del`, config.AppBinName, types.ModuleName),
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			req := &types.QueryCoinRequest{
+				Denom: strings.ToLower(args[0]),
+			}
+
+			res, err := queryClient.Coin(context.Background(), req)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func cmdQueryChecks() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "checks",
+		Short: "Query all existing checks",
+		Long: fmt.Sprintf(`Query all checks information from blockchain
+
+Example: 	
+$ %s query %s checks`, config.AppBinName, types.ModuleName),
+		Args: cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
+			req := &types.QueryChecksRequest{
+				Pagination: pageReq,
+			}
+
+			res, err := queryClient.Checks(context.Background(), req)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	flags.AddPaginationFlagsToCmd(cmd, "all checks")
+
+	return cmd
+}
+
+func cmdQueryCheck() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "check [hash]",
 		Short: "Query specific check by hash in hex format",
@@ -154,46 +192,7 @@ $ %s query %s check 3YEtqixL7ccFTZJaMUHx3TgsQEqzrqoj...(result of command 'issue
 	return cmd
 }
 
-func QueryChecksCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "checks",
-		Short: "Query all existing checks",
-		Long: fmt.Sprintf(`Query all checks information from blockchain
-
-Example: 	
-$ %s query %s checks`, config.AppBinName, types.ModuleName),
-		Args: cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-			queryClient := types.NewQueryClient(clientCtx)
-
-			pageReq, err := client.ReadPageRequest(cmd.Flags())
-			if err != nil {
-				return err
-			}
-			req := &types.QueryChecksRequest{
-				Pagination: pageReq,
-			}
-
-			res, err := queryClient.Checks(context.Background(), req)
-			if err != nil {
-				return err
-			}
-
-			return clientCtx.PrintProto(res)
-		},
-	}
-
-	flags.AddQueryFlagsToCmd(cmd)
-	flags.AddPaginationFlagsToCmd(cmd, "all checks")
-
-	return cmd
-}
-
-func QueryParamsCmd() *cobra.Command {
+func cmdQueryParams() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "params",
 		Short: fmt.Sprintf("Query the current parameters of the module %s", types.ModuleName),

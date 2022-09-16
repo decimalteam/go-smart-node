@@ -1,19 +1,28 @@
 package types
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"fmt"
 
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkmath "cosmossdk.io/math"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/config"
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
+)
+
+// Coin params default values.
+var (
+	DefaultBaseDenom  string      = "del"
+	DefaultBaseTitle  string      = "Decimal coin"
+	DefaultBaseVolume sdkmath.Int = helpers.EtherToWei(sdkmath.NewInt(340_000_000))
 )
 
 // Parameter store keys.
 var (
-	ParamStoreKeyBaseTitle         = []byte("BaseTitle")
-	ParamStoreKeyBaseSymbol        = []byte("BaseSymbol")
-	ParamStoreKeyBaseInitialVolume = []byte("BaseInitialVolume")
+	KeyBaseDenom  = []byte("BaseDenom")
+	KeyBaseTitle  = []byte("BaseTitle")
+	KeyBaseVolume = []byte("BaseVolume")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -26,36 +35,53 @@ func ParamKeyTable() paramtypes.KeyTable {
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return Params{
-		BaseTitle:         "Decimal coin",
-		BaseSymbol:        "del",
-		BaseInitialVolume: helpers.EtherToWei(sdk.NewInt(340_000_000)),
+		BaseDenom:  DefaultBaseDenom,
+		BaseTitle:  DefaultBaseTitle,
+		BaseVolume: DefaultBaseVolume,
 	}
 }
 
 // NewParams creates a new Params instance.
-func NewParams(
-	baseTitle string,
-	baseSymbol string,
-	baseInitialVolume sdk.Int,
-) Params {
+func NewParams(baseDenom string, baseTitle string, baseVolume sdkmath.Int) Params {
 	return Params{
-		BaseTitle:         baseTitle,
-		BaseSymbol:        baseSymbol,
-		BaseInitialVolume: baseInitialVolume,
+		BaseDenom:  baseDenom,
+		BaseTitle:  baseTitle,
+		BaseVolume: baseVolume,
 	}
 }
 
 // ParamSetPairs returns the parameter set pairs.
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(ParamStoreKeyBaseTitle, &p.BaseTitle, validateBaseTitle),
-		paramtypes.NewParamSetPair(ParamStoreKeyBaseSymbol, &p.BaseSymbol, validateBaseSymbol),
-		paramtypes.NewParamSetPair(ParamStoreKeyBaseInitialVolume, &p.BaseInitialVolume, validateBaseInitialVolume),
+		paramtypes.NewParamSetPair(KeyBaseDenom, &p.BaseDenom, validateBaseDenom),
+		paramtypes.NewParamSetPair(KeyBaseTitle, &p.BaseTitle, validateBaseTitle),
+		paramtypes.NewParamSetPair(KeyBaseVolume, &p.BaseVolume, validateBaseVolume),
 	}
 }
 
 // Validate validates the set of params.
-func (p *Params) Validate() error {
+func (p *Params) Validate() (err error) {
+	if err = validateBaseDenom(p.BaseDenom); err != nil {
+		return
+	}
+	if err = validateBaseTitle(p.BaseTitle); err != nil {
+		return
+	}
+	if err = validateBaseVolume(p.BaseVolume); err != nil {
+		return
+	}
+	return
+}
+
+func validateBaseDenom(i interface{}) error {
+	denom, ok := i.(string)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	if !config.CoinDenomValidator.MatchString(denom) {
+		return errors.InvalidCoinDenom
+	}
+	// TODO
 	return nil
 }
 
@@ -68,20 +94,8 @@ func validateBaseTitle(i interface{}) error {
 	return nil
 }
 
-func validateBaseSymbol(i interface{}) error {
-	symbol, ok := i.(string)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-	if !coinSymbolValidator.MatchString(symbol) {
-		return errors.InvalidCoinSymbol
-	}
-	// TODO
-	return nil
-}
-
-func validateBaseInitialVolume(i interface{}) error {
-	_, ok := i.(sdk.Int)
+func validateBaseVolume(i interface{}) error {
+	_, ok := i.(sdkmath.Int)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
