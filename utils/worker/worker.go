@@ -232,6 +232,7 @@ func (w *Worker) getBlockResult(height int64, txNum int) Block {
 		EndBlockEvents:    w.parseEvents(results.EndBlockEvents),
 		BeginBlockEvents:  w.parseEvents(results.BeginBlockEvents),
 		Size:              size,
+		StateChanges:      *ea,
 		EVM: BlockEVM{
 			Header:       web3Block.Header(),
 			Transactions: web3Transactions,
