@@ -3,32 +3,32 @@ package api
 import (
 	"context"
 
-	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
+	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // GetFeeParams returns all for ccorrect transaction fee calculation
-func (api *API) GetFeeParams() (sdk.Dec, feeTypes.Params, error) {
-	client := feeTypes.NewQueryClient(api.grpcClient)
+func (api *API) GetFeeParams() (sdk.Dec, feetypes.Params, error) {
+	client := feetypes.NewQueryClient(api.grpcClient)
 	// 1. price
 	resp, err := client.QueryBaseDenomPrice(
 		context.Background(),
-		&feeTypes.QueryBaseDenomPriceRequest{},
+		&feetypes.QueryBaseDenomPriceRequest{},
 	)
 	if err != nil {
-		return sdk.ZeroDec(), feeTypes.DefaultParams(), err
+		return sdk.ZeroDec(), feetypes.DefaultParams(), err
 	}
 	price, err := sdk.NewDecFromStr(resp.Price)
 	if err != nil {
-		return sdk.ZeroDec(), feeTypes.DefaultParams(), err
+		return sdk.ZeroDec(), feetypes.DefaultParams(), err
 	}
 	// 2. params
 	respP, err := client.QueryModuleParams(
 		context.Background(),
-		&feeTypes.QueryParamsRequest{},
+		&feetypes.QueryParamsRequest{},
 	)
 	if err != nil {
-		return sdk.ZeroDec(), feeTypes.DefaultParams(), err
+		return sdk.ZeroDec(), feetypes.DefaultParams(), err
 	}
 	return price, respP.Params, nil
 }

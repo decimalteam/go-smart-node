@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	tmservice "github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 )
 
@@ -88,8 +88,8 @@ func (api *API) grpcGetParameters() error {
 	}
 	// base coin
 	{
-		client := coinTypes.NewQueryClient(api.grpcClient)
-		resp, err := client.Params(context.Background(), &coinTypes.QueryParamsRequest{})
+		client := cointypes.NewQueryClient(api.grpcClient)
+		resp, err := client.Params(context.Background(), &cointypes.QueryParamsRequest{})
 		if err != nil {
 			return err
 		}

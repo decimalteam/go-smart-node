@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strconv"
 
-	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/libs/strings"
 )
@@ -146,27 +146,27 @@ func validCoinParams(coin FullCoinOld) bool {
 	}
 	// volume
 	v, _ := sdk.NewIntFromString(coin.Volume)
-	if v.LT(coinTypes.MinCoinSupply) {
+	if v.LT(cointypes.MinCoinSupply) {
 		fmt.Printf("coin %s: volume < MinCoinSupply\n", coin.Symbol)
 		result = false
 	}
-	if v.GT(coinTypes.MaxCoinSupply) {
+	if v.GT(cointypes.MaxCoinSupply) {
 		fmt.Printf("coin %s: volume > MaxCoinSupply\n", coin.Symbol)
 		result = false
 	}
 	// limit volume
 	v, _ = sdk.NewIntFromString(coin.LimitVolume)
-	if v.LT(coinTypes.MinCoinSupply) {
+	if v.LT(cointypes.MinCoinSupply) {
 		fmt.Printf("coin %s: limit_volume < MinCoinSupply\n", coin.Symbol)
 		result = false
 	}
-	if v.GT(coinTypes.MaxCoinSupply) {
+	if v.GT(cointypes.MaxCoinSupply) {
 		fmt.Printf("coin %s: limit_volume > MaxCoinSupply\n", coin.Symbol)
 		result = false
 	}
 	// reserve
 	v, _ = sdk.NewIntFromString(coin.Reserve)
-	if v.LT(coinTypes.MinCoinReserve) {
+	if v.LT(cointypes.MinCoinReserve) {
 		fmt.Printf("coin %s: reserve < MinCoinReserve\n", coin.Symbol)
 		result = false
 	}

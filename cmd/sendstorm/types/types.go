@@ -8,7 +8,7 @@ import (
 
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	dscWallet "bitbucket.org/decimalteam/go-smart-node/sdk/wallet"
-	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
+	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 )
 
 type StormAccount struct {
@@ -95,7 +95,7 @@ func (sa *StormAccount) Account() *dscWallet.Account {
 
 type FeeConfiguration struct {
 	DelPrice sdk.Dec
-	Params   feeTypes.Params
+	Params   feetypes.Params
 }
 
 func NewFeeConfiguration() *FeeConfiguration {

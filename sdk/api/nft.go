@@ -3,23 +3,23 @@ package api
 import (
 	"context"
 
-	nftTypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
-type NFTCollection = nftTypes.Collection
+type NFTCollection = nfttypes.Collection
 type NFT struct {
-	nftTypes.BaseNFT
+	nfttypes.BaseNFT
 	Denom string
 }
 
-type SubToken = nftTypes.SubToken
+type SubToken = nfttypes.SubToken
 
 // Returns all NFT collections (denoms)
 func (api *API) NFTCollections() ([]string, error) {
-	client := nftTypes.NewQueryClient(api.grpcClient)
+	client := nfttypes.NewQueryClient(api.grpcClient)
 	res, err := client.QueryDenoms(
 		context.Background(),
-		&nftTypes.QueryDenomsRequest{},
+		&nfttypes.QueryDenomsRequest{},
 	)
 	if err != nil {
 		return []string{}, err
@@ -29,10 +29,10 @@ func (api *API) NFTCollections() ([]string, error) {
 
 // Returns NFT IDs from collection
 func (api *API) NFTCollection(denom string) (NFTCollection, error) {
-	client := nftTypes.NewQueryClient(api.grpcClient)
+	client := nfttypes.NewQueryClient(api.grpcClient)
 	res, err := client.QueryCollection(
 		context.Background(),
-		&nftTypes.QueryCollectionRequest{
+		&nfttypes.QueryCollectionRequest{
 			Denom: denom,
 		},
 	)
@@ -43,10 +43,10 @@ func (api *API) NFTCollection(denom string) (NFTCollection, error) {
 }
 
 func (api *API) NFT(denom string, id string) (NFT, error) {
-	client := nftTypes.NewQueryClient(api.grpcClient)
+	client := nfttypes.NewQueryClient(api.grpcClient)
 	res, err := client.QueryNFT(
 		context.Background(),
-		&nftTypes.QueryNFTRequest{
+		&nfttypes.QueryNFTRequest{
 			Denom:   denom,
 			TokenId: id,
 		},
@@ -58,10 +58,10 @@ func (api *API) NFT(denom string, id string) (NFT, error) {
 }
 
 func (api *API) NFTSubTokens(denom string, tokenID string, ids []uint64) ([]SubToken, error) {
-	client := nftTypes.NewQueryClient(api.grpcClient)
+	client := nfttypes.NewQueryClient(api.grpcClient)
 	res, err := client.QuerySubTokens(
 		context.Background(),
-		&nftTypes.QuerySubTokensRequest{
+		&nfttypes.QuerySubTokensRequest{
 			Denom:   denom,
 			TokenID: tokenID,
 		},

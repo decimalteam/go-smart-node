@@ -63,7 +63,7 @@ func calculateFee(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom str
 		// with zero fee, decimal node will calculate correct fee itself
 		return sdk.ZeroInt(), err
 	}
-	// TODO: in future need to get feeTypes.Param by api query
+	// TODO: in future need to get feetypes.Param by api query
 	newFee, err := appAnte.CalculateFee(msgs, int64(len(bz)), delPrice, params)
 	if err != nil {
 		// with zero fee, decimal node will calculate correct fee itself

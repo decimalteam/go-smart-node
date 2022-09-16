@@ -3,17 +3,17 @@ package api
 import (
 	"context"
 
-	multisigTypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
+	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	query "github.com/cosmos/cosmos-sdk/types/query"
 )
 
-type MultisigWallet = multisigTypes.Wallet
-type MultisigTransaction = multisigTypes.Transaction
+type MultisigWallet = multisigtypes.Wallet
+type MultisigTransaction = multisigtypes.Transaction
 
 func (api *API) MultisigWalletsByOwner(owner string) ([]MultisigWallet, error) {
-	client := multisigTypes.NewQueryClient(api.grpcClient)
+	client := multisigtypes.NewQueryClient(api.grpcClient)
 	wallets := make([]MultisigWallet, 0)
-	req := &multisigTypes.QueryWalletsRequest{
+	req := &multisigtypes.QueryWalletsRequest{
 		Owner:      owner,
 		Pagination: &query.PageRequest{Limit: queryLimit},
 	}
@@ -38,10 +38,10 @@ func (api *API) MultisigWalletsByOwner(owner string) ([]MultisigWallet, error) {
 }
 
 func (api *API) MultisigWalletByAddress(address string) (MultisigWallet, error) {
-	client := multisigTypes.NewQueryClient(api.grpcClient)
+	client := multisigtypes.NewQueryClient(api.grpcClient)
 	res, err := client.Wallet(
 		context.Background(),
-		&multisigTypes.QueryWalletRequest{
+		&multisigtypes.QueryWalletRequest{
 			Address: address,
 		},
 	)
@@ -52,9 +52,9 @@ func (api *API) MultisigWalletByAddress(address string) (MultisigWallet, error) 
 }
 
 func (api *API) MultisigTransactionsByWallet(address string) ([]MultisigTransaction, error) {
-	client := multisigTypes.NewQueryClient(api.grpcClient)
+	client := multisigtypes.NewQueryClient(api.grpcClient)
 	txs := make([]MultisigTransaction, 0)
-	req := &multisigTypes.QueryTransactionsRequest{
+	req := &multisigtypes.QueryTransactionsRequest{
 		Address:    address,
 		Pagination: &query.PageRequest{Limit: queryLimit},
 	}
@@ -79,10 +79,10 @@ func (api *API) MultisigTransactionsByWallet(address string) ([]MultisigTransact
 }
 
 func (api *API) MultisigTransactionsByID(txID string) (MultisigTransaction, error) {
-	client := multisigTypes.NewQueryClient(api.grpcClient)
+	client := multisigtypes.NewQueryClient(api.grpcClient)
 	res, err := client.Transaction(
 		context.Background(),
-		&multisigTypes.QueryTransactionRequest{
+		&multisigtypes.QueryTransactionRequest{
 			Id: txID,
 		},
 	)

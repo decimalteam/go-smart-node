@@ -1,57 +1,58 @@
 package tx
 
 import (
-	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
-	multisigTypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
-	nftTypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
+	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
+	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
 type (
-	FeeParams = feeTypes.Params
+	DefaultFeeParams = feetypes.DefaultParams
+	FeeParams        = feetypes.Params
+)
 
-	MsgCreateCoin    = coinTypes.MsgCreateCoin
-	MsgUpdateCoin    = coinTypes.MsgUpdateCoin
-	MsgMultiSendCoin = coinTypes.MsgMultiSendCoin
-	MsgBuyCoin       = coinTypes.MsgBuyCoin
-	MsgSellCoin      = coinTypes.MsgSellCoin
-	MsgSellAllCoin   = coinTypes.MsgSellAllCoin
-	MsgSendCoin      = coinTypes.MsgSendCoin
-	MsgBurnCoin      = coinTypes.MsgBurnCoin
-	MsgRedeemCheck   = coinTypes.MsgRedeemCheck
-	MultiSendEntry   = coinTypes.MultiSendEntry
+type (
+	MsgCreateCoin    = cointypes.MsgCreateCoin
+	MsgUpdateCoin    = cointypes.MsgUpdateCoin
+	MsgSendCoin      = cointypes.MsgSendCoin
+	MultiSendEntry   = cointypes.MultiSendEntry
+	MsgMultiSendCoin = cointypes.MsgMultiSendCoin
+	MsgBuyCoin       = cointypes.MsgBuyCoin
+	MsgSellCoin      = cointypes.MsgSellCoin
+	MsgSellAllCoin   = cointypes.MsgSellAllCoin
+	MsgBurnCoin      = cointypes.MsgBurnCoin
+	MsgRedeemCheck   = cointypes.MsgRedeemCheck
 
-	MsgMintNFT          = nftTypes.MsgMintNFT
-	MsgBurnNFT          = nftTypes.MsgBurnNFT
-	MsgUpdateReserveNFT = nftTypes.MsgUpdateReserveNFT
-	MsgTransferNFT      = nftTypes.MsgTransferNFT
-	MsgEditNFTMetadata  = nftTypes.MsgEditNFTMetadata
+	MsgMintToken     = nfttypes.MsgMintToken
+	MsgUpdateToken   = nfttypes.MsgUpdateToken
+	MsgUpdateReserve = nfttypes.MsgUpdateReserve
+	MsgSendToken     = nfttypes.MsgSendToken
+	MsgBurnToken     = nfttypes.MsgBurnToken
 
-	MsgCreateWallet      = multisigTypes.MsgCreateWallet
-	MsgCreateTransaction = multisigTypes.MsgCreateTransaction
-	MsgSignTransaction   = multisigTypes.MsgSignTransaction
+	MsgCreateWallet      = multisigtypes.MsgCreateWallet
+	MsgCreateTransaction = multisigtypes.MsgCreateTransaction
+	MsgSignTransaction   = multisigtypes.MsgSignTransaction
 )
 
 var (
-	NewMsgCreateCoin    = coinTypes.NewMsgCreateCoin
-	NewMsgUpdateCoin    = coinTypes.NewMsgUpdateCoin
-	NewMsgMultiSendCoin = coinTypes.NewMsgMultiSendCoin
-	NewMsgBuyCoin       = coinTypes.NewMsgBuyCoin
-	NewMsgSellCoin      = coinTypes.NewMsgSellCoin
-	NewMsgSellAllCoin   = coinTypes.NewMsgSellAllCoin
-	NewMsgSendCoin      = coinTypes.NewMsgSendCoin
-	NewMsgBurnCoin      = coinTypes.NewMsgBurnCoin
-	NewMsgRedeemCheck   = coinTypes.NewMsgRedeemCheck
+	NewMsgCreateCoin    = cointypes.NewMsgCreateCoin
+	NewMsgUpdateCoin    = cointypes.NewMsgUpdateCoin
+	NewMsgMultiSendCoin = cointypes.NewMsgMultiSendCoin
+	NewMsgBuyCoin       = cointypes.NewMsgBuyCoin
+	NewMsgSellCoin      = cointypes.NewMsgSellCoin
+	NewMsgSellAllCoin   = cointypes.NewMsgSellAllCoin
+	NewMsgSendCoin      = cointypes.NewMsgSendCoin
+	NewMsgBurnCoin      = cointypes.NewMsgBurnCoin
+	NewMsgRedeemCheck   = cointypes.NewMsgRedeemCheck
 
-	NewMsgMintNFT          = nftTypes.NewMsgMintNFT
-	NewMsgBurnNFT          = nftTypes.NewMsgBurnNFT
-	NewMsgUpdateReserveNFT = nftTypes.NewMsgUpdateReserveNFT
-	NewMsgTransferNFT      = nftTypes.NewMsgTransferNFT
-	NewMsgEditNFTMetadata  = nftTypes.NewMsgEditNFTMetadata
+	NewMsgMintToken     = nfttypes.NewMsgMintToken
+	NewMsgUpdateToken   = nfttypes.NewMsgUpdateToken
+	NewMsgUpdateReserve = nfttypes.NewMsgUpdateReserve
+	NewMsgSendToken     = nfttypes.NewMsgSendToken
+	NewMsgBurnToken     = nfttypes.NewMsgBurnToken
 
-	NewMsgCreateWallet      = multisigTypes.NewMsgCreateWallet
-	NewMsgCreateTransaction = multisigTypes.NewMsgCreateTransaction
-	NewMsgSignTransaction   = multisigTypes.NewMsgSignTransaction
-
-	DefaultFeeParams = feeTypes.DefaultParams
+	NewMsgCreateWallet      = multisigtypes.NewMsgCreateWallet
+	NewMsgCreateTransaction = multisigtypes.NewMsgCreateTransaction
+	NewMsgSignTransaction   = multisigtypes.NewMsgSignTransaction
 )

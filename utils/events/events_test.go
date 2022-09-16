@@ -9,7 +9,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	multisigTypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
+	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 )
 
 func TestCompare(t *testing.T) {
@@ -18,7 +18,7 @@ func TestCompare(t *testing.T) {
 		expect map[string]string
 	}{
 		{
-			&multisigTypes.EventCreateWallet{
+			&multisigtypes.EventCreateWallet{
 				Sender:    "",
 				Wallet:    "b",
 				Owners:    []string{"c", "d"},
