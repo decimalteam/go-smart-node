@@ -90,9 +90,9 @@ func (w *Worker) executeFromQuery(wg *sync.WaitGroup) {
 	w.getWork()
 	for {
 		task := <-w.query
-		b := w.getBlockResult(task.height, task.txNum)
+		b := w.GetBlockResult(task.height, task.txNum)
 		// Send
-		data, err := json.Marshal(b)
+		data, err := json.Marshal(*b)
 		w.panicError(err)
 		w.sendBlock(task.height, data)
 
@@ -100,8 +100,8 @@ func (w *Worker) executeFromQuery(wg *sync.WaitGroup) {
 	}
 }
 
-func (w *Worker) getBlockResult(height int64, txNum int) Block {
-	ea := NewEventAccumulator()
+func (w *Worker) GetBlockResult(height int64, txNum int) *Block {
+	accum := NewEventAccumulator()
 
 	// Fetch requested block from Tendermint RPC
 	block := w.fetchBlock(height)
@@ -119,7 +119,7 @@ func (w *Worker) getBlockResult(height int64, txNum int) Block {
 	} else {
 		parseTxNum = txNum
 	}
-	go w.fetchBlockTxs(height, parseTxNum, ea, txsChan)
+	go w.fetchBlockTxs(height, parseTxNum, accum, txsChan)
 	go w.fetchBlockTxResults(height, resultsChan)
 	go w.fetchBlockSize(height, sizeChan)
 	go w.fetchBlockWeb3(height, web3BlockChan)
@@ -155,22 +155,14 @@ func (w *Worker) getBlockResult(height int64, txNum int) Block {
 	}
 	web3Receipts := <-web3ReceiptsChan
 
-	w.logger.Info(
-		fmt.Sprintf("Compiled block (%s)", helpers.DurationToString(time.Since(start))),
-		"block", height,
-		"txs", len(txs),
-		"begin-block-events", len(results.BeginBlockEvents),
-		"end-block-events", len(results.EndBlockEvents),
-	)
-
 	for _, event := range results.BeginBlockEvents {
-		err := ea.AddEvent(event, "", results.Height)
+		err := accum.AddEvent(event, "", results.Height)
 		if err != nil {
 			w.panicError(err)
 		}
 	}
 	for _, event := range results.EndBlockEvents {
-		err := ea.AddEvent(event, "", results.Height)
+		err := accum.AddEvent(event, "", results.Height)
 		if err != nil {
 			w.panicError(err)
 		}
@@ -219,8 +211,16 @@ func (w *Worker) getBlockResult(height int64, txNum int) Block {
 		}
 	}
 
+	w.logger.Info(
+		fmt.Sprintf("Compiled block (%s)", helpers.DurationToString(time.Since(start))),
+		"block", height,
+		"txs", len(txs),
+		"begin-block-events", len(results.BeginBlockEvents),
+		"end-block-events", len(results.EndBlockEvents),
+	)
+
 	// Create and fill Block object and then marshal to JSON
-	return Block{
+	return &Block{
 		ID:                block.BlockID,
 		Evidence:          block.Block.Evidence,
 		Header:            block.Block.Header,
@@ -232,7 +232,7 @@ func (w *Worker) getBlockResult(height int64, txNum int) Block {
 		EndBlockEvents:    w.parseEvents(results.EndBlockEvents),
 		BeginBlockEvents:  w.parseEvents(results.BeginBlockEvents),
 		Size:              size,
-		StateChanges:      *ea,
+		StateChanges:      *accum,
 		EVM: BlockEVM{
 			Header:       web3Block.Header(),
 			Transactions: web3Transactions,
@@ -240,7 +240,6 @@ func (w *Worker) getBlockResult(height int64, txNum int) Block {
 			Receipts:     web3Receipts,
 		},
 	}
-
 }
 
 func (w *Worker) panicError(err error) {

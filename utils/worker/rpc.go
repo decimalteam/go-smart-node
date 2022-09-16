@@ -48,7 +48,7 @@ func (w *Worker) fetchBlockSize(height int64, ch chan int) {
 
 func (w *Worker) fetchBlockTxs(height int64, total int, ea *EventAccumulator, ch chan []Tx) {
 	query := fmt.Sprintf("tx.height=%d", height)
-	page, perPage := 1, 100
+	page, perPage := 1, 1000
 
 	var results []Tx
 	for len(results) < total {

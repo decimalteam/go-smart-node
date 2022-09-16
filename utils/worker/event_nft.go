@@ -38,6 +38,12 @@ type EventTransferNFT struct {
 	BlockID     int64    `json:"blockId"`
 }
 
+type EventEditNFT struct {
+	NftID    string `json:"nftId"`
+	Denom    string `json:"nftCollection"`
+	TokenURI string `json:"tokenUri"`
+}
+
 // decimal.nft.v1.EventMintNFT
 func processEventMintNFT(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
 	/*
@@ -150,5 +156,43 @@ func processEventTransferNFT(ea *EventAccumulator, event abci.Event, txHash stri
 	etn.TxHash = txHash
 	etn.BlockID = blockId
 
+	ea.NFTTransfers = append(ea.NFTTransfers, etn)
+
+	return nil
+}
+
+// decimal.nft.v1.EventEditNFT
+func processEventEditNFT(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+	/*
+		string sender = 1;
+		string denom = 2;
+		string nft_id = 3 [
+		    (gogoproto.customname) = "NFTID"
+		];
+		string token_uri = 4 [
+		    (gogoproto.customname) = "TokenURI"
+		];
+	*/
+	var een EventEditNFT
+	for _, attr := range event.Attributes {
+		switch string(attr.Key) {
+		case "denom":
+			een.Denom = string(attr.Value)
+		case "nft_id":
+			een.NftID = string(attr.Value)
+		case "token_uri":
+			een.TokenURI = string(attr.Value)
+		}
+	}
+	edited := false
+	for i := range ea.NFTEdits {
+		if ea.NFTEdits[i].Denom == een.Denom && ea.NFTEdits[i].NftID == een.NftID {
+			ea.NFTEdits[i].TokenURI = een.TokenURI
+			edited = true
+		}
+	}
+	if !edited {
+		ea.NFTEdits = append(ea.NFTEdits, een)
+	}
 	return nil
 }

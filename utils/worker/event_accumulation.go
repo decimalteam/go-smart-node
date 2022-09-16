@@ -43,7 +43,9 @@ type EventAccumulator struct {
 	LegacyReturnNFT    []LegacyReturnNFT    `json:"legacy_return_nft"`
 	LegacyReturnWallet []LegacyReturnWallet `json:"legacy_return_multisig"`
 	// nft
-	NFTMints []EventMintNFT `json:"nft_mints"`
+	NFTMints     []EventMintNFT     `json:"nft_mints"`
+	NFTTransfers []EventTransferNFT `json:"nft_transfers"`
+	NFTEdits     []EventEditNFT     `json:"nft_edits"`
 }
 
 func NewEventAccumulator() *EventAccumulator {
@@ -81,10 +83,15 @@ var eventProcessors = map[string]processFunc{
 	"decimal.legacy.v1.EventLegacyReturnNFT":    processEventLegacyReturnNFT,
 	"decimal.legacy.v1.EventLegacyReturnWallet": processEventLegacyReturnWallet,
 	// multisig
-	"decimal.multisig.v1.EventCreateWallet": processEventCreateWallet,
+	"decimal.multisig.v1.EventCreateWallet":      processEventCreateWallet,
+	"decimal.multisig.v1.EventCreateTransaction": processStub,
+	"decimal.multisig.v1.EventSignTransaction":   processStub,
 	// nft
-	"decimal.nft.v1.EventMintNFT":     processEventMintNFT,
-	"decimal.nft.v1.EventTransferNFT": processEventTransferNFT,
+	"decimal.nft.v1.EventMintNFT":          processEventMintNFT,
+	"decimal.nft.v1.EventTransferNFT":      processEventTransferNFT,
+	"decimal.nft.v1.EventEditNFT":          processEventEditNFT,
+	"decimal.nft.v1.EventBurnNFT":          processStub,
+	"decimal.nft.v1.EventUpdateReserveNFT": processStub,
 	// swap
 	// stub for cosmos events
 	"coin_spent":      processStub,
@@ -95,6 +102,9 @@ var eventProcessors = map[string]processFunc{
 	"commission":      processStub,
 	"rewards":         processStub,
 	"tx":              processStub,
+	"block_bloom":     processStub,
+	"burn":            processStub,
+	"coinbase":        processStub,
 }
 
 // stub to skip internal cosmos events

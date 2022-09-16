@@ -116,13 +116,12 @@ func processEventUpdateCoin(ea *EventAccumulator, event abci.Event, txHash strin
 	var euc EventUpdateCoin
 	var symbol string
 	for _, attr := range event.Attributes {
-		if string(attr.Key) == "symbol" {
+		switch string(attr.Key) {
+		case "symbol":
 			symbol = string(attr.Value)
-		}
-		if string(attr.Key) == "identity" {
+		case "identity":
 			euc.Avatar = string(attr.Value)
-		}
-		if string(attr.Key) == "limit_volume" {
+		case "limit_volume":
 			euc.LimitVolume, ok = sdk.NewIntFromString(string(attr.Value))
 			if !ok {
 				return fmt.Errorf("can't parse limit_volume '%s'", string(attr.Value))
@@ -144,16 +143,15 @@ func processEventEditCoin(ea *EventAccumulator, event abci.Event, txHash string,
 	var eec EventEditCoin
 	var symbol string
 	for _, attr := range event.Attributes {
-		if string(attr.Key) == "symbol" {
+		switch string(attr.Key) {
+		case "symbol":
 			symbol = string(attr.Value)
-		}
-		if string(attr.Key) == "volume" {
+		case "volume":
 			eec.Volume, ok = sdk.NewIntFromString(string(attr.Value))
 			if !ok {
 				return fmt.Errorf("can't parse volume '%s'", string(attr.Value))
 			}
-		}
-		if string(attr.Key) == "reserve" {
+		case "reserve":
 			eec.Reserve, ok = sdk.NewIntFromString(string(attr.Value))
 			if !ok {
 				return fmt.Errorf("can't parse reserve '%s'", string(attr.Value))
@@ -172,19 +170,18 @@ func processEventSendCoin(ea *EventAccumulator, event abci.Event, txHash string,
 		string coin = 3;
 	*/
 	var err error
-	var sender, receiver, coinStr string
+	var sender, receiver string
 	var coin sdk.Coin
 	for _, attr := range event.Attributes {
-		if string(attr.Key) == "sender" {
+		switch string(attr.Key) {
+		case "sender":
 			sender = string(attr.Value)
-		}
-		if string(attr.Key) == "receiver" {
+		case "receiver":
 			receiver = string(attr.Value)
-		}
-		if string(attr.Key) == "coin" {
+		case "coin":
 			coin, err = sdk.ParseCoinNormalized(string(attr.Value))
 			if err != nil {
-				return fmt.Errorf("can't parse coin '%s': %s", coinStr, err.Error())
+				return fmt.Errorf("can't parse coin '%s': %s", string(attr.Value), err.Error())
 			}
 		}
 	}
