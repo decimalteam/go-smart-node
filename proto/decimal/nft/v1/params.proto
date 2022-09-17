@@ -10,6 +10,7 @@ option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
 // Params defines the parameters for the module.
 message Params {
   option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
   option (gogoproto.goproto_stringer) = true;
 
   // max_collection_size defines maximum allowed count of NFT tokens per a NFT collection.

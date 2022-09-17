@@ -37,7 +37,7 @@ message Validator {
   // tokens define the delegated tokens (incl. self-delegation).
   string tokens = 5 [
     (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   // delegator_shares defines total shares issued to a validator's delegators.
@@ -60,13 +60,13 @@ message Validator {
   // delegation.
   string min_self_delegation = 11 [
     (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   // total_rewards is the pool of all collected rewards.
   string total_rewards = 12 [
     (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   // reward_address defines the address of the account for withdrawing rewards;
@@ -173,13 +173,13 @@ message Pool {
 
   string not_bonded_tokens = 1 [
     (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "not_bonded_tokens"
   ];
   string bonded_tokens = 2 [
     (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "bonded_tokens"
   ];

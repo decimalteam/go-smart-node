@@ -72,7 +72,7 @@ func (k Keeper) MintToken(c context.Context, msg *types.MsgMintToken) (*types.Ms
 		subTokenIDs[i] = o + i
 		subTokens[i] = types.SubToken{
 			ID:    o + i,
-			Owner: msg.Sender,
+			Owner: recipient,
 		}
 	}
 

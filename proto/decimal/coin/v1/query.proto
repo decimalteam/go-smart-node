@@ -39,52 +39,38 @@ service Query {
   }
 }
 
-// QueryCoinsRequest is request type for Query/Coins RPC method.
-message QueryCoinsRequest {
-  cosmos.base.query.v1beta1.PageRequest pagination = 1;
-}
+// QueryCoinsRequest is request type for the Query/Coins RPC method.
+message QueryCoinsRequest { cosmos.base.query.v1beta1.PageRequest pagination = 1; }
 
-// QueryCoinsResponse is response type for Query/Coins RPC method.
+// QueryCoinsResponse is response type for the Query/Coins RPC method.
 message QueryCoinsResponse {
   repeated Coin coins = 1 [ (gogoproto.nullable) = false ];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
-// QueryCoinRequest is request type for Query/Coin RPC method.
-message QueryCoinRequest {
-  string denom = 1;
-}
+// QueryCoinRequest is request type for the Query/Coin RPC method.
+message QueryCoinRequest { string denom = 1; }
 
-// QueryCoinResponse is response type for Query/Coin RPC method.
-message QueryCoinResponse {
-  Coin coin = 1 [ (gogoproto.nullable) = false ];
-}
+// QueryCoinResponse is response type for the Query/Coin RPC method.
+message QueryCoinResponse { Coin coin = 1 [ (gogoproto.nullable) = false ]; }
 
-// QueryChecksRequest is request type for Query/Checks RPC method.
-message QueryChecksRequest {
-  cosmos.base.query.v1beta1.PageRequest pagination = 1;
-}
+// QueryChecksRequest is request type for the Query/Checks RPC method.
+message QueryChecksRequest { cosmos.base.query.v1beta1.PageRequest pagination = 1; }
 
-// QueryChecksResponse is response type for Query/Checks RPC method.
+// QueryChecksResponse is response type for the Query/Checks RPC method.
 message QueryChecksResponse {
   repeated Check checks = 1 [ (gogoproto.nullable) = false ];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
-// QueryCheckRequest is request type for Query/Check RPC method.
-message QueryCheckRequest {
-  bytes hash = 1;
-}
+// QueryCheckRequest is request type for the Query/Check RPC method.
+message QueryCheckRequest { bytes hash = 1; }
 
-// QueryCheckResponse is response type for Query/Check RPC method.
-message QueryCheckResponse {
-  Check check = 1 [ (gogoproto.nullable) = false ];
-}
+// QueryCheckResponse is response type for the Query/Check RPC method.
+message QueryCheckResponse { Check check = 1 [ (gogoproto.nullable) = false ]; }
 
-// QueryParamsRequest is request type for Query/Params RPC method.
+// QueryParamsRequest is request type for the Query/Params RPC method.
 message QueryParamsRequest {}
 
-// QueryParamsResponse is response type for Query/Params RPC method.
-message QueryParamsResponse {
-  Params params = 1 [ (gogoproto.nullable) = false ];
-}
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse { Params params = 1 [ (gogoproto.nullable) = false ]; }

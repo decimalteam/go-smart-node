@@ -108,7 +108,7 @@ func (k *Keeper) getCoinVR(store sdk.KVStore, denom string) (volume sdkmath.Int,
 	return
 }
 
-// setCoinVR writes coin's volume and reserve to KVStore.
+// setCoinVR writes coin volume and reserve to KVStore.
 func (k *Keeper) setCoinVR(store sdk.KVStore, denom string, volume sdkmath.Int, reserve sdkmath.Int) {
 	key := types.GetCoinVRKey(denom)
 	value := k.cdc.MustMarshalLengthPrefixed(&types.CoinVR{

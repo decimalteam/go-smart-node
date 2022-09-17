@@ -50,7 +50,7 @@ message EventUpdateToken {
   string uri = 3 [ (gogoproto.customname) = "URI" ];
 }
 
-// EventUpdateReserve defines event emitted when existed NFT sub-token's reserve is changed.
+// EventUpdateReserve defines event emitted when existed NFT sub-token reserve is changed.
 message EventUpdateReserve {
   string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   string id = 2 [ (gogoproto.customname) = "ID" ];

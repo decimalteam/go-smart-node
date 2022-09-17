@@ -9,7 +9,7 @@ import "cosmos/msg/v1/msg.proto";
 
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
 
-// Msg defines the nft Msg service.
+// Msg defines the module Msg service.
 service Msg {
   // MintToken defines message for creating new NFT token or minting additional NFT sub-tokens.
   rpc MintToken(MsgMintToken) returns (MsgMintTokenResponse);
@@ -17,7 +17,7 @@ service Msg {
   // UpdateToken defines message for NFT token modifying.
   rpc UpdateToken(MsgUpdateToken) returns (MsgUpdateTokenResponse);
 
-  // UpdateReserve defines message for NFT token's reserve updating.
+  // UpdateReserve defines message for NFT token reserve updating.
   rpc UpdateReserve(MsgUpdateReserve) returns (MsgUpdateReserveResponse);
 
   // SendToken defines message for transferring NFT sub-tokens.
@@ -56,7 +56,7 @@ message MsgUpdateToken {
 // MsgUpdateTokenResponse defines the Msg/UpdateToken response type.
 message MsgUpdateTokenResponse {}
 
-// MsgUpdateReserve defines a SDK message for modifying existing NFT sub-token's reserve.
+// MsgUpdateReserve defines a SDK message for modifying existing NFT sub-token reserve.
 message MsgUpdateReserve {
   option (cosmos.msg.v1.signer) = "sender";
 

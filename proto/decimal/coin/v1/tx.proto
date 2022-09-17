@@ -9,7 +9,7 @@ import "cosmos/msg/v1/msg.proto";
 
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/coin/types";
 
-// Msg defines the coin Msg service.
+// Msg defines the module Msg service.
 service Msg {
   // CreateCoin defines message for creating a new coin.
   rpc CreateCoin(MsgCreateCoin) returns (MsgCreateCoinResponse);
@@ -43,25 +43,21 @@ service Msg {
 message MsgCreateCoin {
   option (cosmos.msg.v1.signer) = "sender";
 
-  option (gogoproto.equal) = false;
-  option (gogoproto.goproto_getters) = false;
-  option (gogoproto.goproto_stringer) = true;
-
   string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   string denom = 2;
   string title = 3;
-  uint64 crr = 4 [ (gogoproto.customname) = "CRR" ];
-  bytes initial_volume = 5 [
+  uint32 crr = 4 [ (gogoproto.customname) = "CRR" ];
+  string initial_volume = 5 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
-  bytes initial_reserve = 6 [
+  string initial_reserve = 6 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
-  bytes limit_volume = 7 [
+  string limit_volume = 7 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
@@ -82,7 +78,7 @@ message MsgUpdateCoin {
 
   string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   string denom = 2;
-  bytes limit_volume = 3 [
+  string limit_volume = 3 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false

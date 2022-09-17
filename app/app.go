@@ -15,9 +15,9 @@ import (
 
 	// Tendermint
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/log"
+	tmlog "github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
-	dbm "github.com/tendermint/tm-db"
+	tmdb "github.com/tendermint/tm-db"
 
 	// SDK
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -187,10 +187,6 @@ var (
 		ibc.AppModuleBasic{},
 		// Ethermint
 		evm.AppModuleBasic{},
-		// Evmos
-		//claims.AppModuleBasic{},
-		//recovery.AppModuleBasic{},
-
 		// Decimal
 		coin.AppModuleBasic{},
 		legacy.AppModuleBasic{},
@@ -295,8 +291,8 @@ type DSC struct {
 
 // NewDSC returns a reference to a new initialized Decimal application.
 func NewDSC(
-	logger log.Logger,
-	db dbm.DB,
+	logger tmlog.Logger,
+	db tmdb.DB,
 	traceStore io.Writer,
 	loadLatest bool,
 	skipUpgradeHeights map[int64]bool,

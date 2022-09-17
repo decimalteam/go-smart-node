@@ -623,7 +623,7 @@ type QueryClient interface {
 	// CollectionsByCreator queries all NFT collections created by specified creator address.
 	// Response does not contain any info about NFT sub-tokens.
 	CollectionsByCreator(ctx context.Context, in *QueryCollectionsByCreatorRequest, opts ...grpc.CallOption) (*QueryCollectionsByCreatorResponse, error)
-	// Collection queries the NFT collection by specified denom and creator address.
+	// Collection queries the NFT collection by specified creator address and collection denom.
 	// Response does not contain any info about NFT sub-tokens.
 	Collection(ctx context.Context, in *QueryCollectionRequest, opts ...grpc.CallOption) (*QueryCollectionResponse, error)
 	// Token queries the NFT token by specified unique token ID.
@@ -695,7 +695,7 @@ type QueryServer interface {
 	// CollectionsByCreator queries all NFT collections created by specified creator address.
 	// Response does not contain any info about NFT sub-tokens.
 	CollectionsByCreator(context.Context, *QueryCollectionsByCreatorRequest) (*QueryCollectionsByCreatorResponse, error)
-	// Collection queries the NFT collection by specified denom and creator address.
+	// Collection queries the NFT collection by specified creator address and collection denom.
 	// Response does not contain any info about NFT sub-tokens.
 	Collection(context.Context, *QueryCollectionRequest) (*QueryCollectionResponse, error)
 	// Token queries the NFT token by specified unique token ID.

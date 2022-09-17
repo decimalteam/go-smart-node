@@ -2,92 +2,39 @@ syntax = "proto3";
 package decimal.swap.v1;
 
 import "gogoproto/gogo.proto";
-import "cosmos/base/v1beta1/coin.proto";
-import "decimal/swap/v1/tx.proto";
+
+import "cosmos_proto/cosmos.proto";
 
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/swap/types";
 
+// Chain defines a chain.
+message Chain {
+  // id defines the chain number ID.
+  uint32 id = 1;
+  // name defines the chain name.
+  string name = 2;
+  // active defines status of the chain.
+  bool active = 3;
+}
+
+// Swap defines a cross-chain swap.
 message Swap {
-
-  string hashedSecret = 1 [
-    (gogoproto.nullable) = true,
-    (gogoproto.customtype) = "Hash",
-    (gogoproto.jsontag) = "hashed_secret",
-    (gogoproto.moretags) = "yaml:\"hashed_secret\""
-  ];
-
-  string from = 2 [
-    (gogoproto.jsontag) = "from",
-    (gogoproto.moretags) = "yaml:\"from\""
-  ];
-
-  string recipient = 3 [
-    (gogoproto.jsontag) = "recipient",
-    (gogoproto.moretags) = "yaml:\"recipient\""
-  ];
-
-  repeated cosmos.base.v1beta1.Coin amount = 4 [
-    (gogoproto.jsontag) = "amount",
-    (gogoproto.moretags) = "yaml:\"amount\"",    
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+  // hashed_secret defines the hash of secret used during cross-chain swap.
+  string hashed_secret = 1 [ (gogoproto.customtype) = "Hash", (gogoproto.nullable) = true ];
+  // from defines address used to initialize swap.
+  string from = 2;
+  // recipient defines address of the recipient swapped coins.
+  string recipient = 3;
+  // amount defines amount of coins the swap initialized.
+  string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
-
-  uint64 timestamp = 5 [
-    (gogoproto.jsontag) = "timestamp",
-    (gogoproto.moretags) = "yaml:\"timestamp\""
-  ];
-
-  bool redeemed = 6 [
-    (gogoproto.jsontag) = "redeemed",
-    (gogoproto.moretags) = "yaml:\"redeemed\""
-  ];
-
-  bool refunded = 7 [
-    (gogoproto.jsontag) = "refunded",
-    (gogoproto.moretags) = "yaml:\"refunded\""
-  ];
-}
-
-message Chain {
-
-  uint32 number = 1 [
-    (gogoproto.jsontag) = "number",
-    (gogoproto.moretags) = "yaml:\"number\""
-  ];
-
-  string name = 2 [
-    (gogoproto.jsontag) = "number",
-    (gogoproto.moretags) = "yaml:\"number\""
-  ];
-
-  bool active = 3 [
-    (gogoproto.jsontag) = "active",
-    (gogoproto.moretags) = "yaml:\"active\""
-  ];
-
-}
-
-message Params {
-  int64 locked_time_out = 1 [
-    (gogoproto.casttype) = "time.Duration",
-    (gogoproto.jsontag) = "locked_time_out",
-    (gogoproto.moretags) = "yaml:\"locked_time_out\""
-  ];
-
-  int64 locked_time_in = 2 [
-    (gogoproto.casttype) = "time.Duration",
-    (gogoproto.jsontag) = "locked_time_in",
-    (gogoproto.moretags) = "yaml:\"locked_time_in\""
-  ];
-
-  string service_address = 3 [
-    (gogoproto.jsontag) = "service_address",
-    (gogoproto.moretags) = "yaml:\"service_address\""    
-  ];
-  
-  string checking_address = 4 [
-    (gogoproto.jsontag) = "checking_address",
-    (gogoproto.moretags) = "yaml:\"checking_address\""    
-  ];
+  // timestamp defines time moment when the swap was initialized.
+  uint64 timestamp = 5;
+  // redeemed defines if the swap was redeemed.
+  bool redeemed = 6;
+  // refunded defines if the swap was refunded.
+  bool refunded = 7;
 }
