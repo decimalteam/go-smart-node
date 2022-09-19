@@ -94,10 +94,9 @@ func (aa *TransferNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *
 		return nil, err
 	}
 
-	msg := dscTx.NewMsgTransferNFT(
+	msg := dscTx.NewMsgSendToken(
 		sender,
 		recipient,
-		aa.denom,
 		aa.id,
 		aa.subIds,
 	)
