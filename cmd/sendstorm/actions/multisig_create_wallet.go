@@ -19,8 +19,8 @@ type CreateMultisigWalletGenerator struct {
 
 type CreateMultisigWalletAction struct {
 	owners    []string
-	weights   []uint64
-	threshold uint64
+	weights   []uint32
+	threshold uint32
 }
 
 func NewCreateMultisigWalletGenerator() *CreateMultisigWalletGenerator {
@@ -39,9 +39,9 @@ func (gg *CreateMultisigWalletGenerator) Generate() Action {
 		return &EmptyAction{}
 	}
 	var action CreateMultisigWalletAction
-	var sumOfWeights uint64
+	var sumOfWeights uint32
 	action.owners = make([]string, ownersCount)
-	action.weights = make([]uint64, ownersCount)
+	action.weights = make([]uint32, ownersCount)
 
 	for i := 0; i < ownersCount; i++ {
 		var owner string
@@ -56,10 +56,10 @@ func (gg *CreateMultisigWalletGenerator) Generate() Action {
 			}
 		}
 		action.owners[i] = owner
-		action.weights[i] = uint64(RandomRange(gg.rnd, 1, 1024))
+		action.weights[i] = uint32(RandomRange(gg.rnd, 1, 1024))
 		sumOfWeights += action.weights[i]
 	}
-	action.threshold = uint64(RandomRange(gg.rnd, 1, int64(sumOfWeights)))
+	action.threshold = uint32(RandomRange(gg.rnd, 1, int64(sumOfWeights)))
 
 	return &action
 }

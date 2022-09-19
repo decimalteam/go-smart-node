@@ -42,7 +42,7 @@ func (api *API) MultisigWalletByAddress(address string) (MultisigWallet, error) 
 	res, err := client.Wallet(
 		context.Background(),
 		&multisigtypes.QueryWalletRequest{
-			Address: address,
+			Wallet: address,
 		},
 	)
 	if err != nil {
@@ -55,7 +55,7 @@ func (api *API) MultisigTransactionsByWallet(address string) ([]MultisigTransact
 	client := multisigtypes.NewQueryClient(api.grpcClient)
 	txs := make([]MultisigTransaction, 0)
 	req := &multisigtypes.QueryTransactionsRequest{
-		Address:    address,
+		Wallet:     address,
 		Pagination: &query.PageRequest{Limit: queryLimit},
 	}
 	for {

@@ -103,7 +103,7 @@ func NewFeeConfiguration() *FeeConfiguration {
 }
 
 func (fc *FeeConfiguration) Update(api *dscApi.API) error {
-	delPrice, params, err := api.GetFeeParams()
+	delPrice, params, err := api.GetFeeParams("del", "usd")
 	if err != nil {
 		return err
 	}

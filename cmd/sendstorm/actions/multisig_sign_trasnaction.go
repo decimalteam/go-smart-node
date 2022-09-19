@@ -35,7 +35,7 @@ func (gg *SignMultisigTransactionGenerator) Update(ui UpdateInfo) {
 }
 
 func isExecuted(wallet dscApi.MultisigWallet, tx dscApi.MultisigTransaction) bool {
-	var signedWeight uint64
+	var signedWeight uint32
 	for i := range wallet.Owners {
 		if tx.Signers[i] != "" {
 			signedWeight += wallet.Weights[i]

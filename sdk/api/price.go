@@ -7,28 +7,29 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+const QuotePair = "usd"
+
 // GetFeeParams returns all for ccorrect transaction fee calculation
-func (api *API) GetFeeParams() (sdk.Dec, feetypes.Params, error) {
+func (api *API) GetFeeParams(baseDenom, quoteDenom string) (sdk.Dec, feetypes.Params, error) {
 	client := feetypes.NewQueryClient(api.grpcClient)
 	// 1. price
-	resp, err := client.QueryBaseDenomPrice(
+	resp, err := client.CoinPrice(
 		context.Background(),
-		&feetypes.QueryBaseDenomPriceRequest{},
+		&feetypes.QueryCoinPriceRequest{
+			Denom: baseDenom,
+			Quote: quoteDenom,
+		},
 	)
 	if err != nil {
 		return sdk.ZeroDec(), feetypes.DefaultParams(), err
 	}
-	price, err := sdk.NewDecFromStr(resp.Price)
-	if err != nil {
-		return sdk.ZeroDec(), feetypes.DefaultParams(), err
-	}
 	// 2. params
-	respP, err := client.QueryModuleParams(
+	respP, err := client.Params(
 		context.Background(),
 		&feetypes.QueryParamsRequest{},
 	)
 	if err != nil {
 		return sdk.ZeroDec(), feetypes.DefaultParams(), err
 	}
-	return price, respP.Params, nil
+	return resp.Price.Price, respP.Params, nil
 }
