@@ -25,6 +25,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin"
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/testcoin"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
@@ -341,7 +342,7 @@ func TestBurnCoinHandler(t *testing.T) {
 
 	// burn to minimal volume
 	balance = dsc.BankKeeper.GetBalance(ctx, addrs[0], customDenom)
-	volumeToBurn := balance.Amount.Sub(types.MinCoinSupply)
+	volumeToBurn := balance.Amount.Sub(config.MinCoinSupply)
 	_, err = handler(ctx, types.NewMsgBurnCoin(
 		addrs[0],
 		sdk.NewCoin(customDenom, volumeToBurn),

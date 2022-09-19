@@ -72,7 +72,7 @@ func (k Keeper) MintToken(c context.Context, msg *types.MsgMintToken) (*types.Ms
 		subTokenIDs[i] = o + i
 		subTokens[i] = types.SubToken{
 			ID:    o + i,
-			Owner: recipient,
+			Owner: recipient.String(),
 		}
 	}
 
@@ -104,7 +104,7 @@ func (k Keeper) MintToken(c context.Context, msg *types.MsgMintToken) (*types.Ms
 	// write new NFT sub-tokens to the store
 	for _, subToken := range subTokens {
 		// write sub-token record
-		k.setSubToken(ctx, token.ID, subToken)
+		k.SetSubToken(ctx, token.ID, subToken)
 		// write sub-token by owner index
 		k.setSubTokenByOwner(ctx, recipient, token.ID, subToken.ID)
 	}
@@ -268,7 +268,7 @@ func (k Keeper) UpdateReserve(c context.Context, msg *types.MsgUpdateReserve) (*
 		}
 		// update NFT sub-token
 		refillAmount = refillAmount.Add(newReserve.Sub(reserve))
-		k.setSubToken(ctx, token.ID, types.SubToken{
+		k.SetSubToken(ctx, token.ID, types.SubToken{
 			ID:      subToken.ID,
 			Owner:   subToken.Owner,
 			Reserve: &msg.Reserve,
@@ -329,7 +329,7 @@ func (k Keeper) SendToken(c context.Context, msg *types.MsgSendToken) (*types.Ms
 	// transfer NFT sub-tokens
 	for _, subToken := range subTokens {
 		subToken.Owner = msg.Recipient
-		k.setSubToken(ctx, token.ID, subToken)
+		k.SetSubToken(ctx, token.ID, subToken)
 		k.transferSubToken(ctx, sender, recipient, token.ID, subToken.ID)
 	}
 

@@ -533,15 +533,15 @@ func NewDSC(
 	app.NFTKeeper = *nftkeeper.NewKeeper(
 		appCodec,
 		keys[nfttypes.StoreKey],
+		app.GetSubspace(nfttypes.ModuleName),
 		app.BankKeeper,
-		cmdcfg.BaseDenom,
 	)
 	app.LegacyKeeper = *legacykeeper.NewKeeper(
 		appCodec,
 		keys[legacytypes.StoreKey],
 		app.BankKeeper,
-		app.NFTKeeper,
-		app.MultisigKeeper,
+		&app.NFTKeeper,
+		&app.MultisigKeeper,
 	)
 	app.SwapKeeper = *swapkeeper.NewKeeper(
 		appCodec,
@@ -570,7 +570,7 @@ func NewDSC(
 		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
-		upgrade.NewAppModule(app.UpgradeKeeper),
+		upgrade.NewAppModule(appCodec, app.UpgradeKeeper),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
@@ -584,8 +584,8 @@ func NewDSC(
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
 		multisig.NewAppModule(appCodec, app.MultisigKeeper, app.AccountKeeper, app.BankKeeper),
 		swap.NewAppModule(appCodec, app.SwapKeeper, app.AccountKeeper, app.BankKeeper),
-		nft.NewAppModule(app.NFTKeeper),
-		fee.NewAppModule(app.FeeKeeper),
+		nft.NewAppModule(appCodec, app.NFTKeeper),
+		fee.NewAppModule(appCodec, app.FeeKeeper),
 		legacy.NewAppModule(app.appCodec, app.LegacyKeeper),
 	)
 

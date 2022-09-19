@@ -12,8 +12,8 @@ type BankKeeper interface {
 }
 
 type NftKeeper interface {
-	SetNFT(ctx sdk.Context, denom string, id string, token nfttypes.Token) error
-	GetNFT(ctx sdk.Context, denom string, id string) (nfttypes.Token, error)
+	GetSubTokens(ctx sdk.Context, id string) (subTokens []nfttypes.SubToken)
+	SetSubToken(ctx sdk.Context, id string, subToken nfttypes.SubToken)
 }
 
 type MultisigKeeper interface {

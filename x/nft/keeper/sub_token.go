@@ -32,7 +32,7 @@ func (k *Keeper) GetSubToken(ctx sdk.Context, id string, index uint32) (subToken
 }
 
 // setSubToken writes the NFT sub-token to the KVStore.
-func (k *Keeper) setSubToken(ctx sdk.Context, id string, subToken types.SubToken) {
+func (k *Keeper) SetSubToken(ctx sdk.Context, id string, subToken types.SubToken) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetSubTokenKey(id, subToken.ID)
 

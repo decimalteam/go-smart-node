@@ -143,23 +143,16 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 
 	// 2. update nft owners
 	for _, nftRecord := range record.Nfts {
-		nft, err := k.nftKeeper.GetNFT(ctx, nftRecord.Denom, nftRecord.Id)
+		subTokens := k.nftKeeper.GetSubTokens(ctx, nftRecord.Id)
 		// may be nft already burned
-		if err != nil {
+		if len(subTokens) == 0 {
 			continue
 		}
-		if nft.ID == "" {
-			continue
-		}
-		for i := range nft.Owners {
-			if nft.Owners[i].Address == legacyAddress {
-				nft.Owners[i].Address = actualAddress
+		for i := range subTokens {
+			if subTokens[i].Owner == legacyAddress {
+				subTokens[i].Owner = actualAddress
+				k.nftKeeper.SetSubToken(ctx, nftRecord.Id, subTokens[i])
 			}
-		}
-		err = k.nftKeeper.SetNFT(ctx, nftRecord.Denom, nftRecord.Id, nft)
-		// error only if collections doesn't exist, but we can't burn without owner
-		if err != nil {
-			continue
 		}
 		// Emit nft event
 		err = events.EmitTypedEvent(ctx, &types.EventLegacyReturnNFT{
