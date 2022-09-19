@@ -47,7 +47,7 @@ $ %s query multisig wallet dx18c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg3pv33f`, config.Ap
 			queryClient := types.NewQueryClient(clientCtx)
 
 			req := &types.QueryWalletRequest{
-				Address: strings.ToLower(args[0]),
+				Wallet: strings.ToLower(args[0]),
 			}
 
 			res, err := queryClient.Wallet(context.Background(), req)
@@ -157,7 +157,7 @@ $ %s query multisig transactions dx18c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg3pv33f`, con
 			}
 
 			req := &types.QueryTransactionsRequest{
-				Address:    strings.ToLower(args[0]),
+				Wallet:     strings.ToLower(args[0]),
 				Pagination: pageReq,
 			}
 

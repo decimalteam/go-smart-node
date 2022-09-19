@@ -14,7 +14,7 @@ func TestValidateWallet(t *testing.T) {
 	addrs := generateAddresses(addrCount)
 
 	overMaxOwners := make([]string, MaxOwnerCount+1)
-	overMaxWeights := make([]uint64, MaxOwnerCount+1)
+	overMaxWeights := make([]uint32, MaxOwnerCount+1)
 	for i := 0; i < MaxOwnerCount+1; i++ {
 		overMaxOwners[i] = addrs[i+10].String()
 		overMaxWeights[i] = 1
@@ -24,15 +24,15 @@ func TestValidateWallet(t *testing.T) {
 		tag         string
 		sender      sdk.AccAddress
 		owners      []string
-		weights     []uint64
-		threshold   uint64
+		weights     []uint32
+		threshold   uint32
 		expectError bool
 	}{
 		{
 			tag:         "valid wallet",
 			sender:      addrs[0],
 			owners:      []string{addrs[1].String(), addrs[2].String(), addrs[3].String()},
-			weights:     []uint64{1, 1, 1},
+			weights:     []uint32{1, 1, 1},
 			threshold:   2,
 			expectError: false,
 		},
@@ -40,7 +40,7 @@ func TestValidateWallet(t *testing.T) {
 			tag:         "1 owner",
 			sender:      addrs[0],
 			owners:      []string{addrs[1].String()},
-			weights:     []uint64{1},
+			weights:     []uint32{1},
 			threshold:   2,
 			expectError: true,
 		},
@@ -56,7 +56,7 @@ func TestValidateWallet(t *testing.T) {
 			tag:         "double owner",
 			sender:      addrs[0],
 			owners:      []string{addrs[1].String(), addrs[1].String(), addrs[2].String()},
-			weights:     []uint64{1, 1, 1},
+			weights:     []uint32{1, 1, 1},
 			threshold:   2,
 			expectError: true,
 		},
@@ -64,7 +64,7 @@ func TestValidateWallet(t *testing.T) {
 			tag:         "owner count != weight count",
 			sender:      addrs[0],
 			owners:      []string{addrs[1].String(), addrs[2].String()},
-			weights:     []uint64{1},
+			weights:     []uint32{1},
 			threshold:   2,
 			expectError: true,
 		},
@@ -72,7 +72,7 @@ func TestValidateWallet(t *testing.T) {
 			tag:         "invalid weight 1",
 			sender:      addrs[0],
 			owners:      []string{addrs[1].String(), addrs[2].String()},
-			weights:     []uint64{MinWeight - 1, 1}, // < 1
+			weights:     []uint32{MinWeight - 1, 1}, // < 1
 			threshold:   2,
 			expectError: true,
 		},
@@ -80,7 +80,7 @@ func TestValidateWallet(t *testing.T) {
 			tag:         "invalid weight 2",
 			sender:      addrs[0],
 			owners:      []string{addrs[1].String(), addrs[2].String()},
-			weights:     []uint64{1, MaxWeight + 1}, // > 1024
+			weights:     []uint32{1, MaxWeight + 1}, // > 1024
 			threshold:   2,
 			expectError: true,
 		},
@@ -88,7 +88,7 @@ func TestValidateWallet(t *testing.T) {
 			tag:         "threshold over sum of weights",
 			sender:      addrs[0],
 			owners:      []string{addrs[1].String(), addrs[2].String()},
-			weights:     []uint64{1, 1},
+			weights:     []uint32{1, 1},
 			threshold:   3,
 			expectError: true,
 		},
@@ -96,7 +96,7 @@ func TestValidateWallet(t *testing.T) {
 			tag:         "invalid owner address",
 			sender:      addrs[0],
 			owners:      []string{addrs[1].String() + "0", addrs[2].String()},
-			weights:     []uint64{1, 2},
+			weights:     []uint32{1, 2},
 			threshold:   2,
 			expectError: true,
 		},
@@ -119,7 +119,7 @@ func TestValidateTransaction(t *testing.T) {
 
 	wallet, err := NewWallet(
 		[]string{addrs[0].String(), addrs[1].String(), addrs[2].String()},
-		[]uint64{1, 1, 1},
+		[]uint32{1, 1, 1},
 		2,
 		[]byte{1},
 	)
@@ -184,7 +184,7 @@ func TestValidateSignTransaction(t *testing.T) {
 
 	wallet, err := NewWallet(
 		[]string{addrs[0].String(), addrs[1].String(), addrs[2].String()},
-		[]uint64{1, 1, 1},
+		[]uint32{1, 1, 1},
 		2,
 		[]byte{1},
 	)

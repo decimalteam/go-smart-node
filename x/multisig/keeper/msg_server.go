@@ -110,14 +110,14 @@ func (k Keeper) CreateTransaction(goCtx context.Context, msg *types.MsgCreateTra
 	// Sign created multisig transaction by the creator
 	_, err = k.SignTransaction(goCtx, &types.MsgSignTransaction{
 		Sender: msg.Sender,
-		TxID:   transaction.Id,
+		ID:     transaction.Id,
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	return &types.MsgCreateTransactionResponse{
-		TxID: transaction.Id,
+		ID: transaction.Id,
 	}, nil
 }
 
@@ -125,7 +125,7 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Retrieve multisig transaction from the KVStore
-	transaction, err := k.GetTransaction(ctx, msg.TxID)
+	transaction, err := k.GetTransaction(ctx, msg.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 	}
 
 	// Calculate current weight of signatures
-	confirmations := uint64(0)
+	confirmations := uint32(0)
 	for i := 0; i < len(wallet.Owners); i++ {
 		if transaction.Signers[i] != "" {
 			confirmations += wallet.Weights[i]
@@ -150,7 +150,7 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 	}
 
 	// Append the signature to the multisig transaction
-	weight := uint64(0)
+	weight := uint32(0)
 	signed := false
 	for i := 0; i < len(wallet.Owners); i++ {
 		if wallet.Owners[i] != msg.Sender {
