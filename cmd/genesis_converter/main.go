@@ -11,6 +11,24 @@ import (
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
 
+func main() {
+	initConfig()
+	if len(os.Args) < 4 {
+		fmt.Println("usage: ./genesis_converter <decimal_genesis_file> <dsc_params_source_genesis> <nft_owners_fix_file> <dsc_genesis_file>")
+		os.Exit(1)
+	}
+	gsOld := readGenesisOld(os.Args[1])
+	gsSource := readGenesisNew(os.Args[2])
+	fixNFTData := readNFTFix(os.Args[3])
+	gsNew, _, err := convertGenesis(gsOld, fixNFTData)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	copyParams(&gsNew, gsSource)
+	writeGenesisNew(os.Args[4], &gsNew)
+}
+
 // Init global cosmos sdk config
 func initConfig() {
 	cfg := sdk.GetConfig()
@@ -71,20 +89,25 @@ func readGenesisOld(fpath string) *GenesisOld {
 	return &gs
 }
 
-func main() {
-	if len(os.Args) < 4 {
-		fmt.Println("usage: ./genesis_converter <decimal_genesis_file> <dsc_genesis_file> <dsc_params_source_genesis>")
-		os.Exit(1)
+func readNFTFix(fpath string) []NFTOwnerFixRecord {
+	if fpath == "" {
+		return []NFTOwnerFixRecord{}
 	}
-	gsOld := readGenesisOld(os.Args[1])
-	gsSource := readGenesisNew(os.Args[3])
-	gsNew, _, err := convertGenesis(gsOld)
+	f, err := os.Open(fpath)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		panic(fmt.Errorf("file open %s error: %s", fpath, err.Error()))
 	}
-	copyParams(&gsNew, gsSource)
-	writeGenesisNew(os.Args[2], &gsNew)
+	defer f.Close()
+	data, err := io.ReadAll(f)
+	if err != nil {
+		panic(fmt.Errorf("file read %s error: %s", fpath, err.Error()))
+	}
+	var res []NFTOwnerFixRecord
+	err = json.Unmarshal(data, &res)
+	if err != nil {
+		panic(fmt.Errorf("unmarshal %s error: %s", fpath, err.Error()))
+	}
+	return res
 }
 
 type Statistic struct {
@@ -92,7 +115,7 @@ type Statistic struct {
 	countRegularAccountsNoPublicKey uint64
 }
 
-func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
+func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord) (GenesisNew, Statistic, error) {
 	var gsNew GenesisNew
 	var err error
 	// old-new adresses table, multisig addresses table, module addresses
@@ -133,7 +156,7 @@ func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
 	}
 	// nft
 	gsNew.AppState.NFT.Collections, err =
-		convertNFT(gsOld.AppState.NFT.Collections, gsOld.AppState.NFT.SubTokens, addrTable, legacyRecords)
+		convertNFT(gsOld.AppState.NFT.Collections, gsOld.AppState.NFT.SubTokens, addrTable, legacyRecords, fixNFTData)
 	if err != nil {
 		return GenesisNew{}, Statistic{}, err
 	}

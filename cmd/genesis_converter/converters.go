@@ -234,7 +234,8 @@ func convertMultisigTransactions(transactionsOld []TransactionOld, addrTable *Ad
 	return res, nil
 }
 
-func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld, addrTable *AddressTable, legacyRecords *LegacyRecords) ([]CollectionNew, error) {
+func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
+	addrTable *AddressTable, legacyRecords *LegacyRecords, fixNFTData []NFTOwnerFixRecord) ([]CollectionNew, error) {
 	// prepare subtokens
 	type subRecord struct {
 		id      string
@@ -292,6 +293,23 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld, 
 				for i := range subtokens {
 					for _, id := range ownerOld.SubTokenIds {
 						if id == uint64(subtokens[i].ID) {
+							subtokens[i].Owner = ownerAddress
+						}
+					}
+				}
+			}
+			// 3.5 fix owners
+			for _, rec := range fixNFTData {
+				if rec.TokenID != nftOld.ID {
+					continue
+				}
+				ownerAddress := addrTable.GetAddress(rec.Owner)
+				if ownerAddress == "" {
+					return []CollectionNew{}, fmt.Errorf("impossible situation: lost nft for owner '%s'", rec.Owner)
+				}
+				for i := range subtokens {
+					for _, id := range rec.SubTokens {
+						if id == subtokens[i].ID {
 							subtokens[i].Owner = ownerAddress
 						}
 					}

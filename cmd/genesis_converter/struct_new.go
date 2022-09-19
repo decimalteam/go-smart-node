@@ -313,3 +313,9 @@ type SubTokenNew struct {
 	Owner   string   `json:"owner"`
 	Reserve sdk.Coin `json:"reserve"`
 }
+
+type NFTOwnerFixRecord struct {
+	TokenID   string   `json:"token_id"`
+	Owner     string   `json:"owner"`
+	SubTokens []uint32 `json:"sub_tokens"`
+}
