@@ -132,13 +132,8 @@ func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
 		return GenesisNew{}, Statistic{}, err
 	}
 	// nft
-	gsNew.AppState.NFT.Collections, gsNew.AppState.NFT.NFTs, err =
-		convertNFT(gsOld.AppState.NFT.Collections, addrTable, legacyRecords)
-	if err != nil {
-		return GenesisNew{}, Statistic{}, err
-	}
-	gsNew.AppState.NFT.SubTokens, err =
-		convertSubTokens(gsOld.AppState.NFT.SubTokens, gsNew.AppState.NFT.NFTs)
+	gsNew.AppState.NFT.Collections, err =
+		convertNFT(gsOld.AppState.NFT.Collections, gsOld.AppState.NFT.SubTokens, addrTable, legacyRecords)
 	if err != nil {
 		return GenesisNew{}, Statistic{}, err
 	}
@@ -167,7 +162,7 @@ func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
 		}
 	}
 	// validate NFT colections
-	verifyNFTSupply(gsNew.AppState.NFT.Collections, gsNew.AppState.NFT.NFTs)
+	verifyNFTSupply(gsNew.AppState.NFT.Collections)
 
 	return gsNew, Statistic{}, nil
 }
