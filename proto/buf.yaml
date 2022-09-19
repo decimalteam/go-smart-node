@@ -8,6 +8,7 @@ name: bitbucket.org/decimalteam/go-smart-node
 deps:
   - buf.build/cosmos/cosmos-proto
   - buf.build/cosmos/gogo-proto
+  - buf.build/cosmos/cosmos-sdk
   - buf.build/googleapis/googleapis
 breaking:
   use:
