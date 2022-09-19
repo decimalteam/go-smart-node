@@ -39,7 +39,7 @@ func TestCreateCoin(t *testing.T) {
 		sender         string
 		denom          string
 		title          string
-		crr            uint64
+		crr            uint32
 		initialVolume  sdkmath.Int
 		initialReserve sdkmath.Int
 		limitVolume    sdkmath.Int

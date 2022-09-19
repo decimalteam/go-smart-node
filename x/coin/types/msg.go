@@ -51,7 +51,7 @@ func NewMsgCreateCoin(
 		Sender:         sender.String(),
 		Denom:          denom,
 		Title:          title,
-		CRR:            crr,
+		CRR:            uint32(crr),
 		InitialVolume:  initVolume,
 		InitialReserve: initReserve,
 		LimitVolume:    limitVolume,

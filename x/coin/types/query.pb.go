@@ -30,7 +30,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// QueryCoinsRequest is request type for Query/Coins RPC method.
+// QueryCoinsRequest is request type for the Query/Coins RPC method.
 type QueryCoinsRequest struct {
 	Pagination *query.PageRequest `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
@@ -75,7 +75,7 @@ func (m *QueryCoinsRequest) GetPagination() *query.PageRequest {
 	return nil
 }
 
-// QueryCoinsResponse is response type for Query/Coins RPC method.
+// QueryCoinsResponse is response type for the Query/Coins RPC method.
 type QueryCoinsResponse struct {
 	Coins      []Coin              `protobuf:"bytes,1,rep,name=coins,proto3" json:"coins"`
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
@@ -128,7 +128,7 @@ func (m *QueryCoinsResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-// QueryCoinRequest is request type for Query/Coin RPC method.
+// QueryCoinRequest is request type for the Query/Coin RPC method.
 type QueryCoinRequest struct {
 	Denom string `protobuf:"bytes,1,opt,name=denom,proto3" json:"denom,omitempty"`
 }
@@ -173,7 +173,7 @@ func (m *QueryCoinRequest) GetDenom() string {
 	return ""
 }
 
-// QueryCoinResponse is response type for Query/Coin RPC method.
+// QueryCoinResponse is response type for the Query/Coin RPC method.
 type QueryCoinResponse struct {
 	Coin Coin `protobuf:"bytes,1,opt,name=coin,proto3" json:"coin"`
 }
@@ -218,7 +218,7 @@ func (m *QueryCoinResponse) GetCoin() Coin {
 	return Coin{}
 }
 
-// QueryChecksRequest is request type for Query/Checks RPC method.
+// QueryChecksRequest is request type for the Query/Checks RPC method.
 type QueryChecksRequest struct {
 	Pagination *query.PageRequest `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
@@ -263,7 +263,7 @@ func (m *QueryChecksRequest) GetPagination() *query.PageRequest {
 	return nil
 }
 
-// QueryChecksResponse is response type for Query/Checks RPC method.
+// QueryChecksResponse is response type for the Query/Checks RPC method.
 type QueryChecksResponse struct {
 	Checks     []Check             `protobuf:"bytes,1,rep,name=checks,proto3" json:"checks"`
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
@@ -316,7 +316,7 @@ func (m *QueryChecksResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-// QueryCheckRequest is request type for Query/Check RPC method.
+// QueryCheckRequest is request type for the Query/Check RPC method.
 type QueryCheckRequest struct {
 	Hash []byte `protobuf:"bytes,1,opt,name=hash,proto3" json:"hash,omitempty"`
 }
@@ -361,7 +361,7 @@ func (m *QueryCheckRequest) GetHash() []byte {
 	return nil
 }
 
-// QueryCheckResponse is response type for Query/Check RPC method.
+// QueryCheckResponse is response type for the Query/Check RPC method.
 type QueryCheckResponse struct {
 	Check Check `protobuf:"bytes,1,opt,name=check,proto3" json:"check"`
 }
@@ -406,7 +406,7 @@ func (m *QueryCheckResponse) GetCheck() Check {
 	return Check{}
 }
 
-// QueryParamsRequest is request type for Query/Params RPC method.
+// QueryParamsRequest is request type for the Query/Params RPC method.
 type QueryParamsRequest struct {
 }
 
@@ -443,7 +443,7 @@ func (m *QueryParamsRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryParamsRequest proto.InternalMessageInfo
 
-// QueryParamsResponse is response type for Query/Params RPC method.
+// QueryParamsResponse is response type for the Query/Params RPC method.
 type QueryParamsResponse struct {
 	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
 }

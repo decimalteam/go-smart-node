@@ -59,7 +59,7 @@ func (sh *Helper) CreateCoin(sender sdk.AccAddress, title, denom string, crr uin
 	return types.Coin{
 		Title:       title,
 		Denom:       denom,
-		CRR:         crr,
+		CRR:         uint32(crr),
 		Reserve:     initReserve,
 		Volume:      initVolume,
 		LimitVolume: limitVolume,
@@ -75,7 +75,7 @@ func (sh *Helper) CreateCoinWithContext(ctx sdk.Context, sender sdk.AccAddress, 
 	return types.Coin{
 		Title:       title,
 		Denom:       denom,
-		CRR:         crr,
+		CRR:         uint32(crr),
 		Reserve:     initReserve,
 		Volume:      initVolume,
 		LimitVolume: limitVolume,
