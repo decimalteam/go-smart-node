@@ -121,7 +121,7 @@ func TestSwapRedeem(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		msg := NewMsgSwapRedeem(
+		msg := NewMsgRedeemSwap(
 			tc.sender,
 			tc.sender.String(),
 			tc.recipient,
@@ -182,7 +182,7 @@ func TestChainActivate(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		msg := NewMsgChainActivate(
+		msg := NewMsgActivateChain(
 			tc.sender,
 			tc.chainNumber,
 			tc.chainName,
@@ -224,7 +224,7 @@ func TestChainDeactivate(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		msg := NewMsgChainDeactivate(
+		msg := NewMsgDeactivateChain(
 			tc.sender,
 			tc.chainNumber,
 		)

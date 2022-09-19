@@ -22,17 +22,17 @@ func NewHandler(server types.MsgServer) sdk.Handler {
 		}()
 		// Handle the message
 		switch msg := msg.(type) {
-		case *types.MsgSwapInitialize:
-			res, err := server.SwapInitialize(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgInitializeSwap:
+			res, err := server.InitializeSwap(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgSwapRedeem:
-			res, err := server.SwapRedeem(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgRedeemSwap:
+			res, err := server.RedeemSwap(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgChainActivate:
-			res, err := server.ChainActivate(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgActivateChain:
+			res, err := server.ActivateChain(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgChainDeactivate:
-			res, err := server.ChainDeactivate(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgDeactivateChain:
+			res, err := server.DeactivateChain(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg)

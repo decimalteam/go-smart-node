@@ -26,7 +26,7 @@ func TestCliSwapInitialize(t *testing.T) {
 
 	// check
 	require.Equal(t, 1, len(result.msgs))
-	msg, ok := result.msgs[0].(*types.MsgSwapInitialize)
+	msg, ok := result.msgs[0].(*types.MsgInitializeSwap)
 	require.True(t, ok)
 	require.Equal(t, "0x12345", msg.Recipient)
 	require.True(t, msg.Amount.Equal(sdk.NewInt(1000)))
@@ -57,7 +57,7 @@ func TestCliSwapRedeem(t *testing.T) {
 
 	// check
 	require.Equal(t, 1, len(result.msgs))
-	msg, ok := result.msgs[0].(*types.MsgSwapRedeem)
+	msg, ok := result.msgs[0].(*types.MsgRedeemSwap)
 	require.True(t, ok)
 	require.Equal(t, "0x12345", msg.From)
 	require.Equal(t, adr1.String(), msg.Recipient)

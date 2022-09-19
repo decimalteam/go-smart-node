@@ -50,6 +50,6 @@ func (h Hash) String() string {
 // Chain
 ////////////////////////////////////////////////////////////////
 
-func NewChain(number uint32, name string, active bool) Chain {
-	return Chain{Number: number, Name: name, Active: active}
+func NewChain(id uint32, name string, active bool) Chain {
+	return Chain{Id: id, Name: name, Active: active}
 }

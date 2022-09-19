@@ -19,10 +19,10 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
-		&MsgSwapInitialize{},
-		&MsgSwapRedeem{},
-		&MsgChainActivate{},
-		&MsgChainDeactivate{},
+		&MsgInitializeSwap{},
+		&MsgRedeemSwap{},
+		&MsgActivateChain{},
+		&MsgDeactivateChain{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)

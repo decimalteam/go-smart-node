@@ -41,7 +41,7 @@ func TestEcrecover(t *testing.T) {
 	amount, ok := sdk.NewIntFromString("100000000000000000000")
 	require.True(t, ok)
 
-	msg := MsgSwapRedeem{
+	msg := MsgRedeemSwap{
 		sender.String(),
 		sender.String(),
 		recipient.String(),

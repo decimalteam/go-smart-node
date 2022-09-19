@@ -98,7 +98,7 @@ func (k Keeper) HasChain(ctx sdk.Context, chainNumber uint32) bool {
 func (k *Keeper) SetChain(ctx sdk.Context, chain *types.Chain) {
 	store := ctx.KVStore(k.storeKey)
 	value := k.cdc.MustMarshalLengthPrefixed(chain)
-	store.Set(types.GetChainKey(chain.Number), value)
+	store.Set(types.GetChainKey(chain.Id), value)
 }
 
 func (k *Keeper) GetChain(ctx sdk.Context, chainNumber uint32) (types.Chain, bool) {

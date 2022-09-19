@@ -15,7 +15,7 @@ import (
 
 var _ types.MsgServer = &Keeper{}
 
-func (k Keeper) SwapInitialize(goCtx context.Context, msg *types.MsgSwapInitialize) (*types.MsgSwapInitializeResponse, error) {
+func (k Keeper) InitializeSwap(goCtx context.Context, msg *types.MsgInitializeSwap) (*types.MsgInitializeSwapResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	if !k.HasChain(ctx, msg.DestChain) {
@@ -45,7 +45,7 @@ func (k Keeper) SwapInitialize(goCtx context.Context, msg *types.MsgSwapInitiali
 		return nil, err
 	}
 
-	err = events.EmitTypedEvent(ctx, &types.EventSwapInitialize{
+	err = events.EmitTypedEvent(ctx, &types.EventInitializeSwap{
 		Sender:            msg.Sender,
 		From:              msg.Sender,
 		DestChain:         msg.DestChain,
@@ -58,11 +58,11 @@ func (k Keeper) SwapInitialize(goCtx context.Context, msg *types.MsgSwapInitiali
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
-	return &types.MsgSwapInitializeResponse{}, nil
+	return &types.MsgInitializeSwapResponse{}, nil
 
 }
 
-func (k Keeper) SwapRedeem(goCtx context.Context, msg *types.MsgSwapRedeem) (*types.MsgSwapRedeemResponse, error) {
+func (k Keeper) RedeemSwap(goCtx context.Context, msg *types.MsgRedeemSwap) (*types.MsgRedeemSwapResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	transactionNumber, ok := sdk.NewIntFromString(msg.TransactionNumber)
@@ -114,7 +114,7 @@ func (k Keeper) SwapRedeem(goCtx context.Context, msg *types.MsgSwapRedeem) (*ty
 		return nil, err
 	}
 
-	err = events.EmitTypedEvent(ctx, &types.EventSwapRedeem{
+	err = events.EmitTypedEvent(ctx, &types.EventRedeemSwap{
 		Sender:            msg.Sender,
 		From:              msg.Sender,
 		DestChain:         msg.DestChain,
@@ -127,11 +127,11 @@ func (k Keeper) SwapRedeem(goCtx context.Context, msg *types.MsgSwapRedeem) (*ty
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
-	return &types.MsgSwapRedeemResponse{}, nil
+	return &types.MsgRedeemSwapResponse{}, nil
 
 }
 
-func (k Keeper) ChainActivate(goCtx context.Context, msg *types.MsgChainActivate) (*types.MsgChainActivateResponse, error) {
+func (k Keeper) ActivateChain(goCtx context.Context, msg *types.MsgActivateChain) (*types.MsgActivateChainResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	params := k.GetParams(ctx)
@@ -139,27 +139,27 @@ func (k Keeper) ChainActivate(goCtx context.Context, msg *types.MsgChainActivate
 		return nil, errors.SenderIsNotSwapService
 	}
 
-	chain, found := k.GetChain(ctx, msg.ChainNumber)
+	chain, found := k.GetChain(ctx, msg.ID)
 	if found {
 		chain.Active = true
 	} else {
-		chain = types.NewChain(msg.ChainNumber, msg.ChainName, true)
+		chain = types.NewChain(msg.ID, msg.Name, true)
 	}
 
 	k.SetChain(ctx, &chain)
 
-	err := events.EmitTypedEvent(ctx, &types.EventChainActivate{
-		ChainName:   msg.ChainName,
-		ChainNumber: msg.ChainNumber,
+	err := events.EmitTypedEvent(ctx, &types.EventActivateChain{
+		ID:   msg.ID,
+		Name: msg.Name,
 	})
 	if err != nil {
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
-	return &types.MsgChainActivateResponse{}, nil
+	return &types.MsgActivateChainResponse{}, nil
 }
 
-func (k Keeper) ChainDeactivate(goCtx context.Context, msg *types.MsgChainDeactivate) (*types.MsgChainDeactivateResponse, error) {
+func (k Keeper) DeactivateChain(goCtx context.Context, msg *types.MsgDeactivateChain) (*types.MsgDeactivateChainResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	params := k.GetParams(ctx)
@@ -167,7 +167,7 @@ func (k Keeper) ChainDeactivate(goCtx context.Context, msg *types.MsgChainDeacti
 		return nil, errors.SenderIsNotSwapService
 	}
 
-	chain, found := k.GetChain(ctx, msg.ChainNumber)
+	chain, found := k.GetChain(ctx, msg.ID)
 	if !found {
 		return nil, errors.ChainDoesNotExists
 	}
@@ -175,12 +175,12 @@ func (k Keeper) ChainDeactivate(goCtx context.Context, msg *types.MsgChainDeacti
 	chain.Active = false
 	k.SetChain(ctx, &chain)
 
-	err := events.EmitTypedEvent(ctx, &types.EventChainDeactivate{
-		ChainNumber: msg.ChainNumber,
+	err := events.EmitTypedEvent(ctx, &types.EventDeactivateChain{
+		ID: msg.ID,
 	})
 	if err != nil {
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
-	return &types.MsgChainDeactivateResponse{}, nil
+	return &types.MsgDeactivateChainResponse{}, nil
 }

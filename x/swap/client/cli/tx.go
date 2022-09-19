@@ -66,7 +66,7 @@ $ %s tx %s init 0x12345 1000 bnb 128943 1 3 --from mykey`, config.AppBinName, ty
 				return err
 			}
 
-			msg := types.NewMsgSwapInitialize(from, recipient, amount, tokenSymbol, txNumber, uint32(fromChain), uint32(destChain))
+			msg := types.NewMsgInitializeSwap(from, recipient, amount, tokenSymbol, txNumber, uint32(fromChain), uint32(destChain))
 			err = msg.ValidateBasic()
 			if err != nil {
 				return err
@@ -141,7 +141,7 @@ $ %s tx %s redeem 0x12345 dx1..addr 1000 del 128943 3 1 0 ae45.. df350.. --from 
 			var _s types.Hash
 			copy(_s[:], s)
 
-			msg := types.NewMsgSwapRedeem(
+			msg := types.NewMsgRedeemSwap(
 				sender, from, recipient, amount, tokenSymbol, txNumber, uint32(fromChain), uint32(destChain), uint32(v), &_r, &_s)
 			err = msg.ValidateBasic()
 			if err != nil {
@@ -185,7 +185,7 @@ $ %s tx %s chain-activate 2 "Ethereum" --from mykey`, config.AppBinName, types.M
 
 			name := args[1]
 
-			msg := types.NewMsgChainActivate(sender, uint32(number), name)
+			msg := types.NewMsgActivateChain(sender, uint32(number), name)
 			err = msg.ValidateBasic()
 			if err != nil {
 				return err
@@ -226,7 +226,7 @@ $ %s tx %s chain-deactivate 2 --from mykey`, config.AppBinName, types.ModuleName
 				return err
 			}
 
-			msg := types.NewMsgChainDeactivate(sender, uint32(number))
+			msg := types.NewMsgDeactivateChain(sender, uint32(number))
 			err = msg.ValidateBasic()
 			if err != nil {
 				return err
