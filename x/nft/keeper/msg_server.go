@@ -80,7 +80,7 @@ func (k Keeper) MintToken(c context.Context, msg *types.MsgMintToken) (*types.Ms
 	collection.Supply++
 	if !collectionExists {
 		// write collection with it's counter
-		k.SetCollection(ctx, sender, msg.Denom, collection)
+		k.SetCollection(ctx, collection)
 	} else {
 		// write collection counter separately
 		k.setCollectionCounter(ctx, sender, collection.Denom, types.CollectionCounter{

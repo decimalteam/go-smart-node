@@ -71,10 +71,15 @@ func (k *Keeper) updateTokenURI(ctx sdk.Context, oldTokenURI string, newTokenURI
 func (k *Keeper) iterateTokens(ctx sdk.Context, creator sdk.AccAddress, denom string, handler func(token *types.Token) (stop bool)) error {
 	store := ctx.KVStore(k.storeKey)
 
-	it := sdk.KVStorePrefixIterator(store, types.GetTokensByCollectionKey(creator, denom))
+	rootKey := types.GetTokensByCollectionKey(creator, denom)
+	it := sdk.KVStorePrefixIterator(store, rootKey)
 	for ; it.Valid(); it.Next() {
 		var token types.Token
-		k.cdc.MustUnmarshalLengthPrefixed(it.Value(), &token)
+
+		tokenKey := it.Key()[len(rootKey):]
+		bz := store.Get(types.GetTokenKeyByIDHash(tokenKey))
+
+		k.cdc.MustUnmarshalLengthPrefixed(bz, &token)
 
 		// read token counter separately
 		counter := k.getTokenCounter(ctx, token.ID)
