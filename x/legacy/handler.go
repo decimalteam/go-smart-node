@@ -22,7 +22,9 @@ func NewHandler(server types.MsgServer) sdk.Handler {
 		}()
 		// Handle the message
 		switch msg := msg.(type) {
-		// NOTE: No messages in the module yet
+		case *types.MsgReturnLegacy:
+			res, err := server.ReturnLegacy(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg)
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)

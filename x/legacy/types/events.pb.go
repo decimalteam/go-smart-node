@@ -5,6 +5,9 @@ package types
 
 import (
 	fmt "fmt"
+	_ "github.com/cosmos/cosmos-proto"
+	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
+	types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
@@ -23,24 +26,25 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type EventLegacyReturnCoin struct {
-	OldAddress string `protobuf:"bytes,2,opt,name=old_address,json=oldAddress,proto3" json:"old_address,omitempty"`
-	NewAddress string `protobuf:"bytes,3,opt,name=new_address,json=newAddress,proto3" json:"new_address,omitempty"`
-	Coins      string `protobuf:"bytes,4,opt,name=coins,proto3" json:"coins,omitempty"`
+// EventReturnLegacyCoins defines event emitted when the coins are returned to the actual owner.
+type EventReturnLegacyCoins struct {
+	LegacyOwner string                                   `protobuf:"bytes,1,opt,name=legacy_owner,json=legacyOwner,proto3" json:"legacy_owner,omitempty"`
+	Owner       string                                   `protobuf:"bytes,2,opt,name=owner,proto3" json:"owner,omitempty"`
+	Coins       github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,3,rep,name=coins,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"coins"`
 }
 
-func (m *EventLegacyReturnCoin) Reset()         { *m = EventLegacyReturnCoin{} }
-func (m *EventLegacyReturnCoin) String() string { return proto.CompactTextString(m) }
-func (*EventLegacyReturnCoin) ProtoMessage()    {}
-func (*EventLegacyReturnCoin) Descriptor() ([]byte, []int) {
+func (m *EventReturnLegacyCoins) Reset()         { *m = EventReturnLegacyCoins{} }
+func (m *EventReturnLegacyCoins) String() string { return proto.CompactTextString(m) }
+func (*EventReturnLegacyCoins) ProtoMessage()    {}
+func (*EventReturnLegacyCoins) Descriptor() ([]byte, []int) {
 	return fileDescriptor_51c87b5331eb0201, []int{0}
 }
-func (m *EventLegacyReturnCoin) XXX_Unmarshal(b []byte) error {
+func (m *EventReturnLegacyCoins) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *EventLegacyReturnCoin) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EventReturnLegacyCoins) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_EventLegacyReturnCoin.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EventReturnLegacyCoins.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -50,58 +54,60 @@ func (m *EventLegacyReturnCoin) XXX_Marshal(b []byte, deterministic bool) ([]byt
 		return b[:n], nil
 	}
 }
-func (m *EventLegacyReturnCoin) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EventLegacyReturnCoin.Merge(m, src)
+func (m *EventReturnLegacyCoins) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventReturnLegacyCoins.Merge(m, src)
 }
-func (m *EventLegacyReturnCoin) XXX_Size() int {
+func (m *EventReturnLegacyCoins) XXX_Size() int {
 	return m.Size()
 }
-func (m *EventLegacyReturnCoin) XXX_DiscardUnknown() {
-	xxx_messageInfo_EventLegacyReturnCoin.DiscardUnknown(m)
+func (m *EventReturnLegacyCoins) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventReturnLegacyCoins.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_EventLegacyReturnCoin proto.InternalMessageInfo
+var xxx_messageInfo_EventReturnLegacyCoins proto.InternalMessageInfo
 
-func (m *EventLegacyReturnCoin) GetOldAddress() string {
+func (m *EventReturnLegacyCoins) GetLegacyOwner() string {
 	if m != nil {
-		return m.OldAddress
+		return m.LegacyOwner
 	}
 	return ""
 }
 
-func (m *EventLegacyReturnCoin) GetNewAddress() string {
+func (m *EventReturnLegacyCoins) GetOwner() string {
 	if m != nil {
-		return m.NewAddress
+		return m.Owner
 	}
 	return ""
 }
 
-func (m *EventLegacyReturnCoin) GetCoins() string {
+func (m *EventReturnLegacyCoins) GetCoins() github_com_cosmos_cosmos_sdk_types.Coins {
 	if m != nil {
 		return m.Coins
 	}
-	return ""
+	return nil
 }
 
-type EventLegacyReturnNFT struct {
-	OldAddress string `protobuf:"bytes,2,opt,name=old_address,json=oldAddress,proto3" json:"old_address,omitempty"`
-	NewAddress string `protobuf:"bytes,3,opt,name=new_address,json=newAddress,proto3" json:"new_address,omitempty"`
-	Denom      string `protobuf:"bytes,4,opt,name=denom,proto3" json:"denom,omitempty"`
-	TokenId    string `protobuf:"bytes,5,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
+// EventReturnLegacySubToken defines event emitted when the NFT sub-token is returned to the actual owner.
+type EventReturnLegacySubToken struct {
+	LegacyOwner string   `protobuf:"bytes,1,opt,name=legacy_owner,json=legacyOwner,proto3" json:"legacy_owner,omitempty"`
+	Owner       string   `protobuf:"bytes,2,opt,name=owner,proto3" json:"owner,omitempty"`
+	Denom       string   `protobuf:"bytes,3,opt,name=denom,proto3" json:"denom,omitempty"`
+	ID          string   `protobuf:"bytes,4,opt,name=id,proto3" json:"id,omitempty"`
+	SubTokenIDs []uint32 `protobuf:"varint,5,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
 }
 
-func (m *EventLegacyReturnNFT) Reset()         { *m = EventLegacyReturnNFT{} }
-func (m *EventLegacyReturnNFT) String() string { return proto.CompactTextString(m) }
-func (*EventLegacyReturnNFT) ProtoMessage()    {}
-func (*EventLegacyReturnNFT) Descriptor() ([]byte, []int) {
+func (m *EventReturnLegacySubToken) Reset()         { *m = EventReturnLegacySubToken{} }
+func (m *EventReturnLegacySubToken) String() string { return proto.CompactTextString(m) }
+func (*EventReturnLegacySubToken) ProtoMessage()    {}
+func (*EventReturnLegacySubToken) Descriptor() ([]byte, []int) {
 	return fileDescriptor_51c87b5331eb0201, []int{1}
 }
-func (m *EventLegacyReturnNFT) XXX_Unmarshal(b []byte) error {
+func (m *EventReturnLegacySubToken) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *EventLegacyReturnNFT) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EventReturnLegacySubToken) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_EventLegacyReturnNFT.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EventReturnLegacySubToken.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -111,65 +117,72 @@ func (m *EventLegacyReturnNFT) XXX_Marshal(b []byte, deterministic bool) ([]byte
 		return b[:n], nil
 	}
 }
-func (m *EventLegacyReturnNFT) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EventLegacyReturnNFT.Merge(m, src)
+func (m *EventReturnLegacySubToken) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventReturnLegacySubToken.Merge(m, src)
 }
-func (m *EventLegacyReturnNFT) XXX_Size() int {
+func (m *EventReturnLegacySubToken) XXX_Size() int {
 	return m.Size()
 }
-func (m *EventLegacyReturnNFT) XXX_DiscardUnknown() {
-	xxx_messageInfo_EventLegacyReturnNFT.DiscardUnknown(m)
+func (m *EventReturnLegacySubToken) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventReturnLegacySubToken.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_EventLegacyReturnNFT proto.InternalMessageInfo
+var xxx_messageInfo_EventReturnLegacySubToken proto.InternalMessageInfo
 
-func (m *EventLegacyReturnNFT) GetOldAddress() string {
+func (m *EventReturnLegacySubToken) GetLegacyOwner() string {
 	if m != nil {
-		return m.OldAddress
+		return m.LegacyOwner
 	}
 	return ""
 }
 
-func (m *EventLegacyReturnNFT) GetNewAddress() string {
+func (m *EventReturnLegacySubToken) GetOwner() string {
 	if m != nil {
-		return m.NewAddress
+		return m.Owner
 	}
 	return ""
 }
 
-func (m *EventLegacyReturnNFT) GetDenom() string {
+func (m *EventReturnLegacySubToken) GetDenom() string {
 	if m != nil {
 		return m.Denom
 	}
 	return ""
 }
 
-func (m *EventLegacyReturnNFT) GetTokenId() string {
+func (m *EventReturnLegacySubToken) GetID() string {
 	if m != nil {
-		return m.TokenId
+		return m.ID
 	}
 	return ""
 }
 
-// multisig wallet return
-type EventLegacyReturnWallet struct {
-	OldAddress string `protobuf:"bytes,2,opt,name=old_address,json=oldAddress,proto3" json:"old_address,omitempty"`
-	NewAddress string `protobuf:"bytes,3,opt,name=new_address,json=newAddress,proto3" json:"new_address,omitempty"`
-	Wallet     string `protobuf:"bytes,4,opt,name=wallet,proto3" json:"wallet,omitempty"`
+func (m *EventReturnLegacySubToken) GetSubTokenIDs() []uint32 {
+	if m != nil {
+		return m.SubTokenIDs
+	}
+	return nil
 }
 
-func (m *EventLegacyReturnWallet) Reset()         { *m = EventLegacyReturnWallet{} }
-func (m *EventLegacyReturnWallet) String() string { return proto.CompactTextString(m) }
-func (*EventLegacyReturnWallet) ProtoMessage()    {}
-func (*EventLegacyReturnWallet) Descriptor() ([]byte, []int) {
+// EventReturnMultisigWallet defines event emitted when the multisig wallet is returned to the actual owner.
+type EventReturnMultisigWallet struct {
+	LegacyOwner string `protobuf:"bytes,1,opt,name=legacy_owner,json=legacyOwner,proto3" json:"legacy_owner,omitempty"`
+	Owner       string `protobuf:"bytes,2,opt,name=owner,proto3" json:"owner,omitempty"`
+	Wallet      string `protobuf:"bytes,3,opt,name=wallet,proto3" json:"wallet,omitempty"`
+}
+
+func (m *EventReturnMultisigWallet) Reset()         { *m = EventReturnMultisigWallet{} }
+func (m *EventReturnMultisigWallet) String() string { return proto.CompactTextString(m) }
+func (*EventReturnMultisigWallet) ProtoMessage()    {}
+func (*EventReturnMultisigWallet) Descriptor() ([]byte, []int) {
 	return fileDescriptor_51c87b5331eb0201, []int{2}
 }
-func (m *EventLegacyReturnWallet) XXX_Unmarshal(b []byte) error {
+func (m *EventReturnMultisigWallet) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *EventLegacyReturnWallet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EventReturnMultisigWallet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_EventLegacyReturnWallet.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EventReturnMultisigWallet.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -179,33 +192,33 @@ func (m *EventLegacyReturnWallet) XXX_Marshal(b []byte, deterministic bool) ([]b
 		return b[:n], nil
 	}
 }
-func (m *EventLegacyReturnWallet) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EventLegacyReturnWallet.Merge(m, src)
+func (m *EventReturnMultisigWallet) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventReturnMultisigWallet.Merge(m, src)
 }
-func (m *EventLegacyReturnWallet) XXX_Size() int {
+func (m *EventReturnMultisigWallet) XXX_Size() int {
 	return m.Size()
 }
-func (m *EventLegacyReturnWallet) XXX_DiscardUnknown() {
-	xxx_messageInfo_EventLegacyReturnWallet.DiscardUnknown(m)
+func (m *EventReturnMultisigWallet) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventReturnMultisigWallet.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_EventLegacyReturnWallet proto.InternalMessageInfo
+var xxx_messageInfo_EventReturnMultisigWallet proto.InternalMessageInfo
 
-func (m *EventLegacyReturnWallet) GetOldAddress() string {
+func (m *EventReturnMultisigWallet) GetLegacyOwner() string {
 	if m != nil {
-		return m.OldAddress
+		return m.LegacyOwner
 	}
 	return ""
 }
 
-func (m *EventLegacyReturnWallet) GetNewAddress() string {
+func (m *EventReturnMultisigWallet) GetOwner() string {
 	if m != nil {
-		return m.NewAddress
+		return m.Owner
 	}
 	return ""
 }
 
-func (m *EventLegacyReturnWallet) GetWallet() string {
+func (m *EventReturnMultisigWallet) GetWallet() string {
 	if m != nil {
 		return m.Wallet
 	}
@@ -213,37 +226,46 @@ func (m *EventLegacyReturnWallet) GetWallet() string {
 }
 
 func init() {
-	proto.RegisterType((*EventLegacyReturnCoin)(nil), "decimal.legacy.v1.EventLegacyReturnCoin")
-	proto.RegisterType((*EventLegacyReturnNFT)(nil), "decimal.legacy.v1.EventLegacyReturnNFT")
-	proto.RegisterType((*EventLegacyReturnWallet)(nil), "decimal.legacy.v1.EventLegacyReturnWallet")
+	proto.RegisterType((*EventReturnLegacyCoins)(nil), "decimal.legacy.v1.EventReturnLegacyCoins")
+	proto.RegisterType((*EventReturnLegacySubToken)(nil), "decimal.legacy.v1.EventReturnLegacySubToken")
+	proto.RegisterType((*EventReturnMultisigWallet)(nil), "decimal.legacy.v1.EventReturnMultisigWallet")
 }
 
 func init() { proto.RegisterFile("decimal/legacy/v1/events.proto", fileDescriptor_51c87b5331eb0201) }
 
 var fileDescriptor_51c87b5331eb0201 = []byte{
-	// 296 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x91, 0x41, 0x4b, 0xc3, 0x30,
-	0x1c, 0xc5, 0x57, 0x75, 0x53, 0xe3, 0xc9, 0x51, 0xb5, 0x7a, 0x88, 0xd2, 0x93, 0x97, 0x35, 0x0c,
-	0xc1, 0xbb, 0x8a, 0x82, 0x20, 0x22, 0x43, 0x10, 0xbc, 0x8c, 0xb4, 0xf9, 0x53, 0xca, 0xd2, 0xfc,
-	0x47, 0x93, 0xb5, 0xee, 0x23, 0x78, 0xf3, 0x63, 0x79, 0xdc, 0xd1, 0xa3, 0xb4, 0x5f, 0x44, 0x9a,
-	0xb6, 0x5e, 0x76, 0xdd, 0x2d, 0x2f, 0xef, 0x97, 0xbc, 0x07, 0x8f, 0x50, 0x01, 0x51, 0x92, 0x72,
-	0xc9, 0x24, 0xc4, 0x3c, 0x5a, 0xb2, 0x7c, 0xcc, 0x20, 0x07, 0x65, 0x74, 0x30, 0xcf, 0xd0, 0xe0,
-	0xf0, 0xb0, 0xf5, 0x83, 0xc6, 0x0f, 0xf2, 0xf1, 0x99, 0x1b, 0x63, 0x8c, 0xd6, 0x65, 0xf5, 0xa9,
-	0x01, 0x7d, 0x24, 0x47, 0xf7, 0xf5, 0xc3, 0x27, 0xcb, 0x4d, 0xc0, 0x2c, 0x32, 0x75, 0x87, 0x89,
-	0x1a, 0x9e, 0x93, 0x03, 0x94, 0x62, 0xca, 0x85, 0xc8, 0x40, 0x6b, 0x6f, 0xeb, 0xc2, 0xb9, 0xdc,
-	0x9f, 0x10, 0x94, 0xe2, 0xa6, 0xb9, 0xa9, 0x01, 0x05, 0xc5, 0x3f, 0xb0, 0xdd, 0x00, 0x0a, 0x8a,
-	0x0e, 0x70, 0x49, 0x3f, 0xc2, 0x44, 0x69, 0x6f, 0xc7, 0x5a, 0x8d, 0xf0, 0x3f, 0x1d, 0xe2, 0xae,
-	0x25, 0x3e, 0x3f, 0xbc, 0x6e, 0x26, 0x50, 0x80, 0xc2, 0xb4, 0x0b, 0xb4, 0x62, 0x78, 0x4a, 0xf6,
-	0x0c, 0xce, 0x40, 0x4d, 0x13, 0xe1, 0xf5, 0xad, 0xb1, 0x6b, 0xf5, 0xa3, 0xf0, 0x35, 0x39, 0x59,
-	0xab, 0xf2, 0xc6, 0xa5, 0x04, 0xb3, 0x81, 0x36, 0xc7, 0x64, 0x50, 0xd8, 0xbf, 0xda, 0x3a, 0xad,
-	0xba, 0x7d, 0xf9, 0x2e, 0xa9, 0xb3, 0x2a, 0xa9, 0xf3, 0x5b, 0x52, 0xe7, 0xab, 0xa2, 0xbd, 0x55,
-	0x45, 0x7b, 0x3f, 0x15, 0xed, 0xbd, 0x5f, 0x87, 0x89, 0x09, 0x17, 0xd1, 0x0c, 0x4c, 0x80, 0x59,
-	0xcc, 0xda, 0x09, 0x0d, 0xf0, 0x94, 0xc5, 0x38, 0xd2, 0x29, 0xcf, 0xcc, 0x48, 0xa1, 0x00, 0xf6,
-	0xd1, 0xcd, 0x6e, 0x96, 0x73, 0xd0, 0xe1, 0xc0, 0x4e, 0x79, 0xf5, 0x17, 0x00, 0x00, 0xff, 0xff,
-	0x04, 0xf8, 0x28, 0xa4, 0x15, 0x02, 0x00, 0x00,
+	// 448 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x53, 0x41, 0x8b, 0xd3, 0x40,
+	0x18, 0x6d, 0x5a, 0x5b, 0x70, 0xea, 0x22, 0x86, 0xb2, 0xa4, 0x7b, 0x48, 0x4b, 0x4f, 0xbd, 0x74,
+	0x66, 0xeb, 0x82, 0x17, 0x4f, 0xd6, 0xf5, 0xb0, 0xa0, 0x28, 0x59, 0x41, 0xf0, 0x52, 0x92, 0xcc,
+	0x47, 0x1c, 0x9a, 0xcc, 0x2c, 0xf9, 0x26, 0x59, 0xf7, 0x5f, 0xf8, 0x3b, 0x3c, 0x7b, 0xf2, 0x17,
+	0xec, 0x71, 0xf1, 0xe4, 0xa9, 0x4a, 0x7a, 0x11, 0xfc, 0x13, 0x32, 0x99, 0xe9, 0x41, 0x04, 0xf7,
+	0xb6, 0xa7, 0xe4, 0xf1, 0xde, 0x9b, 0xf7, 0x1e, 0xcc, 0x90, 0x90, 0x43, 0x2a, 0x8a, 0x38, 0x67,
+	0x39, 0x64, 0x71, 0x7a, 0xc5, 0xea, 0x25, 0x83, 0x1a, 0xa4, 0x46, 0x7a, 0x51, 0x2a, 0xad, 0xfc,
+	0x47, 0x8e, 0xa7, 0x96, 0xa7, 0xf5, 0xf2, 0x68, 0x94, 0xa9, 0x4c, 0xb5, 0x2c, 0x33, 0x7f, 0x56,
+	0x78, 0x34, 0x4e, 0x15, 0x16, 0x0a, 0xd7, 0x96, 0xb0, 0xc0, 0x51, 0xa1, 0x45, 0x2c, 0x89, 0x11,
+	0x58, 0xbd, 0x4c, 0x40, 0xc7, 0x4b, 0x96, 0x2a, 0x21, 0x2d, 0x3f, 0xfb, 0xe5, 0x91, 0xc3, 0x17,
+	0x26, 0x34, 0x02, 0x5d, 0x95, 0xf2, 0x65, 0x9b, 0xf4, 0x5c, 0x09, 0x89, 0xfe, 0x53, 0xf2, 0xc0,
+	0x06, 0xaf, 0xd5, 0xa5, 0x84, 0x32, 0xf0, 0xa6, 0xde, 0xfc, 0xfe, 0x2a, 0xf8, 0xf6, 0x65, 0x31,
+	0x72, 0x11, 0xcf, 0x38, 0x2f, 0x01, 0xf1, 0x5c, 0x97, 0x42, 0x66, 0xd1, 0xd0, 0xaa, 0x5f, 0x1b,
+	0xb1, 0x4f, 0x49, 0xdf, 0xba, 0xba, 0xb7, 0xb8, 0xac, 0xcc, 0x8f, 0x49, 0xdf, 0xb4, 0xc2, 0xa0,
+	0x37, 0xed, 0xcd, 0x87, 0x8f, 0xc7, 0xd4, 0x89, 0x4d, 0x6f, 0xea, 0x7a, 0x53, 0xd3, 0x6b, 0x75,
+	0x7c, 0xbd, 0x9d, 0x74, 0x3e, 0xff, 0x98, 0xcc, 0x33, 0xa1, 0x3f, 0x54, 0x09, 0x4d, 0x55, 0xe1,
+	0x26, 0xbb, 0xcf, 0x02, 0xf9, 0x86, 0xe9, 0xab, 0x0b, 0xc0, 0xd6, 0x80, 0x91, 0x3d, 0x79, 0xf6,
+	0xdb, 0x23, 0xe3, 0x7f, 0xa6, 0x9e, 0x57, 0xc9, 0x5b, 0xb5, 0x01, 0x79, 0xb7, 0x6b, 0x47, 0xa4,
+	0xcf, 0x41, 0xaa, 0x22, 0xe8, 0x19, 0x7d, 0x64, 0x81, 0x7f, 0x48, 0xba, 0x82, 0x07, 0xf7, 0xda,
+	0x23, 0x06, 0xcd, 0x76, 0xd2, 0x3d, 0x3b, 0x8d, 0xba, 0x82, 0xfb, 0x27, 0xe4, 0x00, 0xab, 0x64,
+	0xad, 0x4d, 0xcf, 0xb5, 0xe0, 0x18, 0xf4, 0xa7, 0xbd, 0xf9, 0xc1, 0xea, 0x61, 0xb3, 0x9d, 0x0c,
+	0xf7, 0xfd, 0xcf, 0x4e, 0x31, 0x1a, 0xe2, 0x1e, 0x70, 0x9c, 0x7d, 0xfd, 0x7b, 0xed, 0xab, 0x2a,
+	0xd7, 0x02, 0x45, 0xf6, 0x2e, 0xce, 0x73, 0xd0, 0x77, 0xbb, 0xf6, 0x98, 0x0c, 0x2e, 0xdb, 0x58,
+	0x3b, 0xf7, 0x3f, 0x06, 0xa7, 0x5b, 0xbd, 0xb9, 0x6e, 0x42, 0xef, 0xa6, 0x09, 0xbd, 0x9f, 0x4d,
+	0xe8, 0x7d, 0xda, 0x85, 0x9d, 0x9b, 0x5d, 0xd8, 0xf9, 0xbe, 0x0b, 0x3b, 0xef, 0x9f, 0x24, 0x42,
+	0x27, 0x55, 0xba, 0x01, 0x4d, 0x55, 0x99, 0x31, 0xf7, 0x42, 0x34, 0xc4, 0x05, 0xcb, 0xd4, 0x02,
+	0x8b, 0xb8, 0xd4, 0x0b, 0xa9, 0x38, 0xb0, 0x8f, 0xfb, 0x57, 0xd5, 0xde, 0x84, 0x64, 0xd0, 0x5e,
+	0xf7, 0x93, 0x3f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x3f, 0x39, 0xfc, 0xf3, 0x74, 0x03, 0x00, 0x00,
 }
 
-func (m *EventLegacyReturnCoin) Marshal() (dAtA []byte, err error) {
+func (m *EventReturnLegacyCoins) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -253,41 +275,48 @@ func (m *EventLegacyReturnCoin) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *EventLegacyReturnCoin) MarshalTo(dAtA []byte) (int, error) {
+func (m *EventReturnLegacyCoins) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *EventLegacyReturnCoin) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EventReturnLegacyCoins) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
 	if len(m.Coins) > 0 {
-		i -= len(m.Coins)
-		copy(dAtA[i:], m.Coins)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.Coins)))
-		i--
-		dAtA[i] = 0x22
+		for iNdEx := len(m.Coins) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Coins[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintEvents(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x1a
+		}
 	}
-	if len(m.NewAddress) > 0 {
-		i -= len(m.NewAddress)
-		copy(dAtA[i:], m.NewAddress)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.NewAddress)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.OldAddress) > 0 {
-		i -= len(m.OldAddress)
-		copy(dAtA[i:], m.OldAddress)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.OldAddress)))
+	if len(m.Owner) > 0 {
+		i -= len(m.Owner)
+		copy(dAtA[i:], m.Owner)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Owner)))
 		i--
 		dAtA[i] = 0x12
+	}
+	if len(m.LegacyOwner) > 0 {
+		i -= len(m.LegacyOwner)
+		copy(dAtA[i:], m.LegacyOwner)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.LegacyOwner)))
+		i--
+		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
 
-func (m *EventLegacyReturnNFT) Marshal() (dAtA []byte, err error) {
+func (m *EventReturnLegacySubToken) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -297,48 +326,66 @@ func (m *EventLegacyReturnNFT) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *EventLegacyReturnNFT) MarshalTo(dAtA []byte) (int, error) {
+func (m *EventReturnLegacySubToken) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *EventLegacyReturnNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EventReturnLegacySubToken) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.TokenId) > 0 {
-		i -= len(m.TokenId)
-		copy(dAtA[i:], m.TokenId)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.TokenId)))
+	if len(m.SubTokenIDs) > 0 {
+		dAtA2 := make([]byte, len(m.SubTokenIDs)*10)
+		var j1 int
+		for _, num := range m.SubTokenIDs {
+			for num >= 1<<7 {
+				dAtA2[j1] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j1++
+			}
+			dAtA2[j1] = uint8(num)
+			j1++
+		}
+		i -= j1
+		copy(dAtA[i:], dAtA2[:j1])
+		i = encodeVarintEvents(dAtA, i, uint64(j1))
 		i--
 		dAtA[i] = 0x2a
+	}
+	if len(m.ID) > 0 {
+		i -= len(m.ID)
+		copy(dAtA[i:], m.ID)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.ID)))
+		i--
+		dAtA[i] = 0x22
 	}
 	if len(m.Denom) > 0 {
 		i -= len(m.Denom)
 		copy(dAtA[i:], m.Denom)
 		i = encodeVarintEvents(dAtA, i, uint64(len(m.Denom)))
 		i--
-		dAtA[i] = 0x22
-	}
-	if len(m.NewAddress) > 0 {
-		i -= len(m.NewAddress)
-		copy(dAtA[i:], m.NewAddress)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.NewAddress)))
-		i--
 		dAtA[i] = 0x1a
 	}
-	if len(m.OldAddress) > 0 {
-		i -= len(m.OldAddress)
-		copy(dAtA[i:], m.OldAddress)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.OldAddress)))
+	if len(m.Owner) > 0 {
+		i -= len(m.Owner)
+		copy(dAtA[i:], m.Owner)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Owner)))
 		i--
 		dAtA[i] = 0x12
+	}
+	if len(m.LegacyOwner) > 0 {
+		i -= len(m.LegacyOwner)
+		copy(dAtA[i:], m.LegacyOwner)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.LegacyOwner)))
+		i--
+		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
 
-func (m *EventLegacyReturnWallet) Marshal() (dAtA []byte, err error) {
+func (m *EventReturnMultisigWallet) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -348,12 +395,12 @@ func (m *EventLegacyReturnWallet) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *EventLegacyReturnWallet) MarshalTo(dAtA []byte) (int, error) {
+func (m *EventReturnMultisigWallet) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *EventLegacyReturnWallet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EventReturnMultisigWallet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -363,21 +410,21 @@ func (m *EventLegacyReturnWallet) MarshalToSizedBuffer(dAtA []byte) (int, error)
 		copy(dAtA[i:], m.Wallet)
 		i = encodeVarintEvents(dAtA, i, uint64(len(m.Wallet)))
 		i--
-		dAtA[i] = 0x22
-	}
-	if len(m.NewAddress) > 0 {
-		i -= len(m.NewAddress)
-		copy(dAtA[i:], m.NewAddress)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.NewAddress)))
-		i--
 		dAtA[i] = 0x1a
 	}
-	if len(m.OldAddress) > 0 {
-		i -= len(m.OldAddress)
-		copy(dAtA[i:], m.OldAddress)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.OldAddress)))
+	if len(m.Owner) > 0 {
+		i -= len(m.Owner)
+		copy(dAtA[i:], m.Owner)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Owner)))
 		i--
 		dAtA[i] = 0x12
+	}
+	if len(m.LegacyOwner) > 0 {
+		i -= len(m.LegacyOwner)
+		copy(dAtA[i:], m.LegacyOwner)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.LegacyOwner)))
+		i--
+		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -393,38 +440,40 @@ func encodeVarintEvents(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *EventLegacyReturnCoin) Size() (n int) {
+func (m *EventReturnLegacyCoins) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.OldAddress)
+	l = len(m.LegacyOwner)
 	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
 	}
-	l = len(m.NewAddress)
+	l = len(m.Owner)
 	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
 	}
-	l = len(m.Coins)
-	if l > 0 {
-		n += 1 + l + sovEvents(uint64(l))
+	if len(m.Coins) > 0 {
+		for _, e := range m.Coins {
+			l = e.Size()
+			n += 1 + l + sovEvents(uint64(l))
+		}
 	}
 	return n
 }
 
-func (m *EventLegacyReturnNFT) Size() (n int) {
+func (m *EventReturnLegacySubToken) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.OldAddress)
+	l = len(m.LegacyOwner)
 	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
 	}
-	l = len(m.NewAddress)
+	l = len(m.Owner)
 	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
 	}
@@ -432,24 +481,31 @@ func (m *EventLegacyReturnNFT) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
 	}
-	l = len(m.TokenId)
+	l = len(m.ID)
 	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
+	}
+	if len(m.SubTokenIDs) > 0 {
+		l = 0
+		for _, e := range m.SubTokenIDs {
+			l += sovEvents(uint64(e))
+		}
+		n += 1 + sovEvents(uint64(l)) + l
 	}
 	return n
 }
 
-func (m *EventLegacyReturnWallet) Size() (n int) {
+func (m *EventReturnMultisigWallet) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.OldAddress)
+	l = len(m.LegacyOwner)
 	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
 	}
-	l = len(m.NewAddress)
+	l = len(m.Owner)
 	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
 	}
@@ -466,7 +522,7 @@ func sovEvents(x uint64) (n int) {
 func sozEvents(x uint64) (n int) {
 	return sovEvents(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *EventLegacyReturnCoin) Unmarshal(dAtA []byte) error {
+func (m *EventReturnLegacyCoins) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -489,15 +545,15 @@ func (m *EventLegacyReturnCoin) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: EventLegacyReturnCoin: wiretype end group for non-group")
+			return fmt.Errorf("proto: EventReturnLegacyCoins: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EventLegacyReturnCoin: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EventReturnLegacyCoins: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
-		case 2:
+		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OldAddress", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field LegacyOwner", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -525,45 +581,45 @@ func (m *EventLegacyReturnCoin) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.OldAddress = string(dAtA[iNdEx:postIndex])
+			m.LegacyOwner = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Owner", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Owner = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NewAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthEvents
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.NewAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Coins", wireType)
 			}
-			var stringLen uint64
+			var msglen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -573,23 +629,25 @@ func (m *EventLegacyReturnCoin) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				msglen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if msglen < 0 {
 				return ErrInvalidLengthEvents
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + msglen
 			if postIndex < 0 {
 				return ErrInvalidLengthEvents
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Coins = string(dAtA[iNdEx:postIndex])
+			m.Coins = append(m.Coins, types.Coin{})
+			if err := m.Coins[len(m.Coins)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -612,7 +670,7 @@ func (m *EventLegacyReturnCoin) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *EventLegacyReturnNFT) Unmarshal(dAtA []byte) error {
+func (m *EventReturnLegacySubToken) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -635,15 +693,47 @@ func (m *EventLegacyReturnNFT) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: EventLegacyReturnNFT: wiretype end group for non-group")
+			return fmt.Errorf("proto: EventReturnLegacySubToken: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EventLegacyReturnNFT: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EventReturnLegacySubToken: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LegacyOwner", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.LegacyOwner = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OldAddress", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Owner", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -671,41 +761,9 @@ func (m *EventLegacyReturnNFT) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.OldAddress = string(dAtA[iNdEx:postIndex])
+			m.Owner = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NewAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthEvents
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.NewAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
 			}
@@ -737,9 +795,9 @@ func (m *EventLegacyReturnNFT) Unmarshal(dAtA []byte) error {
 			}
 			m.Denom = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 5:
+		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TokenId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ID", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -767,8 +825,84 @@ func (m *EventLegacyReturnNFT) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.TokenId = string(dAtA[iNdEx:postIndex])
+			m.ID = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 5:
+			if wireType == 0 {
+				var v uint32
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowEvents
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint32(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.SubTokenIDs = append(m.SubTokenIDs, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowEvents
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthEvents
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthEvents
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.SubTokenIDs) == 0 {
+					m.SubTokenIDs = make([]uint32, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint32
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowEvents
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint32(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.SubTokenIDs = append(m.SubTokenIDs, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field SubTokenIDs", wireType)
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipEvents(dAtA[iNdEx:])
@@ -790,7 +924,7 @@ func (m *EventLegacyReturnNFT) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *EventLegacyReturnWallet) Unmarshal(dAtA []byte) error {
+func (m *EventReturnMultisigWallet) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -813,15 +947,47 @@ func (m *EventLegacyReturnWallet) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: EventLegacyReturnWallet: wiretype end group for non-group")
+			return fmt.Errorf("proto: EventReturnMultisigWallet: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EventLegacyReturnWallet: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EventReturnMultisigWallet: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LegacyOwner", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.LegacyOwner = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OldAddress", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Owner", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -849,41 +1015,9 @@ func (m *EventLegacyReturnWallet) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.OldAddress = string(dAtA[iNdEx:postIndex])
+			m.Owner = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NewAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthEvents
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.NewAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Wallet", wireType)
 			}

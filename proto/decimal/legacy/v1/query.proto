@@ -3,6 +3,7 @@ package decimal.legacy.v1;
 
 import "google/api/annotations.proto";
 import "google/protobuf/any.proto";
+import "gogoproto/gogo.proto";
 
 import "cosmos_proto/cosmos.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
@@ -31,7 +32,10 @@ service Query {
 message QueryRecordsRequest { cosmos.base.query.v1beta1.PageRequest pagination = 1; }
 
 // QueryRecordsResponse is response type for the Query/Records RPC method.
-message QueryRecordsResponse { cosmos.base.query.v1beta1.PageResponse pagination = 2; }
+message QueryRecordsResponse { 
+  repeated Record records = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
 
 // QueryRecordRequest is request type for the Query/Record RPC method.
 message QueryRecordRequest {
@@ -42,17 +46,17 @@ message QueryRecordRequest {
 // QueryRecordResponse is response type for the Query/Record RPC method.
 message QueryRecordResponse {
   // record defines legacy record found by the request.
-  Record record = 1;
+  Record record = 1 [(gogoproto.nullable) = false];
 }
 
 // QueryCheckRequest is request type for the Query/Check RPC method.
 message QueryCheckRequest {
   // pubkey defines account public key as the proof of legacy address authority.
-  google.protobuf.Any pubkey = 1 [ (cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey" ];
+  bytes pubkey = 1;
 }
 
 // QueryCheckResponse is response type for the Query/Check RPC method.
 message QueryCheckResponse {
   // record defines legacy record found by the request.
-  Record record = 1;
+  Record record = 1 [(gogoproto.nullable) = false];
 }

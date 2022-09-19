@@ -5,14 +5,14 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (rec *LegacyRecord) Validate() error {
+func (rec *Record) Validate() error {
 	// 'dx' is prefix from old Decimal
-	_, err := sdk.GetFromBech32(rec.Address, DecimalPrefix)
+	_, err := sdk.GetFromBech32(rec.LegacyAddress, DecimalPrefix)
 	if err != nil {
 		return errors.InvalidLegacyBech32Address
 	}
 	// record must be not empty
-	if len(rec.Coins) == 0 && len(rec.Nfts) == 0 && len(rec.Wallets) == 0 {
+	if len(rec.Coins) == 0 && len(rec.NFTs) == 0 && len(rec.Wallets) == 0 {
 		return errors.NoInfoForLegacyAddress
 	}
 
