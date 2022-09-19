@@ -17,8 +17,8 @@ import (
 // MsgUpdateReserveNFT
 type UpdateReserveNFTGenerator struct {
 	increaseBottom, increaseUp int64 // value in 10^18 (del)
-	knownNFT                   []dscApi.NFT
-	knownSubtokenReserves      map[NFTSubTokenKey]sdk.Int
+	knownNFT                   []*dscApi.NFTToken
+	knownSubtokenReserves      map[NFTSubTokenKey]sdk.Coin
 	rnd                        *rand.Rand
 }
 
@@ -27,7 +27,7 @@ type UpdateReserveNFTAction struct {
 	id         string
 	denom      string
 	newReserve sdk.Coin
-	subIds     []uint64
+	subIds     []uint32
 }
 
 func NewUpdateReserveNFTGenerator(increaseBottom, increaseUp int64) *UpdateReserveNFTGenerator {
@@ -51,11 +51,10 @@ func (gg *UpdateReserveNFTGenerator) Generate() Action {
 	for n := 0; n < 10; n++ {
 		i := int(RandomRange(gg.rnd, 0, int64(len(gg.knownNFT))))
 		nftToUpdateReserve := gg.knownNFT[i]
-		subTokenIDs := make([]uint64, 0)
-		for _, o := range nftToUpdateReserve.Owners {
-			if o.Address == nftToUpdateReserve.Creator {
-				subTokenIDs = append(subTokenIDs, o.SubTokenIDs...)
-				break
+		subTokenIDs := make([]uint32, 0)
+		for _, sub := range nftToUpdateReserve.SubTokens {
+			if sub.Owner == nftToUpdateReserve.Creator {
+				subTokenIDs = append(subTokenIDs, sub.ID)
 			}
 		}
 		// creator not in owners
@@ -63,7 +62,7 @@ func (gg *UpdateReserveNFTGenerator) Generate() Action {
 			continue
 		}
 		increase := RandomRange(gg.rnd, gg.increaseBottom, gg.increaseUp)
-		subToUpdate := RandomSublist(gg.rnd, subTokenIDs)
+		subToUpdate := RandomSublist32(gg.rnd, subTokenIDs)
 		// get max reserve of subtokens
 		newReserve := sdk.ZeroInt()
 		for _, s := range subToUpdate {
@@ -72,8 +71,8 @@ func (gg *UpdateReserveNFTGenerator) Generate() Action {
 			if !ok {
 				continue
 			}
-			if newReserve.LT(reserve) {
-				newReserve = reserve
+			if newReserve.LT(reserve.Amount) {
+				newReserve = reserve.Amount
 			}
 		}
 		newReserve = newReserve.Add(helpers.EtherToWei(sdk.NewInt(increase)))
@@ -113,10 +112,9 @@ func (aa *UpdateReserveNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeCon
 		return nil, err
 	}
 
-	msg := dscTx.NewMsgUpdateReserveNFT(
+	msg := dscTx.NewMsgUpdateReserve(
 		sender,
 		aa.id,
-		aa.denom,
 		aa.subIds,
 		aa.newReserve,
 	)

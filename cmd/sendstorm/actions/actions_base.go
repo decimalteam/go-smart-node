@@ -46,8 +46,8 @@ type UpdateInfo struct {
 	Coins                []string
 	Addresses            []string
 	FullCoins            []dscApi.Coin
-	NFTs                 []dscApi.NFT
-	NFTSubTokenReserves  map[NFTSubTokenKey]sdk.Int
+	NFTs                 []*dscApi.NFTToken
+	NFTSubTokenReserves  map[NFTSubTokenKey]sdk.Coin
 	MultisigWallets      []dscApi.MultisigWallet
 	MultisigTransactions []dscApi.MultisigTransaction
 	MultisigBalances     map[string]sdk.Coins
@@ -56,7 +56,7 @@ type UpdateInfo struct {
 type NFTSubTokenKey struct {
 	Denom   string
 	TokenID string
-	ID      uint64
+	ID      uint32
 }
 
 // TPS (transactions per second) limiter
@@ -129,6 +129,30 @@ func RandomSublist(rnd *rand.Rand, list []uint64) []uint64 {
 	})
 	n := int(RandomRange(rnd, 1, int64(len(list)+1)))
 	result := make([]uint64, n)
+	for i := 0; i < n; i++ {
+		result[i] = list[ids[i]]
+	}
+	return result
+}
+
+// Return random sublist (copy)
+func RandomSublist32(rnd *rand.Rand, list []uint32) []uint32 {
+	if len(list) == 0 {
+		return []uint32{}
+	}
+	if len(list) == 1 {
+		return []uint32{list[0]}
+	}
+	// random indexes to choose
+	ids := make([]int, len(list))
+	for i := range list {
+		ids[i] = i
+	}
+	rnd.Shuffle(len(ids), func(i, j int) {
+		ids[i], ids[j] = ids[j], ids[i]
+	})
+	n := int(RandomRange(rnd, 1, int64(len(list)+1)))
+	result := make([]uint32, n)
 	for i := 0; i < n; i++ {
 		result[i] = list[ids[i]]
 	}

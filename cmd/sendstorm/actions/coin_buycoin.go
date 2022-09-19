@@ -59,7 +59,7 @@ func (abg *BuyCoinGenerator) Generate() Action {
 	}
 
 	for _, ci := range abg.knownFullCoins {
-		if ci.Symbol == coinName {
+		if ci.Denom == coinName {
 			coinInfo = ci
 			break
 		}

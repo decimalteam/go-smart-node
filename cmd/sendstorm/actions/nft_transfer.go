@@ -14,7 +14,7 @@ import (
 // MsgTransferNFT
 type TransferNFTGenerator struct {
 	knownAddresses []string
-	knownNFT       []dscApi.NFT
+	knownNFT       []*dscApi.NFTToken
 	rnd            *rand.Rand
 }
 
@@ -23,7 +23,7 @@ type TransferNFTAction struct {
 	recipient string
 	id        string
 	denom     string
-	subIds    []uint64
+	subIds    []uint32
 }
 
 func NewTransferNFTGenerator() *TransferNFTGenerator {
@@ -41,22 +41,28 @@ func (gg *TransferNFTGenerator) Generate() Action {
 	}
 	i := int(RandomRange(gg.rnd, 0, int64(len(gg.knownNFT))))
 	nftToTransfer := gg.knownNFT[i]
-	i = int(RandomRange(gg.rnd, 0, int64(len(nftToTransfer.Owners))))
-	tokenOwner := nftToTransfer.Owners[i]
-	subIds := RandomSublist(gg.rnd, tokenOwner.SubTokenIDs)
+	i = int(RandomRange(gg.rnd, 0, int64(len(nftToTransfer.SubTokens))))
+	tokenOwner := nftToTransfer.SubTokens[i].Owner
+	subIds := make([]uint32, 0)
+	for _, sub := range nftToTransfer.SubTokens {
+		if sub.Owner == tokenOwner {
+			subIds = append(subIds, sub.ID)
+		}
+	}
+	subIds = RandomSublist32(gg.rnd, subIds)
 	var recipient = RandomChoice(gg.rnd, gg.knownAddresses)
 	for j := 0; j < 10; j++ {
 		// 10 attempts to get recipient != owner
 		if j == 9 {
 			return &EmptyAction{}
 		}
-		if recipient != tokenOwner.Address {
+		if recipient != tokenOwner {
 			break
 		}
 		recipient = RandomChoice(gg.rnd, gg.knownAddresses)
 	}
 	return &TransferNFTAction{
-		owner:     tokenOwner.Address,
+		owner:     tokenOwner,
 		recipient: RandomChoice(gg.rnd, gg.knownAddresses),
 		id:        nftToTransfer.ID,
 		denom:     nftToTransfer.Denom,

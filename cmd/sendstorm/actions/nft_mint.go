@@ -28,7 +28,7 @@ type MintNFTAction struct {
 	id        string
 	denom     string
 	tokenURI  string
-	quantity  sdk.Int
+	quantity  uint32
 	reserve   sdk.Coin
 	allowMint bool
 }
@@ -62,7 +62,7 @@ func (gg *MintNFTGenerator) Generate() Action {
 		id:        RandomString(gg.rnd, RandomRange(gg.rnd, gg.textLengthBottom, gg.textLengthUp), charsAll),
 		denom:     RandomString(gg.rnd, RandomRange(gg.rnd, gg.textLengthBottom, gg.textLengthUp), charsAll),
 		tokenURI:  RandomString(gg.rnd, RandomRange(gg.rnd, gg.textLengthBottom, gg.textLengthUp), charsAll),
-		quantity:  sdk.NewInt(RandomRange(gg.rnd, gg.quantityBottom, gg.quantityUp)),
+		quantity:  uint32(RandomRange(gg.rnd, gg.quantityBottom, gg.quantityUp)),
 		reserve: sdk.NewCoin(
 			RandomChoice(gg.rnd, gg.knownCoins),
 			helpers.EtherToWei(sdk.NewInt(RandomRange(gg.rnd, gg.reserveBottom, gg.reserveUp))),
@@ -77,7 +77,7 @@ func (aa *MintNFTAction) ChooseAccounts(saList []*stormTypes.StormAccount) []*st
 		if saList[i].IsDirty() {
 			continue
 		}
-		if saList[i].BalanceForCoin(aa.reserve.Denom).LT(aa.reserve.Amount.Mul(aa.quantity)) {
+		if saList[i].BalanceForCoin(aa.reserve.Denom).LT(aa.reserve.Amount.Mul(sdk.NewInt(int64(aa.quantity)))) {
 			continue
 		}
 		res = append(res, saList[i])
@@ -100,15 +100,15 @@ func (aa *MintNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stor
 		return nil, err
 	}
 
-	msg := dscTx.NewMsgMintNFT(
+	msg := dscTx.NewMsgMintToken(
 		sender,
-		recipient,
-		aa.id,
 		aa.denom,
+		aa.id,
 		aa.tokenURI,
+		aa.allowMint,
+		recipient,
 		aa.quantity,
 		aa.reserve,
-		aa.allowMint,
 	)
 	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
 	if err != nil {
