@@ -93,7 +93,7 @@ func (api *API) grpcGetParameters() error {
 		if err != nil {
 			return err
 		}
-		api.baseCoin = resp.Params.BaseSymbol
+		api.baseCoin = resp.Params.BaseDenom
 	}
 	return nil
 }

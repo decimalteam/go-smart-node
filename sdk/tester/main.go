@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 )
@@ -106,28 +105,23 @@ func main() {
 			faucet.IncrementSequence()
 		}
 	*/
-	nftDenoms, err := api.NFTCollections()
+	nftColls, err := api.NFTCollections()
 	if err != nil {
 		fmt.Printf("NFTCollections err = %v\n", err)
 	} else {
-		fmt.Printf("NFT collections:\n%s\n", strings.Join(nftDenoms, "\n"))
+		fmt.Printf("NFT collections:\n%s\n", formatAsJSON(nftColls))
 	}
 
 	// all nft
-	nfts := make([]dscApi.NFT, 0)
-	denoms, err := api.NFTCollections()
+	nfts := make([]dscApi.NFTToken, 0)
+	colls, err := api.NFTCollections()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	for _, denom := range denoms {
-		coll, err := api.NFTCollection(denom)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		for _, id := range coll.NFTs {
-			nft, err := api.NFT(denom, id)
+	for _, coll := range colls {
+		for _, token := range coll.Tokens {
+			nft, err := api.NFTToken(token.ID)
 			if err != nil {
 				fmt.Println(err)
 				return

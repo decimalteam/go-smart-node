@@ -4,36 +4,49 @@ import (
 	"context"
 
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	query "github.com/cosmos/cosmos-sdk/types/query"
 )
 
 type NFTCollection = nfttypes.Collection
-type NFT struct {
-	nfttypes.BaseNFT
-	Denom string
-}
+type NFTToken = nfttypes.Token
 
 type SubToken = nfttypes.SubToken
 
 // Returns all NFT collections (denoms)
-func (api *API) NFTCollections() ([]string, error) {
+func (api *API) NFTCollections() ([]NFTCollection, error) {
 	client := nfttypes.NewQueryClient(api.grpcClient)
-	res, err := client.QueryDenoms(
-		context.Background(),
-		&nfttypes.QueryDenomsRequest{},
-	)
-	if err != nil {
-		return []string{}, err
+	colls := make([]nfttypes.Collection, 0)
+	req := &nfttypes.QueryCollectionsRequest{
+		Pagination: &query.PageRequest{Limit: queryLimit},
 	}
-	return res.Denoms, nil
+	for {
+		res, err := client.Collections(
+			context.Background(),
+			req,
+		)
+		if err != nil {
+			return []NFTCollection{}, err
+		}
+		if len(res.Collections) == 0 {
+			break
+		}
+		colls = append(colls, res.Collections...)
+		if len(res.Pagination.NextKey) == 0 {
+			break
+		}
+		req.Pagination.Key = res.Pagination.NextKey
+	}
+	return colls, nil
 }
 
 // Returns NFT IDs from collection
-func (api *API) NFTCollection(denom string) (NFTCollection, error) {
+func (api *API) NFTCollection(creator, denom string) (NFTCollection, error) {
 	client := nfttypes.NewQueryClient(api.grpcClient)
-	res, err := client.QueryCollection(
+	res, err := client.Collection(
 		context.Background(),
 		&nfttypes.QueryCollectionRequest{
-			Denom: denom,
+			Creator: creator,
+			Denom:   denom,
 		},
 	)
 	if err != nil {
@@ -42,32 +55,31 @@ func (api *API) NFTCollection(denom string) (NFTCollection, error) {
 	return res.Collection, nil
 }
 
-func (api *API) NFT(denom string, id string) (NFT, error) {
+func (api *API) NFTToken(id string) (NFTToken, error) {
 	client := nfttypes.NewQueryClient(api.grpcClient)
-	res, err := client.QueryNFT(
+	res, err := client.Token(
 		context.Background(),
-		&nfttypes.QueryNFTRequest{
-			Denom:   denom,
+		&nfttypes.QueryTokenRequest{
 			TokenId: id,
 		},
 	)
 	if err != nil {
-		return NFT{}, err
+		return NFTToken{}, err
 	}
-	return NFT{res.NFT, denom}, nil
+	return res.Token, nil
 }
 
-func (api *API) NFTSubTokens(denom string, tokenID string, ids []uint64) ([]SubToken, error) {
+func (api *API) NFTSubToken(tokenID string, subTokenId string) (SubToken, error) {
 	client := nfttypes.NewQueryClient(api.grpcClient)
-	res, err := client.QuerySubTokens(
+	res, err := client.SubToken(
 		context.Background(),
-		&nfttypes.QuerySubTokensRequest{
-			Denom:   denom,
-			TokenID: tokenID,
+		&nfttypes.QuerySubTokenRequest{
+			TokenId:    tokenID,
+			SubTokenId: subTokenId,
 		},
 	)
 	if err != nil {
-		return []SubToken{}, err
+		return SubToken{}, err
 	}
-	return res.SubTokens, nil
+	return res.SubToken, nil
 }
