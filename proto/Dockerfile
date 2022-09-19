@@ -22,5 +22,3 @@ RUN npm install -g protoc-gen-ts
 
 RUN protoc-gen-go --version
 RUN buf --version
-
-RUN buf mod update

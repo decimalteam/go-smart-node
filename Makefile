@@ -456,7 +456,7 @@ proto-all: proto-format proto-lint proto-gen
 
 proto-gen:
 	@echo "Generating Protobuf files"
-	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(containerProtoImage) sh ./scripts/protocgen.sh
+	@./scripts/protogen.sh
 
 proto-swagger-gen:
 	@echo "Generating Protobuf Swagger"
