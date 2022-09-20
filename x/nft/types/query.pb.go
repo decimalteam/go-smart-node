@@ -31,7 +31,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// QueryCollectionsRequest is request type for Query/Collections RPC method.
+// QueryCollectionsRequest is request type for the Query/Collections RPC method.
 type QueryCollectionsRequest struct {
 	// pagination defines an optional pagination for the request.
 	Pagination *query.PageRequest `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
@@ -133,7 +133,7 @@ func (m *QueryCollectionsResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-// QueryCollectionsByCreatorRequest is request type for Query/CollectionsByCreator RPC method.
+// QueryCollectionsByCreatorRequest is request type for the Query/CollectionsByCreator RPC method.
 type QueryCollectionsByCreatorRequest struct {
 	// creator defines the NFT collection creator address.
 	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
@@ -244,7 +244,7 @@ func (m *QueryCollectionsByCreatorResponse) GetPagination() *query.PageResponse 
 	return nil
 }
 
-// QueryCollectionRequest is request type for Query/Collection RPC method.
+// QueryCollectionRequest is request type for the Query/Collection RPC method.
 type QueryCollectionRequest struct {
 	// creator defines the NFT collection creator address.
 	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
@@ -346,7 +346,7 @@ func (m *QueryCollectionResponse) GetCollection() Collection {
 	return Collection{}
 }
 
-// QueryTokenRequest is request type for Query/Token RPC method.
+// QueryTokenRequest is request type for the Query/Token RPC method.
 type QueryTokenRequest struct {
 	// token_id defines NFT token ID.
 	TokenId string `protobuf:"bytes,1,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
@@ -439,7 +439,7 @@ func (m *QueryTokenResponse) GetToken() Token {
 	return Token{}
 }
 
-// QuerySubTokenRequest is request type for Query/SubToken RPC method.
+// QuerySubTokenRequest is request type for the Query/SubToken RPC method.
 type QuerySubTokenRequest struct {
 	// token_id defines NFT token ID.
 	TokenId string `protobuf:"bytes,1,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
