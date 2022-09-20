@@ -18,6 +18,7 @@ var (
 	PSKeyCoinBuy         = []byte("CoinBuy")
 	PSKeyCoinSell        = []byte("CoinSell")
 	PSKeyCoinRedeemCheck = []byte("CoinRedeemCheck")
+	PSKeyCoinBurn        = []byte("CoinCoinBurn")
 	// special commission depends on coin symbol length
 	PSKeyCoinCreateTicker_3 = []byte("CoinCreateTicker_3")
 	PSKeyCoinCreateTicker_4 = []byte("CoinCreateTicker_4")
@@ -72,7 +73,8 @@ func DefaultParams() Params {
 		CoinSendAdd:     sdk.NewDec(5),
 		CoinBuy:         sdk.NewDec(100),
 		CoinSell:        sdk.NewDec(100),
-		CoinRedeemCheck: sdk.ZeroDec(),
+		CoinRedeemCheck: sdk.NewDec(30),
+		CoinBurn:        sdk.NewDec(100),
 		// special commission depends on coin symbol length
 		CoinCreateTicker_3: sdk.NewDec(1_000_000),
 		CoinCreateTicker_4: sdk.NewDec(100_000),
@@ -123,6 +125,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(PSKeyCoinBuy, &p.CoinBuy, validateDec),
 		paramtypes.NewParamSetPair(PSKeyCoinSell, &p.CoinSell, validateDec),
 		paramtypes.NewParamSetPair(PSKeyCoinRedeemCheck, &p.CoinRedeemCheck, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinBurn, &p.CoinBurn, validateDec),
 		// special commission depends on coin symbol length
 		paramtypes.NewParamSetPair(PSKeyCoinCreateTicker_3, &p.CoinCreateTicker_3, validateDec),
 		paramtypes.NewParamSetPair(PSKeyCoinCreateTicker_4, &p.CoinCreateTicker_4, validateDec),
