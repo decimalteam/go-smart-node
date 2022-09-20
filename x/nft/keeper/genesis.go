@@ -70,7 +70,7 @@ func InitGenesis(ctx sdk.Context, k Keeper, gs *types.GenesisState) {
 				k.setSubTokenByOwner(ctx, owner, token.ID, subToken.ID)
 			}
 
-			k.createToken(ctx, collection, *token)
+			k.CreateToken(ctx, collection, *token)
 		}
 
 		k.SetCollection(ctx, collection)

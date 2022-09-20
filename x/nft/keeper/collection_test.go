@@ -40,12 +40,12 @@ func (s *KeeperTestSuite) TestGetAndSetCollection() {
 	// positive case get collection
 	storeCollection, found := s.nftKeeper.GetCollection(s.ctx, owner, denom)
 	require.True(found)
-	require.Equal(collection.String(), storeCollection.String())
+	require.True(collection.Equal(storeCollection))
 	// positive case get all collections
 	storeCollections := s.nftKeeper.GetCollections(s.ctx)
 	for _, storeCollection := range storeCollections {
 		if storeCollection.Denom == denom {
-			require.Equal(collection.String(), storeCollection.String())
+			require.True(collection.Equal(storeCollection))
 		}
 	}
 }

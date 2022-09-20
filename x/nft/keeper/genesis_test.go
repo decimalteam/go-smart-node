@@ -82,17 +82,24 @@ func (s *KeeperTestSuite) TestInitGenesis() {
 		s.T().Fatal("the number of tokens in genesis and storage is different")
 	}
 
-	for i, subtoken := range subtokens { //TODO replace .String to .Equal after regenerate protobuf
-		require.Equal(dgs.Collections[0].Tokens[0].SubTokens[i].String(), subtoken.String())
+	for i, subtoken := range subtokens {
+		require.True(dgs.Collections[0].Tokens[0].SubTokens[i].Equal(subtoken))
 	}
 
 	dgs.Collections[0].Tokens[0].SubTokens = types.SubTokens{}
 
 	for i, token := range tokens {
-		require.Equal(dgs.Collections[0].Tokens[i].String(), token.String())
+		require.True(dgs.Collections[0].Tokens[i].Equal(token))
 	}
 
 	dgs.Collections[0].Tokens = types.Tokens{}
 
-	require.Equal(dgs.Collections[0].String(), collection.String())
+	require.True(dgs.Collections[0].Equal(collection))
+
+	state := keeper.ExportGenesis(s.ctx, s.nftKeeper)
+
+	require.True(state.Params.Equal(dgs.Params))
+	for i, v := range dgs.Collections {
+		v.Equal(state.Collections[i])
+	}
 }

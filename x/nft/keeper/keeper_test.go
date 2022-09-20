@@ -2,11 +2,13 @@ package keeper_test
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/testutil"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	nftkeeper "bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
 	nfttestutil "bitbucket.org/decimalteam/go-smart-node/x/nft/testutil"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	//simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -21,7 +23,9 @@ import (
 )
 
 var (
-//PKs          = simtestutil.CreateTestPubKeys(500) =
+	pk          = ed25519.GenPrivKey().PubKey()
+	addr        = sdk.AccAddress(pk.Address())
+	defaultCoin = sdk.NewCoin("del", types.DefaultMinReserveAmount)
 )
 
 type KeeperTestSuite struct {
@@ -64,7 +68,9 @@ func (s *KeeperTestSuite) SetupTest() {
 	// -- create mock controller
 	ctrl := gomock.NewController(s.T())
 	bankKeeper := nfttestutil.NewMockKeeper(ctrl)
-	//bankKeeper.EXPECT()
+	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, addr, types.ReservedPool, sdk.NewCoins(defaultCoin)).AnyTimes().Return(nil)
+	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, addr, types.ReservedPool, sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(2))))).AnyTimes().Return(nil)
+	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(ctx, types.ReservedPool, addr, sdk.NewCoins(defaultCoin)).AnyTimes().Return(nil)
 	// --
 
 	// -- create nft keeper

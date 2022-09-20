@@ -36,8 +36,8 @@ func (k *Keeper) GetToken(ctx sdk.Context, id string) (token types.Token, found 
 	return token, true
 }
 
-// createToken writes the new NFT token to the KVStore.
-func (k *Keeper) createToken(ctx sdk.Context, collection types.Collection, token types.Token) {
+// CreateToken writes the new NFT token to the KVStore.
+func (k *Keeper) CreateToken(ctx sdk.Context, collection types.Collection, token types.Token) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetTokenKey(token.ID)
 
@@ -59,6 +59,14 @@ func (k *Keeper) createToken(ctx sdk.Context, collection types.Collection, token
 	// write token by collection index
 	creator := sdk.MustAccAddressFromBech32(token.Creator)
 	k.setTokenByCollection(ctx, creator, collection.Denom, token.ID)
+}
+
+func (k *Keeper) setToken(ctx sdk.Context, t types.Token) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetTokenKey(t.ID)
+
+	bz := k.cdc.MustMarshalLengthPrefixed(&t)
+	store.Set(key, bz)
 }
 
 // updateTokenURI removes previous NFT token URI and writes new one to the KVStore.

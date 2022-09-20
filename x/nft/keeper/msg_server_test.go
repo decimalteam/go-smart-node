@@ -1,417 +1,401 @@
 package keeper_test
 
 import (
-	"testing"
-
-	"bitbucket.org/decimalteam/go-smart-node/app"
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdkmath "cosmossdk.io/math"
+	"fmt"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/require"
+	"testing"
 )
 
-func TestMintNFT(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
+func (s *KeeperTestSuite) TestMsgMintToken() {
+	ctx, k, msgServer := s.ctx, s.nftKeeper, s.msgServer
+	require := s.Require()
 
-	sender := app.GetAddrs(dsc, ctx, 1)[0]
+	var (
+		denom        = "test_msg_mint_1"
+		ID           = "mint_token_1"
+		ID2          = "mint_token_2"
+		ID3          = "mint_token_3"
+		pk           = ed25519.GenPrivKey().PubKey()
+		invalidOwner = sdk.AccAddress(pk.Address())
+	)
 
-	expectedCollection := types.Collection{
-		Creator: sender.String(),
-		Denom:   firstDenom,
-		Supply:  1,
-		Tokens: []*types.Token{
-			{
-				Creator:   sender.String(),
-				Denom:     firstDenom,
-				ID:        firstID,
-				URI:       firstTokenURI,
-				Reserve:   firstReserve,
-				AllowMint: true,
-				Minted:    2,
-				Burnt:     0,
-				SubTokens: []*types.SubToken{
-					{ID: 1, Owner: sender.String(), Reserve: &firstReserve},
-					{ID: 2, Owner: sender.String(), Reserve: &firstReserve},
-				},
-			},
+	testCases := []struct {
+		name   string
+		input  *types.MsgMintToken
+		expErr bool
+	}{
+		{
+			"Valid request",
+			types.NewMsgMintToken(addr, denom, ID, ID, false, addr, 1, defaultCoin),
+			false,
+		},
+		{
+			"Valid request - second token mint",
+			types.NewMsgMintToken(addr, denom, ID2, ID2, true, addr, 1, defaultCoin),
+			false,
+		},
+		{
+			"two collection - one token",
+			types.NewMsgMintToken(addr, "invalid denom", ID2, ID2, true, addr, 1, defaultCoin),
+			true,
+		},
+		{
+			"Creator not owner",
+			types.NewMsgMintToken(invalidOwner, denom, ID2, ID2, true, invalidOwner, 1, defaultCoin),
+			true,
+		},
+		{
+			"Not unique URI if token exists",
+			types.NewMsgMintToken(addr, denom, ID3, ID, true, addr, 1, defaultCoin),
+			true,
+		},
+		{
+			"Not allowed to mint",
+			types.NewMsgMintToken(addr, denom, ID, ID, false, addr, 1, defaultCoin),
+			true,
+		},
+		{
+			"New token reserve is less than min",
+			types.NewMsgMintToken(addr, denom, ID3, ID3, true, addr, 1, sdk.NewCoin("del", sdk.NewInt(1000))),
+			true,
 		},
 	}
 
-	err := mintNFT(firstDenom, 2, *expectedCollection.Tokens[0], dsc, ctx)
-	require.NoError(t, err)
+	for _, tc := range testCases {
+		tc := tc
+		s.T().Run(tc.name, func(t *testing.T) {
+			_, err := msgServer.MintToken(ctx, tc.input)
+			if tc.expErr {
+				require.Error(err)
+			} else {
+				require.NoError(err)
+			}
+		})
+	}
 
-	storedCollection, found := dsc.NFTKeeper.GetCollection(ctx, sender, firstDenom)
-	require.True(t, found)
-	require.Equal(t, expectedCollection, storedCollection)
-
-	storedNFT, found := dsc.NFTKeeper.GetToken(ctx, firstID)
-	require.True(t, found)
-	require.Equal(t, *expectedCollection.Tokens[0], storedNFT)
-
-	storedSubTokens := dsc.NFTKeeper.GetSubTokens(ctx, firstID)
-
-	require.Len(t, storedSubTokens, len(expectedCollection.Tokens[0].SubTokens))
-	require.Equal(t, expectedCollection.Tokens[0].SubTokens, storedSubTokens)
-
-	msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
-	require.False(t, broken, msg)
+	cs := k.GetCollections(ctx)
+	fmt.Println(cs)
 }
 
-func TestMintNFTValidation(t *testing.T) {
-	t.Run("disabled mint", func(t *testing.T) {
-		dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
+func (s *KeeperTestSuite) TestMsgBurnToken() {
+	ctx, k, msgServer := s.ctx, s.nftKeeper, s.msgServer
+	require := s.Require()
 
-		sender := app.GetAddrs(dsc, ctx, 1)[0]
+	var (
+		denom        = "test_msg_burn"
+		ID           = "msg_burn_1"
+		pk           = ed25519.GenPrivKey().PubKey()
+		invalidOwner = sdk.AccAddress(pk.Address())
+	)
 
-		nft := types.Token{
-			Creator:   sender.String(),
-			Denom:     firstDenom,
-			ID:        firstID,
-			URI:       firstTokenURI,
-			Reserve:   firstReserve,
-			AllowMint: false,
-		}
-
-		// first nft mint with allowMint=false flag should be without error
-		err := mintNFT(firstDenom, 2, nft, dsc, ctx)
-		require.NoError(t, err)
-
-		// next nft mint with allowMint=false flag should be with error
-		err = mintNFT(firstDenom, 1, nft, dsc, ctx)
-		require.Error(t, err)
-
-		msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
-		require.False(t, broken, msg)
-	})
-
-	t.Run("wrong sender account", func(t *testing.T) {
-		dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
-
-		addrs := app.GetAddrs(dsc, ctx, 2)
-		creator := addrs[0]
-		wrongCreator := addrs[1]
-
-		firstNFT := types.Token{
-			Creator:   creator.String(),
-			Denom:     firstDenom,
-			ID:        firstID,
-			URI:       firstTokenURI,
-			Reserve:   firstReserve,
-			AllowMint: false,
-		}
-
-		err := mintNFT(firstDenom, 1, firstNFT, dsc, ctx)
-		require.NoError(t, err)
-
-		secondNFT := types.Token{
-			Creator:   wrongCreator.String(),
-			Denom:     firstDenom,
-			ID:        firstID,
-			URI:       firstTokenURI,
-			Reserve:   firstReserve,
-			AllowMint: false,
-		}
-
-		// only nft creator can mint more nfts for nft tokenID
-		err = mintNFT(firstDenom, 1, secondNFT, dsc, ctx)
-		require.Error(t, err)
-
-		msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
-		require.False(t, broken, msg)
-	})
-
-	t.Run("invalid token id", func(t *testing.T) {
-		dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
-
-		sender := app.GetAddrs(dsc, ctx, 1)[0]
-
-		firstNFT := types.Token{
-			Creator:   sender.String(),
-			Denom:     firstDenom,
-			ID:        firstID,
-			URI:       firstTokenURI,
-			Reserve:   firstReserve,
-			AllowMint: true,
-		}
-
-		err := mintNFT(firstDenom, 2, firstNFT, dsc, ctx)
-		require.NoError(t, err)
-
-		secondNFT := types.Token{
-			Creator:   sender.String(),
-			Denom:     firstDenom,
-			ID:        firstID,
-			URI:       secondTokenURI,
-			Reserve:   secondReserve,
-			AllowMint: true,
-		}
-
-		// nft token id must be unique
-		err = mintNFT(secondDenom, 10, secondNFT, dsc, ctx)
-		require.Error(t, err)
-
-		msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
-		require.False(t, broken, msg)
-	})
-
-	t.Run("invalid token uri", func(t *testing.T) {
-		dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
-
-		sender := app.GetAddrs(dsc, ctx, 1)[0]
-
-		firstNFT := types.Token{
-			Creator:   sender.String(),
-			Denom:     firstDenom,
-			ID:        firstID,
-			URI:       firstTokenURI,
-			Reserve:   firstReserve,
-			AllowMint: true,
-		}
-
-		err := mintNFT(firstDenom, 10, firstNFT, dsc, ctx)
-		require.NoError(t, err)
-
-		secondNFT := types.Token{
-			Creator:   sender.String(),
-			Denom:     secondDenom,
-			ID:        secondID,
-			URI:       firstTokenURI,
-			Reserve:   secondReserve,
-			AllowMint: true,
-		}
-
-		// nft token uri must be unique
-		err = mintNFT(secondDenom, 10, secondNFT, dsc, ctx)
-		require.Error(t, err)
-
-		msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
-		require.False(t, broken, msg)
-	})
-
-	t.Run("invalid nft reserve", func(t *testing.T) {
-		dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
-
-		sender := app.GetAddrs(dsc, ctx, 1)[0]
-
-		nft := types.Token{
-			Creator:   sender.String(),
-			Denom:     firstDenom,
-			ID:        firstID,
-			URI:       firstTokenURI,
-			Reserve:   sdk.NewCoin(config.BaseDenom, sdkmath.ZeroInt()),
-			AllowMint: true,
-		}
-
-		// nft reserve must be valid
-		err := mintNFT(firstDenom, 10, nft, dsc, ctx)
-		require.Error(t, err)
-
-		msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
-		require.False(t, broken, msg)
-	})
-}
-
-func TestTransferNFT(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
-
-	addrs := app.GetAddrs(dsc, ctx, 2)
-	fromOwner := addrs[0]
-	toOwner := addrs[1]
-
-	nft := types.Token{
-		Creator:   fromOwner.String(),
-		Denom:     firstDenom,
-		ID:        firstID,
-		URI:       firstTokenURI,
-		Reserve:   firstReserve,
-		AllowMint: true,
+	collection := types.Collection{
+		Creator: addr.String(),
+		Denom:   denom,
 	}
-
-	err := mintNFT(firstDenom, 4, nft, dsc, ctx)
-	require.NoError(t, err)
-
-	msg := types.MsgSendToken{
-		Sender:      nft.Creator,
-		Recipient:   toOwner.String(),
-		TokenID:     nft.ID,
-		SubTokenIDs: []uint32{1, 2},
-	}
-
-	_, err = dsc.NFTKeeper.SendToken(sdk.WrapSDKContext(ctx), &msg)
-	require.NoError(t, err)
-
-	_, found := dsc.NFTKeeper.GetToken(ctx, nft.ID)
-	require.True(t, found)
-
-	subTokens := dsc.NFTKeeper.GetSubTokens(ctx, nft.ID)
-	require.Len(t, subTokens, 4)
-
-	for _, sub := range subTokens {
-		switch sub.ID {
-		case 1:
-			require.Equal(t, toOwner.String(), sub.Owner)
-		case 2:
-			require.Equal(t, toOwner.String(), sub.Owner)
-		case 3:
-			require.Equal(t, fromOwner.String(), sub.Owner)
-		case 4:
-			require.Equal(t, fromOwner.String(), sub.Owner)
-		}
-	}
-
-	invariantMsg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
-	require.False(t, broken, invariantMsg)
-}
-
-func TestEditNFTMetadata(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
-
-	sender := app.GetAddrs(dsc, ctx, 1)[0]
-
-	nft := types.Token{
-		Creator:   sender.String(),
-		Denom:     firstDenom,
-		ID:        firstID,
-		URI:       firstTokenURI,
-		Reserve:   firstReserve,
-		AllowMint: true,
-	}
-
-	err := mintNFT(firstDenom, 2, nft, dsc, ctx)
-	require.NoError(t, err)
-
-	msg := types.MsgUpdateToken{
-		Sender:   sender.String(),
-		TokenID:  nft.ID,
-		TokenURI: secondTokenURI,
-	}
-
-	_, err = dsc.NFTKeeper.UpdateToken(sdk.WrapSDKContext(ctx), &msg)
-	require.NoError(t, err)
-
-	storedNFT, found := dsc.NFTKeeper.GetToken(ctx, nft.ID)
-	require.True(t, found)
-	require.Equal(t, msg.TokenURI, storedNFT.URI)
-
-	invariantMsg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
-	require.False(t, broken, invariantMsg)
-}
-
-func TestBurnNFT(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
-
-	sender := app.GetAddrs(dsc, ctx, 1)[0]
-
-	nft := types.Token{
-		Creator:   sender.String(),
-		Denom:     firstDenom,
-		ID:        firstID,
-		URI:       firstTokenURI,
-		Reserve:   firstReserve,
-		AllowMint: true,
-	}
-
-	const collectionDenom = firstDenom
-	err := mintNFT(firstDenom, 4, nft, dsc, ctx)
-	require.NoError(t, err)
-
-	msg := types.MsgBurnToken{
-		Sender:      sender.String(),
-		TokenID:     nft.ID,
-		SubTokenIDs: []uint32{2, 3},
-	}
-
-	_, err = dsc.NFTKeeper.BurnToken(sdk.WrapSDKContext(ctx), &msg)
-	require.NoError(t, err)
-
-	// Check sub tokens after burn
-	subTokens := dsc.NFTKeeper.GetSubTokens(ctx, nft.ID)
-	require.Len(t, subTokens, 2)
-
-	for _, sub := range subTokens {
-		switch sub.ID {
-		case 1:
-			require.Equal(t, sender.String(), sub.Owner)
-		case 4:
-			require.Equal(t, sender.String(), sub.Owner)
-		default:
-			t.Fail()
-		}
-	}
-
-	invariantMsg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
-	require.False(t, broken, invariantMsg)
-}
-
-func TestUpdateNFTReserve(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
-
-	sender := app.GetAddrs(dsc, ctx, 1)[0]
-
-	nft := types.Token{
-		Creator:   sender.String(),
-		Denom:     firstDenom,
-		ID:        firstID,
-		URI:       firstTokenURI,
-		Reserve:   firstReserve,
-		AllowMint: true,
-	}
-
-	err := mintNFT(firstDenom, 4, nft, dsc, ctx)
-	require.NoError(t, err)
-
-	// Check sub tokens reserve before update
-	storedSubTokens := dsc.NFTKeeper.GetSubTokens(ctx, nft.ID)
-
-	require.Len(t, storedSubTokens, 4)
-	for _, storedSubToken := range storedSubTokens {
-		require.True(t, storedSubToken.Reserve.Equal(firstReserve))
-	}
-
-	msg := types.MsgUpdateReserve{
-		Sender:      sender.String(),
-		TokenID:     nft.ID,
-		SubTokenIDs: []uint32{1, 3},
-		Reserve:     secondReserve,
-	}
-	_, err = dsc.NFTKeeper.UpdateReserve(sdk.WrapSDKContext(ctx), &msg)
-	require.NoError(t, err)
-
-	// Check sub tokens reserve after update
-	storedSubTokens = dsc.NFTKeeper.GetSubTokens(ctx, nft.ID)
-	require.Len(t, storedSubTokens, 4)
-
-	for _, storedSubToken := range storedSubTokens {
-		switch storedSubToken.ID {
-		case 1:
-			require.True(t, storedSubToken.Reserve.Equal(secondReserve))
-		case 2:
-			require.True(t, storedSubToken.Reserve.Equal(firstReserve))
-		case 3:
-			require.True(t, storedSubToken.Reserve.Equal(secondReserve))
-		case 4:
-			require.True(t, storedSubToken.Reserve.Equal(firstReserve))
-		}
-	}
-
-	invariantMsg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
-	require.False(t, broken, invariantMsg)
-}
-
-func mintNFT(denom string, quantity uint32, nft types.Token, dsc *app.DSC, ctx sdk.Context) error {
-	msg := types.MsgMintToken{
-		Sender:    nft.Creator,
+	token := types.Token{
+		Creator:   addr.String(),
 		Denom:     denom,
-		TokenID:   nft.ID,
-		TokenURI:  nft.URI,
-		AllowMint: nft.AllowMint,
-		Recipient: nft.Creator,
-		Quantity:  quantity,
-		Reserve:   nft.Reserve,
+		ID:        ID,
+		URI:       ID,
+		Reserve:   defaultCoin,
+		AllowMint: true,
+		Minted:    0,
+		Burnt:     0,
 	}
-	_, err := dsc.NFTKeeper.MintToken(sdk.WrapSDKContext(ctx), &msg)
-	return err
+	k.CreateToken(ctx, collection, token)
+	for i := 1; i < 10; i++ {
+		k.SetSubToken(ctx, ID, types.SubToken{
+			ID:      uint32(i),
+			Owner:   addr.String(),
+			Reserve: &defaultCoin,
+		})
+	}
+	k.SetSubToken(ctx, ID, types.SubToken{
+		ID:      uint32(11),
+		Owner:   invalidOwner.String(),
+		Reserve: &defaultCoin,
+	})
+	testCases := []struct {
+		name   string
+		input  *types.MsgBurnToken
+		expErr bool
+	}{
+		{
+			"valid request",
+			types.NewMsgBurnToken(addr, ID, []uint32{1}),
+			false,
+		},
+		{
+			"not exists sub token",
+			types.NewMsgBurnToken(addr, ID, []uint32{1000}),
+			true,
+		},
+		{
+			"not exists token",
+			types.NewMsgBurnToken(addr, "invalid ID", []uint32{1}),
+			true,
+		},
+		{
+			"not token owner",
+			types.NewMsgBurnToken(invalidOwner, ID, []uint32{1}),
+			true,
+		},
+		{
+			"owned token, but not owned subtoken",
+			types.NewMsgBurnToken(addr, ID, []uint32{11}),
+			true,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		s.T().Run(tc.name, func(t *testing.T) {
+			_, err := msgServer.BurnToken(ctx, tc.input)
+			if tc.expErr {
+				require.Error(err)
+			} else {
+				require.NoError(err)
+			}
+		})
+	}
+}
+
+func (s *KeeperTestSuite) TestMsgSendToken() {
+	ctx, k, msgServer := s.ctx, s.nftKeeper, s.msgServer
+	require := s.Require()
+
+	var (
+		denom     = "test_msg_send"
+		ID        = "msg_send_1"
+		pk        = ed25519.GenPrivKey().PubKey()
+		recipient = sdk.AccAddress(pk.Address())
+	)
+
+	collection := types.Collection{
+		Creator: addr.String(),
+		Denom:   denom,
+	}
+	token := types.Token{
+		Creator:   addr.String(),
+		Denom:     denom,
+		ID:        ID,
+		URI:       ID,
+		Reserve:   defaultCoin,
+		AllowMint: true,
+		Minted:    0,
+		Burnt:     0,
+	}
+	k.CreateToken(ctx, collection, token)
+	for i := 1; i < 10; i++ {
+		k.SetSubToken(ctx, ID, types.SubToken{
+			ID:      uint32(i),
+			Owner:   addr.String(),
+			Reserve: &defaultCoin,
+		})
+	}
+	k.SetSubToken(ctx, ID, types.SubToken{
+		ID:      11,
+		Owner:   recipient.String(),
+		Reserve: &defaultCoin,
+	})
+
+	testCases := []struct {
+		name   string
+		input  *types.MsgSendToken
+		expErr bool
+	}{
+		{
+			"valid request",
+			types.NewMsgSendToken(addr, recipient, ID, []uint32{1, 2, 3}),
+			false,
+		},
+		{
+			"not exists token",
+			types.NewMsgSendToken(addr, recipient, "invalid token", []uint32{1, 2, 3}),
+			true,
+		},
+		{
+			"not exists subtokens",
+			types.NewMsgSendToken(addr, recipient, ID, []uint32{4, 5, 133}),
+			true,
+		},
+		{
+			"not owned subtoken",
+			types.NewMsgSendToken(addr, recipient, ID, []uint32{11}),
+			true,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		s.T().Run(tc.name, func(t *testing.T) {
+			_, err := msgServer.SendToken(ctx, tc.input)
+			if tc.expErr {
+				require.Error(err)
+			} else {
+				require.NoError(err)
+			}
+		})
+	}
+}
+
+func (s *KeeperTestSuite) TestMsgUpdateToken() {
+	ctx, k, msgServer := s.ctx, s.nftKeeper, s.msgServer
+	require := s.Require()
+
+	var (
+		denom        = "test_msg_update_token"
+		ID           = "msg_update_token_1"
+		pk           = ed25519.GenPrivKey().PubKey()
+		invalidOwner = sdk.AccAddress(pk.Address())
+	)
+
+	collection := types.Collection{
+		Creator: addr.String(),
+		Denom:   denom,
+	}
+	token := types.Token{
+		Creator:   addr.String(),
+		Denom:     denom,
+		ID:        ID,
+		URI:       ID,
+		Reserve:   defaultCoin,
+		AllowMint: true,
+	}
+	k.CreateToken(ctx, collection, token)
+
+	testCases := []struct {
+		name   string
+		input  *types.MsgUpdateToken
+		expErr bool
+	}{
+		{
+			"valid request",
+			types.NewMsgUpdateToken(addr, ID, "new_uri"),
+			false,
+		},
+		{
+			"new uri is identical to the old one",
+			types.NewMsgUpdateToken(addr, ID, "new_uri"),
+			true,
+		},
+		{
+			"not owned token",
+			types.NewMsgUpdateToken(invalidOwner, ID, "uri"),
+			true,
+		},
+		{
+			"not exists token",
+			types.NewMsgUpdateToken(addr, "invalid token", "uri"),
+			true,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		s.T().Run(tc.name, func(t *testing.T) {
+			_, err := msgServer.UpdateToken(ctx, tc.input)
+			if tc.expErr {
+				require.Error(err)
+			} else {
+				require.NoError(err)
+			}
+		})
+	}
+}
+
+func (s *KeeperTestSuite) TestMsgUpdateReserve() {
+	ctx, k, msgServer := s.ctx, s.nftKeeper, s.msgServer
+	require := s.Require()
+
+	var (
+		denom        = "test_msg_update_reserve"
+		ID           = "msg_update_reserve_1"
+		pk           = ed25519.GenPrivKey().PubKey()
+		invalidOwner = sdk.AccAddress(pk.Address())
+	)
+
+	collection := types.Collection{
+		Creator: addr.String(),
+		Denom:   denom,
+	}
+	token := types.Token{
+		Creator:   addr.String(),
+		Denom:     denom,
+		ID:        ID,
+		URI:       ID,
+		Reserve:   defaultCoin,
+		AllowMint: true,
+	}
+	k.CreateToken(ctx, collection, token)
+	for i := 1; i < 10; i++ {
+		k.SetSubToken(ctx, ID, types.SubToken{
+			ID:      uint32(i),
+			Owner:   addr.String(),
+			Reserve: &defaultCoin,
+		})
+	}
+	k.SetSubToken(ctx, ID, types.SubToken{
+		ID:      11,
+		Owner:   invalidOwner.String(),
+		Reserve: &defaultCoin,
+	})
+
+	testCases := []struct {
+		name   string
+		input  *types.MsgUpdateReserve
+		expErr bool
+	}{
+		{
+			"valid request",
+			types.NewMsgUpdateReserve(addr, ID, []uint32{1, 2}, sdk.NewCoin("del", helpers.EtherToWei(sdkmath.NewInt(2)))),
+			false,
+		},
+		{
+			"not exists token",
+			types.NewMsgUpdateReserve(addr, "not exists", []uint32{1, 2}, sdk.NewCoin("del", helpers.EtherToWei(sdkmath.NewInt(2)))),
+			true,
+		},
+		{
+			"not owned token",
+			types.NewMsgUpdateReserve(invalidOwner, ID, []uint32{1, 2}, sdk.NewCoin("del", helpers.EtherToWei(sdkmath.NewInt(2)))),
+			true,
+		},
+		{
+			"new reserve has another denom",
+			types.NewMsgUpdateReserve(addr, ID, []uint32{1, 2}, sdk.NewCoin("test", helpers.EtherToWei(sdkmath.NewInt(2)))),
+			true,
+		},
+		{
+			"not exists subtoken",
+			types.NewMsgUpdateReserve(addr, ID, []uint32{133}, sdk.NewCoin("del", helpers.EtherToWei(sdkmath.NewInt(2)))),
+			true,
+		},
+		{
+			"owned token, but now owned subtoken",
+			types.NewMsgUpdateReserve(addr, ID, []uint32{11}, sdk.NewCoin("del", helpers.EtherToWei(sdkmath.NewInt(2)))),
+			true,
+		},
+		{
+			"new reserve less than actual",
+			types.NewMsgUpdateReserve(addr, ID, []uint32{8}, sdk.NewCoin("del", helpers.EtherToWei(sdkmath.NewInt(1)))),
+			true,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		s.T().Run(tc.name, func(t *testing.T) {
+			_, err := msgServer.UpdateReserve(ctx, tc.input)
+			if tc.expErr {
+				require.Error(err)
+			} else {
+				require.NoError(err)
+			}
+		})
+	}
 }
