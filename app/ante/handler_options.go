@@ -14,7 +14,6 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v5/modules/core/keeper"
 
 	ethante "github.com/evmos/ethermint/app/ante"
-	evmante "github.com/evmos/ethermint/app/ante"
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
 
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -28,7 +27,7 @@ type HandlerOptions struct {
 	BankKeeper             evmtypes.BankKeeper
 	IBCKeeper              *ibckeeper.Keeper
 	FeeMarketKeeper        evmtypes.FeeMarketKeeper
-	EvmKeeper              evmante.EVMKeeper
+	EvmKeeper              ethante.EVMKeeper
 	FeegrantKeeper         authante.FeegrantKeeper
 	CoinKeeper             cointypes.CoinKeeper
 	LegacyKeeper           legacytypes.LegacyKeeper

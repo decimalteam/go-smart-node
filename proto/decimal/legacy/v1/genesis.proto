@@ -2,16 +2,18 @@ syntax = "proto3";
 package decimal.legacy.v1;
 
 import "gogoproto/gogo.proto";
+
+import "cosmos_proto/cosmos.proto";
+
 import "decimal/legacy/v1/legacy.proto";
+import "decimal/legacy/v1/params.proto";
 
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/legacy/types";
 
 // GenesisState defines the module's genesis state.
 message GenesisState {
-  // legacy records
-  repeated LegacyRecord legacy_records = 1 [
-    (gogoproto.jsontag) = "legacy_records",
-    (gogoproto.moretags) = "yaml:\"legacy_records\"",
-    (gogoproto.nullable) = false
-  ];    
+  // records defines compelete list of legacy records to be returned to actual owner.
+  repeated Record records = 2 [ (gogoproto.nullable) = false ];
+  // params defines all the module's parameters.
+  Params params = 1 [ (gogoproto.nullable) = false ]; 
 }

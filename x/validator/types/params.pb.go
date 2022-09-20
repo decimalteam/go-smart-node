@@ -10,7 +10,7 @@ import (
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	github_com_gogo_protobuf_types "github.com/gogo/protobuf/types"
-	_ "google.golang.org/protobuf/types/known/durationpb"
+	_ "google/protobuf"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -29,7 +29,7 @@ var _ = time.Kitchen
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// Params defines the parameters for the staking module.
+// Params defines the parameters for the module.
 type Params struct {
 	// unbonding_time is the time duration of unbonding.
 	UnbondingTime time.Duration `protobuf:"bytes,1,opt,name=unbonding_time,json=unbondingTime,proto3,stdduration" json:"unbonding_time"`
@@ -41,7 +41,7 @@ type Params struct {
 	HistoricalEntries uint32 `protobuf:"varint,4,opt,name=historical_entries,json=historicalEntries,proto3" json:"historical_entries,omitempty"`
 	// max_delegations is the maximum number of delegations per validator.
 	MaxDelegations uint32 `protobuf:"varint,5,opt,name=max_delegations,json=maxDelegations,proto3" json:"max_delegations,omitempty"`
-	// min_commission_rate is the chain-wide minimum commission rate that a validator can charge their delegators
+	// min_commission_rate is the chain-wide minimum commission rate that a validator can charge their delegators.
 	MinCommissionRate github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,6,opt,name=min_commission_rate,json=minCommissionRate,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"min_commission_rate"`
 	// bond_denom defines the bondable coin denomination.
 	BondDenom string `protobuf:"bytes,7,opt,name=bond_denom,json=bondDenom,proto3" json:"bond_denom,omitempty"`

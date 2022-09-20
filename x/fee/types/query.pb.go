@@ -29,21 +29,22 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type QueryBaseDenomPriceRequest struct {
+// QueryCoinPricesRequest is request type for the Query/CoinPrices RPC method.
+type QueryCoinPricesRequest struct {
 }
 
-func (m *QueryBaseDenomPriceRequest) Reset()         { *m = QueryBaseDenomPriceRequest{} }
-func (m *QueryBaseDenomPriceRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryBaseDenomPriceRequest) ProtoMessage()    {}
-func (*QueryBaseDenomPriceRequest) Descriptor() ([]byte, []int) {
+func (m *QueryCoinPricesRequest) Reset()         { *m = QueryCoinPricesRequest{} }
+func (m *QueryCoinPricesRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryCoinPricesRequest) ProtoMessage()    {}
+func (*QueryCoinPricesRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_451d183aec7ef1fe, []int{0}
 }
-func (m *QueryBaseDenomPriceRequest) XXX_Unmarshal(b []byte) error {
+func (m *QueryCoinPricesRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryBaseDenomPriceRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryCoinPricesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryBaseDenomPriceRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryCoinPricesRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -53,36 +54,35 @@ func (m *QueryBaseDenomPriceRequest) XXX_Marshal(b []byte, deterministic bool) (
 		return b[:n], nil
 	}
 }
-func (m *QueryBaseDenomPriceRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryBaseDenomPriceRequest.Merge(m, src)
+func (m *QueryCoinPricesRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryCoinPricesRequest.Merge(m, src)
 }
-func (m *QueryBaseDenomPriceRequest) XXX_Size() int {
+func (m *QueryCoinPricesRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryBaseDenomPriceRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryBaseDenomPriceRequest.DiscardUnknown(m)
+func (m *QueryCoinPricesRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryCoinPricesRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryBaseDenomPriceRequest proto.InternalMessageInfo
+var xxx_messageInfo_QueryCoinPricesRequest proto.InternalMessageInfo
 
-type QueryBaseDenomPriceResponse struct {
-	// NOTE: cosmos sdk types.Dec panics during protobuf decode
-	// string is workaround
-	Price string `protobuf:"bytes,1,opt,name=price,proto3" json:"price" yaml:"price"`
+// QueryCoinPricesResponse is response type for the Query/CoinPrices RPC method.
+type QueryCoinPricesResponse struct {
+	Prices []CoinPrice `protobuf:"bytes,1,rep,name=prices,proto3" json:"prices"`
 }
 
-func (m *QueryBaseDenomPriceResponse) Reset()         { *m = QueryBaseDenomPriceResponse{} }
-func (m *QueryBaseDenomPriceResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryBaseDenomPriceResponse) ProtoMessage()    {}
-func (*QueryBaseDenomPriceResponse) Descriptor() ([]byte, []int) {
+func (m *QueryCoinPricesResponse) Reset()         { *m = QueryCoinPricesResponse{} }
+func (m *QueryCoinPricesResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryCoinPricesResponse) ProtoMessage()    {}
+func (*QueryCoinPricesResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_451d183aec7ef1fe, []int{1}
 }
-func (m *QueryBaseDenomPriceResponse) XXX_Unmarshal(b []byte) error {
+func (m *QueryCoinPricesResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryBaseDenomPriceResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryCoinPricesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryBaseDenomPriceResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryCoinPricesResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -92,25 +92,126 @@ func (m *QueryBaseDenomPriceResponse) XXX_Marshal(b []byte, deterministic bool) 
 		return b[:n], nil
 	}
 }
-func (m *QueryBaseDenomPriceResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryBaseDenomPriceResponse.Merge(m, src)
+func (m *QueryCoinPricesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryCoinPricesResponse.Merge(m, src)
 }
-func (m *QueryBaseDenomPriceResponse) XXX_Size() int {
+func (m *QueryCoinPricesResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryBaseDenomPriceResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryBaseDenomPriceResponse.DiscardUnknown(m)
+func (m *QueryCoinPricesResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryCoinPricesResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryBaseDenomPriceResponse proto.InternalMessageInfo
+var xxx_messageInfo_QueryCoinPricesResponse proto.InternalMessageInfo
 
-func (m *QueryBaseDenomPriceResponse) GetPrice() string {
+func (m *QueryCoinPricesResponse) GetPrices() []CoinPrice {
 	if m != nil {
-		return m.Price
+		return m.Prices
+	}
+	return nil
+}
+
+// QueryCoinPriceRequest is request type for the Query/CoinPrice RPC method.
+type QueryCoinPriceRequest struct {
+	// denom defines the base currency (coin) denomination which is priced.
+	Denom string `protobuf:"bytes,1,opt,name=denom,proto3" json:"denom,omitempty"`
+	// quote defines the quote currency denomination in the pair (USD as the first example).
+	Quote string `protobuf:"bytes,2,opt,name=quote,proto3" json:"quote,omitempty"`
+}
+
+func (m *QueryCoinPriceRequest) Reset()         { *m = QueryCoinPriceRequest{} }
+func (m *QueryCoinPriceRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryCoinPriceRequest) ProtoMessage()    {}
+func (*QueryCoinPriceRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_451d183aec7ef1fe, []int{2}
+}
+func (m *QueryCoinPriceRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryCoinPriceRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryCoinPriceRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryCoinPriceRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryCoinPriceRequest.Merge(m, src)
+}
+func (m *QueryCoinPriceRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryCoinPriceRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryCoinPriceRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryCoinPriceRequest proto.InternalMessageInfo
+
+func (m *QueryCoinPriceRequest) GetDenom() string {
+	if m != nil {
+		return m.Denom
 	}
 	return ""
 }
 
+func (m *QueryCoinPriceRequest) GetQuote() string {
+	if m != nil {
+		return m.Quote
+	}
+	return ""
+}
+
+// QueryCoinPriceResponse is response type for the Query/CoinPrice RPC method.
+type QueryCoinPriceResponse struct {
+	Price *CoinPrice `protobuf:"bytes,1,opt,name=price,proto3" json:"price,omitempty"`
+}
+
+func (m *QueryCoinPriceResponse) Reset()         { *m = QueryCoinPriceResponse{} }
+func (m *QueryCoinPriceResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryCoinPriceResponse) ProtoMessage()    {}
+func (*QueryCoinPriceResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_451d183aec7ef1fe, []int{3}
+}
+func (m *QueryCoinPriceResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryCoinPriceResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryCoinPriceResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryCoinPriceResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryCoinPriceResponse.Merge(m, src)
+}
+func (m *QueryCoinPriceResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryCoinPriceResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryCoinPriceResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryCoinPriceResponse proto.InternalMessageInfo
+
+func (m *QueryCoinPriceResponse) GetPrice() *CoinPrice {
+	if m != nil {
+		return m.Price
+	}
+	return nil
+}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
 type QueryParamsRequest struct {
 }
 
@@ -118,7 +219,7 @@ func (m *QueryParamsRequest) Reset()         { *m = QueryParamsRequest{} }
 func (m *QueryParamsRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryParamsRequest) ProtoMessage()    {}
 func (*QueryParamsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_451d183aec7ef1fe, []int{2}
+	return fileDescriptor_451d183aec7ef1fe, []int{4}
 }
 func (m *QueryParamsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -147,15 +248,16 @@ func (m *QueryParamsRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryParamsRequest proto.InternalMessageInfo
 
+// QueryParamsResponse is response type for the Query/Params RPC method.
 type QueryParamsResponse struct {
-	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params" yaml:"params"`
+	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
 }
 
 func (m *QueryParamsResponse) Reset()         { *m = QueryParamsResponse{} }
 func (m *QueryParamsResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryParamsResponse) ProtoMessage()    {}
 func (*QueryParamsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_451d183aec7ef1fe, []int{3}
+	return fileDescriptor_451d183aec7ef1fe, []int{5}
 }
 func (m *QueryParamsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -192,8 +294,10 @@ func (m *QueryParamsResponse) GetParams() Params {
 }
 
 func init() {
-	proto.RegisterType((*QueryBaseDenomPriceRequest)(nil), "decimal.fee.v1.QueryBaseDenomPriceRequest")
-	proto.RegisterType((*QueryBaseDenomPriceResponse)(nil), "decimal.fee.v1.QueryBaseDenomPriceResponse")
+	proto.RegisterType((*QueryCoinPricesRequest)(nil), "decimal.fee.v1.QueryCoinPricesRequest")
+	proto.RegisterType((*QueryCoinPricesResponse)(nil), "decimal.fee.v1.QueryCoinPricesResponse")
+	proto.RegisterType((*QueryCoinPriceRequest)(nil), "decimal.fee.v1.QueryCoinPriceRequest")
+	proto.RegisterType((*QueryCoinPriceResponse)(nil), "decimal.fee.v1.QueryCoinPriceResponse")
 	proto.RegisterType((*QueryParamsRequest)(nil), "decimal.fee.v1.QueryParamsRequest")
 	proto.RegisterType((*QueryParamsResponse)(nil), "decimal.fee.v1.QueryParamsResponse")
 }
@@ -201,32 +305,36 @@ func init() {
 func init() { proto.RegisterFile("decimal/fee/v1/query.proto", fileDescriptor_451d183aec7ef1fe) }
 
 var fileDescriptor_451d183aec7ef1fe = []byte{
-	// 398 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x92, 0xbf, 0x6f, 0xda, 0x40,
-	0x14, 0xc7, 0x6d, 0x24, 0x90, 0x7a, 0xfd, 0x21, 0xf5, 0x4a, 0x29, 0x35, 0xd4, 0xae, 0xae, 0x4b,
-	0xd5, 0x0a, 0x9f, 0x80, 0xad, 0xa3, 0xd5, 0x95, 0x96, 0x30, 0x66, 0x3b, 0xe0, 0x61, 0x59, 0xb1,
-	0x7d, 0xc6, 0x3e, 0xa3, 0x20, 0x65, 0xca, 0x1e, 0x29, 0x52, 0x94, 0xff, 0x89, 0x11, 0x29, 0x4b,
-	0x26, 0x2b, 0x82, 0x4c, 0x8c, 0xfc, 0x05, 0x11, 0xe7, 0x63, 0x30, 0x22, 0x51, 0x36, 0xdf, 0xfb,
-	0x7e, 0xef, 0xfb, 0xb9, 0xf7, 0xfc, 0x90, 0x31, 0x86, 0x91, 0x17, 0x30, 0x9f, 0x4e, 0x00, 0xe8,
-	0xac, 0x4d, 0xa7, 0x29, 0xc4, 0x73, 0x3b, 0x8a, 0xb9, 0xe0, 0xf8, 0x83, 0xd2, 0xec, 0x09, 0x80,
-	0x3d, 0x6b, 0x1b, 0x55, 0x97, 0xbb, 0x5c, 0x4a, 0x74, 0xf7, 0x95, 0xbb, 0x8c, 0xa6, 0xcb, 0xb9,
-	0xeb, 0x03, 0x65, 0x91, 0x47, 0x59, 0x18, 0x72, 0xc1, 0x84, 0xc7, 0xc3, 0x44, 0xa9, 0x8d, 0x83,
-	0xfc, 0x88, 0xc5, 0x2c, 0x50, 0x22, 0x69, 0x22, 0xe3, 0x64, 0xc7, 0x73, 0x58, 0x02, 0x7f, 0x21,
-	0xe4, 0x41, 0x3f, 0xf6, 0x46, 0x30, 0x80, 0x69, 0x0a, 0x89, 0x20, 0xff, 0x50, 0xe3, 0xa8, 0x9a,
-	0x44, 0x3c, 0x4c, 0x00, 0x53, 0x54, 0x8e, 0x76, 0x85, 0xba, 0xfe, 0x5d, 0xff, 0xf9, 0xc6, 0xf9,
-	0xba, 0xc9, 0xac, 0xbc, 0xb0, 0xcd, 0xac, 0x77, 0x73, 0x16, 0xf8, 0x7f, 0x88, 0x3c, 0x92, 0x41,
-	0x5e, 0x26, 0x55, 0x84, 0x65, 0x5e, 0x5f, 0x3e, 0x61, 0x4f, 0x99, 0xa0, 0x4f, 0x85, 0xaa, 0x4a,
-	0xff, 0x8f, 0x2a, 0xf9, 0x53, 0x65, 0xfc, 0xdb, 0x4e, 0xcd, 0x2e, 0x0e, 0xc3, 0xce, 0xfd, 0x8e,
-	0xb5, 0xc8, 0x2c, 0x6d, 0x93, 0x59, 0xca, 0xbd, 0xcd, 0xac, 0xf7, 0x8a, 0x2d, 0xcf, 0x64, 0xa0,
-	0x84, 0xce, 0x6d, 0x09, 0x95, 0x25, 0x08, 0x5f, 0xe9, 0x0a, 0x59, 0x6c, 0x0c, 0xff, 0x3a, 0x44,
-	0x3c, 0x3f, 0x1b, 0xe3, 0xf7, 0xab, 0xbc, 0x79, 0x2f, 0xe4, 0xdb, 0xe5, 0xdd, 0xe3, 0x4d, 0xe9,
-	0x0b, 0xfe, 0x4c, 0x0f, 0x7f, 0x86, 0xe4, 0x5e, 0xa0, 0x8f, 0xf2, 0x76, 0x8f, 0x8f, 0x53, 0x1f,
-	0xf2, 0xbe, 0x30, 0x39, 0x0a, 0x28, 0x8c, 0xce, 0xf8, 0xf1, 0xa2, 0x47, 0xc1, 0x4d, 0x09, 0xaf,
-	0xe3, 0x1a, 0x3d, 0xba, 0x09, 0x4e, 0x6f, 0xb1, 0x32, 0xf5, 0xe5, 0xca, 0xd4, 0x1f, 0x56, 0xa6,
-	0x7e, 0xbd, 0x36, 0xb5, 0xe5, 0xda, 0xd4, 0xee, 0xd7, 0xa6, 0x76, 0xda, 0x1d, 0x7a, 0x62, 0x98,
-	0x8e, 0xce, 0x40, 0xd8, 0x3c, 0x76, 0xf7, 0xd7, 0x05, 0xb0, 0x80, 0xba, 0xbc, 0x95, 0x04, 0x2c,
-	0x16, 0xad, 0x90, 0x8f, 0x81, 0x9e, 0xcb, 0x48, 0x31, 0x8f, 0x20, 0x19, 0x56, 0xe4, 0x66, 0x75,
-	0x9f, 0x02, 0x00, 0x00, 0xff, 0xff, 0xad, 0xff, 0x2e, 0x44, 0xd8, 0x02, 0x00, 0x00,
+	// 449 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x53, 0xcf, 0x8b, 0xd3, 0x40,
+	0x14, 0x4e, 0x76, 0x6d, 0x61, 0x47, 0xf1, 0x30, 0xd6, 0x1a, 0xa3, 0xc4, 0x25, 0xb2, 0x3f, 0x2e,
+	0xcd, 0xb0, 0xbb, 0x82, 0x77, 0xf7, 0x24, 0xb2, 0xb0, 0xe6, 0xe8, 0x6d, 0xda, 0xbc, 0x86, 0x60,
+	0x93, 0x97, 0x26, 0x93, 0x6a, 0x29, 0xbd, 0x78, 0x13, 0x2f, 0x82, 0xff, 0x54, 0x8f, 0x05, 0x2f,
+	0x9e, 0x44, 0x5a, 0xff, 0x10, 0xc9, 0xcc, 0x34, 0x92, 0x6c, 0x69, 0x6f, 0x99, 0xf7, 0x7d, 0xef,
+	0xfb, 0xde, 0x7b, 0x1f, 0x21, 0x76, 0x00, 0x83, 0x28, 0xe6, 0x23, 0x36, 0x04, 0x60, 0x93, 0x0b,
+	0x36, 0x2e, 0x20, 0x9b, 0x7a, 0x69, 0x86, 0x02, 0xe9, 0x43, 0x8d, 0x79, 0x43, 0x00, 0x6f, 0x72,
+	0x61, 0x77, 0x42, 0x0c, 0x51, 0x42, 0xac, 0xfc, 0x52, 0x2c, 0xfb, 0x79, 0x88, 0x18, 0x8e, 0x80,
+	0xf1, 0x34, 0x62, 0x3c, 0x49, 0x50, 0x70, 0x11, 0x61, 0x92, 0x6b, 0xd4, 0x6a, 0xe8, 0x97, 0x52,
+	0x0a, 0x79, 0xd6, 0x40, 0x52, 0x9e, 0xf1, 0x58, 0xb7, 0xb9, 0x16, 0xe9, 0xbe, 0x2f, 0x27, 0xb9,
+	0xc6, 0x28, 0xb9, 0xcd, 0xa2, 0x01, 0xe4, 0x3e, 0x8c, 0x0b, 0xc8, 0x85, 0xeb, 0x93, 0x27, 0x77,
+	0x90, 0x3c, 0xc5, 0x24, 0x07, 0xfa, 0x9a, 0xb4, 0x53, 0x59, 0xb1, 0xcc, 0xe3, 0xc3, 0xf3, 0xfb,
+	0x97, 0x4f, 0xbd, 0xfa, 0x02, 0x5e, 0xd5, 0xf3, 0xe6, 0xde, 0xe2, 0xf7, 0x0b, 0xc3, 0xd7, 0x74,
+	0xf7, 0x9a, 0x3c, 0xae, 0x6b, 0x6a, 0x33, 0xda, 0x21, 0xad, 0x00, 0x12, 0x8c, 0x2d, 0xf3, 0xd8,
+	0x3c, 0x3f, 0xf2, 0xd5, 0xa3, 0xac, 0x8e, 0x0b, 0x14, 0x60, 0x1d, 0xa8, 0xaa, 0x7c, 0xb8, 0x6f,
+	0x9b, 0x23, 0x57, 0x73, 0x31, 0xd2, 0x92, 0x46, 0x52, 0x65, 0xd7, 0x58, 0xbe, 0xe2, 0xb9, 0x1d,
+	0x42, 0xa5, 0xd4, 0xad, 0x3c, 0xc9, 0x66, 0xf3, 0x77, 0xe4, 0x51, 0xad, 0xaa, 0xd5, 0x5f, 0x91,
+	0xb6, 0x3a, 0x9d, 0x96, 0xef, 0x36, 0xe5, 0x15, 0xbf, 0x5a, 0x59, 0xbe, 0x2e, 0xbf, 0x1d, 0x92,
+	0x96, 0x54, 0xa3, 0x73, 0x42, 0xfe, 0xdf, 0x92, 0x9e, 0x36, 0xbb, 0xb7, 0xc7, 0x60, 0x9f, 0xed,
+	0xe5, 0xa9, 0xf1, 0x5c, 0xe7, 0xcb, 0xcf, 0xbf, 0x3f, 0x0e, 0x2c, 0xda, 0x65, 0xcd, 0xbc, 0x95,
+	0xe1, 0x57, 0x93, 0x1c, 0x55, 0x6d, 0xf4, 0x64, 0xb7, 0xec, 0xc6, 0xfd, 0x74, 0x1f, 0x4d, 0x9b,
+	0xf7, 0xa4, 0xf9, 0x19, 0x3d, 0xd9, 0x6a, 0xce, 0x66, 0x32, 0xcf, 0x39, 0x9b, 0xc9, 0x04, 0xe7,
+	0xf4, 0x13, 0x79, 0x70, 0x83, 0x41, 0x31, 0x02, 0x75, 0x32, 0xea, 0x6e, 0xb5, 0xa9, 0xa5, 0x62,
+	0xbf, 0xdc, 0xc9, 0xd9, 0x7b, 0x04, 0x95, 0xcd, 0xcd, 0x62, 0xe5, 0x98, 0xcb, 0x95, 0x63, 0xfe,
+	0x59, 0x39, 0xe6, 0xf7, 0xb5, 0x63, 0x2c, 0xd7, 0x8e, 0xf1, 0x6b, 0xed, 0x18, 0x1f, 0xae, 0xfa,
+	0x91, 0xe8, 0x17, 0x83, 0x8f, 0x20, 0x3c, 0xcc, 0xc2, 0x4d, 0xbb, 0x00, 0x1e, 0xb3, 0x10, 0x7b,
+	0x79, 0xcc, 0x33, 0xd1, 0x4b, 0x30, 0x00, 0xf6, 0x59, 0x4a, 0x8a, 0x69, 0x0a, 0x79, 0xbf, 0x2d,
+	0x7f, 0xa2, 0xab, 0x7f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x23, 0x4d, 0xb6, 0x29, 0xdd, 0x03, 0x00,
+	0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -241,10 +349,12 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	// Retrieves existing coin by specific symbol.
-	QueryBaseDenomPrice(ctx context.Context, in *QueryBaseDenomPriceRequest, opts ...grpc.CallOption) (*QueryBaseDenomPriceResponse, error)
-	//
-	QueryModuleParams(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
+	// CoinPrices queries all available coin prices.
+	CoinPrices(ctx context.Context, in *QueryCoinPricesRequest, opts ...grpc.CallOption) (*QueryCoinPricesResponse, error)
+	// CoinPrice queries the specified coin price.
+	CoinPrice(ctx context.Context, in *QueryCoinPriceRequest, opts ...grpc.CallOption) (*QueryCoinPriceResponse, error)
+	// Params queries the module params.
+	ModuleParams(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
 }
 
 type queryClient struct {
@@ -255,18 +365,27 @@ func NewQueryClient(cc grpc1.ClientConn) QueryClient {
 	return &queryClient{cc}
 }
 
-func (c *queryClient) QueryBaseDenomPrice(ctx context.Context, in *QueryBaseDenomPriceRequest, opts ...grpc.CallOption) (*QueryBaseDenomPriceResponse, error) {
-	out := new(QueryBaseDenomPriceResponse)
-	err := c.cc.Invoke(ctx, "/decimal.fee.v1.Query/QueryBaseDenomPrice", in, out, opts...)
+func (c *queryClient) CoinPrices(ctx context.Context, in *QueryCoinPricesRequest, opts ...grpc.CallOption) (*QueryCoinPricesResponse, error) {
+	out := new(QueryCoinPricesResponse)
+	err := c.cc.Invoke(ctx, "/decimal.fee.v1.Query/CoinPrices", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *queryClient) QueryModuleParams(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error) {
+func (c *queryClient) CoinPrice(ctx context.Context, in *QueryCoinPriceRequest, opts ...grpc.CallOption) (*QueryCoinPriceResponse, error) {
+	out := new(QueryCoinPriceResponse)
+	err := c.cc.Invoke(ctx, "/decimal.fee.v1.Query/CoinPrice", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) ModuleParams(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error) {
 	out := new(QueryParamsResponse)
-	err := c.cc.Invoke(ctx, "/decimal.fee.v1.Query/QueryModuleParams", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/decimal.fee.v1.Query/ModuleParams", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -275,59 +394,82 @@ func (c *queryClient) QueryModuleParams(ctx context.Context, in *QueryParamsRequ
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	// Retrieves existing coin by specific symbol.
-	QueryBaseDenomPrice(context.Context, *QueryBaseDenomPriceRequest) (*QueryBaseDenomPriceResponse, error)
-	//
-	QueryModuleParams(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
+	// CoinPrices queries all available coin prices.
+	CoinPrices(context.Context, *QueryCoinPricesRequest) (*QueryCoinPricesResponse, error)
+	// CoinPrice queries the specified coin price.
+	CoinPrice(context.Context, *QueryCoinPriceRequest) (*QueryCoinPriceResponse, error)
+	// Params queries the module params.
+	ModuleParams(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
 type UnimplementedQueryServer struct {
 }
 
-func (*UnimplementedQueryServer) QueryBaseDenomPrice(ctx context.Context, req *QueryBaseDenomPriceRequest) (*QueryBaseDenomPriceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method QueryBaseDenomPrice not implemented")
+func (*UnimplementedQueryServer) CoinPrices(ctx context.Context, req *QueryCoinPricesRequest) (*QueryCoinPricesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CoinPrices not implemented")
 }
-func (*UnimplementedQueryServer) QueryModuleParams(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method QueryModuleParams not implemented")
+func (*UnimplementedQueryServer) CoinPrice(ctx context.Context, req *QueryCoinPriceRequest) (*QueryCoinPriceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CoinPrice not implemented")
+}
+func (*UnimplementedQueryServer) ModuleParams(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ModuleParams not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
 	s.RegisterService(&_Query_serviceDesc, srv)
 }
 
-func _Query_QueryBaseDenomPrice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryBaseDenomPriceRequest)
+func _Query_CoinPrices_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryCoinPricesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).QueryBaseDenomPrice(ctx, in)
+		return srv.(QueryServer).CoinPrices(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/decimal.fee.v1.Query/QueryBaseDenomPrice",
+		FullMethod: "/decimal.fee.v1.Query/CoinPrices",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).QueryBaseDenomPrice(ctx, req.(*QueryBaseDenomPriceRequest))
+		return srv.(QueryServer).CoinPrices(ctx, req.(*QueryCoinPricesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_QueryModuleParams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Query_CoinPrice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryCoinPriceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).CoinPrice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/decimal.fee.v1.Query/CoinPrice",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).CoinPrice(ctx, req.(*QueryCoinPriceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_ModuleParams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryParamsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).QueryModuleParams(ctx, in)
+		return srv.(QueryServer).ModuleParams(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/decimal.fee.v1.Query/QueryModuleParams",
+		FullMethod: "/decimal.fee.v1.Query/ModuleParams",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).QueryModuleParams(ctx, req.(*QueryParamsRequest))
+		return srv.(QueryServer).ModuleParams(ctx, req.(*QueryParamsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -337,19 +479,23 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*QueryServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "QueryBaseDenomPrice",
-			Handler:    _Query_QueryBaseDenomPrice_Handler,
+			MethodName: "CoinPrices",
+			Handler:    _Query_CoinPrices_Handler,
 		},
 		{
-			MethodName: "QueryModuleParams",
-			Handler:    _Query_QueryModuleParams_Handler,
+			MethodName: "CoinPrice",
+			Handler:    _Query_CoinPrice_Handler,
+		},
+		{
+			MethodName: "ModuleParams",
+			Handler:    _Query_ModuleParams_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "decimal/fee/v1/query.proto",
 }
 
-func (m *QueryBaseDenomPriceRequest) Marshal() (dAtA []byte, err error) {
+func (m *QueryCoinPricesRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -359,12 +505,12 @@ func (m *QueryBaseDenomPriceRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryBaseDenomPriceRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryCoinPricesRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryBaseDenomPriceRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryCoinPricesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -372,7 +518,7 @@ func (m *QueryBaseDenomPriceRequest) MarshalToSizedBuffer(dAtA []byte) (int, err
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryBaseDenomPriceResponse) Marshal() (dAtA []byte, err error) {
+func (m *QueryCoinPricesResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -382,20 +528,99 @@ func (m *QueryBaseDenomPriceResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryBaseDenomPriceResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryCoinPricesResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryBaseDenomPriceResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryCoinPricesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.Price) > 0 {
-		i -= len(m.Price)
-		copy(dAtA[i:], m.Price)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.Price)))
+	if len(m.Prices) > 0 {
+		for iNdEx := len(m.Prices) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Prices[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryCoinPriceRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryCoinPriceRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryCoinPriceRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Quote) > 0 {
+		i -= len(m.Quote)
+		copy(dAtA[i:], m.Quote)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Quote)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Denom) > 0 {
+		i -= len(m.Denom)
+		copy(dAtA[i:], m.Denom)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Denom)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryCoinPriceResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryCoinPriceResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryCoinPriceResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Price != nil {
+		{
+			size, err := m.Price.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0xa
 	}
@@ -469,7 +694,7 @@ func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *QueryBaseDenomPriceRequest) Size() (n int) {
+func (m *QueryCoinPricesRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -478,14 +703,46 @@ func (m *QueryBaseDenomPriceRequest) Size() (n int) {
 	return n
 }
 
-func (m *QueryBaseDenomPriceResponse) Size() (n int) {
+func (m *QueryCoinPricesResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.Price)
+	if len(m.Prices) > 0 {
+		for _, e := range m.Prices {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *QueryCoinPriceRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Denom)
 	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.Quote)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryCoinPriceResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Price != nil {
+		l = m.Price.Size()
 		n += 1 + l + sovQuery(uint64(l))
 	}
 	return n
@@ -517,7 +774,7 @@ func sovQuery(x uint64) (n int) {
 func sozQuery(x uint64) (n int) {
 	return sovQuery(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *QueryBaseDenomPriceRequest) Unmarshal(dAtA []byte) error {
+func (m *QueryCoinPricesRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -540,10 +797,10 @@ func (m *QueryBaseDenomPriceRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryBaseDenomPriceRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryCoinPricesRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryBaseDenomPriceRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryCoinPricesRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
@@ -567,7 +824,7 @@ func (m *QueryBaseDenomPriceRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryBaseDenomPriceResponse) Unmarshal(dAtA []byte) error {
+func (m *QueryCoinPricesResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -590,15 +847,99 @@ func (m *QueryBaseDenomPriceResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryBaseDenomPriceResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryCoinPricesResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryBaseDenomPriceResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryCoinPricesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Price", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Prices", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Prices = append(m.Prices, CoinPrice{})
+			if err := m.Prices[len(m.Prices)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryCoinPriceRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryCoinPriceRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryCoinPriceRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -626,7 +967,125 @@ func (m *QueryBaseDenomPriceResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Price = string(dAtA[iNdEx:postIndex])
+			m.Denom = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Quote", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Quote = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryCoinPriceResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryCoinPriceResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryCoinPriceResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Price", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Price == nil {
+				m.Price = &CoinPrice{}
+			}
+			if err := m.Price.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

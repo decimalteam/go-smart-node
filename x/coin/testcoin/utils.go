@@ -3,40 +3,42 @@ package testcoin
 import (
 	"crypto/sha256"
 
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	"github.com/ethereum/go-ethereum/crypto"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	ethereumCrypto "github.com/ethereum/go-ethereum/crypto"
+
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 
-func CreateNewCheck(chainID, coinAmountStr, nonceStr, password string, dueBlock uint64) types.Check {
+func CreateNewCheck(chainID, coinStr, nonceStr, password string, dueBlock uint64) types.Check {
 	var (
-		coinAmount, _ = sdk.ParseCoinNormalized(coinAmountStr)
-		nonce, _      = sdk.NewIntFromString(nonceStr)
+		coin, _  = sdk.ParseCoinNormalized(coinStr)
+		nonce, _ = sdk.NewIntFromString(nonceStr)
 	)
 
 	priv, _ := ethsecp256k1.GenerateKey()
 
 	passphraseHash := sha256.Sum256([]byte(password))
-	passphrasePrivKey, _ := ethereumCrypto.ToECDSA(passphraseHash[:])
+	passphrasePrivKey, _ := crypto.ToECDSA(passphraseHash[:])
 
 	check := &types.Check{
 		ChainID:  chainID,
-		Coin:     coinAmount.Denom,
-		Amount:   coinAmount.Amount,
+		Coin:     coin,
 		Nonce:    nonce.BigInt().Bytes(),
 		DueBlock: dueBlock,
 	}
 
 	checkHash := check.HashWithoutLock()
-	lock, _ := ethereumCrypto.Sign(checkHash[:], passphrasePrivKey)
+	lock, _ := crypto.Sign(checkHash[:], passphrasePrivKey)
 	check.Lock = lock
 
 	// un armor key
 	key, _ := priv.ToECDSA()
 
 	checkHash = check.Hash()
-	signature, _ := ethereumCrypto.Sign(checkHash[:], key)
+	signature, _ := crypto.Sign(checkHash[:], key)
 
 	check.SetSignature(signature)
 
@@ -67,18 +69,18 @@ func ChecksEqual(whichChecks, withChecks types.Checks) bool {
 	return true
 }
 
-func CoinsEqual(whichCoins, withCoins types.Coins) bool {
+func CoinsEqual(whichCoins, withCoins []types.Coin) bool {
 	if len(whichCoins) != len(withCoins) {
 		return false
 	}
 
 	withCoinsMap := make(map[string]types.Coin)
 	for _, v := range withCoins {
-		withCoinsMap[v.Symbol] = v
+		withCoinsMap[v.Denom] = v
 	}
 
 	for _, v := range whichCoins {
-		with, ok := withCoinsMap[v.Symbol]
+		with, ok := withCoinsMap[v.Denom]
 		if !ok {
 			return false
 		}

@@ -12,7 +12,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// like SendCoin, but for multisig wallets as receivers
+// like SendCoin, but for multisig wallets as recipients
 type DepositMultisigWalletGenerator struct {
 	bottomRange, upperRange int64 // bounds in 0.001 (10^15)
 	knownAddresses          []string
@@ -22,8 +22,8 @@ type DepositMultisigWalletGenerator struct {
 }
 
 type DepositMultisigWalletAction struct {
-	coin     sdk.Coin
-	receiver string
+	recipient string
+	coin      sdk.Coin
 }
 
 func NewDepositMultisigWalletGenerator(bottomRange, upperRange int64) *DepositMultisigWalletGenerator {
@@ -45,13 +45,13 @@ func (gg *DepositMultisigWalletGenerator) Generate() Action {
 		return &EmptyAction{}
 	}
 	i := int(RandomRange(gg.rnd, 0, int64(len(gg.knownWallets))))
-	receiver := gg.knownWallets[i].Address
+	recipient := gg.knownWallets[i].Address
 	return &DepositMultisigWalletAction{
+		recipient: recipient,
 		coin: sdk.NewCoin(
 			RandomChoice(gg.rnd, gg.knownCoins),
 			helpers.FinneyToWei(sdk.NewInt(RandomRange(gg.rnd, gg.bottomRange, gg.upperRange))),
 		),
-		receiver: receiver,
 	}
 }
 
@@ -74,12 +74,12 @@ func (aa *DepositMultisigWalletAction) GenerateTx(sa *stormTypes.StormAccount, f
 	if err != nil {
 		return nil, err
 	}
-	receiver, err := sdk.AccAddressFromBech32(aa.receiver)
+	recipient, err := sdk.AccAddressFromBech32(aa.recipient)
 	if err != nil {
 		return nil, err
 	}
 
-	msg := dscTx.NewMsgSendCoin(sender, aa.coin, receiver)
+	msg := dscTx.NewMsgSendCoin(sender, recipient, aa.coin)
 	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
 	if err != nil {
 		return nil, err
@@ -92,5 +92,5 @@ func (aa *DepositMultisigWalletAction) GenerateTx(sa *stormTypes.StormAccount, f
 }
 
 func (aa *DepositMultisigWalletAction) String() string {
-	return fmt.Sprintf("DepositMultisigWallet{receiver: %s, coin: %s}", aa.receiver, aa.coin.String())
+	return fmt.Sprintf("DepositMultisigWallet{recipient: %s, coin: %s}", aa.recipient, aa.coin.String())
 }

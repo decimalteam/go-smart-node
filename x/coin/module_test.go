@@ -1,11 +1,14 @@
 package coin_test
 
 import (
-	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/stretchr/testify/require"
-	"testing"
+
+	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 )
 
 func TestItCreatesModuleAccountOnInitBlock(t *testing.T) {

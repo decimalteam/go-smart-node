@@ -69,12 +69,12 @@ func (as *SendCoinAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *sto
 	if err != nil {
 		return nil, err
 	}
-	receiver, err := sdk.AccAddressFromBech32(as.address)
+	recipient, err := sdk.AccAddressFromBech32(as.address)
 	if err != nil {
 		return nil, err
 	}
 
-	msg := dscTx.NewMsgSendCoin(sender, as.coin, receiver)
+	msg := dscTx.NewMsgSendCoin(sender, recipient, as.coin)
 	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
 	if err != nil {
 		return nil, err

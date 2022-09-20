@@ -1,6 +1,7 @@
 package coin_test
 
 import (
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
@@ -10,7 +11,7 @@ import (
 func invalidCoin() sdk.Coin {
 	return sdk.Coin{
 		Denom:  "invalidDenom",
-		Amount: sdk.NewInt(100000000),
+		Amount: sdkmath.NewInt(100000000),
 	}
 }
 
@@ -18,6 +19,6 @@ func invalidCoin() sdk.Coin {
 func validCoin(denom string, amount int64) sdk.Coin {
 	return sdk.Coin{
 		Denom:  denom,
-		Amount: helpers.EtherToWei(sdk.NewInt(amount)),
+		Amount: helpers.EtherToWei(sdkmath.NewInt(amount)),
 	}
 }

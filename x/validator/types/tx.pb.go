@@ -18,7 +18,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	_ "google.golang.org/protobuf/types/known/timestamppb"
+	_ "google/protobuf"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -451,7 +451,8 @@ func (m *MsgUndelegateResponse) GetCompletionTime() time.Time {
 	return time.Time{}
 }
 
-// MsgCancelUnbondingDelegation defines the SDK message for performing a cancel unbonding delegation for delegator
+// MsgCancelUnbondingDelegation defines the SDK message for performing a cancel
+// unbonding delegation for delegator
 type MsgCancelUnbondingDelegation struct {
 	DelegatorAddress string `protobuf:"bytes,1,opt,name=delegator_address,json=delegatorAddress,proto3" json:"delegator_address,omitempty"`
 	ValidatorAddress string `protobuf:"bytes,2,opt,name=validator_address,json=validatorAddress,proto3" json:"validator_address,omitempty"`
@@ -639,8 +640,8 @@ type MsgClient interface {
 	// Undelegate defines a method for performing an undelegation from a
 	// delegate and a validator.
 	Undelegate(ctx context.Context, in *MsgUndelegate, opts ...grpc.CallOption) (*MsgUndelegateResponse, error)
-	// CancelUnbondingDelegation defines a method for performing canceling the unbonding delegation
-	// and delegate back to previous validator.
+	// CancelUnbondingDelegation defines a method for performing canceling the
+	// unbonding delegation and delegate back to previous validator.
 	//
 	// Since: cosmos-sdk 0.46
 	CancelUnbondingDelegation(ctx context.Context, in *MsgCancelUnbondingDelegation, opts ...grpc.CallOption) (*MsgCancelUnbondingDelegationResponse, error)
@@ -723,8 +724,8 @@ type MsgServer interface {
 	// Undelegate defines a method for performing an undelegation from a
 	// delegate and a validator.
 	Undelegate(context.Context, *MsgUndelegate) (*MsgUndelegateResponse, error)
-	// CancelUnbondingDelegation defines a method for performing canceling the unbonding delegation
-	// and delegate back to previous validator.
+	// CancelUnbondingDelegation defines a method for performing canceling the
+	// unbonding delegation and delegate back to previous validator.
 	//
 	// Since: cosmos-sdk 0.46
 	CancelUnbondingDelegation(context.Context, *MsgCancelUnbondingDelegation) (*MsgCancelUnbondingDelegationResponse, error)

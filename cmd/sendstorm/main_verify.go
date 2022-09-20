@@ -46,17 +46,17 @@ func cmdVerify() *cobra.Command {
 				balances = balances.Add(coins...)
 			}
 			for _, coinInfo := range coinsInfo {
-				if coinInfo.Symbol == reactor.api.BaseCoin() {
+				if coinInfo.Denom == reactor.api.BaseCoin() {
 					continue
 				}
 				diff := "none"
-				bal := balances.AmountOf(coinInfo.Symbol)
+				bal := balances.AmountOf(coinInfo.Denom)
 				if !bal.Equal(coinInfo.Volume) {
 					diff = fmt.Sprintf("volume=%s, balances=%s",
 						coinInfo.Volume.String(), bal.String())
 				}
 				fmt.Printf("coin: (symbol: %s, volume: %s, reserve: %s), difference: %s\n",
-					coinInfo.Symbol, coinInfo.Volume, coinInfo.Reserve, diff)
+					coinInfo.Denom, coinInfo.Volume, coinInfo.Reserve, diff)
 			}
 		},
 	}

@@ -3,11 +3,13 @@ package events
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	proto "github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/require"
 
-	multisigTypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
+	proto "github.com/gogo/protobuf/proto"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 )
 
 func TestCompare(t *testing.T) {
@@ -16,7 +18,7 @@ func TestCompare(t *testing.T) {
 		expect map[string]string
 	}{
 		{
-			&multisigTypes.EventCreateWallet{
+			&multisigtypes.EventCreateWallet{
 				Sender:    "",
 				Wallet:    "b",
 				Owners:    []string{"c", "d"},

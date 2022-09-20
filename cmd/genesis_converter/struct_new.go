@@ -4,10 +4,12 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
+
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
 
 type GenesisNew struct {
@@ -36,9 +38,8 @@ type GenesisNew struct {
 			Coins  []FullCoinNew `json:"coins"`
 		} `json:"coin"`
 		NFT struct {
-			Collections []CollectionNew         `json:"collections"`
-			NFTs        []NFTNew                `json:"nfts"`
-			SubTokens   map[string]SubTokensNew `json:"subTokens"`
+			Collections []CollectionNew `json:"collections"`
+			Params      interface{}     `json:"params"`
 		} `json:"nft"`
 		Legacy struct {
 			LegacyRecords []LegacyRecordNew `json:"legacy_records"`
@@ -100,7 +101,7 @@ func AccountO2N(acc AccountOld) (AccountNew, error) {
 	res.BaseAccount.PublicKey.Key = base64.RawStdEncoding.EncodeToString(pubkeyBytes)
 	// address
 	pubkey := ethsecp256k1.PubKey{Key: pubkeyBytes}
-	res.BaseAccount.Address, err = bech32.ConvertAndEncode(config.Bech32PrefixAccAddr, pubkey.Address())
+	res.BaseAccount.Address, err = bech32.ConvertAndEncode(cmdcfg.Bech32PrefixAccAddr, pubkey.Address())
 	if err != nil {
 		return AccountNew{}, err
 	}
@@ -177,9 +178,9 @@ func FullCoinO2N(coin FullCoinOld, addrTable *AddressTable) FullCoinNew {
 	}
 }
 
-///////////////////////////
+// /////////////////////////
 // Legacy
-///////////////////////////
+// /////////////////////////
 type LegacyRecordNew struct {
 	Address string      `json:"address"`
 	Coins   sdk.Coins   `json:"coins"`
@@ -289,29 +290,32 @@ func TransactionO2N(tx TransactionOld, addrTable *AddressTable, coinSymbols map[
 ///////////////////////////
 
 type CollectionNew struct {
-	Denom string   `json:"denom"`
-	NFTs  []string `json:"nfts"`
+	Creator string     `json:"creator"`
+	Denom   string     `json:"denom"`
+	Supply  uint32     `json:"supply"`
+	Tokens  []TokenNew `json:"nfts"`
 }
 
-type NFTNew struct {
-	ID        string     `json:"id"`
-	AllowMint bool       `json:"allow_mint"`
-	Creator   string     `json:"creator"`
-	Reserve   sdk.Coin   `json:"reserve"`
-	TokenURI  string     `json:"token_uri"`
-	Owners    []OwnerNew `json:"owners"`
-}
-
-type OwnerNew struct {
-	SubTokenIDs []string `json:"sub_token_ids"`
-	Address     string   `json:"address"`
-}
-
-type SubTokensNew struct {
-	SubTokens []SubTokenNew `json:"subTokens"`
+type TokenNew struct {
+	Creator   string        `json:"creator"`
+	Denom     string        `json:"denom"`
+	ID        string        `json:"id"`
+	URI       string        `json:"uri"`
+	Reserve   sdk.Coin      `json:"reserve"`
+	AllowMint bool          `json:"allow_mint"`
+	Minted    uint32        `json:"minted"`
+	Burnt     uint32        `json:"burnt"`
+	SubTokens []SubTokenNew `json:"sub_tokens"`
 }
 
 type SubTokenNew struct {
-	ID      string   `json:"id"`
+	ID      uint32   `json:"id"`
+	Owner   string   `json:"owner"`
 	Reserve sdk.Coin `json:"reserve"`
+}
+
+type NFTOwnerFixRecord struct {
+	TokenID   string   `json:"token_id"`
+	Owner     string   `json:"owner"`
+	SubTokens []uint32 `json:"sub_tokens"`
 }

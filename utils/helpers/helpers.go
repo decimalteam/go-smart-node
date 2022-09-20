@@ -9,38 +9,35 @@ import (
 
 	"github.com/dustin/go-humanize"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var (
 	bigE15 = new(big.Int).Exp(big.NewInt(10), big.NewInt(15), nil)
 	bigE18 = new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)
-	sdkE15 = sdk.NewIntFromBigInt(bigE15)
-	sdkE18 = sdk.NewIntFromBigInt(bigE18)
+	sdkE15 = sdkmath.NewIntFromBigInt(bigE15)
+	sdkE18 = sdkmath.NewIntFromBigInt(bigE18)
 )
 
-func BipToPip(bip sdk.Int) sdk.Int {
-	return bip.Mul(sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)))
-}
-
-// EtherToWei convert number 1 to 1 * 10^18
-func EtherToWei(ether sdk.Int) sdk.Int {
+// EtherToWei converts number 1 to 1 * 10^18.
+func EtherToWei(ether sdkmath.Int) sdkmath.Int {
 	return ether.Mul(sdkE18)
 }
 
-// FinneyToWei convert number 1 to 1 * 10^15
-func FinneyToWei(finney sdk.Int) sdk.Int {
+// WeiToEther converts number 1 * 10^18 to 1.
+func WeiToEther(wei sdkmath.Int) sdkmath.Int {
+	return wei.Quo(sdkE18)
+}
+
+// FinneyToWei converts number 1 to 1 * 10^15.
+func FinneyToWei(finney sdkmath.Int) sdkmath.Int {
 	return finney.Mul(sdkE15)
 }
 
-// WeiToFinney convert 1 * 10^15 to 1
-func WeiToFinney(wei sdk.Int) sdk.Int {
+// WeiToFinney converts number 1 * 10^15 to 1.
+func WeiToFinney(wei sdkmath.Int) sdkmath.Int {
 	return wei.Quo(sdkE15)
-}
-
-// WeiToEther convert 1 * 10^18 to 1
-func WeiToEther(wei sdk.Int) sdk.Int {
-	return wei.Quo(sdkE18)
 }
 
 // JoinAccAddresses returns string containing all provided address joined with ",".
@@ -68,29 +65,31 @@ func JoinUints64(values []uint64) string {
 }
 
 // GetReserveLimitFromCRR returns coin reserve limit for specific CRR value.
-func GetReserveLimitFromCRR(crr uint) sdk.Int {
-	// CRR must be in range [10; 100]
-	if crr < 10 || crr > 100 {
-		return sdk.NewInt(0)
-	} else if crr < 20 {
-		return sdk.NewInt(100000).Mul(sdkE18)
-	} else if crr < 30 {
-		return sdk.NewInt(90000).Mul(sdkE18)
-	} else if crr < 40 {
-		return sdk.NewInt(80000).Mul(sdkE18)
-	} else if crr < 50 {
-		return sdk.NewInt(70000).Mul(sdkE18)
-	} else if crr < 60 {
-		return sdk.NewInt(60000).Mul(sdkE18)
-	} else if crr < 70 {
-		return sdk.NewInt(50000).Mul(sdkE18)
-	} else if crr < 80 {
-		return sdk.NewInt(40000).Mul(sdkE18)
-	} else if crr < 90 {
-		return sdk.NewInt(30000).Mul(sdkE18)
-	} else {
-		return sdk.NewInt(10000).Mul(sdkE18)
+func GetReserveLimitFromCRR(crr uint) sdkmath.Int {
+	var limit int64
+	switch {
+	case crr < 10 || crr > 100:
+		limit = 0
+	case crr < 20:
+		limit = 100_000
+	case crr < 30:
+		limit = 90_000
+	case crr < 40:
+		limit = 80_000
+	case crr < 50:
+		limit = 70_000
+	case crr < 60:
+		limit = 60_000
+	case crr < 70:
+		limit = 50_000
+	case crr < 80:
+		limit = 40_000
+	case crr < 90:
+		limit = 30_000
+	default:
+		limit = 10_000
 	}
+	return EtherToWei(sdkmath.NewInt(limit))
 }
 
 // DurationToString converts provided duration to human readable string presentation.

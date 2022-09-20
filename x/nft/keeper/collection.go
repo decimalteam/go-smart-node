@@ -1,75 +1,104 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
-// SetCollection sets the entire collection of a single denom
-func (k Keeper) SetCollection(ctx sdk.Context, denom string, collection types.Collection) {
-	store := ctx.KVStore(k.storeKey)
-	collectionKey := types.GetCollectionKey(denom)
-
-	bz := k.cdc.MustMarshalLengthPrefixed(&collection)
-	store.Set(collectionKey, bz)
-}
-
-// GetCollection returns a collection of NFTs
-func (k Keeper) GetCollection(ctx sdk.Context, denom string) (collection types.Collection, found bool) {
-	store := ctx.KVStore(k.storeKey)
-	collectionKey := types.GetCollectionKey(denom)
-
-	bz := store.Get(collectionKey)
-	if bz == nil {
-		return
-	}
-
-	k.cdc.MustUnmarshalLengthPrefixed(bz, &collection)
-	return collection, true
-}
-
-// GetCollections returns all the NFTs collections
-func (k Keeper) GetCollections(ctx sdk.Context) (collections []types.Collection) {
+// GetCollections returns all the NFTs collections.
+func (k *Keeper) GetCollections(ctx sdk.Context) (collections []types.Collection) {
 	k.iterateCollections(ctx,
-		func(collection types.Collection) (stop bool) {
-			collections = append(collections, collection)
+		func(collection *types.Collection) bool {
+			collections = append(collections, *collection)
 			return false
 		},
 	)
 	return
 }
 
-// GetDenoms returns all the NFT denoms
-func (k Keeper) GetDenoms(ctx sdk.Context) ([]string, error) {
-	var denoms []string
-	err := k.iterateCollections(ctx,
-		func(collection types.Collection) (stop bool) {
-			denoms = append(denoms, collection.Denom)
-			return false
-		},
-	)
-	if err != nil {
-		return nil, err
+// GetCollection returns the NFT collection.
+func (k *Keeper) GetCollection(ctx sdk.Context, creator sdk.AccAddress, denom string) (collection types.Collection, found bool) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetCollectionKey(creator, denom)
+
+	bz := store.Get(key)
+	if bz == nil {
+		return
 	}
 
-	return denoms, nil
+	k.cdc.MustUnmarshalLengthPrefixed(bz, &collection)
+
+	// read collection counter separately
+	counter := k.getCollectionCounter(ctx, creator, denom)
+	collection.Supply = counter.Supply
+
+	return collection, true
 }
 
-func (k Keeper) iterateCollections(ctx sdk.Context, handler func(collection types.Collection) (stop bool)) error {
+// SetCollection writes the NFT collection to the KVStore.
+func (k *Keeper) SetCollection(ctx sdk.Context, creator sdk.AccAddress, denom string, collection types.Collection) {
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.CollectionsKeyPrefix)
-	for ; iterator.Valid(); iterator.Next() {
+	key := types.GetCollectionKey(creator, denom)
+
+	// write only creator address and denom to the main record
+	bz := k.cdc.MustMarshalLengthPrefixed(&types.Collection{
+		Creator: collection.Creator,
+		Denom:   collection.Denom,
+	})
+	store.Set(key, bz)
+
+	// write collection counter separately
+	k.setCollectionCounter(ctx, creator, denom, types.CollectionCounter{
+		Supply: collection.Supply,
+	})
+}
+
+// iterateCollections iterates over all NFT collections created.
+func (k *Keeper) iterateCollections(ctx sdk.Context, handler func(collection *types.Collection) (stop bool)) error {
+	store := ctx.KVStore(k.storeKey)
+
+	it := sdk.KVStorePrefixIterator(store, types.GetCollectionsKey())
+	for ; it.Valid(); it.Next() {
 		var collection types.Collection
-		k.cdc.MustUnmarshalLengthPrefixed(iterator.Value(), &collection)
-		if handler(collection) {
+		k.cdc.MustUnmarshalLengthPrefixed(it.Value(), &collection)
+
+		// read collection counter separately
+		counter := k.getCollectionCounter(ctx, sdk.MustAccAddressFromBech32(collection.Creator), collection.Denom)
+		collection.Supply = counter.Supply
+
+		if handler(&collection) {
 			break
 		}
 	}
 
-	err := iterator.Close()
+	err := it.Close()
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+// getCollectionCounter returns the NFT collection counter.
+func (k *Keeper) getCollectionCounter(ctx sdk.Context, creator sdk.AccAddress, denom string) (counter types.CollectionCounter) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetCollectionCounterKey(creator, denom)
+
+	bz := store.Get(key)
+	if bz == nil {
+		return
+	}
+
+	k.cdc.MustUnmarshalLengthPrefixed(bz, &counter)
+	return
+}
+
+// setCollectionCounter writes the NFT collection counter to the KVStore.
+func (k *Keeper) setCollectionCounter(ctx sdk.Context, creator sdk.AccAddress, denom string, counter types.CollectionCounter) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetCollectionCounterKey(creator, denom)
+
+	bz := k.cdc.MustMarshalLengthPrefixed(&counter)
+	store.Set(key, bz)
 }

@@ -56,7 +56,7 @@ func (gs *GenesisState) Validate() error {
 		}
 		walletOwners[wallet.Address] = wallet.Owners
 		// Validate weights
-		var sumOfWeights uint64
+		var sumOfWeights uint32
 		for i := 0; i < len(wallet.Weights); i++ {
 			if wallet.Weights[i] < MinWeight || wallet.Weights[i] > MaxWeight {
 				return errors.InvalidWeight

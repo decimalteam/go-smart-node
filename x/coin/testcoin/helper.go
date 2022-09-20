@@ -3,12 +3,15 @@ package testcoin
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
+
 	"bitbucket.org/decimalteam/go-smart-node/x/coin"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/query"
-	"github.com/stretchr/testify/require"
 )
 
 // Helper is a structure which wraps the staking handler
@@ -50,13 +53,13 @@ func (sh *Helper) Handle(ctx sdk.Context, msg sdk.Msg, ok bool) *sdk.Result {
 }
 
 // CreateCoin create msg and handle create coin
-func (sh *Helper) CreateCoin(sender sdk.AccAddress, title, symbol string, crr uint64, initVolume, initReserve, limitVolume sdk.Int, identity string, ok bool) types.Coin {
-	msg := types.NewMsgCreateCoin(sender, title, symbol, crr, initVolume, initReserve, limitVolume, identity)
+func (sh *Helper) CreateCoin(sender sdk.AccAddress, title, denom string, crr uint64, initVolume, initReserve, limitVolume sdkmath.Int, identity string, ok bool) types.Coin {
+	msg := types.NewMsgCreateCoin(sender, denom, title, crr, initVolume, initReserve, limitVolume, identity)
 	sh.Handle(sh.Ctx, msg, ok)
 	return types.Coin{
 		Title:       title,
-		Symbol:      symbol,
-		CRR:         crr,
+		Denom:       denom,
+		CRR:         uint32(crr),
 		Reserve:     initReserve,
 		Volume:      initVolume,
 		LimitVolume: limitVolume,
@@ -66,13 +69,13 @@ func (sh *Helper) CreateCoin(sender sdk.AccAddress, title, symbol string, crr ui
 }
 
 // CreateCoinWithContext create msg and handle create coin with custom context
-func (sh *Helper) CreateCoinWithContext(ctx sdk.Context, sender sdk.AccAddress, title, symbol string, crr uint64, initVolume, initReserve, limitVolume sdk.Int, identity string, ok bool) types.Coin {
-	msg := types.NewMsgCreateCoin(sender, title, symbol, crr, initVolume, initReserve, limitVolume, identity)
+func (sh *Helper) CreateCoinWithContext(ctx sdk.Context, sender sdk.AccAddress, title, denom string, crr uint64, initVolume, initReserve, limitVolume sdkmath.Int, identity string, ok bool) types.Coin {
+	msg := types.NewMsgCreateCoin(sender, denom, title, crr, initVolume, initReserve, limitVolume, identity)
 	sh.Handle(ctx, msg, ok)
 	return types.Coin{
 		Title:       title,
-		Symbol:      symbol,
-		CRR:         crr,
+		Denom:       denom,
+		CRR:         uint32(crr),
 		Reserve:     initReserve,
 		Volume:      initVolume,
 		LimitVolume: limitVolume,
@@ -88,19 +91,19 @@ func (sh *Helper) CheckRedeem(sender sdk.AccAddress, check, proof string, ok boo
 }
 
 // UpdateCoin create msg and handle update coin
-func (sh *Helper) UpdateCoin(sender sdk.AccAddress, symbol string, limitVolume sdk.Int, identity string, ok bool) {
-	msg := types.NewMsgUpdateCoin(sender, symbol, limitVolume, identity)
+func (sh *Helper) UpdateCoin(sender sdk.AccAddress, denom string, limitVolume sdkmath.Int, identity string, ok bool) {
+	msg := types.NewMsgUpdateCoin(sender, denom, limitVolume, identity)
 	sh.Handle(sh.Ctx, msg, ok)
 }
 
 // SendCoin create msg and handler send coin to other address
-func (sh *Helper) SendCoin(sender, receiver sdk.AccAddress, coin sdk.Coin, ok bool) {
-	msg := types.NewMsgSendCoin(sender, coin, receiver)
+func (sh *Helper) SendCoin(sender, recipient sdk.AccAddress, coin sdk.Coin, ok bool) {
+	msg := types.NewMsgSendCoin(sender, recipient, coin)
 	sh.Handle(sh.Ctx, msg, ok)
 }
 
 // MultiSendCoin create msg and handler send coin to other addresses
-func (sh *Helper) MultiSendCoin(sender sdk.AccAddress, sends []types.Send, ok bool) {
+func (sh *Helper) MultiSendCoin(sender sdk.AccAddress, sends []types.MultiSendEntry, ok bool) {
 	msg := types.NewMsgMultiSendCoin(sender, sends)
 	sh.Handle(sh.Ctx, msg, ok)
 }
@@ -118,13 +121,13 @@ func (sh *Helper) SellCoin(sender sdk.AccAddress, coinToSell, maxCoinToBuy sdk.C
 }
 
 // SellAllCoin create msg and handler sell all coins request
-func (sh *Helper) SellAllCoin(sender sdk.AccAddress, coinSymbolToSell string, minCoinToBuy sdk.Coin, ok bool) {
-	msg := types.NewMsgSellAllCoin(sender, coinSymbolToSell, minCoinToBuy)
+func (sh *Helper) SellAllCoin(sender sdk.AccAddress, coinDenomToSell string, minCoinToBuy sdk.Coin, ok bool) {
+	msg := types.NewMsgSellAllCoin(sender, coinDenomToSell, minCoinToBuy)
 	sh.Handle(sh.Ctx, msg, ok)
 }
 
-func (sh *Helper) GetCoin(symbol string, ok bool) {
-	_, err := sh.k.GetCoin(sh.Ctx, symbol)
+func (sh *Helper) GetCoin(denom string, ok bool) {
+	_, err := sh.k.GetCoin(sh.Ctx, denom)
 	if ok {
 		require.NoError(sh.t, err)
 	} else {
@@ -139,8 +142,8 @@ func (sh *Helper) QueryCoins() []types.Coin {
 	return resp.Coins
 }
 
-func (sh *Helper) QueryCoin(symbol string) types.Coin {
-	resp, err := sh.queryServer.Coin(sh.Ctx, types.NewQueryCoinRequest(symbol))
+func (sh *Helper) QueryCoin(denom string) types.Coin {
+	resp, err := sh.queryServer.Coin(sh.Ctx, types.NewQueryCoinRequest(denom))
 	require.NoError(sh.t, err)
 
 	return resp.Coin

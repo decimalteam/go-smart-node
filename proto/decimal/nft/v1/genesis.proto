@@ -2,36 +2,18 @@ syntax = "proto3";
 package decimal.nft.v1;
 
 import "gogoproto/gogo.proto";
+
+import "cosmos_proto/cosmos.proto";
+
 import "decimal/nft/v1/nft.proto";
-import "decimal/nft/v1/collection.proto";
-import "decimal/nft/v1/sub_token.proto";
+import "decimal/nft/v1/params.proto";
 
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
 
+// GenesisState defines the module's genesis state.
 message GenesisState {
-  option (gogoproto.equal)           = false;
-  option (gogoproto.goproto_getters) = false;
-
-  repeated Collection collections = 1 [
-    (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"collections\""
-  ];
-
-  repeated BaseNFT nfts = 2 [
-    (gogoproto.customname) = "NFTs",
-    (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"nfts\""
-  ];
-
-  map<string, SubTokens> subTokens = 3 [
-    (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"sub_tokens\""
-  ];
-}
-
-message SubTokens {
-  repeated SubToken subTokens = 1 [
-    (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"sub_tokens\""
-  ];
+  // collections defines all existing NFT collections (including tokens and sub-tokens).
+  repeated Collection collections = 2 [ (gogoproto.nullable) = false ];
+  // params defines all the module's parameters.
+  Params params = 1 [ (gogoproto.nullable) = false ];
 }

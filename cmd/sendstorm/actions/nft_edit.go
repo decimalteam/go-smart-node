@@ -14,7 +14,7 @@ import (
 // MsgEditNFT
 type EditNFTGenerator struct {
 	textLengthBottom, textLengthUp int64
-	knownNFT                       []dscApi.NFT
+	knownNFT                       []*dscApi.NFTToken
 	rnd                            *rand.Rand
 }
 
@@ -72,10 +72,9 @@ func (aa *EditNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stor
 		return nil, err
 	}
 
-	msg := dscTx.NewMsgEditNFTMetadata(
+	msg := dscTx.NewMsgUpdateToken(
 		sender,
 		aa.id,
-		aa.denom,
 		aa.newTokenUri,
 	)
 	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)

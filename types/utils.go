@@ -14,33 +14,23 @@ import (
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 )
 
-// IsSupportedKey returns true if the pubkey type is supported by the chain
-// (i.e eth_secp256k1, amino multisig, ed25519).
-// NOTE: Nested multisigs are not supported.
-func IsSupportedKey(pubkey cryptotypes.PubKey) bool {
-	switch pubkey := pubkey.(type) {
-	case *ed25519.PubKey:
-		return true
-	case *secp256k1.PubKey:
-		// TODO: Is it needed to support?
-		return false
-	case *ethsecp256k1.PubKey:
+// IsSupportedKey returns true if the pubkey type is supported by the chain.
+func IsSupportedKey(pk cryptotypes.PubKey) bool {
+	switch pk := pk.(type) {
+	case *ed25519.PubKey, *ethsecp256k1.PubKey:
 		return true
 	case multisig.PubKey:
-		if len(pubkey.GetPubKeys()) == 0 {
+		if len(pk.GetPubKeys()) == 0 {
 			return false
 		}
-
-		for _, pk := range pubkey.GetPubKeys() {
+		for _, pk := range pk.GetPubKeys() {
 			switch pk.(type) {
-			case *ethsecp256k1.PubKey, *ed25519.PubKey:
+			case *ed25519.PubKey, *ethsecp256k1.PubKey:
 				continue
 			default:
-				// Nested multisigs are unsupported
 				return false
 			}
 		}
-
 		return true
 	default:
 		return false
