@@ -10,7 +10,7 @@ option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
 
 // Collection defines NFT collection which is just a set of NFT tokens.
 message Collection {
-  option (gogoproto.equal) = false;
+  option (gogoproto.equal) = true;
   option (gogoproto.goproto_getters) = false;
   option (gogoproto.goproto_stringer) = true;
 
@@ -27,7 +27,7 @@ message Collection {
 
 // CollectionCounter defines object containing counter of minted NFT tokens in the collection.
 message CollectionCounter {
-  option (gogoproto.equal) = false;
+  option (gogoproto.equal) = true;
   option (gogoproto.goproto_getters) = false;
   option (gogoproto.goproto_stringer) = true;
 
@@ -37,7 +37,7 @@ message CollectionCounter {
 
 // Token defines NFT token.
 message Token {
-  option (gogoproto.equal) = false;
+  option (gogoproto.equal) = true;
   option (gogoproto.goproto_getters) = false;
   option (gogoproto.goproto_stringer) = true;
 
@@ -64,7 +64,7 @@ message Token {
 
 // TokenCounter defines object containing counters of minted and burnt NFT sub-tokens.
 message TokenCounter {
-  option (gogoproto.equal) = false;
+  option (gogoproto.equal) = true;
   option (gogoproto.goproto_getters) = false;
   option (gogoproto.goproto_stringer) = true;
 
@@ -76,7 +76,7 @@ message TokenCounter {
 
 // SubToken defines NFT sub-token.
 message SubToken {
-  option (gogoproto.equal) = false;
+  option (gogoproto.equal) = true;
   option (gogoproto.goproto_getters) = false;
   option (gogoproto.goproto_stringer) = true;
 

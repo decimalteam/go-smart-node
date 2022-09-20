@@ -267,7 +267,7 @@ func (m *MsgUpdateTokenResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgUpdateTokenResponse proto.InternalMessageInfo
 
-// MsgUpdateReserve defines a SDK message for modifying existing NFT sub-token's reserve.
+// MsgUpdateReserve defines a SDK message for modifying existing NFT sub-token reserve.
 type MsgUpdateReserve struct {
 	Sender      string     `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
 	TokenID     string     `protobuf:"bytes,2,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
@@ -654,7 +654,7 @@ type MsgClient interface {
 	MintToken(ctx context.Context, in *MsgMintToken, opts ...grpc.CallOption) (*MsgMintTokenResponse, error)
 	// UpdateToken defines message for NFT token modifying.
 	UpdateToken(ctx context.Context, in *MsgUpdateToken, opts ...grpc.CallOption) (*MsgUpdateTokenResponse, error)
-	// UpdateReserve defines message for NFT token's reserve updating.
+	// UpdateReserve defines message for NFT token reserve updating.
 	UpdateReserve(ctx context.Context, in *MsgUpdateReserve, opts ...grpc.CallOption) (*MsgUpdateReserveResponse, error)
 	// SendToken defines message for transferring NFT sub-tokens.
 	SendToken(ctx context.Context, in *MsgSendToken, opts ...grpc.CallOption) (*MsgSendTokenResponse, error)
@@ -721,7 +721,7 @@ type MsgServer interface {
 	MintToken(context.Context, *MsgMintToken) (*MsgMintTokenResponse, error)
 	// UpdateToken defines message for NFT token modifying.
 	UpdateToken(context.Context, *MsgUpdateToken) (*MsgUpdateTokenResponse, error)
-	// UpdateReserve defines message for NFT token's reserve updating.
+	// UpdateReserve defines message for NFT token reserve updating.
 	UpdateReserve(context.Context, *MsgUpdateReserve) (*MsgUpdateReserveResponse, error)
 	// SendToken defines message for transferring NFT sub-tokens.
 	SendToken(context.Context, *MsgSendToken) (*MsgSendTokenResponse, error)

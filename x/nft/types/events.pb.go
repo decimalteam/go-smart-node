@@ -393,7 +393,7 @@ func (m *EventUpdateToken) GetURI() string {
 	return ""
 }
 
-// EventUpdateReserve defines event emitted when existed NFT sub-token's reserve is changed.
+// EventUpdateReserve defines event emitted when existed NFT sub-token reserve is changed.
 type EventUpdateReserve struct {
 	Sender      string   `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
 	ID          string   `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`

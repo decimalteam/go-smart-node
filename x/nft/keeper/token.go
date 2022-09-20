@@ -36,8 +36,8 @@ func (k *Keeper) GetToken(ctx sdk.Context, id string) (token types.Token, found 
 	return token, true
 }
 
-// createToken writes the new NFT token to the KVStore.
-func (k *Keeper) createToken(ctx sdk.Context, collection types.Collection, token types.Token) {
+// CreateToken writes the new NFT token to the KVStore.
+func (k *Keeper) CreateToken(ctx sdk.Context, collection types.Collection, token types.Token) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetTokenKey(token.ID)
 
@@ -61,6 +61,14 @@ func (k *Keeper) createToken(ctx sdk.Context, collection types.Collection, token
 	k.setTokenByCollection(ctx, creator, collection.Denom, token.ID)
 }
 
+func (k *Keeper) setToken(ctx sdk.Context, t types.Token) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetTokenKey(t.ID)
+
+	bz := k.cdc.MustMarshalLengthPrefixed(&t)
+	store.Set(key, bz)
+}
+
 // updateTokenURI removes previous NFT token URI and writes new one to the KVStore.
 func (k *Keeper) updateTokenURI(ctx sdk.Context, oldTokenURI string, newTokenURI string) {
 	k.removeTokenURI(ctx, oldTokenURI)
@@ -71,10 +79,15 @@ func (k *Keeper) updateTokenURI(ctx sdk.Context, oldTokenURI string, newTokenURI
 func (k *Keeper) iterateTokens(ctx sdk.Context, creator sdk.AccAddress, denom string, handler func(token *types.Token) (stop bool)) error {
 	store := ctx.KVStore(k.storeKey)
 
-	it := sdk.KVStorePrefixIterator(store, types.GetTokensByCollectionKey(creator, denom))
+	rootKey := types.GetTokensByCollectionKey(creator, denom)
+	it := sdk.KVStorePrefixIterator(store, rootKey)
 	for ; it.Valid(); it.Next() {
 		var token types.Token
-		k.cdc.MustUnmarshalLengthPrefixed(it.Value(), &token)
+
+		tokenKey := it.Key()[len(rootKey):]
+		bz := store.Get(types.GetTokenKeyByIDHash(tokenKey))
+
+		k.cdc.MustUnmarshalLengthPrefixed(bz, &token)
 
 		// read token counter separately
 		counter := k.getTokenCounter(ctx, token.ID)

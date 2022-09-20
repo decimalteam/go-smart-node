@@ -86,6 +86,10 @@ func GetTokenKey(id string) []byte {
 	return append(GetTokensKey(), getHash(id)...)
 }
 
+func GetTokenKeyByIDHash(id []byte) []byte {
+	return append(GetTokensKey(), id...)
+}
+
 // GetTokenCounterKey returns the key of the NFT token counter.
 func GetTokenCounterKey(id string) []byte {
 	return append(keyPrefixTokenCounter, getHash(id)...)
