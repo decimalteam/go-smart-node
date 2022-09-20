@@ -8,10 +8,12 @@ import (
 
 	evmTypes "github.com/evmos/ethermint/x/evm/types"
 
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coinconfig "bitbucket.org/decimalteam/go-smart-node/x/coin/config"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
 	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 )
 
@@ -50,11 +52,11 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 		panic(fmt.Sprintf("%s module account has not been set", sdkAuthTypes.FeeCollectorName))
 	}
 
-	delPrice, err := fd.feeKeeper.GetPrice(ctx)
+	delPrice, err := fd.feeKeeper.GetPrice(ctx, config.BaseDenom, feeconfig.DefaultQuote)
 	if err != nil {
 		return ctx, err
 	}
-	commissionInBaseCoin, err := CalculateFee(tx.GetMsgs(), int64(len(ctx.TxBytes())), delPrice, fd.feeKeeper.GetModuleParams(ctx))
+	commissionInBaseCoin, err := CalculateFee(tx.GetMsgs(), int64(len(ctx.TxBytes())), delPrice.Price, fd.feeKeeper.GetModuleParams(ctx))
 	if err != nil {
 		return ctx, err
 	}
