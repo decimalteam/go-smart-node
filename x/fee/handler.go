@@ -21,8 +21,8 @@ func NewHandler(server types.MsgServer) sdk.Handler {
 		}()
 		// Handle the message
 		switch msg := msg.(type) {
-		case *types.MsgSaveBaseDenomPrice:
-			res, err := server.SaveBaseDenomPrice(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgUpdateCoinPrices:
+			res, err := server.UpdateCoinPrices(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg)

@@ -25,5 +25,5 @@ message CoinPrice {
     (gogoproto.nullable) = false
   ];
   // updated_at defines the moment of the previous coin price update.
-  google.protobuf.Timestamp updated_at = 4 [ (gogoproto.stdtime) = true ];
+  google.protobuf.Timestamp updated_at = 4 [ (gogoproto.stdtime) = true, (gogoproto.nullable) = false ];
 }

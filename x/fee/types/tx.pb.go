@@ -6,7 +6,8 @@ package types
 import (
 	context "context"
 	fmt "fmt"
-	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
+	_ "github.com/cosmos/cosmos-proto"
+	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
 	_ "github.com/gogo/protobuf/gogoproto"
 	grpc1 "github.com/gogo/protobuf/grpc"
 	proto "github.com/gogo/protobuf/proto"
@@ -29,24 +30,26 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type MsgSaveBaseDenomPrice struct {
-	Sender    string                                 `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender" yaml:"sender"`
-	BaseDenom string                                 `protobuf:"bytes,2,opt,name=base_denom,json=baseDenom,proto3" json:"base_denom" yaml:"base_denom"`
-	Price     github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,3,opt,name=price,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"price" yaml:"price"`
+// MsgUpdateCoinPrices defines a SDK message for updating specified coin prices.
+type MsgUpdateCoinPrices struct {
+	// oracle defines address empowered to update coin prices.
+	Oracle string `protobuf:"bytes,1,opt,name=oracle,proto3" json:"oracle,omitempty"`
+	// prices defines the coin prices requested to update.
+	Prices []CoinPrice `protobuf:"bytes,2,rep,name=prices,proto3" json:"prices"`
 }
 
-func (m *MsgSaveBaseDenomPrice) Reset()         { *m = MsgSaveBaseDenomPrice{} }
-func (m *MsgSaveBaseDenomPrice) String() string { return proto.CompactTextString(m) }
-func (*MsgSaveBaseDenomPrice) ProtoMessage()    {}
-func (*MsgSaveBaseDenomPrice) Descriptor() ([]byte, []int) {
+func (m *MsgUpdateCoinPrices) Reset()         { *m = MsgUpdateCoinPrices{} }
+func (m *MsgUpdateCoinPrices) String() string { return proto.CompactTextString(m) }
+func (*MsgUpdateCoinPrices) ProtoMessage()    {}
+func (*MsgUpdateCoinPrices) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5a3f2fc50d3178fe, []int{0}
 }
-func (m *MsgSaveBaseDenomPrice) XXX_Unmarshal(b []byte) error {
+func (m *MsgUpdateCoinPrices) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgSaveBaseDenomPrice) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgUpdateCoinPrices) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgSaveBaseDenomPrice.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgUpdateCoinPrices.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -56,47 +59,48 @@ func (m *MsgSaveBaseDenomPrice) XXX_Marshal(b []byte, deterministic bool) ([]byt
 		return b[:n], nil
 	}
 }
-func (m *MsgSaveBaseDenomPrice) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgSaveBaseDenomPrice.Merge(m, src)
+func (m *MsgUpdateCoinPrices) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUpdateCoinPrices.Merge(m, src)
 }
-func (m *MsgSaveBaseDenomPrice) XXX_Size() int {
+func (m *MsgUpdateCoinPrices) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgSaveBaseDenomPrice) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgSaveBaseDenomPrice.DiscardUnknown(m)
+func (m *MsgUpdateCoinPrices) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUpdateCoinPrices.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgSaveBaseDenomPrice proto.InternalMessageInfo
+var xxx_messageInfo_MsgUpdateCoinPrices proto.InternalMessageInfo
 
-func (m *MsgSaveBaseDenomPrice) GetSender() string {
+func (m *MsgUpdateCoinPrices) GetOracle() string {
 	if m != nil {
-		return m.Sender
+		return m.Oracle
 	}
 	return ""
 }
 
-func (m *MsgSaveBaseDenomPrice) GetBaseDenom() string {
+func (m *MsgUpdateCoinPrices) GetPrices() []CoinPrice {
 	if m != nil {
-		return m.BaseDenom
+		return m.Prices
 	}
-	return ""
+	return nil
 }
 
-type MsgSaveBaseDenomPriceResponse struct {
+// MsgUpdateCoinPricesResponse defines the Msg/UpdateCoinPrices response type.
+type MsgUpdateCoinPricesResponse struct {
 }
 
-func (m *MsgSaveBaseDenomPriceResponse) Reset()         { *m = MsgSaveBaseDenomPriceResponse{} }
-func (m *MsgSaveBaseDenomPriceResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgSaveBaseDenomPriceResponse) ProtoMessage()    {}
-func (*MsgSaveBaseDenomPriceResponse) Descriptor() ([]byte, []int) {
+func (m *MsgUpdateCoinPricesResponse) Reset()         { *m = MsgUpdateCoinPricesResponse{} }
+func (m *MsgUpdateCoinPricesResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgUpdateCoinPricesResponse) ProtoMessage()    {}
+func (*MsgUpdateCoinPricesResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5a3f2fc50d3178fe, []int{1}
 }
-func (m *MsgSaveBaseDenomPriceResponse) XXX_Unmarshal(b []byte) error {
+func (m *MsgUpdateCoinPricesResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgSaveBaseDenomPriceResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgUpdateCoinPricesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgSaveBaseDenomPriceResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgUpdateCoinPricesResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -106,50 +110,48 @@ func (m *MsgSaveBaseDenomPriceResponse) XXX_Marshal(b []byte, deterministic bool
 		return b[:n], nil
 	}
 }
-func (m *MsgSaveBaseDenomPriceResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgSaveBaseDenomPriceResponse.Merge(m, src)
+func (m *MsgUpdateCoinPricesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUpdateCoinPricesResponse.Merge(m, src)
 }
-func (m *MsgSaveBaseDenomPriceResponse) XXX_Size() int {
+func (m *MsgUpdateCoinPricesResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgSaveBaseDenomPriceResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgSaveBaseDenomPriceResponse.DiscardUnknown(m)
+func (m *MsgUpdateCoinPricesResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUpdateCoinPricesResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgSaveBaseDenomPriceResponse proto.InternalMessageInfo
+var xxx_messageInfo_MsgUpdateCoinPricesResponse proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*MsgSaveBaseDenomPrice)(nil), "decimal.fee.v1.MsgSaveBaseDenomPrice")
-	proto.RegisterType((*MsgSaveBaseDenomPriceResponse)(nil), "decimal.fee.v1.MsgSaveBaseDenomPriceResponse")
+	proto.RegisterType((*MsgUpdateCoinPrices)(nil), "decimal.fee.v1.MsgUpdateCoinPrices")
+	proto.RegisterType((*MsgUpdateCoinPricesResponse)(nil), "decimal.fee.v1.MsgUpdateCoinPricesResponse")
 }
 
 func init() { proto.RegisterFile("decimal/fee/v1/tx.proto", fileDescriptor_5a3f2fc50d3178fe) }
 
 var fileDescriptor_5a3f2fc50d3178fe = []byte{
-	// 356 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x52, 0x4d, 0x4b, 0xeb, 0x40,
-	0x14, 0x4d, 0x5e, 0x79, 0x85, 0x0e, 0xef, 0x3d, 0x78, 0x41, 0xb1, 0x54, 0xcc, 0x48, 0x44, 0x71,
-	0x93, 0x19, 0x6a, 0x77, 0x2e, 0x43, 0xc1, 0x55, 0x41, 0xe2, 0x4e, 0x10, 0xc9, 0xc7, 0x6d, 0x8c,
-	0xed, 0x64, 0x62, 0x66, 0x5a, 0xda, 0x7f, 0xe1, 0xcf, 0xea, 0xb2, 0x4b, 0x71, 0x31, 0x48, 0xbb,
-	0xeb, 0x46, 0xe8, 0x2f, 0x90, 0x4e, 0x52, 0x54, 0xe8, 0xc2, 0xd5, 0xcc, 0x3d, 0xf7, 0x9e, 0x73,
-	0x66, 0xce, 0x0c, 0x3a, 0x88, 0x21, 0x4a, 0x59, 0x30, 0xa4, 0x7d, 0x00, 0x3a, 0x6e, 0x53, 0x39,
-	0x21, 0x79, 0xc1, 0x25, 0xb7, 0xfe, 0x55, 0x0d, 0xd2, 0x07, 0x20, 0xe3, 0x76, 0x6b, 0x2f, 0xe1,
-	0x09, 0xd7, 0x2d, 0xba, 0xd9, 0x95, 0x53, 0xce, 0xbb, 0x89, 0xf6, 0x7b, 0x22, 0xb9, 0x09, 0xc6,
-	0xe0, 0x05, 0x02, 0xba, 0x90, 0x71, 0x76, 0x5d, 0xa4, 0x11, 0x58, 0x1d, 0x54, 0x17, 0x90, 0xc5,
-	0x50, 0x34, 0xcd, 0x63, 0xf3, 0xbc, 0xe1, 0x1d, 0xae, 0x14, 0xae, 0x90, 0xb5, 0xc2, 0x7f, 0xa7,
-	0x01, 0x1b, 0x5e, 0x3a, 0x65, 0xed, 0xf8, 0x55, 0xc3, 0xf2, 0x10, 0x0a, 0x03, 0x01, 0xf7, 0xf1,
-	0x46, 0xa7, 0xf9, 0x4b, 0x13, 0x4f, 0x56, 0x0a, 0x7f, 0x41, 0xd7, 0x0a, 0xff, 0x2f, 0xc9, 0x9f,
-	0x98, 0xe3, 0x37, 0xc2, 0xad, 0xbb, 0x75, 0x87, 0x7e, 0xe7, 0x9b, 0x13, 0x34, 0x6b, 0x9a, 0x7e,
-	0x35, 0x53, 0xd8, 0x78, 0x55, 0xf8, 0x2c, 0x49, 0xe5, 0xc3, 0x28, 0x24, 0x11, 0x67, 0x34, 0xe2,
-	0x82, 0x71, 0x51, 0x2d, 0xae, 0x88, 0x07, 0x54, 0x4e, 0x73, 0x10, 0xa4, 0x0b, 0xd1, 0x4a, 0xe1,
-	0x92, 0xbe, 0x56, 0xf8, 0x4f, 0xe9, 0xa3, 0x4b, 0xc7, 0x2f, 0x61, 0x07, 0xa3, 0xa3, 0x9d, 0x17,
-	0xf6, 0x41, 0xe4, 0x3c, 0x13, 0x70, 0xf1, 0x84, 0x6a, 0x3d, 0x91, 0x58, 0x8f, 0xc8, 0xda, 0x91,
-	0xca, 0x29, 0xf9, 0x1e, 0x2b, 0xd9, 0xa9, 0xd5, 0x72, 0x7f, 0x34, 0xb6, 0xb5, 0xf4, 0x7a, 0xb3,
-	0x85, 0x6d, 0xce, 0x17, 0xb6, 0xf9, 0xb6, 0xb0, 0xcd, 0xe7, 0xa5, 0x6d, 0xcc, 0x97, 0xb6, 0xf1,
-	0xb2, 0xb4, 0x8d, 0xdb, 0x4e, 0x98, 0xca, 0x70, 0x14, 0x0d, 0x40, 0x12, 0x5e, 0x24, 0xb4, 0x52,
-	0x95, 0x10, 0x30, 0x9a, 0x70, 0x57, 0xb0, 0xa0, 0x90, 0x6e, 0xc6, 0x63, 0xa0, 0x13, 0xfd, 0x01,
-	0x74, 0x0c, 0x61, 0x5d, 0xbf, 0x6d, 0xe7, 0x23, 0x00, 0x00, 0xff, 0xff, 0x03, 0xfc, 0xe6, 0x56,
-	0x1c, 0x02, 0x00, 0x00,
+	// 330 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x90, 0x31, 0x4b, 0xc3, 0x40,
+	0x14, 0xc7, 0x13, 0x2b, 0x05, 0xaf, 0x20, 0x12, 0x0b, 0x4d, 0x2b, 0xc6, 0x52, 0x97, 0xa2, 0x34,
+	0x67, 0xdb, 0x41, 0x70, 0xb3, 0xce, 0x05, 0xa9, 0xb8, 0xb8, 0x48, 0x9a, 0xbc, 0x1e, 0xa1, 0x4d,
+	0x5e, 0xb8, 0x77, 0x96, 0xba, 0xba, 0x0b, 0x7e, 0x14, 0x07, 0x3f, 0x44, 0xc7, 0xe2, 0xe4, 0x24,
+	0xd2, 0x0e, 0x7e, 0x0d, 0x69, 0x72, 0x0a, 0xd6, 0x0e, 0x6e, 0x79, 0xfc, 0xfe, 0xf9, 0xff, 0xde,
+	0x3d, 0x56, 0x0a, 0xc0, 0x0f, 0x23, 0x6f, 0xc4, 0x07, 0x00, 0x7c, 0xdc, 0xe4, 0x6a, 0xe2, 0x26,
+	0x12, 0x15, 0x5a, 0xdb, 0x1a, 0xb8, 0x03, 0x00, 0x77, 0xdc, 0xac, 0x14, 0x05, 0x0a, 0x4c, 0x11,
+	0x5f, 0x7e, 0x65, 0xa9, 0x4a, 0xd9, 0x47, 0x8a, 0x90, 0x6e, 0x33, 0x90, 0x0d, 0x1a, 0x95, 0xb2,
+	0x89, 0x47, 0x24, 0x96, 0xc5, 0x11, 0x09, 0x0d, 0xec, 0x15, 0xe5, 0x52, 0x90, 0x92, 0xda, 0xa3,
+	0xc9, 0x76, 0xbb, 0x24, 0xae, 0x93, 0xc0, 0x53, 0x70, 0x81, 0x61, 0x7c, 0x29, 0x43, 0x1f, 0xc8,
+	0x3a, 0x61, 0x79, 0x94, 0x9e, 0x3f, 0x02, 0xdb, 0xac, 0x9a, 0xf5, 0xad, 0x8e, 0xfd, 0xfa, 0xd2,
+	0x28, 0x6a, 0xd9, 0x79, 0x10, 0x48, 0x20, 0xba, 0x52, 0x32, 0x8c, 0x45, 0x4f, 0xe7, 0xac, 0x53,
+	0x96, 0x4f, 0xd2, 0x7f, 0xed, 0x8d, 0x6a, 0xae, 0x5e, 0x68, 0x95, 0xdd, 0xdf, 0xcf, 0x71, 0x7f,
+	0xda, 0x3b, 0x9b, 0xd3, 0xf7, 0x03, 0xa3, 0xa7, 0xe3, 0x67, 0x85, 0x87, 0xcf, 0xe7, 0x23, 0xdd,
+	0x52, 0xdb, 0x67, 0x7b, 0x6b, 0xd6, 0xe9, 0x01, 0x25, 0x18, 0x13, 0xb4, 0x86, 0x2c, 0xd7, 0x25,
+	0x61, 0x05, 0x6c, 0xe7, 0xcf, 0xc6, 0x87, 0xab, 0xbe, 0x35, 0x3d, 0x95, 0xe3, 0x7f, 0x84, 0xbe,
+	0x65, 0x9d, 0xee, 0x74, 0xee, 0x98, 0xb3, 0xb9, 0x63, 0x7e, 0xcc, 0x1d, 0xf3, 0x69, 0xe1, 0x18,
+	0xb3, 0x85, 0x63, 0xbc, 0x2d, 0x1c, 0xe3, 0xa6, 0xdd, 0x0f, 0x55, 0xff, 0xce, 0x1f, 0x82, 0x72,
+	0x51, 0x0a, 0xae, 0x3b, 0x15, 0x78, 0x11, 0x17, 0xd8, 0xa0, 0xc8, 0x93, 0xaa, 0x11, 0x63, 0x00,
+	0x7c, 0x92, 0x5e, 0x5c, 0xdd, 0x27, 0x40, 0xfd, 0x7c, 0x7a, 0xf1, 0xf6, 0x57, 0x00, 0x00, 0x00,
+	0xff, 0xff, 0x6a, 0xe3, 0xfb, 0x02, 0x00, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -164,7 +166,8 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
-	SaveBaseDenomPrice(ctx context.Context, in *MsgSaveBaseDenomPrice, opts ...grpc.CallOption) (*MsgSaveBaseDenomPriceResponse, error)
+	// UpdateCoinPrices defines message for updating a coin prices.
+	UpdateCoinPrices(ctx context.Context, in *MsgUpdateCoinPrices, opts ...grpc.CallOption) (*MsgUpdateCoinPricesResponse, error)
 }
 
 type msgClient struct {
@@ -175,9 +178,9 @@ func NewMsgClient(cc grpc1.ClientConn) MsgClient {
 	return &msgClient{cc}
 }
 
-func (c *msgClient) SaveBaseDenomPrice(ctx context.Context, in *MsgSaveBaseDenomPrice, opts ...grpc.CallOption) (*MsgSaveBaseDenomPriceResponse, error) {
-	out := new(MsgSaveBaseDenomPriceResponse)
-	err := c.cc.Invoke(ctx, "/decimal.fee.v1.Msg/SaveBaseDenomPrice", in, out, opts...)
+func (c *msgClient) UpdateCoinPrices(ctx context.Context, in *MsgUpdateCoinPrices, opts ...grpc.CallOption) (*MsgUpdateCoinPricesResponse, error) {
+	out := new(MsgUpdateCoinPricesResponse)
+	err := c.cc.Invoke(ctx, "/decimal.fee.v1.Msg/UpdateCoinPrices", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -186,35 +189,36 @@ func (c *msgClient) SaveBaseDenomPrice(ctx context.Context, in *MsgSaveBaseDenom
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
-	SaveBaseDenomPrice(context.Context, *MsgSaveBaseDenomPrice) (*MsgSaveBaseDenomPriceResponse, error)
+	// UpdateCoinPrices defines message for updating a coin prices.
+	UpdateCoinPrices(context.Context, *MsgUpdateCoinPrices) (*MsgUpdateCoinPricesResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
 type UnimplementedMsgServer struct {
 }
 
-func (*UnimplementedMsgServer) SaveBaseDenomPrice(ctx context.Context, req *MsgSaveBaseDenomPrice) (*MsgSaveBaseDenomPriceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SaveBaseDenomPrice not implemented")
+func (*UnimplementedMsgServer) UpdateCoinPrices(ctx context.Context, req *MsgUpdateCoinPrices) (*MsgUpdateCoinPricesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateCoinPrices not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
 	s.RegisterService(&_Msg_serviceDesc, srv)
 }
 
-func _Msg_SaveBaseDenomPrice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgSaveBaseDenomPrice)
+func _Msg_UpdateCoinPrices_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgUpdateCoinPrices)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).SaveBaseDenomPrice(ctx, in)
+		return srv.(MsgServer).UpdateCoinPrices(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/decimal.fee.v1.Msg/SaveBaseDenomPrice",
+		FullMethod: "/decimal.fee.v1.Msg/UpdateCoinPrices",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).SaveBaseDenomPrice(ctx, req.(*MsgSaveBaseDenomPrice))
+		return srv.(MsgServer).UpdateCoinPrices(ctx, req.(*MsgUpdateCoinPrices))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -224,15 +228,15 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*MsgServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SaveBaseDenomPrice",
-			Handler:    _Msg_SaveBaseDenomPrice_Handler,
+			MethodName: "UpdateCoinPrices",
+			Handler:    _Msg_UpdateCoinPrices_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "decimal/fee/v1/tx.proto",
 }
 
-func (m *MsgSaveBaseDenomPrice) Marshal() (dAtA []byte, err error) {
+func (m *MsgUpdateCoinPrices) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -242,44 +246,41 @@ func (m *MsgSaveBaseDenomPrice) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgSaveBaseDenomPrice) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgUpdateCoinPrices) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgSaveBaseDenomPrice) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgUpdateCoinPrices) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	{
-		size := m.Price.Size()
-		i -= size
-		if _, err := m.Price.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
+	if len(m.Prices) > 0 {
+		for iNdEx := len(m.Prices) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Prices[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintTx(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x12
 		}
-		i = encodeVarintTx(dAtA, i, uint64(size))
 	}
-	i--
-	dAtA[i] = 0x1a
-	if len(m.BaseDenom) > 0 {
-		i -= len(m.BaseDenom)
-		copy(dAtA[i:], m.BaseDenom)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.BaseDenom)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Sender) > 0 {
-		i -= len(m.Sender)
-		copy(dAtA[i:], m.Sender)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Sender)))
+	if len(m.Oracle) > 0 {
+		i -= len(m.Oracle)
+		copy(dAtA[i:], m.Oracle)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Oracle)))
 		i--
 		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgSaveBaseDenomPriceResponse) Marshal() (dAtA []byte, err error) {
+func (m *MsgUpdateCoinPricesResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -289,12 +290,12 @@ func (m *MsgSaveBaseDenomPriceResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgSaveBaseDenomPriceResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgUpdateCoinPricesResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgSaveBaseDenomPriceResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgUpdateCoinPricesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -313,26 +314,26 @@ func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *MsgSaveBaseDenomPrice) Size() (n int) {
+func (m *MsgUpdateCoinPrices) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.Sender)
+	l = len(m.Oracle)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.BaseDenom)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
+	if len(m.Prices) > 0 {
+		for _, e := range m.Prices {
+			l = e.Size()
+			n += 1 + l + sovTx(uint64(l))
+		}
 	}
-	l = m.Price.Size()
-	n += 1 + l + sovTx(uint64(l))
 	return n
 }
 
-func (m *MsgSaveBaseDenomPriceResponse) Size() (n int) {
+func (m *MsgUpdateCoinPricesResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -347,7 +348,7 @@ func sovTx(x uint64) (n int) {
 func sozTx(x uint64) (n int) {
 	return sovTx(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *MsgSaveBaseDenomPrice) Unmarshal(dAtA []byte) error {
+func (m *MsgUpdateCoinPrices) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -370,15 +371,15 @@ func (m *MsgSaveBaseDenomPrice) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgSaveBaseDenomPrice: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgUpdateCoinPrices: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgSaveBaseDenomPrice: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgUpdateCoinPrices: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Oracle", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -406,13 +407,13 @@ func (m *MsgSaveBaseDenomPrice) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Sender = string(dAtA[iNdEx:postIndex])
+			m.Oracle = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BaseDenom", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Prices", wireType)
 			}
-			var stringLen uint64
+			var msglen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -422,55 +423,23 @@ func (m *MsgSaveBaseDenomPrice) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				msglen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if msglen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + msglen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.BaseDenom = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Price", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Price.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.Prices = append(m.Prices, CoinPrice{})
+			if err := m.Prices[len(m.Prices)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -495,7 +464,7 @@ func (m *MsgSaveBaseDenomPrice) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgSaveBaseDenomPriceResponse) Unmarshal(dAtA []byte) error {
+func (m *MsgUpdateCoinPricesResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -518,10 +487,10 @@ func (m *MsgSaveBaseDenomPriceResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgSaveBaseDenomPriceResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgUpdateCoinPricesResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgSaveBaseDenomPriceResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgUpdateCoinPricesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
