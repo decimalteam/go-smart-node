@@ -122,7 +122,7 @@ func (aa *MintNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stor
 }
 
 func (aa *MintNFTAction) String() string {
-	return fmt.Sprintf("MintNFT{ID: %s, Recipient: %s, Denom: %s, TokenURI: %s, Quantity: %s, Reserve: %s, AllowMint: %v}",
+	return fmt.Sprintf("MintNFT{ID: %s, Recipient: %s, Denom: %s, TokenURI: %s, Quantity: %d, Reserve: %s, AllowMint: %v}",
 		aa.id,
 		aa.recipient,
 		aa.denom,

@@ -5,6 +5,7 @@ package types
 
 import (
 	fmt "fmt"
+	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
@@ -23,23 +24,24 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type EventBaseDenomPriceSaved struct {
-	Price string `protobuf:"bytes,1,opt,name=price,proto3" json:"price,omitempty"`
-	Denom string `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
+// EventUpdateCoinPrices defines event emitted when coin prices are updated.
+type EventUpdateCoinPrices struct {
+	Oracle string      `protobuf:"bytes,1,opt,name=oracle,proto3" json:"oracle,omitempty"`
+	Prices []CoinPrice `protobuf:"bytes,2,rep,name=prices,proto3" json:"prices"`
 }
 
-func (m *EventBaseDenomPriceSaved) Reset()         { *m = EventBaseDenomPriceSaved{} }
-func (m *EventBaseDenomPriceSaved) String() string { return proto.CompactTextString(m) }
-func (*EventBaseDenomPriceSaved) ProtoMessage()    {}
-func (*EventBaseDenomPriceSaved) Descriptor() ([]byte, []int) {
+func (m *EventUpdateCoinPrices) Reset()         { *m = EventUpdateCoinPrices{} }
+func (m *EventUpdateCoinPrices) String() string { return proto.CompactTextString(m) }
+func (*EventUpdateCoinPrices) ProtoMessage()    {}
+func (*EventUpdateCoinPrices) Descriptor() ([]byte, []int) {
 	return fileDescriptor_b36d3d8d5370b62a, []int{0}
 }
-func (m *EventBaseDenomPriceSaved) XXX_Unmarshal(b []byte) error {
+func (m *EventUpdateCoinPrices) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *EventBaseDenomPriceSaved) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EventUpdateCoinPrices) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_EventBaseDenomPriceSaved.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EventUpdateCoinPrices.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -49,56 +51,60 @@ func (m *EventBaseDenomPriceSaved) XXX_Marshal(b []byte, deterministic bool) ([]
 		return b[:n], nil
 	}
 }
-func (m *EventBaseDenomPriceSaved) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EventBaseDenomPriceSaved.Merge(m, src)
+func (m *EventUpdateCoinPrices) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventUpdateCoinPrices.Merge(m, src)
 }
-func (m *EventBaseDenomPriceSaved) XXX_Size() int {
+func (m *EventUpdateCoinPrices) XXX_Size() int {
 	return m.Size()
 }
-func (m *EventBaseDenomPriceSaved) XXX_DiscardUnknown() {
-	xxx_messageInfo_EventBaseDenomPriceSaved.DiscardUnknown(m)
+func (m *EventUpdateCoinPrices) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventUpdateCoinPrices.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_EventBaseDenomPriceSaved proto.InternalMessageInfo
+var xxx_messageInfo_EventUpdateCoinPrices proto.InternalMessageInfo
 
-func (m *EventBaseDenomPriceSaved) GetPrice() string {
+func (m *EventUpdateCoinPrices) GetOracle() string {
 	if m != nil {
-		return m.Price
+		return m.Oracle
 	}
 	return ""
 }
 
-func (m *EventBaseDenomPriceSaved) GetDenom() string {
+func (m *EventUpdateCoinPrices) GetPrices() []CoinPrice {
 	if m != nil {
-		return m.Denom
+		return m.Prices
 	}
-	return ""
+	return nil
 }
 
 func init() {
-	proto.RegisterType((*EventBaseDenomPriceSaved)(nil), "decimal.fee.v1.EventBaseDenomPriceSaved")
+	proto.RegisterType((*EventUpdateCoinPrices)(nil), "decimal.fee.v1.EventUpdateCoinPrices")
 }
 
 func init() { proto.RegisterFile("decimal/fee/v1/events.proto", fileDescriptor_b36d3d8d5370b62a) }
 
 var fileDescriptor_b36d3d8d5370b62a = []byte{
-	// 207 bytes of a gzipped FileDescriptorProto
+	// 272 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0x4e, 0x49, 0x4d, 0xce,
 	0xcc, 0x4d, 0xcc, 0xd1, 0x4f, 0x4b, 0x4d, 0xd5, 0x2f, 0x33, 0xd4, 0x4f, 0x2d, 0x4b, 0xcd, 0x2b,
 	0x29, 0xd6, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x83, 0x4a, 0xea, 0xa5, 0xa5, 0xa6, 0xea,
-	0x95, 0x19, 0x4a, 0x89, 0xa4, 0xe7, 0xa7, 0xe7, 0x83, 0xa5, 0xf4, 0x41, 0x2c, 0x88, 0x2a, 0x25,
-	0x37, 0x2e, 0x09, 0x57, 0x90, 0x2e, 0xa7, 0xc4, 0xe2, 0x54, 0x97, 0xd4, 0xbc, 0xfc, 0xdc, 0x80,
-	0xa2, 0xcc, 0xe4, 0xd4, 0xe0, 0xc4, 0xb2, 0xd4, 0x14, 0x21, 0x11, 0x2e, 0xd6, 0x02, 0x10, 0x4f,
-	0x82, 0x51, 0x81, 0x51, 0x83, 0x33, 0x08, 0xc2, 0x01, 0x89, 0xa6, 0x80, 0x14, 0x4a, 0x30, 0x41,
-	0x44, 0xc1, 0x1c, 0x27, 0xdf, 0x13, 0x8f, 0xe4, 0x18, 0x2f, 0x3c, 0x92, 0x63, 0x7c, 0xf0, 0x48,
-	0x8e, 0x71, 0xc2, 0x63, 0x39, 0x86, 0x0b, 0x8f, 0xe5, 0x18, 0x6e, 0x3c, 0x96, 0x63, 0x88, 0x32,
-	0x4e, 0xca, 0x2c, 0x49, 0x2a, 0x4d, 0xce, 0x4e, 0x2d, 0xd1, 0xcb, 0x2f, 0x4a, 0xd7, 0x87, 0xba,
-	0xaa, 0x24, 0x35, 0x31, 0x57, 0x3f, 0x3d, 0x5f, 0xb7, 0x38, 0x37, 0xb1, 0xa8, 0x44, 0x37, 0x2f,
-	0x3f, 0x25, 0x55, 0xbf, 0x02, 0xec, 0x8d, 0x92, 0xca, 0x82, 0xd4, 0xe2, 0x24, 0x36, 0xb0, 0xeb,
-	0x8c, 0x01, 0x01, 0x00, 0x00, 0xff, 0xff, 0xab, 0x8e, 0x30, 0x83, 0xe2, 0x00, 0x00, 0x00,
+	0x95, 0x19, 0x4a, 0x89, 0xa4, 0xe7, 0xa7, 0xe7, 0x83, 0xa5, 0xf4, 0x41, 0x2c, 0x88, 0x2a, 0x29,
+	0xc9, 0xe4, 0xfc, 0xe2, 0xdc, 0xfc, 0xe2, 0x78, 0x88, 0x04, 0x84, 0x03, 0x95, 0x92, 0x40, 0x33,
+	0x1d, 0x64, 0x0e, 0x58, 0x46, 0xa9, 0x89, 0x91, 0x4b, 0xd4, 0x15, 0x64, 0x57, 0x68, 0x41, 0x4a,
+	0x62, 0x49, 0xaa, 0x73, 0x7e, 0x66, 0x5e, 0x40, 0x51, 0x66, 0x72, 0x6a, 0xb1, 0x90, 0x01, 0x17,
+	0x5b, 0x7e, 0x51, 0x62, 0x72, 0x4e, 0xaa, 0x04, 0xa3, 0x02, 0xa3, 0x06, 0xa7, 0x93, 0xc4, 0xa5,
+	0x2d, 0xba, 0x22, 0x50, 0x53, 0x1d, 0x53, 0x52, 0x8a, 0x52, 0x8b, 0x8b, 0x83, 0x4b, 0x8a, 0x32,
+	0xf3, 0xd2, 0x83, 0xa0, 0xea, 0x84, 0xcc, 0xb9, 0xd8, 0x0a, 0xc0, 0x7a, 0x25, 0x98, 0x14, 0x98,
+	0x35, 0xb8, 0x8d, 0x24, 0xf5, 0x50, 0xdd, 0xad, 0x07, 0x37, 0xdd, 0x89, 0xe5, 0xc4, 0x3d, 0x79,
+	0x86, 0x20, 0xa8, 0x72, 0x27, 0xdf, 0x13, 0x8f, 0xe4, 0x18, 0x2f, 0x3c, 0x92, 0x63, 0x7c, 0xf0,
+	0x48, 0x8e, 0x71, 0xc2, 0x63, 0x39, 0x86, 0x0b, 0x8f, 0xe5, 0x18, 0x6e, 0x3c, 0x96, 0x63, 0x88,
+	0x32, 0x4e, 0xca, 0x2c, 0x49, 0x2a, 0x4d, 0xce, 0x4e, 0x2d, 0xd1, 0xcb, 0x2f, 0x4a, 0xd7, 0x87,
+	0x9a, 0x57, 0x92, 0x9a, 0x98, 0xab, 0x9f, 0x9e, 0xaf, 0x5b, 0x9c, 0x9b, 0x58, 0x54, 0xa2, 0x9b,
+	0x97, 0x9f, 0x92, 0xaa, 0x5f, 0x01, 0xf6, 0x5a, 0x49, 0x65, 0x41, 0x6a, 0x71, 0x12, 0x1b, 0xd8,
+	0x6b, 0xc6, 0x80, 0x00, 0x00, 0x00, 0xff, 0xff, 0xb9, 0xd1, 0x22, 0x0e, 0x54, 0x01, 0x00, 0x00,
 }
 
-func (m *EventBaseDenomPriceSaved) Marshal() (dAtA []byte, err error) {
+func (m *EventUpdateCoinPrices) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -108,27 +114,34 @@ func (m *EventBaseDenomPriceSaved) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *EventBaseDenomPriceSaved) MarshalTo(dAtA []byte) (int, error) {
+func (m *EventUpdateCoinPrices) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *EventBaseDenomPriceSaved) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EventUpdateCoinPrices) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.Denom) > 0 {
-		i -= len(m.Denom)
-		copy(dAtA[i:], m.Denom)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.Denom)))
-		i--
-		dAtA[i] = 0x12
+	if len(m.Prices) > 0 {
+		for iNdEx := len(m.Prices) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Prices[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintEvents(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x12
+		}
 	}
-	if len(m.Price) > 0 {
-		i -= len(m.Price)
-		copy(dAtA[i:], m.Price)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.Price)))
+	if len(m.Oracle) > 0 {
+		i -= len(m.Oracle)
+		copy(dAtA[i:], m.Oracle)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Oracle)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -146,19 +159,21 @@ func encodeVarintEvents(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *EventBaseDenomPriceSaved) Size() (n int) {
+func (m *EventUpdateCoinPrices) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.Price)
+	l = len(m.Oracle)
 	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
 	}
-	l = len(m.Denom)
-	if l > 0 {
-		n += 1 + l + sovEvents(uint64(l))
+	if len(m.Prices) > 0 {
+		for _, e := range m.Prices {
+			l = e.Size()
+			n += 1 + l + sovEvents(uint64(l))
+		}
 	}
 	return n
 }
@@ -169,7 +184,7 @@ func sovEvents(x uint64) (n int) {
 func sozEvents(x uint64) (n int) {
 	return sovEvents(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *EventBaseDenomPriceSaved) Unmarshal(dAtA []byte) error {
+func (m *EventUpdateCoinPrices) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -192,15 +207,15 @@ func (m *EventBaseDenomPriceSaved) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: EventBaseDenomPriceSaved: wiretype end group for non-group")
+			return fmt.Errorf("proto: EventUpdateCoinPrices: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EventBaseDenomPriceSaved: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EventUpdateCoinPrices: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Price", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Oracle", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -228,13 +243,13 @@ func (m *EventBaseDenomPriceSaved) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Price = string(dAtA[iNdEx:postIndex])
+			m.Oracle = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Prices", wireType)
 			}
-			var stringLen uint64
+			var msglen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -244,23 +259,25 @@ func (m *EventBaseDenomPriceSaved) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				msglen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if msglen < 0 {
 				return ErrInvalidLengthEvents
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + msglen
 			if postIndex < 0 {
 				return ErrInvalidLengthEvents
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Denom = string(dAtA[iNdEx:postIndex])
+			m.Prices = append(m.Prices, CoinPrice{})
+			if err := m.Prices[len(m.Prices)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

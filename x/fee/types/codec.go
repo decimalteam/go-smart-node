@@ -19,7 +19,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
-		&MsgSaveBaseDenomPrice{},
+		&MsgUpdateCoinPrices{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)

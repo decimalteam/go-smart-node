@@ -27,23 +27,35 @@ func TestSavePrice(t *testing.T) {
 		config.BaseDenom,
 	)
 
-	gs := *types.DefaultGenesisState()
+	gs := types.DefaultGenesisState()
 	require.NoError(t, gs.Validate())
 	fee.InitGenesis(ctx, dsc.FeeKeeper, gs)
 
 	msgHandler := fee.NewHandler(dsc.FeeKeeper)
 
+	prices := []types.CoinPrice{
+		{
+			Denom: "del",
+			Quote: "usd",
+			Price: sdk.NewDec(2),
+		},
+		{
+			Denom: "del",
+			Quote: "rub",
+			Price: sdk.NewDec(2),
+		},
+	}
 	// 1. invalid sender, must be error
-	msg := types.NewMsgSaveBaseDenomPrice(gs.Params.OracleAddress+"0", "del", sdk.NewDec(2))
+	msg := types.NewMsgUpdateCoinPrices(gs.Params.Oracle+"0", prices)
 	_, err := msgHandler(ctx, msg)
 	require.Error(t, err)
 
 	// 2. valid, must be no error
-	msg = types.NewMsgSaveBaseDenomPrice(gs.Params.OracleAddress, "del", sdk.NewDec(2))
+	msg = types.NewMsgUpdateCoinPrices(gs.Params.Oracle, prices)
 	_, err = msgHandler(ctx, msg)
 	require.NoError(t, err)
 	// check saving
-	price, err := dsc.FeeKeeper.GetPrice(ctx)
+	storedPrices, err := dsc.FeeKeeper.GetPrices(ctx)
 	require.NoError(t, err)
-	require.True(t, price.Equal(sdk.NewDec(2)))
+	require.Len(t, storedPrices, 2)
 }

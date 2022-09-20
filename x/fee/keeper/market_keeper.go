@@ -3,6 +3,8 @@ package keeper
 import (
 	"math/big"
 
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
@@ -15,12 +17,12 @@ var _ types.FeeMarketKeeper = Keeper{}
 var defaultBase = sdk.NewInt(1000000000)
 
 func (k Keeper) GetBaseFee(ctx sdk.Context) *big.Int {
-	price, err := k.GetPrice(ctx)
+	price, err := k.GetPrice(ctx, config.BaseDenom, feeconfig.DefaultQuote)
 	if err != nil {
 		// fallback to default price
 		return defaultBase.BigInt()
 	}
-	fee := sdk.OneDec().MulInt(defaultBase).Quo(price).RoundInt()
+	fee := sdk.OneDec().MulInt(defaultBase).Quo(price.Price).RoundInt()
 	return fee.BigInt()
 }
 
