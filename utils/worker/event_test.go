@@ -5,6 +5,7 @@ import (
 
 	utilsEvents "bitbucket.org/decimalteam/go-smart-node/utils/events"
 	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	legacyTypes "bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	multisigTypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -18,7 +19,7 @@ func TestMultisigCreateWallet(t *testing.T) {
 		Sender:    "aaa",
 		Wallet:    "bbb",
 		Owners:    []string{"a", "b", "c"},
-		Weights:   []uint64{1, 2, 3},
+		Weights:   []uint32{1, 2, 3},
 		Threshold: 10,
 	}
 	ev, err := utilsEvents.TypedEventToEvent(tev)
@@ -45,9 +46,9 @@ func TestCreateCoin(t *testing.T) {
 	ea := NewEventAccumulator()
 	tev := &coinTypes.EventCreateCoin{
 		Sender:               "a",
-		Symbol:               "test",
+		Denom:                "test",
 		Title:                "title",
-		Crr:                  10,
+		CRR:                  10,
 		InitialVolume:        sdkmath.NewInt(100).String(),
 		InitialReserve:       sdkmath.NewInt(200).String(),
 		LimitVolume:          sdkmath.NewInt(1000).String(),
@@ -64,7 +65,7 @@ func TestCreateCoin(t *testing.T) {
 	require.True(t, ea.BalancesChanges["a"]["test"].Equal(sdkmath.NewInt(100)))
 	cc := ea.CoinsCreates[0]
 	require.Equal(t, "a", cc.Creator)
-	require.Equal(t, "test", cc.Symbol)
+	require.Equal(t, "test", cc.Denom)
 	require.Equal(t, "title", cc.Title)
 	require.Equal(t, "ident", cc.Avatar)
 	require.Equal(t, uint64(10), cc.CRR)
@@ -73,4 +74,19 @@ func TestCreateCoin(t *testing.T) {
 	require.True(t, cc.Volume.Equal(sdkmath.NewInt(100)))
 	require.True(t, cc.Reserve.Equal(sdkmath.NewInt(200)))
 	require.True(t, cc.LimitVolume.Equal(sdkmath.NewInt(1000)))
+}
+
+func TestReturnLegacyCoins(t *testing.T) {
+	ea := NewEventAccumulator()
+	tev := &legacyTypes.EventReturnLegacyCoins{
+		LegacyOwner: "a",
+		Owner:       "b",
+		Coins:       sdk.NewCoins(sdk.NewCoin("coin1", sdk.NewInt(1)), sdk.NewCoin("coin2", sdk.NewInt(2))),
+	}
+	ev, err := utilsEvents.TypedEventToEvent(tev)
+	require.NoError(t, err)
+	err = processEventReturnLegacyCoins(ea, abci.Event(ev), "ABCD", 7)
+	require.NoError(t, err)
+	require.True(t, ea.BalancesChanges["b"]["coin1"].Equal(sdk.NewInt(1)))
+	require.True(t, ea.BalancesChanges["b"]["coin2"].Equal(sdk.NewInt(2)))
 }

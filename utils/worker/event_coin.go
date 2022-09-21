@@ -12,7 +12,7 @@ import (
 // TODO: get from blockchain
 const baseCoinSymbol = "del"
 
-type EventEditCoin struct {
+type EventUpdateCoinVR struct {
 	Volume  sdkmath.Int `json:"volume"`
 	Reserve sdkmath.Int `json:"reserve"`
 }
@@ -23,7 +23,7 @@ type EventUpdateCoin struct {
 }
 
 type EventCreateCoin struct {
-	Symbol      string      `json:"symbol"`
+	Denom       string      `json:"denom"`
 	Title       string      `json:"title"`
 	Volume      sdkmath.Int `json:"volume"`
 	Reserve     sdkmath.Int `json:"reserve"`
@@ -41,15 +41,15 @@ type EventCreateCoin struct {
 // decimal.coin.v1.EventCreateCoin
 func processEventCreateCoin(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
 	/*
-	   string sender = 1;
-	   string symbol = 2;
-	   string title = 3;
-	   uint64 crr = 4;
-	   string initial_volume = 5;
-	   string initial_reserve = 6;
-	   string limit_volume = 7;
-	   string identity = 8;
-	   string commission_create_coin = 9;
+	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string denom = 2;
+	  string title = 3;
+	  uint32 crr = 4 [ (gogoproto.customname) = "CRR" ];
+	  string initial_volume = 5;
+	  string initial_reserve = 6;
+	  string limit_volume = 7;
+	  string identity = 8;
+	  string commission_create_coin = 9;
 	*/
 	var ecc EventCreateCoin
 	var err error
@@ -61,8 +61,8 @@ func processEventCreateCoin(ea *EventAccumulator, event abci.Event, txHash strin
 		case "sender":
 			sender = string(attr.Value)
 			ecc.Creator = sender
-		case "symbol":
-			ecc.Symbol = string(attr.Value)
+		case "denom":
+			ecc.Denom = string(attr.Value)
 		case "title":
 			ecc.Title = string(attr.Value)
 		case "identity":
@@ -97,7 +97,7 @@ func processEventCreateCoin(ea *EventAccumulator, event abci.Event, txHash strin
 	ecc.TxHash = txHash
 	ecc.BlockID = blockId
 	ea.addBalanceChange(sender, baseCoinSymbol, ecc.Reserve.Neg())
-	ea.addBalanceChange(sender, ecc.Symbol, ecc.Volume)
+	ea.addBalanceChange(sender, ecc.Denom, ecc.Volume)
 	ea.addBalanceChange(sender, commission.Denom, commission.Amount.Neg())
 
 	ea.CoinsCreates = append(ea.CoinsCreates, ecc)
@@ -107,18 +107,18 @@ func processEventCreateCoin(ea *EventAccumulator, event abci.Event, txHash strin
 // decimal.coin.v1.EventUpdateCoin
 func processEventUpdateCoin(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
 	/*
-	   string sender = 1;
-	   string symbol = 2;
-	   string limit_volume = 3;
-	   string identity = 4;
+	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string denom = 2;
+	  string limit_volume = 3;
+	  string identity = 4;
 	*/
 	var ok bool
 	var euc EventUpdateCoin
-	var symbol string
+	var denom string
 	for _, attr := range event.Attributes {
 		switch string(attr.Key) {
-		case "symbol":
-			symbol = string(attr.Value)
+		case "denom":
+			denom = string(attr.Value)
 		case "identity":
 			euc.Avatar = string(attr.Value)
 		case "limit_volume":
@@ -128,24 +128,24 @@ func processEventUpdateCoin(ea *EventAccumulator, event abci.Event, txHash strin
 			}
 		}
 	}
-	ea.CoinUpdates[symbol] = euc
+	ea.CoinUpdates[denom] = euc
 	return nil
 }
 
-// decimal.coin.v1.EventEditCoin
-func processEventEditCoin(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+// decimal.coin.v1.EventUpdateCoinVR
+func processEventUpdateCoinVR(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
 	/*
-	   string symbol = 1;
-	   string volume = 2;
-	   string reserve = 3;
+	  string denom = 1;
+	  string volume = 2;
+	  string reserve = 3;
 	*/
 	var ok bool
-	var eec EventEditCoin
-	var symbol string
+	var eec EventUpdateCoinVR
+	var denom string
 	for _, attr := range event.Attributes {
 		switch string(attr.Key) {
-		case "symbol":
-			symbol = string(attr.Value)
+		case "denom":
+			denom = string(attr.Value)
 		case "volume":
 			eec.Volume, ok = sdk.NewIntFromString(string(attr.Value))
 			if !ok {
@@ -158,26 +158,26 @@ func processEventEditCoin(ea *EventAccumulator, event abci.Event, txHash string,
 			}
 		}
 	}
-	ea.CoinEdits[symbol] = eec
+	ea.CoinEdits[denom] = eec
 	return nil
 }
 
 // decimal.coin.v1.EventSendCoin
 func processEventSendCoin(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
 	/*
-		string sender = 1;
-		string receiver = 2;
-		string coin = 3;
+	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string recipient = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string coin = 3;
 	*/
 	var err error
-	var sender, receiver string
+	var sender, recipient string
 	var coin sdk.Coin
 	for _, attr := range event.Attributes {
 		switch string(attr.Key) {
 		case "sender":
 			sender = string(attr.Value)
-		case "receiver":
-			receiver = string(attr.Value)
+		case "recipient":
+			recipient = string(attr.Value)
 		case "coin":
 			coin, err = sdk.ParseCoinNormalized(string(attr.Value))
 			if err != nil {
@@ -187,17 +187,17 @@ func processEventSendCoin(ea *EventAccumulator, event abci.Event, txHash string,
 	}
 
 	ea.addBalanceChange(sender, coin.Denom, coin.Amount.Neg())
-	ea.addBalanceChange(receiver, coin.Denom, coin.Amount)
+	ea.addBalanceChange(recipient, coin.Denom, coin.Amount)
 	return nil
 }
 
 // decimal.coin.v1.EventBuySellCoin
 func processEventBuySellCoin(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
 	/*
-	   string sender = 1;
-	   string coin_to_buy = 2;
-	   string coin_to_sell = 3;
-	   string amount_in_base_coin = 4;
+	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string coin_to_buy = 2;
+	  string coin_to_sell = 3;
+	  string amount_in_base_coin = 4;
 	*/
 	var err error
 	var sender string
@@ -228,8 +228,8 @@ func processEventBuySellCoin(ea *EventAccumulator, event abci.Event, txHash stri
 // decimal.coin.v1.EventBurnCoin
 func processEventBurnCoin(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
 	/*
-	   string sender = 1;
-	   string coin = 2;
+	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string coin = 2;
 	*/
 	var err error
 	var sender string
@@ -253,12 +253,12 @@ func processEventBurnCoin(ea *EventAccumulator, event abci.Event, txHash string,
 // decimal.coin.v1.EventRedeemCheck
 func processEventRedeemCheck(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
 	/*
-	   string sender = 1;
-	   string issuer = 2;
-	   string coin = 3;
-	   string nonce = 4;
-	   string due_block = 5;
-	   string commission_redeem_check = 6;
+	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string issuer = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string coin = 3;
+	  string nonce = 4;
+	  string due_block = 5;
+	  string commission_redeem_check = 6;
 	*/
 	var err error
 	var sender, issuer string

@@ -36,8 +36,8 @@ type EventAccumulator struct {
 	// [address][coin_symbol]amount changes
 	BalancesChanges map[string]map[string]sdkmath.Int `json:"balances_changes"`
 	// [coin_symbol]
-	CoinUpdates map[string]EventUpdateCoin `json:"coin_updates"`
-	CoinEdits   map[string]EventEditCoin   `json:"coin_edits"`
+	CoinUpdates map[string]EventUpdateCoin   `json:"coin_updates"`
+	CoinEdits   map[string]EventUpdateCoinVR `json:"coin_edits"`
 	// replace legacy
 	LegacyReown        map[string]string    `json:"legacy_reown"`
 	LegacyReturnNFT    []LegacyReturnNFT    `json:"legacy_return_nft"`
@@ -52,7 +52,7 @@ func NewEventAccumulator() *EventAccumulator {
 	return &EventAccumulator{
 		BalancesChanges: make(map[string]map[string]sdkmath.Int),
 		CoinUpdates:     make(map[string]EventUpdateCoin),
-		CoinEdits:       make(map[string]EventEditCoin),
+		CoinEdits:       make(map[string]EventUpdateCoinVR),
 		LegacyReown:     make(map[string]string),
 	}
 }
@@ -69,19 +69,19 @@ type processFunc func(ea *EventAccumulator, event abci.Event, txHash string, blo
 
 var eventProcessors = map[string]processFunc{
 	// coins
-	"decimal.coin.v1.EventCreateCoin":  processEventCreateCoin,
-	"decimal.coin.v1.EventUpdateCoin":  processEventUpdateCoin,
-	"decimal.coin.v1.EventEditCoin":    processEventEditCoin,
-	"decimal.coin.v1.EventSendCoin":    processEventSendCoin,
-	"decimal.coin.v1.EventBuySellCoin": processEventBuySellCoin,
-	"decimal.coin.v1.EventBurnCoin":    processEventBurnCoin,
-	"decimal.coin.v1.EventRedeemCheck": processEventRedeemCheck,
+	"decimal.coin.v1.EventCreateCoin":   processEventCreateCoin,
+	"decimal.coin.v1.EventUpdateCoin":   processEventUpdateCoin,
+	"decimal.coin.v1.EventUpdateCoinVR": processEventUpdateCoinVR,
+	"decimal.coin.v1.EventSendCoin":     processEventSendCoin,
+	"decimal.coin.v1.EventBuySellCoin":  processEventBuySellCoin,
+	"decimal.coin.v1.EventBurnCoin":     processEventBurnCoin,
+	"decimal.coin.v1.EventRedeemCheck":  processEventRedeemCheck,
 	// fee
 	"decimal.fee.v1.EventPayCommission": processEventPayCommission,
 	// legacy
-	"decimal.legacy.v1.EventLegacyReturnCoin":   processEventLegacyReturnCoin,
-	"decimal.legacy.v1.EventLegacyReturnNFT":    processEventLegacyReturnNFT,
-	"decimal.legacy.v1.EventLegacyReturnWallet": processEventLegacyReturnWallet,
+	"decimal.legacy.v1.EventReturnLegacyCoins":    processEventReturnLegacyCoins,
+	"decimal.legacy.v1.EventReturnLegacySubToken": processEventReturnLegacySubToken,
+	"decimal.legacy.v1.EventLegacyReturnWallet":   processEventLegacyReturnWallet,
 	// multisig
 	"decimal.multisig.v1.EventCreateWallet":      processEventCreateWallet,
 	"decimal.multisig.v1.EventCreateTransaction": processStub,

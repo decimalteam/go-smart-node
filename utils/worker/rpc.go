@@ -87,6 +87,7 @@ func (w *Worker) fetchBlockTxs(height int64, total int, ea *EventAccumulator, ch
 				for _, event := range tx.TxResult.Events {
 					err := ea.AddEvent(event, tx.Hash.String(), tx.Height)
 					if err != nil {
+						fmt.Printf("error in event %v\n", event.Type)
 						w.panicError(err)
 					}
 				}

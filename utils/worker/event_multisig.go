@@ -19,7 +19,7 @@ type MultisigCreateWallet struct {
 type MultisigOwner struct {
 	Address  string `json:"address"`
 	Multisig string `json:"multisig"`
-	Weight   uint64 `json:"weight"`
+	Weight   uint32 `json:"weight"`
 }
 
 // TODO: Transaction create+sign
@@ -34,7 +34,8 @@ func processEventCreateWallet(ea *EventAccumulator, event abci.Event, txHash str
 		uint64 threshold = 5;
 	*/
 	mcw := MultisigCreateWallet{}
-	var owners, weights []string
+	var owners []string
+	var weights []uint32
 	for _, attr := range event.Attributes {
 		if string(attr.Key) == "sender" {
 			mcw.Creator = string(attr.Value)
@@ -52,25 +53,21 @@ func processEventCreateWallet(ea *EventAccumulator, event abci.Event, txHash str
 		if string(attr.Key) == "owners" {
 			err := json.Unmarshal(attr.Value, &owners)
 			if err != nil {
-				return fmt.Errorf("can't unmarshal owners: %s", err.Error())
+				return fmt.Errorf("can't unmarshal owners: %s, value: '%s'", err.Error(), string(attr.Value))
 			}
 		}
 		if string(attr.Key) == "weights" {
 			err := json.Unmarshal(attr.Value, &weights)
 			if err != nil {
-				return fmt.Errorf("can't unmarshal owners: %s", err.Error())
+				return fmt.Errorf("can't unmarshal weights: %s", err.Error())
 			}
 		}
 	}
 	for i, owner := range owners {
-		w, err := strconv.ParseUint(weights[i], 10, 64)
-		if err != nil {
-			return fmt.Errorf("can't parse weight '%s': %s", weights[i], err.Error())
-		}
 		mcw.Owners = append(mcw.Owners, MultisigOwner{
 			Address:  owner,
 			Multisig: mcw.Address,
-			Weight:   w,
+			Weight:   weights[i],
 		})
 	}
 

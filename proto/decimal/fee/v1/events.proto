@@ -14,3 +14,8 @@ message EventUpdateCoinPrices {
   string oracle = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   repeated CoinPrice prices = 2 [ (gogoproto.nullable) = false ];
 }
+
+message EventPayCommission {
+  string sender = 1;
+  string coin = 2;
+}
