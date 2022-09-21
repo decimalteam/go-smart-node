@@ -31,8 +31,8 @@ func TestCliCreateWallet(t *testing.T) {
 	msg, ok := result.msgs[0].(*types.MsgCreateWallet)
 	require.True(t, ok)
 	require.Equal(t, []string{adr0.String(), adr1.String()}, msg.Owners)
-	require.Equal(t, []uint64{1, 2}, msg.Weights)
-	require.Equal(t, uint64(3), msg.Threshold)
+	require.Equal(t, []uint32{1, 2}, msg.Weights)
+	require.Equal(t, uint32(3), msg.Threshold)
 }
 
 func TestCliCreateTransaction(t *testing.T) {
