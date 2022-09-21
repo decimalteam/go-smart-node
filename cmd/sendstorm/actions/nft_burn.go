@@ -13,7 +13,7 @@ import (
 
 // MsgBurnNFT
 type BurnNFTGenerator struct {
-	knownNFT []dscApi.NFT
+	knownNFT []*dscApi.NFTToken
 	rnd      *rand.Rand
 }
 
@@ -21,8 +21,8 @@ type BurnNFTAction struct {
 	creator string // need for filter
 	id      string
 	denom   string
-	subIds  []uint64
-	nft     dscApi.NFT
+	subIds  []uint32
+	nft     dscApi.NFTToken
 }
 
 func NewBurnNFTGenerator() *BurnNFTGenerator {
@@ -41,22 +41,22 @@ func (gg *BurnNFTGenerator) Generate() Action {
 	for n := 0; n < 10; n++ {
 		i := int(RandomRange(gg.rnd, 0, int64(len(gg.knownNFT))))
 		nftToBurn := gg.knownNFT[i]
-		subTokenIDs := make([]uint64, 0)
-		for _, o := range nftToBurn.Owners {
-			if o.Address == nftToBurn.Creator {
-				subTokenIDs = append(subTokenIDs, o.SubTokenIDs...)
+		subTokenIDs := make([]uint32, 0)
+		for _, sub := range nftToBurn.SubTokens {
+			if sub.Owner == nftToBurn.Creator {
+				subTokenIDs = append(subTokenIDs, sub.ID)
 			}
 		}
 		if len(subTokenIDs) == 0 {
 			continue
 		}
-		subToBurn := RandomSublist(gg.rnd, subTokenIDs)
+		subToBurn := RandomSublist32(gg.rnd, subTokenIDs)
 		return &BurnNFTAction{
 			creator: nftToBurn.Creator,
 			id:      nftToBurn.ID,
 			denom:   nftToBurn.Denom,
 			subIds:  subToBurn,
-			nft:     nftToBurn,
+			nft:     *nftToBurn,
 		}
 	}
 	return &EmptyAction{}
@@ -82,10 +82,9 @@ func (aa *BurnNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stor
 		return nil, err
 	}
 
-	msg := dscTx.NewMsgBurnNFT(
+	msg := dscTx.NewMsgBurnToken(
 		sender,
 		aa.id,
-		aa.denom,
 		aa.subIds,
 	)
 	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)

@@ -16,4 +16,6 @@ var (
 	NoInfoForLegacyAddress                         = errors.New(codespace, 107, "no info for legacy address")
 	OneOfLegacyAddressCoinsBalanceIsNegativeOrZero = errors.New(codespace, 108, "one of address coin balance is negative or zero")
 	WalletAddressIsNotValidBech32                  = errors.New(codespace, 109, "wallet address is not bech32 valid address")
+	InvalidPublicKeyLength                         = errors.New(codespace, 110, "invalid public key length")
+	InvalidSenderAddress                           = errors.New(codespace, 111, "invalid sender address")
 )

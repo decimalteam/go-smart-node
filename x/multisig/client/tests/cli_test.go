@@ -81,6 +81,6 @@ func TestCliSignTransaction(t *testing.T) {
 	require.Equal(t, 1, len(result.msgs))
 	msg, ok := result.msgs[0].(*types.MsgSignTransaction)
 	require.True(t, ok)
-	require.Equal(t, txID, msg.TxID)
+	require.Equal(t, txID, msg.ID)
 
 }

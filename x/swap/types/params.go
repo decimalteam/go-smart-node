@@ -11,10 +11,10 @@ import (
 
 // Parameter store keys.
 var (
-	ParamStoreKeyLockedTimeOut   = []byte("LockedTimeOut")
-	ParamStoreKeyLockedTimeIn    = []byte("LockedTimeIn")
-	ParamStoreKeyServiceAddress  = []byte("ServiceAddress")
-	ParamStoreKeyCheckingAddress = []byte("CheckingAddress")
+	KeyLockedTimeOut   = []byte("LockedTimeOut")
+	KeyLockedTimeIn    = []byte("LockedTimeIn")
+	KeyServiceAddress  = []byte("ServiceAddress")
+	KeyCheckingAddress = []byte("CheckingAddress")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -36,10 +36,10 @@ func DefaultParams() Params {
 // Implements params.ParamSet
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(ParamStoreKeyLockedTimeOut, &p.LockedTimeOut, validateLockedTime),
-		paramtypes.NewParamSetPair(ParamStoreKeyLockedTimeIn, &p.LockedTimeIn, validateLockedTime),
-		paramtypes.NewParamSetPair(ParamStoreKeyServiceAddress, &p.ServiceAddress, validateSdkAddress),
-		paramtypes.NewParamSetPair(ParamStoreKeyCheckingAddress, &p.CheckingAddress, validateHexAddress),
+		paramtypes.NewParamSetPair(KeyLockedTimeOut, &p.LockedTimeOut, validateLockedTime),
+		paramtypes.NewParamSetPair(KeyLockedTimeIn, &p.LockedTimeIn, validateLockedTime),
+		paramtypes.NewParamSetPair(KeyServiceAddress, &p.ServiceAddress, validateSdkAddress),
+		paramtypes.NewParamSetPair(KeyCheckingAddress, &p.CheckingAddress, validateHexAddress),
 	}
 }
 

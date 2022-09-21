@@ -3,16 +3,16 @@ package api
 import (
 	"context"
 
-	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	query "github.com/cosmos/cosmos-sdk/types/query"
 )
 
-type Coin = coinTypes.Coin
+type Coin = cointypes.Coin
 
 func (api *API) Coins() ([]Coin, error) {
-	client := coinTypes.NewQueryClient(api.grpcClient)
-	coins := make([]coinTypes.Coin, 0)
-	req := &coinTypes.QueryCoinsRequest{
+	client := cointypes.NewQueryClient(api.grpcClient)
+	coins := make([]cointypes.Coin, 0)
+	req := &cointypes.QueryCoinsRequest{
 		Pagination: &query.PageRequest{Limit: queryLimit},
 	}
 	for {

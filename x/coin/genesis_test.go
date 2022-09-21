@@ -1,17 +1,19 @@
 package coin_test
 
 import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/testcoin"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/require"
-
-	//tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	"testing"
 )
 
 func bootstrapGenesisTest(t *testing.T) (*app.DSC, sdk.Context) {
@@ -22,24 +24,24 @@ func bootstrapGenesisTest(t *testing.T) (*app.DSC, sdk.Context) {
 
 var (
 	atomCoin = types.Coin{
+		Denom:       "atom",
 		Title:       "Cosmos Hub Atom",
-		Symbol:      "ATOM",
-		CRR:         50,
-		Reserve:     sdk.NewInt(1_000_000_000),
-		Volume:      helpers.EtherToWei(sdk.NewInt(1000000000000)),
-		LimitVolume: sdk.NewInt(1_000_000_000_000_000),
 		Creator:     "uatom",
+		CRR:         50,
+		LimitVolume: sdkmath.NewInt(1_000_000_000_000_000),
 		Identity:    "dx1hs2wdrm87c92rzhq0vgmgrxr6u57xpr2lcygc2",
+		Reserve:     sdkmath.NewInt(1_000_000_000),
+		Volume:      helpers.EtherToWei(sdkmath.NewInt(1000000000000)),
 	}
 	tstCoin = types.Coin{
+		Denom:       "tst",
 		Title:       "Test Suite Token",
-		Symbol:      "TST",
-		CRR:         100,
-		Reserve:     sdk.NewInt(1_000_000_000),
-		Volume:      sdk.NewInt(1_000_000_000_0),
-		LimitVolume: sdk.NewInt(1_000_000_000_000_000_000),
 		Creator:     "uatom",
+		CRR:         100,
+		LimitVolume: sdkmath.NewInt(1_000_000_000_000_000_000),
 		Identity:    "dx1hs2wdrm87c92rzhq0vgmgrxr6u57xpr2lcygc2",
+		Reserve:     sdkmath.NewInt(1_000_000_000),
+		Volume:      sdkmath.NewInt(1_000_000_000_0),
 	}
 
 	check1 types.Check
@@ -69,14 +71,14 @@ func TestAppModuleBasic_InitGenesis(t *testing.T) {
 	// export genesis
 
 	coins = append(coins, types.Coin{
+		Denom:       params.BaseDenom,
 		Title:       params.BaseTitle,
-		Symbol:      params.BaseSymbol,
-		Volume:      params.BaseInitialVolume,
-		CRR:         0,
-		Reserve:     sdk.NewInt(0),
 		Creator:     "",
-		LimitVolume: sdk.NewInt(0),
+		CRR:         0,
+		LimitVolume: sdkmath.NewInt(0),
 		Identity:    "",
+		Volume:      params.BaseVolume,
+		Reserve:     sdkmath.NewInt(0),
 	})
 
 	exportedGenesis := coin.ExportGenesis(ctx, app.CoinKeeper)
@@ -93,17 +95,17 @@ func TestAppModuleBasic_ValidateGenesis(t *testing.T) {
 	}{
 		{"default", func(*types.GenesisState) {}, false},
 		// validate genesis validators
-		{"params coin title > 64 symbols", func(data *types.GenesisState) {
+		{"params coin is regexp", func(data *types.GenesisState) {
+			data.Params.BaseDenom = "laSK;DM"
+		}, true},
+		{"params coin title > 64 characters", func(data *types.GenesisState) {
 			data.Params.BaseTitle = "vsafa;jkdfndsj;anf;asdnf;dsjfkldasfkmsdkalmf;alkdsmflmasl;dkmf;lds"
 		}, true},
-		{"params symbol is regexp", func(data *types.GenesisState) {
-			data.Params.BaseSymbol = "laSK;DM"
+		{"params volume is < min", func(data *types.GenesisState) {
+			data.Params.BaseVolume = sdkmath.NewInt(0)
 		}, true},
-		{"params init volume is < min", func(data *types.GenesisState) {
-			data.Params.BaseInitialVolume = sdk.NewInt(0)
-		}, true},
-		{"params init volume is > max", func(data *types.GenesisState) {
-			data.Params.BaseInitialVolume = helpers.EtherToWei(sdk.NewInt(1000000000000002))
+		{"params volume is > max", func(data *types.GenesisState) {
+			data.Params.BaseVolume = helpers.EtherToWei(sdkmath.NewInt(1000000000000002))
 		}, true},
 		{"valid coins is repeated", func(data *types.GenesisState) {
 			data.Coins = append(data.Coins, data.Coins[0])
@@ -113,14 +115,14 @@ func TestAppModuleBasic_ValidateGenesis(t *testing.T) {
 		}, true},
 		//{"invalid coin", func(data *types.GenesisState) {
 		//	data.Coins = append(data.Coins, types.Coin{
+		//		Denom:       "sdjfn",
 		//		Title:       "vsafa;jkdfndsj;anf;asdnf;dsjfkldasfkmsdkalmf;alkdsmflmasl;dkmf;lds",
-		//		Symbol:      "sdjfn",
-		//		Volume:      helpers.EtherToWei(sdk.NewInt(1000000000000002)),
-		//		CRR:         0,
-		//		Reserve:     sdk.NewInt(0),
 		//		Creator:     "",
-		//		LimitVolume: sdk.NewInt(0),
+		//		CRR:         0,
+		//		LimitVolume: sdkmath.NewInt(0),
 		//		Identity:    "",
+		//		Volume:      helpers.EtherToWei(sdkmath.NewInt(1000000000000002)),
+		//		Reserve:     sdkmath.NewInt(0),
 		//	})
 		//}, true},
 		//{"invalid check", func(data *types.GenesisState) {

@@ -23,16 +23,16 @@ func TestGenesisState_Validate(t *testing.T) {
 		{
 			description: "valid genesis state",
 			genesisState: &types.GenesisState{
-				LegacyRecords: []types.LegacyRecord{
+				Records: []types.Record{
 					{
-						Address: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy",
+						LegacyAddress: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy",
 						Coins: sdkTypes.Coins{
 							{
 								Denom:  "sca",
 								Amount: sdkTypes.NewIntFromUint64(100),
 							},
 						},
-						Nfts:    []types.NFTRecord{{Denom: "a", Id: "a1"}, {Denom: "b", Id: "b1"}},
+						NFTs:    []string{"a1", "a2"},
 						Wallets: []string{"dx108c4p0j7wqsawejfuuv43hj7nhyp36gt0296rs", "dx10fx59x9ytvf249axryvw0uh3eunwvgyfpm9jrp"},
 					},
 				},
@@ -42,16 +42,16 @@ func TestGenesisState_Validate(t *testing.T) {
 		{
 			description: "invalid balance",
 			genesisState: &types.GenesisState{
-				LegacyRecords: []types.LegacyRecord{
+				Records: []types.Record{
 					{
-						Address: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy",
+						LegacyAddress: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy",
 						Coins: sdkTypes.Coins{
 							{
 								Denom:  "sca",
 								Amount: sdkTypes.NewInt(-1),
 							},
 						},
-						Nfts:    []types.NFTRecord{{Denom: "a", Id: "a1"}, {Denom: "b", Id: "b1"}},
+						NFTs:    []string{"a1", "a2"},
 						Wallets: []string{"dx108c4p0j7wqsawejfuuv43hj7nhyp36gt0296rs", "dx10fx59x9ytvf249axryvw0uh3eunwvgyfpm9jrp"},
 					},
 				},
@@ -61,16 +61,16 @@ func TestGenesisState_Validate(t *testing.T) {
 		{
 			description: "invalid bech32 address",
 			genesisState: &types.GenesisState{
-				LegacyRecords: []types.LegacyRecord{
+				Records: []types.Record{
 					{
-						Address: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depi",
+						LegacyAddress: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depi",
 						Coins: sdkTypes.Coins{
 							{
 								Denom:  "sca",
 								Amount: sdkTypes.NewIntFromUint64(100),
 							},
 						},
-						Nfts:    []types.NFTRecord{{Denom: "a", Id: "a1"}, {Denom: "b", Id: "b1"}},
+						NFTs:    []string{"a1", "a2"},
 						Wallets: []string{"dx108c4p0j7wqsawejfuuv43hj7nhyp36gt0296rs", "dx10fx59x9ytvf249axryvw0uh3eunwvgyfpm9jrp"},
 					},
 				},
@@ -80,16 +80,16 @@ func TestGenesisState_Validate(t *testing.T) {
 		{
 			description: "invalid wallet address",
 			genesisState: &types.GenesisState{
-				LegacyRecords: []types.LegacyRecord{
+				Records: []types.Record{
 					{
-						Address: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy",
+						LegacyAddress: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy",
 						Coins: sdkTypes.Coins{
 							{
 								Denom:  "sca",
 								Amount: sdkTypes.NewIntFromUint64(100),
 							},
 						},
-						Nfts:    []types.NFTRecord{{Denom: "a", Id: "a1"}, {Denom: "b", Id: "b1"}},
+						NFTs:    []string{"a1", "a2"},
 						Wallets: []string{"dx108c4p0j7wqsawejfuuv43hj7nhyp36gt0296r0"},
 					},
 				},

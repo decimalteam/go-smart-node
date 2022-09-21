@@ -1,0 +1,76 @@
+syntax = "proto3";
+package decimal.nft.v1;
+
+import "gogoproto/gogo.proto";
+
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
+
+// EventCreateCollection defines event emitted when new NFT collection is created.
+message EventCreateCollection {
+  string creator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string denom = 2;
+  uint32 supply = 3;
+}
+
+// EventUpdateCollection defines event emitted when new NFT token is added to existing NFT collection.
+message EventUpdateCollection {
+  string creator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string denom = 2;
+  uint32 supply = 3;
+}
+
+// EventCreateToken defines event emitted when new NFT token is created.
+message EventCreateToken {
+  string creator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string denom = 2;
+  string id = 3 [ (gogoproto.customname) = "ID" ];
+  string uri = 4 [ (gogoproto.customname) = "URI" ];
+  bool allow_mint = 5;
+  string reserve = 6;
+  string recipient = 7;
+  repeated uint32 sub_token_ids = 8 [ (gogoproto.customname) = "SubTokenIDs" ];
+}
+
+// EventMintToken defines event emitted when new NFT sub-tokens are created.
+message EventMintToken {
+  string creator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string denom = 2;
+  string id = 3 [ (gogoproto.customname) = "ID" ];
+  string reserve = 4;
+  string recipient = 5;
+  repeated uint32 sub_token_ids = 6 [ (gogoproto.customname) = "SubTokenIDs" ];
+}
+
+// EventUpdateToken defines event emitted when existed NFT token is changed.
+message EventUpdateToken {
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string id = 2 [ (gogoproto.customname) = "ID" ];
+  string uri = 3 [ (gogoproto.customname) = "URI" ];
+}
+
+// EventUpdateReserve defines event emitted when existed NFT sub-token reserve is changed.
+message EventUpdateReserve {
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string id = 2 [ (gogoproto.customname) = "ID" ];
+  string reserve = 3; // coin that defines new reserve for all updating NFT-subtokens
+  string refill = 4;  // coin that was added in total per transaction for all NFT sub-tokens
+  repeated uint32 sub_token_ids = 5 [ (gogoproto.customname) = "SubTokenIDs" ];
+}
+
+// EventSendToken defines event emitted when existed NFT sub-tokens are transferred.
+message EventSendToken {
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string id = 2 [ (gogoproto.customname) = "ID" ];
+  string recipient = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  repeated uint32 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
+}
+
+// EventBurnToken defines event emitted when existed NFT sub-tokens are burnt.
+message EventBurnToken {
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string id = 2 [ (gogoproto.customname) = "ID" ];
+  string return = 3;  // coin that was returned in total per transaction for all NFT sub-tokens
+  repeated uint32 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
+}

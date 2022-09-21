@@ -76,13 +76,13 @@ $ %s tx %s create-wallet dx1a..a,dx1b..b,dx1c..c 1,2,3 5 --from mykey`, config.A
 				ownersDups[address] = true
 			}
 
-			weights := make([]uint64, len(weightsStrings))
+			weights := make([]uint32, len(weightsStrings))
 			for i, weightString := range weightsStrings {
 				weight, err := strconv.ParseUint(weightString, 10, 64)
 				if err != nil {
 					return fmt.Errorf("weight %s and pos %d: %s", weightString, i+1, err)
 				}
-				weights[i] = weight
+				weights[i] = uint32(weight)
 			}
 
 			threshold, err := strconv.ParseUint(thresholdString, 10, 64)
@@ -90,7 +90,7 @@ $ %s tx %s create-wallet dx1a..a,dx1b..b,dx1c..c 1,2,3 5 --from mykey`, config.A
 				return fmt.Errorf("threshold %s: %s", thresholdString, err.Error())
 			}
 
-			msg := types.NewMsgCreateWallet(from, ownersStrings, weights, threshold)
+			msg := types.NewMsgCreateWallet(from, ownersStrings, weights, uint32(threshold))
 			err = msg.ValidateBasic()
 			if err != nil {
 				return err

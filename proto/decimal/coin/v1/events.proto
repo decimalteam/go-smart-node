@@ -1,0 +1,67 @@
+syntax = "proto3";
+package decimal.coin.v1;
+
+import "gogoproto/gogo.proto";
+
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/coin/types";
+
+// EventCreateCoin defines event emitted when new coin is created.
+message EventCreateCoin {
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string denom = 2;
+  string title = 3;
+  uint32 crr = 4 [ (gogoproto.customname) = "CRR" ];
+  string initial_volume = 5;
+  string initial_reserve = 6;
+  string limit_volume = 7;
+  string identity = 8;
+  string commission_create_coin = 9;
+}
+
+// EventUpdateCoin defines event emitted when existing coin is updated.
+message EventUpdateCoin {
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string denom = 2;
+  string limit_volume = 3;
+  string identity = 4;
+}
+
+// EventUpdateCoinVR defines event emitted when volume or reserve of existing coin is updated.
+message EventUpdateCoinVR {
+  string denom = 1;
+  string volume = 2;
+  string reserve = 3;
+}
+
+// EventSendCoin defines event emitted when a coin is transferred.
+message EventSendCoin {
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string recipient = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string coin = 3;
+}
+
+// EventBuySellCoin defines event emitted when a coin is traded.
+message EventBuySellCoin {
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string coin_to_buy = 2;
+  string coin_to_sell = 3;
+  string amount_in_base_coin = 4;
+}
+
+// EventBurnCoin defines event emitted when a coin is burnt.
+message EventBurnCoin {
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string coin = 2;
+}
+
+// EventRedeemCheck defines event emitted when a check is redeemed.
+message EventRedeemCheck {
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string issuer = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string coin = 3;
+  string nonce = 4;
+  string due_block = 5;
+  string commission_redeem_check = 6;
+}

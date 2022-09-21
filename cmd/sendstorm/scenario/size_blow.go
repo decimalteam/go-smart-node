@@ -15,7 +15,7 @@ import (
 type NFTBlowScenario struct {
 	accs []*stormTypes.StormAccount
 	api  *dscApi.API
-	nfts []dscApi.NFT
+	nfts []dscApi.NFTToken
 }
 
 // 1. create nft
@@ -29,8 +29,8 @@ func NewNFTBlowScenario(api *dscApi.API, accs []*stormTypes.StormAccount) *NFTBl
 	}
 }
 
-func (sc *NFTBlowScenario) CreateNFTs(subtokensCount int64) error {
-	price, params, err := sc.api.GetFeeParams()
+func (sc *NFTBlowScenario) CreateNFTs(subtokensCount uint32) error {
+	price, params, err := sc.api.GetFeeParams("del", "usd")
 	if err != nil {
 		return err
 	}
@@ -38,15 +38,15 @@ func (sc *NFTBlowScenario) CreateNFTs(subtokensCount int64) error {
 		acc.UpdateBalance()
 		acc.UpdateNumberSequence()
 		id := acc.Address()
-		msg := dscTx.NewMsgMintNFT(
+		msg := dscTx.NewMsgMintToken(
 			acc.Account().SdkAddress(),
-			acc.Account().SdkAddress(),
-			id,
 			"nft_blow_collection",
 			id,
-			sdkmath.NewInt(subtokensCount),
-			sdk.NewCoin("del", helpers.EtherToWei(sdkmath.NewInt(1))),
+			id,
 			false,
+			acc.Account().SdkAddress(),
+			subtokensCount,
+			sdk.NewCoin("del", helpers.EtherToWei(sdkmath.NewInt(1))),
 		)
 		tx, err := dscTx.BuildTransaction(acc.Account(), []sdk.Msg{msg}, "-", "del", price, params)
 		if err != nil {
@@ -76,9 +76,9 @@ func (sc *NFTBlowScenario) CreateNFTs(subtokensCount int64) error {
 }
 
 func (sc *NFTBlowScenario) UpdateNFT() {
-	sc.nfts = make([]dscApi.NFT, 0)
+	sc.nfts = make([]dscApi.NFTToken, 0)
 	for _, acc := range sc.accs {
-		nft, err := sc.api.NFT("nft_blow_collection", acc.Address())
+		nft, err := sc.api.NFTToken(acc.Address()) // id = acc.Address()
 		if err != nil {
 			fmt.Printf("get NFT err: %s\n", err.Error())
 			continue
@@ -89,7 +89,7 @@ func (sc *NFTBlowScenario) UpdateNFT() {
 
 func (sc *NFTBlowScenario) SendNFT() error {
 	sc.UpdateNFT()
-	price, params, err := sc.api.GetFeeParams()
+	price, params, err := sc.api.GetFeeParams("del", "usd")
 	if err != nil {
 		return err
 	}
@@ -102,10 +102,10 @@ func (sc *NFTBlowScenario) SendNFT() error {
 		} else {
 			receiver = sc.accs[j-1].Account().SdkAddress()
 		}
-		nftsToSend := make([]dscApi.NFT, 0)
+		nftsToSend := make([]dscApi.NFTToken, 0)
 		for _, nft := range sc.nfts {
-			for _, owner := range nft.Owners {
-				if owner.Address == acc.Address() {
+			for _, sub := range nft.SubTokens {
+				if sub.Owner == acc.Address() {
 					nftsToSend = append(nftsToSend, nft)
 					break
 				}
@@ -116,20 +116,16 @@ func (sc *NFTBlowScenario) SendNFT() error {
 		}
 		i := rand.Intn(len(nftsToSend))
 		nft := nftsToSend[i]
-		subTokens := []uint64{}
-		for _, owner := range nft.Owners {
-			if owner.Address == acc.Address() {
-				if len(owner.SubTokenIDs) > 0 {
-					subTokens = append(subTokens, owner.SubTokenIDs[0])
-					break
-				}
+		subTokens := []uint32{}
+		for _, sub := range nft.SubTokens {
+			if sub.Owner == acc.Address() {
+				subTokens = append(subTokens, sub.ID)
 			}
 		}
 		////
-		msg := dscTx.NewMsgTransferNFT(
+		msg := dscTx.NewMsgSendToken(
 			acc.Account().SdkAddress(),
 			receiver,
-			nft.Denom,
 			nft.ID,
 			subTokens,
 		)
