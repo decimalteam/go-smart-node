@@ -59,10 +59,12 @@ func InitGenesis(ctx sdk.Context, k Keeper, gs *types.GenesisState) {
 					panic(errors.NotUniqueSubTokenIDs)
 				}
 				// reserve validity check
-				if subToken.Reserve.IsLT(token.Reserve) {
-					panic(errors.InvalidReserve)
-				}
-
+				// TODO: old subtokens can be slashed
+				/*
+					if subToken.Reserve.IsLT(token.Reserve) {
+						panic(errors.InvalidReserve)
+					}
+				*/
 				owner, _ := sdk.AccAddressFromBech32(subToken.Owner)
 				// write sub-token record
 				k.SetSubToken(ctx, token.ID, *subToken)

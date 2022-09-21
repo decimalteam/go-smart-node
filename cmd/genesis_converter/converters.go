@@ -251,22 +251,39 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 		prep = append(prep, subRecord{id: sub.ID, reserve: reserve})
 		preparedSubTokens[sub.NftID] = prep
 	}
+	// prepare collections
+	type collectionKey struct {
+		denom   string
+		creator string
+	}
+	// URI uniqueness
+	tokenURIs := make(map[string]bool)
 
-	var collectionsNew []CollectionNew
+	preparedColls := make(map[collectionKey]*CollectionNew)
 	for _, colOld := range collectionsOld {
-		colNew := CollectionNew{Denom: colOld.Denom}
 		for _, nftOld := range colOld.NFT {
-			// 1. handle with creator
 			creatorAddress := addrTable.GetAddress(nftOld.Creator)
 			if creatorAddress == "" {
-				return []CollectionNew{}, fmt.Errorf("unknown creator %s for nft %s", nftOld.Creator, nftOld.ID)
+				return []CollectionNew{}, fmt.Errorf("unknown creator (no pubkey) %s for nft %s", nftOld.Creator, nftOld.ID)
 			}
-			if colNew.Creator == "" {
-				colNew.Creator = creatorAddress
+			key := collectionKey{denom: colOld.Denom, creator: creatorAddress}
+			if _, ok := preparedColls[key]; !ok {
+				preparedColls[key] = &CollectionNew{Denom: colOld.Denom, Creator: creatorAddress}
 			}
-			if colNew.Creator != creatorAddress {
-				return []CollectionNew{}, fmt.Errorf("different creator for collection %s", colOld.Denom)
+		}
+	}
+	for _, colOld := range collectionsOld {
+		for _, nftOld := range colOld.NFT {
+			// check URI uniq
+			if tokenURIs[nftOld.TokenURI] {
+				fmt.Printf("found yet another token URI: %s\n", nftOld.TokenURI)
+				continue
 			}
+			tokenURIs[nftOld.TokenURI] = true
+
+			creatorAddress := addrTable.GetAddress(nftOld.Creator)
+			key := collectionKey{denom: colOld.Denom, creator: creatorAddress}
+			collNew := preparedColls[key]
 			// 2. subtokens
 			subtokens := make([]SubTokenNew, 0)
 			for _, sub := range preparedSubTokens[nftOld.ID] {
@@ -315,10 +332,19 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 					}
 				}
 			}
+			// 3.9 TODO: empty owners for subtokens in testnet. Workaround with logging
+			// NOTE: bech32 address for []byte{0} = "dx1qqjrdrw8",
+			for i := range subtokens {
+				if subtokens[i].Owner == "" {
+					fmt.Printf("empty owner for collection '%s', creator '%s', nft '%s', sub token id '%d'\n",
+						collNew.Denom, collNew.Creator, nftOld.ID, subtokens[i].ID)
+					subtokens[i].Owner = "dx1qqjrdrw8"
+				}
+			}
 			// 4. build nft and add to collection
 			initialReserve, ok := sdk.NewIntFromString(nftOld.Reserve)
 			if !ok {
-				return []CollectionNew{}, fmt.Errorf("cant parse inital reserve for nft %s", nftOld.ID)
+				return []CollectionNew{}, fmt.Errorf("can't parse initial reserve for nft %s", nftOld.ID)
 			}
 			nftNew := TokenNew{
 				Creator:   creatorAddress,
@@ -332,10 +358,14 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 				SubTokens: subtokens,
 			}
 			// add to collection
-			colNew.Supply++
-			colNew.Tokens = append(colNew.Tokens, nftNew)
+			collNew.Supply++
+			collNew.Tokens = append(collNew.Tokens, nftNew)
+			preparedColls[key] = collNew
 		}
-		collectionsNew = append(collectionsNew, colNew)
+	}
+	var collectionsNew []CollectionNew
+	for _, collNew := range preparedColls {
+		collectionsNew = append(collectionsNew, *collNew)
 	}
 	return collectionsNew, nil
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/base64"
 	"fmt"
+	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
@@ -43,7 +44,7 @@ type GenesisNew struct {
 			Params      interface{}     `json:"params"`
 		} `json:"nft"`
 		Legacy struct {
-			LegacyRecords []LegacyRecordNew `json:"legacy_records"`
+			LegacyRecords []LegacyRecordNew `json:"records"`
 		} `json:"legacy"`
 		//
 		Genutil interface{} `json:"genutil"`
@@ -66,7 +67,7 @@ type GenesisNew struct {
 		Vesting      interface{} `json:"vesting"`
 		Validator    struct {
 			Validators []ValidatorNew `json:"validators"`
-		} `json:"-"`
+		} `json:"validator"`
 	} `json:"app_state"`
 }
 
@@ -160,7 +161,7 @@ type FullCoinNew struct {
 	Identity    string `json:"identity"`
 	LimitVolume string `json:"limit_volume"`
 	Reserve     string `json:"reserve"`
-	Symbol      string `json:"symbol"`
+	Symbol      string `json:"denom"`
 	Title       string `json:"title"`
 	Volume      string `json:"volume"`
 }
@@ -186,10 +187,10 @@ func FullCoinO2N(coin FullCoinOld, addrTable *AddressTable) FullCoinNew {
 // Legacy
 // /////////////////////////
 type LegacyRecordNew struct {
-	Address string      `json:"address"`
-	Coins   sdk.Coins   `json:"coins"`
-	NFTs    []NFTRecord `json:"nfts"`
-	Wallets []string    `json:"wallets"`
+	Address string    `json:"legacy_address"`
+	Coins   sdk.Coins `json:"coins"`
+	NFTs    []string  `json:"nfts"`
+	Wallets []string  `json:"wallets"`
 }
 
 type NFTRecord struct {
@@ -219,7 +220,7 @@ func (rs *LegacyRecords) AddNFT(address string, denom, id string) {
 	if !ok {
 		rec = &LegacyRecordNew{Address: address}
 	}
-	rec.NFTs = append(rec.NFTs, NFTRecord{Denom: denom, ID: id})
+	rec.NFTs = append(rec.NFTs, id)
 	rs.data[address] = rec
 }
 
@@ -297,7 +298,7 @@ type CollectionNew struct {
 	Creator string     `json:"creator"`
 	Denom   string     `json:"denom"`
 	Supply  uint32     `json:"supply"`
-	Tokens  []TokenNew `json:"nfts"`
+	Tokens  []TokenNew `json:"tokens"`
 }
 
 type TokenNew struct {
@@ -333,13 +334,13 @@ type ValidatorNew struct {
 			MaxChangeRate string `json:"max_change_rate"`
 			MaxRate       string `json:"max_rate"`
 			Rate          string `json:"rate"`
-		}
+		} `json:"commission_rates"`
 		UpdateTime string `json:"update_time"`
-	}
+	} `json:"commission"`
 	ConsensusPubKey struct {
 		Type string `json:"@type"`
 		Key  string `json:"key"`
-	}
+	} `json:"consensus_pubkey"`
 	DelegatorShares string `json:"delegator_shares"`
 	Description     struct {
 		Details         string `json:"details"`
@@ -362,6 +363,7 @@ func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable) (ValidatorNew, e
 	result.Commission.CommissionRates.MaxChangeRate = "0.0"
 	result.Commission.CommissionRates.MaxRate = valOld.Commission
 	result.Commission.CommissionRates.Rate = valOld.Commission
+	result.Commission.UpdateTime = time.Now().Format(time.RFC3339)
 	// pubkey
 	result.ConsensusPubKey.Type = "/cosmos.crypto.ed25519.PubKey"
 	bz, err := sdk.GetFromBech32(valOld.PubKey, "dxvalconspub")

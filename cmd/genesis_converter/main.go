@@ -158,7 +158,7 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord) (GenesisN
 	gsNew.AppState.NFT.Collections, err =
 		convertNFT(gsOld.AppState.NFT.Collections, gsOld.AppState.NFT.SubTokens, addrTable, legacyRecords, fixNFTData)
 	if err != nil {
-		//return GenesisNew{}, Statistic{}, err
+		return GenesisNew{}, Statistic{}, err
 	}
 	// legacy records
 	var records []LegacyRecordNew
