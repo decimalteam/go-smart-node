@@ -22,26 +22,31 @@ message Params {
 
   // coin creation special fee depends on coin ticker length
   string coin_create_ticker_3 = 3 [
+    (gogoproto.customname) = "CoinCreateTicker3", 
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
   string coin_create_ticker_4 = 4 [
+    (gogoproto.customname) = "CoinCreateTicker4", 
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
   string coin_create_ticker_5 = 5 [
+    (gogoproto.customname) = "CoinCreateTicker5", 
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
   string coin_create_ticker_6 = 6 [
+    (gogoproto.customname) = "CoinCreateTicker6", 
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
   string coin_create_ticker_7 = 7 [
+    (gogoproto.customname) = "CoinCreateTicker7", 
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false

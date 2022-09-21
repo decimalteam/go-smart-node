@@ -1012,6 +1012,7 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(cointypes.ModuleName)
 	paramsKeeper.Subspace(feetypes.ModuleName)
 	paramsKeeper.Subspace(multisigtypes.ModuleName)
+	paramsKeeper.Subspace(nfttypes.ModuleName)
 	paramsKeeper.Subspace(swaptypes.ModuleName)
 	return paramsKeeper
 }

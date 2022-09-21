@@ -6,11 +6,12 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy"
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	multisig "bitbucket.org/decimalteam/go-smart-node/x/multisig"
 	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
-	nft "bitbucket.org/decimalteam/go-smart-node/x/nft"
+	nftkeeper "bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cosmosAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -59,124 +60,92 @@ func TestInitGenesisForLegacy(t *testing.T) {
 
 	require.NoError(t, bankGenesisState.Validate(), "bankGenesisState")
 	app.BankKeeper.InitGenesis(ctx, bankGenesisState)
-
+	reserve := sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(10)))
 	nftGenesisState := nfttypes.GenesisState{
+		Params: nfttypes.DefaultParams(),
 		Collections: []nfttypes.Collection{
 			{
-				Denom: "a",
-				NFTs:  nfttypes.SortedStringArray{"a1", "a2"},
-			},
-			{
-				Denom: "b",
-				NFTs:  nfttypes.SortedStringArray{"b1", "b2"},
-			},
-		},
-		NFTs: []nfttypes.BaseNFT{
-			{
-				ID: "a1",
-				Owners: nfttypes.TokenOwners{
-					{Address: oldAddress, SubTokenIDs: []uint64{1}},
-				},
-				Creator:   newAddress,
-				TokenURI:  "a1",
-				Reserve:   sdk.NewCoin("del", sdk.NewInt(100)),
-				AllowMint: false,
-			},
-			{
-				ID: "a2",
-				Owners: nfttypes.TokenOwners{
-					{Address: oldAddress, SubTokenIDs: []uint64{1}},
-				},
-				Creator:   newAddress,
-				TokenURI:  "a2",
-				Reserve:   sdk.NewCoin("del", sdk.NewInt(100)),
-				AllowMint: false,
-			},
-			{
-				ID: "b1",
-				Owners: nfttypes.TokenOwners{
-					{Address: oldAddress, SubTokenIDs: []uint64{1, 2}},
-				},
-				Creator:   newAddress,
-				TokenURI:  "b1",
-				Reserve:   sdk.NewCoin("del", sdk.NewInt(100)),
-				AllowMint: false,
-			},
-			{
-				ID: "b2",
-				Owners: nfttypes.TokenOwners{
-					{Address: oldAddress, SubTokenIDs: []uint64{1, 2}},
-				},
-				Creator:   newAddress,
-				TokenURI:  "b2",
-				Reserve:   sdk.NewCoin("del", sdk.NewInt(100)),
-				AllowMint: false,
-			},
-		},
-		SubTokens: map[string]nfttypes.SubTokens{
-			"a1": {
-				SubTokens: []nfttypes.SubToken{
-					{ID: 1, Reserve: sdk.NewCoin("del", sdk.NewInt(100))},
-				},
-			},
-			"a2": {
-				SubTokens: []nfttypes.SubToken{
-					{ID: 1, Reserve: sdk.NewCoin("del", sdk.NewInt(100))},
-				},
-			},
-			"b1": {
-				SubTokens: []nfttypes.SubToken{
-					{ID: 1, Reserve: sdk.NewCoin("del", sdk.NewInt(100))},
-					{ID: 2, Reserve: sdk.NewCoin("del", sdk.NewInt(100))},
-				},
-			},
-			"b2": {
-				SubTokens: []nfttypes.SubToken{
-					{ID: 1, Reserve: sdk.NewCoin("del", sdk.NewInt(100))},
-					{ID: 2, Reserve: sdk.NewCoin("del", sdk.NewInt(100))},
+				Creator: newAddress,
+				Denom:   "aaa",
+				Supply:  2,
+				Tokens: []*nfttypes.Token{
+					{
+						Creator:   newAddress,
+						Denom:     "aaa",
+						ID:        "a1",
+						URI:       "a1",
+						Reserve:   reserve,
+						AllowMint: true,
+						Minted:    1,
+						Burnt:     0,
+						SubTokens: []*nfttypes.SubToken{
+							{
+								ID:      1,
+								Owner:   oldAddress,
+								Reserve: &reserve,
+							},
+						},
+					},
+					{
+						Creator:   newAddress,
+						Denom:     "aaa",
+						ID:        "a2",
+						URI:       "a2",
+						Reserve:   reserve,
+						AllowMint: true,
+						Minted:    1,
+						Burnt:     0,
+						SubTokens: []*nfttypes.SubToken{
+							{
+								ID:      1,
+								Owner:   oldAddress,
+								Reserve: &reserve,
+							},
+						},
+					},
 				},
 			},
 		},
 	}
 	require.NoError(t, nftGenesisState.Validate(), "nftGenesisState")
-	nft.InitGenesis(ctx, app.NFTKeeper, nftGenesisState)
+	nftkeeper.InitGenesis(ctx, app.NFTKeeper, &nftGenesisState)
 
 	multisigGenesisState := multisigtypes.GenesisState{
 		Wallets: []multisigtypes.Wallet{
 			{
 				Address:   wallet1,
 				Owners:    []string{otherAddress, oldAddress},
-				Weights:   []uint64{1, 2},
+				Weights:   []uint32{1, 2},
 				Threshold: 3,
 			},
 			{
 				Address:   wallet2,
 				Owners:    []string{otherAddress, oldAddress},
-				Weights:   []uint64{1, 2},
+				Weights:   []uint32{1, 2},
 				Threshold: 3,
 			},
 		},
 	}
 	require.NoError(t, nftGenesisState.Validate(), "nftGenesisState")
-	multisig.InitGenesis(ctx, app.MultisigKeeper, multisigGenesisState)
+	multisig.InitGenesis(ctx, app.MultisigKeeper, &multisigGenesisState)
 
 	legacyGenesisState := types.GenesisState{
-		LegacyRecords: []types.LegacyRecord{
+		Records: []types.Record{
 			{
-				Address: oldAddress,
-				Coins:   sdk.NewCoins(sdk.NewCoin("del", sdk.NewInt(50)), sdk.NewCoin("foo", sdk.NewInt(1))),
-				Nfts:    []types.NFTRecord{{Denom: "a", Id: "a2"}, {Denom: "b", Id: "b1"}},
-				Wallets: []string{wallet1},
+				LegacyAddress: oldAddress,
+				Coins:         sdk.NewCoins(sdk.NewCoin("del", sdk.NewInt(50)), sdk.NewCoin("foo", sdk.NewInt(1))),
+				NFTs:          []string{"a2"},
+				Wallets:       []string{wallet1},
 			},
 			{
-				Address: otherAddress,
-				Wallets: []string{wallet2},
+				LegacyAddress: otherAddress,
+				Wallets:       []string{wallet2},
 			},
 		},
 	}
 
 	require.NoError(t, legacyGenesisState.Validate(), "legacyGenesisState")
-	legacy.InitGenesis(ctx, app.LegacyKeeper, legacyGenesisState)
+	legacy.InitGenesis(ctx, app.LegacyKeeper, &legacyGenesisState)
 
 	// init  genesis done
 	// let's check
@@ -192,21 +161,13 @@ func TestInitGenesisForLegacy(t *testing.T) {
 		"legacy coins remain")
 
 	// nft no changes
-	nft, err := app.NFTKeeper.GetNFT(ctx, "a", "a1")
-	require.NoError(t, err, "nft-a-a1")
-	require.NotNil(t, nft.GetOwners().GetOwner(oldAddress), "nft-a-a1 must not changed")
-	nft, err = app.NFTKeeper.GetNFT(ctx, "b", "b2")
-	require.NoError(t, err, "nft-b-b2")
-	require.NotNil(t, nft.GetOwners().GetOwner(oldAddress), "nft-a-b2 must not changed")
+	subs := app.NFTKeeper.GetSubTokens(ctx, "a1")
+	require.Len(t, subs, 1, "nft-a1")
+	require.Equal(t, oldAddress, subs[0].Owner, "nft-a1 must not changed")
 	//  nft changes
-	nft, err = app.NFTKeeper.GetNFT(ctx, "a", "a2")
-	require.NoError(t, err, "nft-a-a2")
-	require.Nil(t, nft.GetOwners().GetOwner(oldAddress), "nft-a-a2 must changed")
-	require.NotNil(t, nft.GetOwners().GetOwner(newAddress), "nft-a-a2 must changed")
-	nft, err = app.NFTKeeper.GetNFT(ctx, "b", "b1")
-	require.NoError(t, err, "nft-b-b1")
-	require.Nil(t, nft.GetOwners().GetOwner(oldAddress), "nft-b-b1 must changed")
-	require.NotNil(t, nft.GetOwners().GetOwner(newAddress), "nft-b-b1 must changed")
+	subs = app.NFTKeeper.GetSubTokens(ctx, "a2")
+	require.Len(t, subs, 1, "nft-a2")
+	require.Equal(t, newAddress, subs[0].Owner, "nft-a2 must changed")
 
 	// wallet changes
 	wallet, err := app.MultisigKeeper.GetWallet(ctx, wallet1)
