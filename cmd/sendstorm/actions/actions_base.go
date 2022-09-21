@@ -87,6 +87,10 @@ func (t *TPSLimiter) CanMake() bool {
 	return true
 }
 
+func (t *TPSLimiter) Limit() int64 {
+	return t.limit
+}
+
 // helpers
 const charsAll = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 const charsAbc = "abcdefghijklmnopqrstuvwxyz"
