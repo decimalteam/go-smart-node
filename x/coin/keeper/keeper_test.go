@@ -1,8 +1,23 @@
 package keeper_test
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/testutil"
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
+	coinkeeper "bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
+	cointestutil "bitbucket.org/decimalteam/go-smart-node/x/coin/testutil"
 	"context"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/suite"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	tmtime "github.com/tendermint/tendermint/types/time"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -17,6 +32,90 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 
+var (
+	pk    = ed25519.GenPrivKey().PubKey()
+	addr  = sdk.AccAddress(pk.Address())
+	pk1   = ed25519.GenPrivKey().PubKey()
+	addr1 = sdk.AccAddress(pk.Address())
+
+	baseDenom  = "del"
+	baseAmount = helpers.EtherToWei(sdkmath.NewInt(1000000000000))
+	//baseInitialReserve = sdk.NewCoin(baseDenom, helpers.EtherToWei(10000))
+)
+
+type KeeperTestSuite struct {
+	suite.Suite
+
+	ctx sdk.Context
+
+	coinKeeper keeper.Keeper
+	bankKeeper bankkeeper.Keeper
+	acKeeper   authkeeper.AccountKeeperI
+
+	queryClient types.QueryClient
+	msgServer   types.MsgServer
+}
+
+func (s *KeeperTestSuite) SetupTest() {
+	key := sdk.NewKVStoreKey(types.StoreKey)
+	paramkey := sdk.NewKVStoreKey(paramstypes.StoreKey)
+	keys := []storetypes.StoreKey{
+		key, paramkey,
+	}
+
+	tkey := sdk.NewTransientStoreKey("transient_test")
+	tparamskey := sdk.NewTransientStoreKey("transient_param_test")
+	tkeys := []storetypes.StoreKey{
+		tkey, tparamskey,
+	}
+
+	testCtx := testutil.DefaultContextWithDB(s.T(), keys, tkeys)
+	ctx := testCtx.Ctx.WithBlockHeader(tmproto.Header{Time: tmtime.Now()})
+	encCfg := testutil.MakeTestEncodingConfig()
+
+	// -- create params keeper
+	paramsKeeper := paramskeeper.NewKeeper(
+		encCfg.Codec,
+		encCfg.Amino,
+		paramkey,
+		tparamskey,
+	)
+	paramsKeeper.Subspace(types.ModuleName).WithKeyTable(types.ParamKeyTable())
+	// --
+
+	// -- create mock controller
+	ctrl := gomock.NewController(s.T())
+	bankKeeper := cointestutil.NewMockKeeper(ctrl)
+	acKeeper := cointestutil.NewMockAccountKeeperI(ctrl)
+	// --
+
+	// -- create nft keeper
+	space, ok := paramsKeeper.GetSubspace(types.ModuleName)
+	s.Require().True(ok)
+	k := coinkeeper.NewKeeper(
+		encCfg.Codec,
+		key,
+		space,
+		acKeeper,
+		bankKeeper,
+	)
+	k.SetParams(ctx, types.DefaultParams())
+	// --
+
+	s.ctx = ctx
+	s.coinKeeper = *k
+	s.acKeeper = acKeeper
+	s.bankKeeper = bankKeeper
+
+	// -- register services
+	types.RegisterInterfaces(encCfg.InterfaceRegistry)
+	queryHelper := baseapp.NewQueryServerTestHelper(ctx, encCfg.InterfaceRegistry)
+	types.RegisterQueryServer(queryHelper, s.coinKeeper)
+	s.queryClient = types.NewQueryClient(queryHelper)
+	s.msgServer = k
+	//
+}
+
 func bootstrapKeeperTest(t *testing.T, numAddrs int, accCoins sdk.Coins) (*app.DSC, sdk.Context, []sdk.AccAddress, []sdk.ValAddress) {
 	_, dsc, ctx := testkeeper.GetTestAppWithCoinKeeper(t)
 
@@ -27,10 +126,9 @@ func bootstrapKeeperTest(t *testing.T, numAddrs int, accCoins sdk.Coins) (*app.D
 	return dsc, ctx, addrDels, addrVals
 }
 
-var (
-	baseDenom  = "del"
-	baseAmount = helpers.EtherToWei(sdkmath.NewInt(1000000000000))
-)
+func TestKeeperTestSuite(t *testing.T) {
+	suite.Run(t, new(KeeperTestSuite))
+}
 
 func TestKeeper_Coin(t *testing.T) {
 	dsc, ctx, addrs, _ := bootstrapKeeperTest(t, 1, sdk.Coins{
