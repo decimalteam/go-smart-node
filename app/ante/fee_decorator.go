@@ -4,26 +4,32 @@ import (
 	"fmt"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
-	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	feeErrors "bitbucket.org/decimalteam/go-smart-node/x/fee/errors"
 	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	sdkAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+
 	evmTypes "github.com/evmos/ethermint/x/evm/types"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	coinconfig "bitbucket.org/decimalteam/go-smart-node/x/coin/config"
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
+	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 )
 
 type FeeDecorator struct {
-	coinKeeper    coinTypes.CoinKeeper
+	coinKeeper    cointypes.CoinKeeper
 	bankKeeper    evmTypes.BankKeeper
 	accountKeeper evmTypes.AccountKeeper
-	feeKeeper     feeTypes.FeeKeeper
+	feeKeeper     feetypes.FeeKeeper
 }
 
 // NewFeeDecorator creates new FeeDecorator to deduct fee
-func NewFeeDecorator(ck coinTypes.CoinKeeper, bk evmTypes.BankKeeper, ak evmTypes.AccountKeeper, fk feeTypes.FeeKeeper) FeeDecorator {
+func NewFeeDecorator(ck cointypes.CoinKeeper, bk evmTypes.BankKeeper, ak evmTypes.AccountKeeper, fk feetypes.FeeKeeper) FeeDecorator {
 	return FeeDecorator{
 		coinKeeper:    ck,
 		bankKeeper:    bk,
@@ -50,11 +56,11 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 		panic(fmt.Sprintf("%s module account has not been set", sdkAuthTypes.FeeCollectorName))
 	}
 
-	delPrice, err := fd.feeKeeper.GetPrice(ctx)
+	delPrice, err := fd.feeKeeper.GetPrice(ctx, config.BaseDenom, feeconfig.DefaultQuote)
 	if err != nil {
 		return ctx, err
 	}
-	commissionInBaseCoin, err := CalculateFee(tx.GetMsgs(), int64(len(ctx.TxBytes())), delPrice, fd.feeKeeper.GetModuleParams(ctx))
+	commissionInBaseCoin, err := CalculateFee(tx.GetMsgs(), int64(len(ctx.TxBytes())), delPrice.Price, fd.feeKeeper.GetModuleParams(ctx))
 	if err != nil {
 		return ctx, err
 	}
@@ -104,7 +110,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 		feeInBaseCoin = formulas.CalculateSaleReturn(coinInfo.Volume, coinInfo.Reserve,
 			uint(coinInfo.CRR), feeFromTx[0].Amount)
 
-		if coinInfo.Reserve.Sub(feeInBaseCoin).LT(coinTypes.MinCoinReserve) {
+		if coinInfo.Reserve.Sub(feeInBaseCoin).LT(coinconfig.MinCoinReserve) {
 			return ctx, CoinReserveBecomeInsufficient
 		}
 	}
@@ -129,7 +135,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 }
 
 // DeductFees deducts fees from the given account.
-func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper coinTypes.CoinKeeper,
+func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper cointypes.CoinKeeper,
 	feePayerAddress sdk.AccAddress, fee sdk.Coin) error {
 
 	if !fee.IsValid() {

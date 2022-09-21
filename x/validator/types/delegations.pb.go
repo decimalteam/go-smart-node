@@ -4,9 +4,9 @@
 package types
 
 import (
+	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
 	_ "github.com/cosmos/cosmos-proto"
-	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
@@ -30,6 +30,70 @@ var _ = time.Kitchen
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// NFT contains necessary info related to NFT stake.
+type NFT struct {
+	// denom defines NFT collection name.
+	Denom string `protobuf:"bytes,1,opt,name=denom,proto3" json:"denom,omitempty"`
+	// token_id defines NFT token ID.
+	TokenID string `protobuf:"bytes,2,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
+	// sub_token_ids defines list of NFT subtoken IDs.
+	SubTokenIDs []int64 `protobuf:"varint,3,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
+}
+
+func (m *NFT) Reset()         { *m = NFT{} }
+func (m *NFT) String() string { return proto.CompactTextString(m) }
+func (*NFT) ProtoMessage()    {}
+func (*NFT) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9d0ff615ffa85147, []int{0}
+}
+func (m *NFT) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *NFT) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_NFT.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *NFT) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NFT.Merge(m, src)
+}
+func (m *NFT) XXX_Size() int {
+	return m.Size()
+}
+func (m *NFT) XXX_DiscardUnknown() {
+	xxx_messageInfo_NFT.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_NFT proto.InternalMessageInfo
+
+func (m *NFT) GetDenom() string {
+	if m != nil {
+		return m.Denom
+	}
+	return ""
+}
+
+func (m *NFT) GetTokenID() string {
+	if m != nil {
+		return m.TokenID
+	}
+	return ""
+}
+
+func (m *NFT) GetSubTokenIDs() []int64 {
+	if m != nil {
+		return m.SubTokenIDs
+	}
+	return nil
+}
+
 // Delegation represents the bond with tokens held by an account. It is
 // owned by one delegator, and is associated with the voting power of one
 // validator.
@@ -38,22 +102,22 @@ type Delegation struct {
 	DelegatorAddress string `protobuf:"bytes,1,opt,name=delegator_address,json=delegatorAddress,proto3" json:"delegator_address,omitempty"`
 	// validator_address is the bech32-encoded address of the validator.
 	ValidatorAddress string `protobuf:"bytes,2,opt,name=validator_address,json=validatorAddress,proto3" json:"validator_address,omitempty"`
-	// coin defines amount of coins delegated. For NFT case it contains total
+	// stake defines amount of coins delegated. For NFT case it contains total
 	// reserve of delegated NFTs instead of actually delegated coins.
-	Coin types.Coin `protobuf:"bytes,3,opt,name=coin,proto3" json:"coin"`
+	Stake types.Coin `protobuf:"bytes,3,opt,name=stake,proto3" json:"stake"`
 	// is_nft is true for NFT delegations.
 	IsNFT bool `protobuf:"varint,4,opt,name=is_nft,json=isNft,proto3" json:"is_nft,omitempty"`
 	// nft_token_id defines NFT token ID for NFT delegation.
 	NFTTokenID string `protobuf:"bytes,5,opt,name=nft_token_id,json=nftTokenId,proto3" json:"nft_token_id,omitempty"`
 	// nft_quantity defines quantity of delegated NFT tokens for NFT delegation.
-	NFTQuantity uint64 `protobuf:"varint,6,opt,name=nft_quantity,json=nftQuantity,proto3" json:"nft_quantity,omitempty"`
+	NFTQuantity uint32 `protobuf:"varint,6,opt,name=nft_quantity,json=nftQuantity,proto3" json:"nft_quantity,omitempty"`
 }
 
 func (m *Delegation) Reset()         { *m = Delegation{} }
 func (m *Delegation) String() string { return proto.CompactTextString(m) }
 func (*Delegation) ProtoMessage()    {}
 func (*Delegation) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9d0ff615ffa85147, []int{0}
+	return fileDescriptor_9d0ff615ffa85147, []int{1}
 }
 func (m *Delegation) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -97,7 +161,7 @@ func (m *UnbondingDelegation) Reset()         { *m = UnbondingDelegation{} }
 func (m *UnbondingDelegation) String() string { return proto.CompactTextString(m) }
 func (*UnbondingDelegation) ProtoMessage()    {}
 func (*UnbondingDelegation) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9d0ff615ffa85147, []int{1}
+	return fileDescriptor_9d0ff615ffa85147, []int{2}
 }
 func (m *UnbondingDelegation) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -132,22 +196,22 @@ type UnbondingDelegationEntry struct {
 	CreationHeight int64 `protobuf:"varint,1,opt,name=creation_height,json=creationHeight,proto3" json:"creation_height,omitempty"`
 	// completion_time is the unix time for unbonding completion.
 	CompletionTime time.Time `protobuf:"bytes,2,opt,name=completion_time,json=completionTime,proto3,stdtime" json:"completion_time"`
-	// coin defines amount of coins to receive at completion. For NFT case it contains total
+	// stake defines amount of coins unbonding. For NFT case it contains total
 	// reserve of delegated NFTs instead of actually delegated coins.
-	Coin types.Coin `protobuf:"bytes,3,opt,name=coin,proto3" json:"coin"`
+	Stake types.Coin `protobuf:"bytes,3,opt,name=stake,proto3" json:"stake"`
 	// is_nft is true for NFT delegations.
 	IsNFT bool `protobuf:"varint,4,opt,name=is_nft,json=isNft,proto3" json:"is_nft,omitempty"`
 	// nft_token_id defines NFT token ID for NFT delegation.
 	NFTTokenID string `protobuf:"bytes,5,opt,name=nft_token_id,json=nftTokenId,proto3" json:"nft_token_id,omitempty"`
 	// nft_quantity defines quantity of delegated NFT tokens for NFT delegation.
-	NFTQuantity uint64 `protobuf:"varint,6,opt,name=nft_quantity,json=nftQuantity,proto3" json:"nft_quantity,omitempty"`
+	NFTQuantity uint32 `protobuf:"varint,6,opt,name=nft_quantity,json=nftQuantity,proto3" json:"nft_quantity,omitempty"`
 }
 
 func (m *UnbondingDelegationEntry) Reset()         { *m = UnbondingDelegationEntry{} }
 func (m *UnbondingDelegationEntry) String() string { return proto.CompactTextString(m) }
 func (*UnbondingDelegationEntry) ProtoMessage()    {}
 func (*UnbondingDelegationEntry) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9d0ff615ffa85147, []int{2}
+	return fileDescriptor_9d0ff615ffa85147, []int{3}
 }
 func (m *UnbondingDelegationEntry) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -190,9 +254,9 @@ func (m *UnbondingDelegationEntry) GetCompletionTime() time.Time {
 	return time.Time{}
 }
 
-func (m *UnbondingDelegationEntry) GetCoin() types.Coin {
+func (m *UnbondingDelegationEntry) GetStake() types.Coin {
 	if m != nil {
-		return m.Coin
+		return m.Stake
 	}
 	return types.Coin{}
 }
@@ -211,7 +275,7 @@ func (m *UnbondingDelegationEntry) GetNFTTokenID() string {
 	return ""
 }
 
-func (m *UnbondingDelegationEntry) GetNFTQuantity() uint64 {
+func (m *UnbondingDelegationEntry) GetNFTQuantity() uint32 {
 	if m != nil {
 		return m.NFTQuantity
 	}
@@ -223,9 +287,11 @@ func (m *UnbondingDelegationEntry) GetNFTQuantity() uint64 {
 type Redelegation struct {
 	// delegator_address is the bech32-encoded address of the delegator.
 	DelegatorAddress string `protobuf:"bytes,1,opt,name=delegator_address,json=delegatorAddress,proto3" json:"delegator_address,omitempty"`
-	// validator_src_address is the validator redelegation source operator address.
+	// validator_src_address is the validator redelegation source operator
+	// address.
 	ValidatorSrcAddress string `protobuf:"bytes,2,opt,name=validator_src_address,json=validatorSrcAddress,proto3" json:"validator_src_address,omitempty"`
-	// validator_dst_address is the validator redelegation destination operator address.
+	// validator_dst_address is the validator redelegation destination operator
+	// address.
 	ValidatorDstAddress string `protobuf:"bytes,3,opt,name=validator_dst_address,json=validatorDstAddress,proto3" json:"validator_dst_address,omitempty"`
 	// entries are the redelegation entries.
 	Entries []RedelegationEntry `protobuf:"bytes,4,rep,name=entries,proto3" json:"entries"`
@@ -235,7 +301,7 @@ func (m *Redelegation) Reset()         { *m = Redelegation{} }
 func (m *Redelegation) String() string { return proto.CompactTextString(m) }
 func (*Redelegation) ProtoMessage()    {}
 func (*Redelegation) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9d0ff615ffa85147, []int{3}
+	return fileDescriptor_9d0ff615ffa85147, []int{4}
 }
 func (m *Redelegation) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -270,17 +336,22 @@ type RedelegationEntry struct {
 	CreationHeight int64 `protobuf:"varint,1,opt,name=creation_height,json=creationHeight,proto3" json:"creation_height,omitempty"`
 	// completion_time defines the unix time for redelegation completion.
 	CompletionTime time.Time `protobuf:"bytes,2,opt,name=completion_time,json=completionTime,proto3,stdtime" json:"completion_time"`
-	// initial_balance defines the initial balance when redelegation started.
-	InitialBalance github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,3,opt,name=initial_balance,json=initialBalance,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"initial_balance"`
-	// shares_dst is the amount of destination-validator shares created by redelegation.
-	SharesDst github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,4,opt,name=shares_dst,json=sharesDst,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"shares_dst"`
+	// stake defines amount of coins redelegating. For NFT case it contains total
+	// reserve of delegated NFTs instead of actually delegated coins.
+	Stake types.Coin `protobuf:"bytes,3,opt,name=stake,proto3" json:"stake"`
+	// is_nft is true for NFT delegations.
+	IsNFT bool `protobuf:"varint,4,opt,name=is_nft,json=isNft,proto3" json:"is_nft,omitempty"`
+	// nft_token_id defines NFT token ID for NFT delegation.
+	NFTTokenID string `protobuf:"bytes,5,opt,name=nft_token_id,json=nftTokenId,proto3" json:"nft_token_id,omitempty"`
+	// nft_quantity defines quantity of delegated NFT tokens for NFT delegation.
+	NFTQuantity uint32 `protobuf:"varint,6,opt,name=nft_quantity,json=nftQuantity,proto3" json:"nft_quantity,omitempty"`
 }
 
 func (m *RedelegationEntry) Reset()         { *m = RedelegationEntry{} }
 func (m *RedelegationEntry) String() string { return proto.CompactTextString(m) }
 func (*RedelegationEntry) ProtoMessage()    {}
 func (*RedelegationEntry) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9d0ff615ffa85147, []int{4}
+	return fileDescriptor_9d0ff615ffa85147, []int{5}
 }
 func (m *RedelegationEntry) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -323,6 +394,34 @@ func (m *RedelegationEntry) GetCompletionTime() time.Time {
 	return time.Time{}
 }
 
+func (m *RedelegationEntry) GetStake() types.Coin {
+	if m != nil {
+		return m.Stake
+	}
+	return types.Coin{}
+}
+
+func (m *RedelegationEntry) GetIsNFT() bool {
+	if m != nil {
+		return m.IsNFT
+	}
+	return false
+}
+
+func (m *RedelegationEntry) GetNFTTokenID() string {
+	if m != nil {
+		return m.NFTTokenID
+	}
+	return ""
+}
+
+func (m *RedelegationEntry) GetNFTQuantity() uint32 {
+	if m != nil {
+		return m.NFTQuantity
+	}
+	return 0
+}
+
 // DelegationResponse is equivalent to Delegation except that it contains a
 // balance in addition to shares which is more suitable for client responses.
 type DelegationResponse struct {
@@ -334,7 +433,7 @@ func (m *DelegationResponse) Reset()         { *m = DelegationResponse{} }
 func (m *DelegationResponse) String() string { return proto.CompactTextString(m) }
 func (*DelegationResponse) ProtoMessage()    {}
 func (*DelegationResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9d0ff615ffa85147, []int{5}
+	return fileDescriptor_9d0ff615ffa85147, []int{6}
 }
 func (m *DelegationResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -381,15 +480,15 @@ func (m *DelegationResponse) GetBalance() types.Coin {
 // contains a balance in addition to shares which is more suitable for client
 // responses.
 type RedelegationEntryResponse struct {
-	RedelegationEntry RedelegationEntry                      `protobuf:"bytes,1,opt,name=redelegation_entry,json=redelegationEntry,proto3" json:"redelegation_entry"`
-	Balance           github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,4,opt,name=balance,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"balance"`
+	RedelegationEntry RedelegationEntry     `protobuf:"bytes,1,opt,name=redelegation_entry,json=redelegationEntry,proto3" json:"redelegation_entry"`
+	Balance           cosmossdk_io_math.Int `protobuf:"bytes,4,opt,name=balance,proto3,customtype=cosmossdk.io/math.Int" json:"balance"`
 }
 
 func (m *RedelegationEntryResponse) Reset()         { *m = RedelegationEntryResponse{} }
 func (m *RedelegationEntryResponse) String() string { return proto.CompactTextString(m) }
 func (*RedelegationEntryResponse) ProtoMessage()    {}
 func (*RedelegationEntryResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9d0ff615ffa85147, []int{6}
+	return fileDescriptor_9d0ff615ffa85147, []int{7}
 }
 func (m *RedelegationEntryResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -437,7 +536,7 @@ func (m *RedelegationResponse) Reset()         { *m = RedelegationResponse{} }
 func (m *RedelegationResponse) String() string { return proto.CompactTextString(m) }
 func (*RedelegationResponse) ProtoMessage()    {}
 func (*RedelegationResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9d0ff615ffa85147, []int{7}
+	return fileDescriptor_9d0ff615ffa85147, []int{8}
 }
 func (m *RedelegationResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -480,181 +579,8 @@ func (m *RedelegationResponse) GetEntries() []RedelegationEntryResponse {
 	return nil
 }
 
-// DVPair is struct that just has a delegator-validator pair with no other data.
-// It is intended to be used as a marshalable pointer. For example, a DVPair can
-// be used to construct the key to getting an UnbondingDelegation from state.
-type DVPair struct {
-	DelegatorAddress string `protobuf:"bytes,1,opt,name=delegator_address,json=delegatorAddress,proto3" json:"delegator_address,omitempty"`
-	ValidatorAddress string `protobuf:"bytes,2,opt,name=validator_address,json=validatorAddress,proto3" json:"validator_address,omitempty"`
-}
-
-func (m *DVPair) Reset()         { *m = DVPair{} }
-func (m *DVPair) String() string { return proto.CompactTextString(m) }
-func (*DVPair) ProtoMessage()    {}
-func (*DVPair) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9d0ff615ffa85147, []int{8}
-}
-func (m *DVPair) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *DVPair) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_DVPair.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *DVPair) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DVPair.Merge(m, src)
-}
-func (m *DVPair) XXX_Size() int {
-	return m.Size()
-}
-func (m *DVPair) XXX_DiscardUnknown() {
-	xxx_messageInfo_DVPair.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DVPair proto.InternalMessageInfo
-
-// DVPairs defines an array of DVPair objects.
-type DVPairs struct {
-	Pairs []DVPair `protobuf:"bytes,1,rep,name=pairs,proto3" json:"pairs"`
-}
-
-func (m *DVPairs) Reset()         { *m = DVPairs{} }
-func (m *DVPairs) String() string { return proto.CompactTextString(m) }
-func (*DVPairs) ProtoMessage()    {}
-func (*DVPairs) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9d0ff615ffa85147, []int{9}
-}
-func (m *DVPairs) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *DVPairs) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_DVPairs.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *DVPairs) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DVPairs.Merge(m, src)
-}
-func (m *DVPairs) XXX_Size() int {
-	return m.Size()
-}
-func (m *DVPairs) XXX_DiscardUnknown() {
-	xxx_messageInfo_DVPairs.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DVPairs proto.InternalMessageInfo
-
-func (m *DVPairs) GetPairs() []DVPair {
-	if m != nil {
-		return m.Pairs
-	}
-	return nil
-}
-
-// DVVTriplet is struct that just has a delegator-validator-validator triplet
-// with no other data. It is intended to be used as a marshalable pointer. For
-// example, a DVVTriplet can be used to construct the key to getting a
-// Redelegation from state.
-type DVVTriplet struct {
-	DelegatorAddress    string `protobuf:"bytes,1,opt,name=delegator_address,json=delegatorAddress,proto3" json:"delegator_address,omitempty"`
-	ValidatorSrcAddress string `protobuf:"bytes,2,opt,name=validator_src_address,json=validatorSrcAddress,proto3" json:"validator_src_address,omitempty"`
-	ValidatorDstAddress string `protobuf:"bytes,3,opt,name=validator_dst_address,json=validatorDstAddress,proto3" json:"validator_dst_address,omitempty"`
-}
-
-func (m *DVVTriplet) Reset()         { *m = DVVTriplet{} }
-func (m *DVVTriplet) String() string { return proto.CompactTextString(m) }
-func (*DVVTriplet) ProtoMessage()    {}
-func (*DVVTriplet) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9d0ff615ffa85147, []int{10}
-}
-func (m *DVVTriplet) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *DVVTriplet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_DVVTriplet.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *DVVTriplet) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DVVTriplet.Merge(m, src)
-}
-func (m *DVVTriplet) XXX_Size() int {
-	return m.Size()
-}
-func (m *DVVTriplet) XXX_DiscardUnknown() {
-	xxx_messageInfo_DVVTriplet.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DVVTriplet proto.InternalMessageInfo
-
-// DVVTriplets defines an array of DVVTriplet objects.
-type DVVTriplets struct {
-	Triplets []DVVTriplet `protobuf:"bytes,1,rep,name=triplets,proto3" json:"triplets"`
-}
-
-func (m *DVVTriplets) Reset()         { *m = DVVTriplets{} }
-func (m *DVVTriplets) String() string { return proto.CompactTextString(m) }
-func (*DVVTriplets) ProtoMessage()    {}
-func (*DVVTriplets) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9d0ff615ffa85147, []int{11}
-}
-func (m *DVVTriplets) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *DVVTriplets) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_DVVTriplets.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *DVVTriplets) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DVVTriplets.Merge(m, src)
-}
-func (m *DVVTriplets) XXX_Size() int {
-	return m.Size()
-}
-func (m *DVVTriplets) XXX_DiscardUnknown() {
-	xxx_messageInfo_DVVTriplets.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DVVTriplets proto.InternalMessageInfo
-
-func (m *DVVTriplets) GetTriplets() []DVVTriplet {
-	if m != nil {
-		return m.Triplets
-	}
-	return nil
-}
-
 func init() {
+	proto.RegisterType((*NFT)(nil), "decimal.validator.v1.NFT")
 	proto.RegisterType((*Delegation)(nil), "decimal.validator.v1.Delegation")
 	proto.RegisterType((*UnbondingDelegation)(nil), "decimal.validator.v1.UnbondingDelegation")
 	proto.RegisterType((*UnbondingDelegationEntry)(nil), "decimal.validator.v1.UnbondingDelegationEntry")
@@ -663,10 +589,6 @@ func init() {
 	proto.RegisterType((*DelegationResponse)(nil), "decimal.validator.v1.DelegationResponse")
 	proto.RegisterType((*RedelegationEntryResponse)(nil), "decimal.validator.v1.RedelegationEntryResponse")
 	proto.RegisterType((*RedelegationResponse)(nil), "decimal.validator.v1.RedelegationResponse")
-	proto.RegisterType((*DVPair)(nil), "decimal.validator.v1.DVPair")
-	proto.RegisterType((*DVPairs)(nil), "decimal.validator.v1.DVPairs")
-	proto.RegisterType((*DVVTriplet)(nil), "decimal.validator.v1.DVVTriplet")
-	proto.RegisterType((*DVVTriplets)(nil), "decimal.validator.v1.DVVTriplets")
 }
 
 func init() {
@@ -674,66 +596,61 @@ func init() {
 }
 
 var fileDescriptor_9d0ff615ffa85147 = []byte{
-	// 932 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe4, 0x56, 0x4d, 0x6f, 0x1b, 0x45,
-	0x18, 0xf6, 0xd8, 0xce, 0xd7, 0xeb, 0x28, 0x21, 0xdb, 0x20, 0x39, 0x11, 0xf2, 0x5a, 0x3e, 0xb4,
-	0xbe, 0x78, 0x97, 0xb8, 0x17, 0x5a, 0x71, 0xc1, 0xb8, 0x01, 0x4b, 0xc5, 0xd0, 0x8d, 0xc9, 0x01,
-	0x90, 0xac, 0xfd, 0x18, 0x6f, 0x46, 0xb1, 0x67, 0xcc, 0xcc, 0x24, 0x22, 0x47, 0x6e, 0x1c, 0x7b,
-	0xe4, 0x18, 0x24, 0x7e, 0x42, 0x6f, 0xfc, 0x81, 0x1c, 0xab, 0x9e, 0xf8, 0x90, 0x0c, 0x72, 0x84,
-	0xc4, 0x9f, 0x40, 0x42, 0x3b, 0x3b, 0xbb, 0x6b, 0x12, 0x47, 0x75, 0xa5, 0x4a, 0x04, 0xf5, 0x94,
-	0xf9, 0x78, 0x9f, 0x67, 0xdf, 0xf7, 0x79, 0x9f, 0x77, 0x62, 0xb8, 0x1b, 0x60, 0x9f, 0x8c, 0xdc,
-	0xa1, 0x7d, 0xea, 0x0e, 0x49, 0xe0, 0x4a, 0xc6, 0xed, 0xd3, 0x3d, 0x3b, 0xc0, 0x43, 0x1c, 0xba,
-	0x92, 0x30, 0x2a, 0xac, 0x31, 0x67, 0x92, 0x19, 0xdb, 0x3a, 0xce, 0x4a, 0xe3, 0xac, 0xd3, 0xbd,
-	0xdd, 0xed, 0x90, 0x85, 0x4c, 0x05, 0xd8, 0xd1, 0x2a, 0x8e, 0xdd, 0x35, 0x43, 0xc6, 0xc2, 0x21,
-	0xb6, 0xd5, 0xce, 0x3b, 0x19, 0xd8, 0x92, 0x8c, 0xb0, 0x90, 0xee, 0x68, 0xac, 0x03, 0x76, 0x7c,
-	0x26, 0x46, 0x4c, 0xf4, 0x63, 0x64, 0xbc, 0xd1, 0x57, 0x95, 0x78, 0x67, 0x7b, 0xae, 0xc0, 0xf6,
-	0xe9, 0x9e, 0x87, 0xa5, 0xbb, 0x67, 0xfb, 0x8c, 0xd0, 0xf8, 0xbe, 0xf6, 0x67, 0x1e, 0xa0, 0x9d,
-	0x66, 0x67, 0x3c, 0x82, 0x2d, 0x9d, 0x2b, 0xe3, 0x7d, 0x37, 0x08, 0x38, 0x16, 0xa2, 0x8c, 0xaa,
-	0xa8, 0xbe, 0xd6, 0x2a, 0xbf, 0x78, 0xd6, 0xd8, 0xd6, 0xdc, 0x1f, 0xc4, 0x37, 0x07, 0x92, 0x13,
-	0x1a, 0x3a, 0x6f, 0xa5, 0x10, 0x7d, 0x1e, 0xd1, 0xa4, 0x75, 0xa5, 0x34, 0xf9, 0x97, 0xd1, 0xa4,
-	0x90, 0x84, 0xe6, 0x3e, 0x14, 0xa3, 0x54, 0xcb, 0x85, 0x2a, 0xaa, 0x97, 0x9a, 0x3b, 0x96, 0x86,
-	0x45, 0xb5, 0x58, 0xba, 0x16, 0xeb, 0x43, 0x46, 0x68, 0xab, 0x78, 0x31, 0x31, 0x73, 0x8e, 0x0a,
-	0x36, 0xaa, 0xb0, 0x4c, 0x44, 0x9f, 0x0e, 0x64, 0xb9, 0x58, 0x45, 0xf5, 0xd5, 0xd6, 0xda, 0x74,
-	0x62, 0x2e, 0x75, 0x44, 0x77, 0xbf, 0xe7, 0x2c, 0x11, 0xd1, 0x1d, 0x48, 0xe3, 0x5d, 0x58, 0xa7,
-	0x03, 0xd9, 0x97, 0xec, 0x18, 0xd3, 0x3e, 0x09, 0xca, 0x4b, 0x2a, 0xb1, 0x8d, 0xe9, 0xc4, 0x84,
-	0xee, 0x7e, 0xaf, 0x17, 0x1d, 0x77, 0xda, 0x0e, 0xd0, 0x81, 0x8c, 0xd7, 0x81, 0xd1, 0x8c, 0x11,
-	0x5f, 0x9f, 0xb8, 0x54, 0x12, 0x79, 0x56, 0x5e, 0xae, 0xa2, 0x7a, 0xb1, 0xb5, 0x39, 0x9d, 0x98,
-	0xa5, 0xee, 0x7e, 0xef, 0x89, 0x3e, 0x76, 0x4a, 0x74, 0x20, 0x93, 0xcd, 0xc3, 0xf5, 0xef, 0xce,
-	0xcd, 0xdc, 0xf7, 0xe7, 0x26, 0xfa, 0xeb, 0xdc, 0xcc, 0xd5, 0xbe, 0xcd, 0xc3, 0x9d, 0xcf, 0xa9,
-	0xc7, 0x68, 0x40, 0x68, 0x78, 0x6b, 0x05, 0xef, 0xc2, 0x0a, 0xa6, 0x92, 0x13, 0x2c, 0xca, 0x85,
-	0x6a, 0xa1, 0x5e, 0x6a, 0x5a, 0xd6, 0x3c, 0x9f, 0x5a, 0x73, 0x2a, 0x79, 0x44, 0x25, 0x3f, 0xd3,
-	0x8d, 0x48, 0x48, 0xae, 0x68, 0xf0, 0x4b, 0x1e, 0xca, 0x37, 0x21, 0x8d, 0x7b, 0xb0, 0xe9, 0x73,
-	0xac, 0x0e, 0xfa, 0x47, 0x98, 0x84, 0x47, 0x52, 0xc9, 0x50, 0x70, 0x36, 0x92, 0xe3, 0x8f, 0xd5,
-	0xa9, 0xf1, 0x09, 0x6c, 0xfa, 0x6c, 0x34, 0x1e, 0x62, 0x15, 0x1a, 0x8d, 0x82, 0x2a, 0xb4, 0xd4,
-	0xdc, 0xb5, 0xe2, 0x39, 0xb1, 0x92, 0x39, 0xb1, 0x7a, 0xc9, 0x9c, 0xb4, 0x56, 0xa3, 0xbc, 0x9e,
-	0xfe, 0x6e, 0x22, 0x67, 0x23, 0x03, 0x47, 0xd7, 0xff, 0x6f, 0x8f, 0xad, 0x6a, 0x6d, 0x51, 0xed,
-	0x22, 0x0f, 0xeb, 0x0e, 0x0e, 0x5e, 0xbb, 0xb1, 0x1e, 0xc3, 0xdb, 0x99, 0xb1, 0x04, 0xf7, 0x17,
-	0x36, 0xd7, 0x9d, 0x14, 0x76, 0xc0, 0xfd, 0xb9, 0x6c, 0x81, 0x90, 0x29, 0x5b, 0x61, 0x61, 0xb6,
-	0xb6, 0x90, 0x09, 0xdb, 0x47, 0x99, 0x5b, 0x8b, 0xca, 0xad, 0xf7, 0xe6, 0xbb, 0x75, 0x56, 0x97,
-	0xc5, 0x6c, 0xba, 0x75, 0x0d, 0xf2, 0x9f, 0xf9, 0x13, 0xc3, 0x26, 0xa1, 0x44, 0x12, 0x77, 0xd8,
-	0xf7, 0xdc, 0xa1, 0x4b, 0x7d, 0xac, 0xc5, 0x7a, 0x3f, 0x82, 0xfc, 0x3a, 0x31, 0xef, 0x86, 0x44,
-	0x1e, 0x9d, 0x78, 0x96, 0xcf, 0x46, 0xfa, 0xe9, 0xd7, 0x7f, 0x1a, 0x22, 0x38, 0xb6, 0xe5, 0xd9,
-	0x18, 0x0b, 0xab, 0x43, 0xe5, 0x8b, 0x67, 0x0d, 0xd0, 0xd2, 0x76, 0xa8, 0x74, 0x36, 0x34, 0x69,
-	0x2b, 0xe6, 0x34, 0xbe, 0x04, 0x10, 0x47, 0x2e, 0xc7, 0x22, 0x6a, 0x8b, 0x72, 0xf5, 0xab, 0x7d,
-	0xa1, 0x8d, 0xfd, 0x99, 0x2f, 0xb4, 0xb1, 0xef, 0xac, 0xc5, 0x7c, 0x6d, 0x21, 0x67, 0x6c, 0xfa,
-	0x03, 0x02, 0x23, 0x9b, 0x7c, 0x07, 0x8b, 0x31, 0xa3, 0x02, 0x1b, 0xfb, 0x00, 0x99, 0xde, 0x4a,
-	0xd7, 0x52, 0xb3, 0x3a, 0xbf, 0x99, 0x19, 0x5a, 0x77, 0x71, 0x06, 0x69, 0x3c, 0x80, 0x95, 0x44,
-	0xa4, 0xfc, 0x62, 0xf3, 0x9c, 0xc4, 0xa7, 0x39, 0xe6, 0x6a, 0xbf, 0x21, 0xd8, 0xb9, 0xd6, 0xff,
-	0x34, 0xd5, 0xaf, 0xc0, 0xe0, 0x33, 0x97, 0xfd, 0xc8, 0x43, 0x67, 0x3a, 0xe5, 0x57, 0xf4, 0xdf,
-	0x16, 0xbf, 0xe6, 0xb2, 0xc3, 0xac, 0x80, 0xe2, 0x6b, 0xe8, 0xf2, 0xb5, 0xea, 0x50, 0xed, 0x27,
-	0x04, 0xdb, 0xb3, 0x09, 0xa5, 0x85, 0x3d, 0x86, 0xf5, 0xd9, 0x7c, 0x74, 0x49, 0xb5, 0x97, 0x97,
-	0xa4, 0xab, 0xf9, 0x17, 0xda, 0xf8, 0x34, 0x9b, 0xcd, 0xbc, 0x9a, 0x4d, 0x7b, 0x41, 0x6d, 0x92,
-	0x7c, 0xae, 0xce, 0x68, 0x51, 0xf5, 0xe6, 0x47, 0x04, 0xcb, 0xed, 0xc3, 0xcf, 0x5c, 0xc2, 0x6f,
-	0xd7, 0x7f, 0xce, 0x2b, 0x4f, 0x48, 0x07, 0x56, 0xe2, 0x2c, 0x85, 0xf1, 0x1e, 0x2c, 0x8d, 0xa3,
-	0x45, 0x19, 0x29, 0x19, 0xde, 0xb9, 0xc1, 0xd5, 0x2a, 0x5a, 0xd7, 0x1c, 0x03, 0x1e, 0x16, 0x23,
-	0xba, 0xda, 0xdf, 0x08, 0xa0, 0x7d, 0x78, 0xd8, 0xe3, 0x24, 0x7a, 0x15, 0xde, 0x80, 0x67, 0xfd,
-	0x8a, 0x94, 0x4f, 0xa0, 0x94, 0x95, 0x2f, 0x8c, 0x16, 0xac, 0x4a, 0xbd, 0xd6, 0x8a, 0xde, 0xf4,
-	0x4e, 0xa4, 0x20, 0xad, 0x6a, 0x8a, 0x6b, 0x1d, 0x5c, 0x4c, 0x2b, 0xe8, 0xf9, 0xb4, 0x82, 0xfe,
-	0x98, 0x56, 0xd0, 0xd3, 0xcb, 0x4a, 0xee, 0xf9, 0x65, 0x25, 0xf7, 0xf3, 0x65, 0x25, 0xf7, 0xc5,
-	0x03, 0x8f, 0x48, 0xef, 0xc4, 0x3f, 0xc6, 0xd2, 0x62, 0x3c, 0xb4, 0x35, 0xb1, 0xc4, 0xee, 0xc8,
-	0x0e, 0x59, 0x43, 0x8c, 0x5c, 0x2e, 0x1b, 0x94, 0x05, 0xd8, 0xfe, 0x66, 0xe6, 0xf7, 0xbd, 0x1a,
-	0x3e, 0x6f, 0x59, 0xbd, 0xea, 0xf7, 0xff, 0x09, 0x00, 0x00, 0xff, 0xff, 0xc1, 0x23, 0xba, 0x4f,
-	0x01, 0x0c, 0x00, 0x00,
+	// 858 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x56, 0x4d, 0x6f, 0xe3, 0x44,
+	0x18, 0x8e, 0x9d, 0xa4, 0xc9, 0x8e, 0xb3, 0x2d, 0xf5, 0x66, 0x25, 0xb7, 0x87, 0x38, 0xca, 0x61,
+	0x37, 0x12, 0x8a, 0x4d, 0xb2, 0xe2, 0xb0, 0xdc, 0x08, 0x6d, 0x20, 0x52, 0x09, 0xc2, 0x09, 0x17,
+	0x84, 0x14, 0xf9, 0x63, 0xe2, 0x8e, 0x12, 0xcf, 0x04, 0xcf, 0x24, 0x6a, 0x8e, 0xdc, 0x38, 0xf6,
+	0xc8, 0xb1, 0xfc, 0x87, 0xde, 0xf8, 0x03, 0x15, 0xa7, 0xaa, 0xe2, 0x80, 0x40, 0x0a, 0x28, 0x3d,
+	0xc0, 0xcf, 0x40, 0xb6, 0xc7, 0x76, 0x68, 0x82, 0x1a, 0x04, 0x07, 0x90, 0xf6, 0x96, 0xf7, 0xe3,
+	0x79, 0xfd, 0x3e, 0xcf, 0x3c, 0xaf, 0x14, 0xf0, 0xc2, 0x81, 0x36, 0xf2, 0xcc, 0x89, 0x3e, 0x37,
+	0x27, 0xc8, 0x31, 0x19, 0xf1, 0xf5, 0x79, 0x53, 0x77, 0xe0, 0x04, 0xba, 0x26, 0x43, 0x04, 0x53,
+	0x6d, 0xea, 0x13, 0x46, 0xe4, 0x32, 0xef, 0xd3, 0x92, 0x3e, 0x6d, 0xde, 0x3c, 0x2e, 0xbb, 0xc4,
+	0x25, 0x61, 0x83, 0x1e, 0xfc, 0x8a, 0x7a, 0x8f, 0x55, 0x97, 0x10, 0x77, 0x02, 0xf5, 0x30, 0xb2,
+	0x66, 0x23, 0x9d, 0x21, 0x0f, 0x52, 0x66, 0x7a, 0x53, 0xde, 0x70, 0x64, 0x13, 0xea, 0x11, 0x3a,
+	0x8c, 0x90, 0x51, 0xc0, 0x4b, 0x95, 0x28, 0xd2, 0x2d, 0x93, 0x42, 0x7d, 0xde, 0xb4, 0x20, 0x33,
+	0x9b, 0xba, 0x4d, 0x10, 0x8e, 0xea, 0xb5, 0x0b, 0x90, 0xed, 0x75, 0x06, 0x72, 0x19, 0xe4, 0x1d,
+	0x88, 0x89, 0xa7, 0x08, 0x55, 0xa1, 0xfe, 0xc4, 0x88, 0x02, 0xf9, 0x05, 0x28, 0x32, 0x32, 0x86,
+	0x78, 0x88, 0x1c, 0x45, 0x0c, 0x0a, 0x6d, 0x69, 0xb5, 0x54, 0x0b, 0x83, 0x20, 0xd7, 0x3d, 0x31,
+	0x0a, 0x61, 0xb1, 0xeb, 0xc8, 0xaf, 0xc0, 0x53, 0x3a, 0xb3, 0x86, 0x71, 0x2f, 0x55, 0xb2, 0xd5,
+	0x6c, 0x3d, 0xdb, 0x3e, 0x58, 0x2d, 0x55, 0xa9, 0x3f, 0xb3, 0x78, 0x3f, 0x35, 0x24, 0x1a, 0x07,
+	0x0e, 0xad, 0xfd, 0x26, 0x02, 0x70, 0x92, 0xe8, 0x22, 0x9f, 0x82, 0x43, 0xae, 0x12, 0xf1, 0x87,
+	0xa6, 0xe3, 0xf8, 0x90, 0xd2, 0x68, 0x9b, 0xb6, 0x72, 0x77, 0xdd, 0x28, 0x73, 0x56, 0xef, 0x47,
+	0x95, 0x3e, 0xf3, 0x11, 0x76, 0x8d, 0xb7, 0x12, 0x08, 0xcf, 0x07, 0x63, 0x12, 0x45, 0x93, 0x31,
+	0xe2, 0x63, 0x63, 0x12, 0x48, 0x3c, 0xe6, 0x5d, 0x90, 0xa7, 0xcc, 0x1c, 0x43, 0x25, 0x5b, 0x15,
+	0xea, 0x52, 0xeb, 0x48, 0xe3, 0xb8, 0x40, 0x46, 0x8d, 0xcb, 0xa8, 0x7d, 0x40, 0x10, 0x6e, 0xe7,
+	0x6e, 0x96, 0x6a, 0xc6, 0x88, 0xba, 0xe5, 0x2a, 0xd8, 0x43, 0x74, 0x88, 0x47, 0x4c, 0xc9, 0x55,
+	0x85, 0x7a, 0xb1, 0xfd, 0x64, 0xb5, 0x54, 0xf3, 0x5d, 0xda, 0xeb, 0x0c, 0x8c, 0x3c, 0xa2, 0xbd,
+	0x11, 0x93, 0xdf, 0x01, 0x25, 0x3c, 0x62, 0x89, 0x54, 0x4a, 0x3e, 0x5c, 0x6d, 0x7f, 0xb5, 0x54,
+	0x41, 0xaf, 0x33, 0x88, 0x95, 0x05, 0x78, 0xc4, 0xb8, 0x50, 0x72, 0x2b, 0x42, 0x7c, 0x39, 0x33,
+	0x31, 0x43, 0x6c, 0xa1, 0xec, 0x55, 0x85, 0xfa, 0xd3, 0x48, 0xdb, 0x5e, 0x67, 0xf0, 0x29, 0x4f,
+	0x1b, 0x12, 0x1e, 0xb1, 0x38, 0x78, 0xaf, 0xf4, 0xf5, 0x95, 0x9a, 0xf9, 0xe6, 0x4a, 0x15, 0x7e,
+	0xbf, 0x52, 0x33, 0xb5, 0xaf, 0x44, 0xf0, 0xec, 0x33, 0x6c, 0x11, 0xec, 0x20, 0xec, 0xfe, 0x67,
+	0x25, 0xef, 0x81, 0x02, 0xc4, 0xcc, 0x47, 0x30, 0xb2, 0x8f, 0xd4, 0xd2, 0xb4, 0x6d, 0x37, 0xa2,
+	0x6d, 0x61, 0x72, 0x8a, 0x99, 0xbf, 0xe0, 0x2f, 0x11, 0x0f, 0x79, 0xa0, 0xc1, 0xcf, 0x22, 0x50,
+	0xfe, 0x0a, 0x29, 0xbf, 0x04, 0x07, 0xb6, 0x0f, 0xc3, 0xc4, 0xf0, 0x1c, 0x22, 0xf7, 0x9c, 0x85,
+	0x32, 0x64, 0x8d, 0xfd, 0x38, 0xfd, 0x51, 0x98, 0x95, 0x3f, 0x06, 0x07, 0x36, 0xf1, 0xa6, 0x13,
+	0x18, 0xb6, 0x06, 0x67, 0x18, 0x12, 0x95, 0x5a, 0xc7, 0x5a, 0x74, 0xa3, 0x5a, 0x7c, 0xa3, 0xda,
+	0x20, 0xbe, 0xd1, 0x76, 0x31, 0xd8, 0xeb, 0xf2, 0x17, 0x55, 0x30, 0xf6, 0x53, 0x70, 0x50, 0xfe,
+	0xbf, 0xbb, 0xac, 0xc8, 0xd5, 0x15, 0x6a, 0x37, 0x22, 0x28, 0x19, 0xd0, 0xf9, 0xd7, 0xad, 0x75,
+	0x06, 0x9e, 0xa7, 0xd6, 0xa2, 0xbe, 0xbd, 0xb3, 0xbd, 0x9e, 0x25, 0xb0, 0xbe, 0x6f, 0x6f, 0x9d,
+	0xe6, 0x50, 0x96, 0x4c, 0xcb, 0xee, 0x3c, 0xed, 0x84, 0xb2, 0x78, 0xda, 0x87, 0xa9, 0x5f, 0x73,
+	0xa1, 0x5f, 0x5f, 0x6e, 0xf7, 0xeb, 0xba, 0x2e, 0x3b, 0x18, 0xf5, 0x07, 0x11, 0x1c, 0x6e, 0x40,
+	0xde, 0x38, 0xf4, 0x9f, 0x3a, 0xf4, 0x5b, 0x01, 0xc8, 0xe9, 0xd9, 0x1b, 0x90, 0x4e, 0x09, 0xa6,
+	0x50, 0xee, 0x00, 0x90, 0x4a, 0x1d, 0x4a, 0x2a, 0xb5, 0xaa, 0xdb, 0xdf, 0x31, 0x45, 0x73, 0xae,
+	0x6b, 0x48, 0xf9, 0x35, 0x28, 0x58, 0xe6, 0xc4, 0xc4, 0x76, 0x2c, 0xf7, 0xa3, 0x4a, 0xc5, 0xfd,
+	0xc9, 0x8e, 0x99, 0xda, 0xf7, 0x02, 0x38, 0xda, 0x78, 0xfa, 0x64, 0xd5, 0x2f, 0x80, 0xec, 0xaf,
+	0x15, 0x87, 0x81, 0x7d, 0x16, 0x7c, 0xe5, 0xbf, 0x69, 0xbd, 0x43, 0x7f, 0xc3, 0x60, 0xa7, 0x29,
+	0x81, 0x5c, 0xf8, 0x14, 0x6f, 0x07, 0x9d, 0x3f, 0x2d, 0xd5, 0xe7, 0x11, 0x0f, 0xea, 0x8c, 0x35,
+	0x44, 0x74, 0xcf, 0x64, 0xe7, 0x5a, 0x17, 0xb3, 0xbb, 0xeb, 0x06, 0xe0, 0x04, 0xbb, 0x98, 0x6d,
+	0x92, 0x11, 0x6a, 0xdf, 0x09, 0xa0, 0xbc, 0xfe, 0xfd, 0x84, 0xc7, 0x19, 0x28, 0xad, 0x7f, 0x9e,
+	0x33, 0xa8, 0x3d, 0xce, 0x80, 0x2f, 0xff, 0x27, 0xb4, 0xfc, 0x49, 0x7a, 0x85, 0x62, 0x78, 0x85,
+	0xfa, 0x8e, 0x52, 0xc4, 0xfb, 0x3c, 0xbc, 0xc6, 0x5c, 0xf0, 0x14, 0xed, 0xfe, 0xcd, 0xaa, 0x22,
+	0xdc, 0xae, 0x2a, 0xc2, 0xaf, 0xab, 0x8a, 0x70, 0x79, 0x5f, 0xc9, 0xdc, 0xde, 0x57, 0x32, 0x3f,
+	0xde, 0x57, 0x32, 0x9f, 0xbf, 0xb6, 0x10, 0xb3, 0x66, 0xf6, 0x18, 0x32, 0x8d, 0xf8, 0xae, 0xce,
+	0x3f, 0xc6, 0xa0, 0xe9, 0xe9, 0x2e, 0x69, 0x50, 0xcf, 0xf4, 0x59, 0x03, 0x13, 0x07, 0xea, 0x17,
+	0x6b, 0x7f, 0x01, 0xd9, 0x62, 0x0a, 0xa9, 0xb5, 0x17, 0x9e, 0xde, 0xab, 0x3f, 0x02, 0x00, 0x00,
+	0xff, 0xff, 0xbf, 0xb1, 0x9d, 0x89, 0x24, 0x0a, 0x00, 0x00,
 }
 
 func (this *UnbondingDelegationEntry) Equal(that interface{}) bool {
@@ -761,7 +678,7 @@ func (this *UnbondingDelegationEntry) Equal(that interface{}) bool {
 	if !this.CompletionTime.Equal(that1.CompletionTime) {
 		return false
 	}
-	if !this.Coin.Equal(&that1.Coin) {
+	if !this.Stake.Equal(&that1.Stake) {
 		return false
 	}
 	if this.IsNFT != that1.IsNFT {
@@ -800,10 +717,16 @@ func (this *RedelegationEntry) Equal(that interface{}) bool {
 	if !this.CompletionTime.Equal(that1.CompletionTime) {
 		return false
 	}
-	if !this.InitialBalance.Equal(that1.InitialBalance) {
+	if !this.Stake.Equal(&that1.Stake) {
 		return false
 	}
-	if !this.SharesDst.Equal(that1.SharesDst) {
+	if this.IsNFT != that1.IsNFT {
+		return false
+	}
+	if this.NFTTokenID != that1.NFTTokenID {
+		return false
+	}
+	if this.NFTQuantity != that1.NFTQuantity {
 		return false
 	}
 	return true
@@ -835,6 +758,62 @@ func (this *RedelegationEntryResponse) Equal(that interface{}) bool {
 	}
 	return true
 }
+func (m *NFT) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *NFT) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *NFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.SubTokenIDs) > 0 {
+		dAtA2 := make([]byte, len(m.SubTokenIDs)*10)
+		var j1 int
+		for _, num1 := range m.SubTokenIDs {
+			num := uint64(num1)
+			for num >= 1<<7 {
+				dAtA2[j1] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j1++
+			}
+			dAtA2[j1] = uint8(num)
+			j1++
+		}
+		i -= j1
+		copy(dAtA[i:], dAtA2[:j1])
+		i = encodeVarintDelegations(dAtA, i, uint64(j1))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.TokenID) > 0 {
+		i -= len(m.TokenID)
+		copy(dAtA[i:], m.TokenID)
+		i = encodeVarintDelegations(dAtA, i, uint64(len(m.TokenID)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Denom) > 0 {
+		i -= len(m.Denom)
+		copy(dAtA[i:], m.Denom)
+		i = encodeVarintDelegations(dAtA, i, uint64(len(m.Denom)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *Delegation) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -878,7 +857,7 @@ func (m *Delegation) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x20
 	}
 	{
-		size, err := m.Coin.MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Stake.MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
 			return 0, err
 		}
@@ -998,7 +977,7 @@ func (m *UnbondingDelegationEntry) MarshalToSizedBuffer(dAtA []byte) (int, error
 		dAtA[i] = 0x20
 	}
 	{
-		size, err := m.Coin.MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Stake.MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
 			return 0, err
 		}
@@ -1007,12 +986,12 @@ func (m *UnbondingDelegationEntry) MarshalToSizedBuffer(dAtA []byte) (int, error
 	}
 	i--
 	dAtA[i] = 0x1a
-	n3, err3 := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.CompletionTime, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdTime(m.CompletionTime):])
-	if err3 != nil {
-		return 0, err3
+	n5, err5 := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.CompletionTime, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdTime(m.CompletionTime):])
+	if err5 != nil {
+		return 0, err5
 	}
-	i -= n3
-	i = encodeVarintDelegations(dAtA, i, uint64(n3))
+	i -= n5
+	i = encodeVarintDelegations(dAtA, i, uint64(n5))
 	i--
 	dAtA[i] = 0x12
 	if m.CreationHeight != 0 {
@@ -1101,32 +1080,44 @@ func (m *RedelegationEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	{
-		size := m.SharesDst.Size()
-		i -= size
-		if _, err := m.SharesDst.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintDelegations(dAtA, i, uint64(size))
+	if m.NFTQuantity != 0 {
+		i = encodeVarintDelegations(dAtA, i, uint64(m.NFTQuantity))
+		i--
+		dAtA[i] = 0x30
 	}
-	i--
-	dAtA[i] = 0x22
+	if len(m.NFTTokenID) > 0 {
+		i -= len(m.NFTTokenID)
+		copy(dAtA[i:], m.NFTTokenID)
+		i = encodeVarintDelegations(dAtA, i, uint64(len(m.NFTTokenID)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if m.IsNFT {
+		i--
+		if m.IsNFT {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x20
+	}
 	{
-		size := m.InitialBalance.Size()
-		i -= size
-		if _, err := m.InitialBalance.MarshalTo(dAtA[i:]); err != nil {
+		size, err := m.Stake.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
 			return 0, err
 		}
+		i -= size
 		i = encodeVarintDelegations(dAtA, i, uint64(size))
 	}
 	i--
 	dAtA[i] = 0x1a
-	n4, err4 := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.CompletionTime, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdTime(m.CompletionTime):])
-	if err4 != nil {
-		return 0, err4
+	n7, err7 := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.CompletionTime, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdTime(m.CompletionTime):])
+	if err7 != nil {
+		return 0, err7
 	}
-	i -= n4
-	i = encodeVarintDelegations(dAtA, i, uint64(n4))
+	i -= n7
+	i = encodeVarintDelegations(dAtA, i, uint64(n7))
 	i--
 	dAtA[i] = 0x12
 	if m.CreationHeight != 0 {
@@ -1270,161 +1261,6 @@ func (m *RedelegationResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *DVPair) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *DVPair) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *DVPair) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.ValidatorAddress) > 0 {
-		i -= len(m.ValidatorAddress)
-		copy(dAtA[i:], m.ValidatorAddress)
-		i = encodeVarintDelegations(dAtA, i, uint64(len(m.ValidatorAddress)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.DelegatorAddress) > 0 {
-		i -= len(m.DelegatorAddress)
-		copy(dAtA[i:], m.DelegatorAddress)
-		i = encodeVarintDelegations(dAtA, i, uint64(len(m.DelegatorAddress)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *DVPairs) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *DVPairs) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *DVPairs) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Pairs) > 0 {
-		for iNdEx := len(m.Pairs) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Pairs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintDelegations(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0xa
-		}
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *DVVTriplet) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *DVVTriplet) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *DVVTriplet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.ValidatorDstAddress) > 0 {
-		i -= len(m.ValidatorDstAddress)
-		copy(dAtA[i:], m.ValidatorDstAddress)
-		i = encodeVarintDelegations(dAtA, i, uint64(len(m.ValidatorDstAddress)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.ValidatorSrcAddress) > 0 {
-		i -= len(m.ValidatorSrcAddress)
-		copy(dAtA[i:], m.ValidatorSrcAddress)
-		i = encodeVarintDelegations(dAtA, i, uint64(len(m.ValidatorSrcAddress)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.DelegatorAddress) > 0 {
-		i -= len(m.DelegatorAddress)
-		copy(dAtA[i:], m.DelegatorAddress)
-		i = encodeVarintDelegations(dAtA, i, uint64(len(m.DelegatorAddress)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *DVVTriplets) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *DVVTriplets) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *DVVTriplets) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Triplets) > 0 {
-		for iNdEx := len(m.Triplets) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Triplets[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintDelegations(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0xa
-		}
-	}
-	return len(dAtA) - i, nil
-}
-
 func encodeVarintDelegations(dAtA []byte, offset int, v uint64) int {
 	offset -= sovDelegations(v)
 	base := offset
@@ -1436,6 +1272,30 @@ func encodeVarintDelegations(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+func (m *NFT) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Denom)
+	if l > 0 {
+		n += 1 + l + sovDelegations(uint64(l))
+	}
+	l = len(m.TokenID)
+	if l > 0 {
+		n += 1 + l + sovDelegations(uint64(l))
+	}
+	if len(m.SubTokenIDs) > 0 {
+		l = 0
+		for _, e := range m.SubTokenIDs {
+			l += sovDelegations(uint64(e))
+		}
+		n += 1 + sovDelegations(uint64(l)) + l
+	}
+	return n
+}
+
 func (m *Delegation) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1450,7 +1310,7 @@ func (m *Delegation) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovDelegations(uint64(l))
 	}
-	l = m.Coin.Size()
+	l = m.Stake.Size()
 	n += 1 + l + sovDelegations(uint64(l))
 	if m.IsNFT {
 		n += 2
@@ -1499,7 +1359,7 @@ func (m *UnbondingDelegationEntry) Size() (n int) {
 	}
 	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.CompletionTime)
 	n += 1 + l + sovDelegations(uint64(l))
-	l = m.Coin.Size()
+	l = m.Stake.Size()
 	n += 1 + l + sovDelegations(uint64(l))
 	if m.IsNFT {
 		n += 2
@@ -1552,10 +1412,18 @@ func (m *RedelegationEntry) Size() (n int) {
 	}
 	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.CompletionTime)
 	n += 1 + l + sovDelegations(uint64(l))
-	l = m.InitialBalance.Size()
+	l = m.Stake.Size()
 	n += 1 + l + sovDelegations(uint64(l))
-	l = m.SharesDst.Size()
-	n += 1 + l + sovDelegations(uint64(l))
+	if m.IsNFT {
+		n += 2
+	}
+	l = len(m.NFTTokenID)
+	if l > 0 {
+		n += 1 + l + sovDelegations(uint64(l))
+	}
+	if m.NFTQuantity != 0 {
+		n += 1 + sovDelegations(uint64(m.NFTQuantity))
+	}
 	return n
 }
 
@@ -1602,79 +1470,201 @@ func (m *RedelegationResponse) Size() (n int) {
 	return n
 }
 
-func (m *DVPair) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.DelegatorAddress)
-	if l > 0 {
-		n += 1 + l + sovDelegations(uint64(l))
-	}
-	l = len(m.ValidatorAddress)
-	if l > 0 {
-		n += 1 + l + sovDelegations(uint64(l))
-	}
-	return n
-}
-
-func (m *DVPairs) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if len(m.Pairs) > 0 {
-		for _, e := range m.Pairs {
-			l = e.Size()
-			n += 1 + l + sovDelegations(uint64(l))
-		}
-	}
-	return n
-}
-
-func (m *DVVTriplet) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.DelegatorAddress)
-	if l > 0 {
-		n += 1 + l + sovDelegations(uint64(l))
-	}
-	l = len(m.ValidatorSrcAddress)
-	if l > 0 {
-		n += 1 + l + sovDelegations(uint64(l))
-	}
-	l = len(m.ValidatorDstAddress)
-	if l > 0 {
-		n += 1 + l + sovDelegations(uint64(l))
-	}
-	return n
-}
-
-func (m *DVVTriplets) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if len(m.Triplets) > 0 {
-		for _, e := range m.Triplets {
-			l = e.Size()
-			n += 1 + l + sovDelegations(uint64(l))
-		}
-	}
-	return n
-}
-
 func sovDelegations(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
 func sozDelegations(x uint64) (n int) {
 	return sovDelegations(uint64((x << 1) ^ uint64((int64(x) >> 63))))
+}
+func (m *NFT) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowDelegations
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: NFT: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: NFT: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowDelegations
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthDelegations
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthDelegations
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Denom = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TokenID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowDelegations
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthDelegations
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthDelegations
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TokenID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType == 0 {
+				var v int64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowDelegations
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.SubTokenIDs = append(m.SubTokenIDs, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowDelegations
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthDelegations
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthDelegations
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.SubTokenIDs) == 0 {
+					m.SubTokenIDs = make([]int64, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v int64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowDelegations
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= int64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.SubTokenIDs = append(m.SubTokenIDs, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field SubTokenIDs", wireType)
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipDelegations(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthDelegations
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
 }
 func (m *Delegation) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
@@ -1771,7 +1761,7 @@ func (m *Delegation) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Coin", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Stake", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -1798,7 +1788,7 @@ func (m *Delegation) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.Coin.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Stake.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1868,7 +1858,7 @@ func (m *Delegation) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NFTQuantity |= uint64(b&0x7F) << shift
+				m.NFTQuantity |= uint32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -2125,7 +2115,7 @@ func (m *UnbondingDelegationEntry) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Coin", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Stake", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -2152,7 +2142,7 @@ func (m *UnbondingDelegationEntry) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.Coin.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Stake.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2222,7 +2212,7 @@ func (m *UnbondingDelegationEntry) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NFTQuantity |= uint64(b&0x7F) << shift
+				m.NFTQuantity |= uint32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -2511,9 +2501,9 @@ func (m *RedelegationEntry) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field InitialBalance", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Stake", wireType)
 			}
-			var stringLen uint64
+			var msglen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowDelegations
@@ -2523,29 +2513,48 @@ func (m *RedelegationEntry) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				msglen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if msglen < 0 {
 				return ErrInvalidLengthDelegations
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + msglen
 			if postIndex < 0 {
 				return ErrInvalidLengthDelegations
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.InitialBalance.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Stake.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IsNFT", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowDelegations
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.IsNFT = bool(v != 0)
+		case 5:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SharesDst", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field NFTTokenID", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2573,10 +2582,27 @@ func (m *RedelegationEntry) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.SharesDst.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
+			m.NFTTokenID = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NFTQuantity", wireType)
+			}
+			m.NFTQuantity = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowDelegations
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NFTQuantity |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipDelegations(dAtA[iNdEx:])
@@ -2924,434 +2950,6 @@ func (m *RedelegationResponse) Unmarshal(dAtA []byte) error {
 			}
 			m.Entries = append(m.Entries, RedelegationEntryResponse{})
 			if err := m.Entries[len(m.Entries)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipDelegations(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthDelegations
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *DVPair) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowDelegations
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: DVPair: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DVPair: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DelegatorAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDelegations
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthDelegations
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthDelegations
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.DelegatorAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDelegations
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthDelegations
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthDelegations
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ValidatorAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipDelegations(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthDelegations
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *DVPairs) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowDelegations
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: DVPairs: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DVPairs: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Pairs", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDelegations
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthDelegations
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthDelegations
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Pairs = append(m.Pairs, DVPair{})
-			if err := m.Pairs[len(m.Pairs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipDelegations(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthDelegations
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *DVVTriplet) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowDelegations
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: DVVTriplet: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DVVTriplet: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DelegatorAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDelegations
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthDelegations
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthDelegations
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.DelegatorAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorSrcAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDelegations
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthDelegations
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthDelegations
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ValidatorSrcAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorDstAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDelegations
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthDelegations
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthDelegations
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ValidatorDstAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipDelegations(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthDelegations
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *DVVTriplets) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowDelegations
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: DVVTriplets: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DVVTriplets: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Triplets", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDelegations
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthDelegations
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthDelegations
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Triplets = append(m.Triplets, DVVTriplet{})
-			if err := m.Triplets[len(m.Triplets)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

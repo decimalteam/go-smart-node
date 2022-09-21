@@ -6,10 +6,10 @@ import (
 )
 
 var (
-	_ sdk.Msg = &MsgSwapInitialize{}
-	_ sdk.Msg = &MsgSwapRedeem{}
-	_ sdk.Msg = &MsgChainActivate{}
-	_ sdk.Msg = &MsgChainDeactivate{}
+	_ sdk.Msg = &MsgInitializeSwap{}
+	_ sdk.Msg = &MsgRedeemSwap{}
+	_ sdk.Msg = &MsgActivateChain{}
+	_ sdk.Msg = &MsgDeactivateChain{}
 )
 
 const (
@@ -20,11 +20,11 @@ const (
 )
 
 ////////////////////////////////////////////////////////////////
-// MsgSwapInitialize
+// MsgInitializeSwap
 ////////////////////////////////////////////////////////////////
 
-// NewMsgSwapInitialize creates a new instance of MsgSwapInitialize.
-func NewMsgSwapInitialize(
+// NewMsgInitializeSwap creates a new instance of MsgInitializeSwap.
+func NewMsgInitializeSwap(
 	sender sdk.AccAddress,
 	recipient string,
 	amount sdk.Int,
@@ -32,8 +32,8 @@ func NewMsgSwapInitialize(
 	transactionNumber string,
 	fromChain uint32,
 	destChain uint32,
-) *MsgSwapInitialize {
-	return &MsgSwapInitialize{
+) *MsgInitializeSwap {
+	return &MsgInitializeSwap{
 		Sender:            sender.String(),
 		Recipient:         recipient,
 		Amount:            amount,
@@ -45,18 +45,18 @@ func NewMsgSwapInitialize(
 }
 
 // Route should return the name of the module.
-func (msg MsgSwapInitialize) Route() string { return RouterKey }
+func (msg MsgInitializeSwap) Route() string { return RouterKey }
 
 // Type should return the action.
-func (msg MsgSwapInitialize) Type() string { return TypeMsgSwapInitialize }
+func (msg MsgInitializeSwap) Type() string { return TypeMsgSwapInitialize }
 
 // GetSignBytes encodes the message for signing.
-func (msg *MsgSwapInitialize) GetSignBytes() []byte {
+func (msg *MsgInitializeSwap) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 // GetSigners defines whose signature is required.
-func (msg MsgSwapInitialize) GetSigners() []sdk.AccAddress {
+func (msg MsgInitializeSwap) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil
@@ -65,7 +65,7 @@ func (msg MsgSwapInitialize) GetSigners() []sdk.AccAddress {
 }
 
 // ValidateBasic runs stateless checks on the message.
-func (msg MsgSwapInitialize) ValidateBasic() error {
+func (msg MsgInitializeSwap) ValidateBasic() error {
 	// Validate sender
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return errors.InvalidSenderAddress
@@ -89,10 +89,10 @@ func (msg MsgSwapInitialize) ValidateBasic() error {
 }
 
 ////////////////////////////////////////////////////////////////
-// MsgSwapRedeem
+// MsgRedeemSwap
 ////////////////////////////////////////////////////////////////
 
-func NewMsgSwapRedeem(
+func NewMsgRedeemSwap(
 	sender sdk.AccAddress,
 	from string,
 	recipient string,
@@ -104,8 +104,8 @@ func NewMsgSwapRedeem(
 	v uint32,
 	r *Hash,
 	s *Hash,
-) *MsgSwapRedeem {
-	return &MsgSwapRedeem{
+) *MsgRedeemSwap {
+	return &MsgRedeemSwap{
 		Sender:            sender.String(),
 		From:              from,
 		Recipient:         recipient,
@@ -120,15 +120,15 @@ func NewMsgSwapRedeem(
 	}
 }
 
-func (msg MsgSwapRedeem) Route() string { return RouterKey }
+func (msg MsgRedeemSwap) Route() string { return RouterKey }
 
-func (msg MsgSwapRedeem) Type() string { return TypeMsgSwapRedeem }
+func (msg MsgRedeemSwap) Type() string { return TypeMsgSwapRedeem }
 
-func (msg *MsgSwapRedeem) GetSignBytes() []byte {
+func (msg *MsgRedeemSwap) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
-func (msg MsgSwapRedeem) GetSigners() []sdk.AccAddress {
+func (msg MsgRedeemSwap) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil
@@ -136,7 +136,7 @@ func (msg MsgSwapRedeem) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{addr}
 }
 
-func (msg MsgSwapRedeem) ValidateBasic() error {
+func (msg MsgRedeemSwap) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return errors.InvalidSenderAddress
 	}
@@ -165,27 +165,27 @@ func (msg MsgSwapRedeem) ValidateBasic() error {
 // MsgChainActivate
 ////////////////////////////////////////////////////////////////
 
-func NewMsgChainActivate(
+func NewMsgActivateChain(
 	sender sdk.AccAddress,
-	chainNumber uint32,
-	chainName string,
-) *MsgChainActivate {
-	return &MsgChainActivate{
-		Sender:      sender.String(),
-		ChainNumber: chainNumber,
-		ChainName:   chainName,
+	id uint32,
+	name string,
+) *MsgActivateChain {
+	return &MsgActivateChain{
+		Sender: sender.String(),
+		ID:     id,
+		Name:   name,
 	}
 }
 
-func (msg MsgChainActivate) Route() string { return RouterKey }
+func (msg MsgActivateChain) Route() string { return RouterKey }
 
-func (msg MsgChainActivate) Type() string { return TypeMsgChainActivate }
+func (msg MsgActivateChain) Type() string { return TypeMsgChainActivate }
 
-func (msg *MsgChainActivate) GetSignBytes() []byte {
+func (msg *MsgActivateChain) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
-func (msg MsgChainActivate) GetSigners() []sdk.AccAddress {
+func (msg MsgActivateChain) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil
@@ -193,16 +193,16 @@ func (msg MsgChainActivate) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{addr}
 }
 
-func (msg MsgChainActivate) ValidateBasic() error {
+func (msg MsgActivateChain) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return errors.InvalidSenderAddress
 	}
 
-	if msg.ChainNumber == 0 {
+	if msg.ID == 0 {
 		return errors.InvalidChainNumber
 	}
 
-	if msg.ChainName == "" {
+	if msg.Name == "" {
 		return errors.InvalidChainName
 	}
 
@@ -210,28 +210,28 @@ func (msg MsgChainActivate) ValidateBasic() error {
 }
 
 ////////////////////////////////////////////////////////////////
-// MsgChainDeactivate
+// MsgDeactivateChain
 ////////////////////////////////////////////////////////////////
 
-func NewMsgChainDeactivate(
+func NewMsgDeactivateChain(
 	sender sdk.AccAddress,
-	chainNumber uint32,
-) *MsgChainDeactivate {
-	return &MsgChainDeactivate{
-		Sender:      sender.String(),
-		ChainNumber: chainNumber,
+	id uint32,
+) *MsgDeactivateChain {
+	return &MsgDeactivateChain{
+		Sender: sender.String(),
+		ID:     id,
 	}
 }
 
-func (msg MsgChainDeactivate) Route() string { return RouterKey }
+func (msg MsgDeactivateChain) Route() string { return RouterKey }
 
-func (msg MsgChainDeactivate) Type() string { return TypeMsgChainDeactivate }
+func (msg MsgDeactivateChain) Type() string { return TypeMsgChainDeactivate }
 
-func (msg *MsgChainDeactivate) GetSignBytes() []byte {
+func (msg *MsgDeactivateChain) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
-func (msg MsgChainDeactivate) GetSigners() []sdk.AccAddress {
+func (msg MsgDeactivateChain) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil
@@ -239,12 +239,12 @@ func (msg MsgChainDeactivate) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{addr}
 }
 
-func (msg MsgChainDeactivate) ValidateBasic() error {
+func (msg MsgDeactivateChain) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return errors.InvalidSenderAddress
 	}
 
-	if msg.ChainNumber == 0 {
+	if msg.ID == 0 {
 		return errors.InvalidChainNumber
 	}
 

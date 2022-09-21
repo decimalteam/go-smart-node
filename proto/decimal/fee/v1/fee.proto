@@ -1,0 +1,29 @@
+syntax = "proto3";
+package decimal.fee.v1;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/fee/types";
+
+// CoinPrice defines the coin price.
+message CoinPrice {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // denom defines the base currency (coin) denomination which is priced.
+  string denom = 1;
+  // quote defines the quote currency denomination in the pair (USD as the first example).
+  string quote = 2;
+  // price defines the coin price in quote currency.
+  string price = 3 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  // updated_at defines the moment of the previous coin price update.
+  google.protobuf.Timestamp updated_at = 4 [ (gogoproto.stdtime) = true, (gogoproto.nullable) = false ];
+}

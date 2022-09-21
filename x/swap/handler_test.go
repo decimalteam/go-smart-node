@@ -25,50 +25,50 @@ func TestChainOperations(t *testing.T) {
 
 	gs := types.DefaultGenesisState()
 
-	swap.InitGenesis(ctx, dsc.SwapKeeper, *gs)
+	swap.InitGenesis(ctx, dsc.SwapKeeper, gs)
 
 	swapService, err := sdk.AccAddressFromBech32(gs.Params.ServiceAddress)
 	require.NoError(t, err)
 
 	// invalid sender to activate chain
-	msg := types.NewMsgChainActivate(addrs[0], 1, "some chain")
+	msg := types.NewMsgActivateChain(addrs[0], 1, "some chain")
 	err = msg.ValidateBasic()
 	require.NoError(t, err)
 	goCtx := sdk.WrapSDKContext(ctx)
-	_, err = dsc.SwapKeeper.ChainActivate(goCtx, msg)
+	_, err = dsc.SwapKeeper.ActivateChain(goCtx, msg)
 	require.Error(t, err)
 
 	// valid sender to activate chain
-	msg = types.NewMsgChainActivate(swapService, 1, "some chain")
+	msg = types.NewMsgActivateChain(swapService, 1, "some chain")
 	err = msg.ValidateBasic()
 	require.NoError(t, err)
 	goCtx = sdk.WrapSDKContext(ctx)
-	_, err = dsc.SwapKeeper.ChainActivate(goCtx, msg)
+	_, err = dsc.SwapKeeper.ActivateChain(goCtx, msg)
 	require.NoError(t, err)
 
 	chain, ok := dsc.SwapKeeper.GetChain(ctx, 1)
 	require.True(t, ok)
-	require.Equal(t, types.Chain{Number: 1, Name: "some chain", Active: true}, chain)
+	require.Equal(t, types.Chain{Id: 1, Name: "some chain", Active: true}, chain)
 
 	// invalid sender to deactivate chain
-	msgD := types.NewMsgChainDeactivate(addrs[0], 1)
+	msgD := types.NewMsgDeactivateChain(addrs[0], 1)
 	err = msgD.ValidateBasic()
 	require.NoError(t, err)
 	goCtx = sdk.WrapSDKContext(ctx)
-	_, err = dsc.SwapKeeper.ChainDeactivate(goCtx, msgD)
+	_, err = dsc.SwapKeeper.DeactivateChain(goCtx, msgD)
 	require.Error(t, err)
 
 	// valid sender to deactivate chain
-	msgD = types.NewMsgChainDeactivate(swapService, 1)
+	msgD = types.NewMsgDeactivateChain(swapService, 1)
 	err = msg.ValidateBasic()
 	require.NoError(t, err)
 	goCtx = sdk.WrapSDKContext(ctx)
-	_, err = dsc.SwapKeeper.ChainDeactivate(goCtx, msgD)
+	_, err = dsc.SwapKeeper.DeactivateChain(goCtx, msgD)
 	require.NoError(t, err)
 
 	chain, ok = dsc.SwapKeeper.GetChain(ctx, 1)
 	require.True(t, ok)
-	require.Equal(t, types.Chain{Number: 1, Name: "some chain", Active: false}, chain)
+	require.Equal(t, types.Chain{Id: 1, Name: "some chain", Active: false}, chain)
 }
 
 // TODO: need test for SwapRedeem?

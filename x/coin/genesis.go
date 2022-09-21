@@ -1,24 +1,23 @@
 package coin
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 
 // InitGenesis initializes the module's state from a provided genesis state.
-func InitGenesis(ctx sdk.Context, k keeper.Keeper, gs types.GenesisState) {
+func InitGenesis(ctx sdk.Context, k keeper.Keeper, gs *types.GenesisState) {
 	// Initialize params
 	k.SetParams(ctx, gs.Params)
 
-	// initialize BaseCoin
+	// Initialize base coin
 	coin := types.Coin{
+		Denom:  gs.Params.BaseDenom,
 		Title:  gs.Params.BaseTitle,
-		Symbol: gs.Params.BaseSymbol,
-		Volume: gs.Params.BaseInitialVolume,
+		Volume: gs.Params.BaseVolume,
 	}
-
 	k.SetCoin(ctx, coin)
 
 	// Initialize coins

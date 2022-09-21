@@ -1,9 +1,10 @@
 package types
 
 import (
-	multisigTypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
-	nftTypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
+	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
 type BankKeeper interface {
@@ -11,16 +12,12 @@ type BankKeeper interface {
 }
 
 type NftKeeper interface {
-	SetNFT(ctx sdk.Context, denom, id string, nft nftTypes.BaseNFT) error
-	GetNFT(ctx sdk.Context, denom, id string) (nftTypes.BaseNFT, error)
+	GetSubTokens(ctx sdk.Context, id string) (subTokens []nfttypes.SubToken)
+	SetSubToken(ctx sdk.Context, id string, subToken nfttypes.SubToken)
+	GetToken(ctx sdk.Context, id string) (token nfttypes.Token, found bool)
 }
 
 type MultisigKeeper interface {
-	GetWallet(ctx sdk.Context, address string) (wallet multisigTypes.Wallet, err error)
-	SetWallet(ctx sdk.Context, wallet multisigTypes.Wallet)
-}
-
-type LegacyKeeper interface {
-	IsLegacyAddress(ctx sdk.Context, address string) bool
-	ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error
+	GetWallet(ctx sdk.Context, address string) (wallet multisigtypes.Wallet, err error)
+	SetWallet(ctx sdk.Context, wallet multisigtypes.Wallet)
 }

@@ -5,8 +5,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 
 func TestGenesisState_Validate(t *testing.T) {
@@ -26,8 +27,8 @@ func TestGenesisState_Validate(t *testing.T) {
 				Params: types.DefaultParams(),
 				Coins: []types.Coin{
 					{
+						Denom:   "sco",
 						Title:   "somecoin",
-						Symbol:  "sco",
 						Reserve: sdkTypes.NewIntFromUint64(100),
 					},
 				},

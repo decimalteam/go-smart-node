@@ -1,10 +1,11 @@
 package nft
 
 import (
+	"math/rand"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
-	"math/rand"
 )
 
 var _ module.AppModuleSimulation = AppModule{}

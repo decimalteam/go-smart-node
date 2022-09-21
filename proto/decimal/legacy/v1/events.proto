@@ -1,0 +1,35 @@
+syntax = "proto3";
+package decimal.legacy.v1;
+
+import "gogoproto/gogo.proto";
+
+import "cosmos_proto/cosmos.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/legacy/types";
+
+// EventReturnLegacyCoins defines event emitted when the coins are returned to the actual owner.
+message EventReturnLegacyCoins {
+  string legacy_owner = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string owner = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  repeated cosmos.base.v1beta1.Coin coins = 3 [
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// EventReturnLegacySubToken defines event emitted when the NFT sub-token is returned to the actual owner.
+message EventReturnLegacySubToken {
+  string legacy_owner = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string owner = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string denom = 3;
+  string id = 4 [ (gogoproto.customname) = "ID" ];
+  repeated uint32 sub_token_ids = 5 [ (gogoproto.customname) = "SubTokenIDs" ];
+}
+
+// EventReturnMultisigWallet defines event emitted when the multisig wallet is returned to the actual owner.
+message EventReturnMultisigWallet {
+  string legacy_owner = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string owner = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string wallet = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+}

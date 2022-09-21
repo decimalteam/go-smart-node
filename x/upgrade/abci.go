@@ -2,12 +2,7 @@ package upgrade
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -18,7 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
 
 var (
@@ -64,7 +59,7 @@ func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
 
 	logger := ctx.Logger()
 
-	allBlocks := config.UpdatesInfo.AllBlocks
+	allBlocks := cmdcfg.UpdatesInfo.AllBlocks
 	if _, ok := allBlocks[plan.Name]; ok {
 		return
 	}
@@ -91,7 +86,7 @@ func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
 		// example:
 		// from "http://127.0.0.1/95000/dscd"
 		// to "http://127.0.0.1/95000/linux/ubuntu/20.04/dscd"
-		newUrl := resolveDownloadURL(fmt.Sprintf("%s/%s", plan.Name, config.AppBinName))
+		newUrl := resolveDownloadURL(fmt.Sprintf("%s/%s", plan.Name, cmdcfg.AppBinName))
 		if newUrl == "" {
 			logger.Error("error: failed with generate url")
 			return
@@ -103,7 +98,7 @@ func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
 		}
 
 		downloadStat[plan.Name] = true
-		downloadName := getDownloadFileName(config.AppBinName)
+		downloadName := getDownloadFileName(cmdcfg.AppBinName)
 
 		if _, err := os.Stat(downloadName); os.IsNotExist(err) {
 			go DownloadSecured(ctx, newUrl, downloadName, hashes[0])
@@ -124,7 +119,7 @@ func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
 
 		// Prepare shutdown if we don't have an upgrade handler for this upgrade name (meaning this software is out of date)
 		if !k.HasHandler(plan.Name) {
-			if _, err := os.Stat(getDownloadFileName(config.AppBinName)); err == nil {
+			if _, err := os.Stat(getDownloadFileName(cmdcfg.AppBinName)); err == nil {
 				err = changeBinary(plan)
 				if err != nil {
 					panic(fmt.Errorf("failed to change binaries err: %s", err.Error()))
@@ -149,15 +144,15 @@ func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
 
 		k.ApplyUpgrade(ctx, plan)
 
-		config.UpdatesInfo.PushNewPlanHeight(plan.Height)
-		err := config.UpdatesInfo.Save()
+		cmdcfg.UpdatesInfo.PushNewPlanHeight(plan.Height)
+		err := cmdcfg.UpdatesInfo.Save()
 		if err != nil {
 			logger.Error(fmt.Sprintf("push \"%s\" with error: %s", plan.Name, err.Error()))
 			os.Exit(2)
 		}
 
-		config.UpdatesInfo.AddExecutedPlan(plan.Name, plan.Height)
-		err = config.UpdatesInfo.Save()
+		cmdcfg.UpdatesInfo.AddExecutedPlan(plan.Name, plan.Height)
+		err = cmdcfg.UpdatesInfo.Save()
 		if err != nil {
 			logger.Error(fmt.Sprintf("save \"%s\" with '%s'", plan.Name, err.Error()))
 			os.Exit(3)
@@ -178,33 +173,4 @@ func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
 // BuildUpgradeNeededMsg prints the message that notifies that an upgrade is needed.
 func BuildUpgradeNeededMsg(plan types.Plan) string {
 	return fmt.Sprintf("UPGRADE \"%s\" NEEDED at %s: %s", plan.Name, plan.DueAt(), plan.Info)
-}
-
-func loadVersion(urlPath string) string {
-	const fileVersion = "version.txt"
-
-	// example: "version.txt"
-	u, err := url.Parse(fileVersion)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// example: "https://testnet-repo.decimalchain.com/95000"
-	base, err := u.Parse(urlPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// result: "https://testnet-repo.decimalchain.com/version.txt"
-	resp, err := http.Get(base.ResolveReference(u).String())
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	return strings.TrimSpace(string(body))
 }

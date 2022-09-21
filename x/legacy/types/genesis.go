@@ -12,11 +12,11 @@ func (gs *GenesisState) Validate() error {
 	// Check there are repeated addresses in legacy balances
 	// and validate balances
 	seenLegacy := make(map[string]bool)
-	for _, rec := range gs.LegacyRecords {
-		if seenLegacy[rec.Address] {
+	for _, rec := range gs.Records {
+		if seenLegacy[rec.LegacyAddress] {
 			return errors.LegacyAddressesDuplicatedOnGenesis
 		}
-		seenLegacy[rec.Address] = true
+		seenLegacy[rec.LegacyAddress] = true
 		err := rec.Validate()
 		if err != nil {
 			return err

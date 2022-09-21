@@ -25,8 +25,8 @@ const (
 func NewMsgCreateWallet(
 	sender sdk.AccAddress,
 	owners []string,
-	weights []uint64,
-	threshold uint64,
+	weights []uint32,
+	threshold uint32,
 ) *MsgCreateWallet {
 	return &MsgCreateWallet{
 		Sender:    sender.String(),
@@ -82,7 +82,7 @@ func (msg MsgCreateWallet) ValidateBasic() error {
 		owners[msg.Owners[i]] = true
 	}
 	// Validate weights
-	var sumOfWeights uint64
+	var sumOfWeights uint32
 	for i := 0; i < len(msg.Weights); i++ {
 		if msg.Weights[i] < MinWeight || msg.Weights[i] > MaxWeight {
 			return errors.InvalidWeight
@@ -168,7 +168,7 @@ func NewMsgSignTransaction(
 ) *MsgSignTransaction {
 	return &MsgSignTransaction{
 		Sender: sender.String(),
-		TxID:   txID,
+		ID:     txID,
 	}
 }
 
@@ -197,7 +197,7 @@ func (msg *MsgSignTransaction) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return errors.InvalidSender
 	}
-	prefix, _, err := bech32.DecodeAndConvert(msg.TxID)
+	prefix, _, err := bech32.DecodeAndConvert(msg.ID)
 	if err != nil {
 		return errors.InvalidTransactionIDError
 	}

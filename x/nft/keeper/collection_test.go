@@ -2,11 +2,9 @@ package keeper_test
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 const (
@@ -21,54 +19,33 @@ const (
 )
 
 var (
-	firstReserve  = sdk.NewCoin(config.BaseDenom, types.MinReserve)
-	secondReserve = sdk.NewCoin(config.BaseDenom, types.MinReserve.MulRaw(2))
+	firstReserve  = sdk.NewCoin(config.BaseDenom, types.DefaultMinReserveAmount)
+	secondReserve = sdk.NewCoin(config.BaseDenom, types.DefaultMinReserveAmount.MulRaw(2))
 )
 
-func TestSetCollections(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
+func (s *KeeperTestSuite) TestGetAndSetCollection() {
+	require := s.Require()
+	denom := "Test_Set_Collection"
+	pk := ed25519.GenPrivKey().PubKey() // TODO replace this pks
+	owner := sdk.AccAddress(pk.Address())
 
-	collectionDenomsToStore := []string{firstDenom, secondDenom}
-	for _, denom := range collectionDenomsToStore {
-		collection := types.NewCollection(denom, []string{})
-		dsc.NFTKeeper.SetCollection(ctx, collection.Denom, collection)
+	collection := types.Collection{
+		Denom:   denom,
+		Creator: owner.String(),
+		Supply:  1,
 	}
 
-	// Check throw GetCollections method
-	storedCollections := dsc.NFTKeeper.GetCollections(ctx)
-	require.Len(t, storedCollections, len(collectionDenomsToStore))
+	s.nftKeeper.SetCollection(s.ctx, collection)
 
-	for _, denom := range collectionDenomsToStore {
-		var stored bool
-		for _, storeCollection := range storedCollections {
-			if storeCollection.GetDenom() == denom {
-				stored = true
-				break
-			}
+	// positive case get collection
+	storeCollection, found := s.nftKeeper.GetCollection(s.ctx, owner, denom)
+	require.True(found)
+	require.True(collection.Equal(storeCollection))
+	// positive case get all collections
+	storeCollections := s.nftKeeper.GetCollections(s.ctx)
+	for _, storeCollection := range storeCollections {
+		if storeCollection.Denom == denom {
+			require.True(collection.Equal(storeCollection))
 		}
-
-		require.True(t, stored, denom)
 	}
-
-	// Check throw GetCollection method
-	for _, denom := range collectionDenomsToStore {
-		storedCollection, found := dsc.NFTKeeper.GetCollection(ctx, denom)
-		require.True(t, found, denom)
-		require.Equal(t, denom, storedCollection.GetDenom())
-	}
-}
-
-func TestGetDenoms(t *testing.T) {
-	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
-
-	collectionDenomsToStore := []string{firstDenom, secondDenom}
-	for _, denom := range collectionDenomsToStore {
-		collection := types.NewCollection(denom, []string{})
-		dsc.NFTKeeper.SetCollection(ctx, collection.Denom, collection)
-	}
-
-	// Check throw GetDenoms method
-	storedDenoms, err := dsc.NFTKeeper.GetDenoms(ctx)
-	require.NoError(t, err)
-	require.Equal(t, collectionDenomsToStore, storedDenoms)
 }

@@ -6,16 +6,35 @@ import (
 	"io"
 	"os"
 
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
+
+func main() {
+	initConfig()
+	if len(os.Args) < 4 {
+		fmt.Println("usage: ./genesis_converter <decimal_genesis_file> <dsc_params_source_genesis> <nft_owners_fix_file> <dsc_genesis_file>")
+		os.Exit(1)
+	}
+	gsOld := readGenesisOld(os.Args[1])
+	gsSource := readGenesisNew(os.Args[2])
+	fixNFTData := readNFTFix(os.Args[3])
+	gsNew, _, err := convertGenesis(gsOld, fixNFTData)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	copyParams(&gsNew, gsSource)
+	writeGenesisNew(os.Args[4], &gsNew)
+}
 
 // Init global cosmos sdk config
 func initConfig() {
 	cfg := sdk.GetConfig()
-	cfg.SetBech32PrefixForAccount(config.Bech32PrefixAccAddr, config.Bech32PrefixAccPub)
-	cfg.SetBech32PrefixForValidator(config.Bech32PrefixValAddr, config.Bech32PrefixValPub)
-	cfg.SetBech32PrefixForConsensusNode(config.Bech32PrefixConsAddr, config.Bech32PrefixConsPub)
+	cfg.SetBech32PrefixForAccount(cmdcfg.Bech32PrefixAccAddr, cmdcfg.Bech32PrefixAccPub)
+	cfg.SetBech32PrefixForValidator(cmdcfg.Bech32PrefixValAddr, cmdcfg.Bech32PrefixValPub)
+	cfg.SetBech32PrefixForConsensusNode(cmdcfg.Bech32PrefixConsAddr, cmdcfg.Bech32PrefixConsPub)
 }
 
 func readGenesisNew(fpath string) *GenesisNew {
@@ -70,20 +89,25 @@ func readGenesisOld(fpath string) *GenesisOld {
 	return &gs
 }
 
-func main() {
-	if len(os.Args) < 4 {
-		fmt.Println("usage: ./genesis_converter <decimal_genesis_file> <dsc_genesis_file> <dsc_params_source_genesis>")
-		os.Exit(1)
+func readNFTFix(fpath string) []NFTOwnerFixRecord {
+	if fpath == "" {
+		return []NFTOwnerFixRecord{}
 	}
-	gsOld := readGenesisOld(os.Args[1])
-	gsSource := readGenesisNew(os.Args[3])
-	gsNew, _, err := convertGenesis(gsOld)
+	f, err := os.Open(fpath)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		panic(fmt.Errorf("file open %s error: %s", fpath, err.Error()))
 	}
-	copyParams(&gsNew, gsSource)
-	writeGenesisNew(os.Args[2], &gsNew)
+	defer f.Close()
+	data, err := io.ReadAll(f)
+	if err != nil {
+		panic(fmt.Errorf("file read %s error: %s", fpath, err.Error()))
+	}
+	var res []NFTOwnerFixRecord
+	err = json.Unmarshal(data, &res)
+	if err != nil {
+		panic(fmt.Errorf("unmarshal %s error: %s", fpath, err.Error()))
+	}
+	return res
 }
 
 type Statistic struct {
@@ -91,7 +115,7 @@ type Statistic struct {
 	countRegularAccountsNoPublicKey uint64
 }
 
-func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
+func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord) (GenesisNew, Statistic, error) {
 	var gsNew GenesisNew
 	var err error
 	// old-new adresses table, multisig addresses table, module addresses
@@ -131,13 +155,8 @@ func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
 		return GenesisNew{}, Statistic{}, err
 	}
 	// nft
-	gsNew.AppState.NFT.Collections, gsNew.AppState.NFT.NFTs, err =
-		convertNFT(gsOld.AppState.NFT.Collections, addrTable, legacyRecords)
-	if err != nil {
-		return GenesisNew{}, Statistic{}, err
-	}
-	gsNew.AppState.NFT.SubTokens, err =
-		convertSubTokens(gsOld.AppState.NFT.SubTokens, gsNew.AppState.NFT.NFTs)
+	gsNew.AppState.NFT.Collections, err =
+		convertNFT(gsOld.AppState.NFT.Collections, gsOld.AppState.NFT.SubTokens, addrTable, legacyRecords, fixNFTData)
 	if err != nil {
 		return GenesisNew{}, Statistic{}, err
 	}
@@ -150,6 +169,12 @@ func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
 		records = append(records, *v)
 	}
 	gsNew.AppState.Legacy.LegacyRecords = records
+	// validators
+	gsNew.AppState.Validator.Validators, err =
+		convertValidators(gsOld.AppState.Validator.Validators, addrTable)
+	if err != nil {
+		return GenesisNew{}, Statistic{}, err
+	}
 	// validate NFT subtokens
 	invalidSubtokens := verifySubtokens(gsOld.AppState.NFT.SubTokens, gsOld.AppState.NFT.Collections,
 		gsOld.AppState.Validator.DelegationsNFT, gsOld.AppState.Validator.UndondingNFT)
@@ -166,7 +191,7 @@ func convertGenesis(gsOld *GenesisOld) (GenesisNew, Statistic, error) {
 		}
 	}
 	// validate NFT colections
-	verifyNFTSupply(gsNew.AppState.NFT.Collections, gsNew.AppState.NFT.NFTs)
+	verifyNFTSupply(gsNew.AppState.NFT.Collections)
 
 	return gsNew, Statistic{}, nil
 }

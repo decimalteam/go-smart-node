@@ -15,9 +15,9 @@ import (
 
 	// Tendermint
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/log"
+	tmlog "github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
-	dbm "github.com/tendermint/tm-db"
+	tmdb "github.com/tendermint/tm-db"
 
 	// SDK
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -96,9 +96,8 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v5/testing"
 
 	// Ethermint
-
-	"github.com/evmos/ethermint/encoding"
-	srvflags "github.com/evmos/ethermint/server/flags"
+	ethencoding "github.com/evmos/ethermint/encoding"
+	ethsrvflags "github.com/evmos/ethermint/server/flags"
 	ethtypes "github.com/evmos/ethermint/types"
 
 	// Ethermint modules
@@ -107,43 +106,32 @@ import (
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 
-	//claimskeeper "github.com/tharsis/evmos/v3/x/claims/keeper"
-	//claimstypes "github.com/tharsis/evmos/v3/x/claims/types"
-
-	//recoverytypes "github.com/tharsis/evmos/v3/x/recovery/types"
-
-	// Unnamed import of statik for swagger UI spport
+	// Unnamed import of statik for swagger UI support
 	// _ "bitbucket.org/decimalteam/go-smart-node/client/docs/statik"
 
 	// Decimal
-	"bitbucket.org/decimalteam/go-smart-node/app/ante"
+	ante "bitbucket.org/decimalteam/go-smart-node/app/ante"
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 
 	// Decimal modules
 	coin "bitbucket.org/decimalteam/go-smart-node/x/coin"
 	coinkeeper "bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-
 	fee "bitbucket.org/decimalteam/go-smart-node/x/fee"
 	feekeeper "bitbucket.org/decimalteam/go-smart-node/x/fee/keeper"
 	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
-
-	multisig "bitbucket.org/decimalteam/go-smart-node/x/multisig"
-	multisigkeeper "bitbucket.org/decimalteam/go-smart-node/x/multisig/keeper"
-	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
-
-	swap "bitbucket.org/decimalteam/go-smart-node/x/swap"
-	swapkeeper "bitbucket.org/decimalteam/go-smart-node/x/swap/keeper"
-	swaptypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
-
-	nft "bitbucket.org/decimalteam/go-smart-node/x/nft"
-	nftkeeper "bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
-	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
-
 	legacy "bitbucket.org/decimalteam/go-smart-node/x/legacy"
 	legacykeeper "bitbucket.org/decimalteam/go-smart-node/x/legacy/keeper"
 	legacytypes "bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
-
+	multisig "bitbucket.org/decimalteam/go-smart-node/x/multisig"
+	multisigkeeper "bitbucket.org/decimalteam/go-smart-node/x/multisig/keeper"
+	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
+	nft "bitbucket.org/decimalteam/go-smart-node/x/nft"
+	nftkeeper "bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
+	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	swap "bitbucket.org/decimalteam/go-smart-node/x/swap"
+	swapkeeper "bitbucket.org/decimalteam/go-smart-node/x/swap/keeper"
+	swaptypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
 	upgrade "bitbucket.org/decimalteam/go-smart-node/x/upgrade"
 )
 
@@ -199,10 +187,6 @@ var (
 		ibc.AppModuleBasic{},
 		// Ethermint
 		evm.AppModuleBasic{},
-		// Evmos
-		//claims.AppModuleBasic{},
-		//recovery.AppModuleBasic{},
-
 		// Decimal
 		coin.AppModuleBasic{},
 		legacy.AppModuleBasic{},
@@ -305,10 +289,10 @@ type DSC struct {
 	appOpts servertypes.AppOptions
 }
 
-// NewDSC returns a reference to a new initialized Ethermint application.
+// NewDSC returns a reference to a new initialized Decimal application.
 func NewDSC(
-	logger log.Logger,
-	db dbm.DB,
+	logger tmlog.Logger,
+	db tmdb.DB,
 	traceStore io.Writer,
 	loadLatest bool,
 	skipUpgradeHeights map[int64]bool,
@@ -475,7 +459,7 @@ func NewDSC(
 		app.BankKeeper,
 		&app.StakingKeeper,
 		app.FeeKeeper,
-		cast.ToString(appOpts.Get(srvflags.EVMTracer)),
+		cast.ToString(appOpts.Get(ethsrvflags.EVMTracer)),
 	)
 	app.EvmKeeper = app.EvmKeeper.SetHooks(
 		evmkeeper.NewMultiEvmHooks(),
@@ -549,15 +533,15 @@ func NewDSC(
 	app.NFTKeeper = *nftkeeper.NewKeeper(
 		appCodec,
 		keys[nfttypes.StoreKey],
+		app.GetSubspace(nfttypes.ModuleName),
 		app.BankKeeper,
-		cmdcfg.BaseDenom,
 	)
 	app.LegacyKeeper = *legacykeeper.NewKeeper(
 		appCodec,
 		keys[legacytypes.StoreKey],
 		app.BankKeeper,
-		app.NFTKeeper,
-		app.MultisigKeeper,
+		&app.NFTKeeper,
+		&app.MultisigKeeper,
 	)
 	app.SwapKeeper = *swapkeeper.NewKeeper(
 		appCodec,
@@ -586,7 +570,7 @@ func NewDSC(
 		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
-		upgrade.NewAppModule(app.UpgradeKeeper),
+		upgrade.NewAppModule(appCodec, app.UpgradeKeeper),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
@@ -600,8 +584,8 @@ func NewDSC(
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
 		multisig.NewAppModule(appCodec, app.MultisigKeeper, app.AccountKeeper, app.BankKeeper),
 		swap.NewAppModule(appCodec, app.SwapKeeper, app.AccountKeeper, app.BankKeeper),
-		nft.NewAppModule(app.NFTKeeper),
-		fee.NewAppModule(app.FeeKeeper),
+		nft.NewAppModule(appCodec, app.NFTKeeper),
+		fee.NewAppModule(appCodec, app.FeeKeeper),
 		legacy.NewAppModule(app.appCodec, app.LegacyKeeper),
 	)
 
@@ -736,7 +720,7 @@ func NewDSC(
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 
-	maxGasWanted := cast.ToUint64(appOpts.Get(srvflags.EVMMaxTxGasWanted))
+	maxGasWanted := cast.ToUint64(appOpts.Get(ethsrvflags.EVMMaxTxGasWanted))
 	options := ante.HandlerOptions{
 		Cdc:             appCodec,
 		AccountKeeper:   app.AccountKeeper,
@@ -978,7 +962,7 @@ func (app *DSC) GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper {
 
 // GetTxConfig implements the TestingApp interface.
 func (app *DSC) GetTxConfig() client.TxConfig {
-	cfg := encoding.MakeConfig(ModuleBasics)
+	cfg := ethencoding.MakeConfig(ModuleBasics)
 	return cfg.TxConfig
 }
 
@@ -1028,6 +1012,7 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(cointypes.ModuleName)
 	paramsKeeper.Subspace(feetypes.ModuleName)
 	paramsKeeper.Subspace(multisigtypes.ModuleName)
+	paramsKeeper.Subspace(nfttypes.ModuleName)
 	paramsKeeper.Subspace(swaptypes.ModuleName)
 	return paramsKeeper
 }

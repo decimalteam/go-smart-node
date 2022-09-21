@@ -14,7 +14,7 @@ import (
 	"github.com/evmos/ethermint/encoding"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
-	cnfcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/worker"
 )
 
@@ -26,11 +26,11 @@ var (
 func init() {
 
 	// Setup config
-	cfg := sdk.GetConfig()
-	cnfcfg.SetBech32Prefixes(cfg)
-	cnfcfg.SetBip44CoinType(cfg)
-	cnfcfg.RegisterBaseDenom()
-	cfg.Seal()
+	config := sdk.GetConfig()
+	cmdcfg.SetBech32Prefixes(config)
+	cmdcfg.SetBip44CoinType(config)
+	cmdcfg.RegisterBaseDenom()
+	config.Seal()
 
 	// Register interfaces and create codec
 	cdc = encoding.MakeConfig(app.ModuleBasics)
