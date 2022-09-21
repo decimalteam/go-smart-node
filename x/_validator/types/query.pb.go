@@ -31,7 +31,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// QueryValidatorsRequest is request type for Query/Validators RPC method.
+// QueryValidatorsRequest is request type for the Query/Validators RPC method.
 type QueryValidatorsRequest struct {
 	// status enables to query for validators matching a given status.
 	Status string `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`

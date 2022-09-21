@@ -73,10 +73,7 @@ func (k *Keeper) SavePrice(
 ) error {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetPriceKey(price.Denom, price.Quote)
-	value, err := price.Marshal()
-	if err != nil {
-		return err
-	}
+	value := k.cdc.MustMarshalLengthPrefixed(&price)
 	store.Set(key, value)
 	return nil
 }
@@ -93,7 +90,7 @@ func (k *Keeper) GetPrice(
 		return types.CoinPrice{}, errors.PriceNotFound
 	}
 	var price types.CoinPrice
-	err := price.Unmarshal(value)
+	err := k.cdc.UnmarshalLengthPrefixed(value, &price)
 	if err != nil {
 		return types.CoinPrice{}, errors.Internal.Wrapf("err: %s", err.Error())
 	}
