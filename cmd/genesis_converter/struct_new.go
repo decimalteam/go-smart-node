@@ -10,6 +10,7 @@ import (
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"github.com/cosmos/cosmos-sdk/codec/legacy"
 )
 
 type GenesisNew struct {
@@ -63,6 +64,9 @@ type GenesisNew struct {
 		Staking      interface{} `json:"staking"`
 		Upgrade      interface{} `json:"upgrade"`
 		Vesting      interface{} `json:"vesting"`
+		Validator    struct {
+			Validators []ValidatorNew `json:"validators"`
+		} `json:"-"`
 	} `json:"app_state"`
 }
 
@@ -318,4 +322,87 @@ type NFTOwnerFixRecord struct {
 	TokenID   string   `json:"token_id"`
 	Owner     string   `json:"owner"`
 	SubTokens []uint32 `json:"sub_tokens"`
+}
+
+// /////////////////////////
+// Validator
+// /////////////////////////
+type ValidatorNew struct {
+	Commission struct {
+		CommissionRates struct {
+			MaxChangeRate string `json:"max_change_rate"`
+			MaxRate       string `json:"max_rate"`
+			Rate          string `json:"rate"`
+		}
+		UpdateTime string `json:"update_time"`
+	}
+	ConsensusPubKey struct {
+		Type string `json:"@type"`
+		Key  string `json:"key"`
+	}
+	DelegatorShares string `json:"delegator_shares"`
+	Description     struct {
+		Details         string `json:"details"`
+		Identity        string `json:"identity"`
+		Moniker         string `json:"moniker"`
+		SecurityContact string `json:"security_contact"`
+		Website         string `json:"website"`
+	} `json:"description"`
+	Jailed            bool   `json:"jailed"`
+	MinSelfDelegation string `json:"min_self_delegation"`
+	OperatorAddress   string `json:"operator_address"` // dxvaloper1
+	Status            string `json:"status"`           // BOND_STATUS
+	Tokens            string `json:"tokens"`
+	UnbondingHeight   string `json:"unbonding_height"`
+	UnbondingTime     string `json:"unbonding_time"`
+}
+
+func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable) (ValidatorNew, error) {
+	var result ValidatorNew
+	result.Commission.CommissionRates.MaxChangeRate = "0.0"
+	result.Commission.CommissionRates.MaxRate = valOld.Commission
+	result.Commission.CommissionRates.Rate = valOld.Commission
+	// pubkey
+	result.ConsensusPubKey.Type = "/cosmos.crypto.ed25519.PubKey"
+	bz, err := sdk.GetFromBech32(valOld.PubKey, "dxvalconspub")
+	if err != nil {
+		return ValidatorNew{}, err
+	}
+	pk, err := legacy.PubKeyFromBytes(bz)
+	if err != nil {
+		return ValidatorNew{}, err
+	}
+	result.ConsensusPubKey.Key = base64.RawStdEncoding.EncodeToString(pk.Bytes())
+	// description
+	result.Description.Details = valOld.Description.Details
+	result.Description.Identity = valOld.Description.Identity
+	result.Description.Moniker = valOld.Description.Moniker
+	result.Description.SecurityContact = valOld.Description.SecurityContact
+	result.Description.Website = valOld.Description.Website
+	//
+	result.Jailed = valOld.Jailed
+	result.MinSelfDelegation = "1"
+	result.OperatorAddress = valOld.ValAddress
+	/*
+		Unbonded  BondStatus = 0x00 -- BOND_STATUS_UNBONDED
+		Unbonding BondStatus = 0x01 -- BOND_STATUS_UNBONDING
+		Bonded    BondStatus = 0x02 -- BOND_STATUS_BONDED
+	*/
+	switch valOld.Status {
+	case 0:
+		result.Status = "BOND_STATUS_UNBONDED"
+	case 1:
+		result.Status = "BOND_STATUS_UNBONDING"
+	case 2:
+		result.Status = "BOND_STATUS_BONDED"
+	default:
+		return ValidatorNew{}, fmt.Errorf("unknown status code: %d", valOld.Status)
+	}
+
+	// TODO: tokens, delegator shares
+	result.Tokens = valOld.StakeCoins
+	result.UnbondingHeight = valOld.UnbondingHeight
+	result.UnbondingTime = valOld.UnbondingCompletionTime
+
+	return result, nil
 }
