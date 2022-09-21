@@ -11,7 +11,7 @@ import (
 // decimal-models
 type MultisigCreateWallet struct {
 	Address   string          `json:"address"`
-	Threshold uint64          `json:"threshold"`
+	Threshold uint32          `json:"threshold"`
 	Creator   string          `json:"creator"`
 	Owners    []MultisigOwner `json:""`
 }
@@ -27,36 +27,33 @@ type MultisigOwner struct {
 // decimal.multisig.v1.EventCreateWallet
 func processEventCreateWallet(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
 	/*
-		string sender = 1;
-		string wallet = 2;
-		repeated string owners = 3;
-		repeated uint64 weights = 4;
-		uint64 threshold = 5;
+	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string wallet = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  repeated string owners = 3;
+	  repeated uint32 weights = 4;
+	  uint32 threshold = 5;
 	*/
 	mcw := MultisigCreateWallet{}
 	var owners []string
 	var weights []uint32
 	for _, attr := range event.Attributes {
-		if string(attr.Key) == "sender" {
+		switch string(attr.Key) {
+		case "sender":
 			mcw.Creator = string(attr.Value)
-		}
-		if string(attr.Key) == "wallet" {
+		case "wallet":
 			mcw.Address = string(attr.Value)
-		}
-		if string(attr.Key) == "threshold" {
+		case "threshold":
 			thr, err := strconv.ParseUint(string(attr.Value), 10, 64)
 			if err != nil {
 				return fmt.Errorf("can't parse threshold '%s': %s", string(attr.Value), err.Error())
 			}
-			mcw.Threshold = thr
-		}
-		if string(attr.Key) == "owners" {
+			mcw.Threshold = uint32(thr)
+		case "owners":
 			err := json.Unmarshal(attr.Value, &owners)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal owners: %s, value: '%s'", err.Error(), string(attr.Value))
 			}
-		}
-		if string(attr.Key) == "weights" {
+		case "weights":
 			err := json.Unmarshal(attr.Value, &weights)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal weights: %s", err.Error())
@@ -75,6 +72,14 @@ func processEventCreateWallet(ea *EventAccumulator, event abci.Event, txHash str
 	return nil
 }
 
+// decimal.multisig.v1.EventCreateTransaction
 func processEventCreateTransaction(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+	/*
+		string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+		string wallet = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+		string receiver = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+		string coins = 4;
+		string transaction = 5;
+	*/
 	return nil
 }

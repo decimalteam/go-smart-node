@@ -81,7 +81,7 @@ var eventProcessors = map[string]processFunc{
 	// legacy
 	"decimal.legacy.v1.EventReturnLegacyCoins":    processEventReturnLegacyCoins,
 	"decimal.legacy.v1.EventReturnLegacySubToken": processEventReturnLegacySubToken,
-	"decimal.legacy.v1.EventLegacyReturnWallet":   processEventLegacyReturnWallet,
+	"decimal.legacy.v1.EventReturnMultisigWallet": processEventReturnMultisigWallet,
 	// multisig
 	"decimal.multisig.v1.EventCreateWallet":      processEventCreateWallet,
 	"decimal.multisig.v1.EventCreateTransaction": processStub,

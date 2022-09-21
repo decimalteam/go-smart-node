@@ -9,16 +9,17 @@ import (
 )
 
 type LegacyReturnNFT struct {
-	OldAddress string `json:"old_address"`
-	NewAddress string `json:"new_address"`
-	Denom      string `json:"denom"`
-	ID         string `json:"id"`
+	LegacyOwner string `json:"legacy_owner"`
+	Owner       string `json:"owner"`
+	Denom       string `json:"denom"`
+	Creator     string `json:"creator"`
+	ID          string `json:"id"`
 }
 
 type LegacyReturnWallet struct {
-	OldAddress string `json:"old_address"`
-	NewAddress string `json:"new_address"`
-	Wallet     string `json:"wallet"`
+	LegacyOwner string `json:"legacy_owner"`
+	Owner       string `json:"owner"`
+	Wallet      string `json:"wallet"`
 }
 
 // decimal.legacy.v1.EventReturnLegacyCoins
@@ -68,9 +69,9 @@ func processEventReturnLegacySubToken(ea *EventAccumulator, event abci.Event, tx
 	for _, attr := range event.Attributes {
 		switch string(attr.Key) {
 		case "legacy_owner":
-			ret.OldAddress = string(attr.Value)
+			ret.LegacyOwner = string(attr.Value)
 		case "owner":
-			ret.NewAddress = string(attr.Value)
+			ret.Owner = string(attr.Value)
 		case "denom":
 			ret.Denom = string(attr.Value)
 		case "id":
@@ -82,22 +83,21 @@ func processEventReturnLegacySubToken(ea *EventAccumulator, event abci.Event, tx
 
 }
 
-// decimal.legacy.v1.EventLegacyReturnWallet
-func processEventLegacyReturnWallet(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+// decimal.legacy.v1.EventReturnMultisigWallet
+func processEventReturnMultisigWallet(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
 	/*
-	   string old_address = 2;
-	   string new_address = 3;
-	   string wallet = 4;
+	  string legacy_owner = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string owner = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string wallet = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 	*/
 	var ret LegacyReturnWallet
 	for _, attr := range event.Attributes {
-		if string(attr.Key) == "old_address" {
-			ret.OldAddress = string(attr.Value)
-		}
-		if string(attr.Key) == "new_address" {
-			ret.NewAddress = string(attr.Value)
-		}
-		if string(attr.Key) == "wallet" {
+		switch string(attr.Key) {
+		case "legacy_owner":
+			ret.LegacyOwner = string(attr.Value)
+		case "owner":
+			ret.Owner = string(attr.Value)
+		case "wallet":
 			ret.Wallet = string(attr.Value)
 		}
 	}
