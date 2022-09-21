@@ -65,6 +65,10 @@ func (k Keeper) MintToken(c context.Context, msg *types.MsgMintToken) (*types.Ms
 		}
 	}
 
+	if !collectionExists && tokenExists {
+		return nil, errors.UnknownCollection
+	}
+
 	// prepare new NFT sub-tokens
 	subTokenIDs := make([]uint32, msg.Quantity)
 	subTokens := make([]types.SubToken, msg.Quantity)
@@ -80,7 +84,7 @@ func (k Keeper) MintToken(c context.Context, msg *types.MsgMintToken) (*types.Ms
 	collection.Supply++
 	if !collectionExists {
 		// write collection with it's counter
-		k.SetCollection(ctx, sender, msg.Denom, collection)
+		k.SetCollection(ctx, collection)
 	} else {
 		// write collection counter separately
 		k.setCollectionCounter(ctx, sender, collection.Denom, types.CollectionCounter{
@@ -92,7 +96,7 @@ func (k Keeper) MintToken(c context.Context, msg *types.MsgMintToken) (*types.Ms
 	token.Minted += msg.Quantity
 	if !tokenExists {
 		// write token with it's counter and indexes
-		k.createToken(ctx, collection, token)
+		k.CreateToken(ctx, collection, token)
 	} else {
 		// write token counter separately
 		k.setTokenCounter(ctx, token.ID, types.TokenCounter{
@@ -204,6 +208,9 @@ func (k Keeper) UpdateToken(c context.Context, msg *types.MsgUpdateToken) (*type
 		return nil, errors.NotUniqueTokenURI
 	}
 
+	// update token URI in token
+	token.URI = msg.TokenURI
+	k.setToken(ctx, token)
 	// update token URI indexes in the KVStore
 	k.updateTokenURI(ctx, token.URI, msg.TokenURI)
 
@@ -260,10 +267,7 @@ func (k Keeper) UpdateReserve(c context.Context, msg *types.MsgUpdateReserve) (*
 		if subToken.Reserve != nil {
 			reserve = subToken.Reserve.Amount
 		}
-		if newReserve.Equal(reserve) {
-			return nil, errors.NotSetValueLowerNow
-		}
-		if newReserve.LT(reserve) {
+		if newReserve.LTE(reserve) {
 			return nil, errors.NotSetValueLowerNow
 		}
 		// update NFT sub-token

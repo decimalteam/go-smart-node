@@ -37,9 +37,11 @@ func (k *Keeper) GetCollection(ctx sdk.Context, creator sdk.AccAddress, denom st
 }
 
 // SetCollection writes the NFT collection to the KVStore.
-func (k *Keeper) SetCollection(ctx sdk.Context, creator sdk.AccAddress, denom string, collection types.Collection) {
+func (k *Keeper) SetCollection(ctx sdk.Context, collection types.Collection) {
+	creator := sdk.MustAccAddressFromBech32(collection.Creator)
+
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetCollectionKey(creator, denom)
+	key := types.GetCollectionKey(creator, collection.Denom)
 
 	// write only creator address and denom to the main record
 	bz := k.cdc.MustMarshalLengthPrefixed(&types.Collection{
@@ -49,7 +51,7 @@ func (k *Keeper) SetCollection(ctx sdk.Context, creator sdk.AccAddress, denom st
 	store.Set(key, bz)
 
 	// write collection counter separately
-	k.setCollectionCounter(ctx, creator, denom, types.CollectionCounter{
+	k.setCollectionCounter(ctx, creator, collection.Denom, types.CollectionCounter{
 		Supply: collection.Supply,
 	})
 }

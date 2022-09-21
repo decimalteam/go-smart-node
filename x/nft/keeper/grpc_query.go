@@ -116,6 +116,12 @@ func (k Keeper) Collection(c context.Context, req *types.QueryCollectionRequest)
 	if !found {
 		return nil, errors.UnknownCollection
 	}
+	// read NFT tokens within the collection
+
+	k.iterateTokens(ctx, creator, collection.Denom, func(token *types.Token) bool {
+		collection.Tokens = append(collection.Tokens, token)
+		return false
+	})
 
 	return &types.QueryCollectionResponse{
 		Collection: collection,
