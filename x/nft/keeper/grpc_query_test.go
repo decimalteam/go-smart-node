@@ -1,251 +1,474 @@
 package keeper_test
 
-// import (
-// 	"testing"
+import (
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	gocontext "context"
+	"fmt"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
+	"strconv"
+)
 
-// 	"bitbucket.org/decimalteam/go-smart-node/app"
-// 	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
-// 	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
-// 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
-// 	sdk "github.com/cosmos/cosmos-sdk/types"
-// 	"github.com/stretchr/testify/require"
-// )
+func (s *KeeperTestSuite) TestGRPCQueryCollections() {
+	ctx, keeper, queryClient := s.ctx, s.nftKeeper, s.queryClient
+	require := s.Require()
 
-// func TestQueryCollectionSupply(t *testing.T) {
-// 	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
+	var (
+		denom      = "Test_Query_Collections"
+		pk         = ed25519.GenPrivKey().PubKey()
+		owner      = sdk.AccAddress(pk.Address())
+		collection = types.Collection{
+			Denom:   denom,
+			Creator: owner.String(),
+		}
+	)
 
-// 	sender := app.GetAddrs(dsc, ctx, 1)[0]
+	keeper.SetCollection(ctx, collection)
 
-// 	collectionDenom := firstDenom
+	var req *types.QueryCollectionsRequest
+	testCases := []struct {
+		msg      string
+		malleate func()
+		expPass  bool
+	}{
+		{
+			"valid request",
+			func() {
+				req = &types.QueryCollectionsRequest{
+					Pagination: &query.PageRequest{
+						Offset: 0,
+						Limit:  100,
+					},
+				}
+			},
+			true,
+		},
+	}
 
-// 	firstNFT := types.NewBaseNFT(
-// 		firstID,
-// 		sender.String(),
-// 		firstTokenURI,
-// 		firstReserve,
-// 		true,
-// 	)
+	for _, tc := range testCases {
+		s.Run(fmt.Sprintf("Case %s", tc.msg), func() {
+			tc.malleate()
+			res, err := queryClient.Collections(gocontext.Background(), req)
+			if tc.expPass {
+				require.NoError(err)
+				require.True(collection.Equal(res.GetCollections()[0]))
+			} else {
+				require.Error(err)
+				require.Nil(res)
+			}
+		})
+	}
+}
 
-// 	err := mintNFT(collectionDenom, 10, firstNFT, dsc, ctx)
-// 	require.NoError(t, err)
+func (s *KeeperTestSuite) TestGRPCQueryCollection() {
+	ctx, keeper, queryClient := s.ctx, s.nftKeeper, s.queryClient
+	require := s.Require()
 
-// 	err = mintNFT(collectionDenom, 10, firstNFT, dsc, ctx)
-// 	require.NoError(t, err)
+	var (
+		denom   = "Test_Query_Collection"
+		pk      = ed25519.GenPrivKey().PubKey()
+		owner   = sdk.AccAddress(pk.Address())
+		ID1     = "query_collection_1"
+		ID2     = "query_collection_2"
+		reserve = defaultCoin
+	)
+	pk = ed25519.GenPrivKey().PubKey()
+	invalidOwner := sdk.AccAddress(pk.Address())
 
-// 	secondNFT := types.NewBaseNFT(
-// 		secondID,
-// 		sender.String(),
-// 		secondTokenURI,
-// 		firstReserve,
-// 		true,
-// 	)
+	collection := types.Collection{
+		Denom:   denom,
+		Creator: owner.String(),
+		Tokens: types.Tokens{
+			{
+				Creator: owner.String(),
+				Denom:   denom,
+				ID:      ID1,
+				URI:     ID1,
+				Reserve: reserve,
+			},
+			{
+				Creator: owner.String(),
+				Denom:   denom,
+				ID:      ID2,
+				URI:     ID2,
+				Reserve: reserve,
+			},
+		},
+	}
 
-// 	err = mintNFT(collectionDenom, 10, secondNFT, dsc, ctx)
-// 	require.NoError(t, err)
+	keeper.SetCollection(ctx, collection)
+	for _, v := range collection.Tokens {
+		keeper.CreateToken(ctx, collection, *v)
+	}
 
-// 	expectedResponse := types.QueryCollectionSupplyResponse{
-// 		Supply: 2,
-// 	}
+	var req *types.QueryCollectionRequest
+	testCases := []struct {
+		msg      string
+		malleate func()
+		expPass  bool
+	}{
+		{
+			"valid request",
+			func() {
+				req = &types.QueryCollectionRequest{
+					Creator: owner.String(),
+					Denom:   denom,
+				}
+			},
+			true,
+		},
+		{
+			"invalid owner",
+			func() {
+				req = &types.QueryCollectionRequest{
+					Creator: invalidOwner.String(),
+					Denom:   denom,
+				}
+			},
+			false,
+		},
+		{
+			"invalid denom",
+			func() {
+				req = &types.QueryCollectionRequest{
+					Creator: invalidOwner.String(),
+					Denom:   "Invalid_denom",
+				}
+			},
+			false,
+		},
+	}
 
-// 	req := types.QueryCollectionSupplyRequest{
-// 		Denom: collectionDenom,
-// 	}
+	for _, tc := range testCases {
+		s.Run(fmt.Sprintf("Case %s", tc.msg), func() {
+			tc.malleate()
+			res, err := queryClient.Collection(gocontext.Background(), req)
+			if tc.expPass {
+				require.NoError(err)
+				require.True(collection.Equal(res.Collection))
+			} else {
+				require.Error(err)
+				require.Nil(res)
+			}
+		})
+	}
+}
 
-// 	res, err := dsc.NFTKeeper.QueryCollectionSupply(sdk.WrapSDKContext(ctx), &req)
-// 	require.NoError(t, err)
-// 	require.Equal(t, expectedResponse, *res)
+func (s *KeeperTestSuite) TestGRPCQueryCollectionsByCreator() {
+	ctx, keeper, queryClient := s.ctx, s.nftKeeper, s.queryClient
+	require := s.Require()
 
-// 	msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
-// 	require.False(t, broken, msg)
-// }
+	var (
+		pk      = ed25519.GenPrivKey().PubKey()
+		owner   = sdk.AccAddress(pk.Address())
+		denom1  = "Test_Query_Collections_By_Owner_1"
+		denom2  = "Test_Query_Collections_By_Owner_2"
+		denom3  = "Test_Query_Collections_By_Owner_3"
+		ID1     = "query_collection_by_owner_1"
+		ID2     = "query_collection_by_owner_2"
+		reserve = defaultCoin
+	)
+	pk = ed25519.GenPrivKey().PubKey()
+	notOwner := sdk.AccAddress(pk.Address())
 
-// func TestQueryOwnerCollections(t *testing.T) {
-// 	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
+	collections := []types.Collection{
+		{
+			Denom:   denom1,
+			Creator: owner.String(),
+			Tokens: types.Tokens{
+				{
+					Creator: owner.String(),
+					Denom:   denom1,
+					ID:      ID1,
+					URI:     ID1,
+					Reserve: reserve,
+				},
+				{
+					Creator: owner.String(),
+					Denom:   denom1,
+					ID:      ID2,
+					URI:     ID2,
+					Reserve: reserve,
+				},
+			},
+		},
+		{
+			Denom:   denom2,
+			Creator: owner.String(),
+		},
+		{
+			Denom:   denom3,
+			Creator: owner.String(),
+		},
+	}
 
-// 	sender := app.GetAddrs(dsc, ctx, 1)[0]
+	for _, collection := range collections {
+		keeper.SetCollection(ctx, collection)
+		if collection.Tokens == nil || len(collection.Tokens) < 1 {
+			continue
+		}
+		for _, token := range collection.Tokens {
+			keeper.CreateToken(ctx, collection, *token)
+		}
+	}
 
-// 	firstCollectionDenom := firstDenom
-// 	firstNFT := types.NewBaseNFT(
-// 		firstID,
-// 		sender.String(),
-// 		firstTokenURI,
-// 		firstReserve,
-// 		true,
-// 	)
-// 	err := mintNFT(firstCollectionDenom, 10, firstNFT, dsc, ctx)
-// 	require.NoError(t, err)
+	var hits map[string]types.Collection
+	var req *types.QueryCollectionsByCreatorRequest
+	testCases := []struct {
+		msg      string
+		malleate func()
+		expPass  bool
+	}{
+		{
+			"valid request with collections",
+			func() {
+				req = &types.QueryCollectionsByCreatorRequest{
+					Creator: owner.String(),
+					Pagination: &query.PageRequest{
+						Offset: 0,
+						Limit:  100,
+					},
+				}
+				hits = map[string]types.Collection{
+					denom1: collections[0],
+					denom2: collections[1],
+					denom3: collections[2],
+				}
+			},
+			true,
+		},
+		{
+			"valid request without collections",
+			func() {
+				req = &types.QueryCollectionsByCreatorRequest{
+					Creator: notOwner.String(),
+					Pagination: &query.PageRequest{
+						Offset: 0,
+						Limit:  100,
+					},
+				}
+				hits = map[string]types.Collection{}
+			},
+			true,
+		},
+	}
 
-// 	secondNFT := types.NewBaseNFT(
-// 		secondID,
-// 		sender.String(),
-// 		secondTokenURI,
-// 		firstReserve,
-// 		true,
-// 	)
-// 	err = mintNFT(firstCollectionDenom, 10, secondNFT, dsc, ctx)
-// 	require.NoError(t, err)
+	for _, tc := range testCases {
+		s.Run(fmt.Sprintf("Case %s", tc.msg), func() {
+			tc.malleate()
+			res, err := queryClient.CollectionsByCreator(gocontext.Background(), req)
+			if tc.expPass {
+				require.NoError(err)
+				for _, resCollection := range res.Collections {
+					if collection, ok := hits[resCollection.Denom]; ok {
+						require.True(collection.Equal(resCollection))
+						delete(hits, resCollection.Denom)
+					} else {
+						s.T().Fatal("collection does not set, but it was included in the resp")
+					}
+				}
+				if len(hits) != 0 {
+					s.T().Fatal("not all set collections were returned")
+				}
+			} else {
+				require.Error(err)
+				require.Nil(res)
+			}
+		})
+	}
+}
 
-// 	thirdNFT := types.NewBaseNFT(
-// 		thirdID,
-// 		sender.String(),
-// 		thirdTokenURI,
-// 		firstReserve,
-// 		true,
-// 	)
-// 	secondCollectionDenom := secondDenom
-// 	err = mintNFT(secondCollectionDenom, 10, thirdNFT, dsc, ctx)
-// 	require.NoError(t, err)
+func (s *KeeperTestSuite) TestGRPCQueryToken() {
+	ctx, keeper, queryClient := s.ctx, s.nftKeeper, s.queryClient
+	require := s.Require()
 
-// 	msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
-// 	require.False(t, broken, msg)
+	var (
+		pk         = ed25519.GenPrivKey().PubKey()
+		owner      = sdk.AccAddress(pk.Address())
+		denom1     = "Test_Query_Token"
+		ID         = "query_token_1"
+		collection = types.Collection{
+			Creator: owner.String(),
+			Denom:   denom1,
+		}
+	)
 
-// 	t.Run("without denom", func(t *testing.T) {
-// 		expectedResponse := types.QueryOwnerCollectionsResponse{
-// 			Owner: types.Owner{
-// 				Address: sender.String(),
-// 				Collections: []types.OwnerCollection{
-// 					{
-// 						Denom: firstCollectionDenom,
-// 						NFTs:  types.SortedStringArray{firstNFT.ID, secondNFT.ID},
-// 					},
-// 					{
-// 						Denom: secondCollectionDenom,
-// 						NFTs:  types.SortedStringArray{thirdNFT.ID},
-// 					},
-// 				},
-// 			},
-// 		}
+	token := types.Token{
+		Creator:   owner.String(),
+		Denom:     denom1,
+		ID:        ID,
+		URI:       ID,
+		Reserve:   defaultCoin,
+		AllowMint: false,
+		Minted:    0,
+		Burnt:     0,
+		SubTokens: types.SubTokens{
+			{
+				ID:      1,
+				Owner:   owner.String(),
+				Reserve: nil,
+			},
+			{
+				ID:      2,
+				Owner:   owner.String(),
+				Reserve: nil,
+			},
+			{
+				ID:      3,
+				Owner:   owner.String(),
+				Reserve: nil,
+			},
+		},
+	}
 
-// 		req := types.QueryOwnerCollectionsRequest{
-// 			Owner: sender.String(),
-// 		}
+	keeper.SetCollection(ctx, collection)
+	keeper.CreateToken(ctx, collection, token)
 
-// 		res, err := dsc.NFTKeeper.QueryOwnerCollections(sdk.WrapSDKContext(ctx), &req)
-// 		require.NoError(t, err)
-// 		require.Equal(t, expectedResponse, *res)
-// 	})
+	for _, subtoken := range token.SubTokens {
+		keeper.SetSubToken(ctx, token.ID, *subtoken)
+	}
 
-// }
+	var req *types.QueryTokenRequest
+	testCases := []struct {
+		msg      string
+		malleate func()
+		expPass  bool
+	}{
+		{
+			"valid request",
+			func() {
+				req = &types.QueryTokenRequest{TokenId: ID}
+			},
+			true,
+		},
+		{
+			"not exist token ID",
+			func() {
+				req = &types.QueryTokenRequest{TokenId: "not_exist"}
+			},
+			false,
+		},
+		{
+			"empty token ID",
+			func() {
+				req = &types.QueryTokenRequest{}
+			},
+			false,
+		},
+	}
 
-// func TestQueryCollection(t *testing.T) {
-// 	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
+	for _, tc := range testCases {
+		s.Run(fmt.Sprintf("Case %s", tc.msg), func() {
+			tc.malleate()
+			res, err := queryClient.Token(gocontext.Background(), req)
+			if tc.expPass {
+				require.NoError(err)
+				require.True(token.Equal(res.GetToken()))
+			} else {
+				require.Error(err)
+				require.Nil(res)
+			}
+		})
+	}
+}
 
-// 	sender := app.GetAddrs(dsc, ctx, 1)[0]
+func (s *KeeperTestSuite) TestGRPCQuerySubToken() {
+	ctx, keeper, queryClient := s.ctx, s.nftKeeper, s.queryClient
+	require := s.Require()
 
-// 	firstCollectionDenom := firstDenom
-// 	firstNFT := types.NewBaseNFT(
-// 		firstID,
-// 		sender.String(),
-// 		firstTokenURI,
-// 		firstReserve,
-// 		true,
-// 	)
-// 	err := mintNFT(firstCollectionDenom, 10, firstNFT, dsc, ctx)
-// 	require.NoError(t, err)
+	var (
+		pk         = ed25519.GenPrivKey().PubKey()
+		owner      = sdk.AccAddress(pk.Address())
+		denom1     = "Test_Query_Subtoken"
+		ID         = "query_subtoken_1"
+		reserve    = defaultCoin
+		collection = types.Collection{
+			Creator: owner.String(),
+			Denom:   denom1,
+		}
+	)
 
-// 	secondNFT := types.NewBaseNFT(
-// 		secondID,
-// 		sender.String(),
-// 		secondTokenURI,
-// 		firstReserve,
-// 		true,
-// 	)
-// 	err = mintNFT(firstCollectionDenom, 10, secondNFT, dsc, ctx)
-// 	require.NoError(t, err)
+	token := types.Token{
+		Creator:   owner.String(),
+		Denom:     denom1,
+		ID:        ID,
+		URI:       ID,
+		Reserve:   reserve,
+		AllowMint: false,
+		Minted:    0,
+		Burnt:     0,
+		SubTokens: nil,
+	}
 
-// 	expectedResponse := types.QueryCollectionResponse{
-// 		Collection: types.Collection{
-// 			Denom: firstCollectionDenom,
-// 			NFTs:  types.SortedStringArray{firstNFT.ID, secondNFT.ID},
-// 		},
-// 	}
+	subtoken := types.SubToken{
+		ID:      1,
+		Owner:   owner.String(),
+		Reserve: &reserve,
+	}
+	keeper.SetCollection(ctx, collection)
+	keeper.CreateToken(ctx, collection, token)
+	keeper.SetSubToken(ctx, ID, subtoken)
 
-// 	req := types.QueryCollectionRequest{
-// 		Denom: firstCollectionDenom,
-// 	}
+	var req *types.QuerySubTokenRequest
+	testCases := []struct {
+		msg      string
+		malleate func()
+		expPass  bool
+	}{
+		{
+			"valid request",
+			func() {
+				req = &types.QuerySubTokenRequest{
+					TokenId:    ID,
+					SubTokenId: strconv.Itoa(int(subtoken.ID)),
+				}
+			},
+			true,
+		},
+		{
+			"not exist nft sub token",
+			func() {
+				req = &types.QuerySubTokenRequest{
+					TokenId:    ID,
+					SubTokenId: "20",
+				}
+			},
+			false,
+		},
+		{
+			"not exist nft",
+			func() {
+				req = &types.QuerySubTokenRequest{
+					TokenId:    "not_exist",
+					SubTokenId: strconv.Itoa(int(subtoken.ID)),
+				}
+			},
+			false,
+		},
+		{
+			"invalid subtoken ID",
+			func() {
+				req = &types.QuerySubTokenRequest{
+					TokenId:    ID,
+					SubTokenId: "invalid",
+				}
+			},
+			false,
+		},
+	}
 
-// 	res, err := dsc.NFTKeeper.QueryCollection(sdk.WrapSDKContext(ctx), &req)
-// 	require.NoError(t, err)
-// 	require.Equal(t, expectedResponse, *res)
-
-// 	msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
-// 	require.False(t, broken, msg)
-// }
-
-// func TestQueryNFT(t *testing.T) {
-// 	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
-
-// 	sender := app.GetAddrs(dsc, ctx, 1)[0]
-
-// 	collectionDenom := firstDenom
-// 	nft := types.NewBaseNFT(
-// 		firstID,
-// 		sender.String(),
-// 		firstTokenURI,
-// 		firstReserve,
-// 		true,
-// 	)
-
-// 	subTokenIDs := nft.GenSubTokenIDs(5)
-// 	nft = nft.AddOwnerSubTokenIDs(sender.String(), subTokenIDs)
-
-// 	err := mintNFT(collectionDenom, int64(subTokenIDs.Len()), nft, dsc, ctx)
-// 	require.NoError(t, err)
-
-// 	expectedResponse := types.QueryNFTResponse{
-// 		NFT: nft,
-// 	}
-
-// 	req := types.QueryNFTRequest{
-// 		Denom:   collectionDenom,
-// 		TokenId: nft.ID,
-// 	}
-
-// 	res, err := dsc.NFTKeeper.QueryNFT(sdk.WrapSDKContext(ctx), &req)
-// 	require.NoError(t, err)
-// 	require.Equal(t, expectedResponse, *res)
-
-// 	msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
-// 	require.False(t, broken, msg)
-// }
-
-// func TestQuerySubTokens(t *testing.T) {
-// 	dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
-
-// 	sender := app.GetAddrs(dsc, ctx, 1)[0]
-
-// 	collectionDenom := firstDenom
-// 	nft := types.NewBaseNFT(
-// 		firstID,
-// 		sender.String(),
-// 		firstTokenURI,
-// 		firstReserve,
-// 		true,
-// 	)
-
-// 	subTokenIDs := nft.GenSubTokenIDs(5)
-
-// 	err := mintNFT(collectionDenom, int64(subTokenIDs.Len()), nft, dsc, ctx)
-// 	require.NoError(t, err)
-
-// 	subTokens := make([]types.SubToken, subTokenIDs.Len())
-// 	for i, subTokenID := range subTokenIDs {
-// 		subTokens[i] = types.NewSubToken(subTokenID, nft.Reserve)
-// 	}
-
-// 	expectedResponse := types.QuerySubTokensResponse{
-// 		SubTokens: subTokens,
-// 	}
-
-// 	req := types.QuerySubTokensRequest{
-// 		Denom:   collectionDenom,
-// 		TokenID: nft.ID,
-// 	}
-
-// 	res, err := dsc.NFTKeeper.QuerySubTokens(sdk.WrapSDKContext(ctx), &req)
-// 	require.NoError(t, err)
-// 	require.Equal(t, expectedResponse, *res)
-
-// 	msg, broken := keeper.AllInvariants(dsc.NFTKeeper)(ctx)
-// 	require.False(t, broken, msg)
-// }
+	for _, tc := range testCases {
+		s.Run(fmt.Sprintf("Case %s", tc.msg), func() {
+			tc.malleate()
+			res, err := queryClient.SubToken(gocontext.Background(), req)
+			if tc.expPass {
+				require.NoError(err)
+				require.True(subtoken.Equal(res.SubToken))
+			} else {
+				require.Error(err)
+				require.Nil(res)
+			}
+		})
+	}
+}

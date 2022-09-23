@@ -151,13 +151,13 @@ func (am AppModule) RegisterInvariants(registry sdk.InvariantRegistry) {
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	var gs types.GenesisState
 	cdc.MustUnmarshalJSON(data, &gs)
-	InitGenesis(ctx, am.keeper, &gs)
+	keeper.InitGenesis(ctx, am.keeper, &gs)
 	return []abci.ValidatorUpdate{}
 }
 
 // ExportGenesis returns the module's exported genesis state as raw JSON bytes.
 func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
-	gs := ExportGenesis(ctx, am.keeper)
+	gs := keeper.ExportGenesis(ctx, am.keeper)
 	return cdc.MustMarshalJSON(gs)
 }
 

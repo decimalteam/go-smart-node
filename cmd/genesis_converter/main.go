@@ -169,6 +169,12 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord) (GenesisN
 		records = append(records, *v)
 	}
 	gsNew.AppState.Legacy.LegacyRecords = records
+	// validators
+	gsNew.AppState.Validator.Validators, err =
+		convertValidators(gsOld.AppState.Validator.Validators, addrTable)
+	if err != nil {
+		return GenesisNew{}, Statistic{}, err
+	}
 	// validate NFT subtokens
 	invalidSubtokens := verifySubtokens(gsOld.AppState.NFT.SubTokens, gsOld.AppState.NFT.Collections,
 		gsOld.AppState.Validator.DelegationsNFT, gsOld.AppState.Validator.UndondingNFT)

@@ -24,7 +24,7 @@ func (api *API) GetFeeParams(baseDenom, quoteDenom string) (sdk.Dec, feetypes.Pa
 		return sdk.ZeroDec(), feetypes.DefaultParams(), err
 	}
 	// 2. params
-	respP, err := client.Params(
+	respP, err := client.ModuleParams(
 		context.Background(),
 		&feetypes.QueryParamsRequest{},
 	)

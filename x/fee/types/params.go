@@ -18,12 +18,13 @@ var (
 	PSKeyCoinBuy         = []byte("CoinBuy")
 	PSKeyCoinSell        = []byte("CoinSell")
 	PSKeyCoinRedeemCheck = []byte("CoinRedeemCheck")
+	PSKeyCoinBurn        = []byte("CoinCoinBurn")
 	// special commission depends on coin symbol length
-	PSKeyCoinCreateTicker_3 = []byte("CoinCreateTicker_3")
-	PSKeyCoinCreateTicker_4 = []byte("CoinCreateTicker_4")
-	PSKeyCoinCreateTicker_5 = []byte("CoinCreateTicker_5")
-	PSKeyCoinCreateTicker_6 = []byte("CoinCreateTicker_6")
-	PSKeyCoinCreateTicker_7 = []byte("CoinCreateTicker_7")
+	PSKeyCoinCreateTicker3 = []byte("CoinCreateTicker3")
+	PSKeyCoinCreateTicker4 = []byte("CoinCreateTicker4")
+	PSKeyCoinCreateTicker5 = []byte("CoinCreateTicker5")
+	PSKeyCoinCreateTicker6 = []byte("CoinCreateTicker6")
+	PSKeyCoinCreateTicker7 = []byte("CoinCreateTicker7")
 	// multisignature wallets
 	PSKeyMultisigCreateWallet      = []byte("MultisigCreateWallet")
 	PSKeyMultisigCreateTransaction = []byte("MultisigCreateTransaction")
@@ -72,13 +73,14 @@ func DefaultParams() Params {
 		CoinSendAdd:     sdk.NewDec(5),
 		CoinBuy:         sdk.NewDec(100),
 		CoinSell:        sdk.NewDec(100),
-		CoinRedeemCheck: sdk.ZeroDec(),
+		CoinRedeemCheck: sdk.NewDec(30),
+		CoinBurn:        sdk.NewDec(100),
 		// special commission depends on coin symbol length
-		CoinCreateTicker_3: sdk.NewDec(1_000_000),
-		CoinCreateTicker_4: sdk.NewDec(100_000),
-		CoinCreateTicker_5: sdk.NewDec(10_000),
-		CoinCreateTicker_6: sdk.NewDec(1_000),
-		CoinCreateTicker_7: sdk.NewDec(100),
+		CoinCreateTicker3: sdk.NewDec(1_000_000),
+		CoinCreateTicker4: sdk.NewDec(100_000),
+		CoinCreateTicker5: sdk.NewDec(10_000),
+		CoinCreateTicker6: sdk.NewDec(1_000),
+		CoinCreateTicker7: sdk.NewDec(100),
 		// multisignature wallets
 		MultisigCreateWallet:      sdk.NewDec(100),
 		MultisigCreateTransaction: sdk.NewDec(100),
@@ -123,12 +125,13 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(PSKeyCoinBuy, &p.CoinBuy, validateDec),
 		paramtypes.NewParamSetPair(PSKeyCoinSell, &p.CoinSell, validateDec),
 		paramtypes.NewParamSetPair(PSKeyCoinRedeemCheck, &p.CoinRedeemCheck, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinBurn, &p.CoinBurn, validateDec),
 		// special commission depends on coin symbol length
-		paramtypes.NewParamSetPair(PSKeyCoinCreateTicker_3, &p.CoinCreateTicker_3, validateDec),
-		paramtypes.NewParamSetPair(PSKeyCoinCreateTicker_4, &p.CoinCreateTicker_4, validateDec),
-		paramtypes.NewParamSetPair(PSKeyCoinCreateTicker_5, &p.CoinCreateTicker_5, validateDec),
-		paramtypes.NewParamSetPair(PSKeyCoinCreateTicker_6, &p.CoinCreateTicker_6, validateDec),
-		paramtypes.NewParamSetPair(PSKeyCoinCreateTicker_7, &p.CoinCreateTicker_7, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinCreateTicker3, &p.CoinCreateTicker3, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinCreateTicker4, &p.CoinCreateTicker4, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinCreateTicker5, &p.CoinCreateTicker5, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinCreateTicker6, &p.CoinCreateTicker6, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinCreateTicker7, &p.CoinCreateTicker7, validateDec),
 		// multisignature wallets
 		paramtypes.NewParamSetPair(PSKeyMultisigCreateWallet, &p.MultisigCreateWallet, validateDec),
 		paramtypes.NewParamSetPair(PSKeyMultisigCreateTransaction, &p.MultisigCreateTransaction, validateDec),
@@ -194,7 +197,7 @@ func validateDec(i interface{}) error {
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
-	if !v.IsPositive() {
+	if v.IsNegative() {
 		return fmt.Errorf("negative fee: %s", v.String())
 	}
 	return nil

@@ -3,16 +3,13 @@ package keeper
 import (
 	"testing"
 
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
-
 	"bitbucket.org/decimalteam/go-smart-node/app"
-	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
 func GetBaseAppWithCustomKeeper(t *testing.T) (*app.DSC, sdk.Context) {
@@ -24,8 +21,8 @@ func GetBaseAppWithCustomKeeper(t *testing.T) (*app.DSC, sdk.Context) {
 	dsc.NFTKeeper = *keeper.NewKeeper(
 		appCodec,
 		dsc.GetKey(types.StoreKey),
+		dsc.GetSubspace(nfttypes.ModuleName),
 		dsc.BankKeeper,
-		cmdcfg.BaseDenom,
 	)
 
 	return dsc, ctx

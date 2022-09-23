@@ -28,8 +28,11 @@ type GenesisOld struct {
 			DelegationsNFT []DelegationNFT      `json:"delegations_nft"`
 			UndondingNFT   []UnbondingNFTRecord `json:"nft_unbonding_delegations"`
 			Unbondings     []UnbondingRecord    `json:"unbonding_delegations"`
+			// `params`
+			Validators []ValidatorOld `json:"validators"`
 		} `json:"validator"`
 	} `json:"app_state"`
+	ValidatorPubKeys []ValidatorPubKeyOld `json:"validators"`
 }
 
 ///////////////////////////
@@ -134,9 +137,9 @@ type SubTokenOld struct {
 	ID      string `json:"token_id"`
 }
 
-///////////////////////////
+// /////////////////////////
 // Validator
-///////////////////////////
+// /////////////////////////
 type DelegationNFT struct {
 	Coin             sdk.Coin `json:"coin"`
 	DelegatorAddress string   `json:"delegator_address"`
@@ -178,4 +181,34 @@ type UnbondingEntry struct {
 		Balance        sdk.Coin `json:"balance"`
 		InitialBalance sdk.Coin `json:"initial_balance"`
 	} `json:"value"`
+}
+
+type ValidatorOld struct {
+	AccumRewards string `json:"accum_rewards"`
+	Commission   string `json:"commission"`
+	Description  struct {
+		Details         string `json:"details"`
+		Identity        string `json:"identity"`
+		Moniker         string `json:"moniker"`
+		SecurityContact string `json:"security_contact"`
+		Website         string `json:"website"`
+	} `json:"description"`
+	Jailed                  bool   `json:"jailed"`
+	Online                  bool   `json:"online"`
+	PubKey                  string `json:"pub_key"` // dxvalconspub1...
+	RewardAddress           string `json:"reward_address"`
+	StakeCoins              string `json:"stake_coins"`
+	Status                  uint32 `json:"status"`
+	UnbondingCompletionTime string `json:"unbonding_completion_time"` // iso formatted timestamp
+	UnbondingHeight         string `json:"unbonding_height"`
+	ValAddress              string `json:"val_address"` // dxvaloper1...
+}
+
+type ValidatorPubKeyOld struct {
+	Name   string `json:"name"`
+	Power  string `json:"power"`
+	PubKey struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"pub_key"`
 }

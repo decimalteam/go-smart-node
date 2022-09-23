@@ -34,7 +34,7 @@ func cmdScenario() *cobra.Command {
 				return
 			}
 			sc := stormScenario.NewNFTBlowScenario(reactor.api, reactor.accounts)
-			sc.CreateNFTs(int64(subtokensCount))
+			sc.CreateNFTs(uint32(subtokensCount))
 			time.Sleep(time.Second * 10)
 			step := 0
 			for {
