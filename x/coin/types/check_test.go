@@ -4,20 +4,23 @@ import (
 	"crypto/sha256"
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/assert"
+
 	ethereumCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestParseCheck(t *testing.T) {
 	var (
-		chain_id             = "soki_9000-2"
-		coinAmount, _        = sdk.ParseCoinNormalized("10000del")
-		nonce, _             = sdk.NewIntFromString("9")
-		dueBlock      uint64 = 123
-		pass                 = ""
+		chain_id = "soki_9000-2"
+		coin, _  = sdk.ParseCoinNormalized("10000del")
+		nonce, _ = sdk.NewIntFromString("9")
+		dueBlock = uint64(123)
+		pass     = ""
 	)
 
 	priv, _ := ethsecp256k1.GenerateKey()
@@ -27,8 +30,7 @@ func TestParseCheck(t *testing.T) {
 
 	check := &Check{
 		ChainID:  chain_id,
-		Coin:     coinAmount.Denom,
-		Amount:   coinAmount.Amount,
+		Coin:     coin,
 		Nonce:    nonce.BigInt().Bytes(),
 		DueBlock: dueBlock,
 	}
@@ -51,7 +53,7 @@ func TestParseCheck(t *testing.T) {
 	checkBytes, err := rlp.EncodeToBytes(check)
 	assert.NoError(t, err)
 
-	//decode
+	// decode
 
 	decodedCheck, err := ParseCheck(checkBytes)
 	assert.NoError(t, err)

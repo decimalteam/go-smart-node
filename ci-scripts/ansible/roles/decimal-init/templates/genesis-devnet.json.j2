@@ -127,9 +127,9 @@
     },
     "coin": {
       "params": {
+        "base_denom": "del",
         "base_title": "Decimal coin",
-        "base_symbol": "del",
-        "base_initial_volume": "200000000000000000000000000"
+        "base_volume": "200000000000000000000000000"
       },
       "coins": [],
       "checks": []
@@ -142,31 +142,54 @@
     },
     "customfee": {
       "params": {
-        "byte_fee": "0.001",
-        "coin_send": "0.082",
-        "coin_send_multi_addition": "0.04",
-        "coin_buy": "0.8",
-        "coin_sell": "0.8",
-        "coin_create": "0.8",
-        "coin_create_length3": "100000",
-        "coin_create_length4": "10000",
-        "coin_create_length5": "1000",
-        "coin_create_length6": "100",
-        "coin_create_length_other": "10",
-        "multisig_create_wallet": "0.1",
-        "multisig_create_transaction": "0.1",
-        "multisig_sign_transaction": "0.1",
-        "validator_declare_candidate": "10",
-        "validator_edit_candidate": "10",
-        "validator_delegate": "0.2",
-        "validator_unbond": "0.2",
-        "validator_set_online": "0.1",
-        "validator_set_offline": "0.1",
-        "oracle_address": "dx1qqjrdrw8",
+        "tx_byte_fee": "2.000000000000000000",
+        "coin_create_ticker_3": "1000000.000000000000000000",
+        "coin_create_ticker_4": "100000.000000000000000000",
+        "coin_create_ticker_5": "10000.000000000000000000",
+        "coin_create_ticker_6": "1000.000000000000000000",
+        "coin_create_ticker_7": "100.000000000000000000",
+        "coin_create": "100.000000000000000000",
+        "coin_update": "0.000000000000000000",
+        "coin_send": "10.000000000000000000",
+        "coin_send_add": "5.000000000000000000",
+        "coin_buy": "100.000000000000000000",
+        "coin_sell": "100.000000000000000000",
+        "coin_redeem_check": "30.000000000000000000",
+        "coin_burn": "100.000000000000000000",
+        "multisig_create_wallet": "100.000000000000000000",
+        "multisig_create_transaction": "100.000000000000000000",
+        "multisig_sign_transaction": "100.000000000000000000",
+        "nft_mint_token": "0.000000000000000000",
+        "nft_update_token": "0.000000000000000000",
+        "nft_update_reserve": "0.000000000000000000",
+        "nft_send_token": "0.000000000000000000",
+        "nft_burn_token": "0.000000000000000000",
+        "swap_activate_chain": "0.000000000000000000",
+        "swap_deactivate_chain": "0.000000000000000000",
+        "swap_initialize": "0.000000000000000000",
+        "swap_redeem": "0.000000000000000000",
+        "validator_create_validator": "10000.000000000000000000",
+        "validator_edit_validator": "10000.000000000000000000",
+        "validator_delegate": "200.000000000000000000",
+        "validator_delegate_nft": "200.000000000000000000",
+        "validator_redelegate": "200.000000000000000000",
+        "validator_redelegate_nft": "200.000000000000000000",
+        "validator_undelegate": "200.000000000000000000",
+        "validator_undelegate_nft": "200.000000000000000000",
+        "validator_set_online": "100.000000000000000000",
+        "validator_set_offline": "100.000000000000000000",
+        "oracle": "dx1gczphl4h9aqrzy237jfm97elu66dam2w05xrrc",
         "evm_gas_price": "0.000019047619047619"
       },
-      "initial_price": "0.04"
-    },
+      "prices": [
+        {
+          "denom": "del",
+          "quote": "usd",
+          "price": "1.000000000000000000",
+          "updated_at": "0001-01-01T00:00:00Z"
+        }
+      ]
+    },    
     "distribution": {
       "params": {
         "community_tax": "0.020000000000000000",
@@ -476,16 +499,20 @@
       }
     },
     "legacy": {
-        "legacyRecords": []
+      "records": [],
+      "params": {}
     },
     "multisig": {
         "transactions": [],
         "wallets": []
     },
     "nft": {
-        "collections": [],
-        "nfts": [],
-        "subTokens": {}
+      "collections": [],
+      "params": {
+        "max_collection_size": 10000,
+        "max_token_quantity": 10000,
+        "min_reserve_amount": "1000000000000000000"
+      }
     },
     "params": null,
     "slashing": {

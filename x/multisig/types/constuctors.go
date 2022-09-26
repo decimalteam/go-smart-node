@@ -8,7 +8,7 @@ import (
 )
 
 // NewWallet returns a new Wallet.
-func NewWallet(owners []string, weights []uint64, threshold uint64, salt []byte) (*Wallet, error) {
+func NewWallet(owners []string, weights []uint32, threshold uint32, salt []byte) (*Wallet, error) {
 	// temporary wallet structure to create address
 	w := Wallet{
 		Address:   sdk.AccAddress(salt).String(), // use field Address as salt

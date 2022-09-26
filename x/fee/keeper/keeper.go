@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 
+	"bitbucket.org/decimalteam/go-smart-node/x/fee/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -14,7 +15,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// Keeper maintains the link to data storage and exposes getter/setter methods for the various parts of the state machine
+// Keeper maintains the link to data storage and exposes getter/setter methods for the various parts of the state machine.
 type Keeper struct {
 	storeKey sdkstore.StoreKey // Unexposed key to access store from sdk.Context
 	cdc      codec.BinaryCodec // The amino codec for binary encoding/decoding.
@@ -68,31 +69,52 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k *Keeper) SavePrice(
 	ctx sdk.Context,
-	price sdk.Dec,
+	price types.CoinPrice,
 ) error {
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetBaseDenomPriceKey()
-	value, err := price.Marshal()
-	if err != nil {
-		return err
-	}
+	key := types.GetPriceKey(price.Denom, price.Quote)
+	value := k.cdc.MustMarshalLengthPrefixed(&price)
 	store.Set(key, value)
 	return nil
 }
 
 func (k *Keeper) GetPrice(
 	ctx sdk.Context,
-) (sdk.Dec, error) {
+	denom string,
+	quote string,
+) (types.CoinPrice, error) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetBaseDenomPriceKey()
+	key := types.GetPriceKey(denom, quote)
 	value := store.Get(key)
 	if len(value) == 0 {
-		return sdk.ZeroDec(), fmt.Errorf("price is not found in the key-value store")
+		return types.CoinPrice{}, errors.PriceNotFound
 	}
-	var price sdk.Dec
-	err := price.Unmarshal(value)
+	var price types.CoinPrice
+	err := k.cdc.UnmarshalLengthPrefixed(value, &price)
 	if err != nil {
-		return sdk.ZeroDec(), err
+		return types.CoinPrice{}, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 	return price, nil
+}
+
+func (k *Keeper) GetPrices(
+	ctx sdk.Context,
+) ([]types.CoinPrice, error) {
+	var result []types.CoinPrice
+
+	store := ctx.KVStore(k.storeKey)
+
+	it := sdk.KVStorePrefixIterator(store, types.PriceKeyPrefix)
+	for ; it.Valid(); it.Next() {
+		var price types.CoinPrice
+		k.cdc.MustUnmarshalLengthPrefixed(it.Value(), &price)
+		result = append(result, price)
+	}
+
+	err := it.Close()
+	if err != nil {
+		return []types.CoinPrice{}, err
+	}
+
+	return result, nil
 }

@@ -5,6 +5,7 @@ package types
 
 import (
 	fmt "fmt"
+	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
@@ -23,10 +24,12 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// GenesisState defines the module's genesis state.
 type GenesisState struct {
-	Collections []Collection         `protobuf:"bytes,1,rep,name=collections,proto3" json:"collections" yaml:"collections"`
-	NFTs        []BaseNFT            `protobuf:"bytes,2,rep,name=nfts,proto3" json:"nfts" yaml:"nfts"`
-	SubTokens   map[string]SubTokens `protobuf:"bytes,3,rep,name=subTokens,proto3" json:"subTokens" yaml:"sub_tokens" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	// collections defines all existing NFT collections (including tokens and sub-tokens).
+	Collections []Collection `protobuf:"bytes,2,rep,name=collections,proto3" json:"collections"`
+	// params defines all the module's parameters.
+	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
 }
 
 func (m *GenesisState) Reset()         { *m = GenesisState{} }
@@ -62,88 +65,79 @@ func (m *GenesisState) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GenesisState proto.InternalMessageInfo
 
-type SubTokens struct {
-	SubTokens []SubToken `protobuf:"bytes,1,rep,name=subTokens,proto3" json:"subTokens" yaml:"sub_tokens"`
-}
-
-func (m *SubTokens) Reset()         { *m = SubTokens{} }
-func (m *SubTokens) String() string { return proto.CompactTextString(m) }
-func (*SubTokens) ProtoMessage()    {}
-func (*SubTokens) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5dbce1c13afacb19, []int{1}
-}
-func (m *SubTokens) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *SubTokens) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_SubTokens.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *SubTokens) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SubTokens.Merge(m, src)
-}
-func (m *SubTokens) XXX_Size() int {
-	return m.Size()
-}
-func (m *SubTokens) XXX_DiscardUnknown() {
-	xxx_messageInfo_SubTokens.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_SubTokens proto.InternalMessageInfo
-
-func (m *SubTokens) GetSubTokens() []SubToken {
+func (m *GenesisState) GetCollections() []Collection {
 	if m != nil {
-		return m.SubTokens
+		return m.Collections
 	}
 	return nil
 }
 
+func (m *GenesisState) GetParams() Params {
+	if m != nil {
+		return m.Params
+	}
+	return Params{}
+}
+
 func init() {
 	proto.RegisterType((*GenesisState)(nil), "decimal.nft.v1.GenesisState")
-	proto.RegisterMapType((map[string]SubTokens)(nil), "decimal.nft.v1.GenesisState.SubTokensEntry")
-	proto.RegisterType((*SubTokens)(nil), "decimal.nft.v1.SubTokens")
 }
 
 func init() { proto.RegisterFile("decimal/nft/v1/genesis.proto", fileDescriptor_5dbce1c13afacb19) }
 
 var fileDescriptor_5dbce1c13afacb19 = []byte{
-	// 415 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x92, 0xcd, 0xaa, 0xd3, 0x40,
-	0x18, 0x86, 0x33, 0xe9, 0x51, 0xec, 0x44, 0x0e, 0x3a, 0x08, 0xe6, 0x44, 0x49, 0x4a, 0x56, 0x05,
-	0x39, 0x19, 0x4e, 0xbb, 0x91, 0x2e, 0x23, 0x56, 0x37, 0x16, 0x4c, 0x0b, 0x8a, 0x0b, 0x25, 0x49,
-	0xa7, 0x21, 0x34, 0xc9, 0x94, 0xcc, 0xa4, 0x98, 0x3b, 0x70, 0xe9, 0x25, 0xf4, 0x72, 0xba, 0xec,
-	0xd2, 0x55, 0x90, 0x74, 0xe3, 0xba, 0x5b, 0x37, 0x92, 0x1f, 0xd3, 0x34, 0x20, 0xb8, 0x1b, 0x78,
-	0x9f, 0xef, 0x99, 0xef, 0x1d, 0x06, 0x3e, 0x5f, 0x12, 0xd7, 0x0f, 0xed, 0x00, 0x47, 0x2b, 0x8e,
-	0xb7, 0x77, 0xd8, 0x23, 0x11, 0x61, 0x3e, 0x33, 0x36, 0x31, 0xe5, 0x14, 0x5d, 0xd7, 0xa9, 0x11,
-	0xad, 0xb8, 0xb1, 0xbd, 0x53, 0x9e, 0x78, 0xd4, 0xa3, 0x65, 0x84, 0x8b, 0x53, 0x45, 0x29, 0x72,
-	0xc7, 0x51, 0xc0, 0x55, 0xa2, 0x75, 0x12, 0x97, 0x06, 0x01, 0x71, 0xb9, 0x4f, 0xa3, 0x1a, 0x50,
-	0x3b, 0x00, 0x4b, 0x9c, 0x2f, 0x9c, 0xae, 0x49, 0x9d, 0xeb, 0xbf, 0x45, 0xf8, 0xf0, 0x4d, 0xb5,
-	0xd2, 0x9c, 0xdb, 0x9c, 0xa0, 0x8f, 0x50, 0x3a, 0x4b, 0x98, 0x0c, 0x06, 0xbd, 0xa1, 0x34, 0x52,
-	0x8c, 0xcb, 0x3d, 0x8d, 0x57, 0x0d, 0x62, 0x2a, 0xfb, 0x4c, 0x13, 0x4e, 0x99, 0x86, 0x52, 0x3b,
-	0x0c, 0x26, 0x7a, 0x6b, 0x58, 0xb7, 0xda, 0x2a, 0xf4, 0x16, 0x5e, 0x45, 0x2b, 0xce, 0x64, 0xb1,
-	0x54, 0x3e, 0xed, 0x2a, 0x4d, 0x9b, 0x91, 0xd9, 0x74, 0x61, 0x3e, 0x2b, 0x7c, 0x79, 0xa6, 0x5d,
-	0xcd, 0xa6, 0x0b, 0x76, 0xca, 0x34, 0xa9, 0xf2, 0x16, 0xa3, 0xba, 0x55, 0x1a, 0xd0, 0x12, 0xf6,
-	0x59, 0xe2, 0x2c, 0x8a, 0x1a, 0x4c, 0xee, 0x95, 0xba, 0x17, 0x5d, 0x5d, 0xbb, 0x94, 0x31, 0xff,
-	0x4b, 0xbf, 0x8e, 0x78, 0x9c, 0x9a, 0x37, 0xf5, 0xca, 0x8f, 0x2b, 0x75, 0xf3, 0x26, 0x4c, 0xb7,
-	0xce, 0x62, 0xe5, 0x03, 0xbc, 0xbe, 0x9c, 0x43, 0x8f, 0x60, 0x6f, 0x4d, 0x52, 0x19, 0x0c, 0xc0,
-	0xb0, 0x6f, 0x15, 0x47, 0x84, 0xe1, 0xbd, 0xad, 0x1d, 0x24, 0x44, 0x16, 0x07, 0x60, 0x28, 0x8d,
-	0x6e, 0xba, 0x5b, 0x34, 0x02, 0xab, 0xe2, 0x26, 0xe2, 0x4b, 0x30, 0x79, 0xf0, 0x6d, 0xa7, 0x09,
-	0xbf, 0x76, 0x9a, 0xa0, 0x7f, 0x86, 0xfd, 0x86, 0x40, 0xef, 0xdb, 0xad, 0xaa, 0x77, 0x97, 0xff,
-	0xe5, 0xfb, 0xbf, 0x0a, 0xe6, 0xbb, 0x7d, 0xae, 0x82, 0x43, 0xae, 0x82, 0x9f, 0xb9, 0x0a, 0xbe,
-	0x1f, 0x55, 0xe1, 0x70, 0x54, 0x85, 0x1f, 0x47, 0x55, 0xf8, 0x34, 0x76, 0x7c, 0xee, 0x24, 0xee,
-	0x9a, 0x70, 0x83, 0xc6, 0x1e, 0xae, 0xaf, 0xe1, 0xc4, 0x0e, 0xb1, 0x47, 0x6f, 0x59, 0x68, 0xc7,
-	0xfc, 0x36, 0xa2, 0x4b, 0x82, 0xbf, 0x96, 0x3f, 0x87, 0xa7, 0x1b, 0xc2, 0x9c, 0xfb, 0xe5, 0x9f,
-	0x19, 0xff, 0x09, 0x00, 0x00, 0xff, 0xff, 0x3f, 0xe6, 0xdd, 0x09, 0xd4, 0x02, 0x00, 0x00,
+	// 270 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0x49, 0x49, 0x4d, 0xce,
+	0xcc, 0x4d, 0xcc, 0xd1, 0xcf, 0x4b, 0x2b, 0xd1, 0x2f, 0x33, 0xd4, 0x4f, 0x4f, 0xcd, 0x4b, 0x2d,
+	0xce, 0x2c, 0xd6, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x83, 0xca, 0xea, 0xe5, 0xa5, 0x95,
+	0xe8, 0x95, 0x19, 0x4a, 0x89, 0xa4, 0xe7, 0xa7, 0xe7, 0x83, 0xa5, 0xf4, 0x41, 0x2c, 0x88, 0x2a,
+	0x29, 0xc9, 0xe4, 0xfc, 0xe2, 0xdc, 0xfc, 0xe2, 0x78, 0x88, 0x04, 0x84, 0x03, 0x95, 0x92, 0x40,
+	0x33, 0x1e, 0x64, 0x0e, 0x44, 0x46, 0x1a, 0x4d, 0xa6, 0x20, 0xb1, 0x28, 0x31, 0x17, 0xaa, 0x4d,
+	0xa9, 0x8f, 0x91, 0x8b, 0xc7, 0x1d, 0xe2, 0x92, 0xe0, 0x92, 0xc4, 0x92, 0x54, 0x21, 0x27, 0x2e,
+	0xee, 0xe4, 0xfc, 0x9c, 0x9c, 0xd4, 0xe4, 0x92, 0xcc, 0xfc, 0xbc, 0x62, 0x09, 0x26, 0x05, 0x66,
+	0x0d, 0x6e, 0x23, 0x29, 0x3d, 0x54, 0xe7, 0xe9, 0x39, 0xc3, 0x95, 0x38, 0xb1, 0x9c, 0xb8, 0x27,
+	0xcf, 0x10, 0x84, 0xac, 0x49, 0xc8, 0x84, 0x8b, 0x0d, 0x62, 0x89, 0x04, 0xa3, 0x02, 0xa3, 0x06,
+	0xb7, 0x91, 0x18, 0xba, 0xf6, 0x00, 0xb0, 0x2c, 0x54, 0x2b, 0x54, 0xad, 0x15, 0xcb, 0x8b, 0x05,
+	0xf2, 0x8c, 0x4e, 0xbe, 0x27, 0x1e, 0xc9, 0x31, 0x5e, 0x78, 0x24, 0xc7, 0xf8, 0xe0, 0x91, 0x1c,
+	0xe3, 0x84, 0xc7, 0x72, 0x0c, 0x17, 0x1e, 0xcb, 0x31, 0xdc, 0x78, 0x2c, 0xc7, 0x10, 0x65, 0x9c,
+	0x94, 0x59, 0x92, 0x54, 0x9a, 0x9c, 0x9d, 0x5a, 0xa2, 0x97, 0x5f, 0x94, 0xae, 0x0f, 0x35, 0xb2,
+	0x24, 0x35, 0x31, 0x57, 0x3f, 0x3d, 0x5f, 0xb7, 0x38, 0x37, 0xb1, 0xa8, 0x44, 0x37, 0x2f, 0x3f,
+	0x25, 0x55, 0xbf, 0x02, 0xec, 0xd3, 0x92, 0xca, 0x82, 0xd4, 0xe2, 0x24, 0x36, 0xb0, 0x37, 0x8d,
+	0x01, 0x01, 0x00, 0x00, 0xff, 0xff, 0x25, 0x60, 0xe5, 0xff, 0x7e, 0x01, 0x00, 0x00,
 }
 
+func (this *GenesisState) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*GenesisState)
+	if !ok {
+		that2, ok := that.(GenesisState)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.Collections) != len(that1.Collections) {
+		return false
+	}
+	for i := range this.Collections {
+		if !this.Collections[i].Equal(&that1.Collections[i]) {
+			return false
+		}
+	}
+	if !this.Params.Equal(&that1.Params) {
+		return false
+	}
+	return true
+}
 func (m *GenesisState) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -164,44 +158,6 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.SubTokens) > 0 {
-		for k := range m.SubTokens {
-			v := m.SubTokens[k]
-			baseI := i
-			{
-				size, err := (&v).MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintGenesis(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x12
-			i -= len(k)
-			copy(dAtA[i:], k)
-			i = encodeVarintGenesis(dAtA, i, uint64(len(k)))
-			i--
-			dAtA[i] = 0xa
-			i = encodeVarintGenesis(dAtA, i, uint64(baseI-i))
-			i--
-			dAtA[i] = 0x1a
-		}
-	}
-	if len(m.NFTs) > 0 {
-		for iNdEx := len(m.NFTs) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.NFTs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintGenesis(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x12
-		}
-	}
 	if len(m.Collections) > 0 {
 		for iNdEx := len(m.Collections) - 1; iNdEx >= 0; iNdEx-- {
 			{
@@ -213,46 +169,19 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintGenesis(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0xa
+			dAtA[i] = 0x12
 		}
 	}
-	return len(dAtA) - i, nil
-}
-
-func (m *SubTokens) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *SubTokens) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *SubTokens) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.SubTokens) > 0 {
-		for iNdEx := len(m.SubTokens) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.SubTokens[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintGenesis(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0xa
+	{
+		size, err := m.Params.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = encodeVarintGenesis(dAtA, i, uint64(size))
 	}
+	i--
+	dAtA[i] = 0xa
 	return len(dAtA) - i, nil
 }
 
@@ -273,38 +202,10 @@ func (m *GenesisState) Size() (n int) {
 	}
 	var l int
 	_ = l
+	l = m.Params.Size()
+	n += 1 + l + sovGenesis(uint64(l))
 	if len(m.Collections) > 0 {
 		for _, e := range m.Collections {
-			l = e.Size()
-			n += 1 + l + sovGenesis(uint64(l))
-		}
-	}
-	if len(m.NFTs) > 0 {
-		for _, e := range m.NFTs {
-			l = e.Size()
-			n += 1 + l + sovGenesis(uint64(l))
-		}
-	}
-	if len(m.SubTokens) > 0 {
-		for k, v := range m.SubTokens {
-			_ = k
-			_ = v
-			l = v.Size()
-			mapEntrySize := 1 + len(k) + sovGenesis(uint64(len(k))) + 1 + l + sovGenesis(uint64(l))
-			n += mapEntrySize + 1 + sovGenesis(uint64(mapEntrySize))
-		}
-	}
-	return n
-}
-
-func (m *SubTokens) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if len(m.SubTokens) > 0 {
-		for _, e := range m.SubTokens {
 			l = e.Size()
 			n += 1 + l + sovGenesis(uint64(l))
 		}
@@ -349,6 +250,39 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Params", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Params.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Collections", wireType)
 			}
 			var msglen int
@@ -378,253 +312,6 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			}
 			m.Collections = append(m.Collections, Collection{})
 			if err := m.Collections[len(m.Collections)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NFTs", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.NFTs = append(m.NFTs, BaseNFT{})
-			if err := m.NFTs[len(m.NFTs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SubTokens", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.SubTokens == nil {
-				m.SubTokens = make(map[string]SubTokens)
-			}
-			var mapkey string
-			mapvalue := &SubTokens{}
-			for iNdEx < postIndex {
-				entryPreIndex := iNdEx
-				var wire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowGenesis
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					wire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				fieldNum := int32(wire >> 3)
-				if fieldNum == 1 {
-					var stringLenmapkey uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowGenesis
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						stringLenmapkey |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					intStringLenmapkey := int(stringLenmapkey)
-					if intStringLenmapkey < 0 {
-						return ErrInvalidLengthGenesis
-					}
-					postStringIndexmapkey := iNdEx + intStringLenmapkey
-					if postStringIndexmapkey < 0 {
-						return ErrInvalidLengthGenesis
-					}
-					if postStringIndexmapkey > l {
-						return io.ErrUnexpectedEOF
-					}
-					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
-					iNdEx = postStringIndexmapkey
-				} else if fieldNum == 2 {
-					var mapmsglen int
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowGenesis
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						mapmsglen |= int(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					if mapmsglen < 0 {
-						return ErrInvalidLengthGenesis
-					}
-					postmsgIndex := iNdEx + mapmsglen
-					if postmsgIndex < 0 {
-						return ErrInvalidLengthGenesis
-					}
-					if postmsgIndex > l {
-						return io.ErrUnexpectedEOF
-					}
-					mapvalue = &SubTokens{}
-					if err := mapvalue.Unmarshal(dAtA[iNdEx:postmsgIndex]); err != nil {
-						return err
-					}
-					iNdEx = postmsgIndex
-				} else {
-					iNdEx = entryPreIndex
-					skippy, err := skipGenesis(dAtA[iNdEx:])
-					if err != nil {
-						return err
-					}
-					if (skippy < 0) || (iNdEx+skippy) < 0 {
-						return ErrInvalidLengthGenesis
-					}
-					if (iNdEx + skippy) > postIndex {
-						return io.ErrUnexpectedEOF
-					}
-					iNdEx += skippy
-				}
-			}
-			m.SubTokens[mapkey] = *mapvalue
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipGenesis(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *SubTokens) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowGenesis
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: SubTokens: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: SubTokens: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SubTokens", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.SubTokens = append(m.SubTokens, SubToken{})
-			if err := m.SubTokens[len(m.SubTokens)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

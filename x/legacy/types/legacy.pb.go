@@ -5,6 +5,7 @@ package types
 
 import (
 	fmt "fmt"
+	_ "github.com/cosmos/cosmos-proto"
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/gogo/protobuf/gogoproto"
@@ -25,29 +26,30 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type LegacyRecord struct {
-	// old address
-	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address" yaml:"address"`
-	// account balance
-	Coins github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,2,rep,name=coins,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"coins" yaml:"coins"`
-	// nft token ids
-	Nfts []NFTRecord `protobuf:"bytes,3,rep,name=nfts,proto3" json:"nfts" yaml:"nfts"`
-	// multisig wallets addresses
-	Wallets []string `protobuf:"bytes,4,rep,name=wallets,proto3" json:"wallets" yaml:"wallets"`
+// Record defines the legacy record containing set of values that should be returned to the actual owner.
+type Record struct {
+	// legacy_address defines legacy address which is not valid anymore so cannot be used.
+	LegacyAddress string `protobuf:"bytes,1,opt,name=legacy_address,json=legacyAddress,proto3" json:"legacy_address,omitempty"`
+	// coins defines complete list of tokens to be returned.
+	Coins github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,2,rep,name=coins,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"coins"`
+	// wallets defines complete list of multisig wallets to be returned.
+	Wallets []string `protobuf:"bytes,3,rep,name=wallets,proto3" json:"wallets,omitempty"`
+	// nfts defines list of token ids to be returned
+	NFTs []string `protobuf:"bytes,4,rep,name=nfts,proto3" json:"nfts,omitempty"`
 }
 
-func (m *LegacyRecord) Reset()         { *m = LegacyRecord{} }
-func (m *LegacyRecord) String() string { return proto.CompactTextString(m) }
-func (*LegacyRecord) ProtoMessage()    {}
-func (*LegacyRecord) Descriptor() ([]byte, []int) {
+func (m *Record) Reset()         { *m = Record{} }
+func (m *Record) String() string { return proto.CompactTextString(m) }
+func (*Record) ProtoMessage()    {}
+func (*Record) Descriptor() ([]byte, []int) {
 	return fileDescriptor_fece5b3848118a62, []int{0}
 }
-func (m *LegacyRecord) XXX_Unmarshal(b []byte) error {
+func (m *Record) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *LegacyRecord) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *Record) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_LegacyRecord.Marshal(b, m, deterministic)
+		return xxx_messageInfo_Record.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -57,110 +59,52 @@ func (m *LegacyRecord) XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
 		return b[:n], nil
 	}
 }
-func (m *LegacyRecord) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_LegacyRecord.Merge(m, src)
+func (m *Record) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Record.Merge(m, src)
 }
-func (m *LegacyRecord) XXX_Size() int {
+func (m *Record) XXX_Size() int {
 	return m.Size()
 }
-func (m *LegacyRecord) XXX_DiscardUnknown() {
-	xxx_messageInfo_LegacyRecord.DiscardUnknown(m)
+func (m *Record) XXX_DiscardUnknown() {
+	xxx_messageInfo_Record.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_LegacyRecord proto.InternalMessageInfo
-
-type NFTRecord struct {
-	Denom string `protobuf:"bytes,1,opt,name=denom,proto3" json:"denom" yaml:"denom"`
-	Id    string `protobuf:"bytes,2,opt,name=id,proto3" json:"id" yaml:"id"`
-}
-
-func (m *NFTRecord) Reset()         { *m = NFTRecord{} }
-func (m *NFTRecord) String() string { return proto.CompactTextString(m) }
-func (*NFTRecord) ProtoMessage()    {}
-func (*NFTRecord) Descriptor() ([]byte, []int) {
-	return fileDescriptor_fece5b3848118a62, []int{1}
-}
-func (m *NFTRecord) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *NFTRecord) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_NFTRecord.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *NFTRecord) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_NFTRecord.Merge(m, src)
-}
-func (m *NFTRecord) XXX_Size() int {
-	return m.Size()
-}
-func (m *NFTRecord) XXX_DiscardUnknown() {
-	xxx_messageInfo_NFTRecord.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_NFTRecord proto.InternalMessageInfo
-
-func (m *NFTRecord) GetDenom() string {
-	if m != nil {
-		return m.Denom
-	}
-	return ""
-}
-
-func (m *NFTRecord) GetId() string {
-	if m != nil {
-		return m.Id
-	}
-	return ""
-}
+var xxx_messageInfo_Record proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*LegacyRecord)(nil), "decimal.legacy.v1.LegacyRecord")
-	proto.RegisterType((*NFTRecord)(nil), "decimal.legacy.v1.NFTRecord")
+	proto.RegisterType((*Record)(nil), "decimal.legacy.v1.Record")
 }
 
 func init() { proto.RegisterFile("decimal/legacy/v1/legacy.proto", fileDescriptor_fece5b3848118a62) }
 
 var fileDescriptor_fece5b3848118a62 = []byte{
-	// 433 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x52, 0x31, 0x6f, 0xd4, 0x30,
-	0x18, 0x4d, 0x72, 0x2d, 0x70, 0x6e, 0x85, 0x44, 0x60, 0x48, 0x0b, 0xd8, 0x27, 0xb3, 0xdc, 0x72,
-	0xb6, 0x0e, 0x24, 0x90, 0x3a, 0x1e, 0x12, 0x12, 0x12, 0x20, 0x14, 0x31, 0xb1, 0x39, 0xb1, 0x09,
-	0x56, 0x93, 0xb8, 0x8a, 0xdd, 0x83, 0xe3, 0x17, 0x30, 0x32, 0x32, 0x76, 0xe6, 0x97, 0x74, 0xec,
-	0x82, 0xc4, 0x64, 0xd0, 0xdd, 0x76, 0xe3, 0xfd, 0x02, 0x14, 0xdb, 0xa1, 0x03, 0x53, 0xfc, 0xbd,
-	0xf7, 0xf2, 0x9e, 0xbf, 0x27, 0x03, 0xc8, 0x45, 0x29, 0x1b, 0x56, 0xd3, 0x5a, 0x54, 0xac, 0x5c,
-	0xd1, 0xe5, 0x3c, 0x9c, 0xc8, 0x59, 0xa7, 0x8c, 0x4a, 0xef, 0x04, 0x9e, 0x04, 0x74, 0x39, 0x3f,
-	0xbe, 0x57, 0xa9, 0x4a, 0x39, 0x96, 0xf6, 0x27, 0x2f, 0x3c, 0x86, 0xa5, 0xd2, 0x8d, 0xd2, 0xb4,
-	0x60, 0x5a, 0xd0, 0xe5, 0xbc, 0x10, 0x86, 0xcd, 0x69, 0xa9, 0x64, 0xeb, 0x79, 0xfc, 0x33, 0x01,
-	0x87, 0xaf, 0x9c, 0x47, 0x2e, 0x4a, 0xd5, 0xf1, 0xf4, 0x19, 0xb8, 0xc9, 0x38, 0xef, 0x84, 0xd6,
-	0x59, 0x3c, 0x89, 0xa7, 0xe3, 0xc5, 0xc3, 0xad, 0x45, 0x03, 0xb4, 0xb3, 0xe8, 0xf6, 0x8a, 0x35,
-	0xf5, 0x09, 0x0e, 0x00, 0xce, 0x07, 0x2a, 0xfd, 0x02, 0xf6, 0x7b, 0x5f, 0x9d, 0x25, 0x93, 0xd1,
-	0xf4, 0xe0, 0xf1, 0x11, 0xf1, 0xc9, 0xa4, 0x4f, 0x26, 0x21, 0x99, 0x3c, 0x57, 0xb2, 0x5d, 0xbc,
-	0xbc, 0xb4, 0x28, 0xda, 0x5a, 0xe4, 0xf5, 0x3b, 0x8b, 0x0e, 0xbd, 0xa7, 0x1b, 0xf1, 0x8f, 0xdf,
-	0x68, 0x5a, 0x49, 0xf3, 0xf1, 0xbc, 0x20, 0xa5, 0x6a, 0x68, 0xb8, 0xbf, 0xff, 0xcc, 0x34, 0x3f,
-	0xa5, 0x66, 0x75, 0x26, 0xb4, 0x73, 0xd2, 0xb9, 0xb7, 0x48, 0x5f, 0x83, 0xbd, 0xf6, 0x83, 0xd1,
-	0xd9, 0xc8, 0x45, 0x3f, 0x20, 0xff, 0xb5, 0x43, 0xde, 0xbc, 0x78, 0xe7, 0x17, 0x5c, 0xdc, 0x0f,
-	0xe9, 0xee, 0x8f, 0x9d, 0x45, 0x07, 0x3e, 0xbc, 0x9f, 0x70, 0xee, 0xc0, 0xbe, 0x83, 0x4f, 0xac,
-	0xae, 0x85, 0xd1, 0xd9, 0xde, 0x64, 0x34, 0x74, 0x10, 0xa0, 0xeb, 0x0e, 0x02, 0x80, 0xf3, 0x81,
-	0x3a, 0xb9, 0xf5, 0xf5, 0x02, 0x45, 0xdf, 0x2f, 0x50, 0x8c, 0x19, 0x18, 0xff, 0x8b, 0x4c, 0x29,
-	0xd8, 0xe7, 0xa2, 0x55, 0x4d, 0x68, 0xf4, 0xa8, 0xdf, 0xdd, 0x01, 0xd7, 0xbb, 0xbb, 0x11, 0xe7,
-	0x1e, 0x4e, 0x1f, 0x81, 0x44, 0xf2, 0x2c, 0x71, 0xea, 0xbb, 0x5b, 0x8b, 0x12, 0xc9, 0x77, 0x16,
-	0x8d, 0xbd, 0x54, 0x72, 0x9c, 0x27, 0x92, 0x2f, 0xde, 0x5e, 0xae, 0x61, 0x7c, 0xb5, 0x86, 0xf1,
-	0x9f, 0x35, 0x8c, 0xbf, 0x6d, 0x60, 0x74, 0xb5, 0x81, 0xd1, 0xaf, 0x0d, 0x8c, 0xde, 0x3f, 0x2d,
-	0xa4, 0x29, 0xce, 0xcb, 0x53, 0x61, 0x88, 0xea, 0x2a, 0x1a, 0xda, 0x30, 0x82, 0x35, 0xb4, 0x52,
-	0x33, 0xdd, 0xb0, 0xce, 0xcc, 0x5a, 0xc5, 0x05, 0xfd, 0x3c, 0xbc, 0x2f, 0xd7, 0x69, 0x71, 0xc3,
-	0xbd, 0x89, 0x27, 0x7f, 0x03, 0x00, 0x00, 0xff, 0xff, 0x57, 0x9f, 0x8d, 0x07, 0x7e, 0x02, 0x00,
-	0x00,
+	// 360 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x34, 0x91, 0x3f, 0x4f, 0xf3, 0x30,
+	0x10, 0xc6, 0x93, 0xb7, 0x7d, 0x0b, 0x0d, 0x7f, 0x24, 0xa2, 0x0e, 0x69, 0x85, 0x9c, 0x8a, 0x29,
+	0x4b, 0x62, 0x02, 0x12, 0x03, 0x0b, 0x22, 0x48, 0x8c, 0x08, 0x05, 0x26, 0x96, 0xca, 0x71, 0x8c,
+	0x89, 0x9a, 0xc4, 0x55, 0xec, 0x16, 0xfa, 0x0d, 0x18, 0x19, 0x19, 0x3b, 0x33, 0xf3, 0x21, 0x3a,
+	0x56, 0x4c, 0x4c, 0x05, 0xa5, 0x0b, 0x33, 0x9f, 0x00, 0x25, 0x76, 0x27, 0xdf, 0x3d, 0xbf, 0xbb,
+	0x7b, 0x4e, 0x3e, 0x03, 0xc4, 0x04, 0x27, 0x19, 0x4a, 0x61, 0x4a, 0x28, 0xc2, 0x53, 0x38, 0xf1,
+	0x55, 0xe4, 0x8d, 0x0a, 0x26, 0x98, 0xb9, 0xa7, 0xb8, 0xa7, 0xd4, 0x89, 0xdf, 0xeb, 0x50, 0x46,
+	0x59, 0x4d, 0x61, 0x15, 0xc9, 0xc2, 0x5e, 0x17, 0x33, 0x9e, 0x31, 0x3e, 0x90, 0x40, 0x26, 0x0a,
+	0x01, 0x99, 0xc1, 0x08, 0x71, 0x02, 0x27, 0x7e, 0x44, 0x04, 0xf2, 0x21, 0x66, 0x49, 0x2e, 0xf9,
+	0xc1, 0xaf, 0x6e, 0xb4, 0x42, 0x82, 0x59, 0x11, 0x9b, 0x67, 0xc6, 0xae, 0x34, 0x1a, 0xa0, 0x38,
+	0x2e, 0x08, 0xe7, 0x96, 0xde, 0xd7, 0x9d, 0x76, 0x60, 0x7d, 0xbc, 0xbb, 0x1d, 0x35, 0xf4, 0x5c,
+	0x92, 0x1b, 0x51, 0x24, 0x39, 0x0d, 0x77, 0x64, 0xbd, 0x12, 0x4d, 0x64, 0xfc, 0xaf, 0x26, 0x73,
+	0xeb, 0x5f, 0xbf, 0xe1, 0x6c, 0x1d, 0x75, 0x3d, 0xd5, 0x54, 0x79, 0x7b, 0xca, 0xdb, 0xbb, 0x60,
+	0x49, 0x1e, 0x1c, 0xce, 0x97, 0xb6, 0xf6, 0xf6, 0x65, 0x3b, 0x34, 0x11, 0x0f, 0xe3, 0xc8, 0xc3,
+	0x2c, 0x53, 0x6b, 0xab, 0xc7, 0xe5, 0xf1, 0x10, 0x8a, 0xe9, 0x88, 0xf0, 0xba, 0x81, 0x87, 0x72,
+	0xb2, 0x69, 0x19, 0x1b, 0x8f, 0x28, 0x4d, 0x89, 0xe0, 0x56, 0xa3, 0xdf, 0x70, 0xda, 0xe1, 0x3a,
+	0x35, 0xf7, 0x8d, 0x66, 0x7e, 0x2f, 0xb8, 0xd5, 0xac, 0xe4, 0x60, 0xb3, 0x5c, 0xda, 0xcd, 0xab,
+	0xcb, 0x5b, 0x1e, 0xd6, 0xea, 0xe9, 0xf6, 0xf3, 0xcc, 0xd6, 0x5e, 0x67, 0xb6, 0xfe, 0x33, 0xb3,
+	0xb5, 0xe0, 0x7a, 0x5e, 0x02, 0x7d, 0x51, 0x02, 0xfd, 0xbb, 0x04, 0xfa, 0xcb, 0x0a, 0x68, 0x8b,
+	0x15, 0xd0, 0x3e, 0x57, 0x40, 0xbb, 0x3b, 0x89, 0x12, 0x11, 0x8d, 0xf1, 0x90, 0x08, 0x8f, 0x15,
+	0x14, 0xaa, 0x03, 0x08, 0x82, 0x32, 0x48, 0x99, 0xcb, 0x33, 0x54, 0x08, 0x37, 0x67, 0x31, 0x81,
+	0x4f, 0xeb, 0xa3, 0xd5, 0x4b, 0x46, 0xad, 0xfa, 0x37, 0x8f, 0xff, 0x02, 0x00, 0x00, 0xff, 0xff,
+	0x96, 0x67, 0xe9, 0x35, 0xd3, 0x01, 0x00, 0x00,
 }
 
-func (m *LegacyRecord) Marshal() (dAtA []byte, err error) {
+func (m *Record) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -170,35 +114,30 @@ func (m *LegacyRecord) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *LegacyRecord) MarshalTo(dAtA []byte) (int, error) {
+func (m *Record) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *LegacyRecord) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *Record) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
+	if len(m.NFTs) > 0 {
+		for iNdEx := len(m.NFTs) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.NFTs[iNdEx])
+			copy(dAtA[i:], m.NFTs[iNdEx])
+			i = encodeVarintLegacy(dAtA, i, uint64(len(m.NFTs[iNdEx])))
+			i--
+			dAtA[i] = 0x22
+		}
+	}
 	if len(m.Wallets) > 0 {
 		for iNdEx := len(m.Wallets) - 1; iNdEx >= 0; iNdEx-- {
 			i -= len(m.Wallets[iNdEx])
 			copy(dAtA[i:], m.Wallets[iNdEx])
 			i = encodeVarintLegacy(dAtA, i, uint64(len(m.Wallets[iNdEx])))
-			i--
-			dAtA[i] = 0x22
-		}
-	}
-	if len(m.Nfts) > 0 {
-		for iNdEx := len(m.Nfts) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Nfts[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintLegacy(dAtA, i, uint64(size))
-			}
 			i--
 			dAtA[i] = 0x1a
 		}
@@ -217,47 +156,10 @@ func (m *LegacyRecord) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0x12
 		}
 	}
-	if len(m.Address) > 0 {
-		i -= len(m.Address)
-		copy(dAtA[i:], m.Address)
-		i = encodeVarintLegacy(dAtA, i, uint64(len(m.Address)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *NFTRecord) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *NFTRecord) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *NFTRecord) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Id) > 0 {
-		i -= len(m.Id)
-		copy(dAtA[i:], m.Id)
-		i = encodeVarintLegacy(dAtA, i, uint64(len(m.Id)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Denom) > 0 {
-		i -= len(m.Denom)
-		copy(dAtA[i:], m.Denom)
-		i = encodeVarintLegacy(dAtA, i, uint64(len(m.Denom)))
+	if len(m.LegacyAddress) > 0 {
+		i -= len(m.LegacyAddress)
+		copy(dAtA[i:], m.LegacyAddress)
+		i = encodeVarintLegacy(dAtA, i, uint64(len(m.LegacyAddress)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -275,24 +177,18 @@ func encodeVarintLegacy(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *LegacyRecord) Size() (n int) {
+func (m *Record) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.Address)
+	l = len(m.LegacyAddress)
 	if l > 0 {
 		n += 1 + l + sovLegacy(uint64(l))
 	}
 	if len(m.Coins) > 0 {
 		for _, e := range m.Coins {
-			l = e.Size()
-			n += 1 + l + sovLegacy(uint64(l))
-		}
-	}
-	if len(m.Nfts) > 0 {
-		for _, e := range m.Nfts {
 			l = e.Size()
 			n += 1 + l + sovLegacy(uint64(l))
 		}
@@ -303,22 +199,11 @@ func (m *LegacyRecord) Size() (n int) {
 			n += 1 + l + sovLegacy(uint64(l))
 		}
 	}
-	return n
-}
-
-func (m *NFTRecord) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Denom)
-	if l > 0 {
-		n += 1 + l + sovLegacy(uint64(l))
-	}
-	l = len(m.Id)
-	if l > 0 {
-		n += 1 + l + sovLegacy(uint64(l))
+	if len(m.NFTs) > 0 {
+		for _, s := range m.NFTs {
+			l = len(s)
+			n += 1 + l + sovLegacy(uint64(l))
+		}
 	}
 	return n
 }
@@ -329,7 +214,7 @@ func sovLegacy(x uint64) (n int) {
 func sozLegacy(x uint64) (n int) {
 	return sovLegacy(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *LegacyRecord) Unmarshal(dAtA []byte) error {
+func (m *Record) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -352,15 +237,15 @@ func (m *LegacyRecord) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: LegacyRecord: wiretype end group for non-group")
+			return fmt.Errorf("proto: Record: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: LegacyRecord: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: Record: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field LegacyAddress", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -388,7 +273,7 @@ func (m *LegacyRecord) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Address = string(dAtA[iNdEx:postIndex])
+			m.LegacyAddress = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
@@ -426,40 +311,6 @@ func (m *LegacyRecord) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Nfts", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowLegacy
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthLegacy
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthLegacy
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Nfts = append(m.Nfts, NFTRecord{})
-			if err := m.Nfts[len(m.Nfts)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Wallets", wireType)
 			}
 			var stringLen uint64
@@ -490,59 +341,9 @@ func (m *LegacyRecord) Unmarshal(dAtA []byte) error {
 			}
 			m.Wallets = append(m.Wallets, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipLegacy(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthLegacy
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *NFTRecord) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowLegacy
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: NFTRecord: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: NFTRecord: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
+		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field NFTs", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -570,39 +371,7 @@ func (m *NFTRecord) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Denom = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowLegacy
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthLegacy
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthLegacy
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Id = string(dAtA[iNdEx:postIndex])
+			m.NFTs = append(m.NFTs, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

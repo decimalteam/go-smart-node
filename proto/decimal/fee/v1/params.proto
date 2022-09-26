@@ -3,154 +3,220 @@ package decimal.fee.v1;
 
 import "gogoproto/gogo.proto";
 
+import "cosmos_proto/cosmos.proto";
+
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/fee/types";
 
-// Params defines calculation constants for the module.
-// Naming convention: <module_name><transaction_as_verb><something_additional>
-// Parameters measurement is units (10^15)
+// Params defines transaction fees calculation constants for the entire application.
 message Params {
   option (gogoproto.equal) = true;
   option (gogoproto.goproto_getters) = false;
-  option (gogoproto.goproto_stringer) = false;
+  option (gogoproto.goproto_stringer) = true;
 
-  // 1 byte fee
-  // commission part by transaction size
-  string byte_fee = 1 [
+  // tx common fee depends on raw transaction size in bytes
+  string tx_byte_fee = 1 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "byte_fee",
-    (gogoproto.moretags) = "yaml:\"byte_fee\"",
-    (gogoproto.nullable) = false
-  ];  
-
-  // coin transactions fees
-  string coin_send = 2 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "coin_send",
-    (gogoproto.moretags) = "yaml:\"coin_send\"",
-    (gogoproto.nullable) = false
-  ];
-  string coin_send_multi_addition = 3 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "coin_send_multi_addition",
-    (gogoproto.moretags) = "yaml:\"coin_send_multi_addition\"",
-    (gogoproto.nullable) = false
-  ];
-  string coin_buy = 4 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "coin_buy",
-    (gogoproto.moretags) = "yaml:\"coin_buy\"",
-    (gogoproto.nullable) = false
-  ];
-  string coin_sell = 5 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "coin_sell",
-    (gogoproto.moretags) = "yaml:\"coin_sell\"",
     (gogoproto.nullable) = false
   ];
 
-  // common transaction commission
-  string coin_create = 6 [
+  // coin creation special fee depends on coin ticker length
+  string coin_create_ticker_3 = 3 [
+    (gogoproto.customname) = "CoinCreateTicker3",
+    (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "coin_create",
-    (gogoproto.moretags) = "yaml:\"coin_create\"",
+    (gogoproto.nullable) = false
+  ];
+  string coin_create_ticker_4 = 4 [
+    (gogoproto.customname) = "CoinCreateTicker4",
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string coin_create_ticker_5 = 5 [
+    (gogoproto.customname) = "CoinCreateTicker5",
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string coin_create_ticker_6 = 6 [
+    (gogoproto.customname) = "CoinCreateTicker6",
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string coin_create_ticker_7 = 7 [
+    (gogoproto.customname) = "CoinCreateTicker7",
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
 
-  // special commission depends on coin symbol length
-  string coin_create_length3 = 7 [
+  // coin fees
+  string coin_create = 11 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "coin_create_length_3",
-    (gogoproto.moretags) = "yaml:\"coin_create_length_3\"",
-    (gogoproto.nullable) = false
-  ];  
-  string coin_create_length4 = 8 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "coin_create_length_4",
-    (gogoproto.moretags) = "yaml:\"coin_create_length_4\"",
-    (gogoproto.nullable) = false
-  ];  
-  string coin_create_length5 = 9 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "coin_create_length_5",
-    (gogoproto.moretags) = "yaml:\"coin_create_length_5\"",
-    (gogoproto.nullable) = false
-  ];  
-  string coin_create_length6 = 10 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "coin_create_length_6",
-    (gogoproto.moretags) = "yaml:\"coin_create_length_6\"",
-    (gogoproto.nullable) = false
-  ];  
-  string coin_create_length_other = 11 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "coin_create_length_other",
-    (gogoproto.moretags) = "yaml:\"coin_create_length_other\"",
-    (gogoproto.nullable) = false
-  ];  
-
-  // multisignature wallets
-  string multisig_create_wallet = 12 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "multisig_create_wallet",
-    (gogoproto.moretags) = "yaml:\"multisig_create_wallet\"",
-    (gogoproto.nullable) = false
-  ];    
-  string multisig_create_transaction = 13 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "multisig_create_transaction",
-    (gogoproto.moretags) = "yaml:\"multisig_create_transaction\"",
-    (gogoproto.nullable) = false
-  ];    
-  string multisig_sign_transaction = 14 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "multisig_sign_transaction",
-    (gogoproto.moretags) = "yaml:\"multisig_sign_transaction\"",
-    (gogoproto.nullable) = false
-  ];    
-
-  // validator operations
-  string validator_declare_candidate = 15 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "validator_declare_candidate",
-    (gogoproto.moretags) = "yaml:\"validator_declare_candidate\"",
     (gogoproto.nullable) = false
   ];
-  string validator_edit_candidate = 16 [
+  string coin_update = 12 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "validator_edit_candidate",
-    (gogoproto.moretags) = "yaml:\"validator_edit_candidate\"",
     (gogoproto.nullable) = false
   ];
-  string validator_delegate = 17 [
+  string coin_send = 13 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "validator_delegate",
-    (gogoproto.moretags) = "yaml:\"validator_delegate\"",
     (gogoproto.nullable) = false
   ];
-  string validator_unbond = 18 [
+  string coin_send_add = 14 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "validator_unbond",
-    (gogoproto.moretags) = "yaml:\"validator_unbond\"",
     (gogoproto.nullable) = false
   ];
-  string validator_set_online = 19 [
+  string coin_buy = 15 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "validator_set_online",
-    (gogoproto.moretags) = "yaml:\"validator_set_online\"",
     (gogoproto.nullable) = false
   ];
-  string validator_set_offline = 20 [
+  string coin_sell = 16 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.jsontag) = "validator_set_offline",
-    (gogoproto.moretags) = "yaml:\"validator_set_offline\"",
+    (gogoproto.nullable) = false
+  ];
+  string coin_redeem_check = 17 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string coin_burn = 18 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
 
-  // fee params
-  string oracle_address = 21 [
-    (gogoproto.jsontag) = "oracle_address",
-    (gogoproto.moretags) = "yaml:\"oracle_address\""   
+  // multisig fees
+  string multisig_create_wallet = 21 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
   ];
+  string multisig_create_transaction = 22 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string multisig_sign_transaction = 23 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+
+  // nft fees
+  string nft_mint_token = 31 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string nft_update_token = 32 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string nft_update_reserve = 33 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string nft_send_token = 34 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string nft_burn_token = 35 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+
+  // swap fees
+  string swap_activate_chain = 41 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string swap_deactivate_chain = 42 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string swap_initialize = 43 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string swap_redeem = 44 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+
+  // validator fees
+  string validator_create_validator = 51 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string validator_edit_validator = 52 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string validator_delegate = 53 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string validator_delegate_nft = 54 [
+    (gogoproto.customname) = "ValidatorDelegateNFT",
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string validator_redelegate = 55 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string validator_redelegate_nft = 56 [
+    (gogoproto.customname) = "ValidatorRedelegateNFT",
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string validator_undelegate = 57 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string validator_undelegate_nft = 58 [
+    (gogoproto.customname) = "ValidatorUndelegateNFT",
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string validator_set_online = 59 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string validator_set_offline = 60 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+
+  // oracle defines address empowered to update coin prices.
+  string oracle = 777 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 
   // evm tx commissions
   string evm_gas_price = 22 [

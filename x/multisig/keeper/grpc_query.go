@@ -21,7 +21,7 @@ func (k Keeper) Wallet(c context.Context, req *types.QueryWalletRequest) (*types
 	}
 	ctx := sdk.UnwrapSDKContext(c)
 
-	wallet, err := k.GetWallet(ctx, req.Address)
+	wallet, err := k.GetWallet(ctx, req.Wallet)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

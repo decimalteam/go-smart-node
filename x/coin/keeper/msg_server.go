@@ -8,17 +8,20 @@ import (
 	"strconv"
 	"strings"
 
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
+	"golang.org/x/crypto/sha3"
 
-	"github.com/cosmos/btcutil/base58"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
-	"golang.org/x/crypto/sha3"
+
+	sdkmath "cosmossdk.io/math"
+	"github.com/cosmos/btcutil/base58"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/config"
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	sdkmath "cosmossdk.io/math"
 )
@@ -32,12 +35,12 @@ var _ types.MsgServer = &Keeper{}
 func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*types.MsgCreateCoinResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	baseCoinDenom := k.GetBaseDenom(ctx)
-	coinDenom := strings.ToLower(msg.Symbol)
+	coinDenom := strings.ToLower(msg.Denom)
 
 	// Create new coin instance
 	var coin = types.Coin{
 		Title:       msg.Title,
-		Symbol:      coinDenom,
+		Denom:       coinDenom,
 		CRR:         msg.CRR,
 		Reserve:     msg.InitialReserve,
 		Volume:      msg.InitialVolume,
@@ -122,9 +125,9 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 	// Emit transaction events
 	err = events.EmitTypedEvent(ctx, &types.EventCreateCoin{
 		Sender:               sender.String(),
-		Symbol:               coinDenom,
+		Denom:                coinDenom,
 		Title:                msg.Title,
-		Crr:                  msg.CRR,
+		CRR:                  msg.CRR,
 		InitialVolume:        msg.InitialVolume.String(),
 		InitialReserve:       msg.InitialReserve.String(),
 		LimitVolume:          msg.LimitVolume.String(),
@@ -145,7 +148,7 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 
 func (k Keeper) UpdateCoin(goCtx context.Context, msg *types.MsgUpdateCoin) (*types.MsgUpdateCoinResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	coinDenom := strings.ToLower(msg.Symbol)
+	coinDenom := strings.ToLower(msg.Denom)
 
 	// Retrieve updating coin
 	coin, err := k.GetCoin(ctx, coinDenom)
@@ -173,7 +176,7 @@ func (k Keeper) UpdateCoin(goCtx context.Context, msg *types.MsgUpdateCoin) (*ty
 	// Emit transaction events
 	err = events.EmitTypedEvent(ctx, &types.EventUpdateCoin{
 		Sender:      msg.Sender,
-		Symbol:      coin.Symbol,
+		Denom:       coin.Denom,
 		LimitVolume: msg.LimitVolume.String(),
 		Identity:    msg.Identity,
 	})
@@ -201,19 +204,19 @@ func (k Keeper) SendCoin(goCtx context.Context, msg *types.MsgSendCoin) (*types.
 
 	// NOTE: It was already validated so no need to check error
 	sender, _ := sdk.AccAddressFromBech32(msg.Sender)
-	receiver, _ := sdk.AccAddressFromBech32(msg.Receiver)
+	recipient, _ := sdk.AccAddressFromBech32(msg.Recipient)
 
 	// Send coins from the sender to the recipient
-	err = k.bankKeeper.SendCoins(ctx, sender, receiver, sdk.NewCoins(msg.Coin))
+	err = k.bankKeeper.SendCoins(ctx, sender, recipient, sdk.NewCoins(msg.Coin))
 	if err != nil {
 		return nil, err
 	}
 
 	// Emit transaction events
 	err = events.EmitTypedEvent(ctx, &types.EventSendCoin{
-		Sender:   msg.Sender,
-		Receiver: msg.Receiver,
-		Coin:     msg.Coin.String(),
+		Sender:    msg.Sender,
+		Recipient: msg.Recipient,
+		Coin:      msg.Coin.String(),
 	})
 	if err != nil {
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())
@@ -236,7 +239,7 @@ func (k Keeper) MultiSendCoin(goCtx context.Context, msg *types.MsgMultiSendCoin
 		coinDenom := strings.ToLower(msg.Sends[i].Coin.Denom)
 
 		// NOTE: It was already validated so no need to check error
-		receiver, _ := sdk.AccAddressFromBech32(msg.Sends[i].Receiver)
+		recipient, _ := sdk.AccAddressFromBech32(msg.Sends[i].Recipient)
 
 		// Retrieve sending coin
 		_, err := k.GetCoin(ctx, coinDenom)
@@ -245,16 +248,16 @@ func (k Keeper) MultiSendCoin(goCtx context.Context, msg *types.MsgMultiSendCoin
 		}
 
 		// Send coins from the sender to the recipient
-		err = k.bankKeeper.SendCoins(ctx, sender, receiver, sdk.NewCoins(msg.Sends[i].Coin))
+		err = k.bankKeeper.SendCoins(ctx, sender, recipient, sdk.NewCoins(msg.Sends[i].Coin))
 		if err != nil {
 			return nil, err
 		}
 
 		// Emit transaction events
 		err = events.EmitTypedEvent(ctx, &types.EventSendCoin{
-			Sender:   msg.Sender,
-			Receiver: msg.Sends[i].Receiver,
-			Coin:     msg.Sends[i].Coin.String(),
+			Sender:    msg.Sender,
+			Recipient: msg.Sends[i].Recipient,
+			Coin:      msg.Sends[i].Coin.String(),
 		})
 		if err != nil {
 			return nil, errors.Internal.Wrapf("event err: %s", err.Error())
@@ -313,7 +316,7 @@ func (k Keeper) SellAllCoin(goCtx context.Context, msg *types.MsgSellAllCoin) (*
 	sender, _ := sdk.AccAddressFromBech32(msg.Sender)
 
 	// Make sale
-	err := k.sellCoin(ctx, sender, sdk.NewCoin(msg.CoinSymbolToSell, sdk.ZeroInt()), msg.MinCoinToBuy, true)
+	err := k.sellCoin(ctx, sender, sdk.NewCoin(msg.CoinDenomToSell, sdkmath.ZeroInt()), msg.MinCoinToBuy, true)
 	if err != nil {
 		return nil, err
 	}
@@ -353,7 +356,7 @@ func (k Keeper) BurnCoin(goCtx context.Context, msg *types.MsgBurnCoin) (*types.
 	}
 	if !k.IsCoinBase(ctx, msg.Coin.Denom) {
 		// change coin volume
-		k.EditCoin(ctx, coin, coin.Reserve, coin.Volume.Sub(msg.Coin.Amount))
+		k.UpdateCoinVR(ctx, coin.Denom, coin.Volume.Sub(msg.Coin.Amount), coin.Reserve)
 	}
 
 	// Emit transaction events
@@ -390,8 +393,8 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 	if err != nil {
 		return nil, err
 	}
-	coinDenom := strings.ToLower(check.Coin)
-	coinAmount := check.Amount
+	coinDenom := strings.ToLower(check.Coin.Denom)
+	coinAmount := check.Coin.Amount
 
 	// Decode provided proof from base64 format to raw bytes
 	proof, err := base64.StdEncoding.DecodeString(msg.Proof)
@@ -472,7 +475,7 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 	hw := sha3.NewLegacyKeccak256()
 	err = rlp.Encode(hw, []interface{}{sender})
 	if err != nil {
-		return nil, errors.UnableRPLEncodeAddress
+		return nil, errors.UnableRLPEncodeAddress
 
 	}
 	hw.Sum(senderAddressHash[:0])
@@ -525,7 +528,7 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 // Helpers
 ////////////////////////////////////////////////////////////////
 
-func (k Keeper) buyCoin(
+func (k *Keeper) buyCoin(
 	ctx sdk.Context,
 	sender sdk.AccAddress,
 	coin sdk.Coin,
@@ -557,14 +560,13 @@ func (k Keeper) buyCoin(
 
 	// Calculate amount of sell coins which buyer will receive
 	amountToBuy := coin.Amount
-	amountToSell := sdk.ZeroInt()
-	amountInBaseCoin := sdk.ZeroInt()
+	var amountToSell, amountInBaseCoin sdkmath.Int
 	switch {
-	case k.IsCoinBase(ctx, coinToSell.Symbol):
+	case k.IsCoinBase(ctx, coinToSell.Denom):
 		// Buyer buys custom coin for base coin
 		amountToSell = formulas.CalculatePurchaseAmount(coinToBuy.Volume, coinToBuy.Reserve, uint(coinToBuy.CRR), amountToBuy)
 		amountInBaseCoin = amountToSell
-	case k.IsCoinBase(ctx, coinToBuy.Symbol):
+	case k.IsCoinBase(ctx, coinToBuy.Denom):
 		// Buyer buys base coin for custom coin
 		if coin.Amount.GT(coinToSell.Reserve) {
 			return errors.InsufficientCoinReserve
@@ -586,8 +588,8 @@ func (k Keeper) buyCoin(
 	}
 
 	// Ensure reserve of the coin to sell does not underflow
-	if !k.IsCoinBase(ctx, coinToSell.Symbol) {
-		if coinToSell.Reserve.Sub(amountInBaseCoin).LT(types.MinCoinReserve) {
+	if !k.IsCoinBase(ctx, coinToSell.Denom) {
+		if coinToSell.Reserve.Sub(amountInBaseCoin).LT(config.MinCoinReserve) {
 			return errors.TxBreaksMinReserveRule
 		}
 	}
@@ -624,14 +626,14 @@ func (k Keeper) buyCoin(
 	}
 
 	// Update coins
-	if !k.IsCoinBase(ctx, coinToSell.Symbol) {
-		err = k.EditCoin(ctx, coinToSell, coinToSell.Reserve.Sub(amountInBaseCoin), coinToSell.Volume.Sub(amountToSell))
+	if !k.IsCoinBase(ctx, coinToSell.Denom) {
+		err = k.UpdateCoinVR(ctx, coinToSell.Denom, coinToSell.Volume.Sub(amountToSell), coinToSell.Reserve.Sub(amountInBaseCoin))
 		if err != nil {
 			return err
 		}
 	}
-	if !k.IsCoinBase(ctx, coinToBuy.Symbol) {
-		err = k.EditCoin(ctx, coinToBuy, coinToBuy.Reserve.Add(amountInBaseCoin), coinToBuy.Volume.Add(amountToBuy))
+	if !k.IsCoinBase(ctx, coinToBuy.Denom) {
+		err = k.UpdateCoinVR(ctx, coinToBuy.Denom, coinToBuy.Volume.Add(amountToBuy), coinToBuy.Reserve.Add(amountInBaseCoin))
 		if err != nil {
 			return err
 		}
@@ -651,7 +653,7 @@ func (k Keeper) buyCoin(
 	return nil
 }
 
-func (k Keeper) sellCoin(
+func (k *Keeper) sellCoin(
 	ctx sdk.Context,
 	sender sdk.AccAddress,
 	coin sdk.Coin,
@@ -692,13 +694,14 @@ func (k Keeper) sellCoin(
 	}
 
 	// Calculate amount of buy coins which seller will receive
-	amountToSell, amountToBuy, amountInBaseCoin := coin.Amount, sdk.ZeroInt(), sdk.ZeroInt()
+	amountToSell := coin.Amount
+	var amountToBuy, amountInBaseCoin sdkmath.Int
 	switch {
-	case k.IsCoinBase(ctx, coinToBuy.Symbol):
+	case k.IsCoinBase(ctx, coinToBuy.Denom):
 		// Seller sells custom coin for base coin
 		amountToBuy = formulas.CalculateSaleReturn(coinToSell.Volume, coinToSell.Reserve, uint(coinToSell.CRR), amountToSell)
 		amountInBaseCoin = amountToBuy
-	case k.IsCoinBase(ctx, coinToSell.Symbol):
+	case k.IsCoinBase(ctx, coinToSell.Denom):
 		// Seller sells base coin for custom coin
 		amountToBuy = formulas.CalculatePurchaseReturn(coinToBuy.Volume, coinToBuy.Reserve, uint(coinToBuy.CRR), amountToSell)
 		amountInBaseCoin = amountToSell
@@ -714,14 +717,14 @@ func (k Keeper) sellCoin(
 	}
 
 	// Ensure reserve of the coin to sell does not underflow
-	if !k.IsCoinBase(ctx, coinToSell.Symbol) {
-		if coinToSell.Reserve.Sub(amountInBaseCoin).LT(types.MinCoinReserve) {
+	if !k.IsCoinBase(ctx, coinToSell.Denom) {
+		if coinToSell.Reserve.Sub(amountInBaseCoin).LT(config.MinCoinReserve) {
 			return errors.TxBreaksMinReserveRule
 		}
 	}
 
 	// Ensure supply limit of the coin to buy does not overflow
-	if !k.IsCoinBase(ctx, coinToBuy.Symbol) {
+	if !k.IsCoinBase(ctx, coinToBuy.Denom) {
 		if coinToBuy.Volume.Add(amountToBuy).GT(coinToBuy.LimitVolume) {
 			return errors.TxBreaksVolumeLimit
 		}
@@ -755,14 +758,14 @@ func (k Keeper) sellCoin(
 	}
 
 	// Update coins
-	if !k.IsCoinBase(ctx, coinToSell.Symbol) {
-		err = k.EditCoin(ctx, coinToSell, coinToSell.Reserve.Sub(amountInBaseCoin), coinToSell.Volume.Sub(amountToSell))
+	if !k.IsCoinBase(ctx, coinToSell.Denom) {
+		err = k.UpdateCoinVR(ctx, coinToSell.Denom, coinToSell.Volume.Sub(amountToSell), coinToSell.Reserve.Sub(amountInBaseCoin))
 		if err != nil {
 			return err
 		}
 	}
-	if !k.IsCoinBase(ctx, coinToBuy.Symbol) {
-		err = k.EditCoin(ctx, coinToBuy, coinToBuy.Reserve.Add(amountInBaseCoin), coinToBuy.Volume.Add(amountToBuy))
+	if !k.IsCoinBase(ctx, coinToBuy.Denom) {
+		err = k.UpdateCoinVR(ctx, coinToBuy.Denom, coinToBuy.Volume.Add(amountToBuy), coinToBuy.Reserve.Add(amountInBaseCoin))
 		if err != nil {
 			return err
 		}

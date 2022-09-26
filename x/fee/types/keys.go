@@ -15,11 +15,18 @@ const (
 )
 
 const FeePrefix = 0x70
+const separator = 0x01
 
 var (
-	BaseDenomPriceKeyPrefix = []byte{FeePrefix, 0x00} // key for store
+	PriceKeyPrefix = []byte{FeePrefix, 0x00} // key for store
 )
 
-func GetBaseDenomPriceKey() []byte {
-	return BaseDenomPriceKeyPrefix
+// getCollectionID returns the collection ID concatenated from creator address denom hash and c.
+func GetPriceKey(denom, quote string) []byte {
+	key := []byte{}
+	key = append(key, PriceKeyPrefix...)
+	key = append(key, []byte(denom)...)
+	key = append(key, separator)
+	key = append(key, []byte(quote)...)
+	return key
 }

@@ -3,41 +3,56 @@ package types
 import (
 	"fmt"
 
-	"gopkg.in/yaml.v2"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
 // Parameter store keys.
 var (
-	PSKeyByteFee = []byte("ByteFee")
+	PSKeyTxByteFee = []byte("TxByteFee")
 	// coin transactions fees
-	PSKeyCoinSend              = []byte("CoinSend")
-	PSKeyCoinSendMultiAddition = []byte("CoinSendMultiAddition")
-	PSKeyCoinBuy               = []byte("CoinBuy")
-	PSKeyCoinSell              = []byte("CoinSell")
-	// common transaction commission
-	PSKeyCoinCreate = []byte("CoinCreate")
+	PSKeyCoinCreate      = []byte("CoinCreate")
+	PSKeyCoinUpdate      = []byte("CoinUpdate")
+	PSKeyCoinSend        = []byte("CoinSend")
+	PSKeyCoinSendAdd     = []byte("CoinSendAdd")
+	PSKeyCoinBuy         = []byte("CoinBuy")
+	PSKeyCoinSell        = []byte("CoinSell")
+	PSKeyCoinRedeemCheck = []byte("CoinRedeemCheck")
+	PSKeyCoinBurn        = []byte("CoinCoinBurn")
 	// special commission depends on coin symbol length
-	PSKeyCoinCreateLength3     = []byte("CoinCreateLength3")
-	PSKeyCoinCreateLength4     = []byte("CoinCreateLength4")
-	PSKeyCoinCreateLength5     = []byte("CoinCreateLength5")
-	PSKeyCoinCreateLength6     = []byte("CoinCreateLength6")
-	PSKeyCoinCreateLengthOther = []byte("CoinCreateLengthOther")
+	PSKeyCoinCreateTicker3 = []byte("CoinCreateTicker3")
+	PSKeyCoinCreateTicker4 = []byte("CoinCreateTicker4")
+	PSKeyCoinCreateTicker5 = []byte("CoinCreateTicker5")
+	PSKeyCoinCreateTicker6 = []byte("CoinCreateTicker6")
+	PSKeyCoinCreateTicker7 = []byte("CoinCreateTicker7")
 	// multisignature wallets
 	PSKeyMultisigCreateWallet      = []byte("MultisigCreateWallet")
 	PSKeyMultisigCreateTransaction = []byte("MultisigCreateTransaction")
 	PSKeyMultisigSignTransaction   = []byte("MultisigSignTransaction")
+	// nft
+	PSKeyNftMintToken     = []byte("NftMintToken")
+	PSKeyNftUpdateToken   = []byte("NftUpdateToken")
+	PSKeyNftUpdateReserve = []byte("NftUpdateReserve")
+	PSKeyNftSendToken     = []byte("NftSendToken")
+	PSKeyNftBurnToken     = []byte("NftBurnToken")
+	// swap
+	PSKeySwapActivateChain   = []byte("SwapActivateChain")
+	PSKeySwapDeactivateChain = []byte("SwapDeactivateChain")
+	PSKeySwapInitialize      = []byte("SwapInitialize")
+	PSKeySwapRedeem          = []byte("SwapRedeem")
 	// validator operations
-	PSKeyValidatorDeclareCandidate = []byte("ValidatorDeclareCandidate")
-	PSKeyValidatorEditCandidate    = []byte("ValidatorEditCandidate")
-	PSKeyValidatorDelegate         = []byte("ValidatorDelegate")
-	PSKeyValidatorUnbond           = []byte("ValidatorUnbond")
-	PSKeyValidatorSetOnline        = []byte("ValidatorSetOnline")
-	PSKeyValidatorSetOffline       = []byte("ValidatorSetOffline")
+	PSKeyValidatorCreateValidator = []byte("ValidatorCreateValidator")
+	PSKeyValidatorEditValidator   = []byte("ValidatorEditValidator")
+	PSKeyValidatorDelegate        = []byte("ValidatorDelegate")
+	PSKeyValidatorDelegateNFT     = []byte("ValidatorDelegateNFT")
+	PSKeyValidatorRedelegate      = []byte("ValidatorRedelegate")
+	PSKeyValidatorRedelegateNFT   = []byte("ValidatorRedelegateNFT")
+	PSKeyValidatorUndelegate      = []byte("ValidatorUndelegate")
+	PSKeyValidatorUndelegateNFT   = []byte("ValidatorUndelegateNFT")
+	PSKeyValidatorSetOnline       = []byte("ValidatorSetOnline")
+	PSKeyValidatorSetOffline      = []byte("ValidatorSetOffline")
 	// oracle key
-	PSKeyOracleAddress = []byte("OracleAddress")
+	PSKeyOracle = []byte("Oracle")
 	// evm tx keys
 	PSKeyEvmGasPrice = []byte("EvmGasPrice")
 )
@@ -52,35 +67,51 @@ func ParamKeyTable() paramtypes.KeyTable {
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return Params{
-		ByteFee: sdk.MustNewDecFromStr("0.001"),
+		TxByteFee: sdk.NewDec(2),
 		// coin transactions fees
-		// byte fee in usd*10^-3
-		CoinSend:              sdk.MustNewDecFromStr("0.082"),
-		CoinSendMultiAddition: sdk.MustNewDecFromStr("0.04"),
-		CoinBuy:               sdk.MustNewDecFromStr("0.8"),
-		CoinSell:              sdk.MustNewDecFromStr("0.8"),
-		// common transaction commission
-		CoinCreate: sdk.MustNewDecFromStr("0.008"), // x8
+		CoinCreate:      sdk.NewDec(100),
+		CoinUpdate:      sdk.ZeroDec(),
+		CoinSend:        sdk.NewDec(10),
+		CoinSendAdd:     sdk.NewDec(5),
+		CoinBuy:         sdk.NewDec(100),
+		CoinSell:        sdk.NewDec(100),
+		CoinRedeemCheck: sdk.NewDec(30),
+		CoinBurn:        sdk.NewDec(100),
 		// special commission depends on coin symbol length
-		CoinCreateLength3:     sdk.MustNewDecFromStr("100000"),
-		CoinCreateLength4:     sdk.MustNewDecFromStr("10000"),
-		CoinCreateLength5:     sdk.MustNewDecFromStr("1000"),
-		CoinCreateLength6:     sdk.MustNewDecFromStr("100"),
-		CoinCreateLengthOther: sdk.MustNewDecFromStr("10"),
+		CoinCreateTicker3: sdk.NewDec(1_000_000),
+		CoinCreateTicker4: sdk.NewDec(100_000),
+		CoinCreateTicker5: sdk.NewDec(10_000),
+		CoinCreateTicker6: sdk.NewDec(1_000),
+		CoinCreateTicker7: sdk.NewDec(100),
 		// multisignature wallets
-		MultisigCreateWallet:      sdk.MustNewDecFromStr("0.1"),
-		MultisigCreateTransaction: sdk.MustNewDecFromStr("0.1"),
-		MultisigSignTransaction:   sdk.MustNewDecFromStr("0.1"),
+		MultisigCreateWallet:      sdk.NewDec(100),
+		MultisigCreateTransaction: sdk.NewDec(100),
+		MultisigSignTransaction:   sdk.NewDec(100),
+		// nft
+		NftMintToken:     sdk.ZeroDec(),
+		NftUpdateToken:   sdk.ZeroDec(),
+		NftUpdateReserve: sdk.ZeroDec(),
+		NftSendToken:     sdk.ZeroDec(),
+		NftBurnToken:     sdk.ZeroDec(),
+		// swap
+		SwapActivateChain:   sdk.ZeroDec(),
+		SwapDeactivateChain: sdk.ZeroDec(),
+		SwapInitialize:      sdk.ZeroDec(),
+		SwapRedeem:          sdk.ZeroDec(),
 		// validator operations
-		ValidatorDeclareCandidate: sdk.MustNewDecFromStr("10"),
-		ValidatorEditCandidate:    sdk.MustNewDecFromStr("10"),
-		ValidatorDelegate:         sdk.MustNewDecFromStr("0.2"),
-		ValidatorUnbond:           sdk.MustNewDecFromStr("0.2"),
-		ValidatorSetOnline:        sdk.MustNewDecFromStr("0.1"),
-		ValidatorSetOffline:       sdk.MustNewDecFromStr("0.1"),
+		ValidatorCreateValidator: sdk.NewDec(10_000),
+		ValidatorEditValidator:   sdk.NewDec(10_000),
+		ValidatorDelegate:        sdk.NewDec(200),
+		ValidatorDelegateNFT:     sdk.NewDec(200),
+		ValidatorRedelegate:      sdk.NewDec(200),
+		ValidatorRedelegateNFT:   sdk.NewDec(200),
+		ValidatorUndelegate:      sdk.NewDec(200),
+		ValidatorUndelegateNFT:   sdk.NewDec(200),
+		ValidatorSetOnline:       sdk.NewDec(100),
+		ValidatorSetOffline:      sdk.NewDec(100),
 		// oracle
 		// NOTE: default address is []byte{0}
-		OracleAddress: "dx1qqjrdrw8",
+		Oracle: "dx1qqjrdrw8",
 		// evm min gas price in usd*10^-18
 		EvmGasPrice: sdk.MustNewDecFromStr("0.000019047619047619"),
 	}
@@ -89,33 +120,50 @@ func DefaultParams() Params {
 // ParamSetPairs returns the parameter set pairs.
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(PSKeyByteFee, &p.ByteFee, validateDec),
+		paramtypes.NewParamSetPair(PSKeyTxByteFee, &p.TxByteFee, validateDec),
 		// coin transactions fees
+		paramtypes.NewParamSetPair(PSKeyCoinCreate, &p.CoinCreate, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinUpdate, &p.CoinUpdate, validateDec),
 		paramtypes.NewParamSetPair(PSKeyCoinSend, &p.CoinSend, validateDec),
-		paramtypes.NewParamSetPair(PSKeyCoinSendMultiAddition, &p.CoinSendMultiAddition, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinSendAdd, &p.CoinSendAdd, validateDec),
 		paramtypes.NewParamSetPair(PSKeyCoinBuy, &p.CoinBuy, validateDec),
 		paramtypes.NewParamSetPair(PSKeyCoinSell, &p.CoinSell, validateDec),
-		// common transaction commission
-		paramtypes.NewParamSetPair(PSKeyCoinCreate, &p.CoinCreate, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinRedeemCheck, &p.CoinRedeemCheck, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinBurn, &p.CoinBurn, validateDec),
 		// special commission depends on coin symbol length
-		paramtypes.NewParamSetPair(PSKeyCoinCreateLength3, &p.CoinCreateLength3, validateDec),
-		paramtypes.NewParamSetPair(PSKeyCoinCreateLength4, &p.CoinCreateLength4, validateDec),
-		paramtypes.NewParamSetPair(PSKeyCoinCreateLength5, &p.CoinCreateLength5, validateDec),
-		paramtypes.NewParamSetPair(PSKeyCoinCreateLength6, &p.CoinCreateLength6, validateDec),
-		paramtypes.NewParamSetPair(PSKeyCoinCreateLengthOther, &p.CoinCreateLengthOther, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinCreateTicker3, &p.CoinCreateTicker3, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinCreateTicker4, &p.CoinCreateTicker4, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinCreateTicker5, &p.CoinCreateTicker5, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinCreateTicker6, &p.CoinCreateTicker6, validateDec),
+		paramtypes.NewParamSetPair(PSKeyCoinCreateTicker7, &p.CoinCreateTicker7, validateDec),
 		// multisignature wallets
 		paramtypes.NewParamSetPair(PSKeyMultisigCreateWallet, &p.MultisigCreateWallet, validateDec),
 		paramtypes.NewParamSetPair(PSKeyMultisigCreateTransaction, &p.MultisigCreateTransaction, validateDec),
 		paramtypes.NewParamSetPair(PSKeyMultisigSignTransaction, &p.MultisigSignTransaction, validateDec),
+		// nft
+		paramtypes.NewParamSetPair(PSKeyNftMintToken, &p.NftMintToken, validateDec),
+		paramtypes.NewParamSetPair(PSKeyNftUpdateToken, &p.NftUpdateToken, validateDec),
+		paramtypes.NewParamSetPair(PSKeyNftUpdateReserve, &p.NftUpdateReserve, validateDec),
+		paramtypes.NewParamSetPair(PSKeyNftSendToken, &p.NftSendToken, validateDec),
+		paramtypes.NewParamSetPair(PSKeyNftBurnToken, &p.NftBurnToken, validateDec),
+		// swap
+		paramtypes.NewParamSetPair(PSKeySwapActivateChain, &p.SwapActivateChain, validateDec),
+		paramtypes.NewParamSetPair(PSKeySwapDeactivateChain, &p.SwapDeactivateChain, validateDec),
+		paramtypes.NewParamSetPair(PSKeySwapInitialize, &p.SwapInitialize, validateDec),
+		paramtypes.NewParamSetPair(PSKeySwapRedeem, &p.SwapRedeem, validateDec),
 		// validator operations
-		paramtypes.NewParamSetPair(PSKeyValidatorDeclareCandidate, &p.ValidatorDeclareCandidate, validateDec),
-		paramtypes.NewParamSetPair(PSKeyValidatorEditCandidate, &p.ValidatorEditCandidate, validateDec),
+		paramtypes.NewParamSetPair(PSKeyValidatorCreateValidator, &p.ValidatorCreateValidator, validateDec),
+		paramtypes.NewParamSetPair(PSKeyValidatorEditValidator, &p.ValidatorEditValidator, validateDec),
 		paramtypes.NewParamSetPair(PSKeyValidatorDelegate, &p.ValidatorDelegate, validateDec),
-		paramtypes.NewParamSetPair(PSKeyValidatorUnbond, &p.ValidatorUnbond, validateDec),
+		paramtypes.NewParamSetPair(PSKeyValidatorDelegateNFT, &p.ValidatorDelegateNFT, validateDec),
+		paramtypes.NewParamSetPair(PSKeyValidatorRedelegate, &p.ValidatorRedelegate, validateDec),
+		paramtypes.NewParamSetPair(PSKeyValidatorRedelegateNFT, &p.ValidatorRedelegateNFT, validateDec),
+		paramtypes.NewParamSetPair(PSKeyValidatorUndelegate, &p.ValidatorUndelegate, validateDec),
+		paramtypes.NewParamSetPair(PSKeyValidatorUndelegateNFT, &p.ValidatorUndelegateNFT, validateDec),
 		paramtypes.NewParamSetPair(PSKeyValidatorSetOnline, &p.ValidatorSetOnline, validateDec),
 		paramtypes.NewParamSetPair(PSKeyValidatorSetOffline, &p.ValidatorSetOffline, validateDec),
 		// oracle
-		paramtypes.NewParamSetPair(PSKeyOracleAddress, &p.OracleAddress, validateAddress),
+		paramtypes.NewParamSetPair(PSKeyOracle, &p.Oracle, validateAddress),
 		// evm
 		paramtypes.NewParamSetPair(PSKeyEvmGasPrice, &p.EvmGasPrice, validateDec),
 	}
@@ -123,7 +171,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 
 // Validate validates the set of params.
 func (p *Params) Validate() error {
-	if _, err := sdk.AccAddressFromBech32(p.OracleAddress); err != nil {
+	if _, err := sdk.AccAddressFromBech32(p.Oracle); err != nil {
 		return err
 	}
 	// all parameters are uint64, i.e. >= 0
@@ -131,14 +179,8 @@ func (p *Params) Validate() error {
 	return nil
 }
 
-// String implements the Stringer interface.
-func (p *Params) String() string {
-	out, _ := yaml.Marshal(p)
-	return string(out)
-}
-
-func validateDec(i interface{}) error {
-	_, ok := i.(sdk.Dec)
+func validateUint64(i interface{}) error {
+	_, ok := i.(uint64)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
@@ -153,6 +195,17 @@ func validateAddress(i interface{}) error {
 	}
 	if _, err := sdk.AccAddressFromBech32(addr); err != nil {
 		return fmt.Errorf("invalid address '%s': %s", addr, err.Error())
+	}
+	return nil
+}
+
+func validateDec(i interface{}) error {
+	v, ok := i.(sdk.Dec)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	if v.IsNegative() {
+		return fmt.Errorf("negative fee: %s", v.String())
 	}
 	return nil
 }

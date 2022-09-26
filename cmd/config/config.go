@@ -47,14 +47,14 @@ const (
 
 const (
 	// BaseDenom defines to the default denomination used in Decimal (staking, EVM, governance, etc.)
+	// TODO: Load it from
 	BaseDenom = "del"
-
-	UpdatesName = "updates.json"
 )
 
 var (
 	DataPath    = fmt.Sprintf("%s/.decimal/daemon/data", os.Getenv("HOME"))
 	UpdatesInfo = NewUpdatesInfo(filepath.Join(DataPath, UpdatesName))
+	UpdatesName = "updates.json"
 )
 
 // SetBech32Prefixes sets the global prefixes to be used when serializing addresses and public keys to Bech32 strings.
@@ -66,7 +66,6 @@ func SetBech32Prefixes(config *sdk.Config) {
 
 // SetBip44CoinType sets the global coin type to be used in hierarchical deterministic wallets.
 func SetBip44CoinType(config *sdk.Config) {
-	// config.SetFullFundraiserPath(ethermint.BIP44HDPath) // nolint: staticcheck
 	config.SetPurpose(sdk.Purpose)
 	config.SetCoinType(ethermint.Bip44CoinType)
 }

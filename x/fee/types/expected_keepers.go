@@ -8,7 +8,7 @@ import (
 )
 
 type FeeKeeper interface {
-	GetPrice(ctx sdk.Context) (sdk.Dec, error)
+	GetPrice(ctx sdk.Context, denom, quote string) (CoinPrice, error)
 	GetModuleParams(ctx sdk.Context) Params
 	AddTransientGasWanted(ctx sdk.Context, gasWanted uint64) (uint64, error)
 }

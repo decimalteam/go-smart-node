@@ -53,7 +53,7 @@
 
 *) tx.proto
 
-*) event.proto
+*) events.proto
 
 *) различные типы в *.proto
 

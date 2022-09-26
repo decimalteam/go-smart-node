@@ -141,58 +141,40 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 	ui := stormActions.UpdateInfo{}
 	ui.MultisigBalances = make(map[string]sdk.Coins)
 
+	fmt.Printf("updateGeneratorsInfo: coins\n")
 	coins, err := reactor.api.Coins()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	for _, c := range coins {
-		ui.Coins = append(ui.Coins, c.Symbol)
+		ui.Coins = append(ui.Coins, c.Denom)
 		ui.FullCoins = append(ui.FullCoins, c)
 	}
 	for _, acc := range reactor.accounts {
 		ui.Addresses = append(ui.Addresses, acc.Address())
 	}
 	// nft
-	nfts := make([]dscApi.NFT, 0)
-	denoms, err := reactor.api.NFTCollections()
+	nfts := make([]*dscApi.NFTToken, 0)
+	colls, err := reactor.api.NFTCollections()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	for _, denom := range denoms {
-		coll, err := reactor.api.NFTCollection(denom)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		for _, id := range coll.NFTs {
-			nft, err := reactor.api.NFT(denom, id)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			nfts = append(nfts, nft)
-		}
+	for _, coll := range colls {
+		nfts = append(nfts, coll.Tokens...)
 	}
 	ui.NFTs = nfts
 	// nft subtokens
-	ui.NFTSubTokenReserves = make(map[stormActions.NFTSubTokenKey]sdk.Int)
+	ui.NFTSubTokenReserves = make(map[stormActions.NFTSubTokenKey]sdk.Coin)
 	for _, nft := range ui.NFTs {
-		subIds := []uint64{}
-		for _, o := range nft.Owners {
-			subIds = append(subIds, o.SubTokenIDs...)
-		}
-		subtokens, err := reactor.api.NFTSubTokens(nft.Denom, nft.ID, subIds)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		for i := range subtokens {
-			ui.NFTSubTokenReserves[stormActions.NFTSubTokenKey{Denom: nft.Denom, TokenID: nft.ID, ID: subtokens[i].ID}] = subtokens[i].Reserve.Amount
+		for i := range nft.SubTokens {
+			ui.NFTSubTokenReserves[stormActions.NFTSubTokenKey{Denom: nft.Denom, TokenID: nft.ID, ID: nft.SubTokens[i].ID}] = *nft.SubTokens[i].Reserve
 		}
 	}
+
 	// multisig wallets
+	fmt.Printf("updateGeneratorsInfo: multisig wallets\n")
 	for _, owner := range ui.Addresses {
 		wallets, err := reactor.api.MultisigWalletsByOwner(owner)
 		if err != nil {
@@ -213,6 +195,7 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 		}
 	}
 	// multisig transactions
+	fmt.Printf("updateGeneratorsInfo: multisig txs\n")
 	for _, wallet := range ui.MultisigWallets {
 		txs, err := reactor.api.MultisigTransactionsByWallet(wallet.Address)
 		if err != nil {
@@ -222,6 +205,7 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 		ui.MultisigTransactions = append(ui.MultisigTransactions, txs...)
 	}
 	// multisig balances
+	fmt.Printf("updateGeneratorsInfo: multisig balances\n")
 	for _, wallet := range ui.MultisigWallets {
 		balance, err := reactor.api.AddressBalance(wallet.Address)
 		if err != nil {
@@ -230,6 +214,7 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 		}
 		ui.MultisigBalances[wallet.Address] = balance
 	}
+
 	reactor.actionReactor.Update(ui)
 }
 

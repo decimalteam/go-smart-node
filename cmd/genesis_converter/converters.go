@@ -2,12 +2,10 @@ package main
 
 import (
 	"fmt"
-	"sort"
 	"strconv"
 
-	coinTypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	coinconfig "bitbucket.org/decimalteam/go-smart-node/x/coin/config"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tendermint/tendermint/libs/strings"
 )
 
 func prepareAddressTable(gs *GenesisOld) (*AddressTable, error) {
@@ -146,27 +144,27 @@ func validCoinParams(coin FullCoinOld) bool {
 	}
 	// volume
 	v, _ := sdk.NewIntFromString(coin.Volume)
-	if v.LT(coinTypes.MinCoinSupply) {
+	if v.LT(coinconfig.MinCoinSupply) {
 		fmt.Printf("coin %s: volume < MinCoinSupply\n", coin.Symbol)
 		result = false
 	}
-	if v.GT(coinTypes.MaxCoinSupply) {
+	if v.GT(coinconfig.MaxCoinSupply) {
 		fmt.Printf("coin %s: volume > MaxCoinSupply\n", coin.Symbol)
 		result = false
 	}
 	// limit volume
 	v, _ = sdk.NewIntFromString(coin.LimitVolume)
-	if v.LT(coinTypes.MinCoinSupply) {
+	if v.LT(coinconfig.MinCoinSupply) {
 		fmt.Printf("coin %s: limit_volume < MinCoinSupply\n", coin.Symbol)
 		result = false
 	}
-	if v.GT(coinTypes.MaxCoinSupply) {
+	if v.GT(coinconfig.MaxCoinSupply) {
 		fmt.Printf("coin %s: limit_volume > MaxCoinSupply\n", coin.Symbol)
 		result = false
 	}
 	// reserve
 	v, _ = sdk.NewIntFromString(coin.Reserve)
-	if v.LT(coinTypes.MinCoinReserve) {
+	if v.LT(coinconfig.MinCoinReserve) {
 		fmt.Printf("coin %s: reserve < MinCoinReserve\n", coin.Symbol)
 		result = false
 	}
@@ -236,88 +234,150 @@ func convertMultisigTransactions(transactionsOld []TransactionOld, addrTable *Ad
 	return res, nil
 }
 
-func convertNFT(collectionsOld map[string]CollectionOld, addrTable *AddressTable, legacyRecords *LegacyRecords) ([]CollectionNew, []NFTNew, error) {
-	var collectionsNew []CollectionNew
-	var nftsNew []NFTNew
+func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
+	addrTable *AddressTable, legacyRecords *LegacyRecords, fixNFTData []NFTOwnerFixRecord) ([]CollectionNew, error) {
+	// prepare subtokens
+	type subRecord struct {
+		id      string
+		reserve sdk.Int
+	}
+	preparedSubTokens := make(map[string][]subRecord)
+	for _, sub := range subsOld {
+		prep := preparedSubTokens[sub.NftID]
+		reserve, ok := sdk.NewIntFromString(sub.Reserve)
+		if !ok {
+			return []CollectionNew{}, fmt.Errorf("cant parse reserve for subtoken %s nft %s", sub.ID, sub.NftID)
+		}
+		prep = append(prep, subRecord{id: sub.ID, reserve: reserve})
+		preparedSubTokens[sub.NftID] = prep
+	}
+	// prepare collections
+	type collectionKey struct {
+		denom   string
+		creator string
+	}
+	// URI uniqueness
+	tokenURIs := make(map[string]bool)
+
+	preparedColls := make(map[collectionKey]*CollectionNew)
 	for _, colOld := range collectionsOld {
-		colNew := CollectionNew{Denom: colOld.Denom}
 		for _, nftOld := range colOld.NFT {
 			creatorAddress := addrTable.GetAddress(nftOld.Creator)
 			if creatorAddress == "" {
-				return []CollectionNew{}, []NFTNew{}, fmt.Errorf("unknown creator %s for nft %s", nftOld.Creator, nftOld.ID)
+				return []CollectionNew{}, fmt.Errorf("unknown creator (no pubkey) %s for nft %s", nftOld.Creator, nftOld.ID)
 			}
-			reserve, _ := sdk.NewIntFromString(nftOld.Reserve)
-			nftNew := NFTNew{
-				ID:        nftOld.ID,
-				AllowMint: nftOld.AllowMint,
-				Creator:   creatorAddress,
-				Reserve:   sdk.NewCoin("del", reserve),
-				TokenURI:  nftOld.TokenURI,
+			key := collectionKey{denom: colOld.Denom, creator: creatorAddress}
+			if _, ok := preparedColls[key]; !ok {
+				preparedColls[key] = &CollectionNew{Denom: colOld.Denom, Creator: creatorAddress}
 			}
-			owners := []OwnerNew{}
+		}
+	}
+	for _, colOld := range collectionsOld {
+		for _, nftOld := range colOld.NFT {
+			// check URI uniq
+			if tokenURIs[nftOld.TokenURI] {
+				fmt.Printf("found yet another token URI: %s\n", nftOld.TokenURI)
+				continue
+			}
+			tokenURIs[nftOld.TokenURI] = true
+
+			creatorAddress := addrTable.GetAddress(nftOld.Creator)
+			key := collectionKey{denom: colOld.Denom, creator: creatorAddress}
+			collNew := preparedColls[key]
+			// 2. subtokens
+			subtokens := make([]SubTokenNew, 0)
+			for _, sub := range preparedSubTokens[nftOld.ID] {
+				id, err := strconv.ParseUint(sub.id, 10, 32)
+				if err != nil {
+					return []CollectionNew{}, fmt.Errorf("can't parse for nft '%s' subtoken id : %s", nftOld.ID, sub.id)
+				}
+				subtokens = append(subtokens, SubTokenNew{
+					ID:      uint32(id),
+					Owner:   "",
+					Reserve: sdk.NewCoin("del", sub.reserve),
+				})
+			}
+			// 3. owners for subtokens
 			for _, ownerOld := range nftOld.Owners["owners"] {
 				if len(ownerOld.SubTokenIds) == 0 {
 					continue
 				}
-				subs := make([]string, 0, len(ownerOld.SubTokenIds))
-				for _, s := range ownerOld.SubTokenIds {
-					// check subtoken id already owned
-					owned := false
-					subID := strconv.FormatUint(s, 10)
-					for _, o := range owners {
-						if strings.StringInSlice(subID, o.SubTokenIDs) {
-							owned = true
-							break
-						}
-					}
-					if owned {
-						fmt.Printf("ntf: %s, sub: %s already owned\n", nftOld.ID, subID)
-					} else {
-						subs = append(subs, subID)
-					}
-				}
 				ownerAddress := addrTable.GetAddress(ownerOld.Address)
 				if ownerAddress == "" {
 					legacyRecords.AddNFT(ownerOld.Address, colOld.Denom, nftOld.ID)
-					owners = append(owners, OwnerNew{Address: ownerOld.Address, SubTokenIDs: subs})
-				} else {
-					owners = append(owners, OwnerNew{Address: ownerAddress, SubTokenIDs: subs})
+					ownerAddress = ownerOld.Address
+				}
+				for i := range subtokens {
+					for _, id := range ownerOld.SubTokenIds {
+						if id == uint64(subtokens[i].ID) {
+							subtokens[i].Owner = ownerAddress
+						}
+					}
 				}
 			}
-			if len(owners) == 0 {
-				fmt.Printf("nft without owners: nft_id %s , collection %s\n", nftNew.ID, colNew.Denom)
-				continue
+			// 3.5 fix owners
+			for _, rec := range fixNFTData {
+				if rec.TokenID != nftOld.ID {
+					continue
+				}
+				ownerAddress := addrTable.GetAddress(rec.Owner)
+				if ownerAddress == "" {
+					return []CollectionNew{}, fmt.Errorf("impossible situation: lost nft for owner '%s'", rec.Owner)
+				}
+				for i := range subtokens {
+					for _, id := range rec.SubTokens {
+						if id == subtokens[i].ID {
+							subtokens[i].Owner = ownerAddress
+						}
+					}
+				}
 			}
-			nftNew.Owners = owners
-			nftsNew = append(nftsNew, nftNew)
-			colNew.NFTs = append(colNew.NFTs, nftNew.ID)
+			// 3.9 TODO: empty owners for subtokens in testnet. Workaround with logging
+			// NOTE: bech32 address for []byte{0} = "dx1qqjrdrw8",
+			for i := range subtokens {
+				if subtokens[i].Owner == "" {
+					fmt.Printf("empty owner for collection '%s', creator '%s', nft '%s', sub token id '%d'\n",
+						collNew.Denom, collNew.Creator, nftOld.ID, subtokens[i].ID)
+					subtokens[i].Owner = "dx1qqjrdrw8"
+				}
+			}
+			// 4. build nft and add to collection
+			initialReserve, ok := sdk.NewIntFromString(nftOld.Reserve)
+			if !ok {
+				return []CollectionNew{}, fmt.Errorf("can't parse initial reserve for nft %s", nftOld.ID)
+			}
+			nftNew := TokenNew{
+				Creator:   creatorAddress,
+				Denom:     colOld.Denom,
+				ID:        nftOld.ID,
+				URI:       nftOld.TokenURI,
+				Reserve:   sdk.NewCoin("del", initialReserve),
+				AllowMint: nftOld.AllowMint,
+				Minted:    uint32(len(subtokens)),
+				Burnt:     0,
+				SubTokens: subtokens,
+			}
+			// add to collection
+			collNew.Supply++
+			collNew.Tokens = append(collNew.Tokens, nftNew)
+			preparedColls[key] = collNew
 		}
-		sort.Slice(colNew.NFTs, func(i, j int) bool {
-			return colNew.NFTs[i] < colNew.NFTs[j]
-		})
-		collectionsNew = append(collectionsNew, colNew)
 	}
-	return collectionsNew, nftsNew, nil
+	var collectionsNew []CollectionNew
+	for _, collNew := range preparedColls {
+		collectionsNew = append(collectionsNew, *collNew)
+	}
+	return collectionsNew, nil
 }
 
-func convertSubTokens(subsOld []SubTokenOld, nfts []NFTNew) (map[string]SubTokensNew, error) {
-	// prepare existsing subtokens
-	var existingSubs = make(map[string][]string)
-	for _, nft := range nfts {
-		for _, owner := range nft.Owners {
-			existingSubs[nft.ID] = append(existingSubs[nft.ID], owner.SubTokenIDs...)
+func convertValidators(valsOld []ValidatorOld, addrTable *AddressTable) ([]ValidatorNew, error) {
+	var result []ValidatorNew
+	for _, valOld := range valsOld {
+		valNew, err := ValidatorO2N(valOld, addrTable)
+		if err != nil {
+			return []ValidatorNew{}, err
 		}
+		result = append(result, valNew)
 	}
-	var subsNew = make(map[string]SubTokensNew)
-	for _, sub := range subsOld {
-		newSub := subsNew[sub.NftID]
-		reserve, _ := sdk.NewIntFromString(sub.Reserve)
-		if !strings.StringInSlice(sub.ID, existingSubs[sub.NftID]) {
-			fmt.Printf("skip (not owned) nft: %s, subtoken: %s\n", sub.NftID, sub.ID)
-			continue
-		}
-		newSub.SubTokens = append(newSub.SubTokens, SubTokenNew{ID: sub.ID, Reserve: sdk.NewCoin("del", reserve)})
-		subsNew[sub.NftID] = newSub
-	}
-	return subsNew, nil
+	return result, nil
 }

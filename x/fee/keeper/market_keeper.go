@@ -4,6 +4,8 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"math/big"
 
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"

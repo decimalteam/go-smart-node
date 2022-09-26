@@ -27,8 +27,8 @@ func TestDoubleWallet(t *testing.T) {
 
 	var sender = addrs[0]
 	var owners = []string{addrs[1].String(), addrs[2].String(), addrs[3].String()}
-	var weights = []uint64{1, 1, 1}
-	var threshold uint64 = 2
+	var weights = []uint32{1, 1, 1}
+	var threshold uint32 = 2
 
 	msg := types.NewMsgCreateWallet(sender, owners, weights, threshold)
 	err := msg.ValidateBasic()
@@ -56,8 +56,8 @@ func TestAccountWithSameAddress(t *testing.T) {
 
 	var sender = addrs[0]
 	var owners = []string{addrs[1].String(), addrs[2].String(), addrs[3].String()}
-	var weights = []uint64{1, 1, 1}
-	var threshold uint64 = 2
+	var weights = []uint32{1, 1, 1}
+	var threshold uint32 = 2
 
 	wallet, err := types.NewWallet(owners, weights, threshold, []byte{1})
 	require.NoError(t, err)
@@ -91,8 +91,8 @@ func TestLowBalance(t *testing.T) {
 
 	var sender = addrs[0]
 	var owners = []string{addrs[1].String(), addrs[2].String(), addrs[3].String()}
-	var weights = []uint64{1, 1, 1}
-	var threshold uint64 = 2
+	var weights = []uint32{1, 1, 1}
+	var threshold uint32 = 2
 
 	// create wallet with empty balance
 	msg := types.NewMsgCreateWallet(sender, owners, weights, threshold)
@@ -123,8 +123,8 @@ func TestSenderNotOwner(t *testing.T) {
 
 	var sender = addrs[0]
 	var owners = []string{addrs[1].String(), addrs[2].String(), addrs[3].String()}
-	var weights = []uint64{1, 1, 1}
-	var threshold uint64 = 2
+	var weights = []uint32{1, 1, 1}
+	var threshold uint32 = 2
 
 	// create wallet with empty balance
 	msg := types.NewMsgCreateWallet(sender, owners, weights, threshold)
@@ -162,8 +162,8 @@ func TestSignTransaction(t *testing.T) {
 	var sender = addrs[0]
 	var receiver = addrs[10]
 	var owners = []string{addrs[1].String(), addrs[2].String(), addrs[3].String()}
-	var weights = []uint64{1, 1, 1}
-	var threshold uint64 = 2
+	var weights = []uint32{1, 1, 1}
+	var threshold uint32 = 2
 
 	// create wallet with empty balance
 	msg := types.NewMsgCreateWallet(sender, owners, weights, threshold)
@@ -190,7 +190,7 @@ func TestSignTransaction(t *testing.T) {
 	require.NoError(t, err)
 
 	// tx already signed by first owner, time to sign by third
-	msgSign := types.NewMsgSignTransaction(addrs[3], txResponse.TxID)
+	msgSign := types.NewMsgSignTransaction(addrs[3], txResponse.ID)
 	err = msgSign.ValidateBasic()
 	require.NoError(t, err)
 	goCtx = sdk.WrapSDKContext(ctx)
@@ -219,8 +219,8 @@ func TestTryOverspend(t *testing.T) {
 	var sender = addrs[0]
 	var receiver = addrs[10]
 	var owners = []string{addrs[1].String(), addrs[2].String(), addrs[3].String()}
-	var weights = []uint64{1, 1, 1}
-	var threshold uint64 = 2
+	var weights = []uint32{1, 1, 1}
+	var threshold uint32 = 2
 
 	// create wallet with empty balance
 	msg := types.NewMsgCreateWallet(sender, owners, weights, threshold)
@@ -248,7 +248,7 @@ func TestTryOverspend(t *testing.T) {
 		goCtx = sdk.WrapSDKContext(ctx)
 		txResponse, err := dsc.MultisigKeeper.CreateTransaction(goCtx, msgTx)
 		require.NoError(t, err)
-		txIDs = append(txIDs, txResponse.TxID)
+		txIDs = append(txIDs, txResponse.ID)
 	}
 
 	// now we have 2 transactions

@@ -6,48 +6,64 @@ import (
 )
 
 /* --------------------------------------------------------------------------- */
-// MsgSaveBaseDenomPrice
+// MsgUpdateCoinPrices
 /* --------------------------------------------------------------------------- */
 
-// NewMsgSaveBaseDenomPrice is a constructor function for MsgSaveBaseDenomPrice
-func NewMsgSaveBaseDenomPrice(
+// NewMsgUpdateCoinPrices is a constructor function for MsgUpdateCoinPrices
+func NewMsgUpdateCoinPrices(
 	sender string,
-	denom string,
-	price sdk.Dec,
-) *MsgSaveBaseDenomPrice {
-	return &MsgSaveBaseDenomPrice{
-		Sender:    sender,
-		BaseDenom: denom,
-		Price:     price,
+	prices []CoinPrice,
+) *MsgUpdateCoinPrices {
+	return &MsgUpdateCoinPrices{
+		Oracle: sender,
+		Prices: prices,
 	}
 }
 
 // Route Implements Msg
-func (m *MsgSaveBaseDenomPrice) Route() string { return RouterKey }
+func (m *MsgUpdateCoinPrices) Route() string { return RouterKey }
 
 // Type Implements Msg
-func (m *MsgSaveBaseDenomPrice) Type() string { return "save_base_denom_price" }
+func (m *MsgUpdateCoinPrices) Type() string { return "save_base_denom_price" }
 
 // ValidateBasic Implements Msg.
-func (m *MsgSaveBaseDenomPrice) ValidateBasic() error {
-	if _, err := sdk.AccAddressFromBech32(m.Sender); err != nil {
+func (m *MsgUpdateCoinPrices) ValidateBasic() error {
+	if _, err := sdk.AccAddressFromBech32(m.Oracle); err != nil {
 		return err
 	}
-	if !m.Price.IsPositive() {
+	if len(m.Prices) == 0 {
 		return errors.WrongPrice
+	}
+	type pair struct {
+		denom string
+		quote string
+	}
+	knownPairs := make(map[pair]bool)
+	for _, price := range m.Prices {
+		if !price.Price.IsPositive() {
+			return errors.WrongPrice
+		}
+		key := pair{
+			denom: price.Denom,
+			quote: price.Quote,
+		}
+		if knownPairs[key] {
+			return errors.DuplicateCoinPrice
+		}
+		knownPairs[key] = true
 	}
 	return nil
 }
 
 // GetSignBytes Implements Msg.
-func (m *MsgSaveBaseDenomPrice) GetSignBytes() []byte {
+func (m *MsgUpdateCoinPrices) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(m)
 	return sdk.MustSortJSON(bz)
 }
 
 // GetSigners Implements Msg.
-func (m *MsgSaveBaseDenomPrice) GetSigners() []sdk.AccAddress {
-	sender, err := sdk.AccAddressFromBech32(m.Sender)
+func (m *MsgUpdateCoinPrices) GetSigners() []sdk.AccAddress {
+	sender, err := sdk.AccAddressFromBech32(m.Oracle)
 	if err != nil {
 		panic(err)
 	}

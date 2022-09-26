@@ -17,21 +17,35 @@ var _ feemarkettypes.QueryServer = Keeper{}
 // Fee Keeper
 /////////////
 
-func (k Keeper) QueryBaseDenomPrice(c context.Context, req *types.QueryBaseDenomPriceRequest) (*types.QueryBaseDenomPriceResponse, error) {
+func (k Keeper) CoinPrices(c context.Context, req *types.QueryCoinPricesRequest) (*types.QueryCoinPricesResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 	ctx := sdk.UnwrapSDKContext(c)
 
-	price, err := k.GetPrice(ctx)
+	prices, err := k.GetPrices(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryBaseDenomPriceResponse{Price: price.String()}, nil
+	return &types.QueryCoinPricesResponse{Prices: prices}, nil
 }
 
-func (k Keeper) QueryModuleParams(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+func (k Keeper) CoinPrice(c context.Context, req *types.QueryCoinPriceRequest) (*types.QueryCoinPriceResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+	ctx := sdk.UnwrapSDKContext(c)
+
+	price, err := k.GetPrice(ctx, req.Denom, req.Quote)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.QueryCoinPriceResponse{Price: &price}, nil
+}
+
+func (k Keeper) ModuleParams(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}

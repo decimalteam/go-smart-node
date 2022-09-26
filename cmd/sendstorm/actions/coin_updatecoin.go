@@ -59,7 +59,7 @@ func (aug *UpdateCoinGenerator) Generate() Action {
 		}
 	}
 	for _, ci := range aug.knownFullCoins {
-		if ci.Symbol == coinName {
+		if ci.Denom == coinName {
 			coinInfo = ci
 			break
 		}

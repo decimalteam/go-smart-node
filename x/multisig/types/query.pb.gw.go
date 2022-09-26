@@ -116,15 +116,15 @@ func request_Query_Wallet_0(ctx context.Context, marshaler runtime.Marshaler, cl
 		_   = err
 	)
 
-	val, ok = pathParams["address"]
+	val, ok = pathParams["wallet"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "address")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "wallet")
 	}
 
-	protoReq.Address, err = runtime.String(val)
+	protoReq.Wallet, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "address", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "wallet", err)
 	}
 
 	msg, err := client.Wallet(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -143,15 +143,15 @@ func local_request_Query_Wallet_0(ctx context.Context, marshaler runtime.Marshal
 		_   = err
 	)
 
-	val, ok = pathParams["address"]
+	val, ok = pathParams["wallet"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "address")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "wallet")
 	}
 
-	protoReq.Address, err = runtime.String(val)
+	protoReq.Wallet, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "address", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "wallet", err)
 	}
 
 	msg, err := server.Wallet(ctx, &protoReq)
@@ -160,7 +160,7 @@ func local_request_Query_Wallet_0(ctx context.Context, marshaler runtime.Marshal
 }
 
 var (
-	filter_Query_Transactions_0 = &utilities.DoubleArray{Encoding: map[string]int{"address": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_Query_Transactions_0 = &utilities.DoubleArray{Encoding: map[string]int{"wallet": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 )
 
 func request_Query_Transactions_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -174,15 +174,15 @@ func request_Query_Transactions_0(ctx context.Context, marshaler runtime.Marshal
 		_   = err
 	)
 
-	val, ok = pathParams["address"]
+	val, ok = pathParams["wallet"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "address")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "wallet")
 	}
 
-	protoReq.Address, err = runtime.String(val)
+	protoReq.Wallet, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "address", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "wallet", err)
 	}
 
 	if err := req.ParseForm(); err != nil {
@@ -208,15 +208,15 @@ func local_request_Query_Transactions_0(ctx context.Context, marshaler runtime.M
 		_   = err
 	)
 
-	val, ok = pathParams["address"]
+	val, ok = pathParams["wallet"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "address")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "wallet")
 	}
 
-	protoReq.Address, err = runtime.String(val)
+	protoReq.Wallet, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "address", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "wallet", err)
 	}
 
 	if err := req.ParseForm(); err != nil {
@@ -510,9 +510,9 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 var (
 	pattern_Query_Wallets_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"decimal", "multisig", "v1", "wallets", "owner"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_Wallet_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"decimal", "multisig", "v1", "wallet", "address"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Wallet_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 3}, []string{"decimal", "multisig", "v1", "wallet"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_Transactions_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"decimal", "multisig", "v1", "transactions", "address"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Transactions_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"decimal", "multisig", "v1", "transactions", "wallet"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_Query_Transaction_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"decimal", "multisig", "v1", "transaction", "id"}, "", runtime.AssumeColonVerbOpt(true)))
 )

@@ -34,6 +34,7 @@ func main() {
 		cmdFaucetExt(),
 		cmdRun(),
 		cmdVerify(),
+		cmdScenario(),
 	)
 
 	if err := rootCmd.Execute(); err != nil {

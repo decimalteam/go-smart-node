@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"runtime"
 	"time"
 
 	"bitbucket.org/decimalteam/go-smart-node/sdk/api"
@@ -47,7 +48,8 @@ func cmdRun() *cobra.Command {
 				fmt.Println(err)
 				return
 			}
-			for _, acc := range reactor.accounts {
+			for i, acc := range reactor.accounts {
+				fmt.Printf("load balances(%d): %s\n", i, acc.Address())
 				err = acc.UpdateNumberSequence()
 				if err != nil {
 					fmt.Println(err)
@@ -61,7 +63,7 @@ func cmdRun() *cobra.Command {
 			}
 			reactor.updateGeneratorsInfo()
 			// infinite loop
-			n := 0
+			n := int64(0)
 			for {
 				action := reactor.actionReactor.Generate()
 				accs := action.ChooseAccounts(reactor.accounts)
@@ -71,6 +73,12 @@ func cmdRun() *cobra.Command {
 				acc := accs[rand.Intn(len(accs))]
 				if !reactor.limiter.CanMake() {
 					continue
+				}
+				n++
+				if n >= reactor.limiter.Limit()*5 {
+					go reactor.updateGeneratorsInfo()
+					runtime.GC()
+					n = 0
 				}
 				bytesToSend, err := action.GenerateTx(acc, reactor.feeConfig)
 				if err != nil {
@@ -110,11 +118,6 @@ func cmdRun() *cobra.Command {
 				}
 				acc.IncrementSequence()
 				go acc.UpdateBalance()
-				n++
-				if n >= 100 {
-					go reactor.updateGeneratorsInfo()
-					n = 0
-				}
 			}
 		},
 	}

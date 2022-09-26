@@ -23,7 +23,7 @@ type MultiSendCoinGenerator struct {
 }
 
 type MultiSendCoinAction struct {
-	sends   []dscTx.OneSend
+	sends   []dscTx.MultiSendEntry
 	summary sdk.Coins // for fast check
 }
 
@@ -45,16 +45,16 @@ func (asg *MultiSendCoinGenerator) Update(ui UpdateInfo) {
 func (asg *MultiSendCoinGenerator) Generate() Action {
 	n := RandomRange(asg.rnd, asg.sendCountBottom, asg.sendCountUpper)
 	sums := sdk.NewCoins()
-	sends := make([]dscTx.OneSend, n)
+	sends := make([]dscTx.MultiSendEntry, n)
 	for i := int64(0); i < n; i++ {
 		coin := sdk.NewCoin(
 			RandomChoice(asg.rnd, asg.knownCoins),
 			helpers.FinneyToWei(sdk.NewInt(RandomRange(asg.rnd, asg.bottomRange, asg.upperRange))),
 		)
 		sums = sums.Add(coin)
-		sends[i] = dscTx.OneSend{
-			Coin:     coin,
-			Receiver: RandomChoice(asg.rnd, asg.knownAddresses),
+		sends[i] = dscTx.MultiSendEntry{
+			Recipient: RandomChoice(asg.rnd, asg.knownAddresses),
+			Coin:      coin,
 		}
 	}
 	return &MultiSendCoinAction{
@@ -75,7 +75,7 @@ func (as *MultiSendCoinAction) ChooseAccounts(saList []*stormTypes.StormAccount)
 			}
 		}
 		for _, send := range as.sends {
-			if saList[i].Address() == send.Receiver {
+			if saList[i].Address() == send.Recipient {
 				doAdd = false
 			}
 		}
@@ -109,7 +109,7 @@ func (as *MultiSendCoinAction) String() string {
 	var sb strings.Builder
 	sb.WriteString("MultiSendCoin {")
 	for i, s := range as.sends {
-		sb.WriteString(fmt.Sprintf("Send{Receiver: %s, Coin: %s}", s.Receiver, s.Coin.String()))
+		sb.WriteString(fmt.Sprintf("Send{Recipient: %s, Coin: %s}", s.Recipient, s.Coin.String()))
 		if i < len(as.sends)-1 {
 			sb.WriteString(", ")
 		}
