@@ -51,8 +51,10 @@ var (
 	PSKeyValidatorUndelegateNFT   = []byte("ValidatorUndelegateNFT")
 	PSKeyValidatorSetOnline       = []byte("ValidatorSetOnline")
 	PSKeyValidatorSetOffline      = []byte("ValidatorSetOffline")
-	//
+	// oracle key
 	PSKeyOracle = []byte("Oracle")
+	// evm tx keys
+	PSKeyEvmGasPrice = []byte("EvmGasPrice")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -110,6 +112,8 @@ func DefaultParams() Params {
 		// oracle
 		// NOTE: default address is []byte{0}
 		Oracle: "dx1qqjrdrw8",
+		// evm min gas price in usd*10^-18
+		EvmGasPrice: sdk.MustNewDecFromStr("0.000019047619047619"),
 	}
 }
 
@@ -160,6 +164,8 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(PSKeyValidatorSetOffline, &p.ValidatorSetOffline, validateDec),
 		// oracle
 		paramtypes.NewParamSetPair(PSKeyOracle, &p.Oracle, validateAddress),
+		// evm
+		paramtypes.NewParamSetPair(PSKeyEvmGasPrice, &p.EvmGasPrice, validateDec),
 	}
 }
 
@@ -178,6 +184,7 @@ func validateUint64(i interface{}) error {
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
+
 	return nil
 }
 
