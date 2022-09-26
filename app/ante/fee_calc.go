@@ -47,13 +47,13 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee
 		case *multisig.MsgSignTransaction:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.MultisigSignTransaction))
 		// swap
-		case *swap.MsgSwapInitialize:
+		case *swap.MsgInitializeSwap:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.SwapInitialize))
-		case *swap.MsgSwapRedeem:
+		case *swap.MsgRedeemSwap:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.SwapRedeem))
-		case *swap.MsgChainActivate:
+		case *swap.MsgActivateChain:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.SwapActivateChain))
-		case *swap.MsgChainDeactivate:
+		case *swap.MsgDeactivateChain:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.SwapDeactivateChain))
 		// nft
 		case *nft.MsgMintToken:
@@ -73,7 +73,7 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee
 		}
 	}
 
-	bytesFee := helpers.DecToDecWithE18(params.ByteFee.MulInt64(txBytesLen))
+	bytesFee := helpers.DecToDecWithE18(params.TxByteFee.MulInt64(txBytesLen))
 
 	commission := bytesFee.Add(msgsFee)
 
