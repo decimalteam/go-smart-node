@@ -2,19 +2,17 @@ package keeper_test
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/testutil"
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	nftkeeper "bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
-	nfttestutil "bitbucket.org/decimalteam/go-smart-node/x/nft/testutil"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
-	"cosmossdk.io/math"
+	feekeeper "bitbucket.org/decimalteam/go-smart-node/x/fee/keeper"
+	feetestutil "bitbucket.org/decimalteam/go-smart-node/x/fee/testutil"
+	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
-	//simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -23,9 +21,9 @@ import (
 )
 
 var (
-	pk          = ed25519.GenPrivKey().PubKey()
-	addr        = sdk.AccAddress(pk.Address())
-	defaultCoin = sdk.NewCoin("del", types.DefaultMinReserveAmount)
+	baseDenom = "del"
+	pk        = ed25519.GenPrivKey().PubKey()
+	oracle    = sdk.AccAddress(pk.Address()).String()
 )
 
 type KeeperTestSuite struct {
@@ -33,11 +31,12 @@ type KeeperTestSuite struct {
 
 	ctx sdk.Context
 
-	nftKeeper  nftkeeper.Keeper
+	feeKeeper  feekeeper.Keeper
 	bankKeeper bankkeeper.Keeper
 
-	queryClient types.QueryClient
-	msgServer   types.MsgServer
+	queryClient   types.QueryClient
+	fmQueryClient feemarkettypes.QueryClient
+	msgServer     types.MsgServer
 }
 
 func (s *KeeperTestSuite) SetupTest() {
@@ -69,47 +68,37 @@ func (s *KeeperTestSuite) SetupTest() {
 
 	// -- create mock controller
 	ctrl := gomock.NewController(s.T())
-	bankKeeper := nfttestutil.NewMockKeeper(ctrl)
-	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, addr, types.ReservedPool, sdk.NewCoins(defaultCoin)).AnyTimes().Return(nil)
-	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, addr, types.ReservedPool, sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(2))))).AnyTimes().Return(nil)
-	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(ctx, types.ReservedPool, addr, sdk.NewCoins(defaultCoin)).AnyTimes().Return(nil)
+	bankKeeper := feetestutil.NewMockKeeper(ctrl)
 	// --
 
 	// -- create nft keeper
 	space, ok := paramsKeeper.GetSubspace(types.ModuleName)
 	s.Require().True(ok)
-	keeper := nftkeeper.NewKeeper(
+	k := feekeeper.NewKeeper(
 		encCfg.Codec,
 		key,
 		space,
 		bankKeeper,
+		baseDenom,
 	)
-	keeper.SetParams(ctx, types.DefaultParams())
+	dp := types.DefaultParams()
+	dp.Oracle = oracle
+	k.SetModuleParams(ctx, dp)
 	// --
 
 	s.ctx = ctx
-	s.nftKeeper = *keeper
+	s.feeKeeper = *k
 	s.bankKeeper = bankKeeper
 
 	// -- register services
 	types.RegisterInterfaces(encCfg.InterfaceRegistry)
 	queryHelper := baseapp.NewQueryServerTestHelper(ctx, encCfg.InterfaceRegistry)
-	types.RegisterQueryServer(queryHelper, s.nftKeeper)
+	types.RegisterQueryServer(queryHelper, s.feeKeeper)
 	s.queryClient = types.NewQueryClient(queryHelper)
-	s.msgServer = keeper
+	feemarkettypes.RegisterQueryServer(queryHelper, k)
+	s.fmQueryClient = feemarkettypes.NewQueryClient(queryHelper)
+	s.msgServer = k
 	//
-}
-
-func (s *KeeperTestSuite) TestParams() {
-	ctx, keeper := s.ctx, s.nftKeeper
-	require := s.Require()
-
-	expParams := types.DefaultParams()
-	expParams.MaxCollectionSize = 555
-	expParams.MinReserveAmount = math.NewInt(111)
-	keeper.SetParams(ctx, expParams)
-	resParams := keeper.GetParams(ctx)
-	require.True(expParams.Equal(resParams))
 }
 
 func TestKeeperTestSuite(t *testing.T) {

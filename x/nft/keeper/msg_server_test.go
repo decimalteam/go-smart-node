@@ -4,14 +4,13 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdkmath "cosmossdk.io/math"
-	"fmt"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"testing"
 )
 
 func (s *KeeperTestSuite) TestMsgMintToken() {
-	ctx, k, msgServer := s.ctx, s.nftKeeper, s.msgServer
+	ctx, _, msgServer := s.ctx, s.nftKeeper, s.msgServer
 	require := s.Require()
 
 	var (
@@ -76,9 +75,6 @@ func (s *KeeperTestSuite) TestMsgMintToken() {
 			}
 		})
 	}
-
-	cs := k.GetCollections(ctx)
-	fmt.Println(cs)
 }
 
 func (s *KeeperTestSuite) TestMsgBurnToken() {
