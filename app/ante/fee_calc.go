@@ -1,11 +1,10 @@
 package ante
 
 import (
-	"math/big"
-
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coin "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	fee "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	multisig "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
@@ -13,72 +12,73 @@ import (
 	swap "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
 )
 
-var bigE15 = new(big.Int).Exp(big.NewInt(10), big.NewInt(15), nil)
-var decE15 = sdk.NewDecFromBigInt(bigE15)
-
-// Calculate fee in base coin
+// CalculateFee calculates fee in base coin
 func CalculateFee(msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee.Params) (sdkmath.Int, error) {
-	commissionInBaseCoin := sdk.ZeroDec()
-	commissionInBaseCoin = commissionInBaseCoin.Add(params.TxByteFee.Mul(sdk.NewDec(txBytesLen)))
+	params = fee.DefaultParams()
+
+	var msgsFee sdk.Dec
 	for _, msg := range msgs {
 		switch m := msg.(type) {
 		// coin
 		case *coin.MsgCreateCoin:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.CoinCreate)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinCreate))
 		case *coin.MsgSendCoin:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.CoinSend)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinSend))
 		case *coin.MsgMultiSendCoin:
-			add := params.CoinSendAdd.Mul(sdk.NewDec(int64(len(m.Sends) - 1)))
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.CoinSend).Add(add)
+			multiAdditionFee := params.CoinSendAdd.MulInt64(int64(len(m.Sends) - 1))
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinSend.Add(multiAdditionFee)))
 		case *coin.MsgBuyCoin:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.CoinBuy)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinBuy))
 		case *coin.MsgSellCoin:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.CoinSell)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinSell))
 		case *coin.MsgSellAllCoin:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.CoinSell)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinSell))
 		case *coin.MsgRedeemCheck:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.CoinRedeemCheck)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinRedeemCheck))
 		case *coin.MsgUpdateCoin:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.CoinUpdate)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinUpdate))
 		case *coin.MsgBurnCoin:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.CoinBurn)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinBurn))
 		// multisig
 		case *multisig.MsgCreateWallet:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.MultisigCreateWallet)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.MultisigCreateWallet))
 		case *multisig.MsgCreateTransaction:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.MultisigCreateTransaction)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.MultisigCreateTransaction))
 		case *multisig.MsgSignTransaction:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.MultisigSignTransaction)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.MultisigSignTransaction))
 		// swap
 		case *swap.MsgInitializeSwap:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.SwapInitialize)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.SwapInitialize))
 		case *swap.MsgRedeemSwap:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.SwapRedeem)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.SwapRedeem))
 		case *swap.MsgActivateChain:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.SwapActivateChain)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.SwapActivateChain))
 		case *swap.MsgDeactivateChain:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.SwapDeactivateChain)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.SwapDeactivateChain))
 		// nft
 		case *nft.MsgMintToken:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.NftMintToken)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.NftMintToken))
 		case *nft.MsgUpdateToken:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.NftUpdateToken)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.NftUpdateToken))
 		case *nft.MsgUpdateReserve:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.NftUpdateReserve)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.NftUpdateReserve))
 		case *nft.MsgSendToken:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.NftSendToken)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.NftSendToken))
 		case *nft.MsgBurnToken:
-			commissionInBaseCoin = commissionInBaseCoin.Add(params.NftBurnToken)
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.NftBurnToken))
 		// fee
 		case *fee.MsgUpdateCoinPrices:
-			commissionInBaseCoin = commissionInBaseCoin.Add(sdk.ZeroDec())
 		default:
-			return sdk.NewInt(0), UnknownTransaction
+			return sdkmath.ZeroInt(), UnknownTransaction
 		}
 	}
 
+	bytesFee := helpers.DecToDecWithE18(params.TxByteFee.MulInt64(txBytesLen))
+
+	commission := bytesFee.Add(msgsFee)
+
 	// change commission according to DEL price
-	commissionInBaseCoin = commissionInBaseCoin.Quo(delPrice).Mul(decE15)
-	// TODO: special gas value for special transactions
-	return commissionInBaseCoin.RoundInt(), nil
+	commissionInBaseCoin := commission.Quo(delPrice).RoundInt()
+
+	return commissionInBaseCoin, nil
 }

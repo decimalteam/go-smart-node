@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdkmath "cosmossdk.io/math"
+
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -27,6 +29,7 @@ type Keeper struct {
 
 	accountKeeper auth.AccountKeeperI
 	bankKeeper    bank.Keeper
+	feeKeeper     feeTypes.FeeMarketKeeper
 
 	// cached params value (for optimization)
 	cacheParams types.Params
