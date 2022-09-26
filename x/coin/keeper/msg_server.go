@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	dscconfig "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
 	"golang.org/x/crypto/sha3"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -23,7 +25,6 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-	sdkmath "cosmossdk.io/math"
 )
 
 var _ types.MsgServer = &Keeper{}
@@ -786,7 +787,7 @@ func (k *Keeper) sellCoin(
 }
 
 func (k Keeper) getCreateCoinCommission(ctx sdk.Context, symbol string) (sdkmath.Int, error) {
-	price, err := k.feeKeeper.GetPrice(ctx)
+	baseDenomPrice, err := k.feeKeeper.GetPrice(ctx, dscconfig.BaseDenom, feeconfig.DefaultQuote)
 	if err != nil {
 		return sdkmath.Int{}, err
 	}
@@ -796,16 +797,16 @@ func (k Keeper) getCreateCoinCommission(ctx sdk.Context, symbol string) (sdkmath
 	var createCoinFee sdk.Dec
 	switch len(symbol) {
 	case 3:
-		createCoinFee = params.CoinCreateLength3
+		createCoinFee = params.CoinCreateTicker3
 	case 4:
-		createCoinFee = params.CoinCreateLength4
+		createCoinFee = params.CoinCreateTicker4
 	case 5:
-		createCoinFee = params.CoinCreateLength5
+		createCoinFee = params.CoinCreateTicker5
 	case 6:
-		createCoinFee = params.CoinCreateLength6
+		createCoinFee = params.CoinCreateTicker6
 	default:
-		createCoinFee = params.CoinCreateLengthOther
+		createCoinFee = params.CoinCreateTicker7
 	}
 
-	return helpers.DecToIntWithE18(createCoinFee.Quo(price)), nil
+	return helpers.DecToIntWithE18(createCoinFee.Quo(baseDenomPrice.Price)), nil
 }

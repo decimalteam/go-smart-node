@@ -18,6 +18,6 @@ type FeeMarketKeeper interface {
 	GetBaseFee(ctx sdk.Context) *big.Int
 	GetParams(ctx sdk.Context) feemarkettypes.Params
 	GetModuleParams(ctx sdk.Context) Params
-	GetPrice(ctx sdk.Context) (sdk.Dec, error)
+	GetPrice(ctx sdk.Context, denom string, quote string) (CoinPrice, error)
 	AddTransientGasWanted(ctx sdk.Context, gasWanted uint64) (uint64, error)
 }

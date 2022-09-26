@@ -1,12 +1,12 @@
 package keeper
 
 import (
-	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
-	sdkmath "cosmossdk.io/math"
 	"fmt"
 	"strings"
 
+	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdkmath "cosmossdk.io/math"
+
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
