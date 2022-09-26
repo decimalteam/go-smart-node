@@ -41,6 +41,7 @@ func NewKeeper(
 	storeKey store.StoreKey,
 	ps paramtypes.Subspace,
 	ac auth.AccountKeeperI,
+	fk feeTypes.FeeMarketKeeper,
 	bk bank.Keeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
@@ -51,6 +52,7 @@ func NewKeeper(
 		cdc:           cdc,
 		storeKey:      storeKey,
 		ps:            ps,
+		feeKeeper:     fk,
 		accountKeeper: ac,
 		bankKeeper:    bk,
 	}

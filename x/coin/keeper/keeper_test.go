@@ -87,6 +87,7 @@ func (s *KeeperTestSuite) SetupTest() {
 	ctrl := gomock.NewController(s.T())
 	bankKeeper := cointestutil.NewMockKeeper(ctrl)
 	acKeeper := cointestutil.NewMockAccountKeeperI(ctrl)
+	fkKeeper := cointestutil.NewMockFeeMarketKeeper(ctrl)
 	// --
 
 	// -- create nft keeper
@@ -97,6 +98,7 @@ func (s *KeeperTestSuite) SetupTest() {
 		key,
 		space,
 		acKeeper,
+		fkKeeper,
 		bankKeeper,
 	)
 	k.SetParams(ctx, types.DefaultParams())

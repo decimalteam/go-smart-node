@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	gocontext "context"
 	"fmt"
@@ -153,6 +155,11 @@ func (s *KeeperTestSuite) TestGRPCQueryModuleParams() {
 func (s *KeeperTestSuite) TestGRPCQueryParams() {
 	ctx, k, queryClient := s.ctx, s.feeKeeper, s.fmQueryClient
 	require := s.Require()
+	k.SavePrice(ctx, types.CoinPrice{
+		Denom: config.BaseDenom,
+		Quote: feeconfig.DefaultQuote,
+		Price: sdk.OneDec(),
+	})
 
 	params := k.GetParams(ctx)
 	res, err := queryClient.Params(gocontext.Background(), &feemarkettypes.QueryParamsRequest{})

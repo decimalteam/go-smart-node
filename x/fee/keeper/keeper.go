@@ -107,7 +107,7 @@ func (k *Keeper) GetPrices(
 	it := sdk.KVStorePrefixIterator(store, types.PriceKeyPrefix)
 	for ; it.Valid(); it.Next() {
 		var price types.CoinPrice
-		price.Unmarshal(it.Value())
+		k.cdc.MustUnmarshalLengthPrefixed(it.Value(), &price)
 		result = append(result, price)
 	}
 
