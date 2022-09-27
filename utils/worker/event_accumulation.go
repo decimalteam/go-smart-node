@@ -31,8 +31,7 @@ last event EditCoin group by coin
 */
 
 type EventAccumulator struct {
-	MultisigCreateWallets []MultisigCreateWallet `json:"multisig_create_wallets"`
-	CoinsCreates          []EventCreateCoin      `json:"coin_creates"`
+	CoinsCreates []EventCreateCoin `json:"coin_creates"`
 	// [address][coin_symbol]amount changes
 	BalancesChanges map[string]map[string]sdkmath.Int `json:"balances_changes"`
 	// [coin_symbol]
@@ -42,6 +41,10 @@ type EventAccumulator struct {
 	LegacyReown        map[string]string    `json:"legacy_reown"`
 	LegacyReturnNFT    []LegacyReturnNFT    `json:"legacy_return_nft"`
 	LegacyReturnWallet []LegacyReturnWallet `json:"legacy_return_multisig"`
+	// multisig
+	MultisigCreateWallets []MultisigCreateWallet `json:"multisig_create_wallets"`
+	MultisigCreateTxs     []MultisigCreateTx     `json:"multisig_create_txs"`
+	MultisigSignTxs       []MultisigSignTx       `json:"multisig_sign_txs"`
 	// nft
 	NFTMints     []EventMintNFT     `json:"nft_mints"`
 	NFTTransfers []EventTransferNFT `json:"nft_transfers"`
@@ -83,9 +86,10 @@ var eventProcessors = map[string]processFunc{
 	"decimal.legacy.v1.EventReturnLegacySubToken": processEventReturnLegacySubToken,
 	"decimal.legacy.v1.EventReturnMultisigWallet": processEventReturnMultisigWallet,
 	// multisig
-	"decimal.multisig.v1.EventCreateWallet":      processEventCreateWallet,
-	"decimal.multisig.v1.EventCreateTransaction": processStub,
-	"decimal.multisig.v1.EventSignTransaction":   processStub,
+	"decimal.multisig.v1.EventCreateWallet":       processEventCreateWallet,
+	"decimal.multisig.v1.EventCreateTransaction":  processEventCreateTransaction,
+	"decimal.multisig.v1.EventSignTransaction":    processEventSignTransaction,
+	"decimal.multisig.v1.EventConfirmTransaction": processEventConfirmTransaction,
 	// nft
 	"decimal.nft.v1.EventMintNFT":          processEventMintNFT,
 	"decimal.nft.v1.EventTransferNFT":      processEventTransferNFT,

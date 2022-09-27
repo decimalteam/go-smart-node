@@ -203,16 +203,15 @@ func processEventBuySellCoin(ea *EventAccumulator, event abci.Event, txHash stri
 	var sender string
 	var coinToBuy, coinToSell sdk.Coin
 	for _, attr := range event.Attributes {
-		if string(attr.Key) == "sender" {
+		switch string(attr.Key) {
+		case "sender":
 			sender = string(attr.Value)
-		}
-		if string(attr.Key) == "coin_to_buy" {
+		case "coin_to_buy":
 			coinToBuy, err = sdk.ParseCoinNormalized(string(attr.Value))
 			if err != nil {
 				return fmt.Errorf("can't parse coin '%s': %s", string(attr.Value), err.Error())
 			}
-		}
-		if string(attr.Key) == "coin_to_sell" {
+		case "coin_to_sell":
 			coinToSell, err = sdk.ParseCoinNormalized(string(attr.Value))
 			if err != nil {
 				return fmt.Errorf("can't parse coin '%s': %s", string(attr.Value), err.Error())
@@ -235,10 +234,10 @@ func processEventBurnCoin(ea *EventAccumulator, event abci.Event, txHash string,
 	var sender string
 	var coinToBurn sdk.Coin
 	for _, attr := range event.Attributes {
-		if string(attr.Key) == "sender" {
+		switch string(attr.Key) {
+		case "sender":
 			sender = string(attr.Value)
-		}
-		if string(attr.Key) == "coin" {
+		case "coin":
 			coinToBurn, err = sdk.ParseCoinNormalized(string(attr.Value))
 			if err != nil {
 				return fmt.Errorf("can't parse coin '%s': %s", string(attr.Value), err.Error())
