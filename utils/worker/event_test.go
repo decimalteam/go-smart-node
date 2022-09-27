@@ -180,6 +180,23 @@ func TestReturnLegacyCoins(t *testing.T) {
 	require.True(t, ea.BalancesChanges["b"]["coin2"].Equal(sdk.NewInt(2)))
 }
 
+func TestReturnMultisigWallet(t *testing.T) {
+	ea := NewEventAccumulator()
+	ev, err := utilsEvents.TypedEventToEvent(&legacyTypes.EventReturnMultisigWallet{
+		LegacyOwner: "a",
+		Owner:       "b",
+		Wallet:      "c",
+	})
+	require.NoError(t, err)
+	err = processEventReturnMultisigWallet(ea, abci.Event(ev), "ABCD", 7)
+	require.NoError(t, err)
+
+	require.Len(t, ea.LegacyReturnWallet, 1)
+	require.Equal(t, "a", ea.LegacyReturnWallet[0].LegacyOwner)
+	require.Equal(t, "b", ea.LegacyReturnWallet[0].Owner)
+	require.Equal(t, "c", ea.LegacyReturnWallet[0].Wallet)
+}
+
 // multisig
 func TestMultisigCreateWallet(t *testing.T) {
 	ea := NewEventAccumulator()
