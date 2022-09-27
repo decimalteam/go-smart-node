@@ -521,6 +521,7 @@ func NewDSC(
 		keys[cointypes.StoreKey],
 		app.GetSubspace(cointypes.ModuleName),
 		app.AccountKeeper,
+		&app.FeeKeeper,
 		app.BankKeeper,
 	)
 	app.MultisigKeeper = *multisigkeeper.NewKeeper(

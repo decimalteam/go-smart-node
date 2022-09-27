@@ -10,7 +10,7 @@ option go_package = "bitbucket.org/decimalteam/go-smart-node/x/legacy/types";
 
 // Record defines the legacy record containing set of values that should be returned to the actual owner.
 message Record {
-  option (gogoproto.equal) = false;
+  option (gogoproto.equal) = true;
   option (gogoproto.goproto_getters) = false;
   option (gogoproto.goproto_stringer) = true;
 

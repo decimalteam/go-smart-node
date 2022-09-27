@@ -46,11 +46,13 @@ func (s *KeeperTestSuite) SetupTest() {
 	keys := []storetypes.StoreKey{
 		key, paramkey,
 	}
+
 	tkey := sdk.NewTransientStoreKey("transient_test")
 	tparamskey := sdk.NewTransientStoreKey("transient_param_test")
 	tkeys := []storetypes.StoreKey{
 		tkey, tparamskey,
 	}
+
 	testCtx := testutil.DefaultContextWithDB(s.T(), keys, tkeys)
 	ctx := testCtx.Ctx.WithBlockHeader(tmproto.Header{Time: tmtime.Now()})
 	encCfg := testutil.MakeTestEncodingConfig()

@@ -26,6 +26,7 @@ func GetTestAppWithCoinKeeper(t *testing.T) (*codec.LegacyAmino, *app.DSC, sdk.C
 		dsc.GetKey(types.StoreKey),
 		dsc.GetSubspace(types.ModuleName),
 		dsc.AccountKeeper,
+		&dsc.FeeKeeper,
 		dsc.BankKeeper,
 	)
 	dsc.CoinKeeper.SetParams(ctx, types.DefaultParams())
