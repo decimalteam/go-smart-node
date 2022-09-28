@@ -65,18 +65,68 @@ func Ecrecover(sighash [32]byte, R, S, Vb *big.Int) (ethcmn.Address, error) {
 	}
 	// encode the signature in uncompressed format
 	r, s := R.Bytes(), S.Bytes()
-	sig := make([]byte, 65)
+	sig := make([]byte, crypto.SignatureLength)
 	copy(sig[32-len(r):32], r)
 	copy(sig[64-len(s):64], s)
 	sig[64] = V
-
 	// recover the public key from the signature
-	pub, err := crypto.SigToPub(sighash[:], sig)
+	pub, err := crypto.Ecrecover(sighash[:], sig)
 	if err != nil {
 		return ethcmn.Address{}, err
 	}
-
-	addr := crypto.PubkeyToAddress(*pub)
-
+	if len(pub) == 0 || pub[0] != 4 {
+		return ethcmn.Address{}, errors.New("invalid public key")
+	}
+	var addr ethcmn.Address
+	copy(addr[:], crypto.Keccak256(pub[1:])[12:])
 	return addr, nil
+	//if vb.BitLen() > 8 {
+	//	return ethcmn.Address{}, errors.New("invalid sig") // errors.InvalidCheckSig
+	//}
+	//v := byte(vb.Uint64() - 27)
+	//if !crypto.ValidateSignatureValues(v, rb, sb, true) {
+	//	return ethcmn.Address{}, errors.New("invalid sig") //errors.InvalidCheckSig
+	//}
+	//// encode the signature in uncompressed format
+	//r, s := rb.Bytes(), sb.Bytes()
+	//sig := make([]byte, 65)
+	//copy(sig[32-len(r):32], r)
+	//copy(sig[64-len(s):64], s)
+	//sig[64] = v
+	//// recover the public key from the signature
+	//pub, err := crypto.Ecrecover(sighash[:], sig)
+	//if err != nil {
+	//	return ethcmn.Address{}, errors.New("invalid sig") //errors.FailedToRecoverPKFromSig
+	//}
+	//if len(pub) == 0 || pub[0] != 4 {
+	//	return ethcmn.Address{}, errors.New("invalid sig") //errors.InvalidPubKey
+	//}
+	//// calculate address from the recovered public key
+	//var addr ethcmn.Address
+	//copy(addr[:], crypto.Keccak256(pub[1:])[12:])
+	//return addr, nil
+
+	//if Vb.BitLen() > 8 {
+	//	return ethcmn.Address{}, errors.New("invalid sig")
+	//}
+	//V := byte(Vb.Uint64() - 27)
+	//if !crypto.ValidateSignatureValues(V, R, S, true) {
+	//	return ethcmn.Address{}, errors.New("invalid sig")
+	//}
+	//// encode the signature in uncompressed format
+	//r, s := R.Bytes(), S.Bytes()
+	//sig := make([]byte, 65)
+	//copy(sig[32-len(r):32], r)
+	//copy(sig[64-len(s):64], s)
+	//sig[64] = V
+	//
+	//// recover the public key from the signature
+	//pub, err := crypto.SigToPub(sighash[:], sig)
+	//if err != nil {
+	//	return ethcmn.Address{}, err
+	//}
+	//
+	//addr := crypto.PubkeyToAddress(*pub)
+	//
+	//return addr, nil
 }
