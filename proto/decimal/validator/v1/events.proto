@@ -1,6 +1,0 @@
-syntax = "proto3";
-package decimal.validator.v1;
-
-option go_package = "bitbucket.org/decimalteam/go-smart-node/x/validator/types";
-
-// TODO
