@@ -67,16 +67,16 @@ func ParamKeyTable() paramtypes.KeyTable {
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return Params{
-		TxByteFee: sdk.MustNewDecFromStr("0.02"),
+		TxByteFee: sdk.MustNewDecFromStr("0.00008"),
 		// coin transactions fees
-		CoinCreate:      sdk.MustNewDecFromStr("0.8"),
+		CoinCreate:      sdk.MustNewDecFromStr("0.004"),
 		CoinUpdate:      sdk.ZeroDec(),
-		CoinSend:        sdk.NewDec(10),
-		CoinSendAdd:     sdk.NewDec(5),
-		CoinBuy:         sdk.NewDec(4),
-		CoinSell:        sdk.NewDec(2),
-		CoinRedeemCheck: sdk.MustNewDecFromStr("0.3"),
-		CoinBurn:        sdk.NewDec(4),
+		CoinSend:        sdk.MustNewDecFromStr("0.0004"),
+		CoinSendAdd:     sdk.MustNewDecFromStr("0.0002"),
+		CoinBuy:         sdk.MustNewDecFromStr("0.004"),
+		CoinSell:        sdk.MustNewDecFromStr("0.004"),
+		CoinRedeemCheck: sdk.MustNewDecFromStr("0.0012"),
+		CoinBurn:        sdk.MustNewDecFromStr("0.0004"),
 		// special commission depends on coin symbol length
 		CoinCreateTicker3: sdk.NewDec(100_000),
 		CoinCreateTicker4: sdk.NewDec(10_000),
@@ -84,9 +84,9 @@ func DefaultParams() Params {
 		CoinCreateTicker6: sdk.NewDec(100),
 		CoinCreateTicker7: sdk.NewDec(10),
 		// multisignature wallets
-		MultisigCreateWallet:      sdk.MustNewDecFromStr("0.3"),
-		MultisigCreateTransaction: sdk.MustNewDecFromStr("0.3"),
-		MultisigSignTransaction:   sdk.MustNewDecFromStr("0.3"),
+		MultisigCreateWallet:      sdk.MustNewDecFromStr("0.004"),
+		MultisigCreateTransaction: sdk.MustNewDecFromStr("0.004"),
+		MultisigSignTransaction:   sdk.MustNewDecFromStr("0.004"),
 		// nft
 		NftMintToken:     sdk.ZeroDec(),
 		NftUpdateToken:   sdk.ZeroDec(),
