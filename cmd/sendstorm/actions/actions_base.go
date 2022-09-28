@@ -2,7 +2,6 @@ package actions
 
 import (
 	"fmt"
-	"math/rand"
 	"time"
 
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
@@ -51,6 +50,19 @@ type UpdateInfo struct {
 	MultisigWallets      []dscApi.MultisigWallet
 	MultisigTransactions []dscApi.MultisigTransaction
 	MultisigBalances     map[string]sdk.Coins
+	Validators           []string
+	Stakes               []GenericStake
+	NFTStakes            []NFTStake
+}
+
+type GenericStake struct {
+	Delegator string
+	Validator string
+	sdk.Coin
+}
+type NFTStake struct {
+	Delegator string
+	Validator string
 }
 
 type NFTSubTokenKey struct {
@@ -89,76 +101,4 @@ func (t *TPSLimiter) CanMake() bool {
 
 func (t *TPSLimiter) Limit() int64 {
 	return t.limit
-}
-
-// helpers
-const charsAll = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-const charsAbc = "abcdefghijklmnopqrstuvwxyz"
-
-// returns random number in range [low,up)
-func RandomRange(rnd *rand.Rand, bottom, up int64) int64 {
-	return rnd.Int63n(up-bottom) + bottom
-}
-
-// returns random string length n
-func RandomString(rnd *rand.Rand, n int64, source string) string {
-	var letters = []rune(source)
-	s := make([]rune, n)
-	for i := range s {
-		s[i] = letters[rnd.Intn(len(letters))]
-	}
-	return string(s)
-}
-
-// TODO: need generics
-func RandomChoice(rnd *rand.Rand, list []string) string {
-	return list[rnd.Intn(len(list))]
-}
-
-// Return random sublist (copy)
-func RandomSublist(rnd *rand.Rand, list []uint64) []uint64 {
-	if len(list) == 0 {
-		return []uint64{}
-	}
-	if len(list) == 1 {
-		return []uint64{list[0]}
-	}
-	// random indexes to choose
-	ids := make([]int, len(list))
-	for i := range list {
-		ids[i] = i
-	}
-	rnd.Shuffle(len(ids), func(i, j int) {
-		ids[i], ids[j] = ids[j], ids[i]
-	})
-	n := int(RandomRange(rnd, 1, int64(len(list)+1)))
-	result := make([]uint64, n)
-	for i := 0; i < n; i++ {
-		result[i] = list[ids[i]]
-	}
-	return result
-}
-
-// Return random sublist (copy)
-func RandomSublist32(rnd *rand.Rand, list []uint32) []uint32 {
-	if len(list) == 0 {
-		return []uint32{}
-	}
-	if len(list) == 1 {
-		return []uint32{list[0]}
-	}
-	// random indexes to choose
-	ids := make([]int, len(list))
-	for i := range list {
-		ids[i] = i
-	}
-	rnd.Shuffle(len(ids), func(i, j int) {
-		ids[i], ids[j] = ids[j], ids[i]
-	})
-	n := int(RandomRange(rnd, 1, int64(len(list)+1)))
-	result := make([]uint32, n)
-	for i := 0; i < n; i++ {
-		result[i] = list[ids[i]]
-	}
-	return result
 }

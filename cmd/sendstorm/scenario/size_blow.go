@@ -3,7 +3,9 @@ package scenario
 import (
 	"fmt"
 	"math/rand"
+	"time"
 
+	"bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/actions"
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
@@ -16,6 +18,7 @@ type NFTBlowScenario struct {
 	accs []*stormTypes.StormAccount
 	api  *dscApi.API
 	nfts []dscApi.NFTToken
+	rnd  *rand.Rand
 }
 
 // 1. create nft
@@ -26,6 +29,7 @@ func NewNFTBlowScenario(api *dscApi.API, accs []*stormTypes.StormAccount) *NFTBl
 	return &NFTBlowScenario{
 		accs: accs,
 		api:  api,
+		rnd:  rand.New(rand.NewSource(time.Now().Unix())),
 	}
 }
 
@@ -114,8 +118,7 @@ func (sc *NFTBlowScenario) SendNFT() error {
 		if len(nftsToSend) == 0 {
 			continue
 		}
-		i := rand.Intn(len(nftsToSend))
-		nft := nftsToSend[i]
+		nft := actions.RandomChoice(sc.rnd, nftsToSend)
 		subTokens := []uint32{}
 		for _, sub := range nft.SubTokens {
 			if sub.Owner == acc.Address() {
