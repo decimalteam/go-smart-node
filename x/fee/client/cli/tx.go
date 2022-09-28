@@ -53,6 +53,7 @@ func GetCmdUpdatePrice() *cobra.Command {
 						UpdatedAt: time.Now(),
 					},
 				})
+
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
 	}
