@@ -156,13 +156,13 @@ func (w *Worker) GetBlockResult(height int64, txNum int) *Block {
 	web3Receipts := <-web3ReceiptsChan
 
 	for _, event := range results.BeginBlockEvents {
-		err := accum.AddEvent(event, "", results.Height)
+		err := accum.AddEvent(event, "")
 		if err != nil {
 			w.panicError(err)
 		}
 	}
 	for _, event := range results.EndBlockEvents {
-		err := accum.AddEvent(event, "", results.Height)
+		err := accum.AddEvent(event, "")
 		if err != nil {
 			w.panicError(err)
 		}

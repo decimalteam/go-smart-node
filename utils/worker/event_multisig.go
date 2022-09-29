@@ -24,24 +24,25 @@ type MultisigOwner struct {
 }
 
 type MultisigCreateTx struct {
-	Sender   string    `json:"sender"`
-	Wallet   string    `json:"wallet"`
-	Receiver string    `json:"receiver"`
-	TxHash   string    `json:"transaction"`
-	Coins    sdk.Coins `json:"coins"`
+	Sender      string    `json:"sender"`
+	Wallet      string    `json:"wallet"`
+	Receiver    string    `json:"receiver"`
+	Transaction string    `json:"transaction"`
+	Coins       sdk.Coins `json:"coins"`
+	TxHash      string    `json:"txHash"`
 }
 
 type MultisigSignTx struct {
 	Sender        string `json:"sender"`
 	Wallet        string `json:"wallet"`
-	TxHash        string `json:"transaction"`
+	Transaction   string `json:"transaction"`
 	SignerWeight  uint32 `json:"signer_weight"`
 	Confirmations uint32 `json:"confirmations"`
 	Confirmed     bool   `json:"confirmed"`
 }
 
 // decimal.multisig.v1.EventCreateWallet
-func processEventCreateWallet(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+func processEventCreateWallet(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
 	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 	  string wallet = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
@@ -49,21 +50,21 @@ func processEventCreateWallet(ea *EventAccumulator, event abci.Event, txHash str
 	  repeated uint32 weights = 4;
 	  uint32 threshold = 5;
 	*/
-	mcw := MultisigCreateWallet{}
+	e := MultisigCreateWallet{}
 	var owners []string
 	var weights []uint32
 	for _, attr := range event.Attributes {
 		switch string(attr.Key) {
 		case "sender":
-			mcw.Creator = string(attr.Value)
+			e.Creator = string(attr.Value)
 		case "wallet":
-			mcw.Address = string(attr.Value)
+			e.Address = string(attr.Value)
 		case "threshold":
 			thr, err := strconv.ParseUint(string(attr.Value), 10, 64)
 			if err != nil {
 				return fmt.Errorf("can't parse threshold '%s': %s", string(attr.Value), err.Error())
 			}
-			mcw.Threshold = uint32(thr)
+			e.Threshold = uint32(thr)
 		case "owners":
 			err := json.Unmarshal(attr.Value, &owners)
 			if err != nil {
@@ -77,19 +78,19 @@ func processEventCreateWallet(ea *EventAccumulator, event abci.Event, txHash str
 		}
 	}
 	for i, owner := range owners {
-		mcw.Owners = append(mcw.Owners, MultisigOwner{
+		e.Owners = append(e.Owners, MultisigOwner{
 			Address:  owner,
-			Multisig: mcw.Address,
+			Multisig: e.Address,
 			Weight:   weights[i],
 		})
 	}
 
-	ea.MultisigCreateWallets = append(ea.MultisigCreateWallets, mcw)
+	ea.MultisigCreateWallets = append(ea.MultisigCreateWallets, e)
 	return nil
 }
 
 // decimal.multisig.v1.EventCreateTransaction
-func processEventCreateTransaction(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+func processEventCreateTransaction(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
 		string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 		string wallet = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
@@ -97,30 +98,32 @@ func processEventCreateTransaction(ea *EventAccumulator, event abci.Event, txHas
 		string coins = 4;
 		string transaction = 5;
 	*/
-	mct := MultisigCreateTx{}
+	e := MultisigCreateTx{}
 	for _, attr := range event.Attributes {
 		switch string(attr.Key) {
 		case "sender":
-			mct.Sender = string(attr.Value)
+			e.Sender = string(attr.Value)
 		case "wallet":
-			mct.Wallet = string(attr.Value)
+			e.Wallet = string(attr.Value)
 		case "receiver":
-			mct.Receiver = string(attr.Value)
+			e.Receiver = string(attr.Value)
 		case "coins":
-			err := json.Unmarshal(attr.Value, &mct.Coins)
+			err := json.Unmarshal(attr.Value, &e.Coins)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal coins: %s, value: '%s'", err.Error(), string(attr.Value))
 			}
 		case "transaction":
-			mct.TxHash = string(attr.Value)
+			e.Transaction = string(attr.Value)
 		}
 	}
-	ea.MultisigCreateTxs = append(ea.MultisigCreateTxs, mct)
+
+	e.TxHash = txHash
+	ea.MultisigCreateTxs = append(ea.MultisigCreateTxs, e)
 	return nil
 }
 
 // decimal.multisig.v1.EventSignTransaction
-func processEventSignTransaction(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+func processEventSignTransaction(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
 	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 	  string wallet = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
@@ -129,38 +132,38 @@ func processEventSignTransaction(ea *EventAccumulator, event abci.Event, txHash 
 	  uint32 confirmations = 5;
 	  bool confirmed = 6;
 	*/
-	mst := MultisigSignTx{}
+	e := MultisigSignTx{}
 	for _, attr := range event.Attributes {
 		switch string(attr.Key) {
 		case "sender":
-			mst.Sender = string(attr.Value)
+			e.Sender = string(attr.Value)
 		case "wallet":
-			mst.Wallet = string(attr.Value)
+			e.Wallet = string(attr.Value)
 		case "transaction":
-			mst.TxHash = string(attr.Value)
+			e.Transaction = string(attr.Value)
 		case "signer_weight":
-			err := json.Unmarshal(attr.Value, &mst.SignerWeight)
+			err := json.Unmarshal(attr.Value, &e.SignerWeight)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal signer_weight: %s, value: '%s'", err.Error(), string(attr.Value))
 			}
 		case "confirmations":
-			err := json.Unmarshal(attr.Value, &mst.Confirmations)
+			err := json.Unmarshal(attr.Value, &e.Confirmations)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal confirmations: %s, value: '%s'", err.Error(), string(attr.Value))
 			}
 		case "confirmed":
-			err := json.Unmarshal(attr.Value, &mst.Confirmed)
+			err := json.Unmarshal(attr.Value, &e.Confirmed)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal confirmed: %s, value: '%s'", err.Error(), string(attr.Value))
 			}
 		}
 	}
-	ea.MultisigSignTxs = append(ea.MultisigSignTxs, mst)
+	ea.MultisigSignTxs = append(ea.MultisigSignTxs, e)
 	return nil
 }
 
 // decimal.multisig.v1.EventConfirmTransaction
-func processEventConfirmTransaction(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+func processEventConfirmTransaction(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
 	  string wallet = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 	  string receiver = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];

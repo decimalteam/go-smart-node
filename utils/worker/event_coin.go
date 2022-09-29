@@ -32,14 +32,13 @@ type EventCreateCoin struct {
 	Creator     string      `json:"creator"`
 	Avatar      string      `json:"avatar"` // identity
 	// can get from transactions
-	TxHash  string `json:"txHash"`
-	BlockID int64  `json:"blockId"`
+	TxHash string `json:"txHash"`
 	// ? priceUSD
 	// ? burn
 }
 
 // decimal.coin.v1.EventCreateCoin
-func processEventCreateCoin(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+func processEventCreateCoin(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
 	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 	  string denom = 2;
@@ -95,7 +94,6 @@ func processEventCreateCoin(ea *EventAccumulator, event abci.Event, txHash strin
 		}
 	}
 	ecc.TxHash = txHash
-	ecc.BlockID = blockId
 	ea.addBalanceChange(sender, baseCoinSymbol, ecc.Reserve.Neg())
 	ea.addBalanceChange(sender, ecc.Denom, ecc.Volume)
 	ea.addBalanceChange(sender, commission.Denom, commission.Amount.Neg())
@@ -105,7 +103,7 @@ func processEventCreateCoin(ea *EventAccumulator, event abci.Event, txHash strin
 }
 
 // decimal.coin.v1.EventUpdateCoin
-func processEventUpdateCoin(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+func processEventUpdateCoin(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
 	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 	  string denom = 2;
@@ -133,7 +131,7 @@ func processEventUpdateCoin(ea *EventAccumulator, event abci.Event, txHash strin
 }
 
 // decimal.coin.v1.EventUpdateCoinVR
-func processEventUpdateCoinVR(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+func processEventUpdateCoinVR(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
 	  string denom = 1;
 	  string volume = 2;
@@ -163,7 +161,7 @@ func processEventUpdateCoinVR(ea *EventAccumulator, event abci.Event, txHash str
 }
 
 // decimal.coin.v1.EventSendCoin
-func processEventSendCoin(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+func processEventSendCoin(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
 	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 	  string recipient = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
@@ -192,7 +190,7 @@ func processEventSendCoin(ea *EventAccumulator, event abci.Event, txHash string,
 }
 
 // decimal.coin.v1.EventBuySellCoin
-func processEventBuySellCoin(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+func processEventBuySellCoin(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
 	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 	  string coin_to_buy = 2;
@@ -225,7 +223,7 @@ func processEventBuySellCoin(ea *EventAccumulator, event abci.Event, txHash stri
 }
 
 // decimal.coin.v1.EventBurnCoin
-func processEventBurnCoin(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+func processEventBurnCoin(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
 	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 	  string coin = 2;
@@ -250,7 +248,7 @@ func processEventBurnCoin(ea *EventAccumulator, event abci.Event, txHash string,
 }
 
 // decimal.coin.v1.EventRedeemCheck
-func processEventRedeemCheck(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+func processEventRedeemCheck(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
 	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 	  string issuer = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];

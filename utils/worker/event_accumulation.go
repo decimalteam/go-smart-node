@@ -31,24 +31,33 @@ last event EditCoin group by coin
 */
 
 type EventAccumulator struct {
-	CoinsCreates []EventCreateCoin `json:"coin_creates"`
 	// [address][coin_symbol]amount changes
 	BalancesChanges map[string]map[string]sdkmath.Int `json:"balances_changes"`
 	// [coin_symbol]
-	CoinUpdates map[string]EventUpdateCoin   `json:"coin_updates"`
-	CoinEdits   map[string]EventUpdateCoinVR `json:"coin_edits"`
+	CoinsCreates []EventCreateCoin            `json:"coin_creates,-"`
+	CoinUpdates  map[string]EventUpdateCoin   `json:"coin_updates,-"`
+	CoinEdits    map[string]EventUpdateCoinVR `json:"coin_edits,-"`
 	// replace legacy
-	LegacyReown        map[string]string    `json:"legacy_reown"`
-	LegacyReturnNFT    []LegacyReturnNFT    `json:"legacy_return_nft"`
+	LegacyReown        map[string]string    `json:"legacy_reown,-"`
+	LegacyReturnNFT    []LegacyReturnNFT    `json:"legacy_return_nft,-"`
 	LegacyReturnWallet []LegacyReturnWallet `json:"legacy_return_multisig"`
 	// multisig
-	MultisigCreateWallets []MultisigCreateWallet `json:"multisig_create_wallets"`
-	MultisigCreateTxs     []MultisigCreateTx     `json:"multisig_create_txs"`
-	MultisigSignTxs       []MultisigSignTx       `json:"multisig_sign_txs"`
+	MultisigCreateWallets []MultisigCreateWallet `json:"multisig_create_wallets,-"`
+	MultisigCreateTxs     []MultisigCreateTx     `json:"multisig_create_txs,-"`
+	MultisigSignTxs       []MultisigSignTx       `json:"multisig_sign_txs,-"`
 	// nft
-	NFTMints     []EventMintNFT     `json:"nft_mints"`
-	NFTTransfers []EventTransferNFT `json:"nft_transfers"`
-	NFTEdits     []EventEditNFT     `json:"nft_edits"`
+	//Collection    []EventUpdateCollection `json:"collection"`
+	CreateToken   []EventCreateToken   `json:"create_token,-"`
+	MintSubTokens []EventMintToken     `json:"mint_sub_tokens,-"`
+	BurnSubTokens []EventBurnToken     `json:"burn_sub_tokens,-"`
+	UpdateToken   []EventUpdateToken   `json:"update_token,-"`
+	UpdateReserve []EventUpdateReserve `json:"update_reserve,-"`
+	SendNFTs      []EventSendToken     `json:"send_nfts,-"`
+	// swap
+	ActivateChain   []EventActivateChain   `json:"activate_chain,-"`
+	DeactivateChain []EventDeactivateChain `json:"deactivate_chain,-"`
+	SwapInitialize  []EventSwapInitialize  `json:"swap_initialize,-"`
+	SwapRedeem      []EventSwapRedeem      `json:"swap_redeem,-"`
 }
 
 func NewEventAccumulator() *EventAccumulator {
@@ -60,15 +69,15 @@ func NewEventAccumulator() *EventAccumulator {
 	}
 }
 
-func (ea *EventAccumulator) AddEvent(event abci.Event, txHash string, blockId int64) error {
+func (ea *EventAccumulator) AddEvent(event abci.Event, txHash string) error {
 	procFunc, ok := eventProcessors[event.Type]
 	if !ok {
 		return fmt.Errorf("processor for event '%s' not found", event.Type)
 	}
-	return procFunc(ea, event, txHash, blockId)
+	return procFunc(ea, event, txHash)
 }
 
-type processFunc func(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error
+type processFunc func(ea *EventAccumulator, event abci.Event, txHash string) error
 
 var eventProcessors = map[string]processFunc{
 	// coins
@@ -80,7 +89,8 @@ var eventProcessors = map[string]processFunc{
 	"decimal.coin.v1.EventBurnCoin":     processEventBurnCoin,
 	"decimal.coin.v1.EventRedeemCheck":  processEventRedeemCheck,
 	// fee
-	"decimal.fee.v1.EventPayCommission": processEventPayCommission,
+	"decimal.fee.v1.EventUpdateCoinPrices": processEventUpdatePrices,
+	"decimal.fee.v1.EventPayCommission":    processEventPayCommission,
 	// legacy
 	"decimal.legacy.v1.EventReturnLegacyCoins":    processEventReturnLegacyCoins,
 	"decimal.legacy.v1.EventReturnLegacySubToken": processEventReturnLegacySubToken,
@@ -91,13 +101,21 @@ var eventProcessors = map[string]processFunc{
 	"decimal.multisig.v1.EventSignTransaction":    processEventSignTransaction,
 	"decimal.multisig.v1.EventConfirmTransaction": processEventConfirmTransaction,
 	// nft
-	"decimal.nft.v1.EventMintNFT":          processEventMintNFT,
-	"decimal.nft.v1.EventTransferNFT":      processEventTransferNFT,
-	"decimal.nft.v1.EventEditNFT":          processEventEditNFT,
-	"decimal.nft.v1.EventBurnNFT":          processStub,
-	"decimal.nft.v1.EventUpdateReserveNFT": processStub,
+	"decimal.nft.v1.EventCreateCollection": processEventCreateCollection,
+	"decimal.nft.v1.EventUpdateCollection": processEventCreateCollection,
+	"decimal.nft.v1.EventCreateToken":      processEventCreateToken,
+	"decimal.nft.v1.EventMintToken":        processEventMintNFT,
+	"decimal.nft.v1.EventUpdateToken":      processEventUpdateToken,
+	"decimal.nft.v1.EventUpdateReserve":    processEventUpdateReserve,
+	"decimal.nft.v1.EventSendToken":        processEventSendNFT,
+	"decimal.nft.v1.EventBurnToken":        processEventBurnNFT,
 	// swap
+	"decimal.swap.v1.EventActivateChain":   processEventActivateChain,
+	"decimal.swap.v1.EventDeactivateChain": processEventDeactivateChain,
+	"decimal.swap.v1.EventInitializeSwap":  processEventSwapInitialize,
+	"decimal.swap.v1.EventRedeemSwap":      processEventSwapRedeem,
 	// stub for cosmos events
+
 	"coin_spent":      processStub,
 	"coin_received":   processStub,
 	"transfer":        processStub,
@@ -112,7 +130,7 @@ var eventProcessors = map[string]processFunc{
 }
 
 // stub to skip internal cosmos events
-func processStub(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+func processStub(ea *EventAccumulator, event abci.Event, txHash string) error {
 	return nil
 }
 
@@ -130,6 +148,14 @@ func (ea *EventAccumulator) addBalanceChange(address string, symbol string, amou
 	}
 	balance[symbol] = knownChange.Add(amount)
 	ea.BalancesChanges[address] = balance
+}
+
+func (ea *EventAccumulator) addMintSubTokens(e EventMintToken) {
+	ea.MintSubTokens = append(ea.MintSubTokens, e)
+}
+
+func (ea *EventAccumulator) addBurnSubTokens(e EventBurnToken) {
+	ea.BurnSubTokens = append(ea.BurnSubTokens, e)
 }
 
 // set tx hash for some messages

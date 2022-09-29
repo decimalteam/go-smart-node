@@ -85,7 +85,7 @@ func (w *Worker) fetchBlockTxs(height int64, total int, ea *EventAccumulator, ch
 			// process events for successful transactions
 			if tx.TxResult.Code == 0 {
 				for _, event := range tx.TxResult.Events {
-					err := ea.AddEvent(event, tx.Hash.String(), tx.Height)
+					err := ea.AddEvent(event, tx.Hash.String())
 					if err != nil {
 						fmt.Printf("error in event %v\n", event.Type)
 						w.panicError(err)

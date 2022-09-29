@@ -1,90 +1,203 @@
 package worker
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"encoding/json"
 	"fmt"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"strconv"
 
-	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-type EventMintNFT struct {
-	NftID        string      `json:"nftId"`
-	Denom        string      `json:"nftCollection"`
-	Creator      string      `json:"creator"`
-	Owner        string      `json:"owner"`
-	Quantity     sdkmath.Int `json:"quantity"`
-	StartReserve sdk.Coin    `json:"startReserve"`
-	TotalReserve sdk.Coin    `json:"totalReserve"`
-	TokenURI     string      `json:"tokenUri"`
-	AllowMint    bool        `json:"allowMint"`
-	SubTokenIDs  []uint64    `json:"subTokenIds"`
+var reservedPool = authtypes.NewModuleAddress(types.ReservedPool)
+
+// CreateOrUpdate in postgres
+type EventUpdateCollection struct {
+	Creator string `json:"creator"`
+	Denom   string `json:"nftCollection"`
+	Supply  uint32 `json:"supply"`
 	// from tx
-	TxHash  string `json:"txHash"`
-	BlockID int64  `json:"blockId"`
-
-	// ??? nonFungible: boolean;
+	TxHash string `json:"txHash"`
 }
 
-type EventTransferNFT struct {
-	Sender      string   `json:"sender"`
-	Recipient   string   `json:"recipient"`
+type EventCreateToken struct {
+	NftID         string   `json:"nftId"`
+	NftCollection string   `json:"nftCollection"`
+	TokenURI      string   `json:"tokenUri"`
+	Creator       string   `json:"creator"`
+	StartReserve  sdk.Coin `json:"startReserve"`
+	TotalReserve  sdk.Coin `json:"totalReserve"`
+	AllowMint     bool     `json:"allowMint"`
+	Recipient     string   `json:"recipient"`
+	Quantity      uint32   `json:"quantity"`
+	SubTokenIDs   []uint32 `json:"subTokenIds"`
+	// from tx
+	TxHash string `json:"txHash"`
+}
+
+type EventMintToken struct {
+	Creator       string   `json:"creator"`
+	Recipient     string   `json:"recipient"`
+	NftCollection string   `json:"nftCollection"`
+	NftID         string   `json:"nftId"`
+	StartReserve  sdk.Coin `json:"startReserve"`
+	SubTokenIDs   []uint32 `json:"subTokenIds"`
+	// from tx
+	TxHash string `json:"txHash"`
+}
+
+type EventBurnToken struct {
+	Sender      string   ` json:"sender"`
 	NftID       string   `json:"nftId"`
-	Denom       string   `json:"nftCollection"`
-	SubTokenIDs []uint64 `json:"subTokenIds"`
-	TxHash      string   `json:"txHash"`
-	BlockID     int64    `json:"blockId"`
+	SubTokenIDs []uint32 `json:"subTokenIds"`
+	// from tx
+	TxHash string `json:"txHash"`
 }
 
-type EventEditNFT struct {
+type EventUpdateToken struct {
+	//Sender   string ` json:"sender"`
 	NftID    string `json:"nftId"`
-	Denom    string `json:"nftCollection"`
 	TokenURI string `json:"tokenUri"`
+	// from tx
+	TxHash string `json:"txHash"`
 }
 
-// decimal.nft.v1.EventMintNFT
-func processEventMintNFT(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+type EventUpdateReserve struct {
+	//Sender      string   ` json:"sender"`
+	NftID       string   `json:"nftId"`
+	Reserve     sdk.Coin `json:"reserve"`
+	Refill      sdk.Coin `json:"refill"`
+	SubTokenIDs []uint32 `json:"subTokenIds"`
+	// from tx
+	TxHash string `json:"txHash"`
+}
+
+type EventSendToken struct {
+	Sender      string   ` json:"sender"`
+	NftID       string   `json:"nftId"`
+	Recipient   string   `json:"recipient"`
+	SubTokenIDs []uint32 `json:"subTokenIds"`
+	// from tx
+	TxHash string `json:"txHash"`
+}
+
+func processEventCreateCollection(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
-			string sender = 1;
-		    string recipient = 2;
-		    // aka collection
-		    string denom = 3;
-		    // aka id, token_id
-		    string nft_id = 4 [
-		        (gogoproto.customname) = "NFTID"
-		    ];
-		    string token_uri = 5 [
-		        (gogoproto.customname) = "TokenURI"
-		    ];
-		    bool allow_mint = 6;
-		    string reserve = 7;
-		    repeated uint64 sub_token_ids = 8 [
-		        (gogoproto.customname) = "SubTokenIDs"
-		    ];
+	  string creator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string denom = 2;
+	  uint32 supply = 3;
+	*/
+	//var err error
+	//var e EventUpdateCollection
+	//for _, attr := range event.Attributes {
+	//	switch string(attr.Key) {
+	//	case "creator":
+	//		e.Creator = string(attr.Value)
+	//	case "denom":
+	//		e.Denom = string(attr.Value)
+	//	case "supply":
+	//		e.Supply = binary.LittleEndian.Uint32(attr.Value)
+	//	}
+	//}
+	//e.TxHash = txHash
+	//
+	//ea.Collection = append(ea.Collection, e)
+	return nil
+}
+
+func processEventCreateToken(ea *EventAccumulator, event abci.Event, txHash string) error {
+	/*
+		string creator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+		string denom = 2;
+		string id = 3 [ (gogoproto.customname) = "ID" ];
+		string uri = 4 [ (gogoproto.customname) = "URI" ];
+		bool allowMint = 5;
+		string reserve = 6;
+		string recipient = 7;
+		repeated uint32 subTokenIds = 8 [ (gogoproto.customname) = "SubTokenIDs" ];
 	*/
 	var err error
-	var emn EventMintNFT
+	var e EventCreateToken
 	for _, attr := range event.Attributes {
 		switch string(attr.Key) {
-		case "sender":
-			emn.Creator = string(attr.Value)
-		case "recipient":
-			emn.Owner = string(attr.Value)
+		case "creator":
+			e.Creator = string(attr.Value)
 		case "denom":
-			emn.Denom = string(attr.Value)
-		case "nft_id":
-			emn.NftID = string(attr.Value)
-		case "token_uri":
-			emn.TokenURI = string(attr.Value)
-		case "allow_mint":
-			emn.AllowMint = false
+			e.NftCollection = string(attr.Value)
+		case "id":
+			e.NftID = string(attr.Value)
+		case "uri":
+			e.TokenURI = string(attr.Value)
+		case "allowMint":
+			e.AllowMint = false
 			if string(attr.Value) == "true" {
-				emn.AllowMint = true
+				e.AllowMint = true
 			}
 		case "reserve":
-			emn.StartReserve, err = sdk.ParseCoinNormalized(string(attr.Value))
+			e.StartReserve, err = sdk.ParseCoinNormalized(string(attr.Value))
+			if err != nil {
+				return fmt.Errorf("can't parse reserve '%s': %s", string(attr.Value), err.Error())
+			}
+		case "subTokenIds":
+			var subIds []string
+			err := json.Unmarshal(attr.Value, &subIds)
+			if err != nil {
+				return fmt.Errorf("can't unmarshal subTokenIds: %s", err.Error())
+			}
+			for _, s := range subIds {
+				v, err := strconv.ParseUint(s, 10, 32)
+				if err != nil {
+					return fmt.Errorf("can't parse sub token id '%s': %s", s, err.Error())
+				}
+				e.SubTokenIDs = append(e.SubTokenIDs, uint32(v))
+			}
+		}
+	}
+
+	// TODO возможно стоит убрать поля которые есть в mint из create token
+	e.TxHash = txHash
+
+	e.TotalReserve = sdk.NewCoin(e.StartReserve.Denom, e.StartReserve.Amount.Mul(sdk.NewInt(int64(len(e.SubTokenIDs)))))
+	e.Quantity = uint32(len(e.SubTokenIDs))
+	ea.addBalanceChange(e.Creator, e.TotalReserve.Denom, e.TotalReserve.Amount.Neg())
+	//ea.addBalanceChange(reservedPool.String(), e.TotalReserve.Denom, e.TotalReserve.Amount)
+	ea.addMintSubTokens(EventMintToken{
+		Creator:       e.Creator,
+		Recipient:     e.Recipient,
+		NftCollection: e.NftCollection,
+		NftID:         e.NftID,
+		StartReserve:  e.StartReserve,
+		SubTokenIDs:   e.SubTokenIDs,
+		TxHash:        txHash,
+	})
+
+	ea.CreateToken = append(ea.CreateToken, e)
+	return nil
+}
+
+func processEventMintNFT(ea *EventAccumulator, event abci.Event, txHash string) error {
+	/*
+	  string creator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string denom = 2;
+	  string id = 3 [ (gogoproto.customname) = "ID" ];
+	  string reserve = 4;
+	  string recipient = 5;
+	  repeated uint32 sub_token_ids = 6 [ (gogoproto.customname) = "SubTokenIDs" ];
+	*/
+	var err error
+	var e EventMintToken
+	for _, attr := range event.Attributes {
+		switch string(attr.Key) {
+		case "creator":
+			e.Creator = string(attr.Value)
+		case "denom":
+			e.NftCollection = string(attr.Value)
+		case "id":
+			e.NftID = string(attr.Value)
+		case "reserve":
+			e.StartReserve, err = sdk.ParseCoinNormalized(string(attr.Value))
 			if err != nil {
 				return fmt.Errorf("can't parse reserve '%s': %s", string(attr.Value), err.Error())
 			}
@@ -92,107 +205,182 @@ func processEventMintNFT(ea *EventAccumulator, event abci.Event, txHash string, 
 			var subIds []string
 			err := json.Unmarshal(attr.Value, &subIds)
 			if err != nil {
-				return fmt.Errorf("can't unmarshal sub_token_ids: %s", err.Error())
+				return fmt.Errorf("can't unmarshal subTokenIds: %s", err.Error())
 			}
-			emn.Quantity = sdk.NewInt(int64(len(subIds)))
 			for _, s := range subIds {
-				v, err := strconv.ParseUint(s, 10, 64)
+				v, err := strconv.ParseUint(s, 10, 32)
 				if err != nil {
 					return fmt.Errorf("can't parse sub token id '%s': %s", s, err.Error())
 				}
-				emn.SubTokenIDs = append(emn.SubTokenIDs, v)
+				e.SubTokenIDs = append(e.SubTokenIDs, uint32(v))
 			}
 		}
-
 	}
-	emn.TxHash = txHash
-	emn.BlockID = blockId
-	emn.TotalReserve = sdk.NewCoin(emn.StartReserve.Denom, emn.StartReserve.Amount.Mul(emn.Quantity))
-	ea.addBalanceChange(emn.Creator, emn.TotalReserve.Denom, emn.TotalReserve.Amount.Neg())
+	e.TxHash = txHash
 
-	ea.NFTMints = append(ea.NFTMints, emn)
+	totalReserve := sdk.NewCoin(e.StartReserve.Denom, e.StartReserve.Amount.Mul(sdk.NewInt(int64(len(e.SubTokenIDs)))))
+	ea.addBalanceChange(e.Creator, totalReserve.Denom, totalReserve.Amount.Neg())
+	//ea.addBalanceChange(reservedPool.String(), totalReserve.Denom, totalReserve.Amount)
+
+	ea.addMintSubTokens(e)
+
 	return nil
 }
 
-// decimal.nft.v1.EventTransferNFT
-func processEventTransferNFT(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+func processEventBurnNFT(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
-		string sender = 1;
-		string recipient = 2;
-		string denom = 3;
-		string nft_id = 4 [
-		   (gogoproto.customname) = "NFTID"
-		];
-		repeated uint64 sub_token_ids = 8 [
-		    (gogoproto.customname) = "SubTokenIDs"
-		];
+	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string id = 2 [ (gogoproto.customname) = "ID" ];
+	  string return = 3;  // coin that was returned in total per transaction for all NFT sub-tokens
+	  repeated uint32 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
 	*/
-	var etn EventTransferNFT
+	var (
+		err         error
+		returnCoins sdk.Coin
+		e           EventBurnToken
+	)
 	for _, attr := range event.Attributes {
 		switch string(attr.Key) {
 		case "sender":
-			etn.Sender = string(attr.Value)
-		case "recipient":
-			etn.Recipient = string(attr.Value)
-		case "denom":
-			etn.Denom = string(attr.Value)
-		case "nft_id":
-			etn.NftID = string(attr.Value)
+			e.Sender = string(attr.Value)
+		case "id":
+			e.NftID = string(attr.Value)
+		case "return":
+			returnCoins, err = sdk.ParseCoinNormalized(string(attr.Value))
+			if err != nil {
+				return fmt.Errorf("can't parse reserve '%s': %s", string(attr.Value), err.Error())
+			}
 		case "sub_token_ids":
 			var subIds []string
 			err := json.Unmarshal(attr.Value, &subIds)
 			if err != nil {
-				return fmt.Errorf("can't unmarshal sub_token_ids: %s", err.Error())
+				return fmt.Errorf("can't unmarshal subTokenIds: %s", err.Error())
 			}
 			for _, s := range subIds {
-				v, err := strconv.ParseUint(s, 10, 64)
+				v, err := strconv.ParseUint(s, 10, 32)
 				if err != nil {
 					return fmt.Errorf("can't parse sub token id '%s': %s", s, err.Error())
 				}
-				etn.SubTokenIDs = append(etn.SubTokenIDs, v)
+				e.SubTokenIDs = append(e.SubTokenIDs, uint32(v))
 			}
 		}
 	}
-	etn.TxHash = txHash
-	etn.BlockID = blockId
+	e.TxHash = txHash
 
-	ea.NFTTransfers = append(ea.NFTTransfers, etn)
+	ea.addBalanceChange(e.Sender, returnCoins.Denom, returnCoins.Amount)
+	//ea.addBalanceChange(reservedPool.String(), returnCoins.Denom, returnCoins.Amount.Neg())
+	ea.addBurnSubTokens(e)
 
 	return nil
 }
 
-// decimal.nft.v1.EventEditNFT
-func processEventEditNFT(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+func processEventUpdateToken(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
-		string sender = 1;
-		string denom = 2;
-		string nft_id = 3 [
-		    (gogoproto.customname) = "NFTID"
-		];
-		string token_uri = 4 [
-		    (gogoproto.customname) = "TokenURI"
-		];
+	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string id = 2 [ (gogoproto.customname) = "ID" ];
+	  string uri = 3 [ (gogoproto.customname) = "URI" ];
 	*/
-	var een EventEditNFT
+
+	//var err error
+	var e EventUpdateToken
 	for _, attr := range event.Attributes {
 		switch string(attr.Key) {
-		case "denom":
-			een.Denom = string(attr.Value)
-		case "nft_id":
-			een.NftID = string(attr.Value)
-		case "token_uri":
-			een.TokenURI = string(attr.Value)
+		case "id":
+			e.NftID = string(attr.Value)
+		case "uri":
+			e.TokenURI = string(attr.Value)
 		}
 	}
-	edited := false
-	for i := range ea.NFTEdits {
-		if ea.NFTEdits[i].Denom == een.Denom && ea.NFTEdits[i].NftID == een.NftID {
-			ea.NFTEdits[i].TokenURI = een.TokenURI
-			edited = true
+
+	ea.UpdateToken = append(ea.UpdateToken, e)
+	return nil
+}
+
+func processEventUpdateReserve(ea *EventAccumulator, event abci.Event, txHash string) error {
+	/*
+	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string id = 2 [ (gogoproto.customname) = "ID" ];
+	  string reserve = 3; // coin that defines new reserve for all updating NFT-subtokens
+	  string refill = 4;  // coin that was added in total per transaction for all NFT sub-tokens
+	  repeated uint32 sub_token_ids = 5 [ (gogoproto.customname) = "SubTokenIDs" ];
+	*/
+	var (
+		sender string
+		err    error
+		e      EventUpdateReserve
+	)
+	for _, attr := range event.Attributes {
+		switch string(attr.Key) {
+		case "sender":
+			sender = string(attr.Value)
+		case "id":
+			e.NftID = string(attr.Value)
+		case "reserve":
+			e.Reserve, err = sdk.ParseCoinNormalized(string(attr.Value))
+			if err != nil {
+				return fmt.Errorf("can't parse reserve '%s': %s", string(attr.Value), err.Error())
+			}
+		case "refill":
+			e.Refill, err = sdk.ParseCoinNormalized(string(attr.Value))
+			if err != nil {
+				return fmt.Errorf("can't parse reserve '%s': %s", string(attr.Value), err.Error())
+			}
+		case "sub_token_ids":
+			var subIds []string
+			err := json.Unmarshal(attr.Value, &subIds)
+			if err != nil {
+				return fmt.Errorf("can't unmarshal subTokenIds: %s", err.Error())
+			}
+			for _, s := range subIds {
+				v, err := strconv.ParseUint(s, 10, 32)
+				if err != nil {
+					return fmt.Errorf("can't parse sub token id '%s': %s", s, err.Error())
+				}
+				e.SubTokenIDs = append(e.SubTokenIDs, uint32(v))
+			}
 		}
 	}
-	if !edited {
-		ea.NFTEdits = append(ea.NFTEdits, een)
+
+	ea.addBalanceChange(sender, e.Refill.Denom, e.Refill.Amount.Neg())
+	//ea.addBalanceChange(reservedPool.String(), e.Refill.Denom, e.Refill.Amount)
+	ea.UpdateReserve = append(ea.UpdateReserve, e)
+
+	return nil
+}
+
+func processEventSendNFT(ea *EventAccumulator, event abci.Event, txHash string) error {
+	/*
+	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string id = 2 [ (gogoproto.customname) = "ID" ];
+	  string recipient = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  repeated uint32 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
+	*/
+
+	var e EventSendToken
+	for _, attr := range event.Attributes {
+		switch string(attr.Key) {
+		case "sender":
+			e.Sender = string(attr.Value)
+		case "id":
+			e.NftID = string(attr.Value)
+		case "recipient":
+			e.Recipient = string(attr.Value)
+		case "sub_token_ids":
+			var subIds []string
+			err := json.Unmarshal(attr.Value, &subIds)
+			if err != nil {
+				return fmt.Errorf("can't unmarshal subTokenIds: %s", err.Error())
+			}
+			for _, s := range subIds {
+				v, err := strconv.ParseUint(s, 10, 32)
+				if err != nil {
+					return fmt.Errorf("can't parse sub token id '%s': %s", s, err.Error())
+				}
+				e.SubTokenIDs = append(e.SubTokenIDs, uint32(v))
+			}
+		}
 	}
+
+	ea.SendNFTs = append(ea.SendNFTs, e)
 	return nil
 }

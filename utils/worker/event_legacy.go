@@ -23,7 +23,7 @@ type LegacyReturnWallet struct {
 }
 
 // decimal.legacy.v1.EventReturnLegacyCoins
-func processEventReturnLegacyCoins(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+func processEventReturnLegacyCoins(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
 	  string legacy_owner = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 	  string owner = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
@@ -57,7 +57,7 @@ func processEventReturnLegacyCoins(ea *EventAccumulator, event abci.Event, txHas
 }
 
 // decimal.legacy.v1.EventReturnLegacySubToken
-func processEventReturnLegacySubToken(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+func processEventReturnLegacySubToken(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
 	  string legacy_owner = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 	  string owner = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
@@ -84,7 +84,7 @@ func processEventReturnLegacySubToken(ea *EventAccumulator, event abci.Event, tx
 }
 
 // decimal.legacy.v1.EventReturnMultisigWallet
-func processEventReturnMultisigWallet(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+func processEventReturnMultisigWallet(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
 	  string legacy_owner = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 	  string owner = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];

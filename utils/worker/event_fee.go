@@ -2,13 +2,35 @@ package worker
 
 import (
 	"fmt"
+	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
+type EventUpdateCoinPrices struct {
+	Oracle     string
+	CoinPrices struct {
+		Denom     string
+		Quote     string
+		Price     string
+		UpdatedAt time.Time
+	}
+}
+
+func processEventUpdatePrices(ea *EventAccumulator, event abci.Event, txHash string) error {
+	/*
+		string oracle = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+		repeated CoinPrice prices = 2 [ (gogoproto.nullable) = false ];
+	*/
+
+	// TODO this event need handle?
+
+	return nil
+}
+
 // decimal.fee.v1.EventPayCommission
-func processEventPayCommission(ea *EventAccumulator, event abci.Event, txHash string, blockId int64) error {
+func processEventPayCommission(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
 		string sender = 1;
 		string coin = 2;
