@@ -62,7 +62,7 @@ func (gg *UpdateReserveNFTGenerator) Generate() Action {
 			continue
 		}
 		increase := RandomRange(gg.rnd, gg.increaseBottom, gg.increaseUp)
-		subToUpdate := RandomSublist32(gg.rnd, subTokenIDs)
+		subToUpdate := RandomSublist(gg.rnd, subTokenIDs)
 		// get max reserve of subtokens
 		newReserve := sdk.ZeroInt()
 		for _, s := range subToUpdate {

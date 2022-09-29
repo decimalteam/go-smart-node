@@ -15,7 +15,7 @@ type WeightedAG struct {
 	AG     ActionGenerator
 }
 
-//TODO: parameters for generator
+// TODO: parameters for generator
 func (ar *ActionReactor) Add(generatorName string, weight int64) error {
 	var wag *WeightedAG = &WeightedAG{Weight: weight}
 	switch generatorName {
@@ -54,6 +54,23 @@ func (ar *ActionReactor) Add(generatorName string, weight int64) error {
 		wag.AG = NewCreateMultisigTransactionGenerator(100, 10000)
 	case "SignMultisigTransaction":
 		wag.AG = NewSignMultisigTransactionGenerator()
+	// validator
+	case "CreateValidator":
+		wag.AG = NewCreateValidatorGenerator(100, 1000)
+	case "EditValidator":
+		wag.AG = NewEditValidatorGenerator()
+	case "Delegate":
+		wag.AG = NewDelegateGenerator(1, 100)
+	case "DelegateNFT":
+		wag.AG = NewDelegateNFTGenerator()
+	case "Undelegate":
+		wag.AG = NewUndelegateGenerator()
+	case "UndelegateNFT":
+		wag.AG = NewUndelegateNFTGenerator()
+	case "Redelegate":
+		wag.AG = NewRedelegateGenerator()
+	case "RedelegateNFT":
+		wag.AG = NewRedelegateNFTGenerator()
 	}
 	if wag.AG == nil {
 		return fmt.Errorf("%s: unknown generator name", generatorName)
