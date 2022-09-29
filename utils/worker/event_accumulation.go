@@ -34,30 +34,30 @@ type EventAccumulator struct {
 	// [address][coin_symbol]amount changes
 	BalancesChanges map[string]map[string]sdkmath.Int `json:"balances_changes"`
 	// [coin_symbol]
-	CoinsCreates []EventCreateCoin            `json:"coin_creates,-"`
-	CoinUpdates  map[string]EventUpdateCoin   `json:"coin_updates,-"`
-	CoinEdits    map[string]EventUpdateCoinVR `json:"coin_edits,-"`
+	CoinsCreates []EventCreateCoin            `json:"-"`
+	CoinUpdates  map[string]EventUpdateCoin   `json:"-"`
+	CoinEdits    map[string]EventUpdateCoinVR `json:"-"`
 	// replace legacy
-	LegacyReown        map[string]string    `json:"legacy_reown,-"`
-	LegacyReturnNFT    []LegacyReturnNFT    `json:"legacy_return_nft,-"`
-	LegacyReturnWallet []LegacyReturnWallet `json:"legacy_return_multisig"`
+	LegacyReown        map[string]string    `json:"-"`
+	LegacyReturnNFT    []LegacyReturnNFT    `json:"-"`
+	LegacyReturnWallet []LegacyReturnWallet `json:"-"`
 	// multisig
-	MultisigCreateWallets []MultisigCreateWallet `json:"multisig_create_wallets,-"`
-	MultisigCreateTxs     []MultisigCreateTx     `json:"multisig_create_txs,-"`
-	MultisigSignTxs       []MultisigSignTx       `json:"multisig_sign_txs,-"`
+	MultisigCreateWallets []MultisigCreateWallet `json:"-"`
+	MultisigCreateTxs     []MultisigCreateTx     `json:"-"`
+	MultisigSignTxs       []MultisigSignTx       `json:"-"`
 	// nft
 	//Collection    []EventUpdateCollection `json:"collection"`
-	CreateToken   []EventCreateToken   `json:"create_token,-"`
-	MintSubTokens []EventMintToken     `json:"mint_sub_tokens,-"`
-	BurnSubTokens []EventBurnToken     `json:"burn_sub_tokens,-"`
-	UpdateToken   []EventUpdateToken   `json:"update_token,-"`
-	UpdateReserve []EventUpdateReserve `json:"update_reserve,-"`
-	SendNFTs      []EventSendToken     `json:"send_nfts,-"`
+	CreateToken   []EventCreateToken   `json:"-"`
+	MintSubTokens []EventMintToken     `json:"-"`
+	BurnSubTokens []EventBurnToken     `json:"-"`
+	UpdateToken   []EventUpdateToken   `json:"-"`
+	UpdateReserve []EventUpdateReserve `json:"-"`
+	SendNFTs      []EventSendToken     `json:"-"`
 	// swap
-	ActivateChain   []EventActivateChain   `json:"activate_chain,-"`
-	DeactivateChain []EventDeactivateChain `json:"deactivate_chain,-"`
-	SwapInitialize  []EventSwapInitialize  `json:"swap_initialize,-"`
-	SwapRedeem      []EventSwapRedeem      `json:"swap_redeem,-"`
+	ActivateChain   []EventActivateChain   `json:"-"`
+	DeactivateChain []EventDeactivateChain `json:"-"`
+	SwapInitialize  []EventSwapInitialize  `json:"-"`
+	SwapRedeem      []EventSwapRedeem      `json:"-"`
 }
 
 func NewEventAccumulator() *EventAccumulator {
