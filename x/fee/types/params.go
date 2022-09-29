@@ -67,26 +67,26 @@ func ParamKeyTable() paramtypes.KeyTable {
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return Params{
-		TxByteFee: sdk.NewDec(2),
+		TxByteFee: sdk.MustNewDecFromStr("0.00008"),
 		// coin transactions fees
-		CoinCreate:      sdk.NewDec(100),
+		CoinCreate:      sdk.MustNewDecFromStr("0.004"),
 		CoinUpdate:      sdk.ZeroDec(),
-		CoinSend:        sdk.NewDec(10),
-		CoinSendAdd:     sdk.NewDec(5),
-		CoinBuy:         sdk.NewDec(100),
-		CoinSell:        sdk.NewDec(100),
-		CoinRedeemCheck: sdk.NewDec(30),
-		CoinBurn:        sdk.NewDec(100),
+		CoinSend:        sdk.MustNewDecFromStr("0.0004"),
+		CoinSendAdd:     sdk.MustNewDecFromStr("0.0002"),
+		CoinBuy:         sdk.MustNewDecFromStr("0.004"),
+		CoinSell:        sdk.MustNewDecFromStr("0.004"),
+		CoinRedeemCheck: sdk.MustNewDecFromStr("0.0012"),
+		CoinBurn:        sdk.MustNewDecFromStr("0.0004"),
 		// special commission depends on coin symbol length
-		CoinCreateTicker3: sdk.NewDec(1_000_000),
-		CoinCreateTicker4: sdk.NewDec(100_000),
-		CoinCreateTicker5: sdk.NewDec(10_000),
-		CoinCreateTicker6: sdk.NewDec(1_000),
-		CoinCreateTicker7: sdk.NewDec(100),
+		CoinCreateTicker3: sdk.NewDec(100_000),
+		CoinCreateTicker4: sdk.NewDec(10_000),
+		CoinCreateTicker5: sdk.NewDec(1_000),
+		CoinCreateTicker6: sdk.NewDec(100),
+		CoinCreateTicker7: sdk.NewDec(10),
 		// multisignature wallets
-		MultisigCreateWallet:      sdk.NewDec(100),
-		MultisigCreateTransaction: sdk.NewDec(100),
-		MultisigSignTransaction:   sdk.NewDec(100),
+		MultisigCreateWallet:      sdk.MustNewDecFromStr("0.004"),
+		MultisigCreateTransaction: sdk.MustNewDecFromStr("0.004"),
+		MultisigSignTransaction:   sdk.MustNewDecFromStr("0.004"),
 		// nft
 		NftMintToken:     sdk.ZeroDec(),
 		NftUpdateToken:   sdk.ZeroDec(),
@@ -113,7 +113,7 @@ func DefaultParams() Params {
 		// NOTE: default address is []byte{0}
 		Oracle: "dx1qqjrdrw8",
 		// evm min gas price in usd*10^-18
-		EvmGasPrice: sdk.MustNewDecFromStr("0.000019047619047619"),
+		EvmGasPrice: sdk.MustNewDecFromStr("0.00047619047"),
 	}
 }
 
