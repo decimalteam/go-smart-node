@@ -1,26 +1,17 @@
 FROM bufbuild/buf:1.8.0 as buf
 
-FROM gcc:12.2.0
+FROM ubuntu:18.04
 COPY --from=buf /usr/local/bin /usr/local/bin
 
 RUN apt-get update
-RUN apt-get install git -y
-RUN apt-get install build-essential
-RUN apt-get install cmake -y
-
-RUN cmake --version
+RUN apt-get install -y wget
+RUN apt-get install -y unzip
 
 WORKDIR /home
 
-RUN git clone -b v1.49.1 https://github.com/grpc/grpc
-WORKDIR /home/grpc
-RUN git submodule update --init
-RUN mkdir -p cmake/build
-WORKDIR /home/grpc/cmake/build
-RUN cmake ../..
-RUN make protoc grpc_php_plugin
+RUN wget https://github.com/protocolbuffers/protobuf/releases/download/v21.6/protoc-21.6-linux-x86_64.zip
+RUN unzip protoc-21.6-linux-x86_64.zip
+RUN cp bin/protoc /usr/local/bin/protoc
 
-WORKDIR /home
-RUN cp /home/grpc/cmake/build/grpc_php_plugin /usr/local/bin/protoc-gen-php
-
+RUN protoc --version
 RUN buf --version
