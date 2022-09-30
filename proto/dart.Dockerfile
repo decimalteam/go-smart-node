@@ -9,5 +9,7 @@ RUN dart pub global activate protoc_plugin 20.0.1
 
 RUN cp /root/.pub-cache/bin/protoc-gen-dart /usr/local/bin
 
+ENV BUF_CACHE_DIR=/tmp
+
 RUN dart --version
 RUN buf --version

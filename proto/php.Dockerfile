@@ -13,5 +13,7 @@ RUN wget https://github.com/protocolbuffers/protobuf/releases/download/v21.6/pro
 RUN unzip protoc-21.6-linux-x86_64.zip
 RUN cp bin/protoc /usr/local/bin/protoc
 
+ENV BUF_CACHE_DIR=/tmp
+
 RUN protoc --version
 RUN buf --version

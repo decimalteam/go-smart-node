@@ -7,6 +7,8 @@ WORKDIR /home
 
 RUN npm install -g ts-proto@1.126.1
 
+ENV BUF_CACHE_DIR=/tmp
+
 RUN node -v
 RUN npm -v
 RUN buf --version

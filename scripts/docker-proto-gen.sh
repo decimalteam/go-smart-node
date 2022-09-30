@@ -3,7 +3,10 @@
 generateProtoFiles(){
   docker build -t proto-gen-$1 -f proto/$1.Dockerfile .
 
-  docker run --volume "$(pwd)/proto:/workspace" --workdir /workspace/$2 proto-gen-$1 \
+  USER=$(id -u)
+  GROUP=$(id -g)
+
+  docker run --volume "$(pwd)/proto:/workspace" --user $USER:$GROUP --workdir /workspace/$2 proto-gen-$1 \
     buf generate --template ../buf/buf.gen.$1.yaml -v
 }
 
