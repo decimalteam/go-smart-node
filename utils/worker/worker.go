@@ -1,9 +1,11 @@
 package worker
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/client/grpc/tmservice"
 	"context"
 	"encoding/json"
 	"fmt"
+	"google.golang.org/grpc"
 	"math/big"
 	"net/http"
 	"os"
@@ -31,6 +33,8 @@ type Worker struct {
 	config      *Config
 	hostname    string
 	rpcClient   *rpc.HTTP
+	grpcClient  *grpc.ClientConn
+	tmService   tmservice.ServiceClient
 	web3Client  *web3.Client
 	web3ChainId *big.Int
 	query       chan *ParseTask
@@ -41,6 +45,8 @@ type Config struct {
 	RpcEndpoint     string
 	Web3Endpoint    string
 	WorkersCount    int
+	GRPCHost        string
+	GRPCPort        int
 }
 
 func NewWorker(cdc params.EncodingConfig, logger log.Logger, config *Config) (*Worker, error) {
@@ -57,6 +63,17 @@ func NewWorker(cdc params.EncodingConfig, logger log.Logger, config *Config) (*W
 	if err != nil {
 		return nil, err
 	}
+	grpcConn, err := grpc.Dial(
+		fmt.Sprintf("%s:%d", config.GRPCHost, config.GRPCPort), // your gRPC server address.
+		grpc.WithInsecure(), // The Cosmos SDK doesn't support any transport security mechanism.
+	)
+	if err != nil {
+		return nil, err
+	}
+	tmService := tmservice.NewServiceClient(grpcConn)
+	if err != nil {
+		return nil, err
+	}
 	web3ChainId, err := web3Client.ChainID(context.Background())
 	if err != nil {
 		return nil, err
@@ -68,7 +85,9 @@ func NewWorker(cdc params.EncodingConfig, logger log.Logger, config *Config) (*W
 		logger:      logger,
 		config:      config,
 		hostname:    hostname,
+		grpcClient:  grpcConn,
 		rpcClient:   rpcClient,
+		tmService:   tmService,
 		web3Client:  web3Client,
 		web3ChainId: web3ChainId,
 		query:       make(chan *ParseTask, 1000),
@@ -104,7 +123,7 @@ func (w *Worker) GetBlockResult(height int64, txNum int) *Block {
 	accum := NewEventAccumulator()
 
 	// Fetch requested block from Tendermint RPC
-	block := w.fetchBlock(height)
+	block, blockID := w.fetchBlock(height)
 
 	// Fetch everything needed from Tendermint RPC aand EVM
 	start := time.Now()
@@ -115,7 +134,7 @@ func (w *Worker) GetBlockResult(height int64, txNum int) *Block {
 	web3ReceiptsChan := make(chan web3types.Receipts)
 	var parseTxNum int
 	if txNum == -1 {
-		parseTxNum = len(block.Block.Data.Txs)
+		parseTxNum = len(block.Data.Txs)
 	} else {
 		parseTxNum = txNum
 	}
@@ -221,10 +240,10 @@ func (w *Worker) GetBlockResult(height int64, txNum int) *Block {
 
 	// Create and fill Block object and then marshal to JSON
 	return &Block{
-		ID:                block.BlockID,
-		Evidence:          block.Block.Evidence,
-		Header:            block.Block.Header,
-		LastCommit:        block.Block.LastCommit,
+		ID:                blockID,
+		Evidence:          block.Evidence,
+		Header:            block.Header,
+		LastCommit:        block.LastCommit,
 		Data:              BlockData{Txs: txs},
 		Emission:          emission,
 		Rewards:           rewards,

@@ -1,6 +1,8 @@
 package app
 
 import (
+	tmserviceCosmos "github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
+
 	"context"
 	"encoding/json"
 	"fmt"
@@ -22,7 +24,6 @@ import (
 	// SDK
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/server/api"
@@ -111,6 +112,7 @@ import (
 
 	// Decimal
 	ante "bitbucket.org/decimalteam/go-smart-node/app/ante"
+	"bitbucket.org/decimalteam/go-smart-node/client/grpc/tmservice"
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 
 	// Decimal modules
@@ -937,6 +939,7 @@ func (app *DSC) RegisterTxService(clientCtx client.Context) {
 
 func (app *DSC) RegisterTendermintService(clientCtx client.Context) {
 	tmservice.RegisterTendermintService(clientCtx, app.BaseApp.GRPCQueryRouter(), app.interfaceRegistry, app.Query)
+	tmserviceCosmos.RegisterTendermintService(clientCtx, app.BaseApp.GRPCQueryRouter(), app.interfaceRegistry, app.Query)
 }
 
 // IBC Go TestingApp functions

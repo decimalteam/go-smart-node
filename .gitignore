@@ -87,3 +87,5 @@ contracts/@openzeppelin/*
 .stash
 *.txt
 *.csv
+*.pl
+/cmd/sendstorm/mnemonics.cfg
