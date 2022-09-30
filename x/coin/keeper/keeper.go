@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdkmath "cosmossdk.io/math"
+
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -27,6 +29,7 @@ type Keeper struct {
 
 	accountKeeper auth.AccountKeeperI
 	bankKeeper    bank.Keeper
+	feeKeeper     feeTypes.FeeMarketKeeper
 
 	// cached params value (for optimization)
 	cacheParams types.Params
@@ -38,6 +41,7 @@ func NewKeeper(
 	storeKey store.StoreKey,
 	ps paramtypes.Subspace,
 	ac auth.AccountKeeperI,
+	fk feeTypes.FeeMarketKeeper,
 	bk bank.Keeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
@@ -48,6 +52,7 @@ func NewKeeper(
 		cdc:           cdc,
 		storeKey:      storeKey,
 		ps:            ps,
+		feeKeeper:     fk,
 		accountKeeper: ac,
 		bankKeeper:    bk,
 	}

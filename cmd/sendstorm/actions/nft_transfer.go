@@ -49,7 +49,7 @@ func (gg *TransferNFTGenerator) Generate() Action {
 			subIds = append(subIds, sub.ID)
 		}
 	}
-	subIds = RandomSublist32(gg.rnd, subIds)
+	subIds = RandomSublist(gg.rnd, subIds)
 	var recipient = RandomChoice(gg.rnd, gg.knownAddresses)
 	for j := 0; j < 10; j++ {
 		// 10 attempts to get recipient != owner

@@ -494,3 +494,17 @@ func addCoinToAddr(t *testing.T, ctx sdk.Context, dsc *app.DSC, addr sdk.AccAddr
 	err = dsc.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, coins)
 	require.NoError(t, err)
 }
+
+func invalidCoin() sdk.Coin {
+	return sdk.Coin{
+		Denom:  "invalidDenom",
+		Amount: sdkmath.NewInt(100000000),
+	}
+}
+
+func validCoin(denom string, amount int64) sdk.Coin {
+	return sdk.Coin{
+		Denom:  denom,
+		Amount: helpers.EtherToWei(sdkmath.NewInt(amount)),
+	}
+}

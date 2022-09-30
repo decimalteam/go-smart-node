@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	dscconfig "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
 	"golang.org/x/crypto/sha3"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -55,7 +57,11 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 	}
 
 	// Calculate special fee for creating custom coin
-	feeAmountBase := helpers.EtherToWei(getCreateCoinCommission(coinDenom))
+	feeAmountBase, err := k.getCreateCoinCommission(ctx, coinDenom)
+	if err != nil {
+		return nil, err
+	}
+
 	feeAmount, feeDenom, err := k.GetCommission(ctx, feeAmountBase)
 	if err != nil {
 		return nil, err
@@ -780,16 +786,27 @@ func (k *Keeper) sellCoin(
 	return nil
 }
 
-func getCreateCoinCommission(denom string) sdkmath.Int {
-	switch len(denom) {
-	case 3:
-		return sdkmath.NewInt(1_000_000)
-	case 4:
-		return sdkmath.NewInt(100_000)
-	case 5:
-		return sdkmath.NewInt(10_000)
-	case 6:
-		return sdkmath.NewInt(1000)
+func (k Keeper) getCreateCoinCommission(ctx sdk.Context, symbol string) (sdkmath.Int, error) {
+	baseDenomPrice, err := k.feeKeeper.GetPrice(ctx, dscconfig.BaseDenom, feeconfig.DefaultQuote)
+	if err != nil {
+		return sdkmath.Int{}, err
 	}
-	return sdkmath.NewInt(100)
+
+	params := k.feeKeeper.GetModuleParams(ctx)
+
+	var createCoinFee sdk.Dec
+	switch len(symbol) {
+	case 3:
+		createCoinFee = params.CoinCreateTicker3
+	case 4:
+		createCoinFee = params.CoinCreateTicker4
+	case 5:
+		createCoinFee = params.CoinCreateTicker5
+	case 6:
+		createCoinFee = params.CoinCreateTicker6
+	default:
+		createCoinFee = params.CoinCreateTicker7
+	}
+
+	return helpers.DecToIntWithE18(createCoinFee.Quo(baseDenomPrice.Price)), nil
 }

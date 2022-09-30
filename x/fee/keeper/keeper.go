@@ -11,13 +11,13 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 
-	store "github.com/cosmos/cosmos-sdk/store/types"
+	sdkstore "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Keeper maintains the link to data storage and exposes getter/setter methods for the various parts of the state machine.
 type Keeper struct {
-	storeKey store.StoreKey    // Unexposed key to access store from sdk.Context
+	storeKey sdkstore.StoreKey // Unexposed key to access store from sdk.Context
 	cdc      codec.BinaryCodec // The amino codec for binary encoding/decoding.
 	ps       paramtypes.Subspace
 
@@ -29,7 +29,7 @@ type Keeper struct {
 // NewKeeper creates new instances of the nft Keeper
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeKey store.StoreKey,
+	storeKey sdkstore.StoreKey,
 	ps paramtypes.Subspace,
 	bankKeeper keeper.Keeper,
 	baseDenom string,
@@ -73,10 +73,7 @@ func (k *Keeper) SavePrice(
 ) error {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetPriceKey(price.Denom, price.Quote)
-	value, err := price.Marshal()
-	if err != nil {
-		return err
-	}
+	value := k.cdc.MustMarshalLengthPrefixed(&price)
 	store.Set(key, value)
 	return nil
 }
@@ -93,7 +90,7 @@ func (k *Keeper) GetPrice(
 		return types.CoinPrice{}, errors.PriceNotFound
 	}
 	var price types.CoinPrice
-	err := price.Unmarshal(value)
+	err := k.cdc.UnmarshalLengthPrefixed(value, &price)
 	if err != nil {
 		return types.CoinPrice{}, errors.Internal.Wrapf("err: %s", err.Error())
 	}

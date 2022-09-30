@@ -50,7 +50,7 @@ func (gg *BurnNFTGenerator) Generate() Action {
 		if len(subTokenIDs) == 0 {
 			continue
 		}
-		subToBurn := RandomSublist32(gg.rnd, subTokenIDs)
+		subToBurn := RandomSublist(gg.rnd, subTokenIDs)
 		return &BurnNFTAction{
 			creator: nftToBurn.Creator,
 			id:      nftToBurn.ID,

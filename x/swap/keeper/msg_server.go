@@ -116,7 +116,7 @@ func (k Keeper) RedeemSwap(goCtx context.Context, msg *types.MsgRedeemSwap) (*ty
 
 	err = events.EmitTypedEvent(ctx, &types.EventRedeemSwap{
 		Sender:            msg.Sender,
-		From:              msg.Sender,
+		From:              msg.From,
 		DestChain:         msg.DestChain,
 		Recipient:         msg.Recipient,
 		Amount:            msg.Amount.String(),
