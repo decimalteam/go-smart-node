@@ -456,6 +456,10 @@ proto-gen:
 	@echo "Generating Protobuf files"
 	@./scripts/docker-proto-gen.sh $(PROTO_GEN_LANG)
 
+move-proto:
+	@echo "Move Protobuf files to x directory"
+	@./scripts/move-proto-to-x.sh
+
 ###############################################################################
 ###                                Localnet                                 ###
 ###############################################################################
