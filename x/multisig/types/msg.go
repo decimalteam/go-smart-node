@@ -2,8 +2,10 @@ package types
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/errors"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
+	sdktx "github.com/cosmos/cosmos-sdk/types/tx"
 )
 
 var (
@@ -16,6 +18,9 @@ const (
 	TypeMsgCreateWallet      = "create_wallet"
 	TypeMsgCreateTransaction = "create_transaction"
 	TypeMsgSignTransaction   = "sign_transaction"
+
+	TypeMsgCreateUniversalTransaction = "create_universal_transaction"
+	TypeMsgSignUniversalTransaction   = "sign_universal_transaction"
 )
 
 ////////////////////////////////////////////////////////////////
@@ -194,6 +199,132 @@ func (msg *MsgSignTransaction) GetSigners() []sdk.AccAddress {
 
 // ValidateBasic performs basic validation of the message.
 func (msg *MsgSignTransaction) ValidateBasic() error {
+	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
+		return errors.InvalidSender
+	}
+	prefix, _, err := bech32.DecodeAndConvert(msg.ID)
+	if err != nil {
+		return errors.InvalidTransactionIDError
+	}
+	if prefix != MultisigTransactionIDPrefix {
+		return errors.InvalidTransactionIDPrefix
+	}
+	// TODO: TxID length
+	return nil
+}
+
+////////////////////////////////////////////////////////////////
+// MsgCreateUniversalTransaction
+////////////////////////////////////////////////////////////////
+
+// NewMsgCreateTransaction creates a new MsgCreateTransaction instance.
+func NewMsgCreateUniversalTransaction(
+	sender sdk.AccAddress,
+	wallet string,
+	content sdk.Msg,
+) (*MsgCreateUniversalTransaction, error) {
+	anys, err := sdktx.SetMsgs([]sdk.Msg{content})
+	if err != nil {
+		return nil, err
+	}
+	return &MsgCreateUniversalTransaction{
+		Sender:  sender.String(),
+		Wallet:  wallet,
+		Content: anys[0],
+	}, nil
+}
+
+// Route returns name of the route for the message.
+func (msg *MsgCreateUniversalTransaction) Route() string { return RouterKey }
+
+// Type returns the name of the type for the message.
+func (msg *MsgCreateUniversalTransaction) Type() string { return TypeMsgCreateUniversalTransaction }
+
+// GetSignBytes returns the canonical byte representation of the message used to generate a signature.
+func (msg *MsgCreateUniversalTransaction) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
+
+// GetSigners returns the list of signers required to sign the message.
+func (msg *MsgCreateUniversalTransaction) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil
+	}
+	return []sdk.AccAddress{addr}
+}
+
+// ValidateBasic performs basic validation of the message.
+func (msg *MsgCreateUniversalTransaction) ValidateBasic() error {
+	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
+		return errors.InvalidSender
+	}
+	wallet, err := sdk.AccAddressFromBech32(msg.Wallet)
+	if err != nil {
+		return errors.InvalidWallet
+	}
+	// check internal transaction
+	msgs, err := sdktx.GetMsgs([]*codectypes.Any{msg.Content}, "")
+	if err != nil {
+		return err
+	}
+	err = msgs[0].ValidateBasic()
+	if err != nil {
+		return err
+	}
+	if len(msgs[0].GetSigners()) == 0 {
+		return errors.NoSignersInInternal
+	}
+	// support for multisple signers
+	walletInSigners := false
+	for _, signer := range msgs[0].GetSigners() {
+		if signer.Equals(wallet) {
+			walletInSigners = true
+		}
+	}
+	if !walletInSigners {
+		return errors.WalletIsNotSignerInInternal
+	}
+
+	return nil
+}
+
+////////////////////////////////////////////////////////////////
+// MsgSignUniversalTransaction
+////////////////////////////////////////////////////////////////
+
+func NewMsgSignUniversalTransaction(
+	sender sdk.AccAddress,
+	txID string,
+) *MsgSignUniversalTransaction {
+	return &MsgSignUniversalTransaction{
+		Sender: sender.String(),
+		ID:     txID,
+	}
+}
+
+// Route returns name of the route for the message.
+func (msg *MsgSignUniversalTransaction) Route() string { return RouterKey }
+
+// Type returns the name of the type for the message.
+func (msg *MsgSignUniversalTransaction) Type() string { return TypeMsgSignUniversalTransaction }
+
+// GetSignBytes returns the canonical byte representation of the message used to generate a signature.
+func (msg *MsgSignUniversalTransaction) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
+
+// GetSigners returns the list of signers required to sign the message.
+func (msg *MsgSignUniversalTransaction) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil
+	}
+	return []sdk.AccAddress{addr}
+}
+
+// ValidateBasic performs basic validation of the message.
+func (msg *MsgSignUniversalTransaction) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return errors.InvalidSender
 	}

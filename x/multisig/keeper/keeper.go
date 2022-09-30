@@ -8,6 +8,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -24,6 +25,7 @@ type Keeper struct {
 
 	accountKeeper auth.AccountKeeperI
 	bankKeeper    bank.Keeper
+	router        *baseapp.MsgServiceRouter
 }
 
 // NewKeeper creates a multisig keeper
@@ -33,6 +35,7 @@ func NewKeeper(
 	ps paramtypes.Subspace,
 	accountKeeper auth.AccountKeeperI,
 	bankKeeper bank.Keeper,
+	router *baseapp.MsgServiceRouter,
 ) *Keeper {
 	return &Keeper{
 		storeKey:      storeKey,
@@ -40,6 +43,7 @@ func NewKeeper(
 		ps:            ps,
 		accountKeeper: accountKeeper,
 		bankKeeper:    bankKeeper,
+		router:        router,
 	}
 }
 
@@ -186,4 +190,41 @@ func (k *Keeper) GetAllTransactions(ctx sdk.Context) (transactions []types.Trans
 	}
 
 	return
+}
+
+// SetUniversalTransaction sets the entire multisig wallet universal transaction metadata struct for a multisig wallet.
+func (k *Keeper) SetUniversalTransaction(ctx sdk.Context, transaction types.UniversalTransaction) error {
+	store := ctx.KVStore(k.storeKey)
+	value, err := k.cdc.Marshal(&transaction)
+	if err != nil {
+		return err
+	}
+	key := append(types.KeyPrefixUniversalTransaction, []byte(transaction.Id)...)
+	store.Set(key, value)
+	return nil
+}
+
+func (k *Keeper) GetUniversalTransaction(ctx sdk.Context, txID string) (transaction types.UniversalTransaction, err error) {
+	store := ctx.KVStore(k.storeKey)
+	key := append(types.KeyPrefixUniversalTransaction, []byte(txID)...)
+	value := store.Get(key)
+	if len(value) == 0 {
+		err = errors.TransactionNotFound
+		return
+	}
+	err = k.cdc.Unmarshal(value, &transaction)
+	return
+}
+
+// SetUniversalSign mark signature for transaction and wallet owner.
+func (k *Keeper) SetUniversalSign(ctx sdk.Context, txID, signer string) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetSignatureKey(txID, signer)
+	store.Set(key, []byte{})
+}
+
+// SetUniversalSign mark signature for transaction and wallet owner.
+func (k *Keeper) IsSigned(ctx sdk.Context, txID, signer string) bool {
+	store := ctx.KVStore(k.storeKey)
+	return store.Has(types.GetSignatureKey(txID, signer))
 }

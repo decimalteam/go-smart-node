@@ -530,6 +530,7 @@ func NewDSC(
 		app.GetSubspace(multisigtypes.ModuleName),
 		app.AccountKeeper,
 		app.BankKeeper,
+		app.MsgServiceRouter(),
 	)
 	app.NFTKeeper = *nftkeeper.NewKeeper(
 		appCodec,

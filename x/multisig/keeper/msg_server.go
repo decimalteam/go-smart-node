@@ -205,3 +205,154 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 
 	return &types.MsgSignTransactionResponse{}, nil
 }
+
+func (k Keeper) CreateUniversalTransaction(goCtx context.Context, msg *types.MsgCreateUniversalTransaction) (*types.MsgCreateUniversalTransactionResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// Retrieve multisig wallet from the KVStore
+	wallet, err := k.GetWallet(ctx, msg.Wallet)
+	if err != nil {
+		return nil, err
+	}
+	_, err = sdk.AccAddressFromBech32(wallet.Address)
+	if err != nil {
+		return nil, errors.InvalidWallet
+	}
+
+	// Create new multisig transaction
+	transaction, err := types.NewUniversalTransaction(
+		k.cdc,
+		msg.Wallet,
+		*msg.Content,
+		len(wallet.Owners),
+		ctx.BlockHeight(),
+		ctx.TxBytes(),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check internal transaction
+	var internal sdk.Msg
+	err = k.cdc.UnpackAny(msg.Content, &internal)
+	if err != nil {
+		return nil, err
+	}
+	err = internal.ValidateBasic()
+	if err != nil {
+		return nil, err
+	}
+	handler := k.router.Handler(internal)
+	if handler == nil {
+		return nil, errors.NoHandlerForInternal
+	}
+
+	// Save created multisig transaction to the KVStore
+	k.SetUniversalTransaction(ctx, *transaction)
+
+	// Emit transaction events
+	err = events.EmitTypedEvent(ctx, &types.EventCreateUniversalTransaction{
+		Sender:      msg.Sender,
+		Wallet:      msg.Wallet,
+		Transaction: transaction.Id,
+	})
+	if err != nil {
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
+	}
+
+	// Sign created multisig transaction by the creator
+	_, err = k.SignUniversalTransaction(goCtx, &types.MsgSignUniversalTransaction{
+		Sender: msg.Sender,
+		ID:     transaction.Id,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgCreateUniversalTransactionResponse{
+		ID: transaction.Id,
+	}, nil
+
+}
+
+func (k Keeper) SignUniversalTransaction(goCtx context.Context, msg *types.MsgSignUniversalTransaction) (*types.MsgSignUniversalTransactionResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// Retrieve multisig transaction from the KVStore
+	transaction, err := k.GetUniversalTransaction(ctx, msg.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Retrieve multisig wallet from the KVStore
+	wallet, err := k.GetWallet(ctx, transaction.Wallet)
+	if err != nil {
+		return nil, err
+	}
+
+	if k.IsSigned(ctx, msg.ID, msg.Sender) {
+		return nil, errors.TransactionAlreadySigned
+	}
+
+	// Calculate current weight of signatures and check sender
+	confirmations := uint32(0)
+	senderIsOwner := false
+	senderWeight := uint32(0)
+	for i, owner := range wallet.Owners {
+		if k.IsSigned(ctx, msg.ID, owner) {
+			confirmations += wallet.Weights[i]
+		}
+		if owner == msg.Sender {
+			senderIsOwner = true
+			senderWeight = wallet.Weights[i]
+		}
+	}
+
+	if !senderIsOwner {
+		return nil, errors.SignerIsNotOwner
+	}
+	// Ensure current weight of signatures is not enough
+	if confirmations >= wallet.Threshold {
+		return nil, errors.AlreadyEnoughSignatures
+	}
+
+	// Append the signature to the multisig transaction
+	k.SetUniversalSign(ctx, msg.ID, msg.Sender)
+
+	confirmations += senderWeight
+
+	// Check if new weight of signatures is enough to perform multisig transaction
+	confirmed := confirmations >= wallet.Threshold
+
+	// Emit transaction events
+	err = events.EmitTypedEvent(ctx, &types.EventSignUniversalTransaction{
+		Sender:        msg.Sender,
+		Wallet:        wallet.Address,
+		Transaction:   transaction.Id,
+		SignerWeight:  senderWeight,
+		Confirmations: confirmations,
+		Confirmed:     confirmed,
+	})
+	if err != nil {
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
+	}
+
+	if confirmed {
+		var msg sdk.Msg
+		err = k.cdc.UnpackAny(&transaction.Message, &msg)
+		if err != nil {
+			return nil, err
+		}
+		handler := k.router.Handler(msg)
+		if handler == nil {
+			return nil, errors.NoHandlerForInternal
+		}
+		// TODO: do we need result?
+		_, err = handler(ctx, msg)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &types.MsgSignUniversalTransactionResponse{}, nil
+}

@@ -13,6 +13,8 @@ import (
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 
 func TestDoubleWallet(t *testing.T) {
@@ -274,6 +276,67 @@ func TestTryOverspend(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestUniversalTx(t *testing.T) {
+
+	const addrCount = 100
+
+	_, dsc, ctx := getBaseAppWithCustomKeeper(t)
+	addrs, _ := generateAddresses(dsc, ctx, addrCount,
+		sdk.NewCoins(
+			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
+		),
+	)
+
+	var sender = addrs[0]
+	var receiver = addrs[10]
+	var owners = []string{addrs[1].String(), addrs[2].String(), addrs[3].String()}
+	var weights = []uint32{1, 1, 1}
+	var threshold uint32 = 3
+
+	// create wallet with empty balance
+	msg := types.NewMsgCreateWallet(sender, owners, weights, threshold)
+	err := msg.ValidateBasic()
+	require.NoError(t, err)
+	ctx = ctx.WithTxBytes([]byte{byte(1)}) // for wallet salt
+	goCtx := sdk.WrapSDKContext(ctx)
+	walletResponse, err := dsc.MultisigKeeper.CreateWallet(goCtx, msg)
+	require.NoError(t, err)
+
+	// send 10 coins to wallet
+	wAdr, err := sdk.AccAddressFromBech32(walletResponse.Wallet)
+	require.NoError(t, err)
+	err = dsc.BankKeeper.SendCoins(ctx, sender, wAdr, sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(10)))))
+	require.NoError(t, err)
+
+	// create universal tx
+	msgU, err := types.NewMsgCreateUniversalTransaction(
+		addrs[1], walletResponse.Wallet,
+		cointypes.NewMsgSendCoin(wAdr, receiver, sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(10)))),
+	)
+	require.NoError(t, err)
+
+	txres, err := dsc.MultisigKeeper.CreateUniversalTransaction(goCtx, msgU)
+	require.NoError(t, err)
+
+	// second owner sign
+	msgS := types.NewMsgSignUniversalTransaction(addrs[2], txres.ID)
+	_, err = dsc.MultisigKeeper.SignUniversalTransaction(goCtx, msgS)
+	require.NoError(t, err)
+
+	// third owner sign
+	msgS = types.NewMsgSignUniversalTransaction(addrs[3], txres.ID)
+	_, err = dsc.MultisigKeeper.SignUniversalTransaction(goCtx, msgS)
+	require.NoError(t, err)
+
+	// check internal tx result
+	walletBalance := dsc.BankKeeper.GetBalance(ctx, wAdr, "del")
+	require.True(t, walletBalance.Amount.Equal(helpers.EtherToWei(sdk.NewInt(0))), "wallet balance")
+	receiverBalance := dsc.BankKeeper.GetBalance(ctx, receiver, "del")
+	require.True(t, receiverBalance.Amount.Equal(helpers.EtherToWei(sdk.NewInt(1010))), "receiver balance", receiverBalance.String())
+
+	require.NoError(t, err)
+}
+
 // getBaseAppWithCustomKeeper Returns a simapp with custom keepers
 // to avoid messing with the hooks.
 func getBaseAppWithCustomKeeper(t *testing.T) (*codec.LegacyAmino, *app.DSC, sdk.Context) {
@@ -288,6 +351,7 @@ func getBaseAppWithCustomKeeper(t *testing.T) (*codec.LegacyAmino, *app.DSC, sdk
 		dsc.GetSubspace(types.ModuleName),
 		dsc.AccountKeeper,
 		dsc.BankKeeper,
+		dsc.MsgServiceRouter(),
 	)
 	//dsc.MultisigKeeper.SetParams(ctx, types.DefaultParams())
 

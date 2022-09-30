@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"testing"
+
 	"bitbucket.org/decimalteam/go-smart-node/testutil"
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/keeper"
 	mstestutil "bitbucket.org/decimalteam/go-smart-node/x/multisig/testutil"
@@ -18,7 +20,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
-	"testing"
 )
 
 var (
@@ -91,7 +92,11 @@ func (s *KeeperTestSuite) SetupTest() {
 	accountKeeper.EXPECT().GetAccount(ctx.WithTxBytes([]byte{1}), existsWalletAddress).AnyTimes().Return(emptyAccount)
 	// --
 
-	// -- create nft keeper
+	// --
+	router := baseapp.NewMsgServiceRouter()
+	// --
+
+	// -- create multisig keeper
 	space, ok := paramsKeeper.GetSubspace(types.ModuleName)
 	s.Require().True(ok)
 	k := keeper.NewKeeper(
@@ -100,6 +105,7 @@ func (s *KeeperTestSuite) SetupTest() {
 		space,
 		accountKeeper,
 		bankKeeper,
+		router,
 	)
 	// --
 
