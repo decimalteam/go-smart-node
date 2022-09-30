@@ -16,22 +16,18 @@ import (
 // for evm module
 var _ types.FeeMarketKeeper = &Keeper{}
 
-func (k Keeper) GetBaseFee(_ sdk.Context) *big.Int {
-	return big.NewInt(0)
+func (k Keeper) GetBaseFee(ctx sdk.Context) *big.Int {
+	baseFee := k.GetMinGasPrice(ctx).TruncateInt()
+
+	return baseFee.BigInt()
 }
 
 func (k Keeper) GetParams(ctx sdk.Context) feemarkettypes.Params {
-	baseDenomPrice, err := k.GetPrice(ctx, config.BaseDenom, feeconfig.DefaultQuote)
-	if err != nil {
-		panic(err)
-	}
-
-	evmGasPrice := helpers.DecToDecWithE18(k.GetModuleParams(ctx).EvmGasPrice)
-	minGasPrice := evmGasPrice.Quo(baseDenomPrice.Price)
+	minGasPrice := k.GetMinGasPrice(ctx)
 
 	// TODO: watch for new params
 	return feemarkettypes.NewParams(
-		true,                                   //noBaseFee bool,
+		false,                                  //noBaseFee bool,
 		1,                                      //baseFeeChangeDenom,
 		1,                                      //elasticityMultiplier uint32,
 		k.GetBaseFee(ctx).Uint64(),             //baseFee uint64,
@@ -39,6 +35,19 @@ func (k Keeper) GetParams(ctx sdk.Context) feemarkettypes.Params {
 		minGasPrice,                            //minGasPrice sdk.Dec,
 		feemarkettypes.DefaultMinGasMultiplier, //minGasPriceMultiplier sdk.Dec,
 	)
+}
+
+func (k Keeper) GetMinGasPrice(ctx sdk.Context) sdk.Dec {
+	baseDenomPrice, err := k.GetPrice(ctx, config.BaseDenom, feeconfig.DefaultQuote)
+	if err != nil {
+		panic(err)
+	}
+
+	evmGasPrice := helpers.DecToDecWithE18(k.GetModuleParams(ctx).EvmGasPrice)
+
+	res := evmGasPrice.Quo(baseDenomPrice.Price)
+
+	return res
 }
 
 func (k Keeper) AddTransientGasWanted(_ sdk.Context, _ uint64) (uint64, error) {
