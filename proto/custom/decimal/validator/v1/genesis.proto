@@ -1,0 +1,32 @@
+syntax = "proto3";
+package decimal.validator.v1;
+
+import "gogoproto/gogo.proto";
+
+import "cosmos/staking/v1beta1/genesis.proto";
+import "cosmos/staking/v1beta1/staking.proto";
+
+import "decimal/validator/v1/delegations.proto";
+import "decimal/validator/v1/params.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/validator/types";
+
+// GenesisState defines the module's genesis state.
+message GenesisState {
+  // params defines all the module's parameters.
+  Params params = 1 [ (gogoproto.nullable) = false ];
+  // last_total_power tracks the total amounts of validators power recorded during the previous end block.
+  int64 last_total_power = 2;
+  // last_validator_powers is a special index that provides a historical list of the last-block's bonded validators.
+  repeated cosmos.staking.v1beta1.LastValidatorPower last_validator_powers = 3 [ (gogoproto.nullable) = false ];
+  // validators defines the validator set at genesis.
+  repeated cosmos.staking.v1beta1.Validator validators = 4 [ (gogoproto.nullable) = false ];
+  // delegations defines the delegations active at genesis.
+  repeated Delegation delegations = 5 [ (gogoproto.nullable) = false ];
+  // unbonding_delegations defines the unbonding delegations active at genesis.
+  repeated UnbondingDelegation unbonding_delegations = 6 [ (gogoproto.nullable) = false ];
+  // redelegations defines the redelegations active at genesis.
+  repeated Redelegation redelegations = 7 [ (gogoproto.nullable) = false ];
+  // exported is true if genesis was exported from the state.
+  bool exported = 8;
+}
