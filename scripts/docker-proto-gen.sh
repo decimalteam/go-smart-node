@@ -9,30 +9,54 @@ generateProtoFiles(){
 
 set -eo pipefail
 
-DIR_TO_GENERATE="custom"
+PROTO_PLUGIN=$1
+PROTO_LANG=""
+PROTO_DIR_TO_GENERATE=$2
 
-case "$1" in
+case $PROTO_PLUGIN in
    "go")
-   echo "Generate Golang code"
+   PROTO_LANG="Golang"
    BUF_CONFIG=gogo
       ;;
-   "ts") echo "Generate TypeScript code"
+   "ts")
+   PROTO_LANG="TypeScript"
    BUF_CONFIG=ts
       ;;
-   "dart") echo "Generate Dart code"
+   "dart")
+   PROTO_LANG="Dart"
    BUF_CONFIG=dart
       ;;
-   "php") echo "Generate PHP code"
+   "php")
+   PROTO_LANG="PHP"
    BUF_CONFIG=php
       ;;
-   "py") echo "Generate Python code"
+   "py")
+   PROTO_LANG="Python"
    BUF_CONFIG=py
       ;;
-   *) echo "ERROR: Got unknown language arg $1 (go, ts, dart, php or py required)"
+   *)
+     echo "ERROR: Got unknown language arg $PROTO_LANG (go, ts, dart, php or py required)"
      exit 1
       ;;
 esac
 
-generateProtoFiles $BUF_CONFIG $DIR_TO_GENERATE
+case $PROTO_DIR_TO_GENERATE in
+   "custom")
+   echo "Generate $PROTO_LANG code to custom dir"
+   generateProtoFiles $BUF_CONFIG "custom"
+      ;;
+   "third_party")
+   echo "Generate $PROTO_LANG code to third_party dir"
+   generateProtoFiles $BUF_CONFIG "third_party"
+      ;;
+   "all-proto")
+   echo "Generate $PROTO_LANG code to custom and third_party directories"
+   generateProtoFiles $BUF_CONFIG "custom"
+   generateProtoFiles $BUF_CONFIG "third_party"
+      ;;
+   *) echo "ERROR: Got unknown proto dir path $PROTO_DIR_TO_GENERATE (custom, third_party or all-proto required)"
+     exit 1
+      ;;
+esac
 
 echo "Success!"
