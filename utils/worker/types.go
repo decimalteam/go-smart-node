@@ -31,6 +31,7 @@ type Block struct {
 	EndBlockEvents    []Event            `json:"end_block_events"`
 	Size              int                `json:"size"`
 	EVM               BlockEVM           `json:"evm"`
+	StateChanges      EventAccumulator   `json:"state_changes"`
 }
 
 type TransactionEVM struct {

@@ -90,17 +90,23 @@ func (w *Worker) executeFromQuery(wg *sync.WaitGroup) {
 	w.getWork()
 	for {
 		task := <-w.query
-		w.getBlockResultAndSend(task.height, task.txNum)
+		b := w.GetBlockResult(task.height, task.txNum)
+		// Send
+		data, err := json.Marshal(*b)
+		w.panicError(err)
+		w.sendBlock(task.height, data)
+
 		w.getWork()
 	}
 }
 
-func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
+func (w *Worker) GetBlockResult(height int64, txNum int) *Block {
+	accum := NewEventAccumulator()
 
 	// Fetch requested block from Tendermint RPC
 	block := w.fetchBlock(height)
 
-	// Fetch everything needed from Tendermint RPC
+	// Fetch everything needed from Tendermint RPC aand EVM
 	start := time.Now()
 	txsChan := make(chan []Tx)
 	resultsChan := make(chan *ctypes.ResultBlockResults)
@@ -113,15 +119,16 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 	} else {
 		parseTxNum = txNum
 	}
-	go w.fetchBlockTxs(height, parseTxNum, txsChan)
+	go w.fetchBlockTxs(height, parseTxNum, accum, txsChan)
 	go w.fetchBlockTxResults(height, resultsChan)
 	go w.fetchBlockSize(height, sizeChan)
+	go w.fetchBlockWeb3(height, web3BlockChan)
+
+	web3Block := <-web3BlockChan
+	go w.fetchBlockTxReceiptsWeb3(web3Block, web3ReceiptsChan)
 	txs := <-txsChan
 	results := <-resultsChan
 	size := <-sizeChan
-	go w.fetchBlockWeb3(height, web3BlockChan)
-	web3Block := <-web3BlockChan
-	go w.fetchBlockTxReceiptsWeb3(web3Block, web3ReceiptsChan)
 	web3Body := web3Block.Body()
 	web3Transactions := make([]*TransactionEVM, len(web3Body.Transactions))
 	for i, tx := range web3Body.Transactions {
@@ -148,14 +155,20 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 	}
 	web3Receipts := <-web3ReceiptsChan
 
-	w.logger.Info(
-		fmt.Sprintf("Compiled block (%s)", helpers.DurationToString(time.Since(start))),
-		"block", height,
-		"txs", len(txs),
-		"begin-block-events", len(results.BeginBlockEvents),
-		"end-block-events", len(results.EndBlockEvents),
-	)
+	for _, event := range results.BeginBlockEvents {
+		err := accum.AddEvent(event, "")
+		if err != nil {
+			w.panicError(err)
+		}
+	}
+	for _, event := range results.EndBlockEvents {
+		err := accum.AddEvent(event, "")
+		if err != nil {
+			w.panicError(err)
+		}
+	}
 
+	// TODO: move to event accumulator
 	// Retrieve emission and rewards
 	var emission string
 	var rewards []ProposerReward
@@ -198,8 +211,16 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 		}
 	}
 
+	w.logger.Info(
+		fmt.Sprintf("Compiled block (%s)", helpers.DurationToString(time.Since(start))),
+		"block", height,
+		"txs", len(txs),
+		"begin-block-events", len(results.BeginBlockEvents),
+		"end-block-events", len(results.EndBlockEvents),
+	)
+
 	// Create and fill Block object and then marshal to JSON
-	b := Block{
+	return &Block{
 		ID:                block.BlockID,
 		Evidence:          block.Block.Evidence,
 		Header:            block.Block.Header,
@@ -211,6 +232,7 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 		EndBlockEvents:    w.parseEvents(results.EndBlockEvents),
 		BeginBlockEvents:  w.parseEvents(results.BeginBlockEvents),
 		Size:              size,
+		StateChanges:      *accum,
 		EVM: BlockEVM{
 			Header:       web3Block.Header(),
 			Transactions: web3Transactions,
@@ -218,11 +240,6 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 			Receipts:     web3Receipts,
 		},
 	}
-	data, err := json.Marshal(b)
-	w.panicError(err)
-
-	// Send
-	w.sendBlock(height, data)
 }
 
 func (w *Worker) panicError(err error) {
