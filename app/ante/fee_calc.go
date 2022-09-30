@@ -46,6 +46,8 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.MultisigCreateTransaction))
 		case *multisig.MsgSignTransaction:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.MultisigSignTransaction))
+		case *multisig.MsgCreateUniversalTransaction:
+		case *multisig.MsgSignUniversalTransaction:
 		// swap
 		case *swap.MsgInitializeSwap:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.SwapInitialize))

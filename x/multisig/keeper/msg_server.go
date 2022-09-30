@@ -242,6 +242,16 @@ func (k Keeper) CreateUniversalTransaction(goCtx context.Context, msg *types.Msg
 	if err != nil {
 		return nil, err
 	}
+	walletInSigners := false
+	for _, signer := range internal.GetSigners() {
+		if signer.String() == msg.Wallet {
+			walletInSigners = true
+		}
+	}
+	if !walletInSigners {
+		return nil, errors.WalletIsNotSignerInInternal
+	}
+
 	handler := k.router.Handler(internal)
 	if handler == nil {
 		return nil, errors.NoHandlerForInternal
@@ -347,11 +357,16 @@ func (k Keeper) SignUniversalTransaction(goCtx context.Context, msg *types.MsgSi
 		if handler == nil {
 			return nil, errors.NoHandlerForInternal
 		}
-		// TODO: do we need result?
-		_, err = handler(ctx, msg)
+
+		res, err := handler(ctx, msg)
 		if err != nil {
 			return nil, err
 		}
+		// pass events from handler
+		for _, ev := range res.Events {
+			ctx.EventManager().EmitEvent(sdk.Event(ev))
+		}
+
 	}
 
 	return &types.MsgSignUniversalTransactionResponse{}, nil

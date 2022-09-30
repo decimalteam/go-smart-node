@@ -9,6 +9,7 @@ import (
 
 type MultisigWallet = multisigtypes.Wallet
 type MultisigTransaction = multisigtypes.Transaction
+type MultisigUniversalTransaction = multisigtypes.UniversalTransaction
 
 func (api *API) MultisigWalletsByOwner(owner string) ([]MultisigWallet, error) {
 	client := multisigtypes.NewQueryClient(api.grpcClient)
@@ -90,4 +91,31 @@ func (api *API) MultisigTransactionsByID(txID string) (MultisigTransaction, erro
 		return MultisigTransaction{}, err
 	}
 	return res.Transaction, nil
+}
+
+func (api *API) MultisigUniversalTransactionsByWallet(address string) ([]MultisigUniversalTransaction, error) {
+	client := multisigtypes.NewQueryClient(api.grpcClient)
+	txs := make([]MultisigUniversalTransaction, 0)
+	req := &multisigtypes.QueryUniversalTransactionsRequest{
+		Wallet:     address,
+		Pagination: &query.PageRequest{Limit: queryLimit},
+	}
+	for {
+		res, err := client.UniversalTransactions(
+			context.Background(),
+			req,
+		)
+		if err != nil {
+			return []MultisigUniversalTransaction{}, err
+		}
+		if len(res.Transactions) == 0 {
+			break
+		}
+		txs = append(txs, res.Transactions...)
+		if len(res.Pagination.NextKey) == 0 {
+			break
+		}
+		req.Pagination.Key = res.Pagination.NextKey
+	}
+	return txs, nil
 }

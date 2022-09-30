@@ -2,7 +2,6 @@ package types
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/errors"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	sdktx "github.com/cosmos/cosmos-sdk/types/tx"
@@ -259,31 +258,8 @@ func (msg *MsgCreateUniversalTransaction) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return errors.InvalidSender
 	}
-	wallet, err := sdk.AccAddressFromBech32(msg.Wallet)
-	if err != nil {
+	if _, err := sdk.AccAddressFromBech32(msg.Wallet); err != nil {
 		return errors.InvalidWallet
-	}
-	// check internal transaction
-	msgs, err := sdktx.GetMsgs([]*codectypes.Any{msg.Content}, "")
-	if err != nil {
-		return err
-	}
-	err = msgs[0].ValidateBasic()
-	if err != nil {
-		return err
-	}
-	if len(msgs[0].GetSigners()) == 0 {
-		return errors.NoSignersInInternal
-	}
-	// support for multisple signers
-	walletInSigners := false
-	for _, signer := range msgs[0].GetSigners() {
-		if signer.Equals(wallet) {
-			walletInSigners = true
-		}
-	}
-	if !walletInSigners {
-		return errors.WalletIsNotSignerInInternal
 	}
 
 	return nil

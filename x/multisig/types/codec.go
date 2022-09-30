@@ -22,6 +22,8 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgCreateWallet{},
 		&MsgCreateTransaction{},
 		&MsgSignTransaction{},
+		&MsgCreateUniversalTransaction{},
+		&MsgSignUniversalTransaction{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)

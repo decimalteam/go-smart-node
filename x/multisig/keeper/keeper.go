@@ -195,7 +195,7 @@ func (k *Keeper) GetAllTransactions(ctx sdk.Context) (transactions []types.Trans
 // SetUniversalTransaction sets the entire multisig wallet universal transaction metadata struct for a multisig wallet.
 func (k *Keeper) SetUniversalTransaction(ctx sdk.Context, transaction types.UniversalTransaction) error {
 	store := ctx.KVStore(k.storeKey)
-	value, err := k.cdc.Marshal(&transaction)
+	value, err := k.cdc.MarshalLengthPrefixed(&transaction)
 	if err != nil {
 		return err
 	}
@@ -212,7 +212,7 @@ func (k *Keeper) GetUniversalTransaction(ctx sdk.Context, txID string) (transact
 		err = errors.TransactionNotFound
 		return
 	}
-	err = k.cdc.Unmarshal(value, &transaction)
+	err = k.cdc.UnmarshalLengthPrefixed(value, &transaction)
 	return
 }
 

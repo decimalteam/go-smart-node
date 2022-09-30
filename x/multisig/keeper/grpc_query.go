@@ -99,3 +99,31 @@ func (k Keeper) Transactions(c context.Context, req *types.QueryTransactionsRequ
 
 	return &types.QueryTransactionsResponse{Transactions: transactions, Pagination: pageRes}, nil
 }
+
+func (k Keeper) UniversalTransactions(c context.Context, req *types.QueryUniversalTransactionsRequest) (*types.QueryUniversalTransactionsResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+	ctx := sdk.UnwrapSDKContext(c)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUniversalTransaction)
+	transactions := make([]types.UniversalTransaction, 0)
+	pageRes, err := query.Paginate(
+		store,
+		req.Pagination,
+		func(_, value []byte) error {
+			var tx types.UniversalTransaction
+
+			if err := k.cdc.UnmarshalLengthPrefixed(value, &tx); err != nil {
+				return err
+			}
+
+			transactions = append(transactions, tx)
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.QueryUniversalTransactionsResponse{Transactions: transactions, Pagination: pageRes}, nil
+}
