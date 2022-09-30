@@ -1,14 +1,15 @@
 package keeper_test
 
 import (
+	gocontext "context"
+	"fmt"
+	"time"
+
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
-	gocontext "context"
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
-	"time"
 )
 
 func (s *KeeperTestSuite) TestGRPCQueryCoinPrices() {
@@ -155,11 +156,12 @@ func (s *KeeperTestSuite) TestGRPCQueryModuleParams() {
 func (s *KeeperTestSuite) TestGRPCQueryParams() {
 	ctx, k, queryClient := s.ctx, s.feeKeeper, s.fmQueryClient
 	require := s.Require()
-	k.SavePrice(ctx, types.CoinPrice{
+	err := k.SavePrice(ctx, types.CoinPrice{
 		Denom: config.BaseDenom,
 		Quote: feeconfig.DefaultQuote,
 		Price: sdk.OneDec(),
 	})
+	require.NoError(err)
 
 	params := k.GetParams(ctx)
 	res, err := queryClient.Params(gocontext.Background(), &feemarkettypes.QueryParamsRequest{})
@@ -171,6 +173,14 @@ func (s *KeeperTestSuite) TestGRPCQueryParams() {
 func (s *KeeperTestSuite) TestGRPCQueryBaseFee() {
 	ctx, k, queryClient := s.ctx, s.feeKeeper, s.fmQueryClient
 	require := s.Require()
+
+	err := k.SavePrice(ctx, types.CoinPrice{
+		Denom:     config.BaseDenom,
+		Quote:     feeconfig.DefaultQuote,
+		Price:     sdk.NewDec(100),
+		UpdatedAt: time.Now(),
+	})
+	require.NoError(err)
 
 	basefee := k.GetBaseFee(ctx)
 
