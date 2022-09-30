@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"encoding/hex"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 	"strings"
 
@@ -47,12 +48,12 @@ func (k Keeper) InitializeSwap(goCtx context.Context, msg *types.MsgInitializeSw
 
 	err = events.EmitTypedEvent(ctx, &types.EventInitializeSwap{
 		Sender:            msg.Sender,
-		From:              msg.Sender,
-		DestChain:         msg.DestChain,
 		Recipient:         msg.Recipient,
 		Amount:            msg.Amount.String(),
-		TransactionNumber: msg.TransactionNumber,
 		TokenSymbol:       msg.TokenSymbol,
+		TransactionNumber: msg.TransactionNumber,
+		FromChain:         msg.FromChain,
+		DestChain:         msg.DestChain,
 	})
 	if err != nil {
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())
@@ -117,11 +118,16 @@ func (k Keeper) RedeemSwap(goCtx context.Context, msg *types.MsgRedeemSwap) (*ty
 	err = events.EmitTypedEvent(ctx, &types.EventRedeemSwap{
 		Sender:            msg.Sender,
 		From:              msg.From,
-		DestChain:         msg.DestChain,
 		Recipient:         msg.Recipient,
 		Amount:            msg.Amount.String(),
-		TransactionNumber: msg.TransactionNumber,
 		TokenSymbol:       msg.TokenSymbol,
+		TransactionNumber: msg.TransactionNumber,
+		FromChain:         msg.FromChain,
+		DestChain:         msg.FromChain,
+		V:                 hexutil.EncodeUint64(uint64(msg.V)),
+		R:                 hexutil.Encode(msg.R[:]),
+		S:                 hexutil.Encode(msg.S[:]),
+		HashRedeem:        hash.String(),
 	})
 	if err != nil {
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())
@@ -149,8 +155,9 @@ func (k Keeper) ActivateChain(goCtx context.Context, msg *types.MsgActivateChain
 	k.SetChain(ctx, &chain)
 
 	err := events.EmitTypedEvent(ctx, &types.EventActivateChain{
-		ID:   msg.ID,
-		Name: msg.Name,
+		Sender: msg.Sender,
+		ID:     msg.ID,
+		Name:   msg.Name,
 	})
 	if err != nil {
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())
@@ -176,7 +183,8 @@ func (k Keeper) DeactivateChain(goCtx context.Context, msg *types.MsgDeactivateC
 	k.SetChain(ctx, &chain)
 
 	err := events.EmitTypedEvent(ctx, &types.EventDeactivateChain{
-		ID: msg.ID,
+		Sender: msg.Sender,
+		ID:     msg.ID,
 	})
 	if err != nil {
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())
