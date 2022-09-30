@@ -80,16 +80,13 @@ func (k Keeper) RedeemSwap(goCtx context.Context, msg *types.MsgRedeemSwap) (*ty
 		return nil, errors.AlreadyRedeemed
 	}
 
-	V := sdk.NewInt(int64(msg.V))
-	hexutil.Encode(msg.R[:])
-
 	R := big.NewInt(0)
 	R.SetBytes(msg.R[:])
 
 	S := big.NewInt(0)
 	S.SetBytes(msg.S[:])
 
-	address, err := types.Ecrecover(hash, R, S, V.BigInt())
+	address, err := types.Ecrecover(hash, R, S, sdk.NewInt(int64(msg.V)).BigInt())
 	if err != nil {
 		return nil, err
 	}

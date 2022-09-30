@@ -1,12 +1,16 @@
 package worker
 
 import (
-	swaptypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
-	sdkmath "cosmossdk.io/math"
 	"fmt"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 	"strconv"
+
+	sdkmath "cosmossdk.io/math"
+
+	abci "github.com/tendermint/tendermint/abci/types"
+
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+
+	swaptypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
 )
 
 var swapPool = authtypes.NewModuleAddress(swaptypes.SwapPool)

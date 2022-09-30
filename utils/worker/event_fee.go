@@ -1,11 +1,13 @@
 package worker
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type EventUpdateCoinPrices struct {
@@ -36,21 +38,23 @@ func processEventPayCommission(ea *EventAccumulator, event abci.Event, txHash st
 		string coin = 2;
 	*/
 	var err error
-	var sender string
-	var coin sdk.Coin
+	var payer string
+	var coins sdk.Coins
 	for _, attr := range event.Attributes {
 		if string(attr.Key) == "sender" {
-			sender = string(attr.Value)
+			payer = string(attr.Value)
 		}
 		if string(attr.Key) == "coin" {
-			coin, err = sdk.ParseCoinNormalized(string(attr.Value))
+			err = json.Unmarshal(attr.Value, &coins)
 			if err != nil {
-				return fmt.Errorf("can't parse coin '%s': %s", string(attr.Value), err.Error())
+				return fmt.Errorf("can't unmarshal coins: %s, value: '%s'", err.Error(), string(attr.Value))
 			}
 		}
 	}
 
-	ea.addBalanceChange(sender, coin.Denom, coin.Amount.Neg())
+	for _, coin := range coins {
+		ea.addBalanceChange(payer, coin.Denom, coin.Amount.Neg())
+	}
 	return nil
 
 }

@@ -1,14 +1,16 @@
 package worker
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"encoding/json"
 	"fmt"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"strconv"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
 var reservedPool = authtypes.NewModuleAddress(types.ReservedPool)
