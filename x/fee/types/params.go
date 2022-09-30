@@ -67,6 +67,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return Params{
+
 		TxByteFee: sdk.MustNewDecFromStr("0.00008"),
 		// coin transactions fees
 		CoinCreate:      sdk.MustNewDecFromStr("0.004"),
