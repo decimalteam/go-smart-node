@@ -177,7 +177,7 @@ func (s *KeeperTestSuite) TestGRPCQueryBaseFee() {
 	err := k.SavePrice(ctx, types.CoinPrice{
 		Denom:     config.BaseDenom,
 		Quote:     feeconfig.DefaultQuote,
-		Price:     sdk.NewDec(100),
+		Price:     sdk.NewDec(1),
 		UpdatedAt: time.Now(),
 	})
 	require.NoError(err)
