@@ -1,10 +1,7 @@
 package worker
 
 import (
-	"fmt"
-
 	sdkmath "cosmossdk.io/math"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -73,7 +70,7 @@ func NewEventAccumulator() *EventAccumulator {
 func (ea *EventAccumulator) AddEvent(event abci.Event, txHash string) error {
 	procFunc, ok := eventProcessors[event.Type]
 	if !ok {
-		return fmt.Errorf("processor for event '%s' not found", event.Type)
+		return processStub(ea, event, txHash)
 	}
 	return procFunc(ea, event, txHash)
 }
@@ -115,19 +112,6 @@ var eventProcessors = map[string]processFunc{
 	"decimal.swap.v1.EventDeactivateChain": processEventDeactivateChain,
 	"decimal.swap.v1.EventInitializeSwap":  processEventSwapInitialize,
 	"decimal.swap.v1.EventRedeemSwap":      processEventSwapRedeem,
-	// stub for cosmos events
-
-	"coin_spent":      processStub,
-	"coin_received":   processStub,
-	"transfer":        processStub,
-	"message":         processStub,
-	"proposer_reward": processStub,
-	"commission":      processStub,
-	"rewards":         processStub,
-	"tx":              processStub,
-	"block_bloom":     processStub,
-	"burn":            processStub,
-	"coinbase":        processStub,
 }
 
 // stub to skip internal cosmos events
