@@ -122,13 +122,13 @@ func (w *Worker) GetBlockResult(height int64, txNum int) *Block {
 	go w.fetchBlockTxs(height, parseTxNum, accum, txsChan)
 	go w.fetchBlockTxResults(height, resultsChan)
 	go w.fetchBlockSize(height, sizeChan)
+	txs := <-txsChan
+	results := <-resultsChan
+	size := <-sizeChan
 	go w.fetchBlockWeb3(height, web3BlockChan)
 
 	web3Block := <-web3BlockChan
 	go w.fetchBlockTxReceiptsWeb3(web3Block, web3ReceiptsChan)
-	txs := <-txsChan
-	results := <-resultsChan
-	size := <-sizeChan
 	web3Body := web3Block.Body()
 	web3Transactions := make([]*TransactionEVM, len(web3Body.Transactions))
 	for i, tx := range web3Body.Transactions {
