@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
 generateProtoFiles(){
+#  directory in wi
+  DIR_TO_GENERATE=custom
+
   docker build -t proto-gen-$1 -f proto/$1.Dockerfile .
 
-  docker run --volume "$(pwd)/proto:/workspace" --workdir /workspace/third_party proto-gen-$1 \
+  docker run --volume "$(pwd)/proto:/workspace" --workdir /workspace/$DIR_TO_GENERATE proto-gen-$1 \
     buf generate --template ../buf/buf.gen.$1.yaml -v
 }
 
