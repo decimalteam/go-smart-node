@@ -446,33 +446,15 @@ format:
 ###                                Protobuf                                 ###
 ###############################################################################
 
-containerProtoVer=v0.7
-containerProtoImage=tendermintdev/sdk-proto-gen:$(containerProtoVer)
-containerProtoGen=cosmos-sdk-proto-gen-$(containerProtoVer)
-containerProtoGenSwagger=cosmos-sdk-proto-gen-swagger-$(containerProtoVer)
-containerProtoFmt=cosmos-sdk-proto-fmt-$(containerProtoVer)
-
-proto-all: proto-format proto-lint proto-gen
+# If the first argument is "proto-gen" use the rest as argument for "proto-gen"
+ifeq (proto-gen,$(firstword $(MAKECMDGOALS)))
+  PROTO_GEN_LANG := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+  $(eval $(PROTO_GEN_LANG):;@:)
+endif
 
 proto-gen:
 	@echo "Generating Protobuf files"
-	@./scripts/protogen.sh
-
-proto-swagger-gen:
-	@echo "Generating Protobuf Swagger"
-	@./scripts/protoc-swagger-gen.sh
-
-proto-format:
-	@echo "Formatting Protobuf files"
-	find ./ -not -path "./third_party/*" -name *.proto -exec clang-format -i {} \;
-
-proto-lint:
-	@$(DOCKER_BUF) lint --error-format=json
-
-proto-check-breaking:
-	@$(DOCKER_BUF) breaking --against $(HTTPS_GIT)#branch=main
-
-.PHONY: proto-all proto-gen proto-gen-any proto-swagger-gen proto-format proto-lint proto-check-breaking
+	@./scripts/docker-proto-gen.sh $(PROTO_GEN_LANG)
 
 ###############################################################################
 ###                                Localnet                                 ###
