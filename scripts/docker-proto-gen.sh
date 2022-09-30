@@ -11,8 +11,6 @@ set -eo pipefail
 
 DIR_TO_GENERATE="custom"
 
-sudo rm -rf proto/$DIR_TO_GENERATE/build
-
 case "$1" in
    "go")
    echo "Generate Golang code"
