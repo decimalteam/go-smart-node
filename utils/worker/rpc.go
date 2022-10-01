@@ -1,25 +1,27 @@
 package worker
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/client/grpc/tmservice"
 	"encoding/json"
 	"fmt"
-	"github.com/tendermint/tendermint/libs/bytes"
-	"github.com/tendermint/tendermint/proto/tendermint/types"
 	"time"
 
+	"github.com/tendermint/tendermint/libs/bytes"
+	"github.com/tendermint/tendermint/proto/tendermint/types"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 
+	cosmostmservice "github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
+
+	"bitbucket.org/decimalteam/go-smart-node/client/grpc/tmservice"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
-func (w *Worker) fetchBlock(height int64) (*tmservice.Block, *types.BlockID) {
+func (w *Worker) fetchBlock(height int64) (*cosmostmservice.Block, *types.BlockID) {
 	start := time.Now()
 
 	// Request until get block
 	for first := true; true; first = false {
 		// Request block
-		result, err := w.tmService.GetBlockByHeight(w.ctx, &tmservice.GetBlockByHeightRequest{Height: height})
+		result, err := w.cTmClient.GetBlockByHeight(w.ctx, &cosmostmservice.GetBlockByHeightRequest{Height: height})
 		if err == nil {
 			if !first {
 				w.logger.Info(
@@ -42,7 +44,7 @@ func (w *Worker) fetchBlock(height int64) (*tmservice.Block, *types.BlockID) {
 func (w *Worker) fetchBlockSize(height int64, ch chan int) {
 
 	// Request blockchain info
-	result, err := w.tmService.GetBlockchainInfo(w.ctx, &tmservice.GetBlockchainInfoRequest{
+	result, err := w.tmClient.GetBlockchainInfo(w.ctx, &tmservice.GetBlockchainInfoRequest{
 		MinHeight: height,
 		MaxHeight: height,
 	})
@@ -60,7 +62,7 @@ func (w *Worker) fetchBlockTxs(height int64, total int, ea *EventAccumulator, ch
 	for len(results) < total {
 
 		// Request transactions
-		result, err := w.tmService.GetTxSearch(w.ctx, &tmservice.GetTxSearchRequest{
+		result, err := w.tmClient.GetTxSearch(w.ctx, &tmservice.GetTxSearchRequest{
 			Query:   query,
 			Prove:   true,
 			Page:    page,
@@ -120,7 +122,7 @@ func (w *Worker) fetchBlockTxResults(height int64, ch chan *ctypes.ResultBlockRe
 	// Request until get block results
 	for {
 		// Request block results
-		result, err := w.tmService.GetBlockResults(w.ctx, &tmservice.GetBlockResultsRequest{Height: height})
+		result, err := w.tmClient.GetBlockResults(w.ctx, &tmservice.GetBlockResultsRequest{Height: height})
 		if err == nil { // len(result.EndBlockEvents) != 0
 			ch <- result.BlockResults.ToCoreTypes()
 			break

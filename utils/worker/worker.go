@@ -1,7 +1,6 @@
 package worker
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/client/grpc/tmservice"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -20,8 +19,10 @@ import (
 	rpc "github.com/tendermint/tendermint/rpc/client/http"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 
+	cosmostmservice "github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 	"github.com/cosmos/cosmos-sdk/simapp/params"
 
+	"bitbucket.org/decimalteam/go-smart-node/client/grpc/tmservice"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
@@ -33,8 +34,9 @@ type Worker struct {
 	config      *Config
 	hostname    string
 	rpcClient   *rpc.HTTP
-	grpcClient  *grpc.ClientConn
-	tmService   tmservice.ServiceClient
+	grpcConn    *grpc.ClientConn
+	tmClient    tmservice.ServiceClient       // decimal tendermint api client
+	cTmClient   cosmostmservice.ServiceClient // cosmos tendermint api client
 	web3Client  *web3.Client
 	web3ChainId *big.Int
 	query       chan *ParseTask
@@ -70,7 +72,11 @@ func NewWorker(cdc params.EncodingConfig, logger log.Logger, config *Config) (*W
 	if err != nil {
 		return nil, err
 	}
-	tmService := tmservice.NewServiceClient(grpcConn)
+	tmClient := tmservice.NewServiceClient(grpcConn)
+	if err != nil {
+		return nil, err
+	}
+	cTmClient := cosmostmservice.NewServiceClient(grpcConn)
 	if err != nil {
 		return nil, err
 	}
@@ -85,9 +91,10 @@ func NewWorker(cdc params.EncodingConfig, logger log.Logger, config *Config) (*W
 		logger:      logger,
 		config:      config,
 		hostname:    hostname,
-		grpcClient:  grpcConn,
+		grpcConn:    grpcConn,
 		rpcClient:   rpcClient,
-		tmService:   tmService,
+		tmClient:    tmClient,
+		cTmClient:   cTmClient,
 		web3Client:  web3Client,
 		web3ChainId: web3ChainId,
 		query:       make(chan *ParseTask, 1000),

@@ -48,11 +48,18 @@ func main() {
 		os.Exit(1)
 	}
 
+	grpcPort, err := strconv.Atoi(os.Getenv("GRPC_PORT"))
+	if err != nil {
+		logger.Error("Error convert GRPC port from str to int")
+		panic(err)
+	}
 	// Prepare worker configuration
 	config := &worker.Config{
 		IndexerEndpoint: os.Getenv("INDEXER_URL"),
 		RpcEndpoint:     os.Getenv("RPC_URL"),
 		Web3Endpoint:    os.Getenv("WEB3_URL"),
+		GRPCHost:        os.Getenv("GRPC_HOST"),
+		GRPCPort:        grpcPort,
 		WorkersCount:    1,
 	}
 	if len(os.Getenv("WORKERS")) > 0 {
