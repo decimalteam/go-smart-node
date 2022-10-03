@@ -32,10 +32,11 @@ last event EditCoin group by coin
 type EventAccumulator struct {
 	// [address][coin_symbol]amount changes
 	BalancesChanges map[string]map[string]sdkmath.Int `json:"balances_changes"`
+	// [denom]vr struct
+	CoinsVR map[string]UpdateCoinVR `json:"coins_vr"`
 	// [coin_symbol]
-	CoinsCreates []EventCreateCoin            `json:"-"`
-	CoinUpdates  map[string]EventUpdateCoin   `json:"-"`
-	CoinEdits    map[string]EventUpdateCoinVR `json:"-"`
+	CoinsCreates []EventCreateCoin          `json:"-"`
+	CoinUpdates  map[string]EventUpdateCoin `json:"-"`
 	// replace legacy
 	LegacyReown        map[string]string    `json:"-"`
 	LegacyReturnNFT    []LegacyReturnNFT    `json:"-"`
@@ -63,7 +64,7 @@ func NewEventAccumulator() *EventAccumulator {
 	return &EventAccumulator{
 		BalancesChanges: make(map[string]map[string]sdkmath.Int),
 		CoinUpdates:     make(map[string]EventUpdateCoin),
-		CoinEdits:       make(map[string]EventUpdateCoinVR),
+		CoinsVR:         make(map[string]UpdateCoinVR),
 		LegacyReown:     make(map[string]string),
 	}
 }
@@ -134,6 +135,11 @@ func (ea *EventAccumulator) addBalanceChange(address string, symbol string, amou
 	}
 	balance[symbol] = knownChange.Add(amount)
 	ea.BalancesChanges[address] = balance
+}
+
+// custom coin reserve or volume update
+func (ea *EventAccumulator) addCoinVRChange(symbol string, vr UpdateCoinVR) {
+	ea.CoinsVR[symbol] = vr
 }
 
 func (ea *EventAccumulator) addMintSubTokens(e EventMintToken) {
