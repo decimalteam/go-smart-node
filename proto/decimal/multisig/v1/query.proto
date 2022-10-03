@@ -33,9 +33,13 @@ service Query {
     option (google.api.http).get = "/decimal/multisig/v1/transaction/{id}";
   }
 
-  // Retrieves existing transactions by wallet address.
+  // Retrieves existing universal transactions by wallet address.
   rpc UniversalTransactions(QueryUniversalTransactionsRequest) returns (QueryUniversalTransactionsResponse) {
     option (google.api.http).get = "/decimal/multisig/v1/universal_transactions/{wallet}";
+  }
+  // Retrieves existing universal transaction by id.
+  rpc UniversalTransaction(QueryUniversalTransactionRequest) returns (QueryUniversalTransactionResponse) {
+    option (google.api.http).get = "/decimal/multisig/v1/universal_transaction/{id}";
   }
 }
 
@@ -75,14 +79,29 @@ message QueryTransactionRequest { string id = 1; }
 // QueryTransactionResponse is response type for the Query/Transaction RPC method.
 message QueryTransactionResponse { Transaction transaction = 1 [ (gogoproto.nullable) = false ]; }
 
-// QueryUniversalTransactionsRequest is request type for the Query/Transactions RPC method.
+// UniversalTransaction response
+message UniversalTransactionResponse {
+  UniversalTransaction transaction = 1 [ (gogoproto.nullable) = false ];
+  repeated string signers = 2;
+  bool completed = 3;
+}
+
+// QueryUniversalTransactionsRequest is request type for the Query/UniversalTransactions RPC method.
 message QueryUniversalTransactionsRequest {
   string wallet = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 
-// QueryTransactionsResponse is response type for the Query/Transactions RPC method.
+// QueryUniversalTransactionsResponse is response type for the Query/UniversalTransactions RPC method.
 message QueryUniversalTransactionsResponse {
-  repeated UniversalTransaction transactions = 1 [ (gogoproto.nullable) = false ];
+  repeated UniversalTransactionResponse transactions = 1 [ (gogoproto.nullable) = false ];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryUniversalTransactionRequest is request type for the Query/UniversalTransaction RPC method.
+message QueryUniversalTransactionRequest { string id = 1; }
+
+// QueryUniversalTransactionResponse is response type for the Query/UniversalTransaction RPC method.
+message QueryUniversalTransactionResponse {
+  UniversalTransactionResponse transaction = 1 [ (gogoproto.nullable) = false ];
 }

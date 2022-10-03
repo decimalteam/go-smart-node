@@ -192,6 +192,10 @@ func (k *Keeper) GetAllTransactions(ctx sdk.Context) (transactions []types.Trans
 	return
 }
 
+////////////////////////////////////////////////////////////////
+// Universal Transaction
+////////////////////////////////////////////////////////////////
+
 // SetUniversalTransaction sets the entire multisig wallet universal transaction metadata struct for a multisig wallet.
 func (k *Keeper) SetUniversalTransaction(ctx sdk.Context, transaction types.UniversalTransaction) error {
 	store := ctx.KVStore(k.storeKey)
@@ -223,8 +227,20 @@ func (k *Keeper) SetUniversalSign(ctx sdk.Context, txID, signer string) {
 	store.Set(key, []byte{})
 }
 
-// SetUniversalSign mark signature for transaction and wallet owner.
+// IsSigned check signature for transaction.
 func (k *Keeper) IsSigned(ctx sdk.Context, txID, signer string) bool {
 	store := ctx.KVStore(k.storeKey)
 	return store.Has(types.GetSignatureKey(txID, signer))
+}
+
+func (k *Keeper) SetCompleted(ctx sdk.Context, txID string) {
+	store := ctx.KVStore(k.storeKey)
+	key := append(types.KeyPrefixCompletedTransaction, []byte(txID)...)
+	store.Set(key, []byte{})
+}
+
+func (k *Keeper) IsCompleted(ctx sdk.Context, txID string) bool {
+	store := ctx.KVStore(k.storeKey)
+	key := append(types.KeyPrefixCompletedTransaction, []byte(txID)...)
+	return store.Has(key)
 }

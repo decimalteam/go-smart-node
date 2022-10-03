@@ -7,8 +7,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
+	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	dscWallet "bitbucket.org/decimalteam/go-smart-node/sdk/wallet"
-	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 )
 
 type StormAccount struct {
@@ -93,21 +93,4 @@ func (sa *StormAccount) Account() *dscWallet.Account {
 // Fee configuration
 /////////////////////////
 
-type FeeConfiguration struct {
-	DelPrice sdk.Dec
-	Params   feetypes.Params
-}
-
-func NewFeeConfiguration() *FeeConfiguration {
-	return &FeeConfiguration{}
-}
-
-func (fc *FeeConfiguration) Update(api *dscApi.API) error {
-	delPrice, params, err := api.GetFeeParams("del", "usd")
-	if err != nil {
-		return err
-	}
-	fc.DelPrice = delPrice
-	fc.Params = params
-	return nil
-}
+type FeeConfiguration = dscTx.FeeCalculationOptions

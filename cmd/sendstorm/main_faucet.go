@@ -58,9 +58,12 @@ func cmdFaucet() *cobra.Command {
 					acc.Account().SdkAddress(),
 					sdk.NewCoin(reactor.api.BaseCoin(), helpers.EtherToWei(sdk.NewInt(amountToSend))),
 				)
-				tx, err := dscTx.BuildTransaction(reactor.faucetAccount, []sdk.Msg{msg}, "", reactor.api.BaseCoin(),
-					reactor.feeConfig.DelPrice,
-					reactor.feeConfig.Params,
+				tx, err := dscTx.BuildTransaction(
+					reactor.faucetAccount,
+					[]sdk.Msg{msg},
+					"",
+					reactor.api.BaseCoin(),
+					reactor.api.GetFeeCalculationOptions(),
 				)
 				if err != nil {
 					fmt.Println(err)

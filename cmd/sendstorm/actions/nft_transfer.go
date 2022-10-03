@@ -100,7 +100,7 @@ func (aa *TransferNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *
 		aa.id,
 		aa.subIds,
 	)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
+	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig)
 	if err != nil {
 		return nil, err
 	}

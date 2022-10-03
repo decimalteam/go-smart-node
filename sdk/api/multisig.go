@@ -10,6 +10,7 @@ import (
 type MultisigWallet = multisigtypes.Wallet
 type MultisigTransaction = multisigtypes.Transaction
 type MultisigUniversalTransaction = multisigtypes.UniversalTransaction
+type MultisigUniversalTransactionResponse = multisigtypes.UniversalTransactionResponse
 
 func (api *API) MultisigWalletsByOwner(owner string) ([]MultisigWallet, error) {
 	client := multisigtypes.NewQueryClient(api.grpcClient)
@@ -26,9 +27,9 @@ func (api *API) MultisigWalletsByOwner(owner string) ([]MultisigWallet, error) {
 		if err != nil {
 			return []MultisigWallet{}, err
 		}
-		if len(res.Wallets) == 0 {
-			break
-		}
+		//if len(res.Wallets) == 0 {
+		//	break
+		//}
 		wallets = append(wallets, res.Wallets...)
 		if len(res.Pagination.NextKey) == 0 {
 			break
@@ -67,9 +68,9 @@ func (api *API) MultisigTransactionsByWallet(address string) ([]MultisigTransact
 		if err != nil {
 			return []MultisigTransaction{}, err
 		}
-		if len(res.Transactions) == 0 {
-			break
-		}
+		//if len(res.Transactions) == 0 {
+		//	break
+		//}
 		txs = append(txs, res.Transactions...)
 		if len(res.Pagination.NextKey) == 0 {
 			break
@@ -93,9 +94,9 @@ func (api *API) MultisigTransactionsByID(txID string) (MultisigTransaction, erro
 	return res.Transaction, nil
 }
 
-func (api *API) MultisigUniversalTransactionsByWallet(address string) ([]MultisigUniversalTransaction, error) {
+func (api *API) MultisigUniversalTransactionsByWallet(address string) ([]MultisigUniversalTransactionResponse, error) {
 	client := multisigtypes.NewQueryClient(api.grpcClient)
-	txs := make([]MultisigUniversalTransaction, 0)
+	txs := make([]MultisigUniversalTransactionResponse, 0)
 	req := &multisigtypes.QueryUniversalTransactionsRequest{
 		Wallet:     address,
 		Pagination: &query.PageRequest{Limit: queryLimit},
@@ -106,11 +107,11 @@ func (api *API) MultisigUniversalTransactionsByWallet(address string) ([]Multisi
 			req,
 		)
 		if err != nil {
-			return []MultisigUniversalTransaction{}, err
+			return []MultisigUniversalTransactionResponse{}, err
 		}
-		if len(res.Transactions) == 0 {
-			break
-		}
+		//if len(res.Transactions) == 0 {
+		//	break
+		//}
 		txs = append(txs, res.Transactions...)
 		if len(res.Pagination.NextKey) == 0 {
 			break

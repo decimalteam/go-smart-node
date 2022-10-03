@@ -81,7 +81,7 @@ func (ac *RedelegateNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig
 
 	// TODO
 
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
+	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{}, "", sa.FeeDenom(), feeConfig)
 	if err != nil {
 		return nil, err
 	}

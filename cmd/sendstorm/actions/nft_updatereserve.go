@@ -118,7 +118,7 @@ func (aa *UpdateReserveNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeCon
 		aa.subIds,
 		aa.newReserve,
 	)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
+	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig)
 	if err != nil {
 		return nil, err
 	}

@@ -159,7 +159,7 @@ func main() {
 }
 
 func universalMultiSig() {
-	const faucetMnemonic = "spider vicious brain online rapid devote dentist bulb theory clap physical manual ordinary battle kitchen fit scout comfort shine endorse trick board gift depend"
+	const faucetMnemonic = "erase knee humble birth museum cricket hello quote throw rug example soccer fame situate steel book wall friend owner bulb trick maze hire zebra"
 	const acc1mnemonic = "affair coral purse lounge fancy orbit region shine wagon fever frozen market equal coil mixed lottery will stand oil they pepper utility season fruit"
 	const acc2mnemonic = "hard delay bag address subject dog flock cactus athlete legal arrange skull own elephant twelve switch sustain desert angle shop supply solid river aspect"
 	const acc3mnemonic = "differ enter exhaust copy position gravity fun guide clump brisk confirm swarm salt stamp tape purpose country slam simple tourist fog load toddler warrior"
@@ -175,7 +175,6 @@ func universalMultiSig() {
 		fmt.Printf("GetParameters error: %v\n", err)
 		return
 	}
-	price, par, _ := api.GetFeeParams(api.BaseCoin(), "usd")
 
 	faucet, _ := dscWallet.NewAccountFromMnemonicWords(faucetMnemonic, "")
 	acc1, _ := dscWallet.NewAccountFromMnemonicWords(acc1mnemonic, "")
@@ -186,24 +185,22 @@ func universalMultiSig() {
 	for _, acc := range []*dscWallet.Account{acc1, acc2, acc3} {
 		bindAcc(api, faucet)
 		msg := dscTx.NewMsgSendCoin(faucet.SdkAddress(), acc.SdkAddress(), sdk.NewCoin(api.BaseCoin(), helpers.EtherToWei(sdk.NewInt(100))))
-		tx, _ := dscTx.BuildTransaction(faucet, []sdk.Msg{msg}, "", api.BaseCoin(), price, par)
+		tx, _ := dscTx.BuildTransaction(faucet, []sdk.Msg{msg}, "", api.BaseCoin(), api.GetFeeCalculationOptions())
 		tx.SignTransaction(faucet)
 		bz, _ := tx.BytesToSend()
 		res, _ := api.BroadcastTxCommit(bz)
 		fmt.Printf("fill result: %#v\n\n", res)
 	}
 
-	/*
-		{
-			bindAcc(api, acc1)
-			msg := dscTx.NewMsgCreateWallet(acc1.SdkAddress(), []string{acc1.Address(), acc2.Address(), acc3.Address()}, []uint32{1, 1, 1}, 3)
-			tx, _ := dscTx.BuildTransaction(acc1, []sdk.Msg{msg}, "", api.BaseCoin(), price, par)
-			tx.SignTransaction(acc1)
-			bz, _ := tx.BytesToSend()
-			res, _ := api.BroadcastTxCommit(bz)
-			fmt.Printf("create wallet result: %#v\n", res)
-		}
-	*/
+	{
+		bindAcc(api, acc1)
+		msg := dscTx.NewMsgCreateWallet(acc1.SdkAddress(), []string{acc1.Address(), acc2.Address(), acc3.Address()}, []uint32{1, 1, 1}, 3)
+		tx, _ := dscTx.BuildTransaction(acc1, []sdk.Msg{msg}, "", api.BaseCoin(), api.GetFeeCalculationOptions())
+		tx.SignTransaction(acc1)
+		bz, _ := tx.BytesToSend()
+		res, _ := api.BroadcastTxCommit(bz)
+		fmt.Printf("create wallet result: %#v\n", res)
+	}
 
 	wallets, _ := api.MultisigWalletsByOwner(acc1.Address())
 	if len(wallets) == 0 {
@@ -211,11 +208,12 @@ func universalMultiSig() {
 		return
 	}
 	wal := wallets[0]
+	fmt.Printf("wallet: %#v\n\n", wal)
 	wAdr, _ := sdk.AccAddressFromBech32(wal.Address)
 	{
 		bindAcc(api, faucet)
 		msg := dscTx.NewMsgSendCoin(faucet.SdkAddress(), wAdr, sdk.NewCoin(api.BaseCoin(), helpers.EtherToWei(sdk.NewInt(100))))
-		tx, _ := dscTx.BuildTransaction(faucet, []sdk.Msg{msg}, "", api.BaseCoin(), price, par)
+		tx, _ := dscTx.BuildTransaction(faucet, []sdk.Msg{msg}, "", api.BaseCoin(), api.GetFeeCalculationOptions())
 		tx.SignTransaction(faucet)
 		bz, _ := tx.BytesToSend()
 		res, _ := api.BroadcastTxCommit(bz)
@@ -226,7 +224,7 @@ func universalMultiSig() {
 		msg, _ := dscTx.NewMsgCreateUniversalTransaction(acc1.SdkAddress(), wal.Address,
 			dscTx.NewMsgSendCoin(wAdr, acc4.SdkAddress(), sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(10)))),
 		)
-		tx, err := dscTx.BuildTransaction(acc1, []sdk.Msg{msg}, "", api.BaseCoin(), price, par)
+		tx, err := dscTx.BuildTransaction(acc1, []sdk.Msg{msg}, "", api.BaseCoin(), api.GetFeeCalculationOptions())
 		if err != nil {
 			fmt.Printf("NewMsgCreateUniversalTransaction: %v\n", err)
 		}
@@ -238,11 +236,12 @@ func universalMultiSig() {
 
 	mtxs, _ := api.MultisigUniversalTransactionsByWallet(wal.Address)
 	for _, mtx := range mtxs {
-		fmt.Printf("signing tx: %s\n\n", mtx.Id)
+		fmt.Printf("signing tx: %s\n\n", mtx.Transaction.Id)
+		fmt.Printf("signing tx: %#v\n\n", mtx)
 		for _, acc := range []*dscWallet.Account{acc2, acc3} {
 			bindAcc(api, acc)
-			msg := dscTx.NewMsgSignUniversalTransaction(acc.SdkAddress(), mtx.Id)
-			tx, _ := dscTx.BuildTransaction(acc, []sdk.Msg{msg}, "", api.BaseCoin(), price, par)
+			msg := dscTx.NewMsgSignUniversalTransaction(acc.SdkAddress(), mtx.Transaction.Id)
+			tx, _ := dscTx.BuildTransaction(acc, []sdk.Msg{msg}, "", api.BaseCoin(), api.GetFeeCalculationOptions())
 			tx.SignTransaction(acc)
 			bz, _ := tx.BytesToSend()
 			res, _ := api.BroadcastTxCommit(bz)

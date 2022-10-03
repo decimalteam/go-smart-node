@@ -107,7 +107,7 @@ func (aa *SignMultisigTransactionAction) GenerateTx(sa *stormTypes.StormAccount,
 	}
 
 	msg := dscTx.NewMsgSignTransaction(sender, aa.txID)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
+	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig)
 	if err != nil {
 		return nil, err
 	}

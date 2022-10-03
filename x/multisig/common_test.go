@@ -289,8 +289,8 @@ func TestUniversalTx(t *testing.T) {
 
 	var sender = addrs[0]
 	var receiver = addrs[10]
-	var owners = []string{addrs[1].String(), addrs[2].String(), addrs[3].String()}
-	var weights = []uint32{1, 1, 1}
+	var owners = []string{addrs[1].String(), addrs[2].String(), addrs[3].String(), addrs[4].String()}
+	var weights = []uint32{1, 1, 1, 1}
 	var threshold uint32 = 3
 
 	// create wallet with empty balance
@@ -323,6 +323,10 @@ func TestUniversalTx(t *testing.T) {
 	_, err = dsc.MultisigKeeper.SignUniversalTransaction(goCtx, msgS)
 	require.NoError(t, err)
 
+	// check for double sign
+	_, err = dsc.MultisigKeeper.SignUniversalTransaction(goCtx, msgS)
+	require.Error(t, err)
+
 	// third owner sign
 	msgS = types.NewMsgSignUniversalTransaction(addrs[3], txres.ID)
 	_, err = dsc.MultisigKeeper.SignUniversalTransaction(goCtx, msgS)
@@ -333,8 +337,13 @@ func TestUniversalTx(t *testing.T) {
 	require.True(t, walletBalance.Amount.Equal(helpers.EtherToWei(sdk.NewInt(0))), "wallet balance")
 	receiverBalance := dsc.BankKeeper.GetBalance(ctx, receiver, "del")
 	require.True(t, receiverBalance.Amount.Equal(helpers.EtherToWei(sdk.NewInt(1010))), "receiver balance", receiverBalance.String())
+	require.True(t, dsc.MultisigKeeper.IsCompleted(ctx, txres.ID))
 
-	require.NoError(t, err)
+	// fourth owner, transaction already completed
+	msgS = types.NewMsgSignUniversalTransaction(addrs[4], txres.ID)
+	_, err = dsc.MultisigKeeper.SignUniversalTransaction(goCtx, msgS)
+	require.Error(t, err)
+
 }
 
 // getBaseAppWithCustomKeeper Returns a simapp with custom keepers

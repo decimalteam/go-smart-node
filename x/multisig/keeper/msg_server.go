@@ -288,6 +288,9 @@ func (k Keeper) CreateUniversalTransaction(goCtx context.Context, msg *types.Msg
 func (k Keeper) SignUniversalTransaction(goCtx context.Context, msg *types.MsgSignUniversalTransaction) (*types.MsgSignUniversalTransactionResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	if k.IsCompleted(ctx, msg.ID) {
+		return nil, errors.AlreadyEnoughSignatures
+	}
 	// Retrieve multisig transaction from the KVStore
 	transaction, err := k.GetUniversalTransaction(ctx, msg.ID)
 	if err != nil {
@@ -367,6 +370,7 @@ func (k Keeper) SignUniversalTransaction(goCtx context.Context, msg *types.MsgSi
 			ctx.EventManager().EmitEvent(sdk.Event(ev))
 		}
 
+		k.SetCompleted(ctx, transaction.Id)
 	}
 
 	return &types.MsgSignUniversalTransactionResponse{}, nil

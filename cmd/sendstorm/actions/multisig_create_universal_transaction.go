@@ -13,7 +13,9 @@ import (
 	"github.com/tendermint/tendermint/libs/strings"
 )
 
-type CreateMultisigTransactionGenerator struct {
+// TODO: universal current is simple SendCoin
+
+type CreateMultisigUniversalTransactionGenerator struct {
 	bottomRange, upperRange int64 // bounds in 0.001 (10^15)
 	knownAddresses          []string
 	knownWallets            []dscApi.MultisigWallet
@@ -21,22 +23,22 @@ type CreateMultisigTransactionGenerator struct {
 	rnd                     *rand.Rand
 }
 
-type CreateMultisigTransactionAction struct {
-	coins           sdk.Coins
+type CreateMultisigUniversalTransactionAction struct {
+	coin            sdk.Coin
 	receiver        string
 	wallet          string
 	possibleSenders []string // wallet owners
 }
 
-func NewCreateMultisigTransactionGenerator(bottomRange, upperRange int64) *CreateMultisigTransactionGenerator {
-	return &CreateMultisigTransactionGenerator{
+func NewCreateMultisigUniversalTransactionGenerator(bottomRange, upperRange int64) *CreateMultisigUniversalTransactionGenerator {
+	return &CreateMultisigUniversalTransactionGenerator{
 		bottomRange: bottomRange,
 		upperRange:  upperRange,
 		rnd:         rand.New(rand.NewSource(time.Now().Unix())),
 	}
 }
 
-func (gg *CreateMultisigTransactionGenerator) Update(ui UpdateInfo) {
+func (gg *CreateMultisigUniversalTransactionGenerator) Update(ui UpdateInfo) {
 	gg.knownAddresses = make([]string, 0, len(ui.Addresses)+len(ui.MultisigWallets))
 	gg.knownAddresses = append(gg.knownAddresses, ui.Addresses...)
 	for _, w := range ui.MultisigWallets {
@@ -46,7 +48,7 @@ func (gg *CreateMultisigTransactionGenerator) Update(ui UpdateInfo) {
 	gg.knownMultisigBalances = ui.MultisigBalances
 }
 
-func (gg *CreateMultisigTransactionGenerator) Generate() Action {
+func (gg *CreateMultisigUniversalTransactionGenerator) Generate() Action {
 	if len(gg.knownWallets) == 0 {
 		return &EmptyAction{}
 	}
@@ -66,15 +68,15 @@ func (gg *CreateMultisigTransactionGenerator) Generate() Action {
 	}
 	amount := helpers.FinneyToWei(sdk.NewInt(RandomRange(gg.rnd, gg.bottomRange, upperLimit)))
 	coinToSend := sdk.NewCoin(balance[j].Denom, amount)
-	return &CreateMultisigTransactionAction{
-		coins:           sdk.NewCoins(coinToSend),
+	return &CreateMultisigUniversalTransactionAction{
+		coin:            coinToSend,
 		receiver:        RandomChoice(gg.rnd, gg.knownAddresses),
 		wallet:          wallet.Address,
 		possibleSenders: wallet.Owners,
 	}
 }
 
-func (aa *CreateMultisigTransactionAction) ChooseAccounts(saList []*stormTypes.StormAccount) []*stormTypes.StormAccount {
+func (aa *CreateMultisigUniversalTransactionAction) ChooseAccounts(saList []*stormTypes.StormAccount) []*stormTypes.StormAccount {
 	var res []*stormTypes.StormAccount
 	for i := range saList {
 		if saList[i].IsDirty() {
@@ -88,13 +90,25 @@ func (aa *CreateMultisigTransactionAction) ChooseAccounts(saList []*stormTypes.S
 	return res
 }
 
-func (aa *CreateMultisigTransactionAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stormTypes.FeeConfiguration) ([]byte, error) {
+func (aa *CreateMultisigUniversalTransactionAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stormTypes.FeeConfiguration) ([]byte, error) {
 	sender, err := sdk.AccAddressFromBech32(sa.Address())
 	if err != nil {
 		return nil, err
 	}
 
-	msg := dscTx.NewMsgCreateTransaction(sender, aa.wallet, aa.receiver, aa.coins)
+	wAdr, err := sdk.AccAddressFromBech32(aa.wallet)
+	if err != nil {
+		return nil, err
+	}
+	rAdr, err := sdk.AccAddressFromBech32(aa.receiver)
+	if err != nil {
+		return nil, err
+	}
+
+	msg, err := dscTx.NewMsgCreateUniversalTransaction(sender, aa.wallet, dscTx.NewMsgSendCoin(wAdr, rAdr, aa.coin))
+	if err != nil {
+		return nil, err
+	}
 	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig)
 	if err != nil {
 		return nil, err
@@ -106,7 +120,7 @@ func (aa *CreateMultisigTransactionAction) GenerateTx(sa *stormTypes.StormAccoun
 	return tx.BytesToSend()
 }
 
-func (aa *CreateMultisigTransactionAction) String() string {
-	return fmt.Sprintf("CreateMultisigTransaction{wallet: %s, receiver: %s, coin: %s}",
-		aa.wallet, aa.receiver, aa.coins.String())
+func (aa *CreateMultisigUniversalTransactionAction) String() string {
+	return fmt.Sprintf("CreateMultisigUniversalTransaction{wallet: %s, receiver: %s, coin: %s}",
+		aa.wallet, aa.receiver, aa.coin.String())
 }

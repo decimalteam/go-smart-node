@@ -56,11 +56,7 @@ func (reactor *stormReactor) initApi(flags *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
-	reactor.feeConfig = stormTypes.NewFeeConfiguration()
-	err = reactor.feeConfig.Update(reactor.api)
-	if err != nil {
-		return err
-	}
+	reactor.feeConfig = reactor.api.GetFeeCalculationOptions()
 	return nil
 }
 
@@ -203,6 +199,15 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 			return
 		}
 		ui.MultisigTransactions = append(ui.MultisigTransactions, txs...)
+	}
+	fmt.Printf("updateGeneratorsInfo: multisig universal txs\n")
+	for _, wallet := range ui.MultisigWallets {
+		txs, err := reactor.api.MultisigUniversalTransactionsByWallet(wallet.Address)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		ui.MultisigUniversalTransactions = append(ui.MultisigUniversalTransactions, txs...)
 	}
 	// multisig balances
 	fmt.Printf("updateGeneratorsInfo: multisig balances\n")

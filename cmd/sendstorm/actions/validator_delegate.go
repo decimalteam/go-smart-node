@@ -75,7 +75,7 @@ func (ac *DelegateAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *sto
 
 	// TODO
 
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
+	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{}, "", sa.FeeDenom(), feeConfig)
 	if err != nil {
 		return nil, err
 	}

@@ -110,7 +110,7 @@ func (aa *MintNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stor
 		aa.quantity,
 		aa.reserve,
 	)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
+	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig)
 	if err != nil {
 		return nil, err
 	}

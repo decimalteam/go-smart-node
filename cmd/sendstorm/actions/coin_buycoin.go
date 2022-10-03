@@ -108,7 +108,7 @@ func (ab *BuyCoinAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stor
 		ab.coinToBuy,
 		ab.maxCoinToSell,
 	)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
+	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig)
 	if err != nil {
 		return nil, err
 	}

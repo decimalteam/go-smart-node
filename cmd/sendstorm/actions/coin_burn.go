@@ -65,7 +65,7 @@ func (aa *BurnCoinAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *sto
 	}
 
 	msg := dscTx.NewMsgBurnCoin(sender, aa.coin)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
+	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig)
 	if err != nil {
 		return nil, err
 	}

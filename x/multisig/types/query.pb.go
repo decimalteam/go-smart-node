@@ -423,7 +423,68 @@ func (m *QueryTransactionResponse) GetTransaction() Transaction {
 	return Transaction{}
 }
 
-// QueryUniversalTransactionsRequest is request type for the Query/Transactions RPC method.
+// UniversalTransaction response
+type UniversalTransactionResponse struct {
+	Transaction UniversalTransaction `protobuf:"bytes,1,opt,name=transaction,proto3" json:"transaction"`
+	Signers     []string             `protobuf:"bytes,2,rep,name=signers,proto3" json:"signers,omitempty"`
+	Completed   bool                 `protobuf:"varint,3,opt,name=completed,proto3" json:"completed,omitempty"`
+}
+
+func (m *UniversalTransactionResponse) Reset()         { *m = UniversalTransactionResponse{} }
+func (m *UniversalTransactionResponse) String() string { return proto.CompactTextString(m) }
+func (*UniversalTransactionResponse) ProtoMessage()    {}
+func (*UniversalTransactionResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f6db64598edad6fc, []int{8}
+}
+func (m *UniversalTransactionResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *UniversalTransactionResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_UniversalTransactionResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *UniversalTransactionResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UniversalTransactionResponse.Merge(m, src)
+}
+func (m *UniversalTransactionResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *UniversalTransactionResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_UniversalTransactionResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UniversalTransactionResponse proto.InternalMessageInfo
+
+func (m *UniversalTransactionResponse) GetTransaction() UniversalTransaction {
+	if m != nil {
+		return m.Transaction
+	}
+	return UniversalTransaction{}
+}
+
+func (m *UniversalTransactionResponse) GetSigners() []string {
+	if m != nil {
+		return m.Signers
+	}
+	return nil
+}
+
+func (m *UniversalTransactionResponse) GetCompleted() bool {
+	if m != nil {
+		return m.Completed
+	}
+	return false
+}
+
+// QueryUniversalTransactionsRequest is request type for the Query/UniversalTransactions RPC method.
 type QueryUniversalTransactionsRequest struct {
 	Wallet     string             `protobuf:"bytes,1,opt,name=wallet,proto3" json:"wallet,omitempty"`
 	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
@@ -433,7 +494,7 @@ func (m *QueryUniversalTransactionsRequest) Reset()         { *m = QueryUniversa
 func (m *QueryUniversalTransactionsRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryUniversalTransactionsRequest) ProtoMessage()    {}
 func (*QueryUniversalTransactionsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f6db64598edad6fc, []int{8}
+	return fileDescriptor_f6db64598edad6fc, []int{9}
 }
 func (m *QueryUniversalTransactionsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -476,17 +537,17 @@ func (m *QueryUniversalTransactionsRequest) GetPagination() *query.PageRequest {
 	return nil
 }
 
-// QueryTransactionsResponse is response type for the Query/Transactions RPC method.
+// QueryUniversalTransactionsResponse is response type for the Query/UniversalTransactions RPC method.
 type QueryUniversalTransactionsResponse struct {
-	Transactions []UniversalTransaction `protobuf:"bytes,1,rep,name=transactions,proto3" json:"transactions"`
-	Pagination   *query.PageResponse    `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	Transactions []UniversalTransactionResponse `protobuf:"bytes,1,rep,name=transactions,proto3" json:"transactions"`
+	Pagination   *query.PageResponse            `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
 func (m *QueryUniversalTransactionsResponse) Reset()         { *m = QueryUniversalTransactionsResponse{} }
 func (m *QueryUniversalTransactionsResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryUniversalTransactionsResponse) ProtoMessage()    {}
 func (*QueryUniversalTransactionsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f6db64598edad6fc, []int{9}
+	return fileDescriptor_f6db64598edad6fc, []int{10}
 }
 func (m *QueryUniversalTransactionsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -515,7 +576,7 @@ func (m *QueryUniversalTransactionsResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryUniversalTransactionsResponse proto.InternalMessageInfo
 
-func (m *QueryUniversalTransactionsResponse) GetTransactions() []UniversalTransaction {
+func (m *QueryUniversalTransactionsResponse) GetTransactions() []UniversalTransactionResponse {
 	if m != nil {
 		return m.Transactions
 	}
@@ -529,6 +590,96 @@ func (m *QueryUniversalTransactionsResponse) GetPagination() *query.PageResponse
 	return nil
 }
 
+// QueryUniversalTransactionRequest is request type for the Query/UniversalTransaction RPC method.
+type QueryUniversalTransactionRequest struct {
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (m *QueryUniversalTransactionRequest) Reset()         { *m = QueryUniversalTransactionRequest{} }
+func (m *QueryUniversalTransactionRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryUniversalTransactionRequest) ProtoMessage()    {}
+func (*QueryUniversalTransactionRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f6db64598edad6fc, []int{11}
+}
+func (m *QueryUniversalTransactionRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryUniversalTransactionRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryUniversalTransactionRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryUniversalTransactionRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryUniversalTransactionRequest.Merge(m, src)
+}
+func (m *QueryUniversalTransactionRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryUniversalTransactionRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryUniversalTransactionRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryUniversalTransactionRequest proto.InternalMessageInfo
+
+func (m *QueryUniversalTransactionRequest) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+// QueryUniversalTransactionResponse is response type for the Query/UniversalTransaction RPC method.
+type QueryUniversalTransactionResponse struct {
+	Transaction UniversalTransactionResponse `protobuf:"bytes,1,opt,name=transaction,proto3" json:"transaction"`
+}
+
+func (m *QueryUniversalTransactionResponse) Reset()         { *m = QueryUniversalTransactionResponse{} }
+func (m *QueryUniversalTransactionResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryUniversalTransactionResponse) ProtoMessage()    {}
+func (*QueryUniversalTransactionResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f6db64598edad6fc, []int{12}
+}
+func (m *QueryUniversalTransactionResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryUniversalTransactionResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryUniversalTransactionResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryUniversalTransactionResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryUniversalTransactionResponse.Merge(m, src)
+}
+func (m *QueryUniversalTransactionResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryUniversalTransactionResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryUniversalTransactionResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryUniversalTransactionResponse proto.InternalMessageInfo
+
+func (m *QueryUniversalTransactionResponse) GetTransaction() UniversalTransactionResponse {
+	if m != nil {
+		return m.Transaction
+	}
+	return UniversalTransactionResponse{}
+}
+
 func init() {
 	proto.RegisterType((*QueryWalletsRequest)(nil), "decimal.multisig.v1.QueryWalletsRequest")
 	proto.RegisterType((*QueryWalletsResponse)(nil), "decimal.multisig.v1.QueryWalletsResponse")
@@ -538,58 +689,68 @@ func init() {
 	proto.RegisterType((*QueryTransactionsResponse)(nil), "decimal.multisig.v1.QueryTransactionsResponse")
 	proto.RegisterType((*QueryTransactionRequest)(nil), "decimal.multisig.v1.QueryTransactionRequest")
 	proto.RegisterType((*QueryTransactionResponse)(nil), "decimal.multisig.v1.QueryTransactionResponse")
+	proto.RegisterType((*UniversalTransactionResponse)(nil), "decimal.multisig.v1.UniversalTransactionResponse")
 	proto.RegisterType((*QueryUniversalTransactionsRequest)(nil), "decimal.multisig.v1.QueryUniversalTransactionsRequest")
 	proto.RegisterType((*QueryUniversalTransactionsResponse)(nil), "decimal.multisig.v1.QueryUniversalTransactionsResponse")
+	proto.RegisterType((*QueryUniversalTransactionRequest)(nil), "decimal.multisig.v1.QueryUniversalTransactionRequest")
+	proto.RegisterType((*QueryUniversalTransactionResponse)(nil), "decimal.multisig.v1.QueryUniversalTransactionResponse")
 }
 
 func init() { proto.RegisterFile("decimal/multisig/v1/query.proto", fileDescriptor_f6db64598edad6fc) }
 
 var fileDescriptor_f6db64598edad6fc = []byte{
-	// 701 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x96, 0xc1, 0x4f, 0x13, 0x41,
-	0x14, 0xc6, 0x3b, 0x55, 0x4a, 0x9c, 0x12, 0x0f, 0x03, 0xc6, 0x52, 0x4d, 0xa9, 0x1b, 0x85, 0x42,
-	0xe8, 0x8e, 0xad, 0x06, 0x35, 0x7a, 0x91, 0x03, 0x1a, 0x4f, 0x58, 0x34, 0x26, 0x5e, 0xc8, 0xb4,
-	0x3b, 0xd9, 0x4c, 0x6c, 0x77, 0xca, 0xce, 0xb4, 0x48, 0x08, 0x17, 0x6f, 0x26, 0x9a, 0x98, 0xe8,
-	0xc5, 0x44, 0x0f, 0x9e, 0xbd, 0x78, 0xf0, 0x2f, 0xf0, 0x60, 0x38, 0x12, 0xbd, 0x78, 0x32, 0x06,
-	0xfc, 0x43, 0x0c, 0x33, 0xb3, 0x74, 0xab, 0x03, 0x5d, 0x0c, 0x26, 0x9e, 0x60, 0x77, 0xbf, 0xf7,
-	0xbe, 0xdf, 0xfb, 0xde, 0xee, 0xa4, 0x70, 0xc2, 0xa3, 0x0d, 0xd6, 0x22, 0x4d, 0xdc, 0xea, 0x34,
-	0x25, 0x13, 0xcc, 0xc7, 0xdd, 0x0a, 0x5e, 0xe9, 0xd0, 0x70, 0xcd, 0x6d, 0x87, 0x5c, 0x72, 0x34,
-	0x6a, 0x04, 0x6e, 0x24, 0x70, 0xbb, 0x95, 0xfc, 0x98, 0xcf, 0x7d, 0xae, 0x9e, 0xe3, 0xdd, 0xff,
-	0xb4, 0x34, 0x7f, 0xd6, 0xe7, 0xdc, 0x6f, 0x52, 0x4c, 0xda, 0x0c, 0x93, 0x20, 0xe0, 0x92, 0x48,
-	0xc6, 0x03, 0x61, 0x9e, 0x8e, 0x37, 0xb8, 0x68, 0x71, 0xb1, 0xac, 0xcb, 0xf4, 0x85, 0x79, 0x34,
-	0xa3, 0xaf, 0x70, 0x9d, 0x08, 0xaa, 0xcd, 0x71, 0xb7, 0x52, 0xa7, 0x92, 0x54, 0x70, 0x9b, 0xf8,
-	0x2c, 0x50, 0x7d, 0x8c, 0xd6, 0xb1, 0x01, 0xef, 0xb1, 0x29, 0x8d, 0xf3, 0x1c, 0xc0, 0xd1, 0xbb,
-	0xbb, 0x6d, 0x1e, 0x90, 0x66, 0x93, 0x4a, 0x51, 0xa3, 0x2b, 0x1d, 0x2a, 0x24, 0x72, 0xe1, 0x10,
-	0x5f, 0x0d, 0x68, 0x98, 0x03, 0x45, 0x50, 0x3a, 0x31, 0x9f, 0xfb, 0xf2, 0xb1, 0x3c, 0x66, 0x40,
-	0x6e, 0x7a, 0x5e, 0x48, 0x85, 0x58, 0x92, 0x21, 0x0b, 0xfc, 0x9a, 0x96, 0xa1, 0x05, 0x08, 0x7b,
-	0xfe, 0xb9, 0x74, 0x11, 0x94, 0xb2, 0xd5, 0x49, 0xd7, 0x54, 0xec, 0xc2, 0xba, 0x3a, 0x29, 0x03,
-	0xeb, 0x2e, 0x12, 0x9f, 0x1a, 0xaf, 0x5a, 0xac, 0xd2, 0x79, 0x03, 0xe0, 0x58, 0x3f, 0x8f, 0x68,
-	0xf3, 0x40, 0x50, 0x74, 0x1d, 0x0e, 0xaf, 0xea, 0x5b, 0x39, 0x50, 0x3c, 0x56, 0xca, 0x56, 0xcf,
-	0xb8, 0x96, 0xb8, 0x5d, 0x5d, 0x36, 0x7f, 0x7c, 0xf3, 0xfb, 0x44, 0xaa, 0x16, 0x55, 0xa0, 0x5b,
-	0x16, 0xba, 0xa9, 0x81, 0x74, 0xda, 0xb9, 0x0f, 0x6f, 0x01, 0xa2, 0x18, 0x5d, 0x14, 0xd6, 0x45,
-	0x98, 0xd1, 0x4e, 0x03, 0xd3, 0x32, 0x3a, 0x67, 0xb1, 0x2f, 0xf5, 0xbd, 0x21, 0xaf, 0xf5, 0x35,
-	0x4a, 0x34, 0x63, 0xd4, 0xf1, 0x15, 0x80, 0x39, 0xd5, 0xf2, 0x5e, 0x48, 0x02, 0x41, 0x1a, 0xea,
-	0x7d, 0xfa, 0x6b, 0xc0, 0x23, 0xdb, 0xe7, 0x07, 0x00, 0xc7, 0x2d, 0x58, 0x66, 0xde, 0x3b, 0x70,
-	0x44, 0xc6, 0xee, 0x9b, 0xcd, 0x16, 0xad, 0x53, 0xc7, 0x1a, 0x98, 0xd1, 0xfb, 0x6a, 0x8f, 0x6e,
-	0xc7, 0xd3, 0xf0, 0xf4, 0xef, 0xc4, 0x51, 0x8e, 0x27, 0x61, 0x9a, 0x79, 0x3a, 0xc3, 0x5a, 0x9a,
-	0x79, 0x8e, 0xf7, 0x67, 0xe6, 0x7b, 0xb3, 0xdd, 0x86, 0xd9, 0x18, 0x9f, 0x59, 0x68, 0xd2, 0xd1,
-	0xe2, 0xa5, 0xce, 0x5b, 0x00, 0xcf, 0x29, 0x9b, 0xfb, 0x01, 0xeb, 0xd2, 0x50, 0x90, 0xe6, 0xff,
-	0xb5, 0xe3, 0x4f, 0x00, 0x3a, 0x07, 0xf1, 0x99, 0x40, 0x96, 0xac, 0xcb, 0x9e, 0xb6, 0x26, 0x62,
-	0xeb, 0xf4, 0x4f, 0xb7, 0x5e, 0x7d, 0x9f, 0x81, 0x43, 0x6a, 0x08, 0xf4, 0x0c, 0xc0, 0x61, 0x73,
-	0xfa, 0xa0, 0x92, 0x95, 0xce, 0x72, 0x60, 0xe6, 0xa7, 0x13, 0x28, 0xb5, 0xad, 0x33, 0xfb, 0xe4,
-	0xeb, 0xcf, 0x97, 0xe9, 0x49, 0x74, 0x1e, 0xdb, 0x0e, 0x68, 0x73, 0x66, 0xe1, 0x75, 0x75, 0xb0,
-	0x6e, 0xa0, 0xa7, 0x00, 0x66, 0x74, 0x07, 0x34, 0x35, 0xc8, 0x23, 0x82, 0x29, 0x0d, 0x16, 0x1e,
-	0x82, 0x05, 0xaf, 0xeb, 0xbf, 0x1b, 0xe8, 0x1d, 0x80, 0x23, 0xf1, 0xdd, 0xa2, 0xf2, 0xfe, 0x46,
-	0x96, 0x77, 0x34, 0xef, 0x26, 0x95, 0x1b, 0xba, 0xaa, 0xa2, 0x9b, 0x45, 0x33, 0x56, 0xba, 0xf8,
-	0x8b, 0xd0, 0x63, 0x7c, 0x0d, 0x60, 0x36, 0xd6, 0x0c, 0xcd, 0x26, 0xf2, 0x8c, 0x08, 0xcb, 0x09,
-	0xd5, 0x06, 0xb0, 0xac, 0x00, 0xa7, 0xd0, 0x85, 0x41, 0x80, 0x78, 0x9d, 0x79, 0x1b, 0xe8, 0x33,
-	0x80, 0xa7, 0xac, 0x1f, 0x09, 0x9a, 0xdb, 0xdf, 0xf7, 0xa0, 0xaf, 0x3e, 0x7f, 0xe5, 0xd0, 0x75,
-	0x86, 0xfc, 0x86, 0x22, 0x9f, 0x43, 0x97, 0xad, 0xe4, 0x9d, 0xa8, 0x76, 0xd9, 0x1a, 0xf2, 0x7c,
-	0x6d, 0x73, 0xbb, 0x00, 0xb6, 0xb6, 0x0b, 0xe0, 0xc7, 0x76, 0x01, 0xbc, 0xd8, 0x29, 0xa4, 0xb6,
-	0x76, 0x0a, 0xa9, 0x6f, 0x3b, 0x85, 0xd4, 0xc3, 0xab, 0x75, 0x26, 0xeb, 0x9d, 0xc6, 0x23, 0x2a,
-	0x5d, 0x1e, 0xfa, 0x51, 0x73, 0x49, 0x49, 0x0b, 0xfb, 0xbc, 0x2c, 0x5a, 0x24, 0x94, 0xe5, 0x80,
-	0x7b, 0x14, 0x3f, 0xee, 0x19, 0xca, 0xb5, 0x36, 0x15, 0xf5, 0x8c, 0xfa, 0x45, 0x72, 0xe9, 0x57,
-	0x00, 0x00, 0x00, 0xff, 0xff, 0xaa, 0xe0, 0x60, 0x6c, 0x68, 0x09, 0x00, 0x00,
+	// 809 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x96, 0xb1, 0x6f, 0x13, 0x49,
+	0x14, 0xc6, 0x3d, 0xce, 0x25, 0xbe, 0x8c, 0xa3, 0x2b, 0x26, 0x3e, 0xdd, 0xc6, 0x17, 0x39, 0xbe,
+	0xd5, 0x91, 0x38, 0x51, 0xbc, 0x83, 0x0d, 0x24, 0x20, 0x68, 0x48, 0x11, 0x10, 0x55, 0xb2, 0x80,
+	0x10, 0x50, 0x44, 0x6b, 0xef, 0x68, 0xb5, 0xc2, 0xde, 0x71, 0x76, 0xc6, 0x0e, 0x51, 0x14, 0x0a,
+	0x3a, 0x24, 0x90, 0x90, 0xa0, 0x41, 0x82, 0x82, 0x92, 0x8e, 0x82, 0x9a, 0x12, 0x45, 0x54, 0x11,
+	0x34, 0x54, 0x08, 0x25, 0x94, 0xfc, 0x11, 0x28, 0x3b, 0xb3, 0xf6, 0x1a, 0xc6, 0xf1, 0x3a, 0x0a,
+	0x12, 0x55, 0xb2, 0xbb, 0xef, 0x7d, 0xdf, 0xef, 0x7b, 0xf3, 0xec, 0x35, 0x9c, 0xb2, 0x49, 0xd5,
+	0xad, 0x5b, 0x35, 0x5c, 0x6f, 0xd6, 0xb8, 0xcb, 0x5c, 0x07, 0xb7, 0x4a, 0x78, 0xbd, 0x49, 0xfc,
+	0x4d, 0xa3, 0xe1, 0x53, 0x4e, 0xd1, 0xb8, 0x2c, 0x30, 0xc2, 0x02, 0xa3, 0x55, 0xca, 0x66, 0x1c,
+	0xea, 0xd0, 0xe0, 0x39, 0x3e, 0xf8, 0x4f, 0x94, 0x66, 0x27, 0x1d, 0x4a, 0x9d, 0x1a, 0xc1, 0x56,
+	0xc3, 0xc5, 0x96, 0xe7, 0x51, 0x6e, 0x71, 0x97, 0x7a, 0x4c, 0x3e, 0x9d, 0xa8, 0x52, 0x56, 0xa7,
+	0x6c, 0x4d, 0xb4, 0x89, 0x0b, 0xf9, 0x68, 0x4e, 0x5c, 0xe1, 0x8a, 0xc5, 0x88, 0x30, 0xc7, 0xad,
+	0x52, 0x85, 0x70, 0xab, 0x84, 0x1b, 0x96, 0xe3, 0x7a, 0x81, 0x8e, 0xac, 0xd5, 0x55, 0xc0, 0x6d,
+	0xb6, 0xa0, 0x46, 0x7f, 0x04, 0xe0, 0xf8, 0xea, 0x81, 0xcc, 0x0d, 0xab, 0x56, 0x23, 0x9c, 0x99,
+	0x64, 0xbd, 0x49, 0x18, 0x47, 0x06, 0x1c, 0xa6, 0x1b, 0x1e, 0xf1, 0x35, 0x90, 0x07, 0x85, 0xd1,
+	0x25, 0xed, 0xc3, 0x9b, 0x62, 0x46, 0x82, 0x5c, 0xb4, 0x6d, 0x9f, 0x30, 0x76, 0x95, 0xfb, 0xae,
+	0xe7, 0x98, 0xa2, 0x0c, 0x2d, 0x43, 0xd8, 0xf1, 0xd7, 0x92, 0x79, 0x50, 0x48, 0x97, 0xa7, 0x0d,
+	0xd9, 0x71, 0x00, 0x6b, 0x88, 0x49, 0x49, 0x58, 0x63, 0xc5, 0x72, 0x88, 0xf4, 0x32, 0x23, 0x9d,
+	0xfa, 0x73, 0x00, 0x33, 0xdd, 0x3c, 0xac, 0x41, 0x3d, 0x46, 0xd0, 0x79, 0x98, 0xda, 0x10, 0xb7,
+	0x34, 0x90, 0x1f, 0x2a, 0xa4, 0xcb, 0xff, 0x1a, 0x8a, 0x71, 0x1b, 0xa2, 0x6d, 0xe9, 0x8f, 0x9d,
+	0xcf, 0x53, 0x09, 0x33, 0xec, 0x40, 0x97, 0x14, 0x74, 0x33, 0x7d, 0xe9, 0x84, 0x73, 0x17, 0xde,
+	0x32, 0x44, 0x11, 0xba, 0x70, 0x58, 0x27, 0xe1, 0x88, 0x70, 0xea, 0x3b, 0x2d, 0x59, 0xa7, 0xaf,
+	0x74, 0x4d, 0xbd, 0x1d, 0xf2, 0x5c, 0x97, 0x50, 0xac, 0x8c, 0xa1, 0xe2, 0x53, 0x00, 0xb5, 0x40,
+	0xf2, 0x9a, 0x6f, 0x79, 0xcc, 0xaa, 0x06, 0xfb, 0x74, 0x64, 0xc0, 0x63, 0x3b, 0xcf, 0xd7, 0x00,
+	0x4e, 0x28, 0xb0, 0x64, 0xde, 0x2b, 0x70, 0x8c, 0x47, 0xee, 0xcb, 0x93, 0xcd, 0x2b, 0x53, 0x47,
+	0x04, 0x64, 0xf4, 0xae, 0xde, 0xe3, 0x3b, 0xe3, 0x59, 0xf8, 0xcf, 0x8f, 0xc4, 0xe1, 0x1c, 0xff,
+	0x82, 0x49, 0xd7, 0x16, 0x33, 0x34, 0x93, 0xae, 0xad, 0xdb, 0x3f, 0xcf, 0xbc, 0x9d, 0xed, 0x32,
+	0x4c, 0x47, 0xf8, 0xe4, 0x81, 0xc6, 0x8d, 0x16, 0x6d, 0xd5, 0x5f, 0x01, 0x38, 0x79, 0xdd, 0x73,
+	0x5b, 0xc4, 0x67, 0x56, 0x4d, 0x65, 0xb5, 0xaa, 0xb2, 0x9a, 0x55, 0x5a, 0xa9, 0x74, 0x14, 0x9e,
+	0x48, 0x83, 0x29, 0xe6, 0x3a, 0x1e, 0xf1, 0x99, 0x96, 0xcc, 0x0f, 0x15, 0x46, 0xcd, 0xf0, 0x12,
+	0x4d, 0xc2, 0xd1, 0x2a, 0xad, 0x37, 0x6a, 0x84, 0x13, 0x5b, 0x1b, 0xca, 0x83, 0xc2, 0x9f, 0x66,
+	0xe7, 0x86, 0xfe, 0x02, 0xc0, 0xff, 0x82, 0x91, 0xa8, 0x8c, 0x7e, 0x83, 0x7d, 0x7c, 0x0f, 0xa0,
+	0x7e, 0x18, 0x9f, 0x9c, 0xe8, 0x6d, 0xe5, 0x62, 0x96, 0x62, 0x8f, 0x34, 0x14, 0xfa, 0xb5, 0x9b,
+	0x5a, 0x86, 0xf9, 0x9e, 0x59, 0x7a, 0xad, 0xec, 0xbd, 0x43, 0xce, 0xa7, 0x1d, 0xff, 0xa6, 0x6a,
+	0xa1, 0x8e, 0x9c, 0x3e, 0xaa, 0x55, 0xfe, 0x96, 0x82, 0xc3, 0x01, 0x00, 0x7a, 0x08, 0x60, 0x4a,
+	0x7e, 0xcb, 0xa3, 0x82, 0x52, 0x5b, 0xf1, 0x62, 0xca, 0xce, 0xc6, 0xa8, 0x14, 0xee, 0xfa, 0xfc,
+	0xfd, 0x8f, 0x5f, 0x9f, 0x24, 0xa7, 0xd1, 0xff, 0x58, 0xf5, 0x22, 0x94, 0xef, 0x06, 0xbc, 0x15,
+	0xbc, 0xc0, 0xb6, 0xd1, 0x03, 0x00, 0x47, 0x84, 0x02, 0x9a, 0xe9, 0xe7, 0x11, 0xc2, 0x14, 0xfa,
+	0x17, 0x0e, 0xc0, 0x82, 0xb7, 0xc4, 0xdf, 0x6d, 0xf4, 0x12, 0xc0, 0xb1, 0xe8, 0x5e, 0xa2, 0x62,
+	0x6f, 0x23, 0xc5, 0xe7, 0x2b, 0x6b, 0xc4, 0x2d, 0x97, 0x74, 0xe5, 0x80, 0x6e, 0x1e, 0xcd, 0x29,
+	0xe9, 0xa2, 0xcb, 0xdb, 0x61, 0x7c, 0x06, 0x60, 0x3a, 0x22, 0x86, 0xe6, 0x63, 0x79, 0x86, 0x84,
+	0xc5, 0x98, 0xd5, 0x12, 0xb0, 0x18, 0x00, 0xce, 0xa0, 0x13, 0xfd, 0x00, 0xf1, 0x96, 0x6b, 0x6f,
+	0xa3, 0x77, 0x00, 0xfe, 0xad, 0xfc, 0x80, 0xa3, 0x85, 0xde, 0xbe, 0x87, 0x7d, 0x63, 0x65, 0x17,
+	0x07, 0xee, 0x93, 0xe4, 0x17, 0x02, 0xf2, 0x05, 0x74, 0x5a, 0x49, 0xde, 0x0c, 0x7b, 0xd7, 0xd4,
+	0x43, 0x7e, 0x0b, 0x60, 0x46, 0xa5, 0x8f, 0xce, 0x0c, 0xc6, 0x13, 0xc6, 0x58, 0x18, 0xb4, 0x4d,
+	0xa6, 0x58, 0x0c, 0x52, 0x94, 0x10, 0x8e, 0x9f, 0x22, 0x38, 0x89, 0x25, 0x73, 0x67, 0x2f, 0x07,
+	0x76, 0xf7, 0x72, 0xe0, 0xcb, 0x5e, 0x0e, 0x3c, 0xde, 0xcf, 0x25, 0x76, 0xf7, 0x73, 0x89, 0x4f,
+	0xfb, 0xb9, 0xc4, 0xad, 0xb3, 0x15, 0x97, 0x57, 0x9a, 0xd5, 0x3b, 0x84, 0x1b, 0xd4, 0x77, 0x42,
+	0x5d, 0x4e, 0xac, 0x3a, 0x76, 0x68, 0x91, 0xd5, 0x2d, 0x9f, 0x17, 0x3d, 0x6a, 0x13, 0x7c, 0xb7,
+	0xe3, 0xc5, 0x37, 0x1b, 0x84, 0x55, 0x46, 0x82, 0x9f, 0xae, 0xa7, 0xbe, 0x07, 0x00, 0x00, 0xff,
+	0xff, 0x5e, 0x97, 0x3d, 0x64, 0x91, 0x0b, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -612,8 +773,10 @@ type QueryClient interface {
 	Transactions(ctx context.Context, in *QueryTransactionsRequest, opts ...grpc.CallOption) (*QueryTransactionsResponse, error)
 	// Retrieves existing transaction by id.
 	Transaction(ctx context.Context, in *QueryTransactionRequest, opts ...grpc.CallOption) (*QueryTransactionResponse, error)
-	// Retrieves existing transactions by wallet address.
+	// Retrieves existing universal transactions by wallet address.
 	UniversalTransactions(ctx context.Context, in *QueryUniversalTransactionsRequest, opts ...grpc.CallOption) (*QueryUniversalTransactionsResponse, error)
+	// Retrieves existing universal transaction by id.
+	UniversalTransaction(ctx context.Context, in *QueryUniversalTransactionRequest, opts ...grpc.CallOption) (*QueryUniversalTransactionResponse, error)
 }
 
 type queryClient struct {
@@ -669,6 +832,15 @@ func (c *queryClient) UniversalTransactions(ctx context.Context, in *QueryUniver
 	return out, nil
 }
 
+func (c *queryClient) UniversalTransaction(ctx context.Context, in *QueryUniversalTransactionRequest, opts ...grpc.CallOption) (*QueryUniversalTransactionResponse, error) {
+	out := new(QueryUniversalTransactionResponse)
+	err := c.cc.Invoke(ctx, "/decimal.multisig.v1.Query/UniversalTransaction", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 type QueryServer interface {
 	// Retrieves existing wallets by owner address.
@@ -679,8 +851,10 @@ type QueryServer interface {
 	Transactions(context.Context, *QueryTransactionsRequest) (*QueryTransactionsResponse, error)
 	// Retrieves existing transaction by id.
 	Transaction(context.Context, *QueryTransactionRequest) (*QueryTransactionResponse, error)
-	// Retrieves existing transactions by wallet address.
+	// Retrieves existing universal transactions by wallet address.
 	UniversalTransactions(context.Context, *QueryUniversalTransactionsRequest) (*QueryUniversalTransactionsResponse, error)
+	// Retrieves existing universal transaction by id.
+	UniversalTransaction(context.Context, *QueryUniversalTransactionRequest) (*QueryUniversalTransactionResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -701,6 +875,9 @@ func (*UnimplementedQueryServer) Transaction(ctx context.Context, req *QueryTran
 }
 func (*UnimplementedQueryServer) UniversalTransactions(ctx context.Context, req *QueryUniversalTransactionsRequest) (*QueryUniversalTransactionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UniversalTransactions not implemented")
+}
+func (*UnimplementedQueryServer) UniversalTransaction(ctx context.Context, req *QueryUniversalTransactionRequest) (*QueryUniversalTransactionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UniversalTransaction not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -797,6 +974,24 @@ func _Query_UniversalTransactions_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_UniversalTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryUniversalTransactionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).UniversalTransaction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/decimal.multisig.v1.Query/UniversalTransaction",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).UniversalTransaction(ctx, req.(*QueryUniversalTransactionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "decimal.multisig.v1.Query",
 	HandlerType: (*QueryServer)(nil),
@@ -820,6 +1015,10 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UniversalTransactions",
 			Handler:    _Query_UniversalTransactions_Handler,
+		},
+		{
+			MethodName: "UniversalTransaction",
+			Handler:    _Query_UniversalTransaction_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -1134,6 +1333,58 @@ func (m *QueryTransactionResponse) MarshalToSizedBuffer(dAtA []byte) (int, error
 	return len(dAtA) - i, nil
 }
 
+func (m *UniversalTransactionResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *UniversalTransactionResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *UniversalTransactionResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Completed {
+		i--
+		if m.Completed {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x18
+	}
+	if len(m.Signers) > 0 {
+		for iNdEx := len(m.Signers) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Signers[iNdEx])
+			copy(dAtA[i:], m.Signers[iNdEx])
+			i = encodeVarintQuery(dAtA, i, uint64(len(m.Signers[iNdEx])))
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	{
+		size, err := m.Transaction.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
 func (m *QueryUniversalTransactionsRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -1222,6 +1473,69 @@ func (m *QueryUniversalTransactionsResponse) MarshalToSizedBuffer(dAtA []byte) (
 			dAtA[i] = 0xa
 		}
 	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryUniversalTransactionRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryUniversalTransactionRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryUniversalTransactionRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Id) > 0 {
+		i -= len(m.Id)
+		copy(dAtA[i:], m.Id)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Id)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryUniversalTransactionResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryUniversalTransactionResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryUniversalTransactionResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.Transaction.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
 	return len(dAtA) - i, nil
 }
 
@@ -1356,6 +1670,26 @@ func (m *QueryTransactionResponse) Size() (n int) {
 	return n
 }
 
+func (m *UniversalTransactionResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Transaction.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	if len(m.Signers) > 0 {
+		for _, s := range m.Signers {
+			l = len(s)
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	if m.Completed {
+		n += 2
+	}
+	return n
+}
+
 func (m *QueryUniversalTransactionsRequest) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1389,6 +1723,30 @@ func (m *QueryUniversalTransactionsResponse) Size() (n int) {
 		l = m.Pagination.Size()
 		n += 1 + l + sovQuery(uint64(l))
 	}
+	return n
+}
+
+func (m *QueryUniversalTransactionRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Id)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryUniversalTransactionResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Transaction.Size()
+	n += 1 + l + sovQuery(uint64(l))
 	return n
 }
 
@@ -2204,6 +2562,141 @@ func (m *QueryTransactionResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *UniversalTransactionResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: UniversalTransactionResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: UniversalTransactionResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Transaction", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Transaction.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Signers", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Signers = append(m.Signers, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Completed", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.Completed = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *QueryUniversalTransactionsRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2380,7 +2873,7 @@ func (m *QueryUniversalTransactionsResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Transactions = append(m.Transactions, UniversalTransaction{})
+			m.Transactions = append(m.Transactions, UniversalTransactionResponse{})
 			if err := m.Transactions[len(m.Transactions)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -2418,6 +2911,171 @@ func (m *QueryUniversalTransactionsResponse) Unmarshal(dAtA []byte) error {
 				m.Pagination = &query.PageResponse{}
 			}
 			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryUniversalTransactionRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryUniversalTransactionRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryUniversalTransactionRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Id = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryUniversalTransactionResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryUniversalTransactionResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryUniversalTransactionResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Transaction", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Transaction.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

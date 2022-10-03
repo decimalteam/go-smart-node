@@ -23,6 +23,7 @@ const (
 	prefixTransaction                          // 2
 	prefixUniversalTransaction                 // 3
 	prefixUniversalSign                        // 4
+	prefixCompleted                            // 5
 )
 
 // KVStore key prefixes
@@ -31,6 +32,7 @@ var (
 	KeyPrefixTransaction = []byte{prefixTransaction} // 0x02
 
 	KeyPrefixUniversalTransaction = []byte{prefixUniversalTransaction} // 0x02
+	KeyPrefixCompletedTransaction = []byte{prefixCompleted}
 )
 
 func GetSignatureKey(txID string, signer string) []byte {

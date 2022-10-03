@@ -42,17 +42,18 @@ func (ea *EmptyAction) String() string {
 
 // UpdateInfo contains all external updatable data for generators
 type UpdateInfo struct {
-	Coins                []string
-	Addresses            []string
-	FullCoins            []dscApi.Coin
-	NFTs                 []*dscApi.NFTToken
-	NFTSubTokenReserves  map[NFTSubTokenKey]sdk.Coin
-	MultisigWallets      []dscApi.MultisigWallet
-	MultisigTransactions []dscApi.MultisigTransaction
-	MultisigBalances     map[string]sdk.Coins
-	Validators           []string
-	Stakes               []GenericStake
-	NFTStakes            []NFTStake
+	Coins                         []string
+	Addresses                     []string
+	FullCoins                     []dscApi.Coin
+	NFTs                          []*dscApi.NFTToken
+	NFTSubTokenReserves           map[NFTSubTokenKey]sdk.Coin
+	MultisigWallets               []dscApi.MultisigWallet
+	MultisigTransactions          []dscApi.MultisigTransaction
+	MultisigUniversalTransactions []dscApi.MultisigUniversalTransactionResponse
+	MultisigBalances              map[string]sdk.Coins
+	Validators                    []string
+	Stakes                        []GenericStake
+	NFTStakes                     []NFTStake
 }
 
 type GenericStake struct {
