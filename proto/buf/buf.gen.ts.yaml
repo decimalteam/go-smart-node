@@ -1,0 +1,5 @@
+version: v1
+plugins:
+  - name: ts_proto
+    strategy: all
+    out: build/proto/ts

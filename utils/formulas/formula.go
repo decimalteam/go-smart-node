@@ -3,9 +3,8 @@ package formulas
 import (
 	"math/big"
 
+	"bitbucket.org/decimalteam/go-smart-node/types/bigfloat"
 	sdkmath "cosmossdk.io/math"
-
-	"bitbucket.org/decimalteam/go-smart-node/third_party/bigfloat"
 )
 
 // CalculatePurchaseReturn calculates amount of coin that user will receive by depositing given amount of BIP.
