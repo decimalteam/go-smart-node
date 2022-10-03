@@ -165,17 +165,14 @@ func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper coin
 		return FailedToSendCoins
 	}
 
-	// delivery mode
-	if !ctx.IsCheckTx() && !ctx.IsReCheckTx() {
-		// Emit fee deduction event
-		// need for correct balance calculation for external services
-		err = events.EmitTypedEvent(ctx, &feetypes.EventPayCommission{
-			Payer: feePayerAddress.String(),
-			Coins: sdk.NewCoins(fee),
-		})
-		if err != nil {
-			return feeerrors.Internal.Wrapf("err: %s", err.Error())
-		}
+	// Emit fee deduction event
+	// need for correct balance calculation for external services
+	err = events.EmitTypedEvent(ctx, &feetypes.EventPayCommission{
+		Payer: feePayerAddress.String(),
+		Coins: sdk.NewCoins(fee),
+	})
+	if err != nil {
+		return feeerrors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	return nil
