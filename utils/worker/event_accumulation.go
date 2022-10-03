@@ -1,8 +1,9 @@
 package worker
 
 import (
-	sdkmath "cosmossdk.io/math"
 	abci "github.com/tendermint/tendermint/abci/types"
+
+	sdkmath "cosmossdk.io/math"
 )
 
 /*
