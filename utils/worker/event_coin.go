@@ -14,7 +14,7 @@ import (
 // TODO: get from blockchain
 const baseCoinSymbol = "del"
 
-type EventUpdateCoinVR struct {
+type UpdateCoinVR struct {
 	Volume  sdkmath.Int `json:"volume"`
 	Reserve sdkmath.Int `json:"reserve"`
 }
@@ -140,33 +140,34 @@ func processEventUpdateCoinVR(ea *EventAccumulator, event abci.Event, txHash str
 	  string reserve = 3;
 	*/
 	var ok bool
-	var eec EventUpdateCoinVR
+	var e UpdateCoinVR
 	var denom string
 	for _, attr := range event.Attributes {
 		switch string(attr.Key) {
 		case "denom":
 			denom = string(attr.Value)
 		case "volume":
-			eec.Volume, ok = sdk.NewIntFromString(string(attr.Value))
+			e.Volume, ok = sdk.NewIntFromString(string(attr.Value))
 			if !ok {
 				return fmt.Errorf("can't parse volume '%s'", string(attr.Value))
 			}
 		case "reserve":
-			eec.Reserve, ok = sdk.NewIntFromString(string(attr.Value))
+			e.Reserve, ok = sdk.NewIntFromString(string(attr.Value))
 			if !ok {
 				return fmt.Errorf("can't parse reserve '%s'", string(attr.Value))
 			}
 		}
 	}
-	ea.CoinEdits[denom] = eec
+
+	ea.addCoinVRChange(denom, e)
 	return nil
 }
 
 // decimal.coin.v1.EventSendCoin
 func processEventSendCoin(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
-	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-	  string recipient = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string sender = 1
+	  string recipient = 2
 	  string coin = 3;
 	*/
 	var err error
@@ -194,7 +195,7 @@ func processEventSendCoin(ea *EventAccumulator, event abci.Event, txHash string)
 // decimal.coin.v1.EventBuySellCoin
 func processEventBuySellCoin(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
-	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string sender = 1
 	  string coin_to_buy = 2;
 	  string coin_to_sell = 3;
 	  string amount_in_base_coin = 4;
@@ -227,7 +228,7 @@ func processEventBuySellCoin(ea *EventAccumulator, event abci.Event, txHash stri
 // decimal.coin.v1.EventBurnCoin
 func processEventBurnCoin(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
-	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string sender = 1
 	  string coin = 2;
 	*/
 	var err error
@@ -252,8 +253,8 @@ func processEventBurnCoin(ea *EventAccumulator, event abci.Event, txHash string)
 // decimal.coin.v1.EventRedeemCheck
 func processEventRedeemCheck(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
-	  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-	  string issuer = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+	  string sender = 1
+	  string issuer = 2
 	  string coin = 3;
 	  string nonce = 4;
 	  string due_block = 5;
