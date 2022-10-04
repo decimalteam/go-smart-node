@@ -9,7 +9,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"bitbucket.org/decimalteam/go-smart-node/third_party/bigfloat"
+	"bitbucket.org/decimalteam/go-smart-node/types/bigfloat"
 )
 
 const maxPrec uint = 1100
