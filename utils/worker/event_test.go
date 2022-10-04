@@ -106,9 +106,9 @@ func TestEditCoin(t *testing.T) {
 	err = processEventUpdateCoinVR(ea, abci.Event(ev), "ABCD")
 	require.NoError(t, err)
 
-	require.Len(t, ea.CoinEdits, 1)
-	require.True(t, ea.CoinEdits["test"].Volume.Equal(sdk.NewInt(1001)))
-	require.True(t, ea.CoinEdits["test"].Reserve.Equal(sdk.NewInt(2001)))
+	require.Len(t, ea.CoinsVR, 1)
+	require.True(t, ea.CoinsVR["test"].Volume.Equal(sdk.NewInt(1001)))
+	require.True(t, ea.CoinsVR["test"].Reserve.Equal(sdk.NewInt(2001)))
 }
 
 func TestSendCoin(t *testing.T) {
