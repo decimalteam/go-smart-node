@@ -39,8 +39,7 @@ func NewFeeDecorator(ck cointypes.CoinKeeper, bk evmTypes.BankKeeper, ak evmType
 }
 
 // AnteHandle implements sdk.AnteHandler function.
-func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
-	simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	// no fee on blockchain start
 	if ctx.BlockHeight() == 0 {
 		return next(ctx, tx, simulate)
@@ -109,13 +108,17 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 			return ctx, CoinReserveInsufficient
 		}
 
-		feeInBaseCoin = formulas.CalculateSaleReturn(coinInfo.Volume, coinInfo.Reserve,
-			uint(coinInfo.CRR), feeFromTx[0].Amount)
+		feeInBaseCoin = formulas.CalculateSaleReturn(coinInfo.Volume, coinInfo.Reserve, uint(coinInfo.CRR), feeFromTx[0].Amount)
+		fmt.Printf("####### Coin: %+v\n", coinInfo)
 
 		if coinInfo.Reserve.Sub(feeInBaseCoin).LT(coinconfig.MinCoinReserve) {
 			return ctx, CoinReserveBecomeInsufficient
 		}
 	}
+
+	fmt.Printf("####### Price: %s\n", delPrice.Price)
+	fmt.Printf("####### Commission: %s DEL\n", commissionInBaseCoin)
+	fmt.Printf("####### Fee: %s DEL\n", feeInBaseCoin)
 
 	if feeInBaseCoin.LT(commissionInBaseCoin) {
 		return ctx, FeeLessThanCommission
