@@ -49,9 +49,9 @@ func processEventReturnLegacyCoins(ea *EventAccumulator, event abci.Event, txHas
 			}
 		}
 	}
-	for _, coin := range coins {
-		ea.addBalanceChange(newAddress, coin.Denom, coin.Amount)
-	}
+	//for _, coin := range coins {
+	//ea.addBalanceChange(newAddress, coin.Denom, coin.Amount)
+	//}
 	ea.LegacyReown[oldAddress] = newAddress
 	return nil
 

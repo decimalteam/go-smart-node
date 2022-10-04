@@ -1,13 +1,9 @@
 package worker
 
 import (
-	"encoding/json"
-	"fmt"
 	"time"
 
 	abci "github.com/tendermint/tendermint/abci/types"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type EventUpdateCoinPrices struct {
@@ -38,24 +34,24 @@ func processEventPayCommission(ea *EventAccumulator, event abci.Event, txHash st
 	  repeated cosmos.base.v1beta1.Coin coins = 2
 	  [ (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins", (gogoproto.nullable) = false ];
 	*/
-	var err error
-	var payer string
-	var coins sdk.Coins
-	for _, attr := range event.Attributes {
-		switch string(attr.Key) {
-		case "payer":
-			payer = string(attr.Value)
-		case "coins":
-			err = json.Unmarshal(attr.Value, &coins)
-			if err != nil {
-				return fmt.Errorf("can't unmarshal coins: %s, value: '%s'", err.Error(), string(attr.Value))
-			}
-		}
-	}
+	//var err error
+	//var payer string
+	//var coins sdk.Coins
+	//for _, attr := range event.Attributes {
+	//	switch string(attr.Key) {
+	//	case "payer":
+	//		payer = string(attr.Value)
+	//	case "coins":
+	//		err = json.Unmarshal(attr.Value, &coins)
+	//		if err != nil {
+	//			return fmt.Errorf("can't unmarshal coins: %s, value: '%s'", err.Error(), string(attr.Value))
+	//		}
+	//	}
+	//}
 
-	for _, coin := range coins {
-		ea.addBalanceChange(payer, coin.Denom, coin.Amount.Neg())
-	}
+	//for _, coin := range coins {
+	//	ea.addBalanceChange(payer, coin.Denom, coin.Amount.Neg())
+	//}
 	return nil
 
 }

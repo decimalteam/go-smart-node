@@ -1,9 +1,25 @@
 package worker
 
 import (
+	"fmt"
+
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
+	evmtypes "github.com/evmos/ethermint/x/evm/types"
+
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	legacytypes "bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
+	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	swaptypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
 )
 
 /*
@@ -28,6 +44,19 @@ last event EditCoin group by coin
 
 5) multisig events as is
 */
+
+var pool = map[string]bool{
+	mustConvertAndEncode(authtypes.NewModuleAddress(authtypes.FeeCollectorName)):     false,
+	mustConvertAndEncode(authtypes.NewModuleAddress(distrtypes.ModuleName)):          false,
+	mustConvertAndEncode(authtypes.NewModuleAddress(stakingtypes.BondedPoolName)):    false,
+	mustConvertAndEncode(authtypes.NewModuleAddress(stakingtypes.NotBondedPoolName)): false,
+	mustConvertAndEncode(authtypes.NewModuleAddress(govtypes.ModuleName)):            false,
+	mustConvertAndEncode(authtypes.NewModuleAddress(evmtypes.ModuleName)):            false,
+	mustConvertAndEncode(authtypes.NewModuleAddress(cointypes.ModuleName)):           false,
+	mustConvertAndEncode(authtypes.NewModuleAddress(nfttypes.ReservedPool)):          false,
+	mustConvertAndEncode(authtypes.NewModuleAddress(legacytypes.LegacyCoinPool)):     false,
+	mustConvertAndEncode(authtypes.NewModuleAddress(swaptypes.SwapPool)):             false,
+}
 
 type EventAccumulator struct {
 	// [address][coin_symbol]amount changes
@@ -114,10 +143,45 @@ var eventProcessors = map[string]processFunc{
 	"decimal.swap.v1.EventDeactivateChain": processEventDeactivateChain,
 	"decimal.swap.v1.EventInitializeSwap":  processEventSwapInitialize,
 	"decimal.swap.v1.EventRedeemSwap":      processEventSwapRedeem,
+
+	banktypes.EventTypeTransfer: processEventTransfer,
 }
 
 // stub to skip internal cosmos events
 func processStub(ea *EventAccumulator, event abci.Event, txHash string) error {
+	return nil
+}
+
+func processEventTransfer(ea *EventAccumulator, event abci.Event, txHash string) error {
+	var (
+		err        error
+		coins      sdk.Coins
+		sender     string
+		receipient string
+	)
+	for _, attr := range event.Attributes {
+		switch string(attr.Key) {
+		case banktypes.AttributeKeySender:
+			sender = string(attr.Value)
+		case banktypes.AttributeKeyRecipient:
+			receipient = string(attr.Value)
+		case sdk.AttributeKeyAmount:
+			coins, err = sdk.ParseCoinsNormalized(string(attr.Value))
+			if err != nil {
+				return fmt.Errorf("can't parse coins: %s, value: '%s'", err.Error(), string(attr.Value))
+			}
+		}
+	}
+
+	for _, coin := range coins {
+		if _, ok := pool[sender]; !ok {
+			ea.addBalanceChange(sender, coin.Denom, coin.Amount.Neg())
+		}
+		if _, ok := pool[receipient]; !ok {
+			ea.addBalanceChange(receipient, coin.Denom, coin.Amount)
+		}
+	}
+
 	return nil
 }
 
@@ -156,4 +220,13 @@ func (ea *EventAccumulator) setTxHash(txs []Tx) error {
 	// hash of MintNFT, TransferNFT
 
 	return nil
+}
+
+func mustConvertAndEncode(address sdk.AccAddress) string {
+	res, err := bech32.ConvertAndEncode("dx", address)
+	if err != nil {
+		panic(err)
+	}
+
+	return res
 }
