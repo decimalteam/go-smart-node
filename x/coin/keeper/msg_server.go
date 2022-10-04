@@ -423,7 +423,12 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 	}
 
 	// Calculate correct fee
-	feeAmountBase := helpers.FinneyToWei(sdk.NewIntFromUint64(30))
+	params := k.feeKeeper.GetModuleParams(ctx)
+	delPrice, err := k.feeKeeper.GetPrice(ctx, k.GetBaseDenom(ctx), feeconfig.DefaultQuote)
+	if err != nil {
+		return nil, err
+	}
+	feeAmountBase := helpers.DecToDecWithE18(params.CoinRedeemCheck).Quo(delPrice.Price).RoundInt()
 	feeAmount := feeAmountBase
 	if coinDenom != baseCoinDenom {
 		feeAmount = formulas.CalculateSaleAmount(coin.Volume, coin.Reserve, uint(coin.CRR), feeAmountBase)

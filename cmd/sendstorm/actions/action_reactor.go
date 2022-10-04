@@ -34,6 +34,8 @@ func (ar *ActionReactor) Add(generatorName string, weight int64) error {
 		wag.AG = NewUpdateCoinGenerator(1, 100, "del")
 	case "BurnCoin":
 		wag.AG = NewBurnCoinGenerator(1, 1000)
+	case "RedeemCheck":
+		wag.AG = NewRedeemCheckGenerator(1, 1000)
 	// nft
 	case "MintNFT":
 		wag.AG = NewMintNFTGenerator(1, 100, 100, 1000, 1, 10)
