@@ -1,6 +1,7 @@
 package ante
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -94,7 +95,9 @@ func (egcd EthGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 			return ctx, sdkerrors.Wrapf(err, "failed to deduct transaction costs from user balance")
 		}
 
-		err = ctx.EventManager().EmitTypedEvent(&feetypes.EventPayCommission{
+		// Decimal decorator differs from ethermint, in the events it adds to the result
+		// if you want to update this code to the latest version, then don't touch the event emitter
+		err = events.EmitTypedEvent(ctx, &feetypes.EventPayCommission{
 			Payer: msgEthTx.From,
 			Coins: fees,
 		})
