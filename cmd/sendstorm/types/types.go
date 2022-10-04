@@ -45,6 +45,10 @@ func (sa *StormAccount) UpdateNumberSequence() error {
 	return nil
 }
 
+func (sa *StormAccount) LastHeight() int64 {
+	return sa.api.GetLastHeight()
+}
+
 func (sa *StormAccount) UpdateBalance() error {
 	var err error
 	sa.mu.Lock()

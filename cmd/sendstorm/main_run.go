@@ -114,6 +114,7 @@ func cmdRun() *cobra.Command {
 					if err != nil {
 						fmt.Printf("api.Transaction = %v\n", err)
 					}
+					fmt.Printf("TxHash= %s\n", res.Hash)
 					fmt.Printf("TxResult = %v\n\n\n", txRes)
 				}
 				acc.IncrementSequence()

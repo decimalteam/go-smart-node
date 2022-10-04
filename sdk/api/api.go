@@ -98,6 +98,16 @@ func (api *API) grpcGetParameters() error {
 	return nil
 }
 
+// GetParameters() get blockchain parameters
+func (api *API) GetLastHeight() int64 {
+	client := tmservice.NewServiceClient(api.grpcClient)
+	resp, err := client.GetLatestBlock(context.Background(), &tmservice.GetLatestBlockRequest{})
+	if err != nil {
+		return 0
+	}
+	return resp.Block.Header.Height
+}
+
 // Init global cosmos sdk config
 // Do not seal config or rework to use sealed config
 func initConfig() {
