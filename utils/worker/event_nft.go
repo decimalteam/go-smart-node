@@ -163,7 +163,7 @@ func processEventCreateToken(ea *EventAccumulator, event abci.Event, txHash stri
 
 	e.TotalReserve = sdk.NewCoin(e.StartReserve.Denom, e.StartReserve.Amount.Mul(sdk.NewInt(int64(len(e.SubTokenIDs)))))
 	e.Quantity = uint32(len(e.SubTokenIDs))
-	ea.addBalanceChange(e.Creator, e.TotalReserve.Denom, e.TotalReserve.Amount.Neg())
+	//ea.addBalanceChange(e.Creator, e.TotalReserve.Denom, e.TotalReserve.Amount.Neg())
 	//ea.addBalanceChange(reservedPool.String(), e.TotalReserve.Denom, e.TotalReserve.Amount)
 	ea.addMintSubTokens(EventMintToken{
 		Creator:       e.Creator,
@@ -220,8 +220,8 @@ func processEventMintNFT(ea *EventAccumulator, event abci.Event, txHash string) 
 	}
 	e.TxHash = txHash
 
-	totalReserve := sdk.NewCoin(e.StartReserve.Denom, e.StartReserve.Amount.Mul(sdk.NewInt(int64(len(e.SubTokenIDs)))))
-	ea.addBalanceChange(e.Creator, totalReserve.Denom, totalReserve.Amount.Neg())
+	//totalReserve := sdk.NewCoin(e.StartReserve.Denom, e.StartReserve.Amount.Mul(sdk.NewInt(int64(len(e.SubTokenIDs)))))
+	//ea.addBalanceChange(e.Creator, totalReserve.Denom, totalReserve.Amount.Neg())
 	//ea.addBalanceChange(reservedPool.String(), totalReserve.Denom, totalReserve.Amount)
 
 	ea.addMintSubTokens(e)
@@ -237,9 +237,9 @@ func processEventBurnNFT(ea *EventAccumulator, event abci.Event, txHash string) 
 	  repeated uint32 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
 	*/
 	var (
-		err         error
-		returnCoins sdk.Coin
-		e           EventBurnToken
+		//err         error
+		//returnCoins sdk.Coin
+		e EventBurnToken
 	)
 	for _, attr := range event.Attributes {
 		switch string(attr.Key) {
@@ -248,10 +248,10 @@ func processEventBurnNFT(ea *EventAccumulator, event abci.Event, txHash string) 
 		case "id":
 			e.NftID = string(attr.Value)
 		case "return":
-			returnCoins, err = sdk.ParseCoinNormalized(string(attr.Value))
-			if err != nil {
-				return fmt.Errorf("can't parse reserve '%s': %s", string(attr.Value), err.Error())
-			}
+			//returnCoins, err = sdk.ParseCoinNormalized(string(attr.Value))
+			//if err != nil {
+			//	return fmt.Errorf("can't parse reserve '%s': %s", string(attr.Value), err.Error())
+			//}
 		case "sub_token_ids":
 			var subIds []string
 			err := json.Unmarshal(attr.Value, &subIds)
@@ -269,7 +269,7 @@ func processEventBurnNFT(ea *EventAccumulator, event abci.Event, txHash string) 
 	}
 	e.TxHash = txHash
 
-	ea.addBalanceChange(e.Sender, returnCoins.Denom, returnCoins.Amount)
+	//ea.addBalanceChange(e.Sender, returnCoins.Denom, returnCoins.Amount)
 	//ea.addBalanceChange(reservedPool.String(), returnCoins.Denom, returnCoins.Amount.Neg())
 	ea.addBurnSubTokens(e)
 
@@ -307,14 +307,14 @@ func processEventUpdateReserve(ea *EventAccumulator, event abci.Event, txHash st
 	  repeated uint32 sub_token_ids = 5 [ (gogoproto.customname) = "SubTokenIDs" ];
 	*/
 	var (
-		sender string
-		err    error
-		e      EventUpdateReserve
+		//sender string
+		err error
+		e   EventUpdateReserve
 	)
 	for _, attr := range event.Attributes {
 		switch string(attr.Key) {
 		case "sender":
-			sender = string(attr.Value)
+			//sender = string(attr.Value)
 		case "id":
 			e.NftID = string(attr.Value)
 		case "reserve":
@@ -343,7 +343,7 @@ func processEventUpdateReserve(ea *EventAccumulator, event abci.Event, txHash st
 		}
 	}
 
-	ea.addBalanceChange(sender, e.Refill.Denom, e.Refill.Amount.Neg())
+	//ea.addBalanceChange(sender, e.Refill.Denom, e.Refill.Amount.Neg())
 	//ea.addBalanceChange(reservedPool.String(), e.Refill.Denom, e.Refill.Amount)
 	ea.UpdateReserve = append(ea.UpdateReserve, e)
 

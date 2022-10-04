@@ -56,7 +56,7 @@ func processEventCreateCoin(ea *EventAccumulator, event abci.Event, txHash strin
 	var err error
 	var ok bool
 	var sender string
-	var commission sdk.Coin
+	//var commission sdk.Coin
 	for _, attr := range event.Attributes {
 		switch string(attr.Key) {
 		case "sender":
@@ -88,17 +88,16 @@ func processEventCreateCoin(ea *EventAccumulator, event abci.Event, txHash strin
 			if !ok {
 				return fmt.Errorf("can't parse limit_volume '%s'", string(attr.Value))
 			}
-		case "commission_create_coin":
-			commission, err = sdk.ParseCoinNormalized(string(attr.Value))
-			if err != nil {
-				return fmt.Errorf("can't parse commission_create_coin '%s': %s", string(attr.Value), err.Error())
-			}
+			//case "commission_create_coin":
+			//	commission, err = sdk.ParseCoinNormalized(string(attr.Value))
+			//	if err != nil {
+			//		return fmt.Errorf("can't parse commission_create_coin '%s': %s", string(attr.Value), err.Error())
 		}
 	}
 	ecc.TxHash = txHash
-	ea.addBalanceChange(sender, baseCoinSymbol, ecc.Reserve.Neg())
-	ea.addBalanceChange(sender, ecc.Denom, ecc.Volume)
-	ea.addBalanceChange(sender, commission.Denom, commission.Amount.Neg())
+	//ea.addBalanceChange(sender, baseCoinSymbol, ecc.Reserve.Neg())
+	//ea.addBalanceChange(sender, ecc.Denom, ecc.Volume)
+	//ea.addBalanceChange(sender, commission.Denom, commission.Amount.Neg())
 
 	ea.CoinsCreates = append(ea.CoinsCreates, ecc)
 	return nil
@@ -170,25 +169,25 @@ func processEventSendCoin(ea *EventAccumulator, event abci.Event, txHash string)
 	  string recipient = 2
 	  string coin = 3;
 	*/
-	var err error
-	var sender, recipient string
-	var coin sdk.Coin
-	for _, attr := range event.Attributes {
-		switch string(attr.Key) {
-		case "sender":
-			sender = string(attr.Value)
-		case "recipient":
-			recipient = string(attr.Value)
-		case "coin":
-			coin, err = sdk.ParseCoinNormalized(string(attr.Value))
-			if err != nil {
-				return fmt.Errorf("can't parse coin '%s': %s", string(attr.Value), err.Error())
-			}
-		}
-	}
-
-	ea.addBalanceChange(sender, coin.Denom, coin.Amount.Neg())
-	ea.addBalanceChange(recipient, coin.Denom, coin.Amount)
+	//var err error
+	//var sender, recipient string
+	//var coin sdk.Coin
+	//for _, attr := range event.Attributes {
+	//	switch string(attr.Key) {
+	//	case "sender":
+	//		sender = string(attr.Value)
+	//	case "recipient":
+	//		recipient = string(attr.Value)
+	//	case "coin":
+	//		coin, err = sdk.ParseCoinNormalized(string(attr.Value))
+	//		if err != nil {
+	//			return fmt.Errorf("can't parse coin '%s': %s", string(attr.Value), err.Error())
+	//		}
+	//	}
+	//}
+	//
+	//ea.addBalanceChange(sender, coin.Denom, coin.Amount.Neg())
+	//ea.addBalanceChange(recipient, coin.Denom, coin.Amount)
 	return nil
 }
 
@@ -200,28 +199,28 @@ func processEventBuySellCoin(ea *EventAccumulator, event abci.Event, txHash stri
 	  string coin_to_sell = 3;
 	  string amount_in_base_coin = 4;
 	*/
-	var err error
-	var sender string
-	var coinToBuy, coinToSell sdk.Coin
-	for _, attr := range event.Attributes {
-		switch string(attr.Key) {
-		case "sender":
-			sender = string(attr.Value)
-		case "coin_to_buy":
-			coinToBuy, err = sdk.ParseCoinNormalized(string(attr.Value))
-			if err != nil {
-				return fmt.Errorf("can't parse coin '%s': %s", string(attr.Value), err.Error())
-			}
-		case "coin_to_sell":
-			coinToSell, err = sdk.ParseCoinNormalized(string(attr.Value))
-			if err != nil {
-				return fmt.Errorf("can't parse coin '%s': %s", string(attr.Value), err.Error())
-			}
-		}
-	}
-
-	ea.addBalanceChange(sender, coinToBuy.Denom, coinToBuy.Amount)
-	ea.addBalanceChange(sender, coinToSell.Denom, coinToSell.Amount.Neg())
+	//var err error
+	//var sender string
+	//var coinToBuy, coinToSell sdk.Coin
+	//for _, attr := range event.Attributes {
+	//	switch string(attr.Key) {
+	//	case "sender":
+	//		sender = string(attr.Value)
+	//	case "coin_to_buy":
+	//		coinToBuy, err = sdk.ParseCoinNormalized(string(attr.Value))
+	//		if err != nil {
+	//			return fmt.Errorf("can't parse coin '%s': %s", string(attr.Value), err.Error())
+	//		}
+	//	case "coin_to_sell":
+	//		coinToSell, err = sdk.ParseCoinNormalized(string(attr.Value))
+	//		if err != nil {
+	//			return fmt.Errorf("can't parse coin '%s': %s", string(attr.Value), err.Error())
+	//		}
+	//	}
+	//}
+	//
+	//ea.addBalanceChange(sender, coinToBuy.Denom, coinToBuy.Amount)
+	//ea.addBalanceChange(sender, coinToSell.Denom, coinToSell.Amount.Neg())
 	return nil
 }
 
@@ -231,22 +230,22 @@ func processEventBurnCoin(ea *EventAccumulator, event abci.Event, txHash string)
 	  string sender = 1
 	  string coin = 2;
 	*/
-	var err error
-	var sender string
-	var coinToBurn sdk.Coin
-	for _, attr := range event.Attributes {
-		switch string(attr.Key) {
-		case "sender":
-			sender = string(attr.Value)
-		case "coin":
-			coinToBurn, err = sdk.ParseCoinNormalized(string(attr.Value))
-			if err != nil {
-				return fmt.Errorf("can't parse coin '%s': %s", string(attr.Value), err.Error())
-			}
-		}
-	}
+	//var err error
+	//var sender string
+	//var coinToBurn sdk.Coin
+	//for _, attr := range event.Attributes {
+	//	switch string(attr.Key) {
+	//	case "sender":
+	//		sender = string(attr.Value)
+	//	case "coin":
+	//		coinToBurn, err = sdk.ParseCoinNormalized(string(attr.Value))
+	//		if err != nil {
+	//			return fmt.Errorf("can't parse coin '%s': %s", string(attr.Value), err.Error())
+	//		}
+	//	}
+	//}
 
-	ea.addBalanceChange(sender, coinToBurn.Denom, coinToBurn.Amount.Neg())
+	//ea.addBalanceChange(sender, coinToBurn.Denom, coinToBurn.Amount.Neg())
 	return nil
 }
 
@@ -260,32 +259,32 @@ func processEventRedeemCheck(ea *EventAccumulator, event abci.Event, txHash stri
 	  string due_block = 5;
 	  string commission_redeem_check = 6;
 	*/
-	var err error
-	var sender, issuer string
-	var coin, commission sdk.Coin
-	for _, attr := range event.Attributes {
-		if string(attr.Key) == "sender" {
-			sender = string(attr.Value)
-		}
-		if string(attr.Key) == "issuer" {
-			issuer = string(attr.Value)
-		}
-		if string(attr.Key) == "coin" {
-			coin, err = sdk.ParseCoinNormalized(string(attr.Value))
-			if err != nil {
-				return fmt.Errorf("can't parse coin '%s': %s", string(attr.Value), err.Error())
-			}
-		}
-		if string(attr.Key) == "commission_redeem_check" {
-			commission, err = sdk.ParseCoinNormalized(string(attr.Value))
-			if err != nil {
-				return fmt.Errorf("can't parse commission_redeem_check '%s': %s", string(attr.Value), err.Error())
-			}
-		}
-	}
+	//var err error
+	//var sender, issuer string
+	//var coin, commission sdk.Coin
+	//for _, attr := range event.Attributes {
+	//	if string(attr.Key) == "sender" {
+	//		sender = string(attr.Value)
+	//	}
+	//	if string(attr.Key) == "issuer" {
+	//		issuer = string(attr.Value)
+	//	}
+	//	if string(attr.Key) == "coin" {
+	//		coin, err = sdk.ParseCoinNormalized(string(attr.Value))
+	//		if err != nil {
+	//			return fmt.Errorf("can't parse coin '%s': %s", string(attr.Value), err.Error())
+	//		}
+	//	}
+	//	if string(attr.Key) == "commission_redeem_check" {
+	//		commission, err = sdk.ParseCoinNormalized(string(attr.Value))
+	//		if err != nil {
+	//			return fmt.Errorf("can't parse commission_redeem_check '%s': %s", string(attr.Value), err.Error())
+	//		}
+	//	}
+	//}
 
-	ea.addBalanceChange(sender, coin.Denom, coin.Amount)
-	ea.addBalanceChange(issuer, coin.Denom, coin.Amount.Neg())
-	ea.addBalanceChange(issuer, commission.Denom, commission.Amount.Neg())
+	//ea.addBalanceChange(sender, coin.Denom, coin.Amount)
+	//ea.addBalanceChange(issuer, coin.Denom, coin.Amount.Neg())
+	//ea.addBalanceChange(issuer, commission.Denom, commission.Amount.Neg())
 	return nil
 }
