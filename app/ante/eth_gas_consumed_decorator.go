@@ -1,12 +1,16 @@
 package ante
 
 import (
+	"math"
+	"math/big"
+
+	ethereumCommon "github.com/ethereum/go-ethereum/common"
+
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"math"
-	"math/big"
 
 	ethante "github.com/evmos/ethermint/app/ante"
 	ethermint "github.com/evmos/ethermint/types"
@@ -97,10 +101,19 @@ func (egcd EthGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 
 		// Decimal decorator differs from ethermint, in the events it adds to the result
 		// if you want to update this code to the latest version, then don't touch the event emitter
+		adr := ethereumCommon.HexToAddress(msgEthTx.From)
+		dxAdr, err := sdk.Bech32ifyAddressBytes(config.Bech32PrefixAccAddr, adr.Bytes())
+		if err != nil {
+			return ctx, sdkerrors.Wrapf(err, "failed to convert ethreum address to bech32 form")
+		}
+
 		err = events.EmitTypedEvent(ctx, &feetypes.EventPayCommission{
-			Payer: msgEthTx.From,
+			Payer: dxAdr,
 			Coins: fees,
 		})
+		if err != nil {
+			return ctx, sdkerrors.Wrapf(err, "failed to emit commission event")
+		}
 
 		if priority < minPriority {
 			minPriority = priority

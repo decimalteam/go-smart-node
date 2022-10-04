@@ -11,7 +11,7 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
-
+	ethereumCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 )
 
@@ -173,4 +173,14 @@ func TestOldNewAddresForPubKey(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, tc.oldAddress, oldAddress)
 	}
+}
+
+// this test check conversion from ethereum address representation to bech32 representation
+func TestEth2dx(t *testing.T) {
+	ethAdr := "0xa618f8e2b953593c1f08f2b3dce2a963ce130916"
+	dxAdr := "dx15cv03c4e2dvnc8cg72eaec4fv08pxzgkmr255d"
+	adr := ethereumCommon.HexToAddress(ethAdr)
+	bch, err := sdk.Bech32ifyAddressBytes("dx", adr.Bytes())
+	require.NoError(t, err)
+	require.Equal(t, dxAdr, bch)
 }
