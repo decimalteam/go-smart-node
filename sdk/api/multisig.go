@@ -25,9 +25,6 @@ func (api *API) MultisigWalletsByOwner(owner string) ([]MultisigWallet, error) {
 		if err != nil {
 			return []MultisigWallet{}, err
 		}
-		if len(res.Wallets) == 0 {
-			break
-		}
 		wallets = append(wallets, res.Wallets...)
 		if len(res.Pagination.NextKey) == 0 {
 			break
@@ -65,9 +62,6 @@ func (api *API) MultisigTransactionsByWallet(address string) ([]MultisigTransact
 		)
 		if err != nil {
 			return []MultisigTransaction{}, err
-		}
-		if len(res.Transactions) == 0 {
-			break
 		}
 		txs = append(txs, res.Transactions...)
 		if len(res.Pagination.NextKey) == 0 {
