@@ -109,16 +109,11 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 		}
 
 		feeInBaseCoin = formulas.CalculateSaleReturn(coinInfo.Volume, coinInfo.Reserve, uint(coinInfo.CRR), feeFromTx[0].Amount)
-		fmt.Printf("####### Coin: %+v\n", coinInfo)
 
 		if coinInfo.Reserve.Sub(feeInBaseCoin).LT(coinconfig.MinCoinReserve) {
 			return ctx, CoinReserveBecomeInsufficient
 		}
 	}
-
-	fmt.Printf("####### Price: %s\n", delPrice.Price)
-	fmt.Printf("####### Commission: %s DEL\n", commissionInBaseCoin)
-	fmt.Printf("####### Fee: %s DEL\n", feeInBaseCoin)
 
 	if feeInBaseCoin.LT(commissionInBaseCoin) {
 		return ctx, FeeLessThanCommission
