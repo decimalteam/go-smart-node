@@ -172,24 +172,23 @@ func processEventConfirmTransaction(ea *EventAccumulator, event abci.Event, txHa
 	  repeated cosmos.base.v1beta1.Coin coins = 4
 	      [ (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins", (gogoproto.nullable) = false ];
 	*/
-	var wallet, receiver string
-	var coins = sdk.NewCoins()
-	for _, attr := range event.Attributes {
-		switch string(attr.Key) {
-		case "wallet":
-			wallet = string(attr.Value)
-		case "receiver":
-			receiver = string(attr.Value)
-		case "coins":
-			err := json.Unmarshal(attr.Value, &coins)
-			if err != nil {
-				return fmt.Errorf("can't unmarshal coins: %s, value: '%s'", err.Error(), string(attr.Value))
-			}
-		}
-	}
-	for _, coin := range coins {
-		ea.addBalanceChange(wallet, coin.Denom, coin.Amount.Neg())
-		ea.addBalanceChange(receiver, coin.Denom, coin.Amount)
-	}
+	//var wallet, receiver string
+	//var coins = sdk.NewCoins()
+	//for _, attr := range event.Attributes {
+	//	switch string(attr.Key) {
+	//	case "wallet":
+	//		wallet = string(attr.Value)
+	//	case "receiver":
+	//		receiver = string(attr.Value)
+	//	case "coins":
+	//		err := json.Unmarshal(attr.Value, &coins)
+	//		if err != nil {
+	//			return fmt.Errorf("can't unmarshal coins: %s, value: '%s'", err.Error(), string(attr.Value))
+	//		}
+	//	}
+	//for _, coin := range coins {
+	//	ea.addBalanceChange(wallet, coin.Denom, coin.Amount.Neg())
+	//	ea.addBalanceChange(receiver, coin.Denom, coin.Amount)
+	//}
 	return nil
 }

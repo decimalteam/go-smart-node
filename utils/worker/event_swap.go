@@ -159,7 +159,7 @@ func processEventSwapInitialize(ea *EventAccumulator, event abci.Event, txHash s
 	}
 
 	e.TxHash = txHash
-	ea.addBalanceChange(e.Sender, e.TokenDenom, e.Amount.Neg())
+	//ea.addBalanceChange(e.Sender, e.TokenDenom, e.Amount.Neg())
 	//ea.addBalanceChange(swaptypes.SwapPool, e.TokenDenom, e.Amount)
 	ea.SwapInitialize = append(ea.SwapInitialize, e)
 	return nil
@@ -228,7 +228,7 @@ func processEventSwapRedeem(ea *EventAccumulator, event abci.Event, txHash strin
 	}
 
 	e.TxHash = txHash
-	ea.addBalanceChange(e.Recipient, e.TokenDenom, e.Amount)
+	//ea.addBalanceChange(e.Recipient, e.TokenDenom, e.Amount)
 	//ea.addBalanceChange(swaptypes.SwapPool, e.TokenDenom, e.Amount.Neg())
 	ea.SwapRedeem = append(ea.SwapRedeem, e)
 	return nil
