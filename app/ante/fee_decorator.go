@@ -14,6 +14,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coinconfig "bitbucket.org/decimalteam/go-smart-node/x/coin/config"
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
 	feeerrors "bitbucket.org/decimalteam/go-smart-node/x/fee/errors"
@@ -67,6 +68,8 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 	feeFromTx := feeTx.GetFee()
 	feePayerAcc := fd.accountKeeper.GetAccount(ctx, feeTx.FeePayer())
 	baseDenom := fd.coinKeeper.GetBaseDenom(ctx)
+
+	ctx = ctx.WithValue(types.ContextFeeKey{}, feeFromTx)
 
 	if feePayerAcc == nil {
 		return ctx, FeePayerAddressDoesNotExist
