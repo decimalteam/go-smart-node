@@ -307,17 +307,17 @@ func (s *KeeperTestSuite) TestGRPCQueryToken() {
 			{
 				ID:      1,
 				Owner:   owner.String(),
-				Reserve: nil,
+				Reserve: &defaultCoin,
 			},
 			{
 				ID:      2,
 				Owner:   owner.String(),
-				Reserve: nil,
+				Reserve: &defaultCoin,
 			},
 			{
 				ID:      3,
 				Owner:   owner.String(),
-				Reserve: nil,
+				Reserve: &defaultCoin,
 			},
 		},
 	}
