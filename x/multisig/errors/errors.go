@@ -1,8 +1,9 @@
 package errors
 
 import (
-	"cosmossdk.io/errors"
 	"fmt"
+
+	"cosmossdk.io/errors"
 )
 
 var codespace = "multisig"

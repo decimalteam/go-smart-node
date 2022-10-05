@@ -9,6 +9,7 @@ import (
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -49,7 +50,7 @@ func (asg *MultiSendCoinGenerator) Generate() Action {
 	for i := int64(0); i < n; i++ {
 		coin := sdk.NewCoin(
 			RandomChoice(asg.rnd, asg.knownCoins),
-			helpers.FinneyToWei(sdk.NewInt(RandomRange(asg.rnd, asg.bottomRange, asg.upperRange))),
+			helpers.FinneyToWei(sdkmath.NewInt(RandomRange(asg.rnd, asg.bottomRange, asg.upperRange))),
 		)
 		sums = sums.Add(coin)
 		sends[i] = dscTx.MultiSendEntry{

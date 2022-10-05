@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"cosmossdk.io/math"
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
@@ -47,7 +47,7 @@ func (gg *RedeemCheckGenerator) Generate() Action {
 	return &RedeemCheckAction{
 		coin: sdk.NewCoin(
 			RandomChoice(gg.rnd, gg.knownCoins),
-			helpers.FinneyToWei(sdk.NewInt(RandomRange(gg.rnd, gg.bottomRange, gg.upperRange))),
+			helpers.FinneyToWei(sdkmath.NewInt(RandomRange(gg.rnd, gg.bottomRange, gg.upperRange))),
 		),
 		issuer:   RandomChoice(gg.rnd, gg.knownAddresses),
 		receiver: RandomChoice(gg.rnd, gg.knownAddresses),
@@ -80,7 +80,7 @@ func (ac *RedeemCheckAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *
 	if ac.issuerAcc == nil {
 		return nil, fmt.Errorf("empty issuer account")
 	}
-	nonce := math.NewInt(rand.Int63())
+	nonce := sdkmath.NewInt(rand.Int63())
 	dueBlock := sa.LastHeight()
 	if dueBlock == 0 {
 		return nil, fmt.Errorf("block height is 0")

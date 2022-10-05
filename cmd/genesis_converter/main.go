@@ -6,9 +6,8 @@ import (
 	"io"
 	"os"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func main() {
