@@ -3,6 +3,8 @@ package ante
 import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coin "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -68,6 +70,10 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.NftBurnToken))
 		// fee
 		case *fee.MsgUpdateCoinPrices:
+		case *upgradetypes.MsgSoftwareUpgrade:
+		case *upgradetypes.MsgCancelUpgrade:
+		case *govtypesv1.MsgSubmitProposal:
+		case *govtypesv1.MsgVote:
 		default:
 			return sdkmath.ZeroInt(), UnknownTransaction
 		}
