@@ -145,7 +145,12 @@ func (k Keeper) Token(c context.Context, req *types.QueryTokenRequest) (*types.Q
 
 	// read NFT sub-tokens within the token
 	err := k.iterateSubTokens(ctx, req.TokenId, func(subToken *types.SubToken) bool {
+		if subToken.Reserve == nil {
+			subToken.Reserve = &token.Reserve
+		}
+
 		token.SubTokens = append(token.SubTokens, subToken)
+
 		return false
 	})
 	if err != nil {
@@ -159,15 +164,24 @@ func (k Keeper) Token(c context.Context, req *types.QueryTokenRequest) (*types.Q
 
 func (k Keeper) SubToken(c context.Context, req *types.QuerySubTokenRequest) (*types.QuerySubTokenResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	subTokenId, err := strconv.ParseInt(req.SubTokenId, 10, 32)
+	subTokenID, err := strconv.ParseInt(req.SubTokenId, 10, 32)
 	if err != nil {
 		return nil, err
 	}
 
 	// read NFT sub-token
-	subToken, found := k.GetSubToken(ctx, req.TokenId, uint32(subTokenId))
+	subToken, found := k.GetSubToken(ctx, req.TokenId, uint32(subTokenID))
 	if !found {
 		return nil, errors.UnknownNFT
+	}
+
+	if subToken.Reserve == nil {
+		token, found := k.GetToken(ctx, req.TokenId)
+		if !found {
+			return nil, errors.InvalidTokenID
+		}
+
+		subToken.Reserve = &token.Reserve
 	}
 
 	return &types.QuerySubTokenResponse{
