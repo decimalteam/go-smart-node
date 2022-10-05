@@ -454,7 +454,7 @@ pipelines:
           name: Deploy
           deployment: Test
           script:
-            - pipe: atlassian/rsync-deploy:0.6.0
+            - pipe: atlassian/rsync-deploy:0.8.1
               variables:
                 USER: $REPO_USER
                 SERVER: $REPO_HOST
@@ -469,7 +469,7 @@ pipelines:
           name: Deploy
           deployment: Staging
           script:
-            - pipe: atlassian/rsync-deploy:0.6.0
+            - pipe: atlassian/rsync-deploy:0.8.1
               variables:
                 USER: $REPO_USER
                 SERVER: $REPO_HOST
@@ -484,7 +484,7 @@ pipelines:
           name: Deploy
           deployment: Production
           script:
-            - pipe: atlassian/rsync-deploy:0.6.0
+            - pipe: atlassian/rsync-deploy:0.8.1
               variables:
                 USER: $REPO_USER
                 SERVER: $REPO_HOST
