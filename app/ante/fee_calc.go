@@ -14,8 +14,6 @@ import (
 
 // CalculateFee calculates fee in base coin
 func CalculateFee(msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee.Params) (sdkmath.Int, error) {
-	params = fee.DefaultParams()
-
 	msgsFee := sdk.ZeroDec()
 	for _, msg := range msgs {
 		switch m := msg.(type) {
