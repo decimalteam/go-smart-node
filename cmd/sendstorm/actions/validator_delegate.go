@@ -4,10 +4,12 @@ import (
 	"math/rand"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type DelegateGenerator struct {
@@ -48,7 +50,7 @@ func (gg *DelegateGenerator) Generate() Action {
 	validator := RandomChoice(gg.rnd, gg.knownValidators)
 	amount := RandomRange(gg.rnd, gg.stackBottom, gg.stackUp)
 	return &DelegateAction{
-		coin:             sdk.NewCoin(denom, helpers.FinneyToWei(sdk.NewInt(amount))),
+		coin:             sdk.NewCoin(denom, helpers.FinneyToWei(sdkmath.NewInt(amount))),
 		validatorAddress: validator,
 	}
 }

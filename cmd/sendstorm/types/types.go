@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
@@ -72,13 +73,13 @@ func (sa *StormAccount) IncrementSequence() {
 	sa.account.IncrementSequence()
 }
 
-func (sa *StormAccount) BalanceForCoin(denom string) sdk.Int {
+func (sa *StormAccount) BalanceForCoin(denom string) sdkmath.Int {
 	for _, b := range sa.currentBalance {
 		if b.Denom == denom {
 			return b.Amount
 		}
 	}
-	return sdk.NewInt(0)
+	return sdkmath.NewInt(0)
 }
 
 func (sa *StormAccount) Address() string {

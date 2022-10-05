@@ -118,7 +118,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	// error - only if there is no record
 	// so just stop here and return
 	if err != nil {
-		return nil
+		return nil // nolint:nilerr
 	}
 
 	// 1. send coins

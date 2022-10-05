@@ -5,12 +5,14 @@ import (
 	"math/rand"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/tendermint/tendermint/libs/strings"
+
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tendermint/tendermint/libs/strings"
 )
 
 type CreateMultisigTransactionGenerator struct {
@@ -64,7 +66,7 @@ func (gg *CreateMultisigTransactionGenerator) Generate() Action {
 	if upperLimit <= gg.bottomRange {
 		return &EmptyAction{}
 	}
-	amount := helpers.FinneyToWei(sdk.NewInt(RandomRange(gg.rnd, gg.bottomRange, upperLimit)))
+	amount := helpers.FinneyToWei(sdkmath.NewInt(RandomRange(gg.rnd, gg.bottomRange, upperLimit)))
 	coinToSend := sdk.NewCoin(balance[j].Denom, amount)
 	return &CreateMultisigTransactionAction{
 		coins:           sdk.NewCoins(coinToSend),

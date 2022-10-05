@@ -5,13 +5,14 @@ import (
 	"math/rand"
 	"time"
 
-	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // MsgUpdateReserveNFT
@@ -75,7 +76,7 @@ func (gg *UpdateReserveNFTGenerator) Generate() Action {
 				newReserve = reserve.Amount
 			}
 		}
-		newReserve = newReserve.Add(helpers.EtherToWei(sdk.NewInt(increase)))
+		newReserve = newReserve.Add(helpers.EtherToWei(sdkmath.NewInt(increase)))
 
 		return &UpdateReserveNFTAction{
 			creator:    nftToUpdateReserve.Creator,
