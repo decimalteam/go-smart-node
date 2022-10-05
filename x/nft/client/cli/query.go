@@ -138,7 +138,7 @@ $ %s query %s token d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e78073
 
 func cmdQuerySubToken() *cobra.Command {
 	return &cobra.Command{
-		Use:   "token [token_id] [sub_token_id]",
+		Use:   "sub-token [token_id] [sub_token_id]",
 		Short: "get existing NFT sub-token with specified token ID and sub-token ID",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Get existing NFT sub-token with specified token ID and sub-token ID.

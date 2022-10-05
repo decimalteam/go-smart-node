@@ -63,6 +63,11 @@ func (k Keeper) MintToken(c context.Context, msg *types.MsgMintToken) (*types.Ms
 		if !token.AllowMint {
 			return nil, errors.NotAllowedMint
 		}
+
+		// make sure the same denom is used
+		if token.Reserve.Denom != msg.Reserve.Denom {
+			return nil, errors.WrongReserveCoinDenom
+		}
 	}
 
 	if !collectionExists && tokenExists {
