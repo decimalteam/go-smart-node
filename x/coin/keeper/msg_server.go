@@ -357,7 +357,10 @@ func (k Keeper) BurnCoin(goCtx context.Context, msg *types.MsgBurnCoin) (*types.
 	}
 	if !k.IsCoinBase(ctx, msg.Coin.Denom) {
 		// change coin volume
-		k.UpdateCoinVR(ctx, coin.Denom, coin.Volume.Sub(msg.Coin.Amount), coin.Reserve)
+		err = k.UpdateCoinVR(ctx, coin.Denom, coin.Volume.Sub(msg.Coin.Amount), coin.Reserve)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Emit transaction events

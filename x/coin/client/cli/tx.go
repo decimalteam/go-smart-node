@@ -95,7 +95,7 @@ $ %s tx %s create coin1 "title of coin" 20 10000000000 200000000 10000000000000 
 
 	flags.AddTxFlagsToCmd(cmd)
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }
@@ -145,7 +145,7 @@ $ %s tx %s update coin1 10000000 "some identity" --from mykey`, cmdcfg.AppBinNam
 
 	flags.AddTxFlagsToCmd(cmd)
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }
@@ -196,7 +196,7 @@ $ %s tx %s send dx1hs2wdrm87c92rzhq0vgmgrxr6u57xpr2lcygc2 1000del --from mykey`,
 
 	flags.AddTxFlagsToCmd(cmd)
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }
@@ -271,7 +271,7 @@ $ %s tx %s multisend dx1a..a 1000del dx1b..b 1000tony --from mykey
 
 	flags.AddTxFlagsToCmd(cmd)
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }
@@ -324,7 +324,7 @@ $ %s tx %s buy 10000000000tony 12000000del --from mykey`, cmdcfg.AppBinName, typ
 
 	flags.AddTxFlagsToCmd(cmd)
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }
@@ -376,7 +376,7 @@ $ %s tx %s sell 10000000000tony 12000000del --from mykey`, cmdcfg.AppBinName, ty
 
 	flags.AddTxFlagsToCmd(cmd)
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }
@@ -431,7 +431,7 @@ $ %s tx %s sell-all del 100000000tony --from mykey
 
 	flags.AddTxFlagsToCmd(cmd)
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }
@@ -477,7 +477,7 @@ $ %s tx %s burn 1000del --from mykey
 
 	flags.AddTxFlagsToCmd(cmd)
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }
@@ -521,7 +521,10 @@ $ %s tx %s issue-check 1000del 10 235 "some secret" --from mykey
 
 			// Prepare private key from passphrase
 			passphraseHash := sha256.Sum256([]byte(passphrase))
-			passphrasePrivKey, _ := crypto.ToECDSA(passphraseHash[:])
+			passphrasePrivKey, err := crypto.ToECDSA(passphraseHash[:])
+			if err != nil {
+				return err
+			}
 
 			// Prepare check without lock
 			check := &types.Check{
@@ -533,7 +536,10 @@ $ %s tx %s issue-check 1000del 10 235 "some secret" --from mykey
 
 			// Prepare check lock
 			checkHash := check.HashWithoutLock()
-			lock, _ := crypto.Sign(checkHash[:], passphrasePrivKey)
+			lock, err := crypto.Sign(checkHash[:], passphrasePrivKey)
+			if err != nil {
+				return err
+			}
 
 			// Fill check with prepared lock
 			check.Lock = lock
@@ -558,7 +564,7 @@ $ %s tx %s issue-check 1000del 10 235 "some secret" --from mykey
 
 	flags.AddTxFlagsToCmd(cmd)
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }
@@ -615,7 +621,7 @@ $ %s tx %s redeem-check 3YEtqixL7ccFTZJaMUHx3T...(result of 'issue-check') "some
 			hw.Sum(receiverAddressHash[:0])
 
 			// Sign receiver address by private key generated from passphrase
-			signature, err := crypto.Sign(receiverAddressHash[:], passphrasePrivKey)
+			signature, err := crypto.Sign(receiverAddressHash, passphrasePrivKey)
 			if err != nil {
 				return errors.UnableSignCheck
 			}

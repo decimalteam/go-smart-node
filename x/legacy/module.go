@@ -15,7 +15,6 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
@@ -99,11 +98,7 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper         keeper.Keeper
-	accountKeeper  authkeeper.AccountKeeper
-	bankKeeper     types.BankKeeper
-	nftKeeper      types.NftKeeper
-	multisigKeeper types.MultisigKeeper
+	keeper keeper.Keeper
 }
 
 // NewAppModule creates a new AppModule instance.

@@ -28,6 +28,7 @@ func (w *Worker) getWork() {
 	// Perform request
 	resp, err := w.httpClient.Do(req)
 	w.panicError(err)
+	defer resp.Body.Close()
 
 	// Parse response
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
@@ -58,6 +59,7 @@ func (w *Worker) sendBlock(height int64, json []byte) {
 
 	// Parse response
 	if resp != nil {
+		defer resp.Body.Close()
 		if resp.StatusCode != 200 {
 			w.logger.Error(
 				fmt.Sprintf("Error: unable to send block to the indexer with status code: %s", resp.Status),

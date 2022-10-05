@@ -8,7 +8,7 @@ var codespace = "ante"
 
 var (
 	FeePayerAddressDoesNotExist   = errors.New(codespace, 1, "fee payer address does not exist")
-	FeeLessThanCommission         = errors.New(codespace, 2, "insufficient funds to pay for fees") //TODo ???
+	FeeLessThanCommission         = errors.New(codespace, 2, "insufficient funds to pay for fees")
 	FailedToSendCoins             = errors.New(codespace, 3, "failed to send coins")
 	InsufficientFundsToPayFee     = errors.New(codespace, 4, "insufficient funds to pay for fee")
 	InvalidFeeAmount              = errors.New(codespace, 5, "invalid fee amount")

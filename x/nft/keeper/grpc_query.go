@@ -85,10 +85,13 @@ func (k Keeper) CollectionsByCreator(c context.Context, req *types.QueryCollecti
 			collection.Supply = counter.Supply
 
 			// read NFT tokens within the collection
-			k.iterateTokens(ctx, creator, collection.Denom, func(token *types.Token) bool {
+			err = k.iterateTokens(ctx, creator, collection.Denom, func(token *types.Token) bool {
 				collection.Tokens = append(collection.Tokens, token)
 				return false
 			})
+			if err != nil {
+				return
+			}
 
 			collections = append(collections, collection)
 			return
@@ -118,10 +121,13 @@ func (k Keeper) Collection(c context.Context, req *types.QueryCollectionRequest)
 	}
 	// read NFT tokens within the collection
 
-	k.iterateTokens(ctx, creator, collection.Denom, func(token *types.Token) bool {
+	err := k.iterateTokens(ctx, creator, collection.Denom, func(token *types.Token) bool {
 		collection.Tokens = append(collection.Tokens, token)
 		return false
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	return &types.QueryCollectionResponse{
 		Collection: collection,
@@ -138,10 +144,13 @@ func (k Keeper) Token(c context.Context, req *types.QueryTokenRequest) (*types.Q
 	}
 
 	// read NFT sub-tokens within the token
-	k.iterateSubTokens(ctx, req.TokenId, func(subToken *types.SubToken) bool {
+	err := k.iterateSubTokens(ctx, req.TokenId, func(subToken *types.SubToken) bool {
 		token.SubTokens = append(token.SubTokens, subToken)
 		return false
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	return &types.QueryTokenResponse{
 		Token: token,
