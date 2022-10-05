@@ -169,7 +169,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
               - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
               - tar -xvf go1.18.5.linux-amd64.tar.gz
               - mv go /usr/local
@@ -200,7 +200,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
               - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
               - tar -xvf go1.18.5.linux-amd64.tar.gz
               - mv go /usr/local
@@ -231,7 +231,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
               - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
               - tar -xvf go1.18.5.linux-amd64.tar.gz
               - mv go /usr/local
@@ -262,7 +262,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
               - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
               - tar -xvf go1.18.5.linux-amd64.tar.gz
               - mv go /usr/local
@@ -293,7 +293,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
               - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
               - tar -xvf go1.18.5.linux-amd64.tar.gz
               - mv go /usr/local
@@ -324,7 +324,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
               - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
               - tar -xvf go1.18.5.linux-amd64.tar.gz
               - mv go /usr/local
@@ -355,7 +355,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
               - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
               - tar -xvf go1.18.5.linux-amd64.tar.gz
               - mv go /usr/local
