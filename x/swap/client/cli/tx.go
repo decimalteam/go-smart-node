@@ -80,7 +80,7 @@ $ %s tx %s init 0x12345 1000 bnb 128943 1 3 --from mykey`, config.AppBinName, ty
 	// workaround for cosmos
 	cmd.Flags().String(flags.FlagChainID, "", "network chain id")
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }
@@ -156,7 +156,7 @@ $ %s tx %s redeem 0x12345 dx1..addr 1000 del 128943 3 1 0 ae45.. df350.. --from 
 	// workaround for cosmos
 	cmd.Flags().String(flags.FlagChainID, "", "network chain id")
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }
@@ -199,7 +199,7 @@ $ %s tx %s chain-activate 2 "Ethereum" --from mykey`, config.AppBinName, types.M
 	// workaround for cosmos
 	cmd.Flags().String(flags.FlagChainID, "", "network chain id")
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }
@@ -240,7 +240,7 @@ $ %s tx %s chain-deactivate 2 --from mykey`, config.AppBinName, types.ModuleName
 	// workaround for cosmos
 	cmd.Flags().String(flags.FlagChainID, "", "network chain id")
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }

@@ -23,7 +23,10 @@ func InitGenesis(ctx sdk.Context, k Keeper, gs *types.GenesisState) {
 			panic(err)
 		}
 		// check for duplicate collections
-		creator, _ := sdk.AccAddressFromBech32(collection.Creator)
+		creator, err := sdk.AccAddressFromBech32(collection.Creator)
+		if err != nil {
+			panic(err)
+		}
 		if _, found := k.GetCollection(ctx, creator, collection.Denom); found {
 			panic(errors.InvalidCollection) // TODO errors
 		}
@@ -33,7 +36,7 @@ func InitGenesis(ctx sdk.Context, k Keeper, gs *types.GenesisState) {
 			panic(errors.InvalidCollection)
 		}
 
-		//iterate tokens
+		// iterate tokens
 		for _, token := range collection.Tokens {
 			// validate token
 			if err := token.Validate(); err != nil {
@@ -65,7 +68,10 @@ func InitGenesis(ctx sdk.Context, k Keeper, gs *types.GenesisState) {
 						panic(errors.InvalidReserve)
 					}
 				*/
-				owner, _ := sdk.AccAddressFromBech32(subToken.Owner)
+				owner, err := sdk.AccAddressFromBech32(subToken.Owner)
+				if err != nil {
+					panic(err)
+				}
 				// write sub-token record
 				k.SetSubToken(ctx, token.ID, *subToken)
 				// write sub-token by owner index

@@ -6,6 +6,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -47,8 +48,8 @@ func NewAPI(opts ConnectionOptions) (*API, error) {
 	// gRPC client
 
 	api.grpcClient, err = grpc.Dial(
-		fmt.Sprintf("%s:%d", opts.EndpointHost, opts.GRPCPort), // your gRPC server address.
-		grpc.WithInsecure(), // The Cosmos SDK doesn't support any transport security mechanism.
+		fmt.Sprintf("%s:%d", opts.EndpointHost, opts.GRPCPort),   // your gRPC server address.
+		grpc.WithTransportCredentials(insecure.NewCredentials()), // The Cosmos SDK doesn't support any transport security mechanism.
 	)
 	if err != nil {
 		return nil, err
@@ -84,7 +85,7 @@ func (api *API) grpcGetParameters() error {
 		if err != nil {
 			return err
 		}
-		api.chainID = resp.Block.Header.ChainID
+		api.chainID = resp.SdkBlock.Header.ChainID
 	}
 	// base coin
 	{
@@ -105,7 +106,7 @@ func (api *API) GetLastHeight() int64 {
 	if err != nil {
 		return 0
 	}
-	return resp.Block.Header.Height
+	return resp.SdkBlock.Header.Height
 }
 
 // Init global cosmos sdk config

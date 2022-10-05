@@ -3,15 +3,15 @@ package keeper
 import (
 	"context"
 	"encoding/hex"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 	"strings"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/errors"
-
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var _ types.MsgServer = &Keeper{}

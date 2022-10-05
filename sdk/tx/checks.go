@@ -94,7 +94,7 @@ func CreateRedeemCheck(acc *dscWallet.Account, checkBase58 string, passphrase st
 	hw.Sum(receiverAddressHash[:0])
 
 	// Sign receiver address by private key generated from passphrase
-	signature, err := crypto.Sign(receiverAddressHash[:], passphrasePrivKey)
+	signature, err := crypto.Sign(receiverAddressHash, passphrasePrivKey)
 	if err != nil {
 		return nil, fmt.Errorf("unable to sign check")
 	}

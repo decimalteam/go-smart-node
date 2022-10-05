@@ -180,15 +180,6 @@ func (p *Params) Validate() error {
 	return nil
 }
 
-func validateUint64(i interface{}) error {
-	_, ok := i.(uint64)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-
-	return nil
-}
-
 func validateAddress(i interface{}) error {
 	addr, ok := i.(string)
 	if !ok {

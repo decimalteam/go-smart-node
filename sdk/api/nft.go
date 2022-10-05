@@ -69,13 +69,13 @@ func (api *API) NFTToken(id string) (NFTToken, error) {
 	return res.Token, nil
 }
 
-func (api *API) NFTSubToken(tokenID string, subTokenId string) (SubToken, error) {
+func (api *API) NFTSubToken(tokenID string, subTokenID string) (SubToken, error) {
 	client := nfttypes.NewQueryClient(api.grpcClient)
 	res, err := client.SubToken(
 		context.Background(),
 		&nfttypes.QuerySubTokenRequest{
 			TokenId:    tokenID,
-			SubTokenId: subTokenId,
+			SubTokenId: subTokenID,
 		},
 	)
 	if err != nil {
