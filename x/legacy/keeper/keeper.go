@@ -25,7 +25,7 @@ type Keeper struct {
 	multisigKeeper types.MultisigKeeper
 
 	addressCache     map[string]bool
-	needRestoreCache bool
+	needRestoreCache *bool // use pointer to share flag between Keeper copies
 }
 
 // NewKeeper creates new Keeper instance.
@@ -43,8 +43,9 @@ func NewKeeper(
 		nftKeeper:        nftKeeper,
 		multisigKeeper:   multisigKeeper,
 		addressCache:     make(map[string]bool),
-		needRestoreCache: true,
+		needRestoreCache: new(bool),
 	}
+	*keeper.needRestoreCache = true
 	return keeper
 }
 
@@ -54,11 +55,11 @@ func (k *Keeper) RestoreCache(ctx sdk.Context) {
 	for _, rec := range k.GetLegacyRecords(ctx) {
 		k.addressCache[rec.LegacyAddress] = true
 	}
-	k.needRestoreCache = false
+	*k.needRestoreCache = false
 }
 
 func (k *Keeper) IsNeedToRestoreCache(ctx sdk.Context) bool {
-	return k.needRestoreCache
+	return *k.needRestoreCache
 }
 
 func (k *Keeper) IsLegacyAddress(ctx sdk.Context, address string) bool {
@@ -207,7 +208,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	k.DeleteLegacyRecord(ctx, legacyAddress)
 
 	// after ActualizeLegacy need to reload cache on next block
-	k.needRestoreCache = true
+	*k.needRestoreCache = true
 
 	return nil
 }
