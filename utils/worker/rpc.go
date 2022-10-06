@@ -63,6 +63,7 @@ func (w *Worker) fetchBlockTxResults(height int64, block ctypes.ResultBlock, ea 
 		if err == nil { // len(result.EndBlockEvents) != 0
 			break
 		}
+		time.Sleep(time.Millisecond * 1)
 	}
 
 	var results []Tx
