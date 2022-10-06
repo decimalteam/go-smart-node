@@ -33,11 +33,47 @@ func copyParams(gs *GenesisNew, gsSource *GenesisNew) {
 
 	// Copy accounts and balances
 	for _, acc := range gsSource.AppState.Auth.Accounts {
-		fmt.Printf("copy account from source: %+v\n", acc)
-		gs.AppState.Auth.Accounts = append(gs.AppState.Auth.Accounts, acc)
+		var sourceAdr = extractAddress(acc)
+		var accExists = false
+		for _, accI := range gs.AppState.Auth.Accounts {
+			if extractAddress(accI) == sourceAdr {
+				accExists = true
+				break
+			}
+		}
+		if !accExists {
+			fmt.Printf("copy account from source: %+v\n", acc)
+			gs.AppState.Auth.Accounts = append(gs.AppState.Auth.Accounts, acc)
+		} else {
+			fmt.Printf("account '%s' exists. skip\n", sourceAdr)
+		}
 	}
 	for _, bal := range gsSource.AppState.Bank.Balances {
 		fmt.Printf("copy balance from source: %+v\n", bal)
-		gs.AppState.Bank.Balances = append(gs.AppState.Bank.Balances, bal)
+		var balanceExists = false
+		for i, b := range gs.AppState.Bank.Balances {
+			if bal.Address == b.Address {
+				gs.AppState.Bank.Balances[i].Coins = gs.AppState.Bank.Balances[i].Coins.Add(bal.Coins...)
+				balanceExists = true
+				break
+			}
+		}
+		if !balanceExists {
+			gs.AppState.Bank.Balances = append(gs.AppState.Bank.Balances, bal)
+		}
+	}
+}
+
+func extractAddress(acc interface{}) string {
+	switch a := acc.(type) {
+	case AccountNew:
+		return a.BaseAccount.Address
+	case ModuleAccountNew:
+		return a.BaseAccount.Address
+	case map[string]interface{}:
+		v := a["base_account"].(map[string]interface{})
+		return v["address"].(string)
+	default:
+		return ""
 	}
 }
