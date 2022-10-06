@@ -44,10 +44,6 @@ func NewPreCreateAccountDecorator(ak evmtypes.AccountKeeper) PreCreateAccountDec
 
 // AnteHandle implements sdk.AnteHandler function.
 func (cad PreCreateAccountDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
-	if ctx.IsReCheckTx() {
-		return next(ctx, tx, simulate)
-	}
-
 	msgs := tx.GetMsgs()
 	if len(msgs) > 0 {
 		switch msgs[0].(type) {
@@ -81,9 +77,6 @@ func NewPostCreateAccountDecorator(ak evmtypes.AccountKeeper) PostCreateAccountD
 
 // AnteHandle implements sdk.AnteHandler function.
 func (cad PostCreateAccountDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
-	if ctx.IsReCheckTx() {
-		return next(ctx, tx, simulate)
-	}
 
 	accAddress := ctx.Value("created_account_address")
 	accNumber := ctx.Value("created_account_number")
