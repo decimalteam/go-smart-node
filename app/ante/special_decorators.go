@@ -77,6 +77,7 @@ func NewPostCreateAccountDecorator(ak evmtypes.AccountKeeper) PostCreateAccountD
 
 // AnteHandle implements sdk.AnteHandler function.
 func (cad PostCreateAccountDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+
 	accAddress := ctx.Value("created_account_address")
 	accNumber := ctx.Value("created_account_number")
 	if accAddress != nil && accNumber != nil {
