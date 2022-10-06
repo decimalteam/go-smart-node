@@ -86,11 +86,12 @@ func (k Keeper) MintToken(c context.Context, msg *types.MsgMintToken) (*types.Ms
 	}
 
 	// update NFT collection in the store
-	collection.Supply++
 	if !collectionExists {
+		collection.Supply = 1
 		// write collection with it's counter
 		k.SetCollection(ctx, collection)
-	} else {
+	} else if !tokenExists {
+		collection.Supply++
 		// write collection counter separately
 		k.setCollectionCounter(ctx, sender, collection.Denom, types.CollectionCounter{
 			Supply: collection.Supply,
