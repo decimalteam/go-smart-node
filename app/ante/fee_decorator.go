@@ -75,10 +75,12 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 
 	// fee from transaction is zero (empty), we deduct calculated fee from payer
 	if feeFromTx.IsZero() {
-		// deduct the fees
+		// NOTE: commissionInBaseCoin may be zero in case of RedeemCheck
+		// do not remove this condition
 		if commissionInBaseCoin.IsZero() {
 			return next(ctx, tx, simulate)
 		}
+		// deduct the fees
 		err = DeductFees(ctx, fd.bankKeeper, fd.coinKeeper, feeTx.FeePayer(), sdk.NewCoin(baseDenom, commissionInBaseCoin))
 		if err != nil {
 			return ctx, err
