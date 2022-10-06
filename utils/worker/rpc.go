@@ -49,9 +49,20 @@ func (w *Worker) fetchBlockSize(height int64, ch chan int) {
 }
 
 func (w *Worker) fetchBlockTxResults(height int64, block ctypes.ResultBlock, ea *EventAccumulator, ch chan []Tx, brch chan *ctypes.ResultBlockResults) {
-	blockResults, err := w.rpcClient.BlockResults(w.ctx, &height)
-	if err != nil { // len(result.EndBlockEvents) != 0
-		w.panicError(err)
+	var (
+		err          error
+		blockResults *ctypes.ResultBlockResults
+		counter      int
+	)
+
+	for {
+		counter++
+		w.logger.Debug(fmt.Sprintf("%d attempt to fetch block height: %d, time %s", counter, height, time.Now().String()))
+		// Request block results
+		blockResults, err = w.rpcClient.BlockResults(w.ctx, &height)
+		if err == nil { // len(result.EndBlockEvents) != 0
+			break
+		}
 	}
 
 	var results []Tx
