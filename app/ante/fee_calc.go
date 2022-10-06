@@ -14,6 +14,10 @@ import (
 
 // CalculateFee calculates fee in base coin
 func CalculateFee(msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee.Params) (sdkmath.Int, error) {
+
+	// Do not place commission for tx bytes to end because of RedeemCheck case
+	commission := helpers.DecToDecWithE18(params.TxByteFee.MulInt64(txBytesLen))
+
 	msgsFee := sdk.ZeroDec()
 	for _, msg := range msgs {
 		switch m := msg.(type) {
@@ -32,7 +36,11 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee
 		case *coin.MsgSellAllCoin:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinSell))
 		case *coin.MsgRedeemCheck:
-			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinRedeemCheck))
+			// NOTE: for redeem check commission will be payed by check issuer in keeper
+			// Here commission will be set to zero to enable redeem for new accounts
+			// without coins
+			msgsFee = sdk.ZeroDec()
+			commission = sdk.ZeroDec()
 		case *coin.MsgUpdateCoin:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinUpdate))
 		case *coin.MsgBurnCoin:
@@ -71,9 +79,7 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee
 		}
 	}
 
-	bytesFee := helpers.DecToDecWithE18(params.TxByteFee.MulInt64(txBytesLen))
-
-	commission := bytesFee.Add(msgsFee)
+	commission = commission.Add(msgsFee)
 
 	// change commission according to DEL price
 	commissionInBaseCoin := commission.Quo(delPrice).RoundInt()
