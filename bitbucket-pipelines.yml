@@ -461,7 +461,6 @@ pipelines:
                 LOCAL_PATH: "build/"
                 REMOTE_PATH: $REPO_REMOTE_PATH/$REPO_UPDATE_BLOCK
                 DELETE_FLAG: "true"
-                SSH_ARGS: '-o StrictHostKeyChecking=no'
                 DEBUG: "true"
 
     build-and-deploy-binary-files-to-repo-TESTnet:
