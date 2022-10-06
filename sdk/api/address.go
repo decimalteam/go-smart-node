@@ -25,7 +25,7 @@ func (api *API) Address(address string) (*AddressResult, error) {
 	client := authTypes.NewQueryClient(api.grpcClient)
 	res, err := client.Account(
 		context.Background(),
-		&authTypes.QueryAccountRequest{address},
+		&authTypes.QueryAccountRequest{Address: address},
 	)
 	// if address is correct bech32, but account not found, just return empty info
 	if status.Code(err) == codes.NotFound {

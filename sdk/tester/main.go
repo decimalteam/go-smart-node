@@ -4,7 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
+	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
+	dscWallet "bitbucket.org/decimalteam/go-smart-node/sdk/wallet"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
 // helper function
@@ -18,6 +23,9 @@ func formatAsJSON(obj interface{}) string {
 
 // TODO: split and document
 func main() {
+	makeCheck()
+
+	return
 	api, err := dscApi.NewAPI(dscApi.ConnectionOptions{EndpointHost: "127.0.0.1", Timeout: 40})
 	if err != nil {
 		fmt.Printf("connect error: %v\n", err)
@@ -147,4 +155,13 @@ func main() {
 			fmt.Printf("%v\n", wallets)
 		}
 	}
+}
+
+func makeCheck() {
+	const mnemonic = "flip hamster timber rent then remember cargo choose bubble glue damage ball hazard knee soldier wet oxygen define view device group across tank craft"
+	acc, _ := dscWallet.NewAccountFromMnemonicWords(mnemonic, "")
+	acc.WithChainID("decimal_2020-22093001")
+	check, err := dscTx.IssueCheck(acc, "del", helpers.EtherToWei(sdk.NewInt(100)), sdk.NewInt(10), 100000, "123")
+	fmt.Printf("err: %v\n", err)
+	fmt.Printf("check: %s\n", check)
 }

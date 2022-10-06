@@ -14,7 +14,6 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coinconfig "bitbucket.org/decimalteam/go-smart-node/x/coin/config"
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
 	feeerrors "bitbucket.org/decimalteam/go-smart-node/x/fee/errors"
@@ -68,7 +67,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 	feePayerAcc := fd.accountKeeper.GetAccount(ctx, feeTx.FeePayer())
 	baseDenom := fd.coinKeeper.GetBaseDenom(ctx)
 
-	ctx = ctx.WithValue(types.ContextFeeKey{}, feeFromTx)
+	ctx = ctx.WithValue(cointypes.ContextFeeKey{}, feeFromTx)
 
 	if feePayerAcc == nil {
 		return ctx, FeePayerAddressDoesNotExist
@@ -76,10 +75,12 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 
 	// fee from transaction is zero (empty), we deduct calculated fee from payer
 	if feeFromTx.IsZero() {
-		// deduct the fees
+		// NOTE: commissionInBaseCoin may be zero in case of RedeemCheck
+		// do not remove this condition
 		if commissionInBaseCoin.IsZero() {
 			return next(ctx, tx, simulate)
 		}
+		// deduct the fees
 		err = DeductFees(ctx, fd.bankKeeper, fd.coinKeeper, feeTx.FeePayer(), sdk.NewCoin(baseDenom, commissionInBaseCoin))
 		if err != nil {
 			return ctx, err
@@ -109,16 +110,11 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 		}
 
 		feeInBaseCoin = formulas.CalculateSaleReturn(coinInfo.Volume, coinInfo.Reserve, uint(coinInfo.CRR), feeFromTx[0].Amount)
-		fmt.Printf("####### Coin: %+v\n", coinInfo)
 
 		if coinInfo.Reserve.Sub(feeInBaseCoin).LT(coinconfig.MinCoinReserve) {
 			return ctx, CoinReserveBecomeInsufficient
 		}
 	}
-
-	fmt.Printf("####### Price: %s\n", delPrice.Price)
-	fmt.Printf("####### Commission: %s DEL\n", commissionInBaseCoin)
-	fmt.Printf("####### Fee: %s DEL\n", feeInBaseCoin)
 
 	if feeInBaseCoin.LT(commissionInBaseCoin) {
 		return ctx, FeeLessThanCommission

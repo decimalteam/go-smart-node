@@ -115,6 +115,8 @@ func doesPageExist(s string) bool {
 	if err != nil {
 		return false
 	}
+	defer resp.Body.Close()
+
 	return resp.StatusCode == 200
 }
 

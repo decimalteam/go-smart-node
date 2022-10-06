@@ -5,11 +5,13 @@ import (
 	"math/rand"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // MsgUpdateCoin
@@ -26,7 +28,7 @@ type UpdateCoinGenerator struct {
 type UpdateCoinAction struct {
 	creator        sdk.AccAddress
 	symbol         string
-	newLimitVolume sdk.Int
+	newLimitVolume sdkmath.Int
 	newIdentity    string
 }
 
@@ -65,7 +67,7 @@ func (aug *UpdateCoinGenerator) Generate() Action {
 		}
 	}
 
-	delta := helpers.FinneyToWei(sdk.NewInt(RandomRange(aug.rnd, aug.bottomRange, aug.upperRange)))
+	delta := helpers.FinneyToWei(sdkmath.NewInt(RandomRange(aug.rnd, aug.bottomRange, aug.upperRange)))
 
 	creator, err := sdk.AccAddressFromBech32(coinInfo.Creator)
 	if err != nil {

@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"strconv"
 
-	coinconfig "bitbucket.org/decimalteam/go-smart-node/x/coin/config"
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	coinconfig "bitbucket.org/decimalteam/go-smart-node/x/coin/config"
 )
 
 func prepareAddressTable(gs *GenesisOld) (*AddressTable, error) {
@@ -239,7 +241,7 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 	// prepare subtokens
 	type subRecord struct {
 		id      string
-		reserve sdk.Int
+		reserve math.Int
 	}
 	preparedSubTokens := make(map[string][]subRecord)
 	for _, sub := range subsOld {

@@ -3,7 +3,6 @@ package worker
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
@@ -143,17 +142,9 @@ func processEventCreateToken(ea *EventAccumulator, event abci.Event, txHash stri
 				return fmt.Errorf("can't parse reserve '%s': %s", string(attr.Value), err.Error())
 			}
 		case "subTokenIds":
-			var subIds []string
-			err := json.Unmarshal(attr.Value, &subIds)
+			err := json.Unmarshal(attr.Value, &e.SubTokenIDs)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal subTokenIds: %s", err.Error())
-			}
-			for _, s := range subIds {
-				v, err := strconv.ParseUint(s, 10, 32)
-				if err != nil {
-					return fmt.Errorf("can't parse sub token id '%s': %s", s, err.Error())
-				}
-				e.SubTokenIDs = append(e.SubTokenIDs, uint32(v))
 			}
 		}
 	}
@@ -204,17 +195,9 @@ func processEventMintNFT(ea *EventAccumulator, event abci.Event, txHash string) 
 				return fmt.Errorf("can't parse reserve '%s': %s", string(attr.Value), err.Error())
 			}
 		case "sub_token_ids":
-			var subIds []string
-			err := json.Unmarshal(attr.Value, &subIds)
+			err := json.Unmarshal(attr.Value, &e.SubTokenIDs)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal subTokenIds: %s", err.Error())
-			}
-			for _, s := range subIds {
-				v, err := strconv.ParseUint(s, 10, 32)
-				if err != nil {
-					return fmt.Errorf("can't parse sub token id '%s': %s", s, err.Error())
-				}
-				e.SubTokenIDs = append(e.SubTokenIDs, uint32(v))
 			}
 		}
 	}
@@ -253,17 +236,9 @@ func processEventBurnNFT(ea *EventAccumulator, event abci.Event, txHash string) 
 			//	return fmt.Errorf("can't parse reserve '%s': %s", string(attr.Value), err.Error())
 			//}
 		case "sub_token_ids":
-			var subIds []string
-			err := json.Unmarshal(attr.Value, &subIds)
+			err := json.Unmarshal(attr.Value, &e.SubTokenIDs)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal subTokenIds: %s", err.Error())
-			}
-			for _, s := range subIds {
-				v, err := strconv.ParseUint(s, 10, 32)
-				if err != nil {
-					return fmt.Errorf("can't parse sub token id '%s': %s", s, err.Error())
-				}
-				e.SubTokenIDs = append(e.SubTokenIDs, uint32(v))
 			}
 		}
 	}
@@ -328,17 +303,9 @@ func processEventUpdateReserve(ea *EventAccumulator, event abci.Event, txHash st
 				return fmt.Errorf("can't parse reserve '%s': %s", string(attr.Value), err.Error())
 			}
 		case "sub_token_ids":
-			var subIds []string
-			err := json.Unmarshal(attr.Value, &subIds)
+			err := json.Unmarshal(attr.Value, &e.SubTokenIDs)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal subTokenIds: %s", err.Error())
-			}
-			for _, s := range subIds {
-				v, err := strconv.ParseUint(s, 10, 32)
-				if err != nil {
-					return fmt.Errorf("can't parse sub token id '%s': %s", s, err.Error())
-				}
-				e.SubTokenIDs = append(e.SubTokenIDs, uint32(v))
 			}
 		}
 	}
@@ -368,17 +335,9 @@ func processEventSendNFT(ea *EventAccumulator, event abci.Event, txHash string) 
 		case "recipient":
 			e.Recipient = string(attr.Value)
 		case "sub_token_ids":
-			var subIds []string
-			err := json.Unmarshal(attr.Value, &subIds)
+			err := json.Unmarshal(attr.Value, &e.SubTokenIDs)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal subTokenIds: %s", err.Error())
-			}
-			for _, s := range subIds {
-				v, err := strconv.ParseUint(s, 10, 32)
-				if err != nil {
-					return fmt.Errorf("can't parse sub token id '%s': %s", s, err.Error())
-				}
-				e.SubTokenIDs = append(e.SubTokenIDs, uint32(v))
 			}
 		}
 	}

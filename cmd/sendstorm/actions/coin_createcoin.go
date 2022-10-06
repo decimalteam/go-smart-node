@@ -5,10 +5,13 @@ import (
 	"math/rand"
 	"time"
 
-	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 )
 
 // MsgCreateCoin
@@ -26,9 +29,9 @@ type CreateCoinAction struct {
 	title       string
 	symbol      string
 	crr         uint64
-	initVolume  sdk.Int
-	initReserve sdk.Int
-	limitVolume sdk.Int
+	initVolume  sdkmath.Int
+	initReserve sdkmath.Int
+	limitVolume sdkmath.Int
 	identity    string
 }
 
@@ -71,9 +74,9 @@ func (acg *CreateCoinGenerator) Generate() Action {
 		title:       RandomString(acg.rnd, 10, charsAll),
 		symbol:      symbol,
 		crr:         uint64(RandomRange(acg.rnd, 10, 100+1)),
-		initVolume:  helpers.EtherToWei(sdk.NewInt(RandomRange(acg.rnd, acg.initVolumeBottom, acg.initVolumeUp))),
-		initReserve: helpers.EtherToWei(sdk.NewInt(RandomRange(acg.rnd, acg.initReserveBottom, acg.initReserveUp))),
-		limitVolume: helpers.EtherToWei(sdk.NewInt(RandomRange(acg.rnd, acg.limitVolumeBottom, acg.limitVolumeUp))),
+		initVolume:  helpers.EtherToWei(sdkmath.NewInt(RandomRange(acg.rnd, acg.initVolumeBottom, acg.initVolumeUp))),
+		initReserve: helpers.EtherToWei(sdkmath.NewInt(RandomRange(acg.rnd, acg.initReserveBottom, acg.initReserveUp))),
+		limitVolume: helpers.EtherToWei(sdkmath.NewInt(RandomRange(acg.rnd, acg.limitVolumeBottom, acg.limitVolumeUp))),
 		identity:    RandomString(acg.rnd, 10, charsAll),
 	}
 }

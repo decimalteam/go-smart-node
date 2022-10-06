@@ -18,13 +18,13 @@ import (
 )
 
 // GenesisStateWithValSet returns a new genesis state with the validator set
-func GenesisStateWithValSet(codec codec.Codec, genesisState map[string]json.RawMessage,
+func GenesisStateWithValSet(cdc codec.Codec, genesisState map[string]json.RawMessage,
 	valSet *tmtypes.ValidatorSet, genAccs []authtypes.GenesisAccount,
 	balances ...banktypes.Balance,
 ) (map[string]json.RawMessage, error) {
 	// set genesis accounts
 	authGenesis := authtypes.NewGenesisState(authtypes.DefaultParams(), genAccs)
-	genesisState[authtypes.ModuleName] = codec.MustMarshalJSON(authGenesis)
+	genesisState[authtypes.ModuleName] = cdc.MustMarshalJSON(authGenesis)
 
 	validators := make([]stakingtypes.Validator, 0, len(valSet.Validators))
 	delegations := make([]stakingtypes.Delegation, 0, len(valSet.Validators))
@@ -61,7 +61,7 @@ func GenesisStateWithValSet(codec codec.Codec, genesisState map[string]json.RawM
 	}
 	// set validators and delegations
 	stakingGenesis := stakingtypes.NewGenesisState(stakingtypes.DefaultParams(), validators, delegations)
-	genesisState[stakingtypes.ModuleName] = codec.MustMarshalJSON(stakingGenesis)
+	genesisState[stakingtypes.ModuleName] = cdc.MustMarshalJSON(stakingGenesis)
 
 	totalSupply := sdk.NewCoins()
 	for _, b := range balances {
@@ -82,7 +82,7 @@ func GenesisStateWithValSet(codec codec.Codec, genesisState map[string]json.RawM
 
 	// update total supply
 	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().Params, balances, totalSupply, []banktypes.Metadata{})
-	genesisState[banktypes.ModuleName] = codec.MustMarshalJSON(bankGenesis)
+	genesisState[banktypes.ModuleName] = cdc.MustMarshalJSON(bankGenesis)
 
 	return genesisState, nil
 }

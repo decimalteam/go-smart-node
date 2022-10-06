@@ -94,7 +94,7 @@ definitions:
                - cd "${PACKAGE_PATH}"
                - go get ./...
                - go test ./...
-               - COSMOS_BUILD_OPTIONS=goleveldb make install
+               - go install ./cmd/dscd/
                - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/centos/8/
                - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/centos/8/
              artifacts:
@@ -124,7 +124,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - COSMOS_BUILD_OPTIONS=goleveldb make install
+              - go install ./cmd/dscd/
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ol/8.5/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ol/8.5/
             artifacts:
@@ -154,7 +154,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - COSMOS_BUILD_OPTIONS=goleveldb make install
+              - go install ./cmd/dscd/
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
             artifacts:
@@ -169,7 +169,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
               - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
               - tar -xvf go1.18.5.linux-amd64.tar.gz
               - mv go /usr/local
@@ -185,7 +185,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - COSMOS_BUILD_OPTIONS=goleveldb make install
+              - go install ./cmd/dscd/
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/22.04/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/22.04/
             artifacts:
@@ -200,7 +200,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
               - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
               - tar -xvf go1.18.5.linux-amd64.tar.gz
               - mv go /usr/local
@@ -216,7 +216,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - COSMOS_BUILD_OPTIONS=goleveldb make install
+              - go install ./cmd/dscd/
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/20.04/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/20.04/
             artifacts:
@@ -231,7 +231,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
               - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
               - tar -xvf go1.18.5.linux-amd64.tar.gz
               - mv go /usr/local
@@ -247,7 +247,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - COSMOS_BUILD_OPTIONS=goleveldb make install
+              - go install ./cmd/dscd/
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/18.04/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/18.04/
             artifacts:
@@ -262,7 +262,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
               - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
               - tar -xvf go1.18.5.linux-amd64.tar.gz
               - mv go /usr/local
@@ -278,7 +278,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - COSMOS_BUILD_OPTIONS=goleveldb make install
+              - go install ./cmd/dscd/
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/16.04/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/16.04/
             artifacts:
@@ -293,7 +293,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
               - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
               - tar -xvf go1.18.5.linux-amd64.tar.gz
               - mv go /usr/local
@@ -309,7 +309,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - COSMOS_BUILD_OPTIONS=goleveldb make install
+              - go install ./cmd/dscd/
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/11/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/11/
             artifacts:
@@ -324,7 +324,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
               - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
               - tar -xvf go1.18.5.linux-amd64.tar.gz
               - mv go /usr/local
@@ -340,7 +340,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - COSMOS_BUILD_OPTIONS=goleveldb make install
+              - go install ./cmd/dscd/
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/10/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/10/
             artifacts:
@@ -355,7 +355,7 @@ definitions:
             script:
               - apt-get update -y
               - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates which wget
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
               - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
               - tar -xvf go1.18.5.linux-amd64.tar.gz
               - mv go /usr/local
@@ -371,7 +371,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - COSMOS_BUILD_OPTIONS=goleveldb make install
+              - go install ./cmd/dscd/
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/9/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/9/
             artifacts:
@@ -454,7 +454,7 @@ pipelines:
           name: Deploy
           deployment: Test
           script:
-            - pipe: atlassian/rsync-deploy:0.6.0
+            - pipe: atlassian/rsync-deploy:0.8.1
               variables:
                 USER: $REPO_USER
                 SERVER: $REPO_HOST
@@ -469,7 +469,7 @@ pipelines:
           name: Deploy
           deployment: Staging
           script:
-            - pipe: atlassian/rsync-deploy:0.6.0
+            - pipe: atlassian/rsync-deploy:0.8.1
               variables:
                 USER: $REPO_USER
                 SERVER: $REPO_HOST
@@ -484,7 +484,7 @@ pipelines:
           name: Deploy
           deployment: Production
           script:
-            - pipe: atlassian/rsync-deploy:0.6.0
+            - pipe: atlassian/rsync-deploy:0.8.1
               variables:
                 USER: $REPO_USER
                 SERVER: $REPO_HOST

@@ -3,7 +3,6 @@ package ante
 import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
@@ -16,7 +15,9 @@ import (
 
 // CalculateFee calculates fee in base coin
 func CalculateFee(msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee.Params) (sdkmath.Int, error) {
-	params = fee.DefaultParams()
+
+	// Do not place commission for tx bytes to end because of RedeemCheck case
+	commission := helpers.DecToDecWithE18(params.TxByteFee.MulInt64(txBytesLen))
 
 	msgsFee := sdk.ZeroDec()
 	for _, msg := range msgs {
@@ -36,7 +37,11 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee
 		case *coin.MsgSellAllCoin:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinSell))
 		case *coin.MsgRedeemCheck:
-			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinRedeemCheck))
+			// NOTE: for redeem check commission will be payed by check issuer in keeper
+			// Here commission will be set to zero to enable redeem for new accounts
+			// without coins
+			msgsFee = sdk.ZeroDec()
+			commission = sdk.ZeroDec()
 		case *coin.MsgUpdateCoin:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinUpdate))
 		case *coin.MsgBurnCoin:
@@ -72,16 +77,12 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee
 		case *fee.MsgUpdateCoinPrices:
 		case *upgradetypes.MsgSoftwareUpgrade:
 		case *upgradetypes.MsgCancelUpgrade:
-		case *govtypesv1.MsgSubmitProposal:
-		case *govtypesv1.MsgVote:
 		default:
 			return sdkmath.ZeroInt(), UnknownTransaction
 		}
 	}
 
-	bytesFee := helpers.DecToDecWithE18(params.TxByteFee.MulInt64(txBytesLen))
-
-	commission := bytesFee.Add(msgsFee)
+	commission = commission.Add(msgsFee)
 
 	// change commission according to DEL price
 	commissionInBaseCoin := commission.Quo(delPrice).RoundInt()

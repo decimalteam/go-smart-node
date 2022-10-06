@@ -1,13 +1,16 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	"context"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 )
 
 var _ types.QueryServer = Keeper{}

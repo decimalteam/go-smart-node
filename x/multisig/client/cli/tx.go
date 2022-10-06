@@ -104,7 +104,7 @@ $ %s tx %s create-wallet dx1a..a,dx1b..b,dx1c..c 1,2,3 5 --from mykey`, config.A
 	// workaround for cosmos
 	cmd.Flags().String(flags.FlagChainID, "", "network chain id")
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }
@@ -159,7 +159,7 @@ $ %s tx %s create-transaction dx1..wallet dx1..receiver 1000del,200tony --from m
 	// workaround for cosmos
 	cmd.Flags().String(flags.FlagChainID, "", "network chain id")
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }
@@ -198,7 +198,7 @@ $ %s tx %s sign-transaction dx1..transaction.. --from mykey`, config.AppBinName,
 	// workaround for cosmos
 	cmd.Flags().String(flags.FlagChainID, "", "network chain id")
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }

@@ -7,13 +7,14 @@ import (
 	"fmt"
 	"math/big"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethcmn "github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/math"
+	ethmath "github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-func GetHash(transactionNumber sdk.Int, tokenSymbol string, amount sdk.Int, recipient string,
+func GetHash(transactionNumber math.Int, tokenSymbol string, amount math.Int, recipient string,
 	fromChain, destChain uint32) (Hash, error) {
 	var hash [32]byte
 
@@ -48,7 +49,7 @@ func encodeString(v string) []byte {
 }
 
 func encodeUint256(v *big.Int) []byte {
-	return math.U256Bytes(v)
+	return ethmath.U256Bytes(v)
 }
 
 func encodeUint8(v uint8) []byte {
