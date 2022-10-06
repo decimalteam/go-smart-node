@@ -1,6 +1,6 @@
 package v3
 
 const (
-	UpgradeName   = "http://127.0.0.1:8080/50"
+	UpgradeName   = "https://devnet-dsc-repo.decimalchain.com/9001"
 	UpgradeHeight = 50
 )
