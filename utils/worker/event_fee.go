@@ -3,10 +3,14 @@ package worker
 import (
 	"encoding/json"
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"strings"
 	"time"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	abci "github.com/tendermint/tendermint/abci/types"
+
+	"bitbucket.org/decimalteam/go-smart-node/types"
 )
 
 type EventPayCommission struct {
@@ -50,7 +54,18 @@ func processEventPayCommission(ea *EventAccumulator, event abci.Event, _ string)
 	for _, attr := range event.Attributes {
 		switch string(attr.Key) {
 		case "payer":
-			e.Payer = string(attr.Value)
+			var err error
+			var address sdk.Address
+			payer := string(attr.Value)
+			if strings.HasPrefix(payer, "0x") {
+				address, err = types.GetDecimalAddressFromHex(payer)
+			} else {
+				address, err = types.GetDecimalAddressFromBech32(payer)
+			}
+			if err != nil {
+				return fmt.Errorf("can't unmarshal address: %s, value: '%s'", err.Error(), string(attr.Value))
+			}
+			e.Payer = address.String()
 		case "coins":
 			err = json.Unmarshal(attr.Value, &coins)
 			if err != nil {
