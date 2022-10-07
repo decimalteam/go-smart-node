@@ -2,6 +2,7 @@ package app
 
 import (
 	v3 "bitbucket.org/decimalteam/go-smart-node/app/upgrade/v3"
+	v4 "bitbucket.org/decimalteam/go-smart-node/app/upgrade/v4"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -1022,6 +1023,9 @@ func initParamsKeeper(
 func (app *DSC) setupUpgradeHandlers() {
 	app.UpgradeKeeper.SetUpgradeHandler(
 		v3.UpgradeName, v3.CreateUpgradeHandler(app.mm, app.configurator),
+	)
+	app.UpgradeKeeper.SetUpgradeHandler(
+		v4.UpgradeName, v4.CreateUpgradeHandler(app.mm, app.configurator),
 	)
 
 	// When a planned update height is reached, the old binary will panic
