@@ -149,7 +149,6 @@ func TestInitGenesisForLegacy(t *testing.T) {
 
 	// init  genesis done
 	// let's check
-	app.LegacyKeeper.RestoreCache(ctx)
 	require.True(t, app.LegacyKeeper.IsLegacyAddress(ctx, oldAddress), "check legacy address 1")
 	require.False(t, app.LegacyKeeper.IsLegacyAddress(ctx, newAddress), "check legacy address 2")
 	err = app.LegacyKeeper.ActualizeLegacy(ctx, publicKey)

@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"testing"
+
 	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
@@ -8,7 +10,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
-	"testing"
 )
 
 var (
@@ -52,7 +53,6 @@ func (s *KeeperTestSuite) TestMsgReturnLegacy() {
 	require := s.Require()
 
 	k.SetLegacyRecord(ctx, defaultRecord)
-	k.RestoreCache(ctx)
 
 	testCases := []struct {
 		name   string
