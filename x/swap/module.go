@@ -49,7 +49,7 @@ func (AppModuleBasic) Name() string {
 
 // ConsensusVersion returns the consensus state-breaking version for the module.
 func (AppModuleBasic) ConsensusVersion() uint64 {
-	return 2
+	return 3
 }
 
 // RegisterLegacyAminoCodec performs a no-op as the module doesn't support Amino encoding.
@@ -156,6 +156,10 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 		panic(fmt.Errorf("failed to migrate %s to v2: %w", types.ModuleName, err))
 	}
 
+	// register v2 -> v3 migration
+	if err := cfg.RegisterMigration(types.ModuleName, 2, migrator.Migrate2to3); err != nil {
+		panic(fmt.Errorf("failed to migrate %s to v3: %w", types.ModuleName, err))
+	}
 }
 
 // RegisterInvariants registers the module's invariants.

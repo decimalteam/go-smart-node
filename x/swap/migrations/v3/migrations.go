@@ -1,7 +1,6 @@
-package v2
+package v3
 
 import (
-	"fmt"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -11,13 +10,13 @@ import (
 )
 
 func UpdateParams(ctx sdk.Context, paramstore *paramtypes.Subspace) error {
-	fmt.Println("hiiiiii2")
+	ctx.Logger().Info("Upgrade is successful: congrats people!")
 	if !paramstore.HasKeyTable() {
 		ps := paramstore.WithKeyTable(types.ParamKeyTable())
 		paramstore = &ps
 	}
 
-	newTimeOut := time.Hour * 25
+	newTimeOut := time.Hour * 30
 	newTimeIn := time.Hour * 13
 
 	paramstore.Set(ctx, types.KeyLockedTimeOut, newTimeOut)
