@@ -23,9 +23,6 @@ type Keeper struct {
 	bankKeeper     types.BankKeeper
 	nftKeeper      types.NftKeeper
 	multisigKeeper types.MultisigKeeper
-
-	addressCache     map[string]bool
-	needRestoreCache *bool // use pointer to share flag between Keeper copies
 }
 
 // NewKeeper creates new Keeper instance.
@@ -37,33 +34,19 @@ func NewKeeper(
 	multisigKeeper types.MultisigKeeper,
 ) *Keeper {
 	keeper := &Keeper{
-		cdc:              cdc,
-		storeKey:         storeKey,
-		bankKeeper:       bankKeeper,
-		nftKeeper:        nftKeeper,
-		multisigKeeper:   multisigKeeper,
-		addressCache:     make(map[string]bool),
-		needRestoreCache: new(bool),
+		cdc:            cdc,
+		storeKey:       storeKey,
+		bankKeeper:     bankKeeper,
+		nftKeeper:      nftKeeper,
+		multisigKeeper: multisigKeeper,
 	}
-	*keeper.needRestoreCache = true
 	return keeper
 }
 
-// NOTE: for consensus sanity call RestoreCache only in BeginBlock/EndBlock
-func (k *Keeper) RestoreCache(ctx sdk.Context) {
-	k.addressCache = make(map[string]bool)
-	for _, rec := range k.GetLegacyRecords(ctx) {
-		k.addressCache[rec.LegacyAddress] = true
-	}
-	*k.needRestoreCache = false
-}
-
-func (k *Keeper) IsNeedToRestoreCache(ctx sdk.Context) bool {
-	return *k.needRestoreCache
-}
-
 func (k *Keeper) IsLegacyAddress(ctx sdk.Context, address string) bool {
-	return k.addressCache[address]
+	store := ctx.KVStore(k.storeKey)
+	key := []byte(address)
+	return store.Has(key)
 }
 
 func (k *Keeper) GetLegacyRecords(ctx sdk.Context) []types.Record {
@@ -114,7 +97,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	if err != nil {
 		return errors.CannotGetLegacyAddressFromPublicKey
 	}
-	if !k.addressCache[legacyAddress] {
+	if !k.IsLegacyAddress(ctx, legacyAddress) {
 		return nil
 	}
 	actualSdkAddress := sdk.AccAddress(ethsecp256k1.PubKey{Key: pubKeyBytes}.Address())
@@ -206,9 +189,6 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 
 	// all complete, delete
 	k.DeleteLegacyRecord(ctx, legacyAddress)
-
-	// after ActualizeLegacy need to reload cache on next block
-	*k.needRestoreCache = true
 
 	return nil
 }
