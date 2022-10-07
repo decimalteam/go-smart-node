@@ -23,8 +23,6 @@ type Keeper struct {
 	bankKeeper     types.BankKeeper
 	nftKeeper      types.NftKeeper
 	multisigKeeper types.MultisigKeeper
-
-	addressCache map[string]bool
 }
 
 // NewKeeper creates new Keeper instance.
@@ -41,20 +39,14 @@ func NewKeeper(
 		bankKeeper:     bankKeeper,
 		nftKeeper:      nftKeeper,
 		multisigKeeper: multisigKeeper,
-		addressCache:   make(map[string]bool),
 	}
 	return keeper
 }
 
-func (k *Keeper) RestoreCache(ctx sdk.Context) {
-	k.addressCache = make(map[string]bool)
-	for _, rec := range k.GetLegacyRecords(ctx) {
-		k.addressCache[rec.LegacyAddress] = true
-	}
-}
-
 func (k *Keeper) IsLegacyAddress(ctx sdk.Context, address string) bool {
-	return k.addressCache[address]
+	store := ctx.KVStore(k.storeKey)
+	key := []byte(address)
+	return store.Has(key)
 }
 
 func (k *Keeper) GetLegacyRecords(ctx sdk.Context) []types.Record {
@@ -105,7 +97,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	if err != nil {
 		return errors.CannotGetLegacyAddressFromPublicKey
 	}
-	if !k.addressCache[legacyAddress] {
+	if !k.IsLegacyAddress(ctx, legacyAddress) {
 		return nil
 	}
 	actualSdkAddress := sdk.AccAddress(ethsecp256k1.PubKey{Key: pubKeyBytes}.Address())
@@ -198,10 +190,5 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	// all complete, delete
 	k.DeleteLegacyRecord(ctx, legacyAddress)
 
-	// NOTE: BE CAREFUL WITH CACHES, update only during delivery step
-	// NOTE: cache restores every block, so no need to restore after every ActualizeLegacy
-	// if !ctx.IsCheckTx() && !ctx.IsReCheckTx() {
-	//	k.RestoreCache(ctx)
-	// }
 	return nil
 }

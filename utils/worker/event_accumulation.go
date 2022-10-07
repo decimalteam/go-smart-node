@@ -62,7 +62,8 @@ type EventAccumulator struct {
 	// [address][coin_symbol]amount changes
 	BalancesChanges map[string]map[string]sdkmath.Int `json:"balances_changes"`
 	// [denom]vr struct
-	CoinsVR map[string]UpdateCoinVR `json:"coins_vr"`
+	CoinsVR       map[string]UpdateCoinVR `json:"coins_vr"`
+	PayCommission []EventPayCommission    `json:"pay_commission"`
 	// [coin_symbol]
 	CoinsCreates []EventCreateCoin          `json:"-"`
 	CoinUpdates  map[string]EventUpdateCoin `json:"-"`

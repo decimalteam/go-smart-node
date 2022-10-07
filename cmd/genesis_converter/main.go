@@ -6,8 +6,12 @@ import (
 	"io"
 	"os"
 
-	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	dscWallet "bitbucket.org/decimalteam/go-smart-node/sdk/wallet"
+	dscTypes "bitbucket.org/decimalteam/go-smart-node/types"
 )
 
 func main() {
@@ -158,6 +162,25 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord) (GenesisN
 		convertNFT(gsOld.AppState.NFT.Collections, gsOld.AppState.NFT.SubTokens, addrTable, legacyRecords, fixNFTData)
 	if err != nil {
 		return GenesisNew{}, Statistic{}, err
+	}
+	// inject to legacy records
+	// TODO: parametrize output?
+	if true {
+		fmt.Printf("!!! LEGACY RECORDS INJECTING !!! REMOVE FROM PRODUCTION\n")
+		out, err := os.Create("legacy_test_mnemonics.txt")
+		if err != nil {
+			return GenesisNew{}, Statistic{}, err
+		}
+		coins := sdk.NewCoins(sdk.NewCoin("del", sdkmath.NewInt(3_141_592_653_589_793_238)))
+		for i := 0; i < 40000; i++ {
+			mn, _ := dscWallet.NewMnemonic("")
+			acc, _ := dscWallet.NewAccountFromMnemonicWords(mn.Words(), "")
+			legacy_address, _ := dscTypes.GetLegacyAddressFromPubKey(acc.PubKey().Bytes())
+			address := acc.Address()
+			out.WriteString(fmt.Sprintf("%s\t%s\t%s\n", legacy_address, address, mn.Words()))
+			legacyRecords.AddCoins(legacy_address, coins)
+		}
+		out.Close()
 	}
 	// legacy records
 	var records []LegacyRecordNew

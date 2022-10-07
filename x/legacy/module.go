@@ -167,10 +167,6 @@ func (am AppModule) ConsensusVersion() uint64 {
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the module.
 func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
-	// TODO: we can restore cache not every block but at start of application
-	// but where is application start?
-	am.keeper.RestoreCache(ctx)
-	//
 }
 
 // EndBlock executes all ABCI EndBlock logic respective to the module.
