@@ -12,6 +12,7 @@ func copyParams(gs *GenesisNew, gsSource *GenesisNew) {
 	gs.AppState.Auth.Params = gsSource.AppState.Auth.Params
 	gs.AppState.Coin.Params = gsSource.AppState.Coin.Params
 	gs.AppState.Bank.Params = gsSource.AppState.Bank.Params
+	gs.AppState.Validator.Params = gsSource.AppState.Validator.Params
 	//
 	gs.AppState.Genutil = gsSource.AppState.Genutil
 	gs.AppState.Swap = gsSource.AppState.Swap

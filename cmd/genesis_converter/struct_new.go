@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/base64"
 	"fmt"
-	"time"
+	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
@@ -66,7 +66,12 @@ type GenesisNew struct {
 		Upgrade      interface{} `json:"upgrade"`
 		Vesting      interface{} `json:"vesting"`
 		Validator    struct {
-			Validators []ValidatorNew `json:"validators"`
+			Validators          []ValidatorNew          `json:"validators"`
+			Delegations         []DelegationNew         `json:"delegations"`
+			Undelegations       []UndelegationNew       `json:"undelegations"`
+			LastValidatorPowers []LastValidatorPowerNew `json:"last_validator_powers"`
+			LastTotalPower      int64                   `json:"last_total_power"`
+			Params              interface{}             `json:"params"`
 		} `json:"validator"`
 	} `json:"app_state"`
 }
@@ -329,41 +334,32 @@ type NFTOwnerFixRecord struct {
 // Validator
 // /////////////////////////
 type ValidatorNew struct {
-	Commission struct {
-		CommissionRates struct {
-			MaxChangeRate string `json:"max_change_rate"`
-			MaxRate       string `json:"max_rate"`
-			Rate          string `json:"rate"`
-		} `json:"commission_rates"`
-		UpdateTime string `json:"update_time"`
-	} `json:"commission"`
+	OperatorAddress string `json:"operator_address"` // dxvaloper1
+	RewardAddress   string `json:"reward_address"`   // dx1
 	ConsensusPubKey struct {
 		Type string `json:"@type"`
 		Key  string `json:"key"`
 	} `json:"consensus_pubkey"`
-	DelegatorShares string `json:"delegator_shares"`
-	Description     struct {
+	Description struct {
 		Details         string `json:"details"`
 		Identity        string `json:"identity"`
 		Moniker         string `json:"moniker"`
 		SecurityContact string `json:"security_contact"`
 		Website         string `json:"website"`
 	} `json:"description"`
-	Jailed            bool   `json:"jailed"`
-	MinSelfDelegation string `json:"min_self_delegation"`
-	OperatorAddress   string `json:"operator_address"` // dxvaloper1
-	Status            string `json:"status"`           // BOND_STATUS
-	Tokens            string `json:"tokens"`
-	UnbondingHeight   string `json:"unbonding_height"`
-	UnbondingTime     string `json:"unbonding_time"`
+	Commission      string `json:"commission"`
+	Status          string `json:"status"` // BOND_STATUS
+	Online          bool   `json:"online"`
+	Jailed          bool   `json:"jailed"`
+	UnbondingHeight string `json:"unbonding_height"`
+	UnbondingTime   string `json:"unbonding_time"`
 }
 
 func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable) (ValidatorNew, error) {
 	var result ValidatorNew
-	result.Commission.CommissionRates.MaxChangeRate = "0.0"
-	result.Commission.CommissionRates.MaxRate = valOld.Commission
-	result.Commission.CommissionRates.Rate = valOld.Commission
-	result.Commission.UpdateTime = time.Now().Format(time.RFC3339)
+	result.OperatorAddress = valOld.ValAddress
+	newRewardAdr := addrTable.GetAddress(valOld.RewardAddress)
+	result.RewardAddress = newRewardAdr
 	// pubkey
 	result.ConsensusPubKey.Type = "/cosmos.crypto.ed25519.PubKey"
 	bz, err := sdk.GetFromBech32(valOld.PubKey, "dxvalconspub")
@@ -382,9 +378,7 @@ func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable) (ValidatorNew, e
 	result.Description.SecurityContact = valOld.Description.SecurityContact
 	result.Description.Website = valOld.Description.Website
 	//
-	result.Jailed = valOld.Jailed
-	result.MinSelfDelegation = "1"
-	result.OperatorAddress = valOld.ValAddress
+	result.Commission = valOld.Commission
 	/*
 		Unbonded  BondStatus = 0x00 -- BOND_STATUS_UNBONDED
 		Unbonding BondStatus = 0x01 -- BOND_STATUS_UNBONDING
@@ -401,10 +395,173 @@ func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable) (ValidatorNew, e
 		return ValidatorNew{}, fmt.Errorf("unknown status code: %d", valOld.Status)
 	}
 
-	// TODO: tokens, delegator shares
-	result.Tokens = valOld.StakeCoins
+	result.Online = valOld.Online
+	result.Jailed = valOld.Jailed
 	result.UnbondingHeight = valOld.UnbondingHeight
 	result.UnbondingTime = valOld.UnbondingCompletionTime
 
 	return result, nil
+}
+
+type DelegationNew struct {
+	Delegator string   `json:"delegator"`
+	Validator string   `json:"validator"`
+	Stake     StakeNew `json:"stake"`
+}
+
+type StakeNew struct {
+	Type        string   `json:"type"`
+	ID          string   `json:"id"`
+	Stake       sdk.Coin `json:"stake"`
+	SubTokenIDs []int64  `json:"sub_token_ids"`
+}
+
+type UndelegationNew struct {
+	Delegator string                 `json:"delegator"`
+	Validator string                 `json:"validator"`
+	Entries   []UndelegationEntryNew `json:"entries"`
+}
+type UndelegationEntryNew struct {
+	CreationHeight int64    `json:"creation_height"`
+	CompletionTime string   `json:"completion_time"`
+	Stake          StakeNew `json:"stake"`
+}
+
+type RedelegationNew struct{}
+type LastValidatorPowerNew struct {
+	Address string `json:"address"`
+	Power   int64  `json:"power"`
+}
+
+/*
+  // COIN defines the type for stakes in coin.
+  STAKE_TYPE_COIN = 1 [ (gogoproto.enumvalue_customname) = "Coin" ];
+  // NFT defines the type for stakes in NFT.
+  STAKE_TYPE_NFT = 2 [ (gogoproto.enumvalue_customname) = "NFT" ];
+*/
+
+func DelegationO2NCoin(delOld DelegationOld, coinSymbols map[string]bool, addrTable *AddressTable) (DelegationNew, error) {
+	var delNew DelegationNew
+	coins := filterCoins(sdk.NewCoins(delOld.Coin), coinSymbols)
+	if coins.Len() == 0 {
+		fmt.Printf("delegation: (%s, %s) unexisting coin '%s'\n", delOld.DelegatorAddress, delOld.Validator, delOld.Coin.Denom)
+		return DelegationNew{}, nil
+	}
+	coin := coins[0]
+	delNew.Validator = delOld.Validator
+	newAdr := addrTable.GetAddress(delOld.DelegatorAddress)
+	if newAdr == "" {
+		return DelegationNew{}, fmt.Errorf("delegator '%s' has no new address", delOld.DelegatorAddress)
+	}
+	delNew.Delegator = newAdr
+	delNew.Stake.ID = coin.Denom
+	delNew.Stake.Stake = coin
+	delNew.Stake.Type = "STAKE_TYPE_COIN"
+
+	return delNew, nil
+}
+
+func DelegationO2NNFT(delOld DelegationNFTOld, addrTable *AddressTable) (DelegationNew, error) {
+	var delNew DelegationNew
+
+	delNew.Validator = delOld.Validator
+	newAdr := addrTable.GetAddress(delOld.DelegatorAddress)
+	if newAdr == "" {
+		return DelegationNew{}, fmt.Errorf("delegator '%s' has no new address", delOld.DelegatorAddress)
+	}
+	delNew.Delegator = newAdr
+	delNew.Stake.ID = delOld.TokenID
+	delNew.Stake.Stake = delOld.Coin
+	// fix for testnet
+	if delNew.Stake.Stake.Denom == "tdel" {
+		delNew.Stake.Stake.Denom = "del"
+	}
+	for _, s := range delOld.SubTokenIds {
+		id, err := strconv.ParseInt(s, 10, 32)
+		if err != nil {
+			return DelegationNew{}, fmt.Errorf("subtoken of token '%s' error: %s", delOld.TokenID, err.Error())
+		}
+		delNew.Stake.SubTokenIDs = append(delNew.Stake.SubTokenIDs, id)
+	}
+	delNew.Stake.Type = "STAKE_TYPE_NFT"
+
+	return delNew, nil
+}
+
+func UnbondingO2NCoin(ubdOld UnbondingRecordOld, coinSymbols map[string]bool, addrTable *AddressTable) (UndelegationNew, error) {
+	var err error
+	var ubdNew UndelegationNew
+
+	newAdr := addrTable.GetAddress(ubdOld.DelegatorAddress)
+	if newAdr == "" {
+		return UndelegationNew{}, fmt.Errorf("delegator '%s' has no new address", ubdOld.DelegatorAddress)
+	}
+	ubdNew.Delegator = newAdr
+	ubdNew.Validator = ubdOld.Validator
+
+	for _, entryOld := range ubdOld.Entries {
+		coins := filterCoins(sdk.NewCoins(entryOld.Value.Balance), coinSymbols)
+		if coins.Len() == 0 {
+			fmt.Printf("undonding: (%s, %s) unexisting coin '%s'\n", ubdOld.DelegatorAddress, ubdOld.Validator, entryOld.Value.Balance.Denom)
+			continue
+		}
+		coin := coins[0]
+
+		var entryNew UndelegationEntryNew
+		entryNew.CompletionTime = entryOld.Value.CompletionTime
+		entryNew.CreationHeight, err = strconv.ParseInt(entryOld.Value.CreationHeight, 10, 64)
+		if err != nil {
+			return UndelegationNew{}, fmt.Errorf("delegator '%s' creation_height error: %s", ubdOld.DelegatorAddress, err.Error())
+		}
+		entryNew.Stake.ID = coin.Denom
+		entryNew.Stake.Stake = coin
+		entryNew.Stake.Type = "STAKE_TYPE_COIN"
+
+		ubdNew.Entries = append(ubdNew.Entries, entryNew)
+	}
+	return ubdNew, nil
+}
+
+func UnbondingO2NNFT(ubdOld UnbondingNFTRecordOld, addrTable *AddressTable) (UndelegationNew, error) {
+	var err error
+	var ubdNew UndelegationNew
+
+	newAdr := addrTable.GetAddress(ubdOld.DelegatorAddress)
+	if newAdr == "" {
+		return UndelegationNew{}, fmt.Errorf("delegator '%s' has no new address", ubdOld.DelegatorAddress)
+	}
+	ubdNew.Delegator = newAdr
+	ubdNew.Validator = ubdOld.Validator
+
+	for _, entryOld := range ubdOld.Entries {
+		var entryNew UndelegationEntryNew
+		entryNew.CompletionTime = entryOld.CompletionTime
+		entryNew.CreationHeight, err = strconv.ParseInt(entryOld.CreationHeight, 10, 64)
+		if err != nil {
+			return UndelegationNew{}, fmt.Errorf("delegator '%s' creation_height error: %s", ubdOld.DelegatorAddress, err.Error())
+		}
+		entryNew.Stake.ID = entryOld.TokenID
+		entryNew.Stake.Stake = sdk.NewCoin("del", entryOld.Balance.Amount)
+		entryNew.Stake.Type = "STAKE_TYPE_NFT"
+		for _, s := range entryOld.SubTokenIds {
+			id, err := strconv.ParseInt(s, 10, 32)
+			if err != nil {
+				return UndelegationNew{}, fmt.Errorf("subtoken of token '%s' error: %s", entryOld.TokenID, err.Error())
+			}
+			entryNew.Stake.SubTokenIDs = append(entryNew.Stake.SubTokenIDs, id)
+		}
+		ubdNew.Entries = append(ubdNew.Entries, entryNew)
+	}
+	return ubdNew, nil
+}
+
+func LastValidatorPowerO2N(pwrOld LastValidatorPowerOld) (LastValidatorPowerNew, error) {
+	var err error
+	var pwrNew LastValidatorPowerNew
+	pwrNew.Address = pwrOld.Address
+	pwrNew.Power, err = strconv.ParseInt(pwrOld.Power, 10, 64)
+	if err != nil {
+		return LastValidatorPowerNew{}, fmt.Errorf("validator power '%s' error: %s", pwrOld.Address, err.Error())
+	}
+	return pwrNew, nil
 }

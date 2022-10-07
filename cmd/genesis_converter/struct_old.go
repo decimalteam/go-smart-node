@@ -24,10 +24,11 @@ type GenesisOld struct {
 			SubTokens   []SubTokenOld            `json:"sub_tokens"`
 		} `json:"nft"`
 		Validator struct {
-			Delegations    []DelegationOld      `json:"delegations"`
-			DelegationsNFT []DelegationNFT      `json:"delegations_nft"`
-			UndondingNFT   []UnbondingNFTRecord `json:"nft_unbonding_delegations"`
-			Unbondings     []UnbondingRecord    `json:"unbonding_delegations"`
+			Delegations         []DelegationOld         `json:"delegations"`
+			DelegationsNFT      []DelegationNFTOld      `json:"delegations_nft"`
+			UndondingsNFT       []UnbondingNFTRecordOld `json:"nft_unbonding_delegations"`
+			Unbondings          []UnbondingRecordOld    `json:"unbonding_delegations"`
+			LastValidatorPowers []LastValidatorPowerOld `json:"last_validator_powers"`
 			// `params`
 			Validators []ValidatorOld `json:"validators"`
 		} `json:"validator"`
@@ -140,7 +141,7 @@ type SubTokenOld struct {
 // /////////////////////////
 // Validator
 // /////////////////////////
-type DelegationNFT struct {
+type DelegationNFTOld struct {
 	Coin             sdk.Coin `json:"coin"`
 	DelegatorAddress string   `json:"delegator_address"`
 	Denom            string   `json:"denom"`
@@ -149,17 +150,19 @@ type DelegationNFT struct {
 	Validator        string   `json:"validator_address"`
 }
 
-type UnbondingNFTRecord struct {
-	DelegatorAddress string              `json:"delegator_address"`
-	Validator        string              `json:"validator_address"`
-	Entries          []UnbondingNFTEntry `json:"entries"`
+type UnbondingNFTRecordOld struct {
+	DelegatorAddress string                 `json:"delegator_address"`
+	Validator        string                 `json:"validator_address"`
+	Entries          []UnbondingNFTEntryOld `json:"entries"`
 }
 
-type UnbondingNFTEntry struct {
-	// TODO: complete
-	Denom       string   `json:"denom"`
-	TokenID     string   `json:"token_id"`
-	SubTokenIds []string `json:"sub_token_ids"`
+type UnbondingNFTEntryOld struct {
+	Balance        sdk.Coin `json:"balance"`
+	CreationHeight string   `json:"creation_height"`
+	CompletionTime string   `json:"completion_time"`
+	Denom          string   `json:"denom"`
+	TokenID        string   `json:"token_id"`
+	SubTokenIds    []string `json:"sub_token_ids"`
 }
 
 type DelegationOld struct {
@@ -169,18 +172,25 @@ type DelegationOld struct {
 	TokensBase       string   `json:"tokens_base"`
 }
 
-type UnbondingRecord struct {
-	DelegatorAddress string           `json:"delegator_address"`
-	Validator        string           `json:"validator_address"`
-	Entries          []UnbondingEntry `json:"entries"`
+type UnbondingRecordOld struct {
+	DelegatorAddress string              `json:"delegator_address"`
+	Validator        string              `json:"validator_address"`
+	Entries          []UnbondingEntryOld `json:"entries"`
 }
 
-type UnbondingEntry struct {
-	// TODO: complete
+type UnbondingEntryOld struct {
+	Type  string `json:"type"`
 	Value struct {
 		Balance        sdk.Coin `json:"balance"`
+		CreationHeight string   `json:"creation_height"`
+		CompletionTime string   `json:"completion_time"`
 		InitialBalance sdk.Coin `json:"initial_balance"`
 	} `json:"value"`
+}
+
+type LastValidatorPowerOld struct {
+	Address string `json:"Address"`
+	Power   string `json:"Power"`
 }
 
 type ValidatorOld struct {

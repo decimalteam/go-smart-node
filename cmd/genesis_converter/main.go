@@ -174,9 +174,30 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord) (GenesisN
 	if err != nil {
 		return GenesisNew{}, Statistic{}, err
 	}
+	gsNew.AppState.Validator.Delegations, err =
+		convertDelegations(gsOld.AppState.Validator.Delegations, gsOld.AppState.Validator.DelegationsNFT,
+			gsNew.AppState.Coin.Coins, addrTable)
+	if err != nil {
+		return GenesisNew{}, Statistic{}, err
+	}
+	gsNew.AppState.Validator.Undelegations, err =
+		convertUnbondings(gsOld.AppState.Validator.Unbondings, gsOld.AppState.Validator.UndondingsNFT,
+			gsNew.AppState.Coin.Coins, addrTable)
+	if err != nil {
+		return GenesisNew{}, Statistic{}, err
+	}
+	gsNew.AppState.Validator.LastValidatorPowers, err =
+		convertLastValidatorPowers(gsOld.AppState.Validator.LastValidatorPowers)
+	if err != nil {
+		return GenesisNew{}, Statistic{}, err
+	}
+	for _, pwr := range gsNew.AppState.Validator.LastValidatorPowers {
+		gsNew.AppState.Validator.LastTotalPower += pwr.Power
+	}
+	//////////////////////////////////////////
 	// validate NFT subtokens
 	invalidSubtokens := verifySubtokens(gsOld.AppState.NFT.SubTokens, gsOld.AppState.NFT.Collections,
-		gsOld.AppState.Validator.DelegationsNFT, gsOld.AppState.Validator.UndondingNFT)
+		gsOld.AppState.Validator.DelegationsNFT, gsOld.AppState.Validator.UndondingsNFT)
 	for key, cnt := range invalidSubtokens {
 		fmt.Printf("invalid subtoken nft: %#v == %#v\n", key, *cnt)
 	}
