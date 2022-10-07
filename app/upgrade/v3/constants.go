@@ -1,6 +1,6 @@
 package v3
 
 const (
-	UpgradeName   = "https://devnet-dsc-repo.decimalchain.com/9001"
-	UpgradeHeight = 50
+	UpgradeName = "https://devnet-dsc-repo.decimalchain.com/3200"
+	//UpgradeHeight = 3200
 )
