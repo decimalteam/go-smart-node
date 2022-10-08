@@ -10,6 +10,8 @@ option go_package = "bitbucket.org/decimalteam/go-smart-node/x/swap/types";
 
 // GenesisState defines the module's genesis state.
 message GenesisState {
+  // chains defines the blockchain networks active at genesis.
+  repeated Chain chains = 3 [ (gogoproto.nullable) = false ];
   // swaps defines the swaps active at genesis.
   repeated Swap swaps = 2 [ (gogoproto.nullable) = false ];
   // params defines all the module's parameters.

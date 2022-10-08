@@ -10,6 +10,9 @@ import (
 // InitGenesis initializes the module's state from a provided genesis state.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, gs *types.GenesisState) {
 	k.SetParams(ctx, gs.Params)
+	for _, chain := range gs.Chains {
+		k.SetChain(ctx, &chain)
+	}
 }
 
 // ExportGenesis returns the module's exported genesis.

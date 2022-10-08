@@ -72,12 +72,12 @@ func convertAccounts(accsOld []AccountOld, addrTable *AddressTable) ([]interface
 func filterCoins(coins sdk.Coins, coinSymbols map[string]bool) sdk.Coins {
 	var result = sdk.NewCoins()
 	for _, coin := range coins {
-		if !coinSymbols[coin.Denom] {
-			continue
-		}
 		if coin.Denom == "tdel" {
 			result = result.Add(sdk.NewCoin("del", coin.Amount))
 		} else {
+			if !coinSymbols[coin.Denom] {
+				continue
+			}
 			result = result.Add(coin)
 		}
 	}
