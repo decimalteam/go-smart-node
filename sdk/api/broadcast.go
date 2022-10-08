@@ -4,6 +4,7 @@ import (
 	"context"
 
 	cosmostx "github.com/cosmos/cosmos-sdk/types/tx"
+	tmtypes "github.com/tendermint/tendermint/abci/types"
 )
 
 // Response of broadcast_tx_sync
@@ -14,6 +15,11 @@ type TxSyncResponse struct {
 	Code      uint32
 	Log       string
 	Codespace string
+}
+
+type TxSimulateResponse struct {
+	Log    string
+	Events []tmtypes.Event
 }
 
 func (api *API) BroadcastTxSync(data []byte) (*TxSyncResponse, error) {
@@ -42,5 +48,20 @@ func (api *API) grpcBroadcastTx(data []byte, commitMode bool) (*TxSyncResponse, 
 		Code:      resp.TxResponse.Code,
 		Log:       resp.TxResponse.RawLog,
 		Codespace: resp.TxResponse.Codespace,
+	}, nil
+}
+
+func (api *API) SimulateTx(data []byte) (*TxSimulateResponse, error) {
+	client := cosmostx.NewServiceClient(api.grpcClient)
+	resp, err := client.Simulate(context.Background(), &cosmostx.SimulateRequest{
+		Tx:      nil,
+		TxBytes: data,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &TxSimulateResponse{
+		Log:    resp.Result.Log,
+		Events: resp.Result.Events,
 	}, nil
 }

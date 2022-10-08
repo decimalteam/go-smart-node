@@ -84,6 +84,17 @@ func (rcs *RedeemChecksScenario) MakeCheck() {
 		fmt.Printf("MakeCheck-BytesToSend err: %s\n", err.Error())
 		return
 	}
+	// check throught simulate
+	simres, err := rcs.api.SimulateTx(bz)
+	if err != nil {
+		fmt.Printf("MakeCheck-Simulate err: %s\n", err.Error())
+		return
+	}
+	fmt.Printf("simulate result: %d events\n", len(simres.Events))
+	for _, ev := range simres.Events {
+		fmt.Printf("event: %s\n", ev.Type)
+	}
+
 	resp, err := rcs.api.BroadcastTxCommit(bz)
 	if err != nil {
 		fmt.Printf("MakeCheck-BroadcastTxSync err: %s\n", err.Error())
