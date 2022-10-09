@@ -1,10 +1,10 @@
 package main
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/utils/worker"
+	"github.com/joho/godotenv"
 	"os"
 	"strconv"
-
-	"github.com/joho/godotenv"
 
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -15,7 +15,6 @@ import (
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	"bitbucket.org/decimalteam/go-smart-node/utils/worker"
 )
 
 var (
@@ -48,11 +47,18 @@ func main() {
 		os.Exit(1)
 	}
 
+	grpcPort, err := strconv.Atoi(os.Getenv("GRPC_PORT"))
+	if err != nil {
+		logger.Error("Error convert GRPC port from str to int")
+		panic(err)
+	}
 	// Prepare worker configuration
 	config := &worker.Config{
 		IndexerEndpoint: os.Getenv("INDEXER_URL"),
 		RpcEndpoint:     os.Getenv("RPC_URL"),
 		Web3Endpoint:    os.Getenv("WEB3_URL"),
+		GRPCHost:        os.Getenv("GRPC_HOST"),
+		GRPCPort:        grpcPort,
 		WorkersCount:    1,
 	}
 	if len(os.Getenv("WORKERS")) > 0 {

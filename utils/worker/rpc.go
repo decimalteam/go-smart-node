@@ -1,8 +1,12 @@
 package worker
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/client/grpc/tmservice"
 	"encoding/json"
 	"fmt"
+	cosmostmservice "github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
+	"github.com/tendermint/tendermint/crypto/tmhash"
+	"github.com/tendermint/tendermint/proto/tendermint/types"
 	"time"
 
 	"github.com/status-im/keycard-go/hexutils"
@@ -12,13 +16,13 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
-func (w *Worker) fetchBlock(height int64) *ctypes.ResultBlock {
+func (w *Worker) fetchBlock(height int64) (*cosmostmservice.Block, *types.BlockID) {
 	start := time.Now()
 
 	// Request until get block
 	for first := true; true; first = false {
 		// Request block
-		result, err := w.rpcClient.Block(w.ctx, &height)
+		result, err := w.cTmClient.GetBlockByHeight(w.ctx, &cosmostmservice.GetBlockByHeightRequest{Height: height})
 		if err == nil {
 			if !first {
 				w.logger.Info(
@@ -31,28 +35,30 @@ func (w *Worker) fetchBlock(height int64) *ctypes.ResultBlock {
 					"block", height,
 				)
 			}
-			return result
+			return result.SdkBlock, result.BlockId
 		}
 		// Sleep some time before next try
 		time.Sleep(RequestRetryDelay)
 	}
 
-	return nil
+	return nil, nil
 }
 
 func (w *Worker) fetchBlockSize(height int64, ch chan int) {
 
 	// Request blockchain info
-	result, err := w.rpcClient.BlockchainInfo(w.ctx, height, height)
+	result, err := w.tmClient.GetBlockchainInfo(w.ctx, &tmservice.GetBlockchainInfoRequest{
+		MinHeight: height,
+		MaxHeight: height,
+	},
+	)
 	w.panicError(err)
 
 	// Send result to the channel
-	ch <- result.BlockMetas[0].BlockSize
+	ch <- int(result.BlockMetas[0].BlockSize)
 }
 
-func (w *Worker) fetchBlockResults(height int64, block ctypes.ResultBlock, ea *EventAccumulator, ch chan []Tx, brch chan *ctypes.ResultBlockResults) {
-	var err error
-
+func (w *Worker) fetchBlockResults(height int64, block *cosmostmservice.Block, ea *EventAccumulator, ch chan []Tx, brch chan *ctypes.ResultBlockResults) {
 	// Request block results from the node
 	// NOTE: Try to retrieve results in the loop since it looks like there is some delay before results are ready to by retrieved
 	var blockResults *ctypes.ResultBlockResults
@@ -61,8 +67,11 @@ func (w *Worker) fetchBlockResults(height int64, block ctypes.ResultBlock, ea *E
 			w.logger.Debug(fmt.Sprintf("%d attempt to fetch block height: %d, time %s", c, height, time.Now().String()))
 		}
 		// Request block results
-		blockResults, err = w.rpcClient.BlockResults(w.ctx, &height)
+		resp, err := w.tmClient.GetBlockResults(w.ctx, &tmservice.GetBlockResultsRequest{
+			Height: height,
+		})
 		if err == nil {
+			blockResults = resp.BlockResults.ToCoreTypes()
 			break
 		}
 		// Sleep some time before next try
@@ -71,7 +80,7 @@ func (w *Worker) fetchBlockResults(height int64, block ctypes.ResultBlock, ea *E
 
 	// Prepare block results by overall processing
 	var results []Tx
-	for i, tx := range block.Block.Txs {
+	for i, tx := range block.Data.Txs {
 		var result Tx
 		var txLog []interface{}
 		txr := blockResults.TxsResults[i]
@@ -89,7 +98,7 @@ func (w *Worker) fetchBlockResults(height int64, block ctypes.ResultBlock, ea *E
 
 		result.Info = w.parseTxInfo(recoveredTx)
 		result.Data = txr.Data
-		result.Hash = hexutils.BytesToHex(tx.Hash())
+		result.Hash = hexutils.BytesToHex(tmhash.Sum(tx))
 		result.Code = txr.Code
 		result.GasUsed = txr.GasUsed
 		result.GasWanted = txr.GasWanted
@@ -99,7 +108,7 @@ func (w *Worker) fetchBlockResults(height int64, block ctypes.ResultBlock, ea *E
 		// process events for successful transactions
 		if txr.Code == 0 {
 			for _, event := range txr.Events {
-				err := ea.AddEvent(event, hexutils.BytesToHex(tx.Hash()))
+				err := ea.AddEvent(event, hexutils.BytesToHex(tmhash.Sum(tx)))
 				if err != nil {
 					fmt.Printf("error in event %v\n", event.Type)
 					w.panicError(err)

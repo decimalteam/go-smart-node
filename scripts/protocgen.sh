@@ -48,6 +48,7 @@ done
 
 echo "Copying result files..."
 cp -vr ./build/proto/go/bitbucket.org/decimalteam/go-smart-node/x/* ../../x/
+cp -vr ./build/proto/go/bitbucket.org/decimalteam/go-smart-node/client/* ../../client/
 #cp -vr ./build/proto/ts/* ./sdk/proto/ts/
 #cp -vr ./build/proto/dart/* ./sdk/proto/dart/
 rm -rf ./build

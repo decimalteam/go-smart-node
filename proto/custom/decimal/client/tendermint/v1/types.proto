@@ -1,0 +1,29 @@
+syntax = "proto3";
+package decimal.client.tendermint.v1;
+
+import "gogoproto/gogo.proto";
+import "tendermint/types/types.proto";
+import "tendermint/abci/types.proto";
+import "tendermint/types/evidence.proto";
+import "tendermint/version/types.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/client/grpc/tmservice";
+
+message TxResult {
+  bytes hash = 1;
+  int64 height = 2;
+  uint32 index = 3;
+  .tendermint.abci.ResponseDeliverTx tx_result = 4;
+  bytes tx =5;
+  .tendermint.types.TxProof tx_proof = 6;
+}
+
+message BlockResults {
+  int64 height = 1;
+  repeated .tendermint.abci.ResponseDeliverTx txs_results = 2;
+  repeated .tendermint.abci.Event begin_block_events = 3;
+  repeated .tendermint.abci.Event end_block_events = 4;
+  repeated .tendermint.abci.ValidatorUpdate validator_updates = 5;
+  .tendermint.abci.ConsensusParams consensus_param_updates = 6;
+}

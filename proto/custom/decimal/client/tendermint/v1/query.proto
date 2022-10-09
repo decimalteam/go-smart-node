@@ -1,0 +1,69 @@
+syntax = "proto3";
+package decimal.client.tendermint.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/any.proto";
+import "tendermint/p2p/types.proto";
+import "tendermint/types/types.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "decimal/client/tendermint/v1/types.proto";
+import "cosmos_proto/cosmos.proto";
+import "tendermint/types/block.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/client/grpc/tmservice";
+
+// Service defines the gRPC querier service for tendermint queries.
+service Service {
+  // GetBlockchainInfo queries blocks meta information
+  rpc GetBlockchainInfo(GetBlockchainInfoRequest) returns (GetBlockchainInfoResponse) {
+    option (google.api.http).get = "/decimal/base/tendermint/v1/blockchain_info/{min_height}/{max_height}";
+  }
+
+  // GetBlockchainInfo queries blocks meta information
+  rpc GetTxSearch(GetTxSearchRequest) returns (GetTxSearchResponse) {
+    option (google.api.http) = {
+      post: "/decimal/base/tendermint/v1/tx_search" body: "*"
+    };
+  }
+
+  rpc GetBlockResults(GetBlockResultsRequest) returns (GetBlockResultsResponse) {
+    option (google.api.http) = {
+      post: "/decimal/base/tendermint/v1/block_results" body: "*"
+    };
+  }
+}
+
+// GetBlockchainInfoRequest is the request type for the Query/GetBlockchainInfo RPC method.
+message GetBlockchainInfoRequest {
+  int64 min_height = 1;
+  int64 max_height = 2;
+}
+
+// GetBlockchainInfoResponse is the request type for the Query/GetBlockchainInfo RPC method.
+message GetBlockchainInfoResponse {
+  repeated .tendermint.types.BlockMeta BlockMetas = 1;
+}
+
+// GetTxSearchRequest is the request type for the Query/GetBlockchainInfo RPC method.
+message GetTxSearchRequest {
+  string query = 1;
+  bool   prove = 2;
+  int64  page = 3;
+  int64  per_page = 4;
+  string order_by = 5 ;
+}
+
+// GetTxSearchResponse is the request type for the Query/GetBlockchainInfo RPC method.
+message GetTxSearchResponse {
+  repeated TxResult txs = 1;
+  int64 total_count = 2;
+}
+
+message GetBlockResultsRequest {
+  int64 height = 1;
+}
+
+message GetBlockResultsResponse {
+  BlockResults block_results = 1;
+}

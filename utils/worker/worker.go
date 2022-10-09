@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"google.golang.org/grpc"
 	"math/big"
 	"net/http"
 	"os"
@@ -19,8 +20,10 @@ import (
 	rpc "github.com/tendermint/tendermint/rpc/client/http"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 
+	cosmostmservice "github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 	"github.com/cosmos/cosmos-sdk/simapp/params"
 
+	"bitbucket.org/decimalteam/go-smart-node/client/grpc/tmservice"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
@@ -35,6 +38,9 @@ type Worker struct {
 	web3Client   *web3.Client
 	web3ChainId  *big.Int
 	ethRpcClient *ethrpc.Client
+	grpcConn     *grpc.ClientConn
+	tmClient     tmservice.ServiceClient       // decimal tendermint api client
+	cTmClient    cosmostmservice.ServiceClient // cosmos tendermint api client
 	query        chan *ParseTask
 }
 
@@ -43,6 +49,8 @@ type Config struct {
 	RpcEndpoint     string
 	Web3Endpoint    string
 	WorkersCount    int
+	GRPCHost        string
+	GRPCPort        int
 }
 
 func NewWorker(cdc params.EncodingConfig, logger log.Logger, config *Config) (*Worker, error) {
@@ -67,6 +75,21 @@ func NewWorker(cdc params.EncodingConfig, logger log.Logger, config *Config) (*W
 	if err != nil {
 		return nil, err
 	}
+	grpcConn, err := grpc.Dial(
+		fmt.Sprintf("%s:%d", config.GRPCHost, config.GRPCPort), // your gRPC server address.
+		grpc.WithInsecure(), // The Cosmos SDK doesn't support any transport security mechanism.
+	)
+	if err != nil {
+		return nil, err
+	}
+	tmClient := tmservice.NewServiceClient(grpcConn)
+	if err != nil {
+		return nil, err
+	}
+	cTmClient := cosmostmservice.NewServiceClient(grpcConn)
+	if err != nil {
+		return nil, err
+	}
 	worker := &Worker{
 		ctx:          context.Background(),
 		httpClient:   httpClient,
@@ -78,6 +101,8 @@ func NewWorker(cdc params.EncodingConfig, logger log.Logger, config *Config) (*W
 		web3Client:   web3Client,
 		web3ChainId:  web3ChainId,
 		ethRpcClient: ethRpcClient,
+		tmClient:     tmClient,
+		cTmClient:    cTmClient,
 		query:        make(chan *ParseTask, 1000),
 	}
 	return worker, nil
@@ -111,7 +136,7 @@ func (w *Worker) GetBlockResult(height int64, txNum int) *Block {
 	accum := NewEventAccumulator()
 
 	// Fetch requested block from Tendermint RPC
-	block := w.fetchBlock(height)
+	block, blockID := w.fetchBlock(height)
 
 	// Fetch everything needed from Tendermint RPC aand EVM
 	start := time.Now()
@@ -120,7 +145,7 @@ func (w *Worker) GetBlockResult(height int64, txNum int) *Block {
 	sizeChan := make(chan int)
 	web3BlockChan := make(chan *web3types.Block)
 	web3ReceiptsChan := make(chan web3types.Receipts)
-	go w.fetchBlockResults(height, *block, accum, txsChan, resultsChan)
+	go w.fetchBlockResults(height, block, accum, txsChan, resultsChan)
 	go w.fetchBlockSize(height, sizeChan)
 	txs := <-txsChan
 	results := <-resultsChan
@@ -221,10 +246,10 @@ func (w *Worker) GetBlockResult(height int64, txNum int) *Block {
 
 	// Create and fill Block object and then marshal to JSON
 	return &Block{
-		ID:                block.BlockID,
-		Evidence:          block.Block.Evidence,
-		Header:            block.Block.Header,
-		LastCommit:        block.Block.LastCommit,
+		ID:                blockID,
+		Evidence:          block.Evidence,
+		Header:            block.Header,
+		LastCommit:        block.LastCommit,
 		Data:              BlockData{Txs: txs},
 		Emission:          emission,
 		Rewards:           rewards,
