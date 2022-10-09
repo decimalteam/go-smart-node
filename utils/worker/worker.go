@@ -13,6 +13,7 @@ import (
 	web3hexutil "github.com/ethereum/go-ethereum/common/hexutil"
 	web3types "github.com/ethereum/go-ethereum/core/types"
 	web3 "github.com/ethereum/go-ethereum/ethclient"
+	ethrpc "github.com/ethereum/go-ethereum/rpc"
 
 	"github.com/tendermint/tendermint/libs/log"
 	rpc "github.com/tendermint/tendermint/rpc/client/http"
@@ -24,16 +25,17 @@ import (
 )
 
 type Worker struct {
-	ctx         context.Context
-	httpClient  *http.Client
-	cdc         params.EncodingConfig
-	logger      log.Logger
-	config      *Config
-	hostname    string
-	rpcClient   *rpc.HTTP
-	web3Client  *web3.Client
-	web3ChainId *big.Int
-	query       chan *ParseTask
+	ctx          context.Context
+	httpClient   *http.Client
+	cdc          params.EncodingConfig
+	logger       log.Logger
+	config       *Config
+	hostname     string
+	rpcClient    *rpc.HTTP
+	web3Client   *web3.Client
+	web3ChainId  *big.Int
+	ethRpcClient *ethrpc.Client
+	query        chan *ParseTask
 }
 
 type Config struct {
@@ -61,17 +63,22 @@ func NewWorker(cdc params.EncodingConfig, logger log.Logger, config *Config) (*W
 	if err != nil {
 		return nil, err
 	}
+	ethRpcClient, err := ethrpc.Dial(config.Web3Endpoint)
+	if err != nil {
+		return nil, err
+	}
 	worker := &Worker{
-		ctx:         context.Background(),
-		httpClient:  httpClient,
-		cdc:         cdc,
-		logger:      logger,
-		config:      config,
-		hostname:    hostname,
-		rpcClient:   rpcClient,
-		web3Client:  web3Client,
-		web3ChainId: web3ChainId,
-		query:       make(chan *ParseTask, 1000),
+		ctx:          context.Background(),
+		httpClient:   httpClient,
+		cdc:          cdc,
+		logger:       logger,
+		config:       config,
+		hostname:     hostname,
+		rpcClient:    rpcClient,
+		web3Client:   web3Client,
+		web3ChainId:  web3ChainId,
+		ethRpcClient: ethRpcClient,
+		query:        make(chan *ParseTask, 1000),
 	}
 	return worker, nil
 }
