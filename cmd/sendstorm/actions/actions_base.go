@@ -66,7 +66,6 @@ type NFTStake struct {
 }
 
 type NFTSubTokenKey struct {
-	Denom   string
 	TokenID string
 	ID      uint32
 }
