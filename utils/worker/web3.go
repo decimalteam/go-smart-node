@@ -61,8 +61,6 @@ func (w *Worker) fetchBlockTxReceiptsWeb3(block *web3types.Block, ch chan web3ty
 				// Sleep some time before next try
 				time.Sleep(RequestRetryDelay)
 			}
-			err := w.ethRpcClient.BatchCall(requests)
-			w.panicError(err)
 		}(requests[i:end])
 	}
 	wg.Wait()
