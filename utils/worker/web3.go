@@ -10,8 +10,8 @@ import (
 	ethrpc "github.com/ethereum/go-ethereum/rpc"
 )
 
-const TxReceiptsBatchSize = 10
-const RequestRetryDelay = 10 * time.Millisecond
+const TxReceiptsBatchSize = 16
+const RequestRetryDelay = 32 * time.Millisecond
 
 func (w *Worker) fetchBlockWeb3(height int64, ch chan *web3types.Block) {
 
