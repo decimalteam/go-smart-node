@@ -120,7 +120,7 @@ func (w *Worker) GetBlockResult(height int64, txNum int) *Block {
 	sizeChan := make(chan int)
 	web3BlockChan := make(chan *web3types.Block)
 	web3ReceiptsChan := make(chan web3types.Receipts)
-	go w.fetchBlockTxResults(height, *block, accum, txsChan, resultsChan)
+	go w.fetchBlockResults(height, *block, accum, txsChan, resultsChan)
 	go w.fetchBlockSize(height, sizeChan)
 	txs := <-txsChan
 	results := <-resultsChan

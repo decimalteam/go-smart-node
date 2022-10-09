@@ -7,12 +7,9 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
-var reservedPool = authtypes.NewModuleAddress(types.ReservedPool)
+// var reservedPool = authtypes.NewModuleAddress(types.ReservedPool)
 
 // CreateOrUpdate in postgres
 type EventUpdateCollection struct {

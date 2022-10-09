@@ -33,6 +33,8 @@ func (w *Worker) fetchBlock(height int64) *ctypes.ResultBlock {
 			}
 			return result
 		}
+		// Sleep some time before next try
+		time.Sleep(RequestRetryDelay)
 	}
 
 	return nil
@@ -48,24 +50,26 @@ func (w *Worker) fetchBlockSize(height int64, ch chan int) {
 	ch <- result.BlockMetas[0].BlockSize
 }
 
-func (w *Worker) fetchBlockTxResults(height int64, block ctypes.ResultBlock, ea *EventAccumulator, ch chan []Tx, brch chan *ctypes.ResultBlockResults) {
-	var (
-		err          error
-		blockResults *ctypes.ResultBlockResults
-		counter      int
-	)
+func (w *Worker) fetchBlockResults(height int64, block ctypes.ResultBlock, ea *EventAccumulator, ch chan []Tx, brch chan *ctypes.ResultBlockResults) {
+	var err error
 
-	for {
-		counter++
-		w.logger.Debug(fmt.Sprintf("%d attempt to fetch block height: %d, time %s", counter, height, time.Now().String()))
+	// Request block results from the node
+	// NOTE: Try to retrieve results in the loop since it looks like there is some delay before results are ready to by retrieved
+	var blockResults *ctypes.ResultBlockResults
+	for c := 0; true; c++ {
+		if c > 0 {
+			w.logger.Debug(fmt.Sprintf("%d attempt to fetch block height: %d, time %s", c, height, time.Now().String()))
+		}
 		// Request block results
 		blockResults, err = w.rpcClient.BlockResults(w.ctx, &height)
-		if err == nil { // len(result.EndBlockEvents) != 0
+		if err == nil {
 			break
 		}
-		time.Sleep(time.Millisecond * 10)
+		// Sleep some time before next try
+		time.Sleep(RequestRetryDelay)
 	}
 
+	// Prepare block results by overall processing
 	var results []Tx
 	for i, tx := range block.Block.Txs {
 		var result Tx

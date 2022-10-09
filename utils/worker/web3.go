@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"math/big"
 	"sync"
-
-	"github.com/status-im/keycard-go/hexutils"
+	"time"
 
 	web3types "github.com/ethereum/go-ethereum/core/types"
 	ethrpc "github.com/ethereum/go-ethereum/rpc"
 )
+
+const TxReceiptsBatchSize = 10
+const RequestRetryDelay = 10 * time.Millisecond
 
 func (w *Worker) fetchBlockWeb3(height int64, ch chan *web3types.Block) {
 
@@ -22,54 +24,61 @@ func (w *Worker) fetchBlockWeb3(height int64, ch chan *web3types.Block) {
 }
 
 func (w *Worker) fetchBlockTxReceiptsWeb3(block *web3types.Block, ch chan web3types.Receipts) {
-	wg := &sync.WaitGroup{}
 
-	// Request transaction receipts by hashes in parallel
-	results := make(web3types.Receipts, len(block.Transactions()))
-	batchElems := make([]ethrpc.BatchElem, len(block.Transactions()))
+	txCount := len(block.Transactions())
+	results := make(web3types.Receipts, txCount)
+	requests := make([]ethrpc.BatchElem, txCount)
 
+	// Prepare batch requests to retrieve the receipt for each transaction in the block
 	for i, tx := range block.Transactions() {
-		batchElems[i] = ethrpc.BatchElem{
+		requests[i] = ethrpc.BatchElem{
 			Method: "eth_getTransactionReceipt",
 			Args:   []interface{}{tx.Hash()},
 			Result: &results[i],
 		}
 	}
 
-	quantity := 15 // requests count in batch
-
-	end := quantity
-	if len(batchElems) < end {
-		end = len(batchElems)
-	}
-	for i := 0; i < len(batchElems); {
-		elems := batchElems[i:end]
+	// Request transaction receipts with batches in parallel
+	wg := &sync.WaitGroup{}
+	for i, s := 0, TxReceiptsBatchSize; i < txCount; i += s {
+		end := i + s
+		if end > txCount {
+			end = txCount
+		}
 		wg.Add(1)
-
 		go func(requests []ethrpc.BatchElem) {
 			defer wg.Done()
+			// NOTE: Try to retrieve receipts in the loop since it looks like there is some delay before receipts are ready to by retrieved
+			for c := 0; true; c++ {
+				if c > 0 {
+					w.logger.Debug(fmt.Sprintf("%d attempt to fetch tx receipts height: %d, time %s", c, block.NumberU64(), time.Now().String()))
+				}
+				// Request transaction receipts with the batch
+				err := w.ethRpcClient.BatchCall(requests)
+				if err == nil {
+					break
+				}
+				// Sleep some time before next try
+				time.Sleep(RequestRetryDelay)
+			}
 			err := w.ethRpcClient.BatchCall(requests)
 			w.panicError(err)
-		}(elems)
-
-		i = end
-		if end+quantity > len(batchElems) {
-			end = len(batchElems)
-			continue
-		}
-		end += quantity
+		}(requests[i:end])
 	}
-
 	wg.Wait()
 
-	for i := range batchElems {
-		if batchElems[i].Error != nil {
-			w.panicError(batchElems[i].Error)
+	// Ensure all transaction receipts are retrieved
+	for i := range requests {
+		if requests[i].Error != nil {
+			w.panicError(requests[i].Error)
 		}
 		if results[i] == nil {
-			w.panicError(fmt.Errorf("got null result for tx with hash %s", hexutils.BytesToHex(batchElems[i].Args[0].([]byte))))
+			txHash := requests[i].Args[0].([]byte)
+			err := fmt.Errorf("got null result for tx with hash %X", txHash)
+			w.panicError(err)
 		}
 	}
 
+	// Send results to the channel
 	ch <- results
 }
