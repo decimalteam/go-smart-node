@@ -48,19 +48,8 @@ func (w *Worker) fetchBlockTxReceiptsWeb3(block *web3types.Block, ch chan web3ty
 		wg.Add(1)
 		go func(requests []ethrpc.BatchElem) {
 			defer wg.Done()
-			// NOTE: Try to retrieve receipts in the loop since it looks like there is some delay before receipts are ready to by retrieved
-			for c := 0; true; c++ {
-				if c > 0 {
-					w.logger.Debug(fmt.Sprintf("%d attempt to fetch tx receipts height: %d, time %s", c, block.NumberU64(), time.Now().String()))
-				}
-				// Request transaction receipts with the batch
-				err := w.ethRpcClient.BatchCall(requests)
-				if err == nil {
-					break
-				}
-				// Sleep some time before next try
-				time.Sleep(RequestRetryDelay)
-			}
+			err := w.ethRpcClient.BatchCall(requests)
+			w.panicError(err)
 		}(requests[i:end])
 	}
 	wg.Wait()
