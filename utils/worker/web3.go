@@ -43,6 +43,9 @@ func (w *Worker) fetchBlockTxReceiptsWeb3(block *web3types.Block, ch chan web3ty
 		}
 		// Request transaction receipts with a batch
 		err := w.ethRpcClient.BatchCall(requests)
+		if err != nil {
+			w.logger.Error(fmt.Sprintf("Error: %v", err))
+		}
 		if err == nil {
 			// Ensure all transaction receipts are retrieved
 			for i := range requests {
