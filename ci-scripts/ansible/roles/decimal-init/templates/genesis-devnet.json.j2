@@ -516,15 +516,62 @@
     },
     "params": null,
     "slashing": {
-      "params": {
-        "signed_blocks_window": "100",
-        "min_signed_per_window": "0.500000000000000000",
-        "downtime_jail_duration": "600s",
-        "slash_fraction_double_sign": "0.050000000000000000",
-        "slash_fraction_downtime": "0.010000000000000000"
-      },
-      "signing_infos": [],
-      "missed_blocks": []
+        "missed_blocks": [
+            {
+                "address": "dxvalcons1xa4fnn78lyyy2j7jcvpja4ujapt9vhmd8fdjzw",
+                "missed_blocks": []
+            },
+            {
+                "address": "dxvalcons1jc9q6zwuurs9t6yvvmy3qcyuln49eu2ere0pnk",
+                "missed_blocks": []
+            },
+            {
+                "address": "dxvalcons1cavj8u67x0f58pt0xfl0xxhxc6d4scry83tcn2",
+                "missed_blocks": []
+            }
+        ],
+        "params": {
+            "downtime_jail_duration": "600s",
+            "min_signed_per_window": "0.500000000000000000",
+            "signed_blocks_window": "100",
+            "slash_fraction_double_sign": "0.050000000000000000",
+            "slash_fraction_downtime": "0.010000000000000000"
+        },
+        "signing_infos": [
+            {
+                "address": "dxvalcons1xa4fnn78lyyy2j7jcvpja4ujapt9vhmd8fdjzw",
+                "validator_signing_info": {
+                    "address": "dxvalcons1xa4fnn78lyyy2j7jcvpja4ujapt9vhmd8fdjzw",
+                    "index_offset": "0",
+                    "jailed_until": "1970-01-01T00:00:00Z",
+                    "missed_blocks_counter": "0",
+                    "start_height": "0",
+                    "tombstoned": false
+                }
+            },
+            {
+                "address": "dxvalcons1jc9q6zwuurs9t6yvvmy3qcyuln49eu2ere0pnk",
+                "validator_signing_info": {
+                    "address": "dxvalcons1jc9q6zwuurs9t6yvvmy3qcyuln49eu2ere0pnk",
+                    "index_offset": "0",
+                    "jailed_until": "1970-01-01T00:00:00Z",
+                    "missed_blocks_counter": "0",
+                    "start_height": "0",
+                    "tombstoned": false
+                }
+            },
+            {
+                "address": "dxvalcons1cavj8u67x0f58pt0xfl0xxhxc6d4scry83tcn2",
+                "validator_signing_info": {
+                    "address": "dxvalcons1cavj8u67x0f58pt0xfl0xxhxc6d4scry83tcn2",
+                    "index_offset": "0",
+                    "jailed_until": "1970-01-01T00:00:00Z",
+                    "missed_blocks_counter": "0",
+                    "start_height": "0",
+                    "tombstoned": false
+                }
+            }
+        ]
     },
     "staking": {
       "delegations": [
