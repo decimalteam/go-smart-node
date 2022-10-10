@@ -4,6 +4,7 @@ import (
 	"context"
 
 	cosmostx "github.com/cosmos/cosmos-sdk/types/tx"
+	tmtypes "github.com/tendermint/tendermint/abci/types"
 )
 
 type TxResult struct {
@@ -14,6 +15,7 @@ type TxResult struct {
 	Codespace string
 	RawLog    string
 	Log       []TxLog
+	Events    []tmtypes.Event
 }
 
 // TxLog contains API response fields.
@@ -69,6 +71,7 @@ func (api *API) grpcTransaction(hash string) (*TxResult, error) {
 		Codespace: resp.TxResponse.Codespace,
 		RawLog:    resp.TxResponse.RawLog,
 		Log:       resLogs,
+		Events:    resp.TxResponse.Events,
 	}, nil
 }
 
