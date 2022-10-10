@@ -56,7 +56,12 @@ func (reactor *stormReactor) initApi(flags *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
-	reactor.feeConfig = stormTypes.NewFeeConfiguration()
+
+	useCustomFee, err := flags.GetBool(customFee)
+	if err != nil {
+		return err
+	}
+	reactor.feeConfig = stormTypes.NewFeeConfiguration(useCustomFee)
 	err = reactor.feeConfig.Update(reactor.api)
 	if err != nil {
 		return err
@@ -137,6 +142,11 @@ func (reactor *stormReactor) initLimiter(flags *pflag.FlagSet) error {
 }
 
 func (reactor *stormReactor) updateGeneratorsInfo() {
+	err := reactor.feeConfig.Update(reactor.api)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	// update info
 	ui := stormActions.UpdateInfo{}
 	ui.MultisigBalances = make(map[string]sdk.Coins)

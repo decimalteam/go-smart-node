@@ -95,15 +95,7 @@ func (as *MultiSendCoinAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig
 	}
 
 	msg := dscTx.NewMsgMultiSendCoin(sender, as.sends)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
-	if err != nil {
-		return nil, err
-	}
-	err = tx.SignTransaction(sa.Account())
-	if err != nil {
-		return nil, err
-	}
-	return tx.BytesToSend()
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (as *MultiSendCoinAction) String() string {

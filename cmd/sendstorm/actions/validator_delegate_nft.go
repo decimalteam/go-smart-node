@@ -6,7 +6,6 @@ import (
 
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
-	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -71,15 +70,7 @@ func (ac *DelegateNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *
 
 	// TODO
 
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
-	if err != nil {
-		return nil, err
-	}
-	err = tx.SignTransaction(sa.Account())
-	if err != nil {
-		return nil, err
-	}
-	return tx.BytesToSend()
+	return feeConfig.MakeTransaction(sa, nil)
 }
 
 func (ac *DelegateNFTAction) String() string {
