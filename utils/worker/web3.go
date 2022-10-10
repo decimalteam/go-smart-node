@@ -54,7 +54,7 @@ func (w *Worker) fetchBlockTxReceiptsWeb3(block *web3types.Block, ch chan web3ty
 					err = requests[i].Error
 					w.logger.Error(fmt.Sprintf("Error: %v", err))
 				}
-				if results[i].BlockNumber.Sign() == 0 {
+				if results[i].BlockNumber == nil || results[i].BlockNumber.Sign() == 0 {
 					txHash := requests[i].Args[0].([]byte)
 					err = fmt.Errorf("got null result for tx with hash %X", txHash)
 					w.logger.Error(fmt.Sprintf("Error: %v", err))
