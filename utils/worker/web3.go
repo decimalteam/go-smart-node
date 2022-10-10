@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"time"
 
+	web3common "github.com/ethereum/go-ethereum/common"
 	web3types "github.com/ethereum/go-ethereum/core/types"
 	ethrpc "github.com/ethereum/go-ethereum/rpc"
 )
@@ -55,8 +56,8 @@ func (w *Worker) fetchBlockTxReceiptsWeb3(block *web3types.Block, ch chan web3ty
 					w.logger.Error(fmt.Sprintf("Error: %v", err))
 				}
 				if results[i].BlockNumber == nil || results[i].BlockNumber.Sign() == 0 {
-					txHash := requests[i].Args[0].([]byte)
-					err = fmt.Errorf("got null result for tx with hash %X", txHash)
+					txHash := requests[i].Args[0].(web3common.Hash)
+					err = fmt.Errorf("got null result for tx with hash %v", txHash)
 					w.logger.Error(fmt.Sprintf("Error: %v", err))
 				}
 			}
