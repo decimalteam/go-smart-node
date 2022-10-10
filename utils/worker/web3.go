@@ -24,17 +24,21 @@ func (w *Worker) fetchBlockWeb3(height int64, ch chan *web3types.Block) {
 
 func (w *Worker) fetchBlockTxReceiptsWeb3(block *web3types.Block, ch chan web3types.Receipts) {
 	txCount := len(block.Transactions())
+	results := make(web3types.Receipts, txCount)
+	requests := make([]ethrpc.BatchElem, txCount)
+	if txCount == 0 {
+		ch <- results
+		return
+	}
 
 	// NOTE: Try to retrieve tx receipts in the loop since it looks like there is some delay before receipts are ready to by retrieved
-	var results web3types.Receipts
 	for c := 0; true; c++ {
 		if c > 0 {
 			w.logger.Debug(fmt.Sprintf("%d attempt to fetch transaction receipts with height: %d, time %s", c, block.NumberU64(), time.Now().String()))
 		}
 		// Prepare batch requests to retrieve the receipt for each transaction in the block
-		results = make(web3types.Receipts, txCount)
-		requests := make([]ethrpc.BatchElem, txCount)
 		for i, tx := range block.Transactions() {
+			results[i] = &web3types.Receipt{}
 			requests[i] = ethrpc.BatchElem{
 				Method: "eth_getTransactionReceipt",
 				Args:   []interface{}{tx.Hash()},
@@ -42,23 +46,18 @@ func (w *Worker) fetchBlockTxReceiptsWeb3(block *web3types.Block, ch chan web3ty
 			}
 		}
 		// Request transaction receipts with a batch
-		err := w.ethRpcClient.BatchCall(requests)
-		if err != nil {
-			w.logger.Error(fmt.Sprintf("Error: %v", err))
-		}
+		err := w.ethRpcClient.BatchCall(requests[:])
 		if err == nil {
 			// Ensure all transaction receipts are retrieved
 			for i := range requests {
 				if requests[i].Error != nil {
 					err = requests[i].Error
 					w.logger.Error(fmt.Sprintf("Error: %v", err))
-					// w.panicError(err)
 				}
 				if results[i] == nil {
 					txHash := requests[i].Args[0].([]byte)
 					err = fmt.Errorf("got null result for tx with hash %X", txHash)
 					w.logger.Error(fmt.Sprintf("Error: %v", err))
-					// w.panicError(err)
 				}
 			}
 		}
