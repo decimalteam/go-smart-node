@@ -173,7 +173,6 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 	ui.NFTSubTokenReserves = make(map[stormActions.NFTSubTokenKey]sdk.Coin)
 	for j := range ui.NFTs {
 		nft := ui.NFTs[j]
-		fmt.Printf("read token %s\n", nft.ID)
 		tok, err := reactor.api.NFTToken(nft.ID)
 		if err != nil {
 			fmt.Println(err)

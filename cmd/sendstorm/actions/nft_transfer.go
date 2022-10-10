@@ -39,10 +39,12 @@ func (gg *TransferNFTGenerator) Generate() Action {
 	if len(gg.knownNFT) == 0 {
 		return &EmptyAction{}
 	}
-	i := int(RandomRange(gg.rnd, 0, int64(len(gg.knownNFT))))
-	nftToTransfer := gg.knownNFT[i]
-	i = int(RandomRange(gg.rnd, 0, int64(len(nftToTransfer.SubTokens))))
-	tokenOwner := nftToTransfer.SubTokens[i].Owner
+	nftToTransfer := RandomChoice(gg.rnd, gg.knownNFT)
+	if len(nftToTransfer.SubTokens) == 0 {
+		return &EmptyAction{}
+	}
+	subtoken := RandomChoice(gg.rnd, nftToTransfer.SubTokens)
+	tokenOwner := subtoken.Owner
 	subIds := make([]uint32, 0)
 	for _, sub := range nftToTransfer.SubTokens {
 		if sub.Owner == tokenOwner {
