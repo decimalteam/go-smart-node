@@ -10,9 +10,6 @@ import (
 	ethrpc "github.com/ethereum/go-ethereum/rpc"
 )
 
-const TxReceiptsBatchSize = 16
-const RequestRetryDelay = 32 * time.Millisecond
-
 func (w *Worker) fetchBlockWeb3(height int64, ch chan *web3types.Block) {
 
 	// Request block by number
@@ -33,8 +30,8 @@ func (w *Worker) fetchBlockTxReceiptsWeb3(block *web3types.Block, ch chan web3ty
 	}
 
 	// NOTE: Try to retrieve tx receipts in the loop since it looks like there is some delay before receipts are ready to by retrieved
-	for c := 0; true; c++ {
-		if c > 0 {
+	for c := 1; true; c++ {
+		if c > 5 {
 			w.logger.Debug(fmt.Sprintf("%d attempt to fetch transaction receipts with height: %d, time %s", c, block.NumberU64(), time.Now().String()))
 		}
 		// Prepare batch requests to retrieve the receipt for each transaction in the block
