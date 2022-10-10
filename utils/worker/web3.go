@@ -48,14 +48,19 @@ func (w *Worker) fetchBlockTxReceiptsWeb3(block *web3types.Block, ch chan web3ty
 		if err == nil {
 			// Ensure all transaction receipts are retrieved
 			for i := range requests {
+				txHash := requests[i].Args[0].(web3common.Hash)
 				if requests[i].Error != nil {
 					err = requests[i].Error
-					w.logger.Error(fmt.Sprintf("Error: %v", err))
+					if c > 5 {
+						w.logger.Error(fmt.Sprintf("Error: %v", err))
+					}
+					continue
 				}
 				if results[i].BlockNumber == nil || results[i].BlockNumber.Sign() == 0 {
-					txHash := requests[i].Args[0].(web3common.Hash)
 					err = fmt.Errorf("got null result for tx with hash %v", txHash)
-					w.logger.Error(fmt.Sprintf("Error: %v", err))
+					if c > 5 {
+						w.logger.Error(fmt.Sprintf("Error: %v", err))
+					}
 				}
 			}
 		}

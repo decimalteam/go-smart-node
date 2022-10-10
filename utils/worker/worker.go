@@ -122,11 +122,7 @@ func (w *Worker) executeFromQuery(wg *sync.WaitGroup) {
 func (w *Worker) GetBlockResult(height int64, txNum int) *Block {
 	accum := NewEventAccumulator()
 
-	w.logger.Info(
-		"Retrieving block results...",
-		"block", height,
-		"txs", txNum,
-	)
+	w.logger.Info("Retrieving block results...", "block", height)
 
 	// Fetch requested block from Tendermint RPC
 	block := w.fetchBlock(height)
