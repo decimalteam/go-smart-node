@@ -26,10 +26,10 @@ func (w *Worker) fetchBlockTxReceiptsWeb3(block *web3types.Block, ch chan web3ty
 	txCount := len(block.Transactions())
 	results := make(web3types.Receipts, txCount)
 
-	// NOTE: Try to retrieve results in the loop since it looks like there is some delay before results are ready to by retrieved
+	// NOTE: Try to retrieve tx receipts in the loop since it looks like there is some delay before receipts are ready to by retrieved
 	for c := 0; true; c++ {
 		if c > 0 {
-			w.logger.Debug(fmt.Sprintf("%d attempt to fetch block height: %d, time %s", c, block.NumberU64(), time.Now().String()))
+			w.logger.Debug(fmt.Sprintf("%d attempt to fetch transaction receipts with height: %d, time %s", c, block.NumberU64(), time.Now().String()))
 		}
 		// Prepare batch requests to retrieve the receipt for each transaction in the block
 		requests := make([]ethrpc.BatchElem, txCount)
@@ -57,9 +57,9 @@ func (w *Worker) fetchBlockTxReceiptsWeb3(block *web3types.Block, ch chan web3ty
 					// w.panicError(err)
 				}
 			}
-			if err == nil {
-				break
-			}
+		}
+		if err == nil {
+			break
 		}
 		// Sleep some time before next try
 		time.Sleep(RequestRetryDelay)
