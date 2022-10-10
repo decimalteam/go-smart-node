@@ -21,7 +21,7 @@ type SubTokenCount struct {
 }
 
 func verifySubtokens(subsOld []SubTokenOld, collectionsOld map[string]CollectionOld,
-	delegatedNFT []DelegationNFT, unbondingNFT []UnbondingNFTRecord) map[SubTokenRecord]*SubTokenCount {
+	delegatedNFT []DelegationNFTOld, unbondingNFT []UnbondingNFTRecordOld) map[SubTokenRecord]*SubTokenCount {
 	var checkMap = make(map[SubTokenRecord]*SubTokenCount)
 	for _, sub := range subsOld {
 		checkMap[SubTokenRecord{Denom: sub.Denom, NFT: sub.NftID, SubToken: sub.ID}] = &SubTokenCount{Subs: 1}
@@ -86,7 +86,7 @@ type CoinDiff struct {
 }
 
 func verifyCoinsVolume(coinsOld []FullCoinOld, accsOld []AccountOld,
-	delegations []DelegationOld, unbondings []UnbondingRecord) []CoinDiff {
+	delegations []DelegationOld, unbondings []UnbondingRecordOld) []CoinDiff {
 	fullSum := sdk.NewCoins()
 	for _, acc := range accsOld {
 		if acc.Value.Name == "bonded_tokens_pool" || acc.Value.Name == "not_bonded_tokens_pool" {

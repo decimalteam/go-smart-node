@@ -1,19 +1,25 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
 
 func copyParams(gs *GenesisNew, gsSource *GenesisNew) {
 	gs.GenesisTime = gsSource.GenesisTime
 	gs.AppHash = gsSource.AppHash
 	gs.ChainID = gsSource.ChainID
-	gs.InitalHeight = gsSource.InitalHeight
+	// initial height will be taken from last_height
+	// gs.InitalHeight = gsSource.InitalHeight
 	gs.ConsensusParam = gsSource.ConsensusParam
 	// modules
 	gs.AppState.Auth.Params = gsSource.AppState.Auth.Params
 	gs.AppState.Coin.Params = gsSource.AppState.Coin.Params
 	gs.AppState.Bank.Params = gsSource.AppState.Bank.Params
+	gs.AppState.Validator.Params = gsSource.AppState.Validator.Params
 	//
-	gs.AppState.Genutil = gsSource.AppState.Genutil
+	// gs.AppState.Genutil = gsSource.AppState.Genutil
 	gs.AppState.Swap = gsSource.AppState.Swap
 	gs.AppState.Authz = gsSource.AppState.Authz
 	gs.AppState.Capability = gsSource.AppState.Capability
@@ -75,5 +81,36 @@ func extractAddress(acc interface{}) string {
 		return v["address"].(string)
 	default:
 		return ""
+	}
+}
+
+// fix bonded pool balance from staking
+func fixAfterCopy(gs *GenesisNew) {
+	// staking -> delegations[]: "delegator_address", "shares",
+	st, ok := gs.AppState.Staking.(map[string]interface{})
+	if !ok {
+		panic("Staking is not type map[string]interface{}")
+	}
+	delegations, ok := st["delegations"].([]interface{})
+	if !ok {
+		panic("Delegations is not type []interface{}")
+	}
+	bondings := sdk.NewCoins()
+	for _, delRaw := range delegations {
+		del, ok := delRaw.(map[string]interface{})
+		if !ok {
+			panic("Delegation is not type map[string]interface{}")
+		}
+		v, err := sdk.NewDecFromStr(del["shares"].(string))
+		if err != nil {
+			panic(err)
+		}
+		bondings = bondings.Add(sdk.NewCoin("del", v.RoundInt()))
+	}
+	// "bonded_tokens_pool"
+	for i := range gs.AppState.Bank.Balances {
+		if gs.AppState.Bank.Balances[i].Address == "dx1fl48vsnmsdzcv85q5d2q4z5ajdha8yu3nz9atz" {
+			gs.AppState.Bank.Balances[i].Coins = bondings
+		}
 	}
 }

@@ -383,3 +383,64 @@ func convertValidators(valsOld []ValidatorOld, addrTable *AddressTable) ([]Valid
 	}
 	return result, nil
 }
+
+func convertDelegations(delegations []DelegationOld, delegationsNFT []DelegationNFTOld, coins []FullCoinNew, addrTable *AddressTable) ([]DelegationNew, error) {
+	var coinSymbols = make(map[string]bool)
+	for _, c := range coins {
+		coinSymbols[c.Symbol] = true
+	}
+
+	var result []DelegationNew
+	for _, del := range delegations {
+		delNew, err := DelegationO2NCoin(del, coinSymbols, addrTable)
+		if err != nil {
+			return []DelegationNew{}, err
+		}
+		result = append(result, delNew)
+	}
+	for _, del := range delegationsNFT {
+		delNew, err := DelegationO2NNFT(del, addrTable)
+		if err != nil {
+			return []DelegationNew{}, err
+		}
+		result = append(result, delNew)
+	}
+	return result, nil
+}
+
+func convertUnbondings(undelegations []UnbondingRecordOld, undelegationsNFT []UnbondingNFTRecordOld,
+	coins []FullCoinNew, addrTable *AddressTable) ([]UndelegationNew, error) {
+	var coinSymbols = make(map[string]bool)
+	for _, c := range coins {
+		coinSymbols[c.Symbol] = true
+	}
+
+	var result []UndelegationNew
+	for _, ubd := range undelegations {
+		ubdNew, err := UnbondingO2NCoin(ubd, coinSymbols, addrTable)
+		if err != nil {
+			return []UndelegationNew{}, err
+		}
+		result = append(result, ubdNew)
+	}
+	for _, ubd := range undelegationsNFT {
+		ubdNew, err := UnbondingO2NNFT(ubd, addrTable)
+		if err != nil {
+			return []UndelegationNew{}, err
+		}
+		result = append(result, ubdNew)
+	}
+	return result, nil
+}
+
+func convertLastValidatorPowers(pwrsOld []LastValidatorPowerOld) ([]LastValidatorPowerNew, error) {
+	var result []LastValidatorPowerNew
+	for _, pwrOld := range pwrsOld {
+		pwrNew, err := LastValidatorPowerO2N(pwrOld)
+		if err != nil {
+			return []LastValidatorPowerNew{}, err
+		}
+		result = append(result, pwrNew)
+	}
+	return result, nil
+}
