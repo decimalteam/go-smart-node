@@ -161,7 +161,7 @@ type BalanceNew struct {
 ///////////////////////////
 
 type FullCoinNew struct {
-	CRR         string `json:"crr"`
+	CRR         int64  `json:"crr"`
 	Creator     string `json:"creator"`
 	Identity    string `json:"identity"`
 	LimitVolume string `json:"limit_volume"`
@@ -176,8 +176,9 @@ func FullCoinO2N(coin FullCoinOld, addrTable *AddressTable) FullCoinNew {
 	if symbol == "tdel" {
 		symbol = "del"
 	}
+	crr, _ := strconv.ParseInt(coin.CRR, 10, 64)
 	return FullCoinNew{
-		CRR:         coin.CRR,
+		CRR:         crr,
 		Creator:     addrTable.GetAddress(coin.Creator),
 		Identity:    coin.Identity,
 		LimitVolume: coin.LimitVolume,

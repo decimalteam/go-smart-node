@@ -33,6 +33,7 @@ func main() {
 		os.Exit(1)
 	}
 	copyParams(&gsNew, gsSource)
+	fixAfterCopy(&gsNew)
 	writeGenesisNew(os.Args[4], &gsNew)
 }
 
