@@ -32,6 +32,7 @@ type GenesisOld struct {
 			// `params`
 			Validators []ValidatorOld `json:"validators"`
 		} `json:"validator"`
+		LastHeight int64 `json:"last_height"`
 	} `json:"app_state"`
 	ValidatorPubKeys []ValidatorPubKeyOld `json:"validators"`
 }

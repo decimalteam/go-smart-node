@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -121,6 +122,9 @@ type Statistic struct {
 func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord) (GenesisNew, Statistic, error) {
 	var gsNew GenesisNew
 	var err error
+
+	gsNew.InitalHeight = strconv.FormatInt(gsOld.AppState.LastHeight+1, 10)
+
 	// old-new adresses table, multisig addresses table, module addresses
 	addrTable, err := prepareAddressTable(gsOld)
 	if err != nil {
