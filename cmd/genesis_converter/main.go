@@ -1,11 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"strconv"
+	"strings"
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -171,20 +174,33 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord) (GenesisN
 	// TODO: parametrize output?
 	if true {
 		fmt.Printf("!!! LEGACY RECORDS INJECTING !!! REMOVE FROM PRODUCTION\n")
-		out, err := os.Create("legacy_test_mnemonics.txt")
+		_, err := os.Stat("legacy_test_mnemonics.txt")
+		if errors.Is(err, os.ErrNotExist) {
+			out, err := os.Create("legacy_test_mnemonics.txt")
+			if err != nil {
+				return GenesisNew{}, Statistic{}, err
+			}
+			for i := 0; i < 40000; i++ {
+				mn, _ := dscWallet.NewMnemonic("")
+				acc, _ := dscWallet.NewAccountFromMnemonicWords(mn.Words(), "")
+				legacy_address, _ := dscTypes.GetLegacyAddressFromPubKey(acc.PubKey().Bytes())
+				address := acc.Address()
+				out.WriteString(fmt.Sprintf("%s\t%s\t%s\n", legacy_address, address, mn.Words()))
+			}
+			out.Close()
+		}
+		inp, err := os.Open("legacy_test_mnemonics.txt")
 		if err != nil {
 			return GenesisNew{}, Statistic{}, err
 		}
 		coins := sdk.NewCoins(sdk.NewCoin("del", sdkmath.NewInt(3_141_592_653_589_793_238)))
-		for i := 0; i < 40000; i++ {
-			mn, _ := dscWallet.NewMnemonic("")
-			acc, _ := dscWallet.NewAccountFromMnemonicWords(mn.Words(), "")
-			legacy_address, _ := dscTypes.GetLegacyAddressFromPubKey(acc.PubKey().Bytes())
-			address := acc.Address()
-			out.WriteString(fmt.Sprintf("%s\t%s\t%s\n", legacy_address, address, mn.Words()))
-			legacyRecords.AddCoins(legacy_address, coins)
+		fileScanner := bufio.NewScanner(inp)
+		fileScanner.Split(bufio.ScanLines)
+		for fileScanner.Scan() {
+			row := strings.Split(fileScanner.Text(), "\t")
+			legacyRecords.AddCoins(row[0], coins)
 		}
-		out.Close()
+		inp.Close()
 	}
 	// legacy records
 	var records []LegacyRecordNew

@@ -67,7 +67,7 @@ func (gg *UpdateReserveNFTGenerator) Generate() Action {
 		// get max reserve of subtokens
 		newReserve := sdk.ZeroInt()
 		for _, s := range subToUpdate {
-			key := NFTSubTokenKey{Denom: nftToUpdateReserve.Denom, TokenID: nftToUpdateReserve.ID, ID: s}
+			key := NFTSubTokenKey{TokenID: nftToUpdateReserve.ID, ID: s}
 			reserve, ok := gg.knownSubtokenReserves[key]
 			if !ok {
 				continue

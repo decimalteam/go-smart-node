@@ -10,6 +10,7 @@ import (
 
 	dscconfig "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
+	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	"golang.org/x/crypto/sha3"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -515,6 +516,14 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 	if err != nil {
 		return nil, err
 
+	}
+	// Emit transaction events
+	err = events.EmitTypedEvent(ctx, &feetypes.EventPayCommission{
+		Payer: issuer.String(),
+		Coins: sdk.NewCoins(feeCoin),
+	})
+	if err != nil {
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	// Send check coins from issuer to the transaction sender

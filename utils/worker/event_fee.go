@@ -11,8 +11,9 @@ import (
 )
 
 type EventPayCommission struct {
-	Payer string    `json:"payer"`
-	Coins sdk.Coins `json:"coins"`
+	Payer  string    `json:"payer"`
+	Coins  sdk.Coins `json:"coins"`
+	TxHash string    `json:"txHash"`
 }
 
 type EventUpdateCoinPrices struct {
@@ -37,7 +38,7 @@ func processEventUpdatePrices(ea *EventAccumulator, event abci.Event, txHash str
 }
 
 // decimal.fee.v1.EventPayCommission
-func processEventPayCommission(ea *EventAccumulator, event abci.Event, _ string) error {
+func processEventPayCommission(ea *EventAccumulator, event abci.Event, txHash string) error {
 	/*
 	  string payer = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 	  repeated cosmos.base.v1beta1.Coin coins = 2
@@ -61,6 +62,7 @@ func processEventPayCommission(ea *EventAccumulator, event abci.Event, _ string)
 	}
 
 	e.Coins = coins
+	e.TxHash = txHash
 	ea.PayCommission = append(ea.PayCommission, e)
 	return nil
 

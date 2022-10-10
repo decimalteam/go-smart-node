@@ -390,6 +390,9 @@ func (k Keeper) BurnToken(c context.Context, msg *types.MsgBurnToken) (*types.Ms
 		if subToken.Owner != msg.Sender {
 			return nil, errors.OwnerDoesNotOwnSubTokenID
 		}
+		if subToken.Reserve == nil {
+			subToken.Reserve = &token.Reserve
+		}
 		subTokens[i] = subToken
 	}
 

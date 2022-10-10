@@ -1,11 +1,17 @@
 package worker
 
 import (
+	"fmt"
 	"math/big"
 	"sync"
+	"time"
 
 	web3types "github.com/ethereum/go-ethereum/core/types"
+	ethrpc "github.com/ethereum/go-ethereum/rpc"
 )
+
+const TxReceiptsBatchSize = 16
+const RequestRetryDelay = 32 * time.Millisecond
 
 func (w *Worker) fetchBlockWeb3(height int64, ch chan *web3types.Block) {
 
@@ -19,19 +25,46 @@ func (w *Worker) fetchBlockWeb3(height int64, ch chan *web3types.Block) {
 
 func (w *Worker) fetchBlockTxReceiptsWeb3(block *web3types.Block, ch chan web3types.Receipts) {
 
-	// Request transaction receipts by hashes in parallel
-	results := make(web3types.Receipts, len(block.Transactions()))
+	txCount := len(block.Transactions())
+	results := make(web3types.Receipts, txCount)
+	requests := make([]ethrpc.BatchElem, txCount)
+
+	// Prepare batch requests to retrieve the receipt for each transaction in the block
+	for i, tx := range block.Transactions() {
+		requests[i] = ethrpc.BatchElem{
+			Method: "eth_getTransactionReceipt",
+			Args:   []interface{}{tx.Hash()},
+			Result: &results[i],
+		}
+	}
+
+	// Request transaction receipts with batches in parallel
 	wg := &sync.WaitGroup{}
-	wg.Add(len(block.Transactions()))
-	for i := range block.Transactions() {
-		go func(i int) {
+	for i, s := 0, TxReceiptsBatchSize; i < txCount; i += s {
+		end := i + s
+		if end > txCount {
+			end = txCount
+		}
+		wg.Add(1)
+		go func(requests []ethrpc.BatchElem) {
 			defer wg.Done()
-			result, err := w.web3Client.TransactionReceipt(w.ctx, block.Transactions()[i].Hash())
+			err := w.ethRpcClient.BatchCall(requests)
 			w.panicError(err)
-			results[i] = result
-		}(i)
+		}(requests[i:end])
 	}
 	wg.Wait()
+
+	// Ensure all transaction receipts are retrieved
+	for i := range requests {
+		if requests[i].Error != nil {
+			w.panicError(requests[i].Error)
+		}
+		if results[i] == nil {
+			txHash := requests[i].Args[0].([]byte)
+			err := fmt.Errorf("got null result for tx with hash %X", txHash)
+			w.panicError(err)
+		}
+	}
 
 	// Send results to the channel
 	ch <- results
