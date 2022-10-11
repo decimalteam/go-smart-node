@@ -7,13 +7,11 @@ import (
 )
 
 // Return all validators that a delegator is bonded to. If maxRetrieve is supplied, the respective amount will be returned.
-func (k Keeper) GetDelegatorValidators(
-	ctx sdk.Context, delegatorAddr sdk.AccAddress, maxRetrieve uint32,
-) types.Validators {
+func (k Keeper) GetDelegatorValidators(ctx sdk.Context, delegator sdk.AccAddress, maxRetrieve uint32) types.Validators {
 	validators := make([]types.Validator, maxRetrieve)
 
 	store := ctx.KVStore(k.storeKey)
-	delegatorPrefixKey := types.GetDelegatorDelegationsKey(delegatorAddr)
+	delegatorPrefixKey := types.GetDelegatorDelegationsKey(delegator)
 
 	iterator := sdk.KVStorePrefixIterator(store, delegatorPrefixKey) // smallest to largest
 	defer iterator.Close()
@@ -22,7 +20,7 @@ func (k Keeper) GetDelegatorValidators(
 	for ; iterator.Valid() && i < int(maxRetrieve); iterator.Next() {
 		delegation := types.MustUnmarshalDelegation(k.cdc, iterator.Value())
 
-		validator, found := k.GetValidator(ctx, delegation.GetValidatorAddr())
+		validator, found := k.GetValidator(ctx, delegation.GetValidator())
 		if !found {
 			panic(types.ErrNoValidatorFound)
 		}
@@ -35,20 +33,18 @@ func (k Keeper) GetDelegatorValidators(
 }
 
 // return a validator that a delegator is bonded to
-func (k Keeper) GetDelegatorValidator(
-	ctx sdk.Context, delegatorAddr sdk.AccAddress, validatorAddr sdk.ValAddress,
-) (validator types.Validator, err error) {
-	delegation, found := k.GetDelegation(ctx, delegatorAddr, validatorAddr)
+func (k Keeper) GetDelegatorValidator(ctx sdk.Context, delegator sdk.AccAddress, validator sdk.ValAddress) (v types.Validator, err error) {
+	delegation, found := k.GetDelegation(ctx, delegator, validator)
 	if !found {
-		return validator, types.ErrNoDelegation
+		return v, types.ErrNoDelegation
 	}
 
-	validator, found = k.GetValidator(ctx, delegation.GetValidatorAddr())
+	v, found = k.GetValidator(ctx, delegation.GetValidator())
 	if !found {
 		panic(types.ErrNoValidatorFound)
 	}
 
-	return validator, nil
+	return v, nil
 }
 
 // return all delegations for a delegator

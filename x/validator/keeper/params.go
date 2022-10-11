@@ -20,33 +20,39 @@ func (k Keeper) MaxDelegations(ctx sdk.Context) (res uint32) {
 	return
 }
 
-// MaxEntries returns maximum number of simultaneous redelegations or undelegations (per trio/pair)
+// MaxEntries returns maximum number of simultaneous redelegations/undelegations (per trio/pair).
 func (k Keeper) MaxEntries(ctx sdk.Context) (res uint32) {
 	k.paramstore.Get(ctx, types.KeyMaxEntries, &res)
 	return
 }
 
-// HistoricalEntries = number of historical info entries
-// to persist in store
+// HistoricalEntries returns number of historical info entries to persist in store.
 func (k Keeper) HistoricalEntries(ctx sdk.Context) (res uint32) {
 	k.paramstore.Get(ctx, types.KeyHistoricalEntries, &res)
 	return
 }
 
-// UnbondingTime
-func (k Keeper) UnbondingTime(ctx sdk.Context) (res time.Duration) {
-	k.paramstore.Get(ctx, types.KeyUnbondingTime, &res)
+// RedelegationTime returns time duration needed to redelegate a stake.
+func (k Keeper) RedelegationTime(ctx sdk.Context) (res time.Duration) {
+	k.paramstore.Get(ctx, types.KeyRedelegationTime, &res)
 	return
 }
 
-// Get all parameters as types.Params
+// UndelegationTime returns time duration needed to undelegate a stake.
+func (k Keeper) UndelegationTime(ctx sdk.Context) (res time.Duration) {
+	k.paramstore.Get(ctx, types.KeyUndelegationTime, &res)
+	return
+}
+
+// GetParams returns all parameters as types.Params.
 func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 	return types.NewParams(
-		k.UnbondingTime(ctx),
 		k.MaxValidators(ctx),
+		k.MaxDelegations(ctx),
 		k.MaxEntries(ctx),
 		k.HistoricalEntries(ctx),
-		k.BondDenom(ctx),
+		k.RedelegationTime(ctx),
+		k.UndelegationTime(ctx),
 	)
 }
 

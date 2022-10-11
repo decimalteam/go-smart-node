@@ -248,8 +248,7 @@ func (d Description) EnsureLength() (Description, error) {
 	return d, nil
 }
 
-// ABCIValidatorUpdate returns an abci.ValidatorUpdate from a staking validator type
-// with the full validator power
+// ABCIValidatorUpdate returns an abci.ValidatorUpdate from a staking validator type with the full validator power.
 func (v Validator) ABCIValidatorUpdate(r sdkmath.Int) abci.ValidatorUpdate {
 	tmProtoPk, err := v.TmConsPublicKey()
 	if err != nil {
@@ -262,8 +261,7 @@ func (v Validator) ABCIValidatorUpdate(r sdkmath.Int) abci.ValidatorUpdate {
 	}
 }
 
-// ABCIValidatorUpdateZero returns an abci.ValidatorUpdate from a staking validator type
-// with zero power used for validator updates.
+// ABCIValidatorUpdateZero returns an abci.ValidatorUpdate from a staking validator type with zero power used for validator updates.
 func (v Validator) ABCIValidatorUpdateZero() abci.ValidatorUpdate {
 	tmProtoPk, err := v.TmConsPublicKey()
 	if err != nil {
@@ -276,8 +274,7 @@ func (v Validator) ABCIValidatorUpdateZero() abci.ValidatorUpdate {
 	}
 }
 
-// ConsensusPower gets the consensus-engine power. Aa reduction of 10^6 from
-// validator tokens is applied
+// ConsensusPower gets the consensus-engine power. Aa reduction of 10^6 from validator tokens is applied.
 func (v Validator) ConsensusPower(r sdkmath.Int) int64 {
 	if v.IsBonded() {
 		return v.PotentialConsensusPower(r)
@@ -293,15 +290,13 @@ func (v Validator) PotentialConsensusPower(r sdkmath.Int) int64 {
 	return sdk.TokensToConsensusPower(worth, r)
 }
 
-// UpdateStatus updates the location of the shares within a validator
-// to reflect the new status
+// UpdateStatus updates the location of the shares within a validator to reflect the new status.
 func (v Validator) UpdateStatus(newStatus BondStatus) Validator {
 	v.Status = newStatus
 	return v
 }
 
-// MinEqual defines a more minimum set of equality conditions when comparing two
-// validators.
+// MinEqual defines a more minimum set of equality conditions when comparing two validators.
 func (v *Validator) MinEqual(other *Validator) bool {
 	return v.OperatorAddress == other.OperatorAddress &&
 		v.RewardAddress == other.RewardAddress &&
@@ -312,7 +307,7 @@ func (v *Validator) MinEqual(other *Validator) bool {
 		v.Jailed == other.Jailed
 }
 
-// Equal checks if the receiver equals the parameter
+// Equal checks if the receiver equals the parameter.
 func (v *Validator) Equal(v2 *Validator) bool {
 	return v.MinEqual(v2) &&
 		v.UnbondingHeight == v2.UnbondingHeight &&

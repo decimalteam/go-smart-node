@@ -38,10 +38,8 @@ func (k Keeper) DeleteHistoricalInfo(ctx sdk.Context, height int64) {
 // For each HistoricalInfo object, cb will be called. If the cb returns true, the iterator will close and stop.
 func (k Keeper) IterateHistoricalInfo(ctx sdk.Context, cb func(types.HistoricalInfo) bool) {
 	store := ctx.KVStore(k.storeKey)
-
-	iterator := sdk.KVStorePrefixIterator(store, types.HistoricalInfoKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.GetHistoricalInfosKey())
 	defer iterator.Close()
-
 	for ; iterator.Valid(); iterator.Next() {
 		histInfo := types.MustUnmarshalHistoricalInfo(k.cdc, iterator.Value())
 		if cb(histInfo) {
@@ -53,12 +51,10 @@ func (k Keeper) IterateHistoricalInfo(ctx sdk.Context, cb func(types.HistoricalI
 // GetAllHistoricalInfo returns all stored HistoricalInfo objects.
 func (k Keeper) GetAllHistoricalInfo(ctx sdk.Context) []types.HistoricalInfo {
 	var infos []types.HistoricalInfo
-
 	k.IterateHistoricalInfo(ctx, func(histInfo types.HistoricalInfo) bool {
 		infos = append(infos, histInfo)
 		return false
 	})
-
 	return infos
 }
 

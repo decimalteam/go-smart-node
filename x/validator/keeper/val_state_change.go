@@ -210,9 +210,9 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 	// Compare and subtract the respective amounts to only perform one transfer.
 	// This is done in order to avoid doing multiple updates inside each iterator/loop.
 	case amtFromNotBondedToBonded.GT(amtFromBondedToNotBonded):
-		k.notBondedTokensToBonded(ctx, amtFromNotBondedToBonded.Sub(amtFromBondedToNotBonded))
+		k.sendCoinsToBonded(ctx, amtFromNotBondedToBonded.Sub(amtFromBondedToNotBonded))
 	case amtFromNotBondedToBonded.LT(amtFromBondedToNotBonded):
-		k.bondedTokensToNotBonded(ctx, amtFromBondedToNotBonded.Sub(amtFromNotBondedToBonded))
+		k.sendCoinsToNotBonded(ctx, amtFromBondedToNotBonded.Sub(amtFromNotBondedToBonded))
 	default: // equal amounts of tokens; no update required
 	}
 

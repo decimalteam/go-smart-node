@@ -23,7 +23,7 @@ func TestingUpdateValidator(keeper Keeper, ctx sdk.Context, validator types.Vali
 	store := ctx.KVStore(keeper.storeKey)
 	deleted := false
 
-	iterator := sdk.KVStorePrefixIterator(store, types.ValidatorsByPowerIndexKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.GetValidatorsByPowerIndexKey())
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {

@@ -9,6 +9,12 @@ import (
 )
 
 var _ DelegationI = Delegation{}
+var _ RedelegationI = Redelegation{}
+var _ UndelegationI = Undelegation{}
+
+////////////////////////////////////////////////////////////////
+// Delegation
+////////////////////////////////////////////////////////////////
 
 // NewDelegation creates a new delegation object.
 func NewDelegation(delegator sdk.AccAddress, validator sdk.ValAddress, stake Stake) Delegation {
@@ -18,6 +24,25 @@ func NewDelegation(delegator sdk.AccAddress, validator sdk.ValAddress, stake Sta
 		Stake:     stake,
 	}
 }
+
+// GetDelegator returns delegator address.
+func (d Delegation) GetDelegator() sdk.AccAddress {
+	return sdk.MustAccAddressFromBech32(d.Delegator)
+}
+
+// GetValidator returns validator address.
+func (d Delegation) GetValidator() sdk.ValAddress {
+	addr, err := sdk.ValAddressFromBech32(d.Validator)
+	if err != nil {
+		panic(err)
+	}
+	return addr
+}
+
+// GetStake returns the stake delegated.
+func (d Delegation) GetStake() StakeI { return d.Stake }
+
+////////////////////////////////////////////////////////////////
 
 // MustMarshalDelegation returns the delegation bytes. Panics if fails.
 func MustMarshalDelegation(cdc codec.BinaryCodec, delegation Delegation) []byte {
@@ -33,25 +58,13 @@ func MustUnmarshalDelegation(cdc codec.BinaryCodec, value []byte) Delegation {
 	return delegation
 }
 
-// return the delegation
+// UnmarshalDelegation returns the unmarshaled delegation from bytes.
 func UnmarshalDelegation(cdc codec.BinaryCodec, value []byte) (delegation Delegation, err error) {
 	err = cdc.Unmarshal(value, &delegation)
 	return delegation, err
 }
 
-func (d Delegation) GetDelegator() sdk.AccAddress {
-	return sdk.MustAccAddressFromBech32(d.Delegator)
-}
-
-func (d Delegation) GetValidator() sdk.ValAddress {
-	addr, err := sdk.ValAddressFromBech32(d.Validator)
-	if err != nil {
-		panic(err)
-	}
-	return addr
-}
-
-func (d Delegation) GetStake() StakeI { return d.Stake }
+////////////////////////////////////////////////////////////////
 
 // Delegations is a collection of delegations.
 type Delegations []Delegation
@@ -60,10 +73,94 @@ func (d Delegations) String() (out string) {
 	for _, del := range d {
 		out += del.String() + "\n"
 	}
-
 	return strings.TrimSpace(out)
 }
 
+////////////////////////////////////////////////////////////////
+// Redelegation
+////////////////////////////////////////////////////////////////
+
+// NewRedelegation creates a new redelegation object.
+func NewRedelegation(
+	delegator sdk.AccAddress,
+	validatorSrc sdk.ValAddress,
+	validatorDst sdk.ValAddress,
+	creationHeight int64,
+	minTime time.Time,
+	stake Stake,
+) Redelegation {
+	return Redelegation{
+		Delegator:    delegator.String(),
+		ValidatorSrc: validatorSrc.String(),
+		ValidatorDst: validatorDst.String(),
+		Entries: []RedelegationEntry{
+			NewRedelegationEntry(creationHeight, minTime, stake),
+		},
+	}
+}
+
+// GetDelegator returns delegator address.
+func (red Redelegation) GetDelegator() sdk.AccAddress {
+	return sdk.MustAccAddressFromBech32(red.Delegator)
+}
+
+// GetValidatorSrc returns source validator address.
+func (red Redelegation) GetValidatorSrc() sdk.ValAddress {
+	addr, err := sdk.ValAddressFromBech32(red.ValidatorSrc)
+	if err != nil {
+		panic(err)
+	}
+	return addr
+}
+
+// GetValidatorDst returns destination validator address.
+func (red Redelegation) GetValidatorDst() sdk.ValAddress {
+	addr, err := sdk.ValAddressFromBech32(red.ValidatorDst)
+	if err != nil {
+		panic(err)
+	}
+	return addr
+}
+
+// GetEntries returns redelegation entries.
+func (red Redelegation) GetEntries() []RedelegationEntry { return red.Entries }
+
+// AddEntry appends new entry to the redelegation.
+func (red *Redelegation) AddEntry(creationHeight int64, minTime time.Time, stake Stake) {
+	entry := NewRedelegationEntry(creationHeight, minTime, stake)
+	red.Entries = append(red.Entries, entry)
+}
+
+// RemoveEntry removes existing entry at index i from the redelegation.
+func (red *Redelegation) RemoveEntry(i int64) {
+	red.Entries = append(red.Entries[:i], red.Entries[i+1:]...)
+}
+
+////////////////////////////////////////////////////////////////
+
+// MustMarshalRED returns the redelegation bytes. Panics if fails.
+func MustMarshalRED(cdc codec.BinaryCodec, red Redelegation) []byte {
+	return cdc.MustMarshal(&red)
+}
+
+// MustUnmarshalRED returns the unmarshaled redelegation from bytes. Panics if fails.
+func MustUnmarshalRED(cdc codec.BinaryCodec, value []byte) Redelegation {
+	red, err := UnmarshalRED(cdc, value)
+	if err != nil {
+		panic(err)
+	}
+	return red
+}
+
+// UnmarshalRED returns the unmarshaled redelegation from bytes.
+func UnmarshalRED(cdc codec.BinaryCodec, value []byte) (red Redelegation, err error) {
+	err = cdc.Unmarshal(value, &red)
+	return red, err
+}
+
+////////////////////////////////////////////////////////////////
+
+// NewRedelegationEntry creates a new redelegation entry object.
 func NewRedelegationEntry(creationHeight int64, completionTime time.Time, stake Stake) RedelegationEntry {
 	return RedelegationEntry{
 		CreationHeight: creationHeight,
@@ -72,69 +169,97 @@ func NewRedelegationEntry(creationHeight int64, completionTime time.Time, stake 
 	}
 }
 
-// IsMature - is the current entry mature
-func (e RedelegationEntry) IsMature(currentTime time.Time) bool {
-	return !e.CompletionTime.After(currentTime)
+// IsMature returns true if the entry is mature currently (redelegation is ready to be completed).
+func (e RedelegationEntry) IsMature(now time.Time) bool {
+	return !e.CompletionTime.After(now)
 }
 
-//nolint:interfacer
-func NewRedelegation(
-	delegatorAddr sdk.AccAddress, validatorSrcAddr, validatorDstAddr sdk.ValAddress,
-	creationHeight int64, minTime time.Time, stake Stake,
-) Redelegation {
-	return Redelegation{
-		Delegator:    delegatorAddr.String(),
-		ValidatorSrc: validatorSrcAddr.String(),
-		ValidatorDst: validatorDstAddr.String(),
-		Entries: []RedelegationEntry{
-			NewRedelegationEntry(creationHeight, minTime, stake),
-		},
-	}
-}
+////////////////////////////////////////////////////////////////
 
-// AddEntry - append entry to the unbonding delegation
-func (red *Redelegation) AddEntry(creationHeight int64, minTime time.Time, stake Stake) {
-	entry := NewRedelegationEntry(creationHeight, minTime, stake)
-	red.Entries = append(red.Entries, entry)
-}
-
-// RemoveEntry - remove entry at index i to the unbonding delegation
-func (red *Redelegation) RemoveEntry(i int64) {
-	red.Entries = append(red.Entries[:i], red.Entries[i+1:]...)
-}
-
-// MustMarshalRED returns the Redelegation bytes. Panics if fails.
-func MustMarshalRED(cdc codec.BinaryCodec, red Redelegation) []byte {
-	return cdc.MustMarshal(&red)
-}
-
-// MustUnmarshalRED unmarshals a redelegation from a store value. Panics if fails.
-func MustUnmarshalRED(cdc codec.BinaryCodec, value []byte) Redelegation {
-	red, err := UnmarshalRED(cdc, value)
-	if err != nil {
-		panic(err)
-	}
-
-	return red
-}
-
-// UnmarshalRED unmarshals a redelegation from a store value
-func UnmarshalRED(cdc codec.BinaryCodec, value []byte) (red Redelegation, err error) {
-	err = cdc.Unmarshal(value, &red)
-	return red, err
-}
-
-// Redelegations are a collection of Redelegation
+// Redelegations is a collection of redelegations.
 type Redelegations []Redelegation
 
 func (d Redelegations) String() (out string) {
 	for _, red := range d {
 		out += red.String() + "\n"
 	}
-
 	return strings.TrimSpace(out)
 }
 
+////////////////////////////////////////////////////////////////
+// Undelegation
+////////////////////////////////////////////////////////////////
+
+// NewUndelegation creates a new undelegation object.
+func NewUndelegation(
+	delegator sdk.AccAddress,
+	validator sdk.ValAddress,
+	creationHeight int64,
+	minTime time.Time,
+	stake Stake,
+) Undelegation {
+	return Undelegation{
+		Delegator: delegator.String(),
+		Validator: validator.String(),
+		Entries: []UndelegationEntry{
+			NewUndelegationEntry(creationHeight, minTime, stake),
+		},
+	}
+}
+
+// GetDelegator returns delegator address.
+func (ubd Undelegation) GetDelegator() sdk.AccAddress {
+	return sdk.MustAccAddressFromBech32(ubd.Delegator)
+}
+
+// GetValidator returns validator address.
+func (ubd Undelegation) GetValidator() sdk.ValAddress {
+	addr, err := sdk.ValAddressFromBech32(ubd.Validator)
+	if err != nil {
+		panic(err)
+	}
+	return addr
+}
+
+// GetEntries returns undelegation entries.
+func (ubd Undelegation) GetEntries() []UndelegationEntry { return ubd.Entries }
+
+// AddEntry appends new entry to the undelegation.
+func (ubd *Undelegation) AddEntry(creationHeight int64, minTime time.Time, stake Stake) {
+	entry := NewUndelegationEntry(creationHeight, minTime, stake)
+	ubd.Entries = append(ubd.Entries, entry)
+}
+
+// RemoveEntry removes existing entry at index i from the undelegation.
+func (ubd *Undelegation) RemoveEntry(i int64) {
+	ubd.Entries = append(ubd.Entries[:i], ubd.Entries[i+1:]...)
+}
+
+////////////////////////////////////////////////////////////////
+
+// MustMarshalUBD returns the undelegation bytes. Panics if fails.
+func MustMarshalUBD(cdc codec.BinaryCodec, ubd Undelegation) []byte {
+	return cdc.MustMarshal(&ubd)
+}
+
+// MustUnmarshalUBD returns the unmarshaled undelegation from bytes. Panics if fails.
+func MustUnmarshalUBD(cdc codec.BinaryCodec, value []byte) Undelegation {
+	ubd, err := UnmarshalUBD(cdc, value)
+	if err != nil {
+		panic(err)
+	}
+	return ubd
+}
+
+// UnmarshalUBD returns the unmarshaled undelegation from bytes.
+func UnmarshalUBD(cdc codec.BinaryCodec, value []byte) (ubd Undelegation, err error) {
+	err = cdc.Unmarshal(value, &ubd)
+	return ubd, err
+}
+
+////////////////////////////////////////////////////////////////
+
+// NewUndelegationEntry creates a new undelegation entry object.
 func NewUndelegationEntry(creationHeight int64, completionTime time.Time, stake Stake) UndelegationEntry {
 	return UndelegationEntry{
 		CreationHeight: creationHeight,
@@ -143,65 +268,20 @@ func NewUndelegationEntry(creationHeight int64, completionTime time.Time, stake 
 	}
 }
 
-// IsMature - is the current entry mature.
-func (e UndelegationEntry) IsMature(currentTime time.Time) bool {
-	return !e.CompletionTime.After(currentTime)
+// IsMature returns true if the entry is mature currently (undelegation is ready to be completed).
+func (e UndelegationEntry) IsMature(now time.Time) bool {
+	return !e.CompletionTime.After(now)
 }
 
-// NewUndelegation - create a new unbonding delegation object.
-func NewUndelegation(
-	delegatorAddr sdk.AccAddress, validatorAddr sdk.ValAddress,
-	creationHeight int64, minTime time.Time, stake Stake,
-) Undelegation {
-	return Undelegation{
-		Delegator: delegatorAddr.String(),
-		Validator: validatorAddr.String(),
-		Entries: []UndelegationEntry{
-			NewUndelegationEntry(creationHeight, minTime, stake),
-		},
-	}
-}
+////////////////////////////////////////////////////////////////
 
-// AddEntry - append entry to the unbonding delegation
-func (ubd *Undelegation) AddEntry(creationHeight int64, minTime time.Time, stake Stake) {
-	entry := NewUndelegationEntry(creationHeight, minTime, stake)
-	ubd.Entries = append(ubd.Entries, entry)
-}
-
-// RemoveEntry - remove entry at index i to the unbonding delegation
-func (ubd *Undelegation) RemoveEntry(i int64) {
-	ubd.Entries = append(ubd.Entries[:i], ubd.Entries[i+1:]...)
-}
-
-// return the unbonding delegation
-func MustMarshalUBD(cdc codec.BinaryCodec, ubd Undelegation) []byte {
-	return cdc.MustMarshal(&ubd)
-}
-
-// unmarshal a unbonding delegation from a store value
-func MustUnmarshalUBD(cdc codec.BinaryCodec, value []byte) Undelegation {
-	ubd, err := UnmarshalUBD(cdc, value)
-	if err != nil {
-		panic(err)
-	}
-
-	return ubd
-}
-
-// unmarshal a unbonding delegation from a store value
-func UnmarshalUBD(cdc codec.BinaryCodec, value []byte) (ubd Undelegation, err error) {
-	err = cdc.Unmarshal(value, &ubd)
-	return ubd, err
-}
-
-// Undelegations is a collection of Undelegation
+// Undelegations is a collection of undelegations.
 type Undelegations []Undelegation
 
 func (ubds Undelegations) String() (out string) {
 	for _, u := range ubds {
 		out += u.String() + "\n"
 	}
-
 	return strings.TrimSpace(out)
 }
 

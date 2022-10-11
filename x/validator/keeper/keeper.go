@@ -29,7 +29,10 @@ type Keeper struct {
 
 // NewKeeper creates new Keeper instance.
 func NewKeeper(
-	cdc codec.BinaryCodec, key storetypes.StoreKey, ak types.AccountKeeper, bk types.BankKeeper,
+	cdc codec.BinaryCodec,
+	key storetypes.StoreKey,
+	ak types.AccountKeeper,
+	bk types.BankKeeper,
 	ps paramtypes.Subspace,
 ) Keeper {
 	// set KeyTable if it has not already been set
@@ -61,35 +64,21 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", "x/"+types.ModuleName)
 }
 
-// Set the validator hooks
-func (k *Keeper) SetHooks(sh types.StakingHooks) *Keeper {
-	if k.hooks != nil {
-		panic("cannot set validator hooks twice")
-	}
-
-	k.hooks = sh
-
-	return k
-}
-
-// Load the last total validator power.
+// GetLastTotalPower loads the last total validators power.
 func (k Keeper) GetLastTotalPower(ctx sdk.Context) sdkmath.Int {
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.LastTotalPowerKey)
-
+	bz := store.Get(types.GetLastTotalPowerKey())
 	if bz == nil {
 		return sdk.ZeroInt()
 	}
-
 	ip := sdk.IntProto{}
 	k.cdc.MustUnmarshal(bz, &ip)
-
 	return ip.Int
 }
 
-// Set the last total validator power.
+// SetLastTotalPower sets the last total validators power.
 func (k Keeper) SetLastTotalPower(ctx sdk.Context, power sdkmath.Int) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(&sdk.IntProto{Int: power})
-	store.Set(types.LastTotalPowerKey, bz)
+	store.Set(types.GetLastTotalPowerKey(), bz)
 }
