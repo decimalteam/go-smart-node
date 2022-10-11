@@ -575,7 +575,7 @@ func (k Keeper) DequeueAllMatureUBDQueue(ctx sdk.Context, currTime time.Time) (m
 	defer unbondingTimesliceIterator.Close()
 
 	for ; unbondingTimesliceIterator.Valid(); unbondingTimesliceIterator.Next() {
-		timeslice := types.DVPairs{}
+		timeslice := stakingtypes.DVPairs{}
 		value := unbondingTimesliceIterator.Value()
 		k.cdc.MustUnmarshal(value, &timeslice)
 
@@ -594,14 +594,40 @@ func (k Keeper) DequeueAllMatureUBDQueue(ctx sdk.Context, currTime time.Time) (m
 // Delegate performs a delegation, set/update everything necessary within the store.
 // tokenSrc indicates the bond status of the incoming funds.
 func (k Keeper) Delegate(
-	ctx sdk.Context, delegator sdk.AccAddress, bondAmt sdkmath.Int, tokenSrc types.BondStatus,
+	ctx sdk.Context, delegator sdk.AccAddress, denom string, coinAmount *sdkmath.Int, subTokenIDs []uint32, tokenSrc types.BondStatus,
 	validator types.Validator, subtractAccount bool,
 ) (newShares sdk.Dec, err error) {
 
+	// create stake entity
+	var stake types.Stake
+	switch {
+	case coinAmount != nil && subTokenIDs == nil: // if stake is coin
+		stake = types.NewStakeCoin(sdk.NewCoin(denom, *coinAmount))
+	case subTokenIDs != nil && coinAmount == nil: // if stake is nft
+		if len(subTokenIDs) == 0 {
+			//TODO Error
+		}
+
+		var reserve *sdk.Coin
+		for _, v := range subTokenIDs {
+			st, ok := k.nftKeeper.GetSubToken(ctx, denom, uint32(v))
+			if !ok {
+				// TODO error
+			}
+			if reserve == nil {
+				reserve = st.Reserve
+			}
+			reserve.Add(*st.Reserve)
+		}
+		stake = types.NewStakeNFT(denom, subTokenIDs, *reserve)
+	default:
+		// TODO Error
+	}
+
 	// Get or create the delegation object
-	delegation, found := k.GetDelegation(ctx, delegator, validator.GetOperator())
+	delegation, found := k.GetDelegation(ctx, delegator, validator.GetOperator(), denom)
 	if !found {
-		delegation = types.NewDelegation(delegator, validator.GetOperator(), sdk.ZeroDec())
+		delegation = types.NewDelegation(delegator, validator.GetOperator(), stake)
 	}
 
 	// call the appropriate hook if present
@@ -615,57 +641,86 @@ func (k Keeper) Delegate(
 		return sdk.ZeroDec(), err
 	}
 
-	delegator := sdk.MustAccAddressFromBech32(delegation.GetDelegator())
-
 	// if subtractAccount is true then we are
 	// performing a delegation and not a redelegation, thus the source tokens are
 	// all non bonded
+	notBondedPool := k.GetNotBondedPool(ctx).GetAddress()
+	bondedPool := k.GetBondedPool(ctx).GetAddress()
 	if subtractAccount {
-		if tokenSrc == types.Bonded {
+		if tokenSrc == types.BondStatus_Bonded {
 			panic("delegation token source cannot be bonded")
 		}
 
 		var sendName string
-
+		var sendPool sdk.AccAddress
 		switch {
 		case validator.IsBonded():
 			sendName = types.BondedPoolName
+			sendPool = bondedPool
 		case validator.IsUnbonding(), validator.IsUnbonded():
 			sendName = types.NotBondedPoolName
+			sendPool = notBondedPool
 		default:
 			panic("invalid validator status")
 		}
 
-		coins := sdk.NewCoins(sdk.NewCoin(k.BondDenom(ctx), bondAmt))
-		if err := k.bankKeeper.DelegateCoinsFromAccountToModule(ctx, delegator, sendName, coins); err != nil {
-			return sdk.Dec{}, err
+		// stake is coin or nft
+		switch {
+		case coinAmount != nil && subTokenIDs == nil:
+			coins := sdk.NewCoins(stake.Stake)
+			if err := k.bankKeeper.DelegateCoinsFromAccountToModule(ctx, delegator, sendName, coins); err != nil {
+				return sdk.Dec{}, err
+			}
+		case subTokenIDs != nil && coinAmount == nil:
+			if err := k.nftKeeper.TransferSubTokens(ctx, delegator, sendPool, denom, subTokenIDs); err != nil {
+				return sdk.Dec{}, err
+			}
 		}
 	} else {
 		// potentially transfer tokens between pools, if
 		switch {
-		case tokenSrc == types.Bonded && validator.IsBonded():
+		case tokenSrc == types.BondStatus_Bonded && validator.IsBonded():
 			// do nothing
-		case (tokenSrc == types.Unbonded || tokenSrc == types.Unbonding) && !validator.IsBonded():
+		case (tokenSrc == types.BondStatus_Unbonded || tokenSrc == types.BondStatus_Unbonding) && !validator.IsBonded():
 			// do nothing
-		case (tokenSrc == types.Unbonded || tokenSrc == types.Unbonding) && validator.IsBonded():
+		case (tokenSrc == types.BondStatus_Unbonded || tokenSrc == types.BondStatus_Unbonding) && validator.IsBonded():
 			// transfer pools
-			k.sendCoinsToBonded(ctx, bondAmt)
-		case tokenSrc == types.Bonded && !validator.IsBonded():
+			// stake is coin or nft
+			switch {
+			case coinAmount != nil && subTokenIDs == nil:
+				coins := sdk.NewCoins(stake.GetStake())
+				k.sendCoinsToBonded(ctx, coins)
+			case subTokenIDs != nil && coinAmount == nil:
+				if err = k.nftKeeper.TransferSubTokens(ctx, notBondedPool, bondedPool, denom, subTokenIDs); err != nil {
+					return sdk.Dec{}, err
+				}
+			}
+		case tokenSrc == types.BondStatus_Bonded && !validator.IsBonded():
 			// transfer pools
-			k.sendCoinsToNotBonded(ctx, bondAmt)
+			// stake is coin or nft
+			switch {
+			case coinAmount != nil && subTokenIDs == nil:
+				coins := sdk.NewCoins(stake.GetStake())
+				k.sendCoinsToNotBonded(ctx, coins)
+			case subTokenIDs != nil && coinAmount == nil:
+				if err = k.nftKeeper.TransferSubTokens(ctx, bondedPool, notBondedPool, denom, subTokenIDs); err != nil {
+					return sdk.Dec{}, err
+				}
+			}
 		default:
 			panic("unknown token source bond status")
 		}
 	}
 
-	_, newShares = k.AddValidatorTokensAndShares(ctx, validator, bondAmt)
-
 	// Update delegation
-	delegation.Shares = delegation.Shares.Add(newShares)
 	k.SetDelegation(ctx, delegation)
 
+	valAddress, err := sdk.ValAddressFromBech32(delegation.Validator)
+	if err != nil {
+		return sdk.Dec{}, err
+	}
 	// Call the after-modification hook
-	if err := k.AfterDelegationModified(ctx, delegator, delegation.GetValidatorAddr()); err != nil {
+	if err := k.AfterDelegationModified(ctx, delegator, valAddress); err != nil {
 		return newShares, err
 	}
 

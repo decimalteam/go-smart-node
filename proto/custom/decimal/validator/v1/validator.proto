@@ -128,7 +128,7 @@ message Stake {
   // For stake in NFT: contains total reserve of delegated NFT sub-tokens.
   cosmos.base.v1beta1.Coin stake = 3 [ (gogoproto.nullable) = false ];
   // sub_token_ids defines list of NFT sub-token IDs.
-  repeated int64 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
+  repeated uint32 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
 }
 
 // Delegation represents the bond with coins/NTFs held by an account.
