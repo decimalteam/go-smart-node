@@ -25,7 +25,7 @@ func cmdVerify() *cobra.Command {
 				fmt.Println(err)
 				return
 			}
-			err = reactor.initAccounts(cmd.Flags())
+			addresses, err := reactor.api.AllAccounts()
 			if err != nil {
 				fmt.Println(err)
 				return
@@ -37,8 +37,8 @@ func cmdVerify() *cobra.Command {
 				return
 			}
 			balances := sdk.NewCoins()
-			for _, acc := range reactor.accounts {
-				coins, err := reactor.api.AddressBalance(acc.Address())
+			for _, adr := range addresses {
+				coins, err := reactor.api.AddressBalance(adr)
 				if err != nil {
 					fmt.Println(err)
 					return

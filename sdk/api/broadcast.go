@@ -15,6 +15,7 @@ type TxSyncResponse struct {
 	Code      uint32
 	Log       string
 	Codespace string
+	Events    []tmtypes.Event
 }
 
 type TxSimulateResponse struct {
@@ -48,6 +49,7 @@ func (api *API) grpcBroadcastTx(data []byte, commitMode bool) (*TxSyncResponse, 
 		Code:      resp.TxResponse.Code,
 		Log:       resp.TxResponse.RawLog,
 		Codespace: resp.TxResponse.Codespace,
+		Events:    resp.TxResponse.Events,
 	}, nil
 }
 
