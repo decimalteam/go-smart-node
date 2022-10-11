@@ -21,8 +21,8 @@ service Query {
     option (google.api.http).get = "/decimal/fee/v1/price/{denom}/{quote}";
   }
 
-  // Params queries the module params.
-  rpc ModuleParams(QueryParamsRequest) returns (QueryParamsResponse) {
+  // ModuleParams queries the module params.
+  rpc ModuleParams(QueryModuleParamsRequest) returns (QueryModuleParamsResponse) {
     option (google.api.http).get = "/decimal/fee/v1/params";
   }
 }
@@ -44,8 +44,8 @@ message QueryCoinPriceRequest {
 // QueryCoinPriceResponse is response type for the Query/CoinPrice RPC method.
 message QueryCoinPriceResponse { CoinPrice price = 1; }
 
-// QueryParamsRequest is request type for the Query/Params RPC method.
-message QueryParamsRequest {}
+// QueryModuleParamsRequest is request type for the Query/ModuleParams RPC method.
+message QueryModuleParamsRequest {}
 
-// QueryParamsResponse is response type for the Query/Params RPC method.
-message QueryParamsResponse { Params params = 1 [ (gogoproto.nullable) = false ]; }
+// QueryModuleParamsResponse is response type for the Query/ModuleParams RPC method.
+message QueryModuleParamsResponse { Params params = 1 [ (gogoproto.nullable) = false ]; }

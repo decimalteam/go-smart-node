@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -54,7 +55,8 @@ func (app *DSC) ExportAppStateAndValidators(
 
 // prepare for fresh start at zero height
 // NOTE zero height genesis is a temporary feature which will be deprecated
-//      in favor of export at a block height
+//
+//	in favor of export at a block height
 func (app *DSC) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []string) error {
 	applyAllowedAddrs := false
 
@@ -150,18 +152,18 @@ func (app *DSC) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 	})
 
 	// iterate through unbonding delegations, reset creation height
-	app.StakingKeeper.IterateUnbondingDelegations(ctx, func(_ int64, ubd stakingtypes.UnbondingDelegation) (stop bool) {
+	app.StakingKeeper.IterateUndelegations(ctx, func(_ int64, ubd stakingtypes.Undelegation) (stop bool) {
 		for i := range ubd.Entries {
 			ubd.Entries[i].CreationHeight = 0
 		}
-		app.StakingKeeper.SetUnbondingDelegation(ctx, ubd)
+		app.StakingKeeper.SetUndelegation(ctx, ubd)
 		return false
 	})
 
 	// Iterate through validators by power descending, reset bond heights, and
 	// update bond intra-tx counters.
 	store := ctx.KVStore(app.keys[stakingtypes.StoreKey])
-	iter := sdk.KVStoreReversePrefixIterator(store, stakingtypes.ValidatorsKey)
+	iter := sdk.KVStoreReversePrefixIterator(store, types.GetValidatorsKey())
 	counter := int16(0)
 
 	for ; iter.Valid(); iter.Next() {

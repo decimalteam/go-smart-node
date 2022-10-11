@@ -147,7 +147,7 @@ func (s *KeeperTestSuite) TestGRPCQueryModuleParams() {
 	require := s.Require()
 
 	mparams := k.GetModuleParams(ctx)
-	res, err := queryClient.ModuleParams(gocontext.Background(), &types.QueryParamsRequest{})
+	res, err := queryClient.ModuleParams(gocontext.Background(), &types.QueryModuleParamsRequest{})
 
 	require.NoError(err)
 	require.True(mparams.Equal(res.GetParams()))

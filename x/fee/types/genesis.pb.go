@@ -27,9 +27,9 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 // GenesisState defines the module's genesis state.
 type GenesisState struct {
 	// prices defines complete list of initial coin prices.
-	Prices []CoinPrice `protobuf:"bytes,2,rep,name=prices,proto3" json:"prices"`
+	Prices []CoinPrice `protobuf:"bytes,1,rep,name=prices,proto3" json:"prices"`
 	// params defines all the module's parameters.
-	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
+	Params Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params"`
 }
 
 func (m *GenesisState) Reset()         { *m = GenesisState{} }
@@ -94,15 +94,15 @@ var fileDescriptor_83150323673ec427 = []byte{
 	0x29, 0xc9, 0xe4, 0xfc, 0xe2, 0xdc, 0xfc, 0xe2, 0x78, 0x88, 0x04, 0x84, 0x03, 0x95, 0x92, 0x40,
 	0x33, 0x1e, 0x64, 0x0e, 0x44, 0x46, 0x1a, 0x4d, 0xa6, 0x20, 0xb1, 0x28, 0x31, 0x17, 0xaa, 0x4d,
 	0xa9, 0x96, 0x8b, 0xc7, 0x1d, 0xe2, 0x90, 0xe0, 0x92, 0xc4, 0x92, 0x54, 0x21, 0x73, 0x2e, 0xb6,
-	0x82, 0xa2, 0xcc, 0xe4, 0xd4, 0x62, 0x09, 0x26, 0x05, 0x66, 0x0d, 0x6e, 0x23, 0x49, 0x3d, 0x54,
+	0x82, 0xa2, 0xcc, 0xe4, 0xd4, 0x62, 0x09, 0x46, 0x05, 0x66, 0x0d, 0x6e, 0x23, 0x49, 0x3d, 0x54,
 	0x87, 0xe9, 0x39, 0xe7, 0x67, 0xe6, 0x05, 0x80, 0x54, 0x38, 0xb1, 0x9c, 0xb8, 0x27, 0xcf, 0x10,
-	0x04, 0x55, 0x2e, 0x64, 0xc2, 0xc5, 0x06, 0x31, 0x58, 0x82, 0x51, 0x81, 0x51, 0x83, 0xdb, 0x48,
+	0x04, 0x55, 0x2e, 0x64, 0xc2, 0xc5, 0x06, 0x31, 0x58, 0x82, 0x49, 0x81, 0x51, 0x83, 0xdb, 0x48,
 	0x0c, 0x5d, 0x63, 0x00, 0x58, 0x16, 0xae, 0x0b, 0xc2, 0xf3, 0x3d, 0xf1, 0x48, 0x8e, 0xf1, 0xc2,
 	0x23, 0x39, 0xc6, 0x07, 0x8f, 0xe4, 0x18, 0x27, 0x3c, 0x96, 0x63, 0xb8, 0xf0, 0x58, 0x8e, 0xe1,
 	0xc6, 0x63, 0x39, 0x86, 0x28, 0xe3, 0xa4, 0xcc, 0x92, 0xa4, 0xd2, 0xe4, 0xec, 0xd4, 0x12, 0xbd,
 	0xfc, 0xa2, 0x74, 0x7d, 0xa8, 0x61, 0x25, 0xa9, 0x89, 0xb9, 0xfa, 0xe9, 0xf9, 0xba, 0xc5, 0xb9,
 	0x89, 0x45, 0x25, 0xba, 0x79, 0xf9, 0x29, 0xa9, 0xfa, 0x15, 0x60, 0x7f, 0x95, 0x54, 0x16, 0xa4,
-	0x16, 0x27, 0xb1, 0x81, 0x3d, 0x65, 0x0c, 0x08, 0x00, 0x00, 0xff, 0xff, 0x2f, 0xde, 0x22, 0x15,
+	0x16, 0x27, 0xb1, 0x81, 0x3d, 0x65, 0x0c, 0x08, 0x00, 0x00, 0xff, 0xff, 0x42, 0x51, 0x66, 0xfc,
 	0x6c, 0x01, 0x00, 0x00,
 }
 
@@ -126,6 +126,16 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	{
+		size, err := m.Params.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintGenesis(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
 	if len(m.Prices) > 0 {
 		for iNdEx := len(m.Prices) - 1; iNdEx >= 0; iNdEx-- {
 			{
@@ -137,19 +147,9 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintGenesis(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x12
+			dAtA[i] = 0xa
 		}
 	}
-	{
-		size, err := m.Params.MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarintGenesis(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0xa
 	return len(dAtA) - i, nil
 }
 
@@ -170,14 +170,14 @@ func (m *GenesisState) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = m.Params.Size()
-	n += 1 + l + sovGenesis(uint64(l))
 	if len(m.Prices) > 0 {
 		for _, e := range m.Prices {
 			l = e.Size()
 			n += 1 + l + sovGenesis(uint64(l))
 		}
 	}
+	l = m.Params.Size()
+	n += 1 + l + sovGenesis(uint64(l))
 	return n
 }
 
@@ -218,39 +218,6 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Params", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Params.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Prices", wireType)
 			}
 			var msglen int
@@ -280,6 +247,39 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			}
 			m.Prices = append(m.Prices, CoinPrice{})
 			if err := m.Prices[len(m.Prices)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Params", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Params.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
