@@ -1,0 +1,19 @@
+[master-host-devnet]
+dev-validator-01            ansible_host=91.219.31.205 ansible_port=2251
+dev-validator-02            ansible_host=91.219.31.205 ansible_port=2252
+dev-validator-03            ansible_host=91.219.31.205 ansible_port=2253
+
+[slave-host-devnet]
+dev-gw-backend-01           ansible_host=91.219.31.205 ansible_port=2231
+dev-gw-backend-02           ansible_host=91.219.31.205 ansible_port=2232
+dev-explorer-worker-01      ansible_host=91.219.31.205 ansible_port=2225
+dev-explorer-worker-02      ansible_host=91.219.31.205 ansible_port=2226
+
+[explorer-host-devnet]
+dev-explorer-db-master      ansible_host=91.219.31.205 ansible_port=2210
+dev-explorer-db-slave-01    ansible_host=91.219.31.205 ansible_port=2211
+dev-explorer-db-slave-02    ansible_host=91.219.31.205 ansible_port=2212
+
+[worker-host-devnet]
+dev-explorer-worker-01      ansible_host=91.219.31.205 ansible_port=2225
+dev-explorer-worker-02      ansible_host=91.219.31.205 ansible_port=2226
