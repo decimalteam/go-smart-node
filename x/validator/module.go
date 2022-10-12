@@ -19,7 +19,6 @@ import (
 
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 
-	"bitbucket.org/decimalteam/go-smart-node/x/validator/client/cli"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
@@ -74,7 +73,7 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingCo
 	if err := cdc.UnmarshalJSON(bz, &gs); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
 	}
-	return gs.Validate()
+	return nil
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
@@ -86,12 +85,14 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(c client.Context, serveMux *runt
 
 // GetTxCmd returns the module's root tx command.
 func (AppModuleBasic) GetTxCmd() *cobra.Command {
-	return cli.GetTxCmd()
+	//return cli.GetTxCmd()
+	return nil
 }
 
 // GetQueryCmd returns the module's root query command.
 func (AppModuleBasic) GetQueryCmd() *cobra.Command {
-	return cli.GetQueryCmd()
+	//return cli.GetQueryCmd()
+	return nil
 }
 
 ////////////////////////////////////////////////////////////////
@@ -153,20 +154,22 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 
 // RegisterInvariants registers the module's invariants.
 func (am AppModule) RegisterInvariants(registry sdk.InvariantRegistry) {
-	keeper.RegisterInvariants(registry, am.keeper)
+	//keeper.RegisterInvariants(registry, am.keeper)
 }
 
 // InitGenesis performs the module's genesis initialization.
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
-	var gs types.GenesisState
-	cdc.MustUnmarshalJSON(data, &gs)
-	return am.keeper.InitGenesis(ctx, &gs)
+	//var gs types.GenesisState
+	//cdc.MustUnmarshalJSON(data, &gs)
+	//return am.keeper.InitGenesis(ctx, &gs)
+	return nil
 }
 
 // ExportGenesis returns the module's exported genesis state as raw JSON bytes.
 func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
-	gs := am.keeper.ExportGenesis(ctx)
-	return cdc.MustMarshalJSON(gs)
+	//gs := am.keeper.ExportGenesis(ctx)
+	//return cdc.MustMarshalJSON(gs)
+	return nil
 }
 
 // ConsensusVersion returns the consensus state-breaking version for the module.

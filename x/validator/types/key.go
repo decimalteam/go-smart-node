@@ -160,18 +160,22 @@ func GetDelegationKey(delegator sdk.AccAddress, validator sdk.ValAddress, denom 
 	return append(GetDelegationsKey(delegator, validator), []byte(denom)...)
 }
 
+// GetValidatorAllDelegations returns the prefix for all validators delegations index
 func GetValidatorAllDelegations() []byte {
 	return keyPrefixDelegationByValIndex
 }
 
+// GetValidatorDelegationsKey create the key for validator all delegations
 func GetValidatorDelegationsKey(val sdk.ValAddress) []byte {
 	return append(GetValidatorAllDelegations(), address.MustLengthPrefix(val)...)
 }
 
+// GetValidatorDelegatorDelegationsKey create a key for all delegations between delegator and validator
 func GetValidatorDelegatorDelegationsKey(val sdk.ValAddress, del sdk.AccAddress) []byte {
 	return append(GetValidatorDelegationsKey(val), address.MustLengthPrefix(del)...)
 }
 
+// GetValidatorDelegatorDelegationKey create a key for validator-delegator-denom delegation
 func GetValidatorDelegatorDelegationKey(val sdk.ValAddress, del sdk.AccAddress, denom string) []byte {
 	return append(GetValidatorDelegatorDelegationsKey(val, del), []byte(denom)...)
 }
@@ -353,6 +357,10 @@ func GetUBDKeyFromValIndexKey(indexKey []byte) []byte {
 ////////////////////////////////////////////////////////////////////////////////
 // Queues //////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+
+func GetAllValidatorQueueKey() []byte {
+	return keyPrefixValidatorQueue
+}
 
 // GetValidatorQueueKey returns the prefix key used for getting a set of unbonding
 // validators whose unbonding completion occurs at the given time and height.

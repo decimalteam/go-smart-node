@@ -61,7 +61,7 @@ type ValidatorSet interface {
 	IterateValidators(sdk.Context, func(index int64, validator ValidatorI) (stop bool))
 
 	// iterate through bonded validators by operator address, execute func for each validator
-	IterateBondedValidatorsByPower(sdk.Context, func(index int64, validator ValidatorI) (stop bool))
+	//IterateBondedValidatorsByPower(sdk.Context, func(index int64, validator ValidatorI) (stop bool))
 
 	// iterate through the consensus validator set of the last block by operator address, execute func for each validator
 	IterateLastValidators(sdk.Context, func(index int64, validator ValidatorI) (stop bool))
@@ -72,7 +72,7 @@ type ValidatorSet interface {
 	BondedRatio(sdk.Context, string) sdk.Dec                     // total bonded ratio within the validator set for the specific coin
 
 	// slash the validator and delegators of the validator, specifying offence height, offence power, and slash fraction
-	Slash(sdk.Context, sdk.ConsAddress, int64, int64, sdk.Dec) sdkmath.Int
+	Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeight int64, power int64, slashFactor sdk.Dec)
 	Jail(sdk.Context, sdk.ConsAddress)   // jail a validator
 	Unjail(sdk.Context, sdk.ConsAddress) // unjail a validator
 

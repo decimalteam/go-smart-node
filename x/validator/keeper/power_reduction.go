@@ -1,23 +1,21 @@
 package keeper
 
 import (
-	"encoding/binary"
-
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	sdkmath "cosmossdk.io/math"
+	"encoding/binary"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	ethtypes "github.com/evmos/ethermint/types"
-
-	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
 // TokensToConsensusPower converts input tokens to potential consensus-engine power
-func (k Keeper) TokensToConsensusPower(ctx sdk.Context, tokens sdkmath.Int) int64 {
+func TokensToConsensusPower(tokens sdkmath.Int) int64 {
 	return sdk.TokensToConsensusPower(tokens, ethtypes.PowerReduction)
 }
 
 // TokensFromConsensusPower - convert input power to tokens
-func (k Keeper) TokensFromConsensusPower(ctx sdk.Context, power int64) sdkmath.Int {
+func TokensFromConsensusPower(power int64) sdkmath.Int {
 	return sdk.TokensFromConsensusPower(power, ethtypes.PowerReduction)
 }
 
