@@ -1,11 +1,12 @@
 package types
 
 import (
-	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	nftypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
 // DistributionKeeper expected distribution keeper (noalias)
@@ -41,13 +42,17 @@ type BankKeeper interface {
 }
 
 type NFTKeeper interface {
-	GetToken(ctx sdk.Context, id string) (token types.Token, found bool)
-	GetSubToken(ctx sdk.Context, id string, index uint32) (subToken types.SubToken, found bool)
+	GetToken(ctx sdk.Context, id string) (token nftypes.Token, found bool)
+	GetSubToken(ctx sdk.Context, id string, index uint32) (subToken nftypes.SubToken, found bool)
+	SetSubToken(ctx sdk.Context, id string, subToken nftypes.SubToken)
 	TransferSubTokens(ctx sdk.Context, sender, recipient sdk.AccAddress, tokenID string, subTokenIDs []uint32) error
 }
 
 type CoinKeeper interface {
 	GetCoin(ctx sdk.Context, denom string) (coin cointypes.Coin, err error)
+	GetBaseDenom(ctx sdk.Context) string
+	GetDecreasingFactor(ctx sdk.Context, coin sdk.Coin) (sdk.Dec, error)
+	BurnPoolCoins(ctx sdk.Context, poolName string, coins sdk.Coins) error
 }
 
 // ValidatorSet expected properties for the set of all validators (noalias)ю
