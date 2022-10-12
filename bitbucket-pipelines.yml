@@ -65,7 +65,7 @@ definitions:
 
           # run reset playbook for SLAVE HOSTS
           - if [[ $MESSAGE == *\[reset\]* ]]; then
-            ansible-playbook -vvvv -i hosts -l "$SLAVE_HOST" -e "ansible_user=$USERNAME mode=slave decimal_keys=$DECIMAL_KEYS chain_id=$CHAIN_ID_NEW artifacts=$BITBUCKET_CLONE_DIR/build src_genesis=$SRC_GENESIS_NEW persistent_peers=$PERSISTENT_PEERS_NEW" decimal-nodes-init.yml;
+            ansible-playbook -vv -i hosts -l "$SLAVE_HOST" -e "ansible_user=$USERNAME mode=slave decimal_keys=$DECIMAL_KEYS chain_id=$CHAIN_ID_NEW artifacts=$BITBUCKET_CLONE_DIR/build src_genesis=$SRC_GENESIS_NEW persistent_peers=$PERSISTENT_PEERS_NEW" decimal-nodes-init.yml;
             else echo 0; fi
 
     - parallel: &repo_build
