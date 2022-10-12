@@ -49,26 +49,26 @@ func (k Keeper) SetValidatorByConsAddr(ctx sdk.Context, validator types.Validato
 }
 
 // validator index
-func (k Keeper) SetValidatorByPowerIndex(ctx sdk.Context, validator types.Validator) {
+func (k Keeper) SetValidatorByPowerIndex(ctx sdk.Context, validator types.Validator, power int64) {
 	// jailed validators are not kept in the power index
 	if validator.Jailed {
 		return
 	}
 
 	store := ctx.KVStore(k.storeKey)
-	store.Set(k.GetValidatorsByPowerIndexKey(ctx, validator), validator.GetOperator())
+	store.Set(k.GetValidatorsByPowerIndexKey(ctx, validator, power), validator.GetOperator())
 }
 
 // validator index
-func (k Keeper) DeleteValidatorByPowerIndex(ctx sdk.Context, validator types.Validator) {
+func (k Keeper) DeleteValidatorByPowerIndex(ctx sdk.Context, validator types.Validator, power int64) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(k.GetValidatorsByPowerIndexKey(ctx, validator))
+	store.Delete(k.GetValidatorsByPowerIndexKey(ctx, validator, power))
 }
 
 // validator index
-func (k Keeper) SetNewValidatorByPowerIndex(ctx sdk.Context, validator types.Validator) {
+func (k Keeper) SetNewValidatorByPowerIndex(ctx sdk.Context, validator types.Validator, power int64) {
 	store := ctx.KVStore(k.storeKey)
-	store.Set(k.GetValidatorsByPowerIndexKey(ctx, validator), validator.GetOperator())
+	store.Set(k.GetValidatorsByPowerIndexKey(ctx, validator, power), validator.GetOperator())
 }
 
 // Update the tokens of an existing validator, update the validators power index key

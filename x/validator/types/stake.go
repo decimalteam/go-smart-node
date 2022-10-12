@@ -10,12 +10,12 @@ func NewStakeCoin(stake sdk.Coin) Stake {
 		Type:        StakeType_Coin,
 		ID:          stake.Denom,
 		Stake:       stake,
-		SubTokenIDs: []int64{},
+		SubTokenIDs: []uint32{},
 	}
 }
 
 // NewStakeNFT creates a new Stake instance for stake in the NFT token.
-func NewStakeNFT(tokenID string, subTokenIDs []int64, reserve sdk.Coin) Stake {
+func NewStakeNFT(tokenID string, subTokenIDs []uint32, reserve sdk.Coin) Stake {
 	return Stake{
 		Type:        StakeType_NFT,
 		ID:          tokenID,

@@ -1,6 +1,8 @@
 package types
 
 import (
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -36,6 +38,16 @@ type BankKeeper interface {
 	DelegateCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 
 	BurnCoins(ctx sdk.Context, name string, amt sdk.Coins) error
+}
+
+type NFTKeeper interface {
+	GetToken(ctx sdk.Context, id string) (token types.Token, found bool)
+	GetSubToken(ctx sdk.Context, id string, index uint32) (subToken types.SubToken, found bool)
+	TransferSubTokens(ctx sdk.Context, sender, recipient sdk.AccAddress, tokenID string, subTokenIDs []uint32) error
+}
+
+type CoinKeeper interface {
+	GetCoin(ctx sdk.Context, denom string) (coin cointypes.Coin, err error)
 }
 
 // ValidatorSet expected properties for the set of all validators (noalias)ю
