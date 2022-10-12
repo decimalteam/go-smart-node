@@ -20,7 +20,7 @@ import (
 // GetDelegation returns specific delegation by the given delegator address, validator and staked coin's denom.
 func (k Keeper) GetDelegation(ctx sdk.Context, delegator sdk.AccAddress, validator sdk.ValAddress, denom string) (delegation types.Delegation, found bool) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetDelegationsKey(delegator, validator)
+	key := types.GetDelegationKey(delegator, validator, denom)
 	value := store.Get(key)
 	if value == nil {
 		return delegation, false
@@ -67,6 +67,20 @@ func (k Keeper) GetDelegatorDelegations(ctx sdk.Context, delegator sdk.AccAddres
 	return delegations
 }
 
+// GetDelegatorValidatorDelegations returns a given amount of all the delegations between the validator and the delegator.
+func (k Keeper) GetDelegatorValidatorDelegations(ctx sdk.Context, delegator sdk.AccAddress, validator sdk.ValAddress, maxRetrieve uint16) (delegations []types.Delegation) {
+	delegations = make([]types.Delegation, 0, maxRetrieve)
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.GetDelegationsKey(delegator, validator))
+	defer iterator.Close()
+	for i := 0; iterator.Valid() && i < int(maxRetrieve); iterator.Next() {
+		delegation := types.MustUnmarshalDelegation(k.cdc, iterator.Value())
+		delegations = append(delegations, delegation)
+		i++
+	}
+	return delegations
+}
+
 // IterateAllDelegations iterates through all of the delegations.
 func (k Keeper) IterateAllDelegations(ctx sdk.Context, cb func(delegation types.Delegation) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
@@ -84,21 +98,23 @@ func (k Keeper) IterateAllDelegations(ctx sdk.Context, cb func(delegation types.
 func (k Keeper) SetDelegation(ctx sdk.Context, delegation types.Delegation) {
 	delegator := delegation.GetDelegator()
 	validator := delegation.GetValidator()
+	denom := delegation.GetStake().GetID()
 	store := ctx.KVStore(k.storeKey)
 	b := types.MustMarshalDelegation(k.cdc, delegation)
-	store.Set(types.GetDelegationsKey(delegator, validator), b)
+	store.Set(types.GetDelegationKey(delegator, validator, denom), b)
 }
 
 // RemoveDelegation removes a delegation
 func (k Keeper) RemoveDelegation(ctx sdk.Context, delegation types.Delegation) error {
 	delegator := delegation.GetDelegator()
 	validator := delegation.GetValidator()
+	denom := delegation.GetStake().GetID()
 	// TODO: Consider calling hooks outside of the store wrapper functions, it's unobvious.
 	if err := k.BeforeDelegationRemoved(ctx, delegator, validator); err != nil {
 		return err
 	}
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.GetDelegationsKey(delegator, validator))
+	store.Delete(types.GetDelegationKey(delegator, validator, denom))
 	return nil
 }
 
@@ -187,15 +203,14 @@ func (k Keeper) SetRedelegationEntry(
 	validatorDst sdk.ValAddress,
 	creationHeight int64,
 	minTime time.Time,
-	balance sdkmath.Int,
-	sharesSrc, sharesDst sdk.Dec,
+	stake types.Stake,
 ) types.Redelegation {
 	red, found := k.GetRedelegation(ctx, delegator, validatorSrc, validatorDst)
 	if found {
-		red.AddEntry(creationHeight, minTime, balance, sharesDst)
+		red.AddEntry(creationHeight, minTime, stake)
 	} else {
 		red = types.NewRedelegation(delegator, validatorSrc,
-			validatorDst, creationHeight, minTime, balance, sharesDst)
+			validatorDst, creationHeight, minTime, stake)
 	}
 
 	k.SetRedelegation(ctx, red)
@@ -259,14 +274,14 @@ func (k Keeper) SetRedelegationQueueTimeSlice(ctx sdk.Context, timestamp time.Ti
 // timeslice in the redelegation queue.
 func (k Keeper) InsertRedelegationQueue(ctx sdk.Context, red types.Redelegation, completionTime time.Time) {
 	timeSlice := k.GetRedelegationQueueTimeSlice(ctx, completionTime)
-	dvvTriplet := types.DVVTriplet{
-		DelegatorAddress:    red.DelegatorAddress,
-		ValidatorSrcAddress: red.ValidatorSrcAddress,
-		ValidatorDstAddress: red.ValidatorDstAddress,
+	dvvTriplet := stakingtypes.DVVTriplet{
+		DelegatorAddress:    red.Delegator,
+		ValidatorSrcAddress: red.ValidatorSrc,
+		ValidatorDstAddress: red.ValidatorDst,
 	}
 
 	if len(timeSlice) == 0 {
-		k.SetRedelegationQueueTimeSlice(ctx, completionTime, []types.DVVTriplet{dvvTriplet})
+		k.SetRedelegationQueueTimeSlice(ctx, completionTime, []stakingtypes.DVVTriplet{dvvTriplet})
 	} else {
 		timeSlice = append(timeSlice, dvvTriplet)
 		k.SetRedelegationQueueTimeSlice(ctx, completionTime, timeSlice)
@@ -277,13 +292,13 @@ func (k Keeper) InsertRedelegationQueue(ctx sdk.Context, red types.Redelegation,
 // time 0 until endTime.
 func (k Keeper) RedelegationQueueIterator(ctx sdk.Context, endTime time.Time) sdk.Iterator {
 	store := ctx.KVStore(k.storeKey)
-	return store.Iterator(types.RedelegationQueueKey, sdk.InclusiveEndBytes(types.GetRedelegationsTimeKey(endTime)))
+	return store.Iterator(types.GetRedelegationsTimeKey(endTime), sdk.InclusiveEndBytes(types.GetRedelegationsTimeKey(endTime)))
 }
 
 // DequeueAllMatureRedelegationQueue returns a concatenated list of all the
 // timeslices inclusively previous to currTime, and deletes the timeslices from
 // the queue.
-func (k Keeper) DequeueAllMatureRedelegationQueue(ctx sdk.Context, currTime time.Time) (matureRedelegations []stakingtypes.DVVTriplet) {
+func (k Keeper) DequeueAllMatureRedelegationQueue(ctx sdk.Context) (matureRedelegations []stakingtypes.DVVTriplet) {
 	store := ctx.KVStore(k.storeKey)
 
 	// gets an iterator for all timeslices from time 0 until the current Blockheader time
@@ -363,7 +378,7 @@ func (k Keeper) GetUndelegationsFromValidator(ctx sdk.Context, validator sdk.Val
 func (k Keeper) IterateUndelegations(ctx sdk.Context, fn func(index int64, ubd types.Undelegation) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
 
-	iterator := sdk.KVStorePrefixIterator(store, types.UndelegationKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.GetAllDelegationsKey())
 	defer iterator.Close()
 
 	for i := int64(0); iterator.Valid(); iterator.Next() {
@@ -380,7 +395,7 @@ func (k Keeper) GetDelegatorUnbonding(ctx sdk.Context, delegator sdk.AccAddress)
 	unbonding := sdk.ZeroInt()
 	k.IterateDelegatorUndelegations(ctx, delegator, func(ubd types.Undelegation) bool {
 		for _, entry := range ubd.Entries {
-			unbonding = unbonding.Add(entry.Balance)
+			unbonding = unbonding.Add(entry.Stake.Stake.Amount)
 		}
 		return false
 	})
@@ -404,18 +419,15 @@ func (k Keeper) IterateDelegatorUndelegations(ctx sdk.Context, delegator sdk.Acc
 
 // GetDelegatorBonded returs the total amount a delegator has bonded.
 func (k Keeper) GetDelegatorBonded(ctx sdk.Context, delegator sdk.AccAddress) sdkmath.Int {
-	bonded := sdk.ZeroDec()
+	bonded := sdk.ZeroInt()
 
 	k.IterateDelegatorDelegations(ctx, delegator, func(delegation types.Delegation) bool {
-		validator, found := k.GetValidator(ctx, delegation.GetValidator())
-		if found {
-			shares := delegation.Shares
-			tokens := validator.TokensFromSharesTruncated(shares)
-			bonded = bonded.Add(tokens)
-		}
+		amount := delegation.Stake.GetStake().Amount
+		bonded = bonded.Add(amount)
+
 		return false
 	})
-	return bonded.RoundInt()
+	return bonded
 }
 
 // IterateDelegatorDelegations iterates through one delegator's delegations.
@@ -461,11 +473,11 @@ func (k Keeper) HasMaxUndelegationEntries(ctx sdk.Context, delegator sdk.AccAddr
 
 // SetUndelegation sets the unbonding delegation and associated index.
 func (k Keeper) SetUndelegation(ctx sdk.Context, ubd types.Undelegation) {
-	delegator := sdk.MustAccAddressFromBech32(ubd.DelegatorAddress)
+	delegator := sdk.MustAccAddressFromBech32(ubd.Delegator)
 
 	store := ctx.KVStore(k.storeKey)
 	bz := types.MustMarshalUBD(k.cdc, ubd)
-	addr, err := sdk.ValAddressFromBech32(ubd.ValidatorAddress)
+	addr, err := sdk.ValAddressFromBech32(ubd.Validator)
 	if err != nil {
 		panic(err)
 	}
@@ -476,10 +488,10 @@ func (k Keeper) SetUndelegation(ctx sdk.Context, ubd types.Undelegation) {
 
 // RemoveUndelegation removes the unbonding delegation object and associated index.
 func (k Keeper) RemoveUndelegation(ctx sdk.Context, ubd types.Undelegation) {
-	delegator := sdk.MustAccAddressFromBech32(ubd.DelegatorAddress)
+	delegator := sdk.MustAccAddressFromBech32(ubd.Delegator)
 
 	store := ctx.KVStore(k.storeKey)
-	addr, err := sdk.ValAddressFromBech32(ubd.ValidatorAddress)
+	addr, err := sdk.ValAddressFromBech32(ubd.Validator)
 	if err != nil {
 		panic(err)
 	}
@@ -492,13 +504,13 @@ func (k Keeper) RemoveUndelegation(ctx sdk.Context, ubd types.Undelegation) {
 // the given addresses. It creates the unbonding delegation if it does not exist.
 func (k Keeper) SetUndelegationEntry(
 	ctx sdk.Context, delegator sdk.AccAddress, validator sdk.ValAddress,
-	creationHeight int64, minTime time.Time, balance sdkmath.Int,
+	creationHeight int64, minTime time.Time, stake types.Stake,
 ) types.Undelegation {
 	ubd, found := k.GetUndelegation(ctx, delegator, validator)
 	if found {
-		ubd.AddEntry(creationHeight, minTime, balance)
+		ubd.AddEntry(creationHeight, minTime, stake)
 	} else {
-		ubd = types.NewUndelegation(delegator, validator, creationHeight, minTime, balance)
+		ubd = types.NewUndelegation(delegator, validator, creationHeight, minTime, stake)
 	}
 
 	k.SetUndelegation(ctx, ubd)
@@ -519,7 +531,7 @@ func (k Keeper) GetUBDQueueTimeSlice(ctx sdk.Context, timestamp time.Time) (dvPa
 		return []stakingtypes.DVPair{}
 	}
 
-	pairs := types.DVPairs{}
+	pairs := stakingtypes.DVPairs{}
 	k.cdc.MustUnmarshal(bz, &pairs)
 
 	return pairs.Pairs
@@ -528,14 +540,14 @@ func (k Keeper) GetUBDQueueTimeSlice(ctx sdk.Context, timestamp time.Time) (dvPa
 // SetUBDQueueTimeSlice sets a specific unbonding queue timeslice.
 func (k Keeper) SetUBDQueueTimeSlice(ctx sdk.Context, timestamp time.Time, keys []stakingtypes.DVPair) {
 	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshal(&types.DVPairs{Pairs: keys})
+	bz := k.cdc.MustMarshal(&stakingtypes.DVPairs{Pairs: keys})
 	store.Set(types.GetUndelegationsTimeKey(timestamp), bz)
 }
 
 // InsertUBDQueue inserts an unbonding delegation to the appropriate timeslice
 // in the unbonding queue.
 func (k Keeper) InsertUBDQueue(ctx sdk.Context, ubd types.Undelegation, completionTime time.Time) {
-	dvPair := stakingtypes.DVPair{DelegatorAddress: ubd.DelegatorAddress, ValidatorAddress: ubd.ValidatorAddress}
+	dvPair := stakingtypes.DVPair{DelegatorAddress: ubd.Delegator, ValidatorAddress: ubd.Validator}
 
 	timeSlice := k.GetUBDQueueTimeSlice(ctx, completionTime)
 	if len(timeSlice) == 0 {
@@ -549,7 +561,7 @@ func (k Keeper) InsertUBDQueue(ctx sdk.Context, ubd types.Undelegation, completi
 // UBDQueueIterator returns all the unbonding queue timeslices from time 0 until endTime.
 func (k Keeper) UBDQueueIterator(ctx sdk.Context, endTime time.Time) sdk.Iterator {
 	store := ctx.KVStore(k.storeKey)
-	return store.Iterator(types.UnbondingQueueKey,
+	return store.Iterator(types.GetUndelegationsTimeKey(endTime),
 		sdk.InclusiveEndBytes(types.GetUndelegationsTimeKey(endTime)))
 }
 
@@ -563,7 +575,7 @@ func (k Keeper) DequeueAllMatureUBDQueue(ctx sdk.Context, currTime time.Time) (m
 	defer unbondingTimesliceIterator.Close()
 
 	for ; unbondingTimesliceIterator.Valid(); unbondingTimesliceIterator.Next() {
-		timeslice := types.DVPairs{}
+		timeslice := stakingtypes.DVPairs{}
 		value := unbondingTimesliceIterator.Value()
 		k.cdc.MustUnmarshal(value, &timeslice)
 
@@ -582,14 +594,40 @@ func (k Keeper) DequeueAllMatureUBDQueue(ctx sdk.Context, currTime time.Time) (m
 // Delegate performs a delegation, set/update everything necessary within the store.
 // tokenSrc indicates the bond status of the incoming funds.
 func (k Keeper) Delegate(
-	ctx sdk.Context, delegator sdk.AccAddress, bondAmt sdkmath.Int, tokenSrc types.BondStatus,
+	ctx sdk.Context, delegator sdk.AccAddress, denom string, coinAmount *sdkmath.Int, subTokenIDs []uint32, tokenSrc types.BondStatus,
 	validator types.Validator, subtractAccount bool,
 ) (newShares sdk.Dec, err error) {
 
+	// create stake entity
+	var stake types.Stake
+	switch {
+	case coinAmount != nil && subTokenIDs == nil: // if stake is coin
+		stake = types.NewStakeCoin(sdk.NewCoin(denom, *coinAmount))
+	case subTokenIDs != nil && coinAmount == nil: // if stake is nft
+		if len(subTokenIDs) == 0 {
+			//TODO Error
+		}
+
+		var reserve *sdk.Coin
+		for _, v := range subTokenIDs {
+			st, ok := k.nftKeeper.GetSubToken(ctx, denom, uint32(v))
+			if !ok {
+				// TODO error
+			}
+			if reserve == nil {
+				reserve = st.Reserve
+			}
+			reserve.Add(*st.Reserve)
+		}
+		stake = types.NewStakeNFT(denom, subTokenIDs, *reserve)
+	default:
+		// TODO Error
+	}
+
 	// Get or create the delegation object
-	delegation, found := k.GetDelegation(ctx, delegator, validator.GetOperator())
+	delegation, found := k.GetDelegation(ctx, delegator, validator.GetOperator(), denom)
 	if !found {
-		delegation = types.NewDelegation(delegator, validator.GetOperator(), sdk.ZeroDec())
+		delegation = types.NewDelegation(delegator, validator.GetOperator(), stake)
 	}
 
 	// call the appropriate hook if present
@@ -603,57 +641,86 @@ func (k Keeper) Delegate(
 		return sdk.ZeroDec(), err
 	}
 
-	delegator := sdk.MustAccAddressFromBech32(delegation.GetDelegator())
-
 	// if subtractAccount is true then we are
 	// performing a delegation and not a redelegation, thus the source tokens are
 	// all non bonded
+	notBondedPool := k.GetNotBondedPool(ctx).GetAddress()
+	bondedPool := k.GetBondedPool(ctx).GetAddress()
 	if subtractAccount {
-		if tokenSrc == types.Bonded {
+		if tokenSrc == types.BondStatus_Bonded {
 			panic("delegation token source cannot be bonded")
 		}
 
 		var sendName string
-
+		var sendPool sdk.AccAddress
 		switch {
 		case validator.IsBonded():
 			sendName = types.BondedPoolName
+			sendPool = bondedPool
 		case validator.IsUnbonding(), validator.IsUnbonded():
 			sendName = types.NotBondedPoolName
+			sendPool = notBondedPool
 		default:
 			panic("invalid validator status")
 		}
 
-		coins := sdk.NewCoins(sdk.NewCoin(k.BondDenom(ctx), bondAmt))
-		if err := k.bankKeeper.DelegateCoinsFromAccountToModule(ctx, delegator, sendName, coins); err != nil {
-			return sdk.Dec{}, err
+		// stake is coin or nft
+		switch {
+		case coinAmount != nil && subTokenIDs == nil:
+			coins := sdk.NewCoins(stake.Stake)
+			if err := k.bankKeeper.DelegateCoinsFromAccountToModule(ctx, delegator, sendName, coins); err != nil {
+				return sdk.Dec{}, err
+			}
+		case subTokenIDs != nil && coinAmount == nil:
+			if err := k.nftKeeper.TransferSubTokens(ctx, delegator, sendPool, denom, subTokenIDs); err != nil {
+				return sdk.Dec{}, err
+			}
 		}
 	} else {
 		// potentially transfer tokens between pools, if
 		switch {
-		case tokenSrc == types.Bonded && validator.IsBonded():
+		case tokenSrc == types.BondStatus_Bonded && validator.IsBonded():
 			// do nothing
-		case (tokenSrc == types.Unbonded || tokenSrc == types.Unbonding) && !validator.IsBonded():
+		case (tokenSrc == types.BondStatus_Unbonded || tokenSrc == types.BondStatus_Unbonding) && !validator.IsBonded():
 			// do nothing
-		case (tokenSrc == types.Unbonded || tokenSrc == types.Unbonding) && validator.IsBonded():
+		case (tokenSrc == types.BondStatus_Unbonded || tokenSrc == types.BondStatus_Unbonding) && validator.IsBonded():
 			// transfer pools
-			k.sendCoinsToBonded(ctx, bondAmt)
-		case tokenSrc == types.Bonded && !validator.IsBonded():
+			// stake is coin or nft
+			switch {
+			case coinAmount != nil && subTokenIDs == nil:
+				coins := sdk.NewCoins(stake.GetStake())
+				k.sendCoinsToBonded(ctx, coins)
+			case subTokenIDs != nil && coinAmount == nil:
+				if err = k.nftKeeper.TransferSubTokens(ctx, notBondedPool, bondedPool, denom, subTokenIDs); err != nil {
+					return sdk.Dec{}, err
+				}
+			}
+		case tokenSrc == types.BondStatus_Bonded && !validator.IsBonded():
 			// transfer pools
-			k.sendCoinsToNotBonded(ctx, bondAmt)
+			// stake is coin or nft
+			switch {
+			case coinAmount != nil && subTokenIDs == nil:
+				coins := sdk.NewCoins(stake.GetStake())
+				k.sendCoinsToNotBonded(ctx, coins)
+			case subTokenIDs != nil && coinAmount == nil:
+				if err = k.nftKeeper.TransferSubTokens(ctx, bondedPool, notBondedPool, denom, subTokenIDs); err != nil {
+					return sdk.Dec{}, err
+				}
+			}
 		default:
 			panic("unknown token source bond status")
 		}
 	}
 
-	_, newShares = k.AddValidatorTokensAndShares(ctx, validator, bondAmt)
-
 	// Update delegation
-	delegation.Shares = delegation.Shares.Add(newShares)
 	k.SetDelegation(ctx, delegation)
 
+	valAddress, err := sdk.ValAddressFromBech32(delegation.Validator)
+	if err != nil {
+		return sdk.Dec{}, err
+	}
 	// Call the after-modification hook
-	if err := k.AfterDelegationModified(ctx, delegator, delegation.GetValidatorAddr()); err != nil {
+	if err := k.AfterDelegationModified(ctx, delegator, valAddress); err != nil {
 		return newShares, err
 	}
 
