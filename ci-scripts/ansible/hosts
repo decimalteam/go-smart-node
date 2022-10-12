@@ -11,6 +11,7 @@ dev-explorer-worker-02      ansible_host=91.219.31.205 ansible_port=2226
 
 [explorer-master-host-devnet]
 dev-explorer-db-master      ansible_host=91.219.31.205 ansible_port=2210
+dev-explorer-indexer        ansible_host=91.219.31.205 ansible_port=2220
 
 [explorer-slave-host-devnet]
 dev-explorer-db-slave-01    ansible_host=91.219.31.205 ansible_port=2211
