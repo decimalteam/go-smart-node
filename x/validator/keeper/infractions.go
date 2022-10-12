@@ -153,7 +153,6 @@ func (k Keeper) HandleDoubleSign(ctx sdk.Context, addr crypto.Address, infractio
 	// Tendermint. This value is validator.Tokens as sent to Tendermint via
 	// ABCI, and now received as evidence.
 	// The fraction is passed in to separately to slash unbonding and rebonding delegations.
-	// TODO: emit EventSlash
 	k.Slash(ctx, consAddr, distributionHeight, power, params.SlashFractionDoubleSign)
 
 	// Jail validator if not already jailed

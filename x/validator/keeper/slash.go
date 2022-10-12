@@ -3,7 +3,6 @@ package keeper
 import (
 	"fmt"
 
-	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
@@ -32,11 +31,18 @@ import (
 //
 //	Infraction was committed at the current height or at a past height,
 //	not at a height in the future
-func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeight int64, power int64, slashFactor sdk.Dec) sdkmath.Int {
+func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeight int64, power int64, slashFactor sdk.Dec) {
 	logger := k.Logger(ctx)
 
 	if slashFactor.IsNegative() {
 		panic(fmt.Errorf("attempted to slash with a negative slash factor: %v", slashFactor))
+	}
+
+	if infractionHeight > ctx.BlockHeight() {
+		// Can't slash infractions in the future
+		panic(fmt.Sprintf(
+			"impossible attempt to slash future infraction at height %d but we are at height %d",
+			infractionHeight, ctx.BlockHeight()))
 	}
 
 	validator, found := k.GetValidatorByConsAddr(ctx, consAddr)
@@ -49,7 +55,7 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 			"WARNING: ignored attempt to slash a nonexistent validator; we recommend you investigate immediately",
 			"validator", consAddr.String(),
 		)
-		return sdk.NewInt(0)
+		return
 	}
 
 	// should not be slashing an unbonded validator
@@ -58,110 +64,106 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 	}
 
 	operatorAddress := validator.GetOperator()
+	valStatuses := make(map[string]types.BondStatus)
+	for _, v := range k.GetAllValidators(ctx) {
+		valStatuses[v.OperatorAddress] = v.Status
+	}
 
 	// call the before-modification hook
 	k.BeforeValidatorModified(ctx, operatorAddress)
 
-	switch {
-	case infractionHeight > ctx.BlockHeight():
-		// Can't slash infractions in the future
-		panic(fmt.Sprintf(
-			"impossible attempt to slash future infraction at height %d but we are at height %d",
-			infractionHeight, ctx.BlockHeight()))
-
-	case infractionHeight == ctx.BlockHeight():
-		// Special-case slash at current height for efficiency - we don't need to
-		// look through unbonding delegations or redelegations.
-		logger.Info(
-			"slashing at current height; not scanning unbonding delegations & redelegations",
-			"height", infractionHeight,
-		)
-
-	case infractionHeight < ctx.BlockHeight():
-		// Iterate through unbonding delegations from slashed validator
-		undelegations := k.GetUndelegationsFromValidator(ctx, operatorAddress)
-		for _, undelegation := range undelegations {
-			amountSlashed := k.SlashUndelegation(ctx, undelegation, infractionHeight, slashFactor)
-			if amountSlashed.IsZero() {
-				continue
-			}
+	//////////////////////////////////////////////////
+	// 1. precalculation for correct burn of slashed coins
+	accum := NewSlashesAccumulator(k, ctx, slashFactor, NewDecreasingFactors())
+	for _, delegation := range k.GetValidatorDelegations(ctx, operatorAddress) {
+		accum.AddDelegation(delegation, validator.Status, true)
+	}
+	if infractionHeight < ctx.BlockHeight() {
+		for _, undelegation := range k.GetUndelegationsFromValidator(ctx, operatorAddress) {
+			accum.AddUndelegation(undelegation, infractionHeight, true)
 		}
-
-		// Iterate through redelegations from slashed source validator
-		redelegations := k.GetRedelegationsFromSrcValidator(ctx, operatorAddress)
-		for _, redelegation := range redelegations {
-			amountSlashed := k.SlashRedelegation(ctx, validator, redelegation, infractionHeight, slashFactor)
-			if amountSlashed.IsZero() {
-				continue
-			}
+		for _, redelegation := range k.GetRedelegationsFromSrcValidator(ctx, operatorAddress) {
+			accum.AddRedelegation(redelegation, infractionHeight, valStatuses, true)
 		}
 	}
 
-	// slash delegations
-	delegations := k.GetValidatorDelegations(ctx, operatorAddress)
-	for _, delegation := range delegations {
-		switch delegation.Stake.Type {
-		case types.StakeType_Coin:
-			calcSlashCoinStake(delegation.Stake, slashFactor)
-		case types.StakeType_NFT:
-			token, found := k.nftKeeper.GetToken(ctx, delegation.Stake.ID)
-			if !found {
-				panic(fmt.Errorf("can't find token %s in slashing time", delegation.Stake.ID))
-			}
-			var subtokens []nfttypes.SubToken
-			for _, id := range delegation.Stake.SubTokenIDs {
-				sub, found := k.nftKeeper.GetSubToken(ctx, token.ID, id)
-				if !found {
-					panic(fmt.Errorf("can't find subtoken %d for token %s in slashing time", id, delegation.Stake.ID))
-				}
-				if sub.Reserve == nil {
-					sub.Reserve = &token.Reserve
-				}
-				subtokens = append(subtokens, sub)
-			}
-			calcSlashNFTStake(delegation.Stake, subtokens, slashFactor)
+	// precalculation to check future coins burns
+	var factors = NewDecreasingFactors()
+	for _, coin := range accum.GetAllCoinsToBurn() {
+		if coin.Denom == k.coinKeeper.GetBaseDenom(ctx) {
+			factors.SetFactor(coin.Denom, sdk.OneDec())
+		}
+		f, err := k.coinKeeper.GetDecreasingFactor(ctx, coin)
+		if err != nil {
+			panic(fmt.Errorf("error in GetDecreasingFactor %s: %s", coin.Denom, err.Error()))
+		}
+		factors.SetFactor(coin.Denom, f)
+	}
+
+	//////////////////////////////////////////////////
+	// 2. new accumulator to prepare changes
+	accum = NewSlashesAccumulator(k, ctx, slashFactor, factors)
+	for _, delegation := range k.GetValidatorDelegations(ctx, operatorAddress) {
+		accum.AddDelegation(delegation, validator.Status, false)
+	}
+	if infractionHeight < ctx.BlockHeight() {
+		for _, undelegation := range k.GetUndelegationsFromValidator(ctx, operatorAddress) {
+			accum.AddUndelegation(undelegation, infractionHeight, false)
+		}
+		for _, redelegation := range k.GetRedelegationsFromSrcValidator(ctx, operatorAddress) {
+			accum.AddRedelegation(redelegation, infractionHeight, valStatuses, false)
 		}
 	}
 
-	// cannot decrease balance below zero
-	tokensToBurn := sdk.MinInt(remainingSlashAmount, validator.Tokens)
-	tokensToBurn = sdk.MaxInt(tokensToBurn, sdk.ZeroInt()) // defensive.
-
-	// we need to calculate the *effective* slash fraction for distribution
-	if validator.Tokens.IsPositive() {
-		effectiveFraction := sdk.NewDecFromInt(tokensToBurn).QuoRoundUp(sdk.NewDecFromInt(validator.Tokens))
-		// possible if power has changed
-		if effectiveFraction.GT(sdk.OneDec()) {
-			effectiveFraction = sdk.OneDec()
+	//////////////////////////////////////////////////
+	// 3. do changes
+	for _, delegation := range accum.GetDelegations() {
+		k.SetDelegation(ctx, delegation)
+	}
+	for _, undelegation := range accum.GetUndelegations() {
+		k.SetUndelegation(ctx, undelegation)
+	}
+	for _, redelegation := range accum.GetRedelegations() {
+		k.SetRedelegation(ctx, redelegation)
+	}
+	for _, chng := range accum.GetNFTChanges() {
+		for _, sub := range chng.subtokens {
+			k.nftKeeper.SetSubToken(ctx, chng.tokenID, sub)
 		}
-		// call the before-slashed hook
-		k.BeforeValidatorSlashed(ctx, operatorAddress, effectiveFraction)
 	}
 
-	// Deduct from validator's bonded tokens and update the validator.
-	// Burn the slashed tokens from the pool account and decrease the total supply.
-	validator = k.RemoveValidatorTokens(ctx, validator, tokensToBurn)
-
-	switch validator.GetStatus() {
-	case types.Bonded:
-		if err := k.burnCoinsFromBonded(ctx, tokensToBurn); err != nil {
-			panic(err)
+	//////////////////////////////////////////////////
+	// 4. burn coins
+	if !accum.GetCoinsToBurnBonded().IsZero() {
+		err := k.coinKeeper.BurnPoolCoins(ctx, types.BondedPoolName, accum.GetCoinsToBurnBonded())
+		if err != nil {
+			panic(fmt.Errorf("error in burn in bonded pool: %s", err.Error()))
 		}
-	case types.Unbonding, types.Unbonded:
-		if err := k.burnCoinsFromNotBonded(ctx, tokensToBurn); err != nil {
-			panic(err)
-		}
-	default:
-		panic("invalid validator status")
 	}
+	if !accum.GetCoinsToBurnUnbonded().IsZero() {
+		err := k.coinKeeper.BurnPoolCoins(ctx, types.NotBondedPoolName, accum.GetCoinsToBurnUnbonded())
+		if err != nil {
+			panic(fmt.Errorf("error in burn in not_bonded pool: %s", err.Error()))
+		}
+	}
+	if !accum.GetCoinsToBurnNFT().IsZero() {
+		err := k.coinKeeper.BurnPoolCoins(ctx, nfttypes.ReservedPool, accum.GetCoinsToBurnNFT())
+		if err != nil {
+			panic(fmt.Errorf("error in burn for nft reserved pool: %s", err.Error()))
+		}
+	}
+
+	//////////////////////////////////////////////////
+	// 5. emit event
+	ev := accum.GetEvent(validator.OperatorAddress)
+	events.EmitTypedEvent(ctx, &ev)
 
 	logger.Info(
 		"validator slashed by slash factor",
 		"validator", validator.GetOperator().String(),
 		"slash_factor", slashFactor.String(),
-		"burned", tokensToBurn,
+		"burned", accum.GetAllCoinsToBurn(),
 	)
-	return tokensToBurn
 }
 
 // jail a validator
@@ -180,171 +182,179 @@ func (k Keeper) Unjail(ctx sdk.Context, consAddr sdk.ConsAddress) {
 	logger.Info("validator un-jailed", "validator", consAddr)
 }
 
-// slash an unbonding delegation and update the pool
-// return the amount that would have been slashed assuming
-// the unbonding delegation had enough stake to slash
-// (the amount actually slashed may be less if there's
-// insufficient stake remaining)
-func (k Keeper) SlashUndelegation(ctx sdk.Context, undelegation types.Undelegation,
-	infractionHeight int64, slashFactor sdk.Dec,
-) (totalSlashAmount sdkmath.Int) {
-	now := ctx.BlockHeader().Time
-	totalSlashAmount = sdk.ZeroInt()
-	burnedAmount := sdk.ZeroInt()
-
-	// perform slashing on all entries within the unbonding delegation
-	for i, entry := range undelegation.Entries {
-		// If unbonding started before this height, stake didn't contribute to infraction
-		if entry.CreationHeight < infractionHeight {
-			continue
-		}
-
-		if entry.IsMature(now) {
-			// Unbonding delegation no longer eligible for slashing, skip it
-			continue
-		}
-
-		// Calculate slash amount proportional to stake contributing to infraction
-		slashAmountDec := slashFactor.MulInt(entry.InitialBalance)
-		slashAmount := slashAmountDec.TruncateInt()
-		totalSlashAmount = totalSlashAmount.Add(slashAmount)
-
-		// Don't slash more tokens than held
-		// Possible since the unbonding delegation may already
-		// have been slashed, and slash amounts are calculated
-		// according to stake held at time of infraction
-		unbondingSlashAmount := sdk.MinInt(slashAmount, entry.Balance)
-
-		// Update unbonding delegation if necessary
-		if unbondingSlashAmount.IsZero() {
-			continue
-		}
-
-		burnedAmount = burnedAmount.Add(unbondingSlashAmount)
-		entry.Balance = entry.Balance.Sub(unbondingSlashAmount)
-		undelegation.Entries[i] = entry
-		k.SetUndelegation(ctx, undelegation)
-	}
-
-	if err := k.burnCoinsFromNotBonded(ctx, burnedAmount); err != nil {
-		panic(err)
-	}
-
-	return totalSlashAmount
+// structure accumulates changes during slash process
+type slashesAccumulator struct {
+	newDelegations          []types.Delegation
+	newUndelegations        []types.Undelegation
+	newRedelegations        []types.Redelegation
+	delegationSlashEvents   map[string]types.DelegatorSlash
+	undelegationSlashEvents map[undelegationKey]types.UndelegateSlash
+	redelegationSlashEvents map[redelegationKey]types.RedelegateSlash
+	nftChanges              []nftSubtokenChanges
+	coinsToBurnBonded       sdk.Coins
+	coinsToBurnUnbonded     sdk.Coins
+	nftCoinsToBurn          sdk.Coins
+	keeper                  Keeper
+	ctx                     sdk.Context
+	slashFactor             sdk.Dec
+	factors                 *decreasingFactors
 }
 
-// slash a redelegation and update the pool
-// return the amount that would have been slashed assuming
-// the unbonding delegation had enough stake to slash
-// (the amount actually slashed may be less if there's
-// insufficient stake remaining)
-// NOTE this is only slashing for prior infractions from the source validator
-func (k Keeper) SlashRedelegation(ctx sdk.Context, srcValidator types.Validator, redelegation types.Redelegation,
-	infractionHeight int64, slashFactor sdk.Dec,
-) (totalSlashAmount sdkmath.Int) {
-	now := ctx.BlockHeader().Time
-	totalSlashAmount = sdk.ZeroInt()
-	bondedBurnedAmount, notBondedBurnedAmount := sdk.ZeroInt(), sdk.ZeroInt()
-
-	// perform slashing on all entries within the redelegation
-	for _, entry := range redelegation.Entries {
-		// If redelegation started before this height, stake didn't contribute to infraction
-		if entry.CreationHeight < infractionHeight {
-			continue
-		}
-
-		if entry.IsMature(now) {
-			// Redelegation no longer eligible for slashing, skip it
-			continue
-		}
-
-		// Calculate slash amount proportional to stake contributing to infraction
-		slashAmountDec := slashFactor.MulInt(entry.InitialBalance)
-		slashAmount := slashAmountDec.TruncateInt()
-		totalSlashAmount = totalSlashAmount.Add(slashAmount)
-
-		// Unbond from target validator
-		sharesToUnbond := slashFactor.Mul(entry.SharesDst)
-		if sharesToUnbond.IsZero() {
-			continue
-		}
-
-		valDstAddr, err := sdk.ValAddressFromBech32(redelegation.ValidatorDstAddress)
-		if err != nil {
-			panic(err)
-		}
-
-		delegatorAddress := sdk.MustAccAddressFromBech32(redelegation.DelegatorAddress)
-
-		delegation, found := k.GetDelegation(ctx, delegatorAddress, valDstAddr)
-		if !found {
-			// If deleted, delegation has zero shares, and we can't unbond any more
-			continue
-		}
-
-		if sharesToUnbond.GT(delegation.Shares) {
-			sharesToUnbond = delegation.Shares
-		}
-
-		tokensToBurn, err := k.Unbond(ctx, delegatorAddress, valDstAddr, sharesToUnbond)
-		if err != nil {
-			panic(fmt.Errorf("error unbonding delegator: %v", err))
-		}
-
-		dstValidator, found := k.GetValidator(ctx, valDstAddr)
-		if !found {
-			panic("destination validator not found")
-		}
-
-		// tokens of a redelegation currently live in the destination validator
-		// therefor we must burn tokens from the destination-validator's bonding status
-		switch {
-		case dstValidator.IsBonded():
-			bondedBurnedAmount = bondedBurnedAmount.Add(tokensToBurn)
-		case dstValidator.IsUnbonded() || dstValidator.IsUnbonding():
-			notBondedBurnedAmount = notBondedBurnedAmount.Add(tokensToBurn)
-		default:
-			panic("unknown validator status")
-		}
-	}
-
-	if err := k.burnCoinsFromBonded(ctx, bondedBurnedAmount); err != nil {
-		panic(err)
-	}
-
-	if err := k.burnCoinsFromNotBonded(ctx, notBondedBurnedAmount); err != nil {
-		panic(err)
-	}
-
-	return totalSlashAmount
+type undelegationKey struct {
+	delegator string
+	validator string
 }
 
-// slash delegations records, make changes in nft, burn coins from pools
-func (k Keeper) SlashDelegations(ctx sdk.Context, operatorAddress sdk.ValAddress, slashFactor sdk.Dec) {
-	var coinsToBurn, nftCoinsToBurn sdk.Coins
-	delegations := k.GetValidatorDelegations(ctx, operatorAddress)
-	var slashEvents = make(map[string]types.DelegatorSlash)
-	for _, delegation := range delegations {
-		newStake, slashCoin, slashNFT, nftChanges := k.calcSlashStake(ctx, delegation.Stake, slashFactor)
-		// accumulate coins to burn
-		coinsToBurn = coinsToBurn.Add(slashCoin.Slash)
-		for _, sub := range slashNFT.SubTokens {
-			nftCoinsToBurn = nftCoinsToBurn.Add(sub.Slash)
-		}
-		// make changes in stake and nft
-		k.SetDelegation(ctx, types.Delegation{
+type redelegationKey struct {
+	delegator    string
+	validatorSrc string
+	validatorDst string
+}
+
+func NewSlashesAccumulator(k Keeper, ctx sdk.Context, slashFactor sdk.Dec, factors *decreasingFactors) *slashesAccumulator {
+	return &slashesAccumulator{
+		coinsToBurnBonded:       sdk.NewCoins(),
+		coinsToBurnUnbonded:     sdk.NewCoins(),
+		nftCoinsToBurn:          sdk.NewCoins(),
+		keeper:                  k,
+		ctx:                     ctx,
+		slashFactor:             slashFactor,
+		factors:                 factors,
+		delegationSlashEvents:   make(map[string]types.DelegatorSlash),
+		undelegationSlashEvents: make(map[undelegationKey]types.UndelegateSlash),
+	}
+}
+
+func (sa *slashesAccumulator) GetAllCoinsToBurn() sdk.Coins {
+	return sa.coinsToBurnBonded.Add(sa.coinsToBurnUnbonded...).Add(sa.nftCoinsToBurn...)
+}
+
+func (sa *slashesAccumulator) GetCoinsToBurnBonded() sdk.Coins {
+	return sa.coinsToBurnBonded
+}
+
+func (sa *slashesAccumulator) GetCoinsToBurnUnbonded() sdk.Coins {
+	return sa.coinsToBurnUnbonded
+}
+
+func (sa *slashesAccumulator) GetCoinsToBurnNFT() sdk.Coins {
+	return sa.nftCoinsToBurn
+}
+
+func (sa *slashesAccumulator) GetDelegations() []types.Delegation {
+	return sa.newDelegations
+}
+
+func (sa *slashesAccumulator) GetUndelegations() []types.Undelegation {
+	return sa.newUndelegations
+}
+
+func (sa *slashesAccumulator) GetRedelegations() []types.Redelegation {
+	return sa.newRedelegations
+}
+
+func (sa *slashesAccumulator) GetNFTChanges() []nftSubtokenChanges {
+	return sa.nftChanges
+}
+
+func (sa *slashesAccumulator) GetEvent(operatorAddress string) types.ValidatorSlash {
+	var result types.ValidatorSlash
+	result.Validator = operatorAddress
+	for _, ev := range sa.delegationSlashEvents {
+		result.Delegators = append(result.Delegators, ev)
+	}
+	for _, ev := range sa.undelegationSlashEvents {
+		result.Undelegations = append(result.Undelegations, ev)
+	}
+	for _, ev := range sa.redelegationSlashEvents {
+		result.Redelegations = append(result.Redelegations, ev)
+	}
+	return result
+}
+
+// AddDelegation process delegation. if simulate = true, only calculates coins for burning
+func (sa *slashesAccumulator) AddDelegation(delegation types.Delegation, validatorStatus types.BondStatus, simulate bool) {
+	newStake, slashCoin, slashNFT, nftChanges := sa.keeper.calcSlashStake(sa.ctx, delegation.Stake, sa.slashFactor, sa.factors)
+
+	switch validatorStatus {
+	case types.BondStatus_Bonded:
+		sa.coinsToBurnBonded = sa.coinsToBurnBonded.Add(slashCoin.Slash)
+	case types.BondStatus_Unbonded, types.BondStatus_Unbonding:
+		sa.coinsToBurnUnbonded = sa.coinsToBurnUnbonded.Add(slashCoin.Slash)
+	}
+	for _, sub := range slashNFT.SubTokens {
+		sa.nftCoinsToBurn = sa.nftCoinsToBurn.Add(sub.Slash)
+	}
+	if simulate {
+		return
+	}
+
+	// add changes
+	sa.newDelegations = append(sa.newDelegations, types.Delegation{
+		Delegator: delegation.Delegator,
+		Validator: delegation.Validator,
+		Stake:     newStake,
+	})
+	if nftChanges.tokenID != "" {
+		sa.nftChanges = append(sa.nftChanges, nftChanges)
+	}
+	// accumulate events
+	ev, ok := sa.delegationSlashEvents[delegation.Delegator]
+	if !ok {
+		ev = types.DelegatorSlash{
 			Delegator: delegation.Delegator,
-			Validator: delegation.Validator,
-			Stake:     newStake,
+		}
+	}
+	if slashCoin.Slash.Denom != "" {
+		ev.Coins = append(ev.Coins, slashCoin)
+	}
+	if slashNFT.ID != "" {
+		ev.NFTs = append(ev.NFTs, slashNFT)
+	}
+	sa.delegationSlashEvents[delegation.Delegator] = ev
+
+}
+
+// AddUndelegation process undelegation record. if simulate = true, only calculates coins for burning
+func (sa *slashesAccumulator) AddUndelegation(undelegation types.Undelegation, infractionHeight int64, simulate bool) {
+	var doChanges bool
+	var newUndelegation types.Undelegation
+	now := sa.ctx.BlockHeader().Time
+	newUndelegation.Delegator = undelegation.Delegator
+	newUndelegation.Validator = undelegation.Validator
+	for _, entry := range undelegation.Entries {
+		if entry.CreationHeight < infractionHeight || entry.IsMature(now) {
+			newUndelegation.Entries = append(newUndelegation.Entries, entry)
+			continue
+		}
+		doChanges = true
+		newStake, slashCoin, slashNFT, nftChanges := sa.keeper.calcSlashStake(sa.ctx, entry.Stake, sa.slashFactor, sa.factors)
+
+		sa.coinsToBurnUnbonded = sa.coinsToBurnUnbonded.Add(slashCoin.Slash)
+
+		for _, sub := range slashNFT.SubTokens {
+			sa.nftCoinsToBurn = sa.nftCoinsToBurn.Add(sub.Slash)
+		}
+		if simulate {
+			continue
+		}
+
+		// add changes
+		newUndelegation.Entries = append(newUndelegation.Entries, types.UndelegationEntry{
+			CreationHeight: entry.CreationHeight,
+			CompletionTime: entry.CompletionTime,
+			Stake:          newStake,
 		})
-		for _, sub := range nftChanges.subtokens {
-			k.nftKeeper.SetSubToken(ctx, nftChanges.tokenID, sub)
+		if nftChanges.tokenID != "" {
+			sa.nftChanges = append(sa.nftChanges, nftChanges)
 		}
 		// accumulate events
-		ev, ok := slashEvents[delegation.Delegator]
+		key := undelegationKey{undelegation.Delegator, undelegation.Validator}
+		ev, ok := sa.undelegationSlashEvents[key]
 		if !ok {
-			ev = types.DelegatorSlash{
-				Delegator: delegation.Delegator,
+			ev = types.UndelegateSlash{
+				Delegator: undelegation.Delegator,
+				Validator: undelegation.Validator,
 			}
 		}
 		if slashCoin.Slash.Denom != "" {
@@ -353,24 +363,76 @@ func (k Keeper) SlashDelegations(ctx sdk.Context, operatorAddress sdk.ValAddress
 		if slashNFT.ID != "" {
 			ev.NFTs = append(ev.NFTs, slashNFT)
 		}
-		slashEvents[delegation.Delegator] = ev
+		sa.undelegationSlashEvents[key] = ev
 	}
-	// TODO: burn coins from pools
-	if !coinsToBurn.IsZero() {
-		err := k.coinKeeper.BurnPoolCoins(ctx, types.BondedPoolName, coinsToBurn)
+	if !simulate && doChanges {
+		sa.newUndelegations = append(sa.newUndelegations, newUndelegation)
 	}
-	if !nftCoinsToBurn.IsZero() {
-		err := k.coinKeeper.BurnPoolCoins(ctx, nfttypes.ReservedPool, coinsToBurn)
+}
+
+// AddRedelegation process redelegation record. if simulate = true, only calculates coins for burning
+func (sa *slashesAccumulator) AddRedelegation(redelegation types.Redelegation, infractionHeight int64,
+	validatorStatuses map[string]types.BondStatus, simulate bool) {
+
+	var doChanges bool
+	var newRedelegation types.Redelegation
+	now := sa.ctx.BlockHeader().Time
+	newRedelegation.Delegator = redelegation.Delegator
+	newRedelegation.ValidatorSrc = redelegation.ValidatorSrc
+	newRedelegation.ValidatorDst = redelegation.ValidatorDst
+	for _, entry := range redelegation.Entries {
+		if entry.CreationHeight < infractionHeight || entry.IsMature(now) {
+			newRedelegation.Entries = append(newRedelegation.Entries, entry)
+			continue
+		}
+		doChanges = true
+		newStake, slashCoin, slashNFT, nftChanges := sa.keeper.calcSlashStake(sa.ctx, entry.Stake, sa.slashFactor, sa.factors)
+
+		switch validatorStatuses[newRedelegation.ValidatorDst] {
+		case types.BondStatus_Bonded:
+			sa.coinsToBurnBonded = sa.coinsToBurnBonded.Add(slashCoin.Slash)
+		case types.BondStatus_Unbonded, types.BondStatus_Unbonding:
+			sa.coinsToBurnUnbonded = sa.coinsToBurnUnbonded.Add(slashCoin.Slash)
+		}
+		sa.coinsToBurnUnbonded = sa.coinsToBurnUnbonded.Add(slashCoin.Slash)
+
+		for _, sub := range slashNFT.SubTokens {
+			sa.nftCoinsToBurn = sa.nftCoinsToBurn.Add(sub.Slash)
+		}
+		if simulate {
+			continue
+		}
+
+		// add changes
+		newRedelegation.Entries = append(newRedelegation.Entries, types.RedelegationEntry{
+			CreationHeight: entry.CreationHeight,
+			CompletionTime: entry.CompletionTime,
+			Stake:          newStake,
+		})
+		if nftChanges.tokenID != "" {
+			sa.nftChanges = append(sa.nftChanges, nftChanges)
+		}
+		// accumulate events
+		key := redelegationKey{redelegation.Delegator, redelegation.ValidatorSrc, redelegation.ValidatorDst}
+		ev, ok := sa.redelegationSlashEvents[key]
+		if !ok {
+			ev = types.RedelegateSlash{
+				Delegator:    redelegation.Delegator,
+				ValidatorSrc: redelegation.ValidatorSrc,
+				ValidatorDst: redelegation.ValidatorDst,
+			}
+		}
+		if slashCoin.Slash.Denom != "" {
+			ev.Coins = append(ev.Coins, slashCoin)
+		}
+		if slashNFT.ID != "" {
+			ev.NFTs = append(ev.NFTs, slashNFT)
+		}
+		sa.redelegationSlashEvents[key] = ev
 	}
-	// ...
-	// emit result event
-	resultEvent := &types.EventSlash{
-		Validator: operatorAddress.String(),
+	if !simulate && doChanges {
+		sa.newRedelegations = append(sa.newRedelegations, newRedelegation)
 	}
-	for _, ev := range slashEvents {
-		resultEvent.Delegators = append(resultEvent.Delegators, ev)
-	}
-	events.EmitTypedEvent(ctx, resultEvent)
 }
 
 type nftSubtokenChanges struct {
@@ -379,7 +441,7 @@ type nftSubtokenChanges struct {
 }
 
 // calcSlashStake prepare changes. Only calculate, no changes
-func (k Keeper) calcSlashStake(ctx sdk.Context, stake types.Stake, slashFactor sdk.Dec) (types.Stake,
+func (k Keeper) calcSlashStake(ctx sdk.Context, stake types.Stake, slashFactor sdk.Dec, factors *decreasingFactors) (types.Stake,
 	types.SlashCoin, types.SlashNFT, nftSubtokenChanges) {
 	var newStake types.Stake
 	var slashCoin types.SlashCoin
@@ -389,7 +451,7 @@ func (k Keeper) calcSlashStake(ctx sdk.Context, stake types.Stake, slashFactor s
 	var err error
 	switch stake.Type {
 	case types.StakeType_Coin:
-		newStake, slashCoin, err = calcSlashCoinStake(stake, slashFactor)
+		newStake, slashCoin, err = calcSlashCoinStake(stake, slashFactor, factors)
 		if err != nil {
 			panic(err)
 		}
@@ -409,7 +471,7 @@ func (k Keeper) calcSlashStake(ctx sdk.Context, stake types.Stake, slashFactor s
 			}
 			subtokens = append(subtokens, sub)
 		}
-		newStake, slashNFT, newSubTokens, err = calcSlashNFTStake(stake, subtokens, slashFactor)
+		newStake, slashNFT, newSubTokens, err = calcSlashNFTStake(stake, subtokens, slashFactor, factors)
 		if err != nil {
 			panic(err)
 		}
@@ -419,11 +481,11 @@ func (k Keeper) calcSlashStake(ctx sdk.Context, stake types.Stake, slashFactor s
 }
 
 // calcSlashCoinStake return modified stake and SlashCoin for event. Only calculate, no changes
-func calcSlashCoinStake(stake types.Stake, fraction sdk.Dec) (types.Stake, types.SlashCoin, error) {
+func calcSlashCoinStake(stake types.Stake, slashFactor sdk.Dec, factors *decreasingFactors) (types.Stake, types.SlashCoin, error) {
 	if stake.Type != types.StakeType_Coin {
 		return types.Stake{}, types.SlashCoin{}, fmt.Errorf("call slashCoinStake not for coin stake")
 	}
-	slashAmount := sdk.NewDecFromInt(stake.Stake.Amount).Mul(fraction).RoundInt()
+	slashAmount := sdk.NewDecFromInt(stake.Stake.Amount).Mul(slashFactor).Mul(factors.Factor(stake.Stake.Denom)).RoundInt()
 	newAmount := stake.Stake.Amount.Sub(slashAmount)
 	newStake := types.Stake{
 		Type:  types.StakeType_Coin,
@@ -438,7 +500,7 @@ func calcSlashCoinStake(stake types.Stake, fraction sdk.Dec) (types.Stake, types
 
 // slashCoinStake return modified stake and subtokens, SlashNFT for event. Only calculate, no changes
 // stake.SubTokenIDs and subtokens order must be same, subtokens reserve must be not nil filled
-func calcSlashNFTStake(stake types.Stake, subtokens []nfttypes.SubToken, fraction sdk.Dec) (types.Stake, types.SlashNFT, []nfttypes.SubToken, error) {
+func calcSlashNFTStake(stake types.Stake, subtokens []nfttypes.SubToken, slashFactor sdk.Dec, factors *decreasingFactors) (types.Stake, types.SlashNFT, []nfttypes.SubToken, error) {
 	if stake.Type != types.StakeType_NFT {
 		return types.Stake{}, types.SlashNFT{}, []nfttypes.SubToken{}, fmt.Errorf("call slashCoinStake not for coin stake")
 	}
@@ -459,7 +521,7 @@ func calcSlashNFTStake(stake types.Stake, subtokens []nfttypes.SubToken, fractio
 		if subtokens[i].Reserve == nil {
 			return types.Stake{}, types.SlashNFT{}, []nfttypes.SubToken{}, fmt.Errorf("subtokens reserve is nil")
 		}
-		slashAmount := sdk.NewDecFromInt(subtokens[i].Reserve.Amount).Mul(fraction).RoundInt()
+		slashAmount := sdk.NewDecFromInt(subtokens[i].Reserve.Amount).Mul(slashFactor).RoundInt()
 		newAmount := subtokens[i].Reserve.Amount.Sub(slashAmount)
 		newReserve := sdk.NewCoin(subtokens[i].Reserve.Denom, newAmount)
 
@@ -489,4 +551,30 @@ func calcSlashNFTStake(stake types.Stake, subtokens []nfttypes.SubToken, fractio
 	}
 
 	return newStake, slashNFT, newSubTokens, nil
+}
+
+// helper type
+// Decreasing factors
+// map of coin denom -> sdk.Dec. By default return 1.0 for any coin
+
+type decreasingFactors struct {
+	factors map[string]sdk.Dec
+}
+
+func NewDecreasingFactors() *decreasingFactors {
+	return &decreasingFactors{
+		factors: make(map[string]sdk.Dec),
+	}
+}
+
+func (df *decreasingFactors) Factor(denom string) sdk.Dec {
+	v, ok := df.factors[denom]
+	if !ok {
+		return sdk.OneDec()
+	}
+	return v
+}
+
+func (df *decreasingFactors) SetFactor(denom string, factor sdk.Dec) {
+	df.factors[denom] = factor
 }
