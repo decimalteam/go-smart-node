@@ -40,16 +40,14 @@ func (k Keeper) GetAllDelegations(ctx sdk.Context) (delegations []types.Delegati
 }
 
 // GetValidatorDelegations returns all delegations to a specific validator. Useful for querier.
-// TODO: Add indexes to the store if we need delegations by a validator!
 func (k Keeper) GetValidatorDelegations(ctx sdk.Context, validator sdk.ValAddress) (delegations []types.Delegation) { //nolint:interfacer
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.GetAllDelegationsKey())
+	iterator := sdk.KVStorePrefixIterator(store, types.GetValidatorDelegationsKey(validator))
 	defer iterator.Close()
-	for validatorStr := validator.String(); iterator.Valid(); iterator.Next() {
+	for ; iterator.Valid(); iterator.Next() {
 		delegation := types.MustUnmarshalDelegation(k.cdc, iterator.Value())
-		if delegation.Validator == validatorStr {
-			delegations = append(delegations, delegation)
-		}
+
+		delegations = append(delegations, delegation)
 	}
 	return delegations
 }
@@ -103,6 +101,7 @@ func (k Keeper) SetDelegation(ctx sdk.Context, delegation types.Delegation) {
 	store := ctx.KVStore(k.storeKey)
 	b := types.MustMarshalDelegation(k.cdc, delegation)
 	store.Set(types.GetDelegationKey(delegator, validator, denom), b)
+	store.Set(types.GetValidatorDelegatorDelegationKey(validator, delegator, denom), []byte{})
 }
 
 // RemoveDelegation removes a delegation
@@ -735,37 +734,27 @@ func (k Keeper) Delegate(
 
 // Unbond unbonds a particular delegation and perform associated store operations.
 func (k Keeper) Unbond(
-	ctx sdk.Context, delegator sdk.AccAddress, validator sdk.ValAddress, shares sdk.Dec,
+	ctx sdk.Context, delegator sdk.AccAddress, validator types.Validator,
+	denom string, coinAmount *sdkmath.Int, subTokenIDs []uint32,
 ) (amount sdkmath.Int, err error) {
 	// check if a delegation object exists in the store
-	delegation, found := k.GetDelegation(ctx, delegator, validator)
+	delegation, found := k.GetDelegation(ctx, delegator, validator.GetOperator(), denom)
 	if !found {
 		return amount, types.ErrNoDelegatorForAddress
 	}
 
 	// call the before-delegation-modified hook
-	if err := k.BeforeDelegationSharesModified(ctx, delegator, validator); err != nil {
+	if err := k.BeforeDelegationSharesModified(ctx, delegator, validator.GetOperator()); err != nil {
 		return amount, err
 	}
 
-	// ensure that we have enough shares to remove
-	if delegation.Shares.LT(shares) {
-		return amount, sdkerrors.Wrap(types.ErrNotEnoughDelegationShares, delegation.Shares.String())
-	}
-
-	// get validator
-	validator, found := k.GetValidator(ctx, validator)
-	if !found {
-		return amount, types.ErrNoValidatorFound
-	}
+	//// ensure that we have enough shares to remove
+	//if delegation.Shares.LT(shares) {
+	//	return amount, sdkerrors.Wrap(types.ErrNotEnoughDelegationShares, delegation.Shares.String())
+	//}
 
 	// subtract shares from delegation
-	delegation.Shares = delegation.Shares.Sub(shares)
-
-	delegator, err := sdk.AccAddressFromBech32(delegation.GetDelegator())
-	if err != nil {
-		return amount, err
-	}
+	//delegation.Shares = delegation.Shares.Sub(shares)
 
 	isValidatorOperator := delegator.Equals(validator.GetOperator())
 
@@ -806,14 +795,15 @@ func (k Keeper) Unbond(
 // an unbonding object and inserting it into the unbonding queue which will be
 // processed during the staking EndBlocker.
 func (k Keeper) Undelegate(
-	ctx sdk.Context, delegator sdk.AccAddress, validator sdk.ValAddress, sharesAmount sdk.Dec,
+	ctx sdk.Context, delegator sdk.AccAddress, valAddress sdk.ValAddress,
+	denom string, coinAmount *sdkmath.Int, subTokenIDs []uint32,
 ) (time.Time, error) {
-	validator, found := k.GetValidator(ctx, validator)
+	validator, found := k.GetValidator(ctx, valAddress)
 	if !found {
 		return time.Time{}, types.ErrNoDelegatorForAddress
 	}
 
-	if k.HasMaxUndelegationEntries(ctx, delegator, validator) {
+	if k.HasMaxUndelegationEntries(ctx, delegator, valAddress) {
 		return time.Time{}, types.ErrMaxUndelegationEntries
 	}
 

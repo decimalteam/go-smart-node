@@ -50,5 +50,5 @@ type StakeI interface {
 	GetType() StakeType
 	GetID() string
 	GetStake() sdk.Coin
-	GetSubTokenIDs() []int64
+	GetSubTokenIDs() []uint32
 }

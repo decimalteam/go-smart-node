@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
 	"github.com/cosmos/cosmos-sdk/types/kv"
@@ -53,6 +52,7 @@ const (
 
 // Staking related records:
 //   - Delegations:             0x31<delegator><validator><stake_id>          : <Stake>
+//   - DelegationsByVal:        0x37<validator><delegator><stake_id>		  : []byte{}
 //   - Redelegations:           0x32<delegator><val_src><val_dst><stake_id>   : <Redelegation>
 //   - RedelegationsByValSrc:   0x33<val_src><delegator><val_dst><stake_id>   : []byte{}
 //   - RedelegationsByValDst:   0x34<val_dst><delegator><val_src><stake_id>   : []byte{}
@@ -90,6 +90,7 @@ var (
 	keyPrefixHistoricalInfo             = []byte{0x51} // prefix for the historical info
 	keyPrefixMissedBlock                = []byte{0x61} // prefix for missed blocks
 	keyPrefixStartHeight                = []byte{0x62} // prefix for starting block
+	keyPrefixDelegationByValIndex       = []byte{0x37} // prefix for each key for a delegation key (by validator address)
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -153,10 +154,47 @@ func GetDelegationKey(delegator sdk.AccAddress, validator sdk.ValAddress, denom 
 	return append(GetDelegationsKey(delegator, validator), []byte(denom)...)
 }
 
-// GetDelegationNFTKey creates the key for the exact delegation in the specified NFT token.
-func GetDelegationNFTKey(delegator sdk.AccAddress, validator sdk.ValAddress, tokenID string) []byte {
-	return append(GetDelegationsKey(delegator, validator), helpers.CalcHashSHA256(tokenID)...)
+func GetValidatorAllDelegations() []byte {
+	return keyPrefixDelegationByValIndex
 }
+
+func GetValidatorDelegationsKey(val sdk.ValAddress) []byte {
+	return append(GetValidatorAllDelegations(), address.MustLengthPrefix(val)...)
+}
+
+func GetValidatorDelegatorDelegationsKey(val sdk.ValAddress, del sdk.AccAddress) []byte {
+	return append(GetValidatorDelegationsKey(val), address.MustLengthPrefix(del)...)
+}
+
+func GetValidatorDelegatorDelegationKey(val sdk.ValAddress, del sdk.AccAddress, denom string) []byte {
+	return append(GetValidatorDelegatorDelegationsKey(val, del), []byte(denom)...)
+}
+
+// GetDelegationKeyFromValIndexKey rearranges the ValIndexKey to get the DelegationKey
+func GetDelegationKeyFromValIndexKey(indexKey []byte) []byte {
+	kv.AssertKeyAtLeastLength(indexKey, 2)
+	addrs := indexKey[1:] // remove prefix bytes
+
+	// get validator
+	valAddrLen := addrs[0]
+	kv.AssertKeyAtLeastLength(addrs, int(valAddrLen)+2)
+	validator := addrs[1 : valAddrLen+1]
+
+	// get delegator
+	delAddrLen := addrs[valAddrLen+1]
+	kv.AssertKeyAtLeastLength(addrs, int(valAddrLen)+int(delAddrLen)+3)
+	delegator := addrs[valAddrLen+2 : valAddrLen+2+delAddrLen]
+
+	// get denom
+	denom := string(addrs[valAddrLen+delAddrLen+2:])
+
+	return GetDelegationKey(delegator, validator, denom)
+}
+
+//// GetDelegationNFTKey creates the key for the exact delegation in the specified NFT token.
+//func GetDelegationNFTKey(delegator sdk.AccAddress, validator sdk.ValAddress, tokenID string) []byte {
+//	return append(GetDelegationsKey(delegator, validator), helpers.CalcHashSHA256(tokenID)...)
+//}
 
 ////////////////////////////////////////////////////////////////////////////////
 
