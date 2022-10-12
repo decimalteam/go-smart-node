@@ -360,8 +360,7 @@ func (v Validator) GetConsAddr() (sdk.ConsAddress, error) {
 	return sdk.ConsAddress(pk.Address()), nil
 }
 
-func (v Validator) GetConsensusPower(r sdkmath.Int) int64 { return v.ConsensusPower(r) }
-func (v Validator) GetCommission() sdk.Dec                { return v.Commission }
+func (v Validator) GetCommission() sdk.Dec { return v.Commission }
 
 // UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces.
 func (v Validator) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {

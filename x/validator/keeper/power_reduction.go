@@ -23,18 +23,17 @@ func (k Keeper) TokensFromConsensusPower(ctx sdk.Context, power int64) sdkmath.I
 
 // GetValidatorsByPowerIndexKey creates the validator by power index.
 // Power index is the key used in the power-store, and represents the relative power ranking of the validator.
-func (k Keeper) GetValidatorsByPowerIndexKey(ctx sdk.Context, validator types.Validator) []byte {
+func (k Keeper) GetValidatorsByPowerIndexKey(ctx sdk.Context, validator types.Validator, power int64) []byte {
 	// NOTE the address doesn't need to be stored because counter bytes must always be different
 	// NOTE the larger values are of higher value
 
 	consensusPowerBytes := make([]byte, 8)
-	binary.BigEndian.PutUint64(consensusPowerBytes, uint64(validator.GetConsensusPower()))
+	binary.BigEndian.PutUint64(consensusPowerBytes, uint64(power))
 
 	powerBytes := consensusPowerBytes
 	powerBytesLen := len(powerBytes) // 8
 
-	addr := validator.GetOperator()
-	operAddrInvr := sdk.CopyBytes(addr)
+	operAddrInvr := sdk.CopyBytes(validator.GetOperator())
 	addrLen := len(operAddrInvr)
 
 	for i, b := range operAddrInvr {

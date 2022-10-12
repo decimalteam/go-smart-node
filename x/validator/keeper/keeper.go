@@ -24,6 +24,7 @@ type Keeper struct {
 	authKeeper types.AccountKeeper
 	bankKeeper types.BankKeeper
 	nftKeeper  types.NFTKeeper
+	coinKeeper types.CoinKeeper
 	hooks      types.StakingHooks
 	paramstore paramtypes.Subspace
 }

@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bytes"
 	"fmt"
 	"time"
@@ -596,7 +597,7 @@ func (k Keeper) DequeueAllMatureUBDQueue(ctx sdk.Context, currTime time.Time) (m
 func (k Keeper) Delegate(
 	ctx sdk.Context, delegator sdk.AccAddress, denom string, coinAmount *sdkmath.Int, subTokenIDs []uint32, tokenSrc types.BondStatus,
 	validator types.Validator, subtractAccount bool,
-) (newShares sdk.Dec, err error) {
+) (totalStake sdkmath.Int, err error) {
 
 	// create stake entity
 	var stake types.Stake
@@ -605,14 +606,14 @@ func (k Keeper) Delegate(
 		stake = types.NewStakeCoin(sdk.NewCoin(denom, *coinAmount))
 	case subTokenIDs != nil && coinAmount == nil: // if stake is nft
 		if len(subTokenIDs) == 0 {
-			//TODO Error
+			return sdk.ZeroInt(), fmt.Errorf("not coin delegate and not nft delegate, who is you") //TODO Error
 		}
 
 		var reserve *sdk.Coin
 		for _, v := range subTokenIDs {
-			st, ok := k.nftKeeper.GetSubToken(ctx, denom, uint32(v))
+			st, ok := k.nftKeeper.GetSubToken(ctx, denom, v)
 			if !ok {
-				// TODO error
+				return sdk.ZeroInt(), fmt.Errorf("not found sub token") // TODO error
 			}
 			if reserve == nil {
 				reserve = st.Reserve
@@ -621,7 +622,7 @@ func (k Keeper) Delegate(
 		}
 		stake = types.NewStakeNFT(denom, subTokenIDs, *reserve)
 	default:
-		// TODO Error
+		return sdkmath.Int{}, fmt.Errorf("not coin delegate and not nft delegate, who is you") //TODO error
 	}
 
 	// Get or create the delegation object
@@ -638,7 +639,7 @@ func (k Keeper) Delegate(
 	}
 
 	if err != nil {
-		return sdk.ZeroDec(), err
+		return sdk.ZeroInt(), err
 	}
 
 	// if subtractAccount is true then we are
@@ -664,16 +665,16 @@ func (k Keeper) Delegate(
 			panic("invalid validator status")
 		}
 
-		// stake is coin or nft
+		// the transfer of user assets is carried out in coins or nft
 		switch {
 		case coinAmount != nil && subTokenIDs == nil:
 			coins := sdk.NewCoins(stake.Stake)
 			if err := k.bankKeeper.DelegateCoinsFromAccountToModule(ctx, delegator, sendName, coins); err != nil {
-				return sdk.Dec{}, err
+				return sdk.ZeroInt(), err
 			}
 		case subTokenIDs != nil && coinAmount == nil:
 			if err := k.nftKeeper.TransferSubTokens(ctx, delegator, sendPool, denom, subTokenIDs); err != nil {
-				return sdk.Dec{}, err
+				return sdk.ZeroInt(), err
 			}
 		}
 	} else {
@@ -692,7 +693,7 @@ func (k Keeper) Delegate(
 				k.sendCoinsToBonded(ctx, coins)
 			case subTokenIDs != nil && coinAmount == nil:
 				if err = k.nftKeeper.TransferSubTokens(ctx, notBondedPool, bondedPool, denom, subTokenIDs); err != nil {
-					return sdk.Dec{}, err
+					return sdk.ZeroInt(), err
 				}
 			}
 		case tokenSrc == types.BondStatus_Bonded && !validator.IsBonded():
@@ -704,7 +705,7 @@ func (k Keeper) Delegate(
 				k.sendCoinsToNotBonded(ctx, coins)
 			case subTokenIDs != nil && coinAmount == nil:
 				if err = k.nftKeeper.TransferSubTokens(ctx, bondedPool, notBondedPool, denom, subTokenIDs); err != nil {
-					return sdk.Dec{}, err
+					return sdk.ZeroInt(), err
 				}
 			}
 		default:
@@ -715,16 +716,21 @@ func (k Keeper) Delegate(
 	// Update delegation
 	k.SetDelegation(ctx, delegation)
 
-	valAddress, err := sdk.ValAddressFromBech32(delegation.Validator)
+	// update validator ConsensusPower
+	valAddress := validator.GetOperator()
+	totalStake, err = k.TotalStakeInBaseCoin(ctx, valAddress)
 	if err != nil {
-		return sdk.Dec{}, err
-	}
-	// Call the after-modification hook
-	if err := k.AfterDelegationModified(ctx, delegator, valAddress); err != nil {
-		return newShares, err
+		return sdk.ZeroInt(), err
 	}
 
-	return newShares, nil
+	k.DeleteValidatorByPowerIndex(ctx, validator, totalStake.Int64())
+	k.SetValidatorByPowerIndex(ctx, validator, totalStake.Int64())
+
+	if err := k.AfterDelegationModified(ctx, delegator, valAddress); err != nil {
+		return sdk.ZeroInt(), err
+	}
+
+	return totalStake, nil
 }
 
 // Unbond unbonds a particular delegation and perform associated store operations.
@@ -1038,4 +1044,25 @@ func (k Keeper) getBeginInfo(ctx sdk.Context, validatorSrc sdk.ValAddress) (comp
 	default:
 		panic(fmt.Sprintf("unknown validator status: %s", validator.Status))
 	}
+}
+
+func (k Keeper) TotalStakeInBaseCoin(ctx sdk.Context, valAddress sdk.ValAddress) (sdkmath.Int, error) {
+	delegations := k.GetValidatorDelegations(ctx, valAddress)
+	totalStakeInBaseCoin := sdk.ZeroInt()
+	for _, del := range delegations {
+		delStake := del.GetStake().GetStake()
+
+		if delStake.Denom != k.BaseCoin(ctx) {
+			delCoin, err := k.coinKeeper.GetCoin(ctx, delStake.Denom)
+			if err != nil {
+				return sdkmath.Int{}, err
+			}
+			totalAmountCoin := formulas.CalculateSaleReturn(delCoin.Volume, delCoin.Reserve, uint(delCoin.CRR), delStake.Amount)
+			totalStakeInBaseCoin.Add(totalAmountCoin)
+		} else {
+			totalStakeInBaseCoin.Add(delStake.Amount)
+		}
+	}
+
+	return totalStakeInBaseCoin, nil
 }
