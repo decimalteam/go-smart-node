@@ -38,7 +38,7 @@
 #- set_fact:
 #    content: '{{ content.json.result.genesis }}'
 
-- debug: var=content
+#- debug: var=content
 
 - name: Save genesis file
   copy:
@@ -48,3 +48,4 @@
 
 - name: Include tasks with common (master & slave) final actions
   include: node-common-in-last.yml
+  
