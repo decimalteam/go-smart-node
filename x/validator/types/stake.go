@@ -24,18 +24,26 @@ func NewStakeNFT(tokenID string, subTokenIDs []int64, reserve sdk.Coin) Stake {
 	}
 }
 
+// GetType returns the stake type.
 func (s Stake) GetType() StakeType {
 	return s.Type
 }
 
+// GetID returns the stake ID.
+// For stake in Coin: contains coin denom value.
+// For stake in NFT: contains NFT token ID value.
 func (s Stake) GetID() string {
 	return s.ID
 }
 
+// GetStake returns amount of the coin staked.
+// For stake in Coin: contains actually staked coin.
+// For stake in NFT: contains total reserve of staked NFT sub-tokens.
 func (s Stake) GetStake() sdk.Coin {
 	return s.Stake
 }
 
+// GetSubTokenIDs returns the list of staked NFT sub-token IDs.
 func (s Stake) GetSubTokenIDs() []int64 {
 	return s.SubTokenIDs
 }

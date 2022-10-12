@@ -103,14 +103,13 @@ func (k Keeper) GetValidatorSet() types.ValidatorSet {
 	return k
 }
 
-// Delegation get the delegation interface for a particular set of delegator and validator addresses
-func (k Keeper) Delegation(ctx sdk.Context, addrDel sdk.AccAddress, addrVal sdk.ValAddress) types.DelegationI {
-	bond, ok := k.GetDelegation(ctx, addrDel, addrVal)
+// Delegation get the delegation interface for a particular set of delegator and validator addresses.
+func (k Keeper) Delegation(ctx sdk.Context, delegator sdk.AccAddress, validator sdk.ValAddress, denom string) types.DelegationI {
+	delegation, ok := k.GetDelegation(ctx, delegator, validator, denom)
 	if !ok {
 		return nil
 	}
-
-	return bond
+	return delegation
 }
 
 // iterate through all of the delegations from a delegator

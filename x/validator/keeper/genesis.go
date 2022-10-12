@@ -12,20 +12,17 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
-// InitGenesis sets the pool and parameters for the provided keeper.  For each
-// validator in data, it sets that validator in the keeper along with manually
-// setting the indexes. In addition, it also sets any delegations found in
-// data. Finally, it updates the bonded validators.
+// InitGenesis sets the pool and parameters for the provided keeper.
+// For each validator in data, it sets that validator in the keeper along with manually setting the indexes.
+// In addition, it also sets any delegations found in data. Finally, it updates the bonded validators.
 // Returns final validator set after applying all declaration and delegations
 func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []abci.ValidatorUpdate) {
 	bondedTokens := sdk.ZeroInt()
 	notBondedTokens := sdk.ZeroInt()
 
-	// We need to pretend to be "n blocks before genesis", where "n" is the
-	// validator update delay, so that e.g. slashing periods are correctly
-	// initialized for the validator set e.g. with a one-block offset - the
-	// first TM block is at height 1, so state updates applied from
-	// genesis.json are in block 0.
+	// We need to pretend to be "n blocks before genesis", where "n" is the validator update delay,
+	// so that e.g. slashing periods are correctly initialized for the validator set e.g. with a one-block
+	// offset - the first TM block is at height 1, so state updates applied from genesis.json are in block 0.
 	ctx = ctx.WithBlockHeight(1 - sdk.ValidatorUpdateDelay)
 
 	k.SetParams(ctx, data.Params)

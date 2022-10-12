@@ -6,8 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/tendermint/tendermint/crypto/tmhash"
-
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
 	"github.com/cosmos/cosmos-sdk/types/kv"
@@ -62,9 +61,9 @@ const (
 
 // Queues related records:
 // TODO: Instead of storing array we need to store records separately and iterate over it when needed.
-//   - ValidatorsQueues:        0x41<time><height> : <ValAddresses>
-//   - RedelegationsQueues:     0x42<time>         : 0x32<delegator><val_src><val_dst><stake_id> (key of the redelegation record)
-//   - UndelegationsQueues:     0x43<time>         : 0x35<delegator><validator><stake_id>        (key of the undelegation record)
+//   - ValidatorQueues:        0x41<time><height> : <ValAddresses>
+//   - RedelegationQueues:     0x42<time>         : 0x32<delegator><val_src><val_dst><stake_id> (key of the redelegation record)
+//   - UndelegationQueues:     0x43<time>         : 0x35<delegator><validator><stake_id>        (key of the undelegation record)
 
 // ABCI related records:
 //   - HistoricalInfo:          0x51<block_id>     : <HistoricalInfo>
@@ -85,9 +84,9 @@ var (
 	keyPrefixRedelegationsByValDstIndex = []byte{0x34} // prefix for each key for a redelegation index (by destination validator address)
 	keyPrefixUndelegations              = []byte{0x35} // prefix for each key for an undelegation
 	keyPrefixUndelegationsByValIndex    = []byte{0x36} // prefix for each key for an undelegation index (by validator address)
-	keyPrefixValidatorsQueue            = []byte{0x41} // prefix for the timestamps in validator queue
-	keyPrefixRedelegationsQueue         = []byte{0x42} // prefix for the timestamps in redelegations queue
-	keyPrefixUndelegationsQueue         = []byte{0x43} // prefix for the timestamps in unbonding queue
+	keyPrefixValidatorQueue             = []byte{0x41} // prefix for the timestamps in validator queue
+	keyPrefixRedelegationQueue          = []byte{0x42} // prefix for the timestamps in redelegations queue
+	keyPrefixUndelegationQueue          = []byte{0x43} // prefix for the timestamps in unbonding queue
 	keyPrefixHistoricalInfo             = []byte{0x51} // prefix for the historical info
 	keyPrefixMissedBlock                = []byte{0x61} // prefix for missed blocks
 	keyPrefixStartHeight                = []byte{0x62} // prefix for starting block
@@ -149,17 +148,22 @@ func GetDelegationsKey(delegator sdk.AccAddress, validator sdk.ValAddress) []byt
 	return append(GetDelegatorDelegationsKey(delegator), address.MustLengthPrefix(validator)...)
 }
 
-// GetDelegationKey creates the key for the exact delegation in coin.
+// GetDelegationKey creates the key for the exact delegation in the specified coin.
 func GetDelegationKey(delegator sdk.AccAddress, validator sdk.ValAddress, denom string) []byte {
 	return append(GetDelegationsKey(delegator, validator), []byte(denom)...)
 }
 
-// GetDelegationNFTKey creates the key for the exact delegation in NFT.
+// GetDelegationNFTKey creates the key for the exact delegation in the specified NFT token.
 func GetDelegationNFTKey(delegator sdk.AccAddress, validator sdk.ValAddress, tokenID string) []byte {
-	return append(GetDelegationsKey(delegator, validator), getHash(tokenID)...)
+	return append(GetDelegationsKey(delegator, validator), helpers.CalcHashSHA256(tokenID)...)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+// GetAllREDsKey returns a key prefix for indexing all redelegations.
+func GetAllREDsKey() []byte {
+	return keyPrefixRedelegations
+}
 
 // GetREDsKey returns a key prefix for indexing a redelegation from a delegator address.
 func GetREDsKey(delegator sdk.AccAddress) []byte {
@@ -167,7 +171,7 @@ func GetREDsKey(delegator sdk.AccAddress) []byte {
 }
 
 // GetREDKey returns a key prefix for indexing a redelegation from a delegator and source validator to a destination validator.
-func GetREDKey(delegator sdk.AccAddress, validatorSrc, validatorDst sdk.ValAddress) []byte {
+func GetREDKey(delegator sdk.AccAddress, validatorSrc sdk.ValAddress, validatorDst sdk.ValAddress) []byte {
 	// key is of the form GetREDsKey || valSrcAddrLen (1 byte) || validatorSrc || valDstAddrLen (1 byte) || validatorDst
 	key := make([]byte, 1+3+len(delegator)+len(validatorSrc)+len(validatorDst))
 	copy(key[0:2+len(delegator)], GetREDsKey(delegator.Bytes()))
@@ -264,6 +268,11 @@ func GetREDsByDelToValDstIndexKey(delegator sdk.AccAddress, validatorDst sdk.Val
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// GetAllUBDsKey returns a key prefix for indexing all undelegations.
+func GetAllUBDsKey() []byte {
+	return keyPrefixRedelegations
+}
+
 // GetUBDsKey creates the prefix for all unbonding delegations from a delegator
 func GetUBDsKey(delegator sdk.AccAddress) []byte {
 	return append(keyPrefixUndelegations, address.MustLengthPrefix(delegator)...)
@@ -306,11 +315,11 @@ func GetValidatorQueueKey(timestamp time.Time, height int64) []byte {
 	heightBz := sdk.Uint64ToBigEndian(uint64(height))
 	timeBz := sdk.FormatTimeBytes(timestamp)
 	timeBzL := len(timeBz)
-	prefixL := len(keyPrefixValidatorsQueue)
+	prefixL := len(keyPrefixValidatorQueue)
 
 	bz := make([]byte, prefixL+8+timeBzL+8)
 	// copy the prefix
-	copy(bz[:prefixL], keyPrefixValidatorsQueue)
+	copy(bz[:prefixL], keyPrefixValidatorQueue)
 	// copy the encoded time bytes length
 	copy(bz[prefixL:prefixL+8], sdk.Uint64ToBigEndian(uint64(timeBzL)))
 	// copy the encoded time bytes
@@ -324,20 +333,25 @@ func GetValidatorQueueKey(timestamp time.Time, height int64) []byte {
 // GetRedelegationsTimeKey returns a key prefix for indexing redelegations based on a completion time.
 func GetRedelegationsTimeKey(timestamp time.Time) []byte {
 	bz := sdk.FormatTimeBytes(timestamp)
-	return append(keyPrefixRedelegationsQueue, bz...)
+	return append(keyPrefixRedelegationQueue, bz...)
 }
 
 // GetUndelegationsTimeKey creates the prefix for undelegations based on a completion time.
 func GetUndelegationsTimeKey(timestamp time.Time) []byte {
 	bz := sdk.FormatTimeBytes(timestamp)
-	return append(keyPrefixUndelegationsQueue, bz...)
+	return append(keyPrefixUndelegationQueue, bz...)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// GetHistoricalInfosKey returns a key prefix for all HistoricalInfo objects.
+func GetHistoricalInfosKey() []byte {
+	return keyPrefixHistoricalInfo
+}
+
 // GetHistoricalInfoKey returns a key prefix for indexing HistoricalInfo objects.
 func GetHistoricalInfoKey(height int64) []byte {
-	return append(keyPrefixHistoricalInfo, []byte(strconv.FormatInt(height, 10))...)
+	return append(GetHistoricalInfosKey(), []byte(strconv.FormatInt(height, 10))...)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -364,9 +378,9 @@ func ParseValidatorPowerKey(key []byte) (operAddr []byte) {
 
 // ParseValidatorQueueKey returns the encoded time and height from a key created from GetValidatorQueueKey.
 func ParseValidatorQueueKey(bz []byte) (time.Time, int64, error) {
-	prefixL := len(keyPrefixValidatorsQueue)
-	if prefix := bz[:prefixL]; !bytes.Equal(prefix, keyPrefixValidatorsQueue) {
-		return time.Time{}, 0, fmt.Errorf("invalid prefix; expected: %X, got: %X", keyPrefixValidatorsQueue, prefix)
+	prefixL := len(keyPrefixValidatorQueue)
+	if prefix := bz[:prefixL]; !bytes.Equal(prefix, keyPrefixValidatorQueue) {
+		return time.Time{}, 0, fmt.Errorf("invalid prefix; expected: %X, got: %X", keyPrefixValidatorQueue, prefix)
 	}
 
 	timeBzL := sdk.BigEndianToUint64(bz[prefixL : prefixL+8])
@@ -392,16 +406,4 @@ func GetMissedBlockKey(addr sdk.ConsAddress, height int64) []byte {
 func GetStartHeightKey(addr sdk.ConsAddress) []byte {
 	// key format: prefix (1 byte) || consensus address
 	return append(keyPrefixStartHeight, addr.Bytes()...)
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-// getHash returns sha256 hash (32 bytes) calculated from specified string.
-func getHash(str string) []byte {
-	h := tmhash.New()
-	_, err := h.Write([]byte(str))
-	if err != nil {
-		panic(err)
-	}
-	return h.Sum(nil)
 }

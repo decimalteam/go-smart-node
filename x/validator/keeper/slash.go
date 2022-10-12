@@ -144,11 +144,11 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 
 	switch validator.GetStatus() {
 	case types.Bonded:
-		if err := k.burnBondedTokens(ctx, tokensToBurn); err != nil {
+		if err := k.burnCoinsFromBonded(ctx, tokensToBurn); err != nil {
 			panic(err)
 		}
 	case types.Unbonding, types.Unbonded:
-		if err := k.burnNotBondedTokens(ctx, tokensToBurn); err != nil {
+		if err := k.burnCoinsFromNotBonded(ctx, tokensToBurn); err != nil {
 			panic(err)
 		}
 	default:
@@ -226,7 +226,7 @@ func (k Keeper) SlashUndelegation(ctx sdk.Context, undelegation types.Undelegati
 		k.SetUndelegation(ctx, undelegation)
 	}
 
-	if err := k.burnNotBondedTokens(ctx, burnedAmount); err != nil {
+	if err := k.burnCoinsFromNotBonded(ctx, burnedAmount); err != nil {
 		panic(err)
 	}
 
@@ -308,11 +308,11 @@ func (k Keeper) SlashRedelegation(ctx sdk.Context, srcValidator types.Validator,
 		}
 	}
 
-	if err := k.burnBondedTokens(ctx, bondedBurnedAmount); err != nil {
+	if err := k.burnCoinsFromBonded(ctx, bondedBurnedAmount); err != nil {
 		panic(err)
 	}
 
-	if err := k.burnNotBondedTokens(ctx, notBondedBurnedAmount); err != nil {
+	if err := k.burnCoinsFromNotBonded(ctx, notBondedBurnedAmount); err != nil {
 		panic(err)
 	}
 

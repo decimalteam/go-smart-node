@@ -72,38 +72,29 @@ func (k Keeper) SetNewValidatorByPowerIndex(ctx sdk.Context, validator types.Val
 }
 
 // Update the tokens of an existing validator, update the validators power index key
-func (k Keeper) AddValidatorTokensAndShares(ctx sdk.Context, validator types.Validator,
-	tokensToAdd sdkmath.Int,
-) (valOut types.Validator, addedShares sdk.Dec) {
+func (k Keeper) AddValidatorTokensAndShares(ctx sdk.Context, validator types.Validator, tokensToAdd sdkmath.Int) (valOut types.Validator, addedShares sdk.Dec) {
 	k.DeleteValidatorByPowerIndex(ctx, validator)
 	validator, addedShares = validator.AddTokensFromDel(tokensToAdd)
 	k.SetValidator(ctx, validator)
 	k.SetValidatorByPowerIndex(ctx, validator)
-
 	return validator, addedShares
 }
 
 // Update the tokens of an existing validator, update the validators power index key
-func (k Keeper) RemoveValidatorTokensAndShares(ctx sdk.Context, validator types.Validator,
-	sharesToRemove sdk.Dec,
-) (valOut types.Validator, removedTokens sdkmath.Int) {
+func (k Keeper) RemoveValidatorTokensAndShares(ctx sdk.Context, validator types.Validator, sharesToRemove sdk.Dec) (valOut types.Validator, removedTokens sdkmath.Int) {
 	k.DeleteValidatorByPowerIndex(ctx, validator)
 	validator, removedTokens = validator.RemoveDelShares(sharesToRemove)
 	k.SetValidator(ctx, validator)
 	k.SetValidatorByPowerIndex(ctx, validator)
-
 	return validator, removedTokens
 }
 
 // Update the tokens of an existing validator, update the validators power index key
-func (k Keeper) RemoveValidatorTokens(ctx sdk.Context,
-	validator types.Validator, tokensToRemove sdkmath.Int,
-) types.Validator {
+func (k Keeper) RemoveValidatorTokens(ctx sdk.Context, validator types.Validator, tokensToRemove sdkmath.Int) types.Validator {
 	k.DeleteValidatorByPowerIndex(ctx, validator)
 	validator = validator.RemoveTokens(tokensToRemove)
 	k.SetValidator(ctx, validator)
 	k.SetValidatorByPowerIndex(ctx, validator)
-
 	return validator
 }
 

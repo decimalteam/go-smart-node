@@ -8,21 +8,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// StakeI defines interface for a delegation stake.
-type StakeI interface {
-	GetType() StakeType
-	GetID() string
-	GetStake() sdk.Coin
-	GetSubTokenIDs() []int64
-}
-
-// DelegationI defines interface for a delegation bonded to a validator.
-type DelegationI interface {
-	GetDelegator() sdk.AccAddress
-	GetValidator() sdk.ValAddress
-	GetStake() StakeI
-}
-
 // ValidatorI defines interface for a validator.
 type ValidatorI interface {
 	GetOperator() sdk.ValAddress                       // operator address to receive/return validators coins
@@ -37,4 +22,34 @@ type ValidatorI interface {
 	ConsPubKey() (cryptotypes.PubKey, error)           // validation consensus pubkey (cryptotypes.PubKey)
 	TmConsPublicKey() (tmprotocrypto.PublicKey, error) // validation consensus pubkey (Tendermint)
 	GetConsensusPower(sdkmath.Int) int64               // validation power in tendermint
+}
+
+// DelegationI defines interface for a delegation bonded to a validator.
+type DelegationI interface {
+	GetDelegator() sdk.AccAddress
+	GetValidator() sdk.ValAddress
+	GetStake() StakeI
+}
+
+// RedelegationI defines interface for a redelegation from one validator to another.
+type RedelegationI interface {
+	GetDelegator() sdk.AccAddress
+	GetValidatorSrc() sdk.ValAddress
+	GetValidatorDst() sdk.ValAddress
+	GetEntries() []RedelegationEntry
+}
+
+// UndelegationI defines interface for a undelegation from a validator.
+type UndelegationI interface {
+	GetDelegator() sdk.AccAddress
+	GetValidator() sdk.ValAddress
+	GetEntries() []UndelegationEntry
+}
+
+// StakeI defines interface for a delegation stake.
+type StakeI interface {
+	GetType() StakeType
+	GetID() string
+	GetStake() sdk.Coin
+	GetSubTokenIDs() []int64
 }

@@ -11,7 +11,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
-// TokensToConsensusPower - convert input tokens to potential consensus-engine power
+// TokensToConsensusPower converts input tokens to potential consensus-engine power
 func (k Keeper) TokensToConsensusPower(ctx sdk.Context, tokens sdkmath.Int) int64 {
 	return sdk.TokensToConsensusPower(tokens, ethtypes.PowerReduction)
 }
@@ -22,24 +22,18 @@ func (k Keeper) TokensFromConsensusPower(ctx sdk.Context, power int64) sdkmath.I
 }
 
 // GetValidatorsByPowerIndexKey creates the validator by power index.
-// Power index is the key used in the power-store, and represents the relative
-// power ranking of the validator.
-// VALUE: validator operator address ([]byte)
+// Power index is the key used in the power-store, and represents the relative power ranking of the validator.
 func (k Keeper) GetValidatorsByPowerIndexKey(ctx sdk.Context, validator types.Validator) []byte {
 	// NOTE the address doesn't need to be stored because counter bytes must always be different
 	// NOTE the larger values are of higher value
 
-	consensusPower := k.TokensToConsensusPower(ctx, validator.Tokens)
 	consensusPowerBytes := make([]byte, 8)
-	binary.BigEndian.PutUint64(consensusPowerBytes, uint64(consensusPower))
+	binary.BigEndian.PutUint64(consensusPowerBytes, uint64(validator.GetConsensusPower()))
 
 	powerBytes := consensusPowerBytes
 	powerBytesLen := len(powerBytes) // 8
 
-	addr, err := sdk.ValAddressFromBech32(validator.OperatorAddress)
-	if err != nil {
-		panic(err)
-	}
+	addr := validator.GetOperator()
 	operAddrInvr := sdk.CopyBytes(addr)
 	addrLen := len(operAddrInvr)
 
@@ -50,7 +44,7 @@ func (k Keeper) GetValidatorsByPowerIndexKey(ctx sdk.Context, validator types.Va
 	// key is of format prefix || powerbytes || addrLen (1byte) || addrBytes
 	key := make([]byte, 1+powerBytesLen+1+addrLen)
 
-	key[0] = ValidatorsByPowerIndexKey[0]
+	key[0] = types.GetValidatorsByPowerIndexKey()[0]
 	copy(key[1:powerBytesLen+1], powerBytes)
 	key[powerBytesLen+1] = byte(addrLen)
 	copy(key[powerBytesLen+2:], operAddrInvr)

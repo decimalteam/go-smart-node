@@ -28,8 +28,6 @@ type AccountKeeper interface {
 type BankKeeper interface {
 	GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
 	GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin
-	LockedCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
-	SpendableCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
 
 	GetSupply(ctx sdk.Context, denom string) sdk.Coin
 
@@ -40,7 +38,7 @@ type BankKeeper interface {
 	BurnCoins(ctx sdk.Context, name string, amt sdk.Coins) error
 }
 
-// ValidatorSet expected properties for the set of all validators (noalias)
+// ValidatorSet expected properties for the set of all validators (noalias)ю
 type ValidatorSet interface {
 	// iterate through validators by operator address, execute func for each validator
 	IterateValidators(sdk.Context, func(index int64, validator ValidatorI) (stop bool))
@@ -53,8 +51,8 @@ type ValidatorSet interface {
 
 	Validator(sdk.Context, sdk.ValAddress) ValidatorI            // get a particular validator by operator address
 	ValidatorByConsAddr(sdk.Context, sdk.ConsAddress) ValidatorI // get a particular validator by consensus address
-	TotalBondedTokens(sdk.Context) sdkmath.Int                   // total bonded tokens within the validator set
-	StakingTokenSupply(sdk.Context) sdkmath.Int                  // total staking token supply
+	BondedTotal(sdk.Context, string) sdkmath.Int                 // total bonded coins within the validator set for the specific coin
+	BondedRatio(sdk.Context, string) sdk.Dec                     // total bonded ratio within the validator set for the specific coin
 
 	// slash the validator and delegators of the validator, specifying offence height, offence power, and slash fraction
 	Slash(sdk.Context, sdk.ConsAddress, int64, int64, sdk.Dec) sdkmath.Int
@@ -63,7 +61,7 @@ type ValidatorSet interface {
 
 	// Delegation allows for getting a particular delegation for a given validator
 	// and delegator outside the scope of the staking module.
-	Delegation(sdk.Context, sdk.AccAddress, sdk.ValAddress) DelegationI
+	Delegation(sdk.Context, sdk.AccAddress, sdk.ValAddress, string) DelegationI
 
 	// MaxValidators returns the maximum amount of bonded validators
 	MaxValidators(sdk.Context) uint32
