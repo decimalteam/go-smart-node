@@ -157,6 +157,25 @@ func UnmarshalValidator(cdc codec.BinaryCodec, value []byte) (v Validator, err e
 	return v, err
 }
 
+func MustMarshalValidatorRewards(cdc codec.BinaryCodec, rewards *ValidatorRewards) []byte {
+	return cdc.MustMarshal(rewards)
+}
+
+func MustUnmarshalValidatorRewards(cdc codec.BinaryCodec, value []byte) ValidatorRewards {
+	validator, err := UnmarshalValidatorRewards(cdc, value)
+	if err != nil {
+		panic(err)
+	}
+
+	return validator
+}
+
+// unmarshal a redelegation from a store value
+func UnmarshalValidatorRewards(cdc codec.BinaryCodec, value []byte) (v ValidatorRewards, err error) {
+	err = cdc.Unmarshal(value, &v)
+	return v, err
+}
+
 // IsBonded checks if the validator status equals Bonded
 func (v Validator) IsBonded() bool {
 	return v.GetStatus() == BondStatus_Bonded

@@ -18,6 +18,8 @@ func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.ValAddress) (validator ty
 		return validator, false
 	}
 	validator = types.MustUnmarshalValidator(k.cdc, value)
+	k.MustGetValidatorRewards(ctx, &validator)
+
 	return validator, true
 }
 
@@ -34,6 +36,31 @@ func (k Keeper) SetValidator(ctx sdk.Context, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
 	bz := types.MustMarshalValidator(k.cdc, &validator)
 	store.Set(types.GetValidatorKey(validator.GetOperator()), bz)
+}
+
+func (k Keeper) SetValidatorRewards(ctx sdk.Context, valAddr sdk.ValAddress, rewards types.ValidatorRewards) {
+	store := ctx.KVStore(k.storeKey)
+	bz := types.MustMarshalValidatorRewards(k.cdc, &rewards)
+	store.Set(types.GetValidatorRewards(valAddr), bz)
+}
+
+func (k Keeper) GetValidatorRewards(ctx sdk.Context, valAddr sdk.ValAddress) (rewards types.ValidatorRewards, err error) {
+	store := ctx.KVStore(k.storeKey)
+	value := store.Get(types.GetValidatorKey(valAddr))
+	if value == nil {
+		return rewards, fmt.Errorf("not found rewards for validator")
+	}
+	rewards = types.MustUnmarshalValidatorRewards(k.cdc, value)
+	return rewards, nil
+}
+
+func (k Keeper) MustGetValidatorRewards(ctx sdk.Context, validator *types.Validator) {
+	rewards, err := k.GetValidatorRewards(ctx, validator.GetOperator())
+	if err != nil {
+		panic(err)
+	}
+	validator.Rewards = rewards.Rewards
+	validator.TotalRewards = rewards.TotalRewards
 }
 
 // validator index
@@ -130,6 +157,7 @@ func (k Keeper) RemoveValidator(ctx sdk.Context, address sdk.ValAddress) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.GetValidatorKey(address))
 	store.Delete(types.GetValidatorByConsAddrIndexKey(valConsAddr))
+	store.Delete(types.GetValidatorRewards(address))
 	//store.Delete(k.GetValidatorsByPowerIndexKey(ctx, validator))
 
 	// call hooks
@@ -147,6 +175,8 @@ func (k Keeper) GetAllValidators(ctx sdk.Context) (validators []types.Validator)
 
 	for ; iterator.Valid(); iterator.Next() {
 		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
+		k.MustGetValidatorRewards(ctx, &validator)
+
 		validators = append(validators, validator)
 	}
 
@@ -164,6 +194,8 @@ func (k Keeper) GetValidators(ctx sdk.Context, maxRetrieve uint32) (validators [
 	i := 0
 	for ; iterator.Valid() && i < int(maxRetrieve); iterator.Next() {
 		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
+		k.MustGetValidatorRewards(ctx, &validator)
+
 		validators[i] = validator
 		i++
 	}
@@ -183,6 +215,7 @@ func (k Keeper) GetBondedValidatorsByPower(ctx sdk.Context) []types.Validator {
 	for ; iterator.Valid() && i < int(maxValidators); iterator.Next() {
 		address := iterator.Value()
 		validator := k.mustGetValidator(ctx, address)
+		k.MustGetValidatorRewards(ctx, &validator)
 
 		if validator.IsBonded() {
 			validators[i] = validator

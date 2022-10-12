@@ -78,6 +78,7 @@ var (
 	keyPrefixValidators                 = []byte{0x21} // prefix for each key to a validator
 	keyPrefixValidatorsByConsAddrIndex  = []byte{0x22} // prefix for each key to a validator index (by consensus address)
 	keyPrefixValidatorsByPowerIndex     = []byte{0x23} // prefix for each key to a validator index (sorted by power)
+	keyPrefixValidatorRewards           = []byte{0x24} // prefix for validator rewards
 	keyPrefixDelegations                = []byte{0x31} // prefix for each key for a delegation
 	keyPrefixRedelegations              = []byte{0x32} // prefix for each key for a redelegation
 	keyPrefixRedelegationsByValSrcIndex = []byte{0x33} // prefix for each key for a redelegation index (by source validator address)
@@ -134,6 +135,14 @@ func GetValidatorByConsAddrIndexKey(addr sdk.ConsAddress) []byte {
 // GetValidatorsByPowerIndexKey returns the prefix key for the validators sorted by voting power.
 func GetValidatorsByPowerIndexKey() []byte {
 	return keyPrefixValidatorsByPowerIndex
+}
+
+func GetValidatorsRewards() []byte {
+	return keyPrefixValidatorRewards
+}
+
+func GetValidatorRewards(addr sdk.ValAddress) []byte {
+	return append(GetValidatorsRewards(), addr.Bytes()...)
 }
 
 ////////////////////////////////////////////////////////////////////////////////

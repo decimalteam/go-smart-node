@@ -595,7 +595,6 @@ func (k Keeper) Delegate(
 	ctx sdk.Context, delegator sdk.AccAddress, denom string, coinAmount *sdkmath.Int, subTokenIDs []uint32, tokenSrc types.BondStatus,
 	validator types.Validator, subtractAccount bool,
 ) (totalStake sdkmath.Int, err error) {
-
 	// create stake entity
 	var stake types.Stake
 	switch {
@@ -719,9 +718,6 @@ func (k Keeper) Delegate(
 	if err != nil {
 		return sdk.ZeroInt(), err
 	}
-
-	//k.DeleteValidatorByPowerIndex(ctx, validator, totalStake.Int64())
-	//k.SetValidatorByPowerIndex(ctx, validator, totalStake.Int64())
 
 	if err := k.AfterDelegationModified(ctx, delegator, valAddress); err != nil {
 		return sdk.ZeroInt(), err
