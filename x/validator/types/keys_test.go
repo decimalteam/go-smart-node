@@ -1,6 +1,7 @@
 package types_test
 
 import (
+	"github.com/cosmos/cosmos-sdk/types/address"
 	"github.com/stretchr/testify/require"
 	"testing"
 
@@ -19,121 +20,79 @@ var (
 	keysAddr3 = keysPK3.Address()
 )
 
-func TestValidatorDelegations(t *testing.T) {
+func TestDelegations(t *testing.T) {
 	val := sdk.ValAddress(keysAddr1)
 	del := sdk.AccAddress(keysAddr2)
 	denom := "del"
 
+	key := append(append(append(types.GetAllDelegationsKey(), address.MustLengthPrefix(del)...), address.MustLengthPrefix(val)...), []byte(denom)...)
+	// <delegator> <validator> <denom>
 	delegationKey := types.GetDelegationKey(del, val, denom)
+	require.Equal(t, key, delegationKey)
+
+	// <delegator> <validator>
+	delegatorDelegationsKey := types.GetDelegationsKey(del, val)
+	require.Equal(t, delegationKey[:len(delegationKey)-len(denom)], delegatorDelegationsKey)
+
+	// <delegator>
+	delegatorAllDelegations := types.GetDelegatorDelegationsKey(del)
+	require.Equal(t, delegationKey[:len(delegationKey)-len(del)-1-len(denom)], delegatorAllDelegations)
+
+	// <validator> <delegator> <denom>
 	valDelKey := types.GetValidatorDelegatorDelegationKey(val, del, denom)
 
+	// <validator> <delegator> <denom> ------> <delegator> <validator> <denom>
 	converterdKey := types.GetDelegationKeyFromValIndexKey(valDelKey)
 	require.Equal(t, delegationKey, converterdKey)
 }
 
-func TestGetValidatorPowerRank(t *testing.T) {
-	//valAddr1 := sdk.ValAddress(keysAddr1)
-	//val1 := newValidator(t, valAddr1, keysPK1)
-	//val1.Tokens = sdk.ZeroInt()
-	//val2, val3, val4 := val1, val1, val1
-	//val2.Tokens = sdk.TokensFromConsensusPower(1, sdk.DefaultPowerReduction)
-	//val3.Tokens = sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction)
-	//x := new(big.Int).Exp(big.NewInt(2), big.NewInt(40), big.NewInt(0))
-	//val4.Tokens = sdk.TokensFromConsensusPower(x.Int64(), sdk.DefaultPowerReduction)
-	//
-	//tests := []struct {
-	//	validator types.Validator
-	//	wantHex   string
-	//}{
-	//	{val1, "230000000000000000149c288ede7df62742fc3b7d0962045a8cef0f79f6"},
-	//	{val2, "230000000000000001149c288ede7df62742fc3b7d0962045a8cef0f79f6"},
-	//	{val3, "23000000000000000a149c288ede7df62742fc3b7d0962045a8cef0f79f6"},
-	//	{val4, "230000010000000000149c288ede7df62742fc3b7d0962045a8cef0f79f6"},
-	//}
-	//for i, tt := range tests {
-	//	got := hex.EncodeToString(types.GetValidatorsByPowerIndexKey(tt.validator, sdk.DefaultPowerReduction))
-	//
-	//	require.Equal(t, tt.wantHex, got, "Keys did not match on test case %d", i)
-	//}
+func TestRedelegations(t *testing.T) {
+	del := sdk.AccAddress(keysAddr2)
+	val_src := sdk.ValAddress(keysAddr3)
+	val_dst := sdk.ValAddress(keysAddr1)
+	//denom := "del"
+
+	key := append(append(append(types.GetAllREDsKey(), address.MustLengthPrefix(del)...), address.MustLengthPrefix(val_src)...), address.MustLengthPrefix(val_dst)...)
+	// <delegator> <src_validator> <dst_validator>
+	redelegationKey := types.GetREDKey(del, val_src, val_dst)
+	require.Equal(t, key, redelegationKey)
+
+	// <src_validator> <delegator> <dst_validator> ----> <delegator> <src_validator> <dst_validator>
+	src := types.GetREDByValSrcIndexKey(del, val_src, val_dst)
+	redKey := types.GetREDKeyFromValSrcIndexKey(src)
+	require.Equal(t, redelegationKey, redKey)
+
+	// <dst_validator> <delegator> <src_validator> -> <delegator> <src_validator> <dst_validator>
+	dst := types.GetREDByValDstIndexKey(del, val_src, val_dst)
+	redKey = types.GetREDKeyFromValDstIndexKey(dst)
+	require.Equal(t, redelegationKey, redKey)
+
+	// <dst_validator> <delegator>
+	dstDelReds := types.GetREDsByDelToValDstIndexKey(del, val_dst)
+	t.Log(len(dst) - len(val_src))
+	require.Equal(t, dst[:len(dst)-len(val_src)-1], dstDelReds)
 }
 
-//
-//func TestGetREDByValDstIndexKey(t *testing.T) {
-//	tests := []struct {
-//		delAddr    sdk.AccAddress
-//		valSrcAddr sdk.ValAddress
-//		valDstAddr sdk.ValAddress
-//		wantHex    string
-//	}{
-//		{
-//			sdk.AccAddress(keysAddr1), sdk.ValAddress(keysAddr1), sdk.ValAddress(keysAddr1),
-//			"361463d771218209d8bd03c482f69dfba57310f086091463d771218209d8bd03c482f69dfba57310f086091463d771218209d8bd03c482f69dfba57310f08609",
-//		},
-//		{
-//			sdk.AccAddress(keysAddr1), sdk.ValAddress(keysAddr2), sdk.ValAddress(keysAddr3),
-//			"36143ab62f0d93849be495e21e3e9013a517038f45bd1463d771218209d8bd03c482f69dfba57310f08609145ef3b5f25c54946d4a89fc0d09d2f126614540f2",
-//		},
-//		{
-//			sdk.AccAddress(keysAddr2), sdk.ValAddress(keysAddr1), sdk.ValAddress(keysAddr3),
-//			"36143ab62f0d93849be495e21e3e9013a517038f45bd145ef3b5f25c54946d4a89fc0d09d2f126614540f21463d771218209d8bd03c482f69dfba57310f08609",
-//		},
-//	}
-//	for i, tt := range tests {
-//		got := hex.EncodeToString(types.GetREDByValDstIndexKey(tt.delAddr, tt.valSrcAddr, tt.valDstAddr))
-//
-//		require.Equal(t, tt.wantHex, got, "Keys did not match on test case %d", i)
-//	}
-//}
-//
-//func TestGetREDByValSrcIndexKey(t *testing.T) {
-//	tests := []struct {
-//		delAddr    sdk.AccAddress
-//		valSrcAddr sdk.ValAddress
-//		valDstAddr sdk.ValAddress
-//		wantHex    string
-//	}{
-//		{
-//			sdk.AccAddress(keysAddr1), sdk.ValAddress(keysAddr1), sdk.ValAddress(keysAddr1),
-//			"351463d771218209d8bd03c482f69dfba57310f086091463d771218209d8bd03c482f69dfba57310f086091463d771218209d8bd03c482f69dfba57310f08609",
-//		},
-//		{
-//			sdk.AccAddress(keysAddr1), sdk.ValAddress(keysAddr2), sdk.ValAddress(keysAddr3),
-//			"35145ef3b5f25c54946d4a89fc0d09d2f126614540f21463d771218209d8bd03c482f69dfba57310f08609143ab62f0d93849be495e21e3e9013a517038f45bd",
-//		},
-//		{
-//			sdk.AccAddress(keysAddr2), sdk.ValAddress(keysAddr1), sdk.ValAddress(keysAddr3),
-//			"351463d771218209d8bd03c482f69dfba57310f08609145ef3b5f25c54946d4a89fc0d09d2f126614540f2143ab62f0d93849be495e21e3e9013a517038f45bd",
-//		},
-//	}
-//	for i, tt := range tests {
-//		got := hex.EncodeToString(types.GetREDByValSrcIndexKey(tt.delAddr, tt.valSrcAddr, tt.valDstAddr))
-//
-//		require.Equal(t, tt.wantHex, got, "Keys did not match on test case %d", i)
-//	}
-//}
-//
-//func TestGetValidatorQueueKey(t *testing.T) {
-//	ts := time.Now()
-//	height := int64(1024)
-//
-//	bz := types.GetValidatorQueueKey(ts, height)
-//	rTs, rHeight, err := types.ParseValidatorQueueKey(bz)
-//	require.NoError(t, err)
-//	require.Equal(t, ts.UTC(), rTs.UTC())
-//	require.Equal(t, rHeight, height)
-//}
-//
-//func TestTestGetValidatorQueueKeyOrder(t *testing.T) {
-//	ts := time.Now().UTC()
-//	height := int64(1000)
-//
-//	endKey := types.GetValidatorQueueKey(ts, height)
-//
-//	keyA := types.GetValidatorQueueKey(ts.Add(-10*time.Minute), height-10)
-//	keyB := types.GetValidatorQueueKey(ts.Add(-5*time.Minute), height+50)
-//	keyC := types.GetValidatorQueueKey(ts.Add(10*time.Minute), height+100)
-//
-//	require.Equal(t, -1, bytes.Compare(keyA, endKey)) // keyA <= endKey
-//	require.Equal(t, -1, bytes.Compare(keyB, endKey)) // keyB <= endKey
-//	require.Equal(t, 1, bytes.Compare(keyC, endKey))  // keyB >= endKey
-//}
+func TestUndelegations(t *testing.T) {
+	del := sdk.AccAddress(keysAddr2)
+	val := sdk.ValAddress(keysAddr3)
+
+	key := append(append(append(types.GetAllUBDsKey(), address.MustLengthPrefix(del)...), address.MustLengthPrefix(val)...))
+
+	// <delegator> <validator>
+	undelegationKey := types.GetUBDKey(del, val)
+	require.Equal(t, key, undelegationKey)
+
+	// <delegator>
+	ubds := types.GetUBDsKey(del)
+	require.Equal(t, key[:len(key)-len(val)-1], ubds)
+
+	//<validator> <delegator>
+	validatorUbd := types.GetUBDByValIndexKey(del, val)
+	recoverKey := types.GetUBDKeyFromValIndexKey(validatorUbd)
+	require.Equal(t, key, recoverKey)
+
+	// <validator>
+	validatorUbds := types.GetUBDsByValIndexKey(val)
+	require.Equal(t, validatorUbd[:len(validatorUbd)-len(del)-1], validatorUbds)
+}

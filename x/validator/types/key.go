@@ -53,9 +53,9 @@ const (
 // Staking related records:
 //   - Delegations:             0x31<delegator><validator><stake_id>          : <Stake>
 //   - DelegationsByVal:        0x37<validator><delegator><stake_id>		  : []byte{}
-//   - Redelegations:           0x32<delegator><val_src><val_dst><stake_id>   : <Redelegation>
-//   - RedelegationsByValSrc:   0x33<val_src><delegator><val_dst><stake_id>   : []byte{}
-//   - RedelegationsByValDst:   0x34<val_dst><delegator><val_src><stake_id>   : []byte{}
+//   - Redelegations:           0x32<delegator><val_src><val_dst>   		  : <Redelegation>
+//   - RedelegationsByValSrc:   0x33<val_src><delegator><val_dst>             : []byte{}
+//   - RedelegationsByValDst:   0x34<val_dst><delegator><val_src>             : []byte{}
 //   - Undelegations:           0x35<delegator><validator><stake_id>          : <Undelegation>
 //   - UndelegationsByValSrc:   0x36<validator><delegator><stake_id>          : []byte{}
 
@@ -308,12 +308,12 @@ func GetREDsByDelToValDstIndexKey(delegator sdk.AccAddress, validatorDst sdk.Val
 
 // GetAllUBDsKey returns a key prefix for indexing all undelegations.
 func GetAllUBDsKey() []byte {
-	return keyPrefixRedelegations
+	return keyPrefixUndelegations
 }
 
 // GetUBDsKey creates the prefix for all unbonding delegations from a delegator
 func GetUBDsKey(delegator sdk.AccAddress) []byte {
-	return append(keyPrefixUndelegations, address.MustLengthPrefix(delegator)...)
+	return append(GetAllUBDsKey(), address.MustLengthPrefix(delegator)...)
 }
 
 // GetUBDKey creates the key for an unbonding delegation by delegator and validator addr
