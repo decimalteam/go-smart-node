@@ -43,6 +43,8 @@ definitions:
           - MESSAGE=`git log --format=%B -n 1 $BITBUCKET_COMMIT` # getting commit message
           - pip3 install ansible==2.10.7
 
+          - export no_proxy="*"
+
           - chmod 700 ci-scripts/ansible
           - cd ci-scripts/ansible
 
@@ -63,7 +65,7 @@ definitions:
 
           # run reset playbook for SLAVE HOSTS
           - if [[ $MESSAGE == *\[reset\]* ]]; then
-            ansible-playbook -i hosts -l "$SLAVE_HOST" -e "ansible_user=$USERNAME mode=slave decimal_keys=$DECIMAL_KEYS chain_id=$CHAIN_ID_NEW artifacts=$BITBUCKET_CLONE_DIR/build src_genesis=$SRC_GENESIS_NEW persistent_peers=$PERSISTENT_PEERS_NEW" decimal-nodes-init.yml;
+            ansible-playbook -vvvv -i hosts -l "$SLAVE_HOST" -e "ansible_user=$USERNAME mode=slave decimal_keys=$DECIMAL_KEYS chain_id=$CHAIN_ID_NEW artifacts=$BITBUCKET_CLONE_DIR/build src_genesis=$SRC_GENESIS_NEW persistent_peers=$PERSISTENT_PEERS_NEW" decimal-nodes-init.yml;
             else echo 0; fi
 
     - parallel: &repo_build
