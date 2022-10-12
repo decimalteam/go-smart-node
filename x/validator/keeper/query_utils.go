@@ -104,11 +104,11 @@ func (k Keeper) GetAllRedelegations(
 
 	for ; iterator.Valid(); iterator.Next() {
 		redelegation := types.MustUnmarshalRED(k.cdc, iterator.Value())
-		valSrcAddr, err := sdk.ValAddressFromBech32(redelegation.ValidatorSrcAddress)
+		valSrcAddr, err := sdk.ValAddressFromBech32(redelegation.ValidatorSrc)
 		if err != nil {
 			panic(err)
 		}
-		valDstAddr, err := sdk.ValAddressFromBech32(redelegation.ValidatorDstAddress)
+		valDstAddr, err := sdk.ValAddressFromBech32(redelegation.ValidatorDst)
 		if err != nil {
 			panic(err)
 		}

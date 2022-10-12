@@ -72,7 +72,7 @@ type ValidatorSet interface {
 	BondedRatio(sdk.Context, string) sdk.Dec                     // total bonded ratio within the validator set for the specific coin
 
 	// slash the validator and delegators of the validator, specifying offence height, offence power, and slash fraction
-	Slash(sdk.Context, sdk.ConsAddress, int64, int64, sdk.Dec) sdkmath.Int
+	Slash(sdk.Context, sdk.ConsAddress, int64, int64, sdk.Dec)
 	Jail(sdk.Context, sdk.ConsAddress)   // jail a validator
 	Unjail(sdk.Context, sdk.ConsAddress) // unjail a validator
 
