@@ -44,6 +44,28 @@ func (k Keeper) UndelegationTime(ctx sdk.Context) (res time.Duration) {
 	return
 }
 
+func (k Keeper) BaseDenom(ctx sdk.Context) (res string) {
+	k.paramstore.Get(ctx, types.KeyBaseDenom, &res)
+	return
+}
+
+func (k Keeper) SignedBlockWindow(ctx sdk.Context) (res int64) {
+	k.paramstore.Get(ctx, types.KeySignedBlocksWindow, &res)
+	return
+}
+func (k Keeper) MinSignedPerWindow(ctx sdk.Context) (res sdk.Dec) {
+	k.paramstore.Get(ctx, types.KeyMinSignedPerWindow, &res)
+	return
+}
+func (k Keeper) SlashFractionDowntime(ctx sdk.Context) (res sdk.Dec) {
+	k.paramstore.Get(ctx, types.KeySlashFractionDowntime, &res)
+	return
+}
+func (k Keeper) SlashFractionDoubleSign(ctx sdk.Context) (res sdk.Dec) {
+	k.paramstore.Get(ctx, types.KeySlashFractionDoubleSign, &res)
+	return
+}
+
 // GetParams returns all parameters as types.Params.
 func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 	return types.NewParams(
@@ -53,6 +75,11 @@ func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 		k.HistoricalEntries(ctx),
 		k.RedelegationTime(ctx),
 		k.UndelegationTime(ctx),
+		k.BaseDenom(ctx),
+		k.SignedBlockWindow(ctx),
+		k.MinSignedPerWindow(ctx),
+		k.SlashFractionDowntime(ctx),
+		k.SlashFractionDoubleSign(ctx),
 	)
 }
 
