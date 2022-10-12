@@ -35,8 +35,8 @@
     return_content: true
   register: content
 
-- set_fact:
-    content: '{{ content.json.result.genesis }}'
+#- set_fact:
+#    content: '{{ content.json.result.genesis }}'
 
 - debug: var=content
 
