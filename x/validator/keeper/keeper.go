@@ -11,6 +11,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
+	coinkeeper "bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
+	nftkeeper "bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
@@ -23,6 +25,8 @@ type Keeper struct {
 	cdc        codec.BinaryCodec
 	authKeeper types.AccountKeeper
 	bankKeeper types.BankKeeper
+	nftKeeper  nftkeeper.Keeper
+	coinKeeper coinkeeper.Keeper
 	hooks      types.StakingHooks
 	paramstore paramtypes.Subspace
 }
@@ -30,6 +34,7 @@ type Keeper struct {
 // NewKeeper creates new Keeper instance.
 func NewKeeper(
 	cdc codec.BinaryCodec, key storetypes.StoreKey, ak types.AccountKeeper, bk types.BankKeeper,
+	nftk nftkeeper.Keeper, ck coinkeeper.Keeper,
 	ps paramtypes.Subspace,
 ) Keeper {
 	// set KeyTable if it has not already been set
@@ -51,6 +56,8 @@ func NewKeeper(
 		cdc:        cdc,
 		authKeeper: ak,
 		bankKeeper: bk,
+		nftKeeper:  nftk,
+		coinKeeper: ck,
 		paramstore: ps,
 		hooks:      nil,
 	}

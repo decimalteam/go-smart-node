@@ -6,6 +6,8 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
+	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	types "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
@@ -37,13 +39,6 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 		panic(fmt.Errorf("attempted to slash with a negative slash factor: %v", slashFactor))
 	}
 
-	// Amount of slashing = slash slashFactor * power at time of infraction
-	amount := k.TokensFromConsensusPower(ctx, power)
-	slashAmountDec := sdk.NewDecFromInt(amount).Mul(slashFactor)
-	slashAmount := slashAmountDec.TruncateInt()
-
-	// ref https://github.com/cosmos/cosmos-sdk/issues/1348
-
 	validator, found := k.GetValidatorByConsAddr(ctx, consAddr)
 	if !found {
 		// If not found, the validator must have been overslashed and removed - so we don't need to do anything
@@ -66,11 +61,6 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 
 	// call the before-modification hook
 	k.BeforeValidatorModified(ctx, operatorAddress)
-
-	// Track remaining slash amount for the validator
-	// This will decrease when we slash unbondings and
-	// redelegations, as that stake has since unbonded
-	remainingSlashAmount := slashAmount
 
 	switch {
 	case infractionHeight > ctx.BlockHeight():
@@ -95,8 +85,6 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 			if amountSlashed.IsZero() {
 				continue
 			}
-
-			remainingSlashAmount = remainingSlashAmount.Sub(amountSlashed)
 		}
 
 		// Iterate through redelegations from slashed source validator
@@ -106,8 +94,32 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 			if amountSlashed.IsZero() {
 				continue
 			}
+		}
+	}
 
-			remainingSlashAmount = remainingSlashAmount.Sub(amountSlashed)
+	// slash delegations
+	delegations := k.GetValidatorDelegations(ctx, operatorAddress)
+	for _, delegation := range delegations {
+		switch delegation.Stake.Type {
+		case types.StakeType_Coin:
+			calcSlashCoinStake(delegation.Stake, slashFactor)
+		case types.StakeType_NFT:
+			token, found := k.nftKeeper.GetToken(ctx, delegation.Stake.ID)
+			if !found {
+				panic(fmt.Errorf("can't find token %s in slashing time", delegation.Stake.ID))
+			}
+			var subtokens []nfttypes.SubToken
+			for _, id := range delegation.Stake.SubTokenIDs {
+				sub, found := k.nftKeeper.GetSubToken(ctx, token.ID, id)
+				if !found {
+					panic(fmt.Errorf("can't find subtoken %d for token %s in slashing time", id, delegation.Stake.ID))
+				}
+				if sub.Reserve == nil {
+					sub.Reserve = &token.Reserve
+				}
+				subtokens = append(subtokens, sub)
+			}
+			calcSlashNFTStake(delegation.Stake, subtokens, slashFactor)
 		}
 	}
 
@@ -305,4 +317,176 @@ func (k Keeper) SlashRedelegation(ctx sdk.Context, srcValidator types.Validator,
 	}
 
 	return totalSlashAmount
+}
+
+// slash delegations records, make changes in nft, burn coins from pools
+func (k Keeper) SlashDelegations(ctx sdk.Context, operatorAddress sdk.ValAddress, slashFactor sdk.Dec) {
+	var coinsToBurn, nftCoinsToBurn sdk.Coins
+	delegations := k.GetValidatorDelegations(ctx, operatorAddress)
+	var slashEvents = make(map[string]types.DelegatorSlash)
+	for _, delegation := range delegations {
+		newStake, slashCoin, slashNFT, nftChanges := k.calcSlashStake(ctx, delegation.Stake, slashFactor)
+		// accumulate coins to burn
+		coinsToBurn = coinsToBurn.Add(slashCoin.Slash)
+		for _, sub := range slashNFT.SubTokens {
+			nftCoinsToBurn = nftCoinsToBurn.Add(sub.Slash)
+		}
+		// make changes in stake and nft
+		k.SetDelegation(ctx, types.Delegation{
+			Delegator: delegation.Delegator,
+			Validator: delegation.Validator,
+			Stake:     newStake,
+		})
+		for _, sub := range nftChanges.subtokens {
+			k.nftKeeper.SetSubToken(ctx, nftChanges.tokenID, sub)
+		}
+		// accumulate events
+		ev, ok := slashEvents[delegation.Delegator]
+		if !ok {
+			ev = types.DelegatorSlash{
+				Delegator: delegation.Delegator,
+			}
+		}
+		if slashCoin.Slash.Denom != "" {
+			ev.Coins = append(ev.Coins, slashCoin)
+		}
+		if slashNFT.ID != "" {
+			ev.NFTs = append(ev.NFTs, slashNFT)
+		}
+		slashEvents[delegation.Delegator] = ev
+	}
+	// TODO: burn coins from pools
+	if !coinsToBurn.IsZero() {
+		err := k.coinKeeper.BurnPoolCoins(ctx, types.BondedPoolName, coinsToBurn)
+	}
+	if !nftCoinsToBurn.IsZero() {
+		err := k.coinKeeper.BurnPoolCoins(ctx, nfttypes.ReservedPool, coinsToBurn)
+	}
+	// ...
+	// emit result event
+	resultEvent := &types.EventSlash{
+		Validator: operatorAddress.String(),
+	}
+	for _, ev := range slashEvents {
+		resultEvent.Delegators = append(resultEvent.Delegators, ev)
+	}
+	events.EmitTypedEvent(ctx, resultEvent)
+}
+
+type nftSubtokenChanges struct {
+	tokenID   string
+	subtokens []nfttypes.SubToken
+}
+
+// calcSlashStake prepare changes. Only calculate, no changes
+func (k Keeper) calcSlashStake(ctx sdk.Context, stake types.Stake, slashFactor sdk.Dec) (types.Stake,
+	types.SlashCoin, types.SlashNFT, nftSubtokenChanges) {
+	var newStake types.Stake
+	var slashCoin types.SlashCoin
+	var slashNFT types.SlashNFT
+	var newSubTokens []nfttypes.SubToken
+	var nftChanges nftSubtokenChanges
+	var err error
+	switch stake.Type {
+	case types.StakeType_Coin:
+		newStake, slashCoin, err = calcSlashCoinStake(stake, slashFactor)
+		if err != nil {
+			panic(err)
+		}
+	case types.StakeType_NFT:
+		token, found := k.nftKeeper.GetToken(ctx, stake.ID)
+		if !found {
+			panic(fmt.Errorf("can't find token %s in slashing time", stake.ID))
+		}
+		var subtokens []nfttypes.SubToken
+		for _, id := range stake.SubTokenIDs {
+			sub, found := k.nftKeeper.GetSubToken(ctx, token.ID, id)
+			if !found {
+				panic(fmt.Errorf("can't find subtoken %d for token %s in slashing time", id, stake.ID))
+			}
+			if sub.Reserve == nil {
+				sub.Reserve = &token.Reserve
+			}
+			subtokens = append(subtokens, sub)
+		}
+		newStake, slashNFT, newSubTokens, err = calcSlashNFTStake(stake, subtokens, slashFactor)
+		if err != nil {
+			panic(err)
+		}
+		nftChanges = nftSubtokenChanges{tokenID: token.ID, subtokens: newSubTokens}
+	}
+	return newStake, slashCoin, slashNFT, nftChanges
+}
+
+// calcSlashCoinStake return modified stake and SlashCoin for event. Only calculate, no changes
+func calcSlashCoinStake(stake types.Stake, fraction sdk.Dec) (types.Stake, types.SlashCoin, error) {
+	if stake.Type != types.StakeType_Coin {
+		return types.Stake{}, types.SlashCoin{}, fmt.Errorf("call slashCoinStake not for coin stake")
+	}
+	slashAmount := sdk.NewDecFromInt(stake.Stake.Amount).Mul(fraction).RoundInt()
+	newAmount := stake.Stake.Amount.Sub(slashAmount)
+	newStake := types.Stake{
+		Type:  types.StakeType_Coin,
+		ID:    stake.ID,
+		Stake: sdk.NewCoin(stake.Stake.Denom, newAmount),
+	}
+	slashCoin := types.SlashCoin{
+		Slash: sdk.NewCoin(stake.Stake.Denom, slashAmount),
+	}
+	return newStake, slashCoin, nil
+}
+
+// slashCoinStake return modified stake and subtokens, SlashNFT for event. Only calculate, no changes
+// stake.SubTokenIDs and subtokens order must be same, subtokens reserve must be not nil filled
+func calcSlashNFTStake(stake types.Stake, subtokens []nfttypes.SubToken, fraction sdk.Dec) (types.Stake, types.SlashNFT, []nfttypes.SubToken, error) {
+	if stake.Type != types.StakeType_NFT {
+		return types.Stake{}, types.SlashNFT{}, []nfttypes.SubToken{}, fmt.Errorf("call slashCoinStake not for coin stake")
+	}
+	if len(stake.SubTokenIDs) != len(subtokens) {
+		return types.Stake{}, types.SlashNFT{}, []nfttypes.SubToken{}, fmt.Errorf("lengths of stake subtokens and subtokens not equal")
+	}
+
+	totalSlash := sdk.ZeroInt()
+	totalStake := sdk.ZeroInt()
+
+	var newSubTokens []nfttypes.SubToken
+	var slashSubTokens []types.SlashNFTSubToken
+
+	for i := range stake.SubTokenIDs {
+		if stake.SubTokenIDs[i] != subtokens[i].ID {
+			return types.Stake{}, types.SlashNFT{}, []nfttypes.SubToken{}, fmt.Errorf("subtokens id not equal")
+		}
+		if subtokens[i].Reserve == nil {
+			return types.Stake{}, types.SlashNFT{}, []nfttypes.SubToken{}, fmt.Errorf("subtokens reserve is nil")
+		}
+		slashAmount := sdk.NewDecFromInt(subtokens[i].Reserve.Amount).Mul(fraction).RoundInt()
+		newAmount := subtokens[i].Reserve.Amount.Sub(slashAmount)
+		newReserve := sdk.NewCoin(subtokens[i].Reserve.Denom, newAmount)
+
+		newSubTokens = append(newSubTokens, nfttypes.SubToken{
+			ID:      subtokens[i].ID,
+			Owner:   subtokens[i].Owner,
+			Reserve: &newReserve,
+		})
+		slashSubTokens = append(slashSubTokens, types.SlashNFTSubToken{
+			ID:    subtokens[i].ID,
+			Slash: sdk.NewCoin(subtokens[i].Reserve.Denom, slashAmount),
+		})
+
+		totalSlash = totalSlash.Add(slashAmount)
+		totalStake = totalStake.Add(newAmount)
+	}
+
+	newStake := types.Stake{
+		Type:        types.StakeType_NFT,
+		ID:          stake.ID,
+		Stake:       sdk.NewCoin(stake.Stake.Denom, totalStake),
+		SubTokenIDs: stake.SubTokenIDs,
+	}
+	slashNFT := types.SlashNFT{
+		ID:        stake.ID,
+		SubTokens: slashSubTokens,
+	}
+
+	return newStake, slashNFT, newSubTokens, nil
 }

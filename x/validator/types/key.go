@@ -69,6 +69,10 @@ const (
 // ABCI related records:
 //   - HistoricalInfo:          0x51<block_id>     : <HistoricalInfo>
 
+// Missed blocks records:
+//   - MissedBlock:          0x61<cons_addr><block_id> : []byte{}
+//   - StartingBlock:        0x62<cons_addr>           : <block_id>
+
 var (
 	keyPrefixLastValidatorPowers        = []byte{0x11} // prefix for each key to a validator index (for bonded validators)
 	keyPrefixLastTotalPower             = []byte{0x12} // prefix for the total power record
@@ -85,7 +89,8 @@ var (
 	keyPrefixRedelegationsQueue         = []byte{0x42} // prefix for the timestamps in redelegations queue
 	keyPrefixUndelegationsQueue         = []byte{0x43} // prefix for the timestamps in unbonding queue
 	keyPrefixHistoricalInfo             = []byte{0x51} // prefix for the historical info
-
+	keyPrefixMissedBlock                = []byte{0x61} // prefix for missed blocks
+	keyPrefixStartHeight                = []byte{0x62} // prefix for starting block
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -373,6 +378,20 @@ func ParseValidatorQueueKey(bz []byte) (time.Time, int64, error) {
 	height := sdk.BigEndianToUint64(bz[prefixL+8+int(timeBzL):])
 
 	return ts, int64(height), nil
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+func GetMissedBlockKey(addr sdk.ConsAddress, height int64) []byte {
+	// key format: prefix (1 byte) || consensus address || height (8 bytes)
+	key := append(keyPrefixMissedBlock, addr.Bytes()...)
+	key = append(key, sdk.Uint64ToBigEndian(uint64(height))...)
+	return key
+}
+
+func GetStartHeightKey(addr sdk.ConsAddress) []byte {
+	// key format: prefix (1 byte) || consensus address
+	return append(keyPrefixStartHeight, addr.Bytes()...)
 }
 
 ////////////////////////////////////////////////////////////////////////////////

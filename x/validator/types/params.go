@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
@@ -27,6 +29,18 @@ const (
 
 	// DefaultUndelegationTime reflects a month in nanoseconds as the default unbonding time.
 	DefaultUndelegationTime time.Duration = time.Hour * 24 * 7 * 4
+
+	// DefaultSignedBlocksWindow 24 * ~5 sec = ~120 sec window
+	DefaultSignedBlocksWindow int64 = 24
+)
+
+var (
+	// DefaultMinSignedPerWindow 0.5 of 24 blocks = ~ 60 sec
+	DefaultMinSignedPerWindow = sdk.NewDec(1).Quo(sdk.NewDec(2))
+	// DefaultSlashFractionDowntime 1% of stake
+	DefaultSlashFractionDowntime = sdk.NewDec(1).Quo(sdk.NewDec(100))
+	// DefaultSlashFractionDoubleSign 5% of stake
+	DefaultSlashFractionDoubleSign = sdk.NewDec(1).Quo(sdk.NewDec(20))
 )
 
 var (
@@ -36,6 +50,11 @@ var (
 	KeyHistoricalEntries = []byte("HistoricalEntries")
 	KeyRedelegationTime  = []byte("RedelegationTime")
 	KeyUndelegationTime  = []byte("UndelegationTime")
+
+	KeySignedBlocksWindow      = []byte("SignedBlocksWindow")
+	KeyMinSignedPerWindow      = []byte("MinSignedPerWindow")
+	KeySlashFractionDowntime   = []byte("SlashFractionDowntime")
+	KeySlashFractionDoubleSign = []byte("SlashFractionDoubleSign")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -48,12 +67,16 @@ func ParamKeyTable() paramtypes.KeyTable {
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return Params{
-		MaxValidators:     DefaultMaxValidators,
-		MaxDelegations:    0,
-		MaxEntries:        DefaultMaxEntries,
-		HistoricalEntries: DefaultHistoricalEntries,
-		RedelegationTime:  DefaultRedelegationTime,
-		UndelegationTime:  DefaultUndelegationTime,
+		MaxValidators:           DefaultMaxValidators,
+		MaxDelegations:          0,
+		MaxEntries:              DefaultMaxEntries,
+		HistoricalEntries:       DefaultHistoricalEntries,
+		RedelegationTime:        DefaultRedelegationTime,
+		UndelegationTime:        DefaultUndelegationTime,
+		SignedBlocksWindow:      DefaultSignedBlocksWindow,
+		MinSignedPerWindow:      DefaultMinSignedPerWindow,
+		SlashFractionDowntime:   DefaultSlashFractionDowntime,
+		SlashFractionDoubleSign: DefaultSlashFractionDoubleSign,
 	}
 }
 
@@ -65,14 +88,22 @@ func NewParams(
 	historicalEntries uint32,
 	redelegationTime time.Duration,
 	undelegationTime time.Duration,
+	signedBlockWindow int64,
+	minSignedPerWindow sdk.Dec,
+	slashFractionDowntime sdk.Dec,
+	slashFractionDoubleSign sdk.Dec,
 ) Params {
 	return Params{
-		MaxValidators:     maxValidators,
-		MaxDelegations:    maxDelegations,
-		MaxEntries:        maxEntries,
-		HistoricalEntries: historicalEntries,
-		RedelegationTime:  redelegationTime,
-		UndelegationTime:  undelegationTime,
+		MaxValidators:           maxValidators,
+		MaxDelegations:          maxDelegations,
+		MaxEntries:              maxEntries,
+		HistoricalEntries:       historicalEntries,
+		RedelegationTime:        redelegationTime,
+		UndelegationTime:        undelegationTime,
+		SignedBlocksWindow:      signedBlockWindow,
+		MinSignedPerWindow:      minSignedPerWindow,
+		SlashFractionDowntime:   slashFractionDowntime,
+		SlashFractionDoubleSign: slashFractionDoubleSign,
 	}
 }
 
@@ -85,6 +116,10 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(KeyHistoricalEntries, &p.HistoricalEntries, validateHistoricalEntries),
 		paramtypes.NewParamSetPair(KeyRedelegationTime, &p.RedelegationTime, validateRedelegationTime),
 		paramtypes.NewParamSetPair(KeyUndelegationTime, &p.UndelegationTime, validateUndelegationTime),
+		paramtypes.NewParamSetPair(KeySignedBlocksWindow, &p.SignedBlocksWindow, validateSignedBlockWindow),
+		paramtypes.NewParamSetPair(KeyMinSignedPerWindow, &p.MinSignedPerWindow, validateDec),
+		paramtypes.NewParamSetPair(KeySlashFractionDowntime, &p.SlashFractionDowntime, validateDec),
+		paramtypes.NewParamSetPair(KeySlashFractionDoubleSign, &p.SlashFractionDoubleSign, validateDec),
 	}
 }
 
@@ -170,6 +205,28 @@ func validateUndelegationTime(i interface{}) error {
 	}
 	if v <= 0 {
 		return fmt.Errorf("undelegation time must be positive: %d", v)
+	}
+	return nil
+}
+
+func validateSignedBlockWindow(i interface{}) error {
+	v, ok := i.(int64)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	if v < DefaultSignedBlocksWindow {
+		return fmt.Errorf("signed block window too small: %d < %d", v, DefaultSignedBlocksWindow)
+	}
+	return nil
+}
+
+func validateDec(i interface{}) error {
+	v, ok := i.(sdk.Dec)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	if v.IsNil() || !v.IsPositive() {
+		return fmt.Errorf("wrong sdk.Dec value")
 	}
 	return nil
 }

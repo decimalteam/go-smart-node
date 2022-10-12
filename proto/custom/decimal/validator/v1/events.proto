@@ -246,7 +246,7 @@ message DelegatorSlash {
 
   // delegator is the bech32-encoded address of the delegator.
   string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-  // coins is the list of NFT slashes.
+  // coins is the list of coin slashes.
   repeated SlashCoin coins = 2 [ (gogoproto.nullable) = false ];
   // nfts is the list of NFT slashes.
   repeated SlashNFT nfts = 3 [ (gogoproto.customname) = "NFTs", (gogoproto.nullable) = false ];

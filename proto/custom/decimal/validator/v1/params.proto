@@ -24,4 +24,21 @@ message Params {
   google.protobuf.Duration redelegation_time = 5 [ (gogoproto.nullable) = false, (gogoproto.stdduration) = true ];
   // undelegation_time defines the time duration of undelegation a stake (unbonding from the validator).
   google.protobuf.Duration undelegation_time = 6 [ (gogoproto.nullable) = false, (gogoproto.stdduration) = true ];
+
+  // slashing parameters
+  
+  // width of sliding window for downtime slashing
+  int64 signed_blocks_window  = 10;
+  // minimum blocks signed per window
+  bytes min_signed_per_window = 11
+      [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec", (gogoproto.nullable) = false];
+  // downtime jail duration
+  google.protobuf.Duration downtime_jail_duration = 12 [(gogoproto.nullable) = false, (gogoproto.stdduration) = true];
+  // fraction of power slashed in case of double sign
+  bytes                    slash_fraction_double_sign = 13
+      [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec", (gogoproto.nullable) = false];
+  // fraction of power slashed for downtime
+  bytes slash_fraction_downtime = 14
+      [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec", (gogoproto.nullable) = false];
+
 }

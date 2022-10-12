@@ -1269,7 +1269,7 @@ var xxx_messageInfo_ValidatorSlash proto.InternalMessageInfo
 type DelegatorSlash struct {
 	// delegator is the bech32-encoded address of the delegator.
 	Delegator string `protobuf:"bytes,1,opt,name=delegator,proto3" json:"delegator,omitempty"`
-	// coins is the list of NFT slashes.
+	// coins is the list of coin slashes.
 	Coins []SlashCoin `protobuf:"bytes,2,rep,name=coins,proto3" json:"coins"`
 	// nfts is the list of NFT slashes.
 	NFTs []SlashNFT `protobuf:"bytes,3,rep,name=nfts,proto3" json:"nfts"`

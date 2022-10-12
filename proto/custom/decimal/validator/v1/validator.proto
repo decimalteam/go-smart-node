@@ -128,7 +128,7 @@ message Stake {
   // For stake in NFT: contains total reserve of delegated NFT sub-tokens.
   cosmos.base.v1beta1.Coin stake = 3 [ (gogoproto.nullable) = false ];
   // sub_token_ids defines list of NFT sub-token IDs.
-  repeated int64 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
+  repeated uint32 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
 }
 
 // Delegation represents the bond with coins/NTFs held by an account.
@@ -229,4 +229,23 @@ message Pool {
   
   // not_bonded defines complete list of coins delegated but not bonded (redelegating or undelegating).
   repeated cosmos.base.v1beta1.Coin not_bonded = 2 [ (gogoproto.nullable) = false ];
+}
+
+// ValidatorSigningInfo defines a validator's signing info for monitoring their
+// liveness activity.
+// To decrease storage space this structure never be stored directly
+message ValidatorSigningInfo {
+  option (gogoproto.equal)            = true;
+  option (gogoproto.goproto_stringer) = true;
+
+  string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // Height at which validator become online, -1 for offline validator
+  int64 start_height = 2;
+  // A counter of missed blocks
+  int64 missed_blocks_counter = 3;
+  // TODO: do we need that? Timestamp until which the validator is jailed due to liveness downtime.
+  google.protobuf.Timestamp jailed_until = 4 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+  // TODO: do we need that? Whether or not a validator has been tombstoned (killed out of validator set). It is set
+  // once the validator commits an equivocation or for any other configured misbehiavor.
+  bool tombstoned = 5;
 }
