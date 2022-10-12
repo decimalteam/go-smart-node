@@ -21,9 +21,9 @@ func (k Keeper) TokensFromConsensusPower(ctx sdk.Context, power int64) sdkmath.I
 	return sdk.TokensFromConsensusPower(power, ethtypes.PowerReduction)
 }
 
-// GetValidatorsByPowerIndexKey creates the validator by power index.
+// GetValidatorByPowerIndexKey creates the validator by power index.
 // Power index is the key used in the power-store, and represents the relative power ranking of the validator.
-func (k Keeper) GetValidatorsByPowerIndexKey(ctx sdk.Context, validator types.Validator, power int64) []byte {
+func (k Keeper) GetValidatorByPowerIndexKey(ctx sdk.Context, validator types.Validator, power int64) []byte {
 	// NOTE the address doesn't need to be stored because counter bytes must always be different
 	// NOTE the larger values are of higher value
 

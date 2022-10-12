@@ -1042,7 +1042,7 @@ func (k Keeper) TotalStakeInBaseCoin(ctx sdk.Context, valAddress sdk.ValAddress)
 	for _, del := range delegations {
 		delStake := del.GetStake().GetStake()
 
-		if delStake.Denom != k.BaseCoin(ctx) {
+		if delStake.Denom != k.BaseDenom(ctx) {
 			delCoin, err := k.coinKeeper.GetCoin(ctx, delStake.Denom)
 			if err != nil {
 				return sdkmath.Int{}, err
