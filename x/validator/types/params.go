@@ -17,7 +17,7 @@ const (
 	DefaultMaxValidators uint32 = 256
 
 	// Default maximum number of bonded delegations per validator.
-	DefaultMaxDelegations uint16 = 1000
+	DefaultMaxDelegations uint32 = 1000
 
 	// Default maximum entries in a UBD/RED pair.
 	DefaultMaxEntries uint32 = 7
@@ -73,7 +73,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 func DefaultParams() Params {
 	return Params{
 		MaxValidators:           DefaultMaxValidators,
-		MaxDelegations:          0,
+		MaxDelegations:          DefaultMaxDelegations,
 		MaxEntries:              DefaultMaxEntries,
 		HistoricalEntries:       DefaultHistoricalEntries,
 		RedelegationTime:        DefaultRedelegationTime,

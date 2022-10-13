@@ -6,6 +6,7 @@ import (
 
 	gogotypes "github.com/gogo/protobuf/types"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
@@ -74,13 +75,19 @@ func (k Keeper) SetValidatorRewards(ctx sdk.Context, valAddr sdk.ValAddress, rew
 }
 
 func (k Keeper) GetValidatorRewards(ctx sdk.Context, valAddr sdk.ValAddress) (rewards types.ValidatorRewards, err error) {
-	store := ctx.KVStore(k.storeKey)
-	value := store.Get(types.GetValidatorKey(valAddr))
-	if value == nil {
-		return rewards, fmt.Errorf("not found rewards for validator")
-	}
-	rewards = types.MustUnmarshalValidatorRewards(k.cdc, value)
-	return rewards, nil
+	/*
+		store := ctx.KVStore(k.storeKey)
+		value := store.Get(types.GetValidatorKey(valAddr))
+		if value == nil {
+			return rewards, fmt.Errorf("not found rewards for validator")
+		}
+		rewards = types.MustUnmarshalValidatorRewards(k.cdc, value)
+		return rewards, nil
+	*/
+	return types.ValidatorRewards{
+		sdkmath.ZeroInt(),
+		sdkmath.ZeroInt(),
+	}, nil
 }
 
 func (k Keeper) MustGetValidatorRewards(ctx sdk.Context, validator *types.Validator) {

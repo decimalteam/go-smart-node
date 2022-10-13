@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 
+	ethtypes "github.com/evmos/ethermint/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	sdkmath "cosmossdk.io/math"
@@ -163,34 +164,31 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 	}
 
 	// don't need to run Tendermint updates if we exported
-	/*
-		if data.Exported {
-			for _, lv := range data.LastValidatorPowers {
-				valAddr, err := sdk.ValAddressFromBech32(lv.Address)
-				if err != nil {
-					panic(err)
-				}
-
-				k.SetLastValidatorPower(ctx, valAddr, lv.Power)
-				validator, found := k.GetValidator(ctx, valAddr)
-
-				if !found {
-					panic(fmt.Sprintf("validator %s not found", lv.Address))
-				}
-
-				update := validator.ABCIValidatorUpdate(ethtypes.PowerReduction)
-				update.Power = lv.Power // keep the next-val-set offset, use the last power for the first block
-				res = append(res, update)
-			}
-		} else {
-			var err error
-
-			res, err = k.ApplyAndReturnValidatorSetUpdates(ctx)
-			if err != nil {
-				panic(err)
-			}
+	//if data.Exported {
+	for _, lv := range data.LastValidatorPowers {
+		valAddr, err := sdk.ValAddressFromBech32(lv.Address)
+		if err != nil {
+			panic(err)
 		}
-	*/
+
+		k.SetLastValidatorPower(ctx, valAddr, lv.Power)
+		validator, found := k.GetValidator(ctx, valAddr)
+
+		if !found {
+			panic(fmt.Sprintf("validator %s not found", lv.Address))
+		}
+
+		update := validator.ABCIValidatorUpdate(ethtypes.PowerReduction)
+		update.Power = lv.Power // keep the next-val-set offset, use the last power for the first block
+		res = append(res, update)
+	}
+	//} else {
+	//	var err error
+	// res, err = k.ApplyAndReturnValidatorSetUpdates(ctx)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// }
 	return res
 }
 
