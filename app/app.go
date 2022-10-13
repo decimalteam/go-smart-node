@@ -56,7 +56,6 @@ import (
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	distrclient "github.com/cosmos/cosmos-sdk/x/distribution/client"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
 	feegrant "github.com/cosmos/cosmos-sdk/x/feegrant"
 	feegrantkeeper "github.com/cosmos/cosmos-sdk/x/feegrant/keeper"
 	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
@@ -73,8 +72,6 @@ import (
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
-	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
@@ -589,6 +586,7 @@ func NewDSC(
 		nft.NewAppModule(appCodec, app.NFTKeeper),
 		fee.NewAppModule(appCodec, app.FeeKeeper),
 		legacy.NewAppModule(app.appCodec, app.LegacyKeeper),
+		validator.NewAppModule(appCodec, app.ValidatorKeeper, app.AccountKeeper, app.BankKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -601,10 +599,11 @@ func NewDSC(
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		evmtypes.ModuleName,
-		distrtypes.ModuleName,
-		slashingtypes.ModuleName,
-		evidencetypes.ModuleName,
-		stakingtypes.ModuleName,
+		validatortypes.ModuleName,
+		//distrtypes.ModuleName,
+		//slashingtypes.ModuleName,
+		//evidencetypes.ModuleName,
+		//stakingtypes.ModuleName,
 		ibchost.ModuleName,
 		// no-op modules
 		authtypes.ModuleName,
@@ -627,7 +626,8 @@ func NewDSC(
 	app.mm.SetOrderEndBlockers(
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
-		stakingtypes.ModuleName,
+		validatortypes.ModuleName,
+		//stakingtypes.ModuleName,
 		evmtypes.ModuleName,
 		//claimstypes.ModuleName,
 		// no-op modules
@@ -635,10 +635,10 @@ func NewDSC(
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
-		distrtypes.ModuleName,
-		slashingtypes.ModuleName,
+		//distrtypes.ModuleName,
+		//slashingtypes.ModuleName,
 		genutiltypes.ModuleName,
-		evidencetypes.ModuleName,
+		//evidencetypes.ModuleName,
 		authz.ModuleName,
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
@@ -662,11 +662,11 @@ func NewDSC(
 		authtypes.ModuleName,
 		banktypes.ModuleName,
 		distrtypes.ModuleName,
-		stakingtypes.ModuleName,
-		slashingtypes.ModuleName,
+		//stakingtypes.ModuleName,
+		//slashingtypes.ModuleName,
 		govtypes.ModuleName,
 		ibchost.ModuleName,
-		evidencetypes.ModuleName,
+		//evidencetypes.ModuleName,
 		authz.ModuleName,
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
@@ -682,6 +682,7 @@ func NewDSC(
 		swaptypes.ModuleName,
 		nfttypes.ModuleName,
 		legacytypes.ModuleName,
+		validatortypes.ModuleName,
 		genutiltypes.ModuleName,
 		// NOTE: crisis module must go at the end to check for invariants on each module
 		crisistypes.ModuleName,
