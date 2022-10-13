@@ -45,5 +45,5 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper, req abci.RequestBeginBlock) 
 func EndBlocker(ctx sdk.Context, k keeper.Keeper, req abci.RequestEndBlock) []abci.ValidatorUpdate {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
 
-	return k.BlockValidatorUpdates(ctx)
+	return nil // k.BlockValidatorUpdates(ctx)
 }

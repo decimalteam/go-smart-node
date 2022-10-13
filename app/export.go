@@ -151,14 +151,14 @@ func (app *DSC) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 		return false
 	})
 
-	// iterate through unbonding delegations, reset creation height
-	app.StakingKeeper.IterateUndelegations(ctx, func(_ int64, ubd stakingtypes.Undelegation) (stop bool) {
-		for i := range ubd.Entries {
-			ubd.Entries[i].CreationHeight = 0
-		}
-		app.StakingKeeper.SetUndelegation(ctx, ubd)
-		return false
-	})
+	//// iterate through unbonding delegations, reset creation height
+	//app.StakingKeeper.IterateUndelegations(ctx, func(_ int64, ubd stakingtypes.Undelegation) (stop bool) {
+	//	for i := range ubd.Entries {
+	//		ubd.Entries[i].CreationHeight = 0
+	//	}
+	//	app.StakingKeeper.SetUndelegation(ctx, ubd)
+	//	return false
+	//})
 
 	// Iterate through validators by power descending, reset bond heights, and
 	// update bond intra-tx counters.

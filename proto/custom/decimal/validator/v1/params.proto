@@ -24,7 +24,8 @@ message Params {
   google.protobuf.Duration redelegation_time = 5 [ (gogoproto.nullable) = false, (gogoproto.stdduration) = true ];
   // undelegation_time defines the time duration of undelegation a stake (unbonding from the validator).
   google.protobuf.Duration undelegation_time = 6 [ (gogoproto.nullable) = false, (gogoproto.stdduration) = true ];
-
+  // base_denom is base denom on the basis of which power is calculated
+  string base_denom = 7;
   // slashing parameters
   
   // width of sliding window for downtime slashing

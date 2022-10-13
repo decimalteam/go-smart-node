@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
 	"github.com/cosmos/cosmos-sdk/types/kv"
@@ -53,9 +52,10 @@ const (
 
 // Staking related records:
 //   - Delegations:             0x31<delegator><validator><stake_id>          : <Stake>
-//   - Redelegations:           0x32<delegator><val_src><val_dst><stake_id>   : <Redelegation>
-//   - RedelegationsByValSrc:   0x33<val_src><delegator><val_dst><stake_id>   : []byte{}
-//   - RedelegationsByValDst:   0x34<val_dst><delegator><val_src><stake_id>   : []byte{}
+//   - DelegationsByVal:        0x37<validator><delegator><stake_id>		  : []byte{}
+//   - Redelegations:           0x32<delegator><val_src><val_dst>   		  : <Redelegation>
+//   - RedelegationsByValSrc:   0x33<val_src><delegator><val_dst>             : []byte{}
+//   - RedelegationsByValDst:   0x34<val_dst><delegator><val_src>             : []byte{}
 //   - Undelegations:           0x35<delegator><validator><stake_id>          : <Undelegation>
 //   - UndelegationsByValSrc:   0x36<validator><delegator><stake_id>          : []byte{}
 
@@ -78,6 +78,7 @@ var (
 	keyPrefixValidators                 = []byte{0x21} // prefix for each key to a validator
 	keyPrefixValidatorsByConsAddrIndex  = []byte{0x22} // prefix for each key to a validator index (by consensus address)
 	keyPrefixValidatorsByPowerIndex     = []byte{0x23} // prefix for each key to a validator index (sorted by power)
+	keyPrefixValidatorRewards           = []byte{0x24} // prefix for validator rewards
 	keyPrefixDelegations                = []byte{0x31} // prefix for each key for a delegation
 	keyPrefixRedelegations              = []byte{0x32} // prefix for each key for a redelegation
 	keyPrefixRedelegationsByValSrcIndex = []byte{0x33} // prefix for each key for a redelegation index (by source validator address)
@@ -90,8 +91,11 @@ var (
 	keyPrefixHistoricalInfo             = []byte{0x51} // prefix for the historical info
 	keyPrefixMissedBlock                = []byte{0x61} // prefix for missed blocks
 	keyPrefixStartHeight                = []byte{0x62} // prefix for starting block
+	keyPrefixDelegationByValIndex       = []byte{0x37} // prefix for each key for a delegation key (by validator address)
 )
 
+////////////////////////////////////////////////////////////////////////////////
+// Last total validator power //////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 // GetLastValidatorPowersKey returns prefix key for bonded validators.
@@ -109,6 +113,8 @@ func GetLastTotalPowerKey() []byte {
 	return keyPrefixLastTotalPower
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Validators //////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 // GetValidatorsKey returns prefix key for all validators.
@@ -131,6 +137,16 @@ func GetValidatorsByPowerIndexKey() []byte {
 	return keyPrefixValidatorsByPowerIndex
 }
 
+func GetValidatorsRewards() []byte {
+	return keyPrefixValidatorRewards
+}
+
+func GetValidatorRewards(addr sdk.ValAddress) []byte {
+	return append(GetValidatorsRewards(), addr.Bytes()...)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Delegations /////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 // GetAllDelegationsKey returns the prefix key for all delegations.
@@ -153,11 +169,49 @@ func GetDelegationKey(delegator sdk.AccAddress, validator sdk.ValAddress, denom 
 	return append(GetDelegationsKey(delegator, validator), []byte(denom)...)
 }
 
-// GetDelegationNFTKey creates the key for the exact delegation in the specified NFT token.
-func GetDelegationNFTKey(delegator sdk.AccAddress, validator sdk.ValAddress, tokenID string) []byte {
-	return append(GetDelegationsKey(delegator, validator), helpers.CalcHashSHA256(tokenID)...)
+// GetValidatorAllDelegations returns the prefix for all validators delegations index
+func GetValidatorAllDelegations() []byte {
+	return keyPrefixDelegationByValIndex
 }
 
+// GetValidatorDelegationsKey create the key for validator all delegations
+func GetValidatorDelegationsKey(val sdk.ValAddress) []byte {
+	return append(GetValidatorAllDelegations(), address.MustLengthPrefix(val)...)
+}
+
+// GetValidatorDelegatorDelegationsKey create a key for all delegations between delegator and validator
+func GetValidatorDelegatorDelegationsKey(val sdk.ValAddress, del sdk.AccAddress) []byte {
+	return append(GetValidatorDelegationsKey(val), address.MustLengthPrefix(del)...)
+}
+
+// GetValidatorDelegatorDelegationKey create a key for validator-delegator-denom delegation
+func GetValidatorDelegatorDelegationKey(val sdk.ValAddress, del sdk.AccAddress, denom string) []byte {
+	return append(GetValidatorDelegatorDelegationsKey(val, del), []byte(denom)...)
+}
+
+// GetDelegationKeyFromValIndexKey rearranges the ValIndexKey to get the DelegationKey
+func GetDelegationKeyFromValIndexKey(indexKey []byte) []byte {
+	kv.AssertKeyAtLeastLength(indexKey, 2)
+	addrs := indexKey[1:] // remove prefix bytes
+
+	// get validator
+	valAddrLen := addrs[0]
+	kv.AssertKeyAtLeastLength(addrs, int(valAddrLen)+2)
+	validator := addrs[1 : valAddrLen+1]
+
+	// get delegator
+	delAddrLen := addrs[valAddrLen+1]
+	kv.AssertKeyAtLeastLength(addrs, int(valAddrLen)+int(delAddrLen)+3)
+	delegator := addrs[valAddrLen+2 : valAddrLen+2+delAddrLen]
+
+	// get denom
+	denom := string(addrs[valAddrLen+delAddrLen+2:])
+
+	return GetDelegationKey(delegator, validator, denom)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Redelegations ///////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 // GetAllREDsKey returns a key prefix for indexing all redelegations.
@@ -267,15 +321,17 @@ func GetREDsByDelToValDstIndexKey(delegator sdk.AccAddress, validatorDst sdk.Val
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Undelegations ///////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 // GetAllUBDsKey returns a key prefix for indexing all undelegations.
 func GetAllUBDsKey() []byte {
-	return keyPrefixRedelegations
+	return keyPrefixUndelegations
 }
 
 // GetUBDsKey creates the prefix for all unbonding delegations from a delegator
 func GetUBDsKey(delegator sdk.AccAddress) []byte {
-	return append(keyPrefixUndelegations, address.MustLengthPrefix(delegator)...)
+	return append(GetAllUBDsKey(), address.MustLengthPrefix(delegator)...)
 }
 
 // GetUBDKey creates the key for an unbonding delegation by delegator and validator addr
@@ -308,6 +364,12 @@ func GetUBDKeyFromValIndexKey(indexKey []byte) []byte {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Queues //////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+func GetAllValidatorQueueKey() []byte {
+	return keyPrefixValidatorQueue
+}
 
 // GetValidatorQueueKey returns the prefix key used for getting a set of unbonding
 // validators whose unbonding completion occurs at the given time and height.
@@ -343,6 +405,8 @@ func GetUndelegationsTimeKey(timestamp time.Time) []byte {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Historical Info /////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 // GetHistoricalInfosKey returns a key prefix for all HistoricalInfo objects.
 func GetHistoricalInfosKey() []byte {
@@ -354,6 +418,8 @@ func GetHistoricalInfoKey(height int64) []byte {
 	return append(GetHistoricalInfosKey(), []byte(strconv.FormatInt(height, 10))...)
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Power Key ///////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 // AddressFromLastValidatorPowerKey creates the validator operator address from LastValidatorPowerKey.
@@ -395,7 +461,10 @@ func ParseValidatorQueueKey(bz []byte) (time.Time, int64, error) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Missed Blocks ///////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
+// GetMissedBlockKey returns key for save validator missed blocks
 func GetMissedBlockKey(addr sdk.ConsAddress, height int64) []byte {
 	// key format: prefix (1 byte) || consensus address || height (8 bytes)
 	key := append(keyPrefixMissedBlock, addr.Bytes()...)
@@ -403,6 +472,7 @@ func GetMissedBlockKey(addr sdk.ConsAddress, height int64) []byte {
 	return key
 }
 
+// GetStartHeightKey returns key for save validator first block stake
 func GetStartHeightKey(addr sdk.ConsAddress) []byte {
 	// key format: prefix (1 byte) || consensus address
 	return append(keyPrefixStartHeight, addr.Bytes()...)

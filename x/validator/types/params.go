@@ -1,6 +1,7 @@
 package types
 
 import (
+	coinconfig "bitbucket.org/decimalteam/go-smart-node/x/coin/config"
 	"fmt"
 	"time"
 
@@ -32,6 +33,8 @@ const (
 
 	// DefaultSignedBlocksWindow 24 * ~5 sec = ~120 sec window
 	DefaultSignedBlocksWindow int64 = 24
+
+	DefaultBaseDenom = "del"
 )
 
 var (
@@ -50,6 +53,7 @@ var (
 	KeyHistoricalEntries = []byte("HistoricalEntries")
 	KeyRedelegationTime  = []byte("RedelegationTime")
 	KeyUndelegationTime  = []byte("UndelegationTime")
+	KeyBaseDenom         = []byte("BaseDenom")
 
 	KeySignedBlocksWindow      = []byte("SignedBlocksWindow")
 	KeyMinSignedPerWindow      = []byte("MinSignedPerWindow")
@@ -73,6 +77,7 @@ func DefaultParams() Params {
 		HistoricalEntries:       DefaultHistoricalEntries,
 		RedelegationTime:        DefaultRedelegationTime,
 		UndelegationTime:        DefaultUndelegationTime,
+		BaseDenom:               DefaultBaseDenom,
 		SignedBlocksWindow:      DefaultSignedBlocksWindow,
 		MinSignedPerWindow:      DefaultMinSignedPerWindow,
 		SlashFractionDowntime:   DefaultSlashFractionDowntime,
@@ -88,6 +93,7 @@ func NewParams(
 	historicalEntries uint32,
 	redelegationTime time.Duration,
 	undelegationTime time.Duration,
+	baseDenom string,
 	signedBlockWindow int64,
 	minSignedPerWindow sdk.Dec,
 	slashFractionDowntime sdk.Dec,
@@ -100,6 +106,7 @@ func NewParams(
 		HistoricalEntries:       historicalEntries,
 		RedelegationTime:        redelegationTime,
 		UndelegationTime:        undelegationTime,
+		BaseDenom:               baseDenom,
 		SignedBlocksWindow:      signedBlockWindow,
 		MinSignedPerWindow:      minSignedPerWindow,
 		SlashFractionDowntime:   slashFractionDowntime,
@@ -116,6 +123,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(KeyHistoricalEntries, &p.HistoricalEntries, validateHistoricalEntries),
 		paramtypes.NewParamSetPair(KeyRedelegationTime, &p.RedelegationTime, validateRedelegationTime),
 		paramtypes.NewParamSetPair(KeyUndelegationTime, &p.UndelegationTime, validateUndelegationTime),
+		paramtypes.NewParamSetPair(KeyBaseDenom, &p.BaseDenom, validateBaseDenom),
 		paramtypes.NewParamSetPair(KeySignedBlocksWindow, &p.SignedBlocksWindow, validateSignedBlockWindow),
 		paramtypes.NewParamSetPair(KeyMinSignedPerWindow, &p.MinSignedPerWindow, validateDec),
 		paramtypes.NewParamSetPair(KeySlashFractionDowntime, &p.SlashFractionDowntime, validateDec),
@@ -141,6 +149,9 @@ func (p Params) Validate() (err error) {
 		return
 	}
 	if err = validateUndelegationTime(p.UndelegationTime); err != nil {
+		return
+	}
+	if err = validateBaseDenom(p.BaseDenom); err != nil {
 		return
 	}
 	return
@@ -228,5 +239,17 @@ func validateDec(i interface{}) error {
 	if v.IsNil() || !v.IsPositive() {
 		return fmt.Errorf("wrong sdk.Dec value")
 	}
+	return nil
+}
+
+func validateBaseDenom(i interface{}) error {
+	v, ok := i.(string)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	if v == "" || !coinconfig.CoinDenomValidator.MatchString(v) {
+		return fmt.Errorf("wrong denom value")
+	}
+
 	return nil
 }

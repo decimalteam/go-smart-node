@@ -1,29 +1,27 @@
 package keeper
 
 import (
-	"encoding/binary"
-
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	sdkmath "cosmossdk.io/math"
+	"encoding/binary"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	ethtypes "github.com/evmos/ethermint/types"
-
-	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
 // TokensToConsensusPower converts input tokens to potential consensus-engine power
-func (k Keeper) TokensToConsensusPower(ctx sdk.Context, tokens sdkmath.Int) int64 {
+func TokensToConsensusPower(tokens sdkmath.Int) int64 {
 	return sdk.TokensToConsensusPower(tokens, ethtypes.PowerReduction)
 }
 
 // TokensFromConsensusPower - convert input power to tokens
-func (k Keeper) TokensFromConsensusPower(ctx sdk.Context, power int64) sdkmath.Int {
+func TokensFromConsensusPower(power int64) sdkmath.Int {
 	return sdk.TokensFromConsensusPower(power, ethtypes.PowerReduction)
 }
 
-// GetValidatorsByPowerIndexKey creates the validator by power index.
+// GetValidatorByPowerIndexKey creates the validator by power index.
 // Power index is the key used in the power-store, and represents the relative power ranking of the validator.
-func (k Keeper) GetValidatorsByPowerIndexKey(ctx sdk.Context, validator types.Validator, power int64) []byte {
+func (k Keeper) GetValidatorByPowerIndexKey(ctx sdk.Context, validator types.Validator, power int64) []byte {
 	// NOTE the address doesn't need to be stored because counter bytes must always be different
 	// NOTE the larger values are of higher value
 

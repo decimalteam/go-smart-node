@@ -112,7 +112,7 @@ type ValidatorsByVotingPower []Validator
 func (valz ValidatorsByVotingPower) Len() int { return len(valz) }
 
 func (valz ValidatorsByVotingPower) Less(i, j int, r sdkmath.Int) bool {
-	if valz[i].ConsensusPower(r) == valz[j].ConsensusPower(r) {
+	if valz[i].ConsensusPower() == valz[j].ConsensusPower() {
 		addrI, errI := valz[i].GetConsAddr()
 		addrJ, errJ := valz[j].GetConsAddr()
 		// If either returns error, then return false
@@ -121,7 +121,7 @@ func (valz ValidatorsByVotingPower) Less(i, j int, r sdkmath.Int) bool {
 		}
 		return bytes.Compare(addrI, addrJ) == -1
 	}
-	return valz[i].ConsensusPower(r) > valz[j].ConsensusPower(r)
+	return valz[i].ConsensusPower() > valz[j].ConsensusPower()
 }
 
 func (valz ValidatorsByVotingPower) Swap(i, j int) {
@@ -153,6 +153,25 @@ func MustUnmarshalValidator(cdc codec.BinaryCodec, value []byte) Validator {
 
 // unmarshal a redelegation from a store value
 func UnmarshalValidator(cdc codec.BinaryCodec, value []byte) (v Validator, err error) {
+	err = cdc.Unmarshal(value, &v)
+	return v, err
+}
+
+func MustMarshalValidatorRewards(cdc codec.BinaryCodec, rewards *ValidatorRewards) []byte {
+	return cdc.MustMarshal(rewards)
+}
+
+func MustUnmarshalValidatorRewards(cdc codec.BinaryCodec, value []byte) ValidatorRewards {
+	validator, err := UnmarshalValidatorRewards(cdc, value)
+	if err != nil {
+		panic(err)
+	}
+
+	return validator
+}
+
+// unmarshal a redelegation from a store value
+func UnmarshalValidatorRewards(cdc codec.BinaryCodec, value []byte) (v ValidatorRewards, err error) {
 	err = cdc.Unmarshal(value, &v)
 	return v, err
 }
@@ -257,7 +276,7 @@ func (v Validator) ABCIValidatorUpdate(r sdkmath.Int) abci.ValidatorUpdate {
 
 	return abci.ValidatorUpdate{
 		PubKey: tmProtoPk,
-		Power:  v.ConsensusPower(r),
+		Power:  v.ConsensusPower(),
 	}
 }
 
@@ -275,19 +294,19 @@ func (v Validator) ABCIValidatorUpdateZero() abci.ValidatorUpdate {
 }
 
 // ConsensusPower gets the consensus-engine power. Aa reduction of 10^6 from validator tokens is applied.
-func (v Validator) ConsensusPower(r sdkmath.Int) int64 {
+func (v Validator) ConsensusPower() int64 {
 	if v.IsBonded() {
-		return v.PotentialConsensusPower(r)
+		return v.PotentialConsensusPower()
 	}
 
 	return 0
 }
 
 // PotentialConsensusPower returns the potential consensus-engine power.
-func (v Validator) PotentialConsensusPower(r sdkmath.Int) int64 {
-	// TODO: Get somewhere total delegations worth in base coin
-	worth := sdk.ZeroInt()
-	return sdk.TokensToConsensusPower(worth, r)
+func (v Validator) PotentialConsensusPower() int64 {
+	//worth := sdk.ZeroInt()
+	return 0
+	//return keeper.TokensToConsensusPower(worth)
 }
 
 // UpdateStatus updates the location of the shares within a validator to reflect the new status.

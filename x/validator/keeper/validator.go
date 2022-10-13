@@ -6,7 +6,6 @@ import (
 
 	gogotypes "github.com/gogo/protobuf/types"
 
-	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
@@ -19,6 +18,8 @@ func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.ValAddress) (validator ty
 		return validator, false
 	}
 	validator = types.MustUnmarshalValidator(k.cdc, value)
+	k.MustGetValidatorRewards(ctx, &validator)
+
 	return validator, true
 }
 
@@ -35,6 +36,31 @@ func (k Keeper) SetValidator(ctx sdk.Context, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
 	bz := types.MustMarshalValidator(k.cdc, &validator)
 	store.Set(types.GetValidatorKey(validator.GetOperator()), bz)
+}
+
+func (k Keeper) SetValidatorRewards(ctx sdk.Context, valAddr sdk.ValAddress, rewards types.ValidatorRewards) {
+	store := ctx.KVStore(k.storeKey)
+	bz := types.MustMarshalValidatorRewards(k.cdc, &rewards)
+	store.Set(types.GetValidatorRewards(valAddr), bz)
+}
+
+func (k Keeper) GetValidatorRewards(ctx sdk.Context, valAddr sdk.ValAddress) (rewards types.ValidatorRewards, err error) {
+	store := ctx.KVStore(k.storeKey)
+	value := store.Get(types.GetValidatorKey(valAddr))
+	if value == nil {
+		return rewards, fmt.Errorf("not found rewards for validator")
+	}
+	rewards = types.MustUnmarshalValidatorRewards(k.cdc, value)
+	return rewards, nil
+}
+
+func (k Keeper) MustGetValidatorRewards(ctx sdk.Context, validator *types.Validator) {
+	rewards, err := k.GetValidatorRewards(ctx, validator.GetOperator())
+	if err != nil {
+		panic(err)
+	}
+	validator.Rewards = rewards.Rewards
+	validator.TotalRewards = rewards.TotalRewards
 }
 
 // validator index
@@ -55,48 +81,54 @@ func (k Keeper) SetValidatorByPowerIndex(ctx sdk.Context, validator types.Valida
 		return
 	}
 
-	store := ctx.KVStore(k.storeKey)
-	store.Set(k.GetValidatorsByPowerIndexKey(ctx, validator, power), validator.GetOperator())
+	//store := ctx.KVStore(k.storeKey)
+	//store.Set(k.GetValidatorsByPowerIndexKey(ctx, validator, power), validator.GetOperator())
 }
 
 // validator index
 func (k Keeper) DeleteValidatorByPowerIndex(ctx sdk.Context, validator types.Validator, power int64) {
-	store := ctx.KVStore(k.storeKey)
-	store.Delete(k.GetValidatorsByPowerIndexKey(ctx, validator, power))
+	//store := ctx.KVStore(k.storeKey)
+	//store.Delete(k.GetValidatorsByPowerIndexKey(ctx, validator, power))
 }
 
 // validator index
 func (k Keeper) SetNewValidatorByPowerIndex(ctx sdk.Context, validator types.Validator, power int64) {
-	store := ctx.KVStore(k.storeKey)
-	store.Set(k.GetValidatorsByPowerIndexKey(ctx, validator, power), validator.GetOperator())
+	//store := ctx.KVStore(k.storeKey)
+	//store.Set(k.GetValidatorsByPowerIndexKey(ctx, validator, power), validator.GetOperator())
 }
 
-// Update the tokens of an existing validator, update the validators power index key
-func (k Keeper) AddValidatorTokensAndShares(ctx sdk.Context, validator types.Validator, tokensToAdd sdkmath.Int) (valOut types.Validator, addedShares sdk.Dec) {
-	k.DeleteValidatorByPowerIndex(ctx, validator)
-	validator, addedShares = validator.AddTokensFromDel(tokensToAdd)
-	k.SetValidator(ctx, validator)
-	k.SetValidatorByPowerIndex(ctx, validator)
-	return validator, addedShares
-}
+//// validator index
+//func (k Keeper) SetNewValidatorByPowerIndex(ctx sdk.Context, validator types.Validator, power int64) {
+//	store := ctx.KVStore(k.storeKey)
+//	store.Set(k.GetValidatorByPowerIndexKey(ctx, validator, power), validator.GetOperator())
+//}
 
-// Update the tokens of an existing validator, update the validators power index key
-func (k Keeper) RemoveValidatorTokensAndShares(ctx sdk.Context, validator types.Validator, sharesToRemove sdk.Dec) (valOut types.Validator, removedTokens sdkmath.Int) {
-	k.DeleteValidatorByPowerIndex(ctx, validator)
-	validator, removedTokens = validator.RemoveDelShares(sharesToRemove)
-	k.SetValidator(ctx, validator)
-	k.SetValidatorByPowerIndex(ctx, validator)
-	return validator, removedTokens
-}
-
-// Update the tokens of an existing validator, update the validators power index key
-func (k Keeper) RemoveValidatorTokens(ctx sdk.Context, validator types.Validator, tokensToRemove sdkmath.Int) types.Validator {
-	k.DeleteValidatorByPowerIndex(ctx, validator)
-	validator = validator.RemoveTokens(tokensToRemove)
-	k.SetValidator(ctx, validator)
-	k.SetValidatorByPowerIndex(ctx, validator)
-	return validator
-}
+//// Update the tokens of an existing validator, update the validators power index key
+//func (k Keeper) AddValidatorTokensAndShares(ctx sdk.Context, validator types.Validator, tokensToAdd sdkmath.Int) (valOut types.Validator, addedShares sdk.Dec) {
+//	k.DeleteValidatorByPowerIndex(ctx, validator)
+//	validator, addedShares = validator.AddTokensFromDel(tokensToAdd)
+//	k.SetValidator(ctx, validator)
+//	k.SetValidatorByPowerIndex(ctx, validator)
+//	return validator, addedShares
+//}
+//
+//// Update the tokens of an existing validator, update the validators power index key
+//func (k Keeper) RemoveValidatorTokensAndShares(ctx sdk.Context, validator types.Validator, sharesToRemove sdk.Dec) (valOut types.Validator, removedTokens sdkmath.Int) {
+//	k.DeleteValidatorByPowerIndex(ctx, validator)
+//	validator, removedTokens = validator.RemoveDelShares(sharesToRemove)
+//	k.SetValidator(ctx, validator)
+//	k.SetValidatorByPowerIndex(ctx, validator)
+//	return validator, removedTokens
+//}
+//
+//// Update the tokens of an existing validator, update the validators power index key
+//func (k Keeper) RemoveValidatorTokens(ctx sdk.Context, validator types.Validator, tokensToRemove sdkmath.Int) types.Validator {
+//	k.DeleteValidatorByPowerIndex(ctx, validator)
+//	validator = validator.RemoveTokens(tokensToRemove)
+//	k.SetValidator(ctx, validator)
+//	k.SetValidatorByPowerIndex(ctx, validator)
+//	return validator
+//}
 
 // remove the validator record and associated indexes
 // except for the bonded validator index which is only handled in ApplyAndReturnTendermintUpdates
@@ -112,7 +144,7 @@ func (k Keeper) RemoveValidator(ctx sdk.Context, address sdk.ValAddress) {
 		panic("cannot call RemoveValidator on bonded or unbonding validators")
 	}
 
-	if validator.Tokens.IsPositive() {
+	if validator.TotalRewards.IsPositive() {
 		panic("attempting to remove a validator which still contains tokens")
 	}
 
@@ -125,7 +157,8 @@ func (k Keeper) RemoveValidator(ctx sdk.Context, address sdk.ValAddress) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.GetValidatorKey(address))
 	store.Delete(types.GetValidatorByConsAddrIndexKey(valConsAddr))
-	store.Delete(k.GetValidatorsByPowerIndexKey(ctx, validator))
+	store.Delete(types.GetValidatorRewards(address))
+	//store.Delete(k.GetValidatorsByPowerIndexKey(ctx, validator))
 
 	// call hooks
 	k.AfterValidatorRemoved(ctx, valConsAddr, validator.GetOperator())
@@ -142,6 +175,8 @@ func (k Keeper) GetAllValidators(ctx sdk.Context) (validators []types.Validator)
 
 	for ; iterator.Valid(); iterator.Next() {
 		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
+		k.MustGetValidatorRewards(ctx, &validator)
+
 		validators = append(validators, validator)
 	}
 
@@ -159,6 +194,8 @@ func (k Keeper) GetValidators(ctx sdk.Context, maxRetrieve uint32) (validators [
 	i := 0
 	for ; iterator.Valid() && i < int(maxRetrieve); iterator.Next() {
 		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
+		k.MustGetValidatorRewards(ctx, &validator)
+
 		validators[i] = validator
 		i++
 	}
@@ -178,6 +215,7 @@ func (k Keeper) GetBondedValidatorsByPower(ctx sdk.Context) []types.Validator {
 	for ; iterator.Valid() && i < int(maxValidators); iterator.Next() {
 		address := iterator.Value()
 		validator := k.mustGetValidator(ctx, address)
+		k.MustGetValidatorRewards(ctx, &validator)
 
 		if validator.IsBonded() {
 			validators[i] = validator
@@ -191,7 +229,7 @@ func (k Keeper) GetBondedValidatorsByPower(ctx sdk.Context) []types.Validator {
 // returns an iterator for the current validator power store
 func (k Keeper) ValidatorsPowerStoreIterator(ctx sdk.Context) sdk.Iterator {
 	store := ctx.KVStore(k.storeKey)
-	return sdk.KVStoreReversePrefixIterator(store, types.ValidatorsByPowerIndexKey)
+	return sdk.KVStoreReversePrefixIterator(store, types.GetValidatorsByPowerIndexKey())
 }
 
 // Last Validator Index
@@ -228,16 +266,14 @@ func (k Keeper) DeleteLastValidatorPower(ctx sdk.Context, operator sdk.ValAddres
 // returns an iterator for the consensus validators in the last block
 func (k Keeper) LastValidatorsIterator(ctx sdk.Context) (iterator sdk.Iterator) {
 	store := ctx.KVStore(k.storeKey)
-	iterator = sdk.KVStorePrefixIterator(store, types.LastValidatorPowerKey)
+	iterator = sdk.KVStorePrefixIterator(store, types.GetLastValidatorPowersKey())
 
 	return iterator
 }
 
 // Iterate over last validator powers.
 func (k Keeper) IterateLastValidatorPowers(ctx sdk.Context, handler func(operator sdk.ValAddress, power int64) (stop bool)) {
-	store := ctx.KVStore(k.storeKey)
-
-	iter := sdk.KVStorePrefixIterator(store, types.LastValidatorPowerKey)
+	iter := k.LastValidatorsIterator(ctx)
 	defer iter.Close()
 
 	for ; iter.Valid(); iter.Next() {
@@ -254,13 +290,11 @@ func (k Keeper) IterateLastValidatorPowers(ctx sdk.Context, handler func(operato
 
 // get the group of the bonded validators
 func (k Keeper) GetLastValidators(ctx sdk.Context) (validators []types.Validator) {
-	store := ctx.KVStore(k.storeKey)
-
 	// add the actual validator power sorted store
 	maxValidators := k.MaxValidators(ctx)
 	validators = make([]types.Validator, maxValidators)
 
-	iterator := sdk.KVStorePrefixIterator(store, types.LastValidatorPowerKey)
+	iterator := k.LastValidatorsIterator(ctx)
 	defer iterator.Close()
 
 	i := 0
@@ -342,7 +376,7 @@ func (k Keeper) DeleteValidatorQueue(ctx sdk.Context, val types.Validator) {
 // unbonding whose unbonding completion occurs at the given height and time.
 func (k Keeper) ValidatorQueueIterator(ctx sdk.Context, endTime time.Time, endHeight int64) sdk.Iterator {
 	store := ctx.KVStore(k.storeKey)
-	return store.Iterator(types.ValidatorQueueKey, sdk.InclusiveEndBytes(types.GetValidatorQueueKey(endTime, endHeight)))
+	return store.Iterator(types.GetAllValidatorQueueKey(), sdk.InclusiveEndBytes(types.GetValidatorQueueKey(endTime, endHeight)))
 }
 
 // UnbondAllMatureValidators unbonds all the mature unbonding validators that
@@ -389,10 +423,10 @@ func (k Keeper) UnbondAllMatureValidators(ctx sdk.Context) {
 					panic("unexpected validator in unbonding queue; status was not unbonding")
 				}
 
-				val = k.UnbondingToUnbonded(ctx, val)
-				if val.GetDelegatorShares().IsZero() {
-					k.RemoveValidator(ctx, val.GetOperator())
-				}
+				//val = k.UnbondingToUnbonded(ctx, val)
+				//if val.GetDelegatorShares().IsZero() {
+				//	k.RemoveValidator(ctx, val.GetOperator())
+				//}
 			}
 
 			store.Delete(key)
