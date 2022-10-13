@@ -397,6 +397,9 @@ func convertDelegations(delegations []DelegationOld, delegationsNFT []Delegation
 		if err != nil {
 			return []DelegationNew{}, err
 		}
+		if delNew.Stake.ID == "" {
+			continue
+		}
 		result = append(result, delNew)
 	}
 	for _, del := range delegationsNFT {

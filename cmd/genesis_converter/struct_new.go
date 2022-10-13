@@ -339,7 +339,7 @@ type ValidatorNew struct {
 	RewardAddress   string `json:"reward_address"`   // dx1
 	ConsensusPubKey struct {
 		Type string `json:"@type"`
-		Key  string `json:"key"`
+		Key  []byte `json:"key"`
 	} `json:"consensus_pubkey"`
 	Description struct {
 		Details         string `json:"details"`
@@ -371,7 +371,7 @@ func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable) (ValidatorNew, e
 	if err != nil {
 		return ValidatorNew{}, err
 	}
-	result.ConsensusPubKey.Key = base64.RawStdEncoding.EncodeToString(pk.Bytes())
+	result.ConsensusPubKey.Key = pk.Bytes()
 	// description
 	result.Description.Details = valOld.Description.Details
 	result.Description.Identity = valOld.Description.Identity
