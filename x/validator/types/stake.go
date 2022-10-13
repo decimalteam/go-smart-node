@@ -44,6 +44,6 @@ func (s Stake) GetStake() sdk.Coin {
 }
 
 // GetSubTokenIDs returns the list of staked NFT sub-token IDs.
-func (s Stake) GetSubTokenIDs() []int64 {
+func (s Stake) GetSubTokenIDs() []uint32 {
 	return s.SubTokenIDs
 }

@@ -5,6 +5,7 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	ethtypes "github.com/evmos/ethermint/types"
@@ -26,14 +27,28 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 	ctx = ctx.WithBlockHeight(1 - sdk.ValidatorUpdateDelay)
 
 	k.SetParams(ctx, data.Params)
-	k.SetLastTotalPower(ctx, data.LastTotalPower)
+	k.SetLastTotalPower(ctx, sdkmath.NewInt(data.LastTotalPower))
+
+	var valStatus = make(map[string]types.BondStatus)
 
 	for _, validator := range data.Validators {
 		k.SetValidator(ctx, validator)
 
 		// Manually set indices for the first time
 		k.SetValidatorByConsAddr(ctx, validator)
-		k.SetValidatorByPowerIndex(ctx, validator)
+		var power int64
+		var hasPower bool
+		for _, lp := range data.LastValidatorPowers {
+			if lp.Address == validator.OperatorAddress {
+				power = lp.Power
+				hasPower = true
+				break
+			}
+		}
+		if !hasPower {
+			panic(fmt.Errorf("validator %s has no records in LastValidatorPowers", validator.OperatorAddress))
+		}
+		k.SetValidatorByPowerIndex(ctx, validator, power)
 
 		// Call the creation hook if not exported
 		if !data.Exported {
@@ -47,16 +62,20 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 			k.InsertUnbondingValidatorQueue(ctx, validator)
 		}
 
-		switch validator.GetStatus() {
-		case types.Bonded:
-			bondedTokens = bondedTokens.Add(validator.GetTokens())
+		valStatus[validator.OperatorAddress] = validator.GetStatus()
 
-		case types.Unbonding, types.Unbonded:
-			notBondedTokens = notBondedTokens.Add(validator.GetTokens())
+		/*
+			switch validator.GetStatus() {
+			case types.BondStatus_Bonded:
+				bondedTokens = bondedTokens.Add(validator.GetTokens())
 
-		default:
-			panic("invalid validator status")
-		}
+			case types.BondStatus_Unbonding, types.BondStatus_Unbonded:
+				notBondedTokens = notBondedTokens.Add(validator.GetTokens())
+
+			default:
+				panic("invalid validator status")
+			}
+		*/
 	}
 
 	for _, delegation := range data.Delegations {
