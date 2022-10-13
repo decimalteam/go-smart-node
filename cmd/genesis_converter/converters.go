@@ -113,11 +113,12 @@ func convertBalances(accsOld []AccountOld, addrTable *AddressTable, legacyRecord
 
 		coins := filterCoins(acc.Value.Coins, coinSymbols)
 		// TODO: return when correct staking starts work
-		if acc.Value.Name == "not_bonded_tokens_pool" || acc.Value.Name == "bonded_tokens_pool" {
-			fmt.Printf("set '%s' module account balance to zero\n", acc.Value.Name)
-			coins = sdk.NewCoins()
-		}
-
+		/*
+			if acc.Value.Name == "not_bonded_tokens_pool" || acc.Value.Name == "bonded_tokens_pool" {
+				fmt.Printf("set '%s' module account balance to zero\n", acc.Value.Name)
+				coins = sdk.NewCoins()
+			}
+		*/
 		if newAddress > "" {
 			res = append(res, BalanceNew{Address: newAddress, Coins: coins})
 		} else {

@@ -1,9 +1,10 @@
 package types
 
 import (
-	coinconfig "bitbucket.org/decimalteam/go-smart-node/x/coin/config"
 	"fmt"
 	"time"
+
+	coinconfig "bitbucket.org/decimalteam/go-smart-node/x/coin/config"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -152,6 +153,18 @@ func (p Params) Validate() (err error) {
 		return
 	}
 	if err = validateBaseDenom(p.BaseDenom); err != nil {
+		return
+	}
+	if err = validateSignedBlockWindow(p.SignedBlocksWindow); err != nil {
+		return
+	}
+	if err = validateDec(p.MinSignedPerWindow); err != nil {
+		return
+	}
+	if err = validateDec(p.SlashFractionDowntime); err != nil {
+		return
+	}
+	if err = validateDec(p.SlashFractionDoubleSign); err != nil {
 		return
 	}
 	return

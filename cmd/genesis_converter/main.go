@@ -257,5 +257,8 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord) (GenesisN
 	// validate NFT colections
 	verifyNFTSupply(gsNew.AppState.NFT.Collections)
 
+	verifyPools(gsNew.AppState.Bank.Balances, gsNew.AppState.Validator.Validators, gsNew.AppState.Validator.Delegations,
+		gsNew.AppState.Validator.Undelegations, addrTable)
+
 	return gsNew, Statistic{}, nil
 }

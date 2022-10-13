@@ -8,8 +8,6 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	ethtypes "github.com/evmos/ethermint/types"
-
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
@@ -18,8 +16,8 @@ import (
 // In addition, it also sets any delegations found in data. Finally, it updates the bonded validators.
 // Returns final validator set after applying all declaration and delegations
 func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []abci.ValidatorUpdate) {
-	bondedTokens := sdk.ZeroInt()
-	notBondedTokens := sdk.ZeroInt()
+	bondedCoins := sdk.NewCoins()
+	notBondedCoins := sdk.NewCoins()
 
 	// We need to pretend to be "n blocks before genesis", where "n" is the validator update delay,
 	// so that e.g. slashing periods are correctly initialized for the validator set e.g. with a one-block
@@ -45,10 +43,9 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 				break
 			}
 		}
-		if !hasPower {
-			panic(fmt.Errorf("validator %s has no records in LastValidatorPowers", validator.OperatorAddress))
+		if hasPower {
+			k.SetValidatorByPowerIndex(ctx, validator, power)
 		}
-		k.SetValidatorByPowerIndex(ctx, validator, power)
 
 		// Call the creation hook if not exported
 		if !data.Exported {
@@ -63,60 +60,74 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 		}
 
 		valStatus[validator.OperatorAddress] = validator.GetStatus()
+	}
 
-		/*
-			switch validator.GetStatus() {
-			case types.BondStatus_Bonded:
-				bondedTokens = bondedTokens.Add(validator.GetTokens())
-
-			case types.BondStatus_Unbonding, types.BondStatus_Unbonded:
-				notBondedTokens = notBondedTokens.Add(validator.GetTokens())
-
-			default:
-				panic("invalid validator status")
-			}
-		*/
+	coinMap := make(map[string]bool)
+	for _, coinInfo := range k.coinKeeper.GetCoins(ctx) {
+		coinMap[coinInfo.Denom] = true
 	}
 
 	for _, delegation := range data.Delegations {
-		delegatorAddress := sdk.MustAccAddressFromBech32(delegation.DelegatorAddress)
+		delegatorAddress := sdk.MustAccAddressFromBech32(delegation.Delegator)
 
 		// Call the before-creation hook if not exported
 		if !data.Exported {
-			if err := k.BeforeDelegationCreated(ctx, delegatorAddress, delegation.GetValidatorAddr()); err != nil {
+			if err := k.BeforeDelegationCreated(ctx, delegatorAddress, delegation.GetValidator()); err != nil {
 				panic(err)
 			}
+		}
+
+		if err := k.checkStake(ctx, delegation.Stake, coinMap); err != nil {
+			panic(err)
 		}
 
 		k.SetDelegation(ctx, delegation)
 
 		// Call the after-modification hook if not exported
 		if !data.Exported {
-			if err := k.AfterDelegationModified(ctx, delegatorAddress, delegation.GetValidatorAddr()); err != nil {
+			if err := k.AfterDelegationModified(ctx, delegatorAddress, delegation.GetValidator()); err != nil {
 				panic(err)
+			}
+		}
+
+		if delegation.Stake.Type == types.StakeType_Coin {
+			switch valStatus[delegation.Validator] {
+			case types.BondStatus_Bonded:
+				bondedCoins = bondedCoins.Add(delegation.Stake.Stake)
+			case types.BondStatus_Unbonding, types.BondStatus_Unbonded:
+				notBondedCoins = notBondedCoins.Add(delegation.Stake.Stake)
+			default:
+				panic(fmt.Errorf("invalid validator %s status", delegation.Validator))
 			}
 		}
 	}
 
 	for _, ubd := range data.Undelegations {
+		for _, entry := range ubd.Entries {
+			if err := k.checkStake(ctx, entry.Stake, coinMap); err != nil {
+				panic(err)
+			}
+		}
 		k.SetUndelegation(ctx, ubd)
 
 		for _, entry := range ubd.Entries {
 			k.InsertUBDQueue(ctx, ubd, entry.CompletionTime)
-			notBondedTokens = notBondedTokens.Add(entry.Balance)
+			notBondedCoins = notBondedCoins.Add(entry.Stake.Stake)
 		}
 	}
 
 	for _, red := range data.Redelegations {
+		for _, entry := range red.Entries {
+			if err := k.checkStake(ctx, entry.Stake, coinMap); err != nil {
+				panic(err)
+			}
+		}
 		k.SetRedelegation(ctx, red)
 
 		for _, entry := range red.Entries {
 			k.InsertRedelegationQueue(ctx, red, entry.CompletionTime)
 		}
 	}
-
-	bondedCoins := sdk.NewCoins(sdk.NewCoin(data.Params.BondDenom, bondedTokens))
-	notBondedCoins := sdk.NewCoins(sdk.NewCoin(data.Params.BondDenom, notBondedTokens))
 
 	// check if the unbonded and bonded pools accounts exists
 	bondedPool := k.GetBondedPool(ctx)
@@ -152,33 +163,34 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 	}
 
 	// don't need to run Tendermint updates if we exported
-	if data.Exported {
-		for _, lv := range data.LastValidatorPowers {
-			valAddr, err := sdk.ValAddressFromBech32(lv.Address)
+	/*
+		if data.Exported {
+			for _, lv := range data.LastValidatorPowers {
+				valAddr, err := sdk.ValAddressFromBech32(lv.Address)
+				if err != nil {
+					panic(err)
+				}
+
+				k.SetLastValidatorPower(ctx, valAddr, lv.Power)
+				validator, found := k.GetValidator(ctx, valAddr)
+
+				if !found {
+					panic(fmt.Sprintf("validator %s not found", lv.Address))
+				}
+
+				update := validator.ABCIValidatorUpdate(ethtypes.PowerReduction)
+				update.Power = lv.Power // keep the next-val-set offset, use the last power for the first block
+				res = append(res, update)
+			}
+		} else {
+			var err error
+
+			res, err = k.ApplyAndReturnValidatorSetUpdates(ctx)
 			if err != nil {
 				panic(err)
 			}
-
-			k.SetLastValidatorPower(ctx, valAddr, lv.Power)
-			validator, found := k.GetValidator(ctx, valAddr)
-
-			if !found {
-				panic(fmt.Sprintf("validator %s not found", lv.Address))
-			}
-
-			update := validator.ABCIValidatorUpdate(ethtypes.PowerReduction)
-			update.Power = lv.Power // keep the next-val-set offset, use the last power for the first block
-			res = append(res, update)
 		}
-	} else {
-		var err error
-
-		res, err = k.ApplyAndReturnValidatorSetUpdates(ctx)
-		if err != nil {
-			panic(err)
-		}
-	}
-
+	*/
 	return res
 }
 
@@ -209,7 +221,7 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 
 	return &types.GenesisState{
 		Params:              k.GetParams(ctx),
-		LastTotalPower:      k.GetLastTotalPower(ctx),
+		LastTotalPower:      k.GetLastTotalPower(ctx).Int64(),
 		LastValidatorPowers: lastValidatorPowers,
 		Validators:          k.GetAllValidators(ctx),
 		Delegations:         k.GetAllDelegations(ctx),
@@ -217,4 +229,21 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		Redelegations:       redelegations,
 		Exported:            true,
 	}
+}
+
+func (k Keeper) checkStake(ctx sdk.Context, stake types.Stake, coinMap map[string]bool) error {
+	switch stake.Type {
+	case types.StakeType_Coin:
+		if !coinMap[stake.ID] {
+			return fmt.Errorf("coin '%s' does not exists", stake.ID)
+		}
+	case types.StakeType_NFT:
+		for _, subID := range stake.SubTokenIDs {
+			_, found := k.nftKeeper.GetSubToken(ctx, stake.ID, subID)
+			if !found {
+				return fmt.Errorf("token '%s' subtoken '%d' does not exists", stake.ID, subID)
+			}
+		}
+	}
+	return nil
 }

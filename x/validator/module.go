@@ -159,10 +159,9 @@ func (am AppModule) RegisterInvariants(registry sdk.InvariantRegistry) {
 
 // InitGenesis performs the module's genesis initialization.
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
-	//var gs types.GenesisState
-	//cdc.MustUnmarshalJSON(data, &gs)
-	//return am.keeper.InitGenesis(ctx, &gs)
-	return nil
+	var gs types.GenesisState
+	cdc.MustUnmarshalJSON(data, &gs)
+	return am.keeper.InitGenesis(ctx, &gs)
 }
 
 // ExportGenesis returns the module's exported genesis state as raw JSON bytes.

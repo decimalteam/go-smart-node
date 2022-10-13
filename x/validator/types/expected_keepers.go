@@ -50,6 +50,7 @@ type NFTKeeper interface {
 
 type CoinKeeper interface {
 	GetCoin(ctx sdk.Context, denom string) (coin cointypes.Coin, err error)
+	GetCoins(ctx sdk.Context) (coins []cointypes.Coin)
 	GetBaseDenom(ctx sdk.Context) string
 	GetDecreasingFactor(ctx sdk.Context, coin sdk.Coin) (sdk.Dec, error)
 	BurnPoolCoins(ctx sdk.Context, poolName string, coins sdk.Coins) error
