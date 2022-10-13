@@ -29,22 +29,27 @@
 
 - debug: var=initialization
 
-- name: Get genesis blockchain file from validator
-  uri:
-    url: 'https://{{ src_genesis }}/rpc/genesis'
-    return_content: true
-  register: content
+#- name: Get genesis blockchain file from validator
+#  uri:
+#    url: 'https://{{ src_genesis }}/rpc/genesis'
+#    return_content: true
+#  register: content
 
-- set_fact:
-    content: '{{ content.json.result.genesis }}'
+#- set_fact:
+#    content: '{{ content.json.result.genesis }}'
 
-- debug: var=content
+#- debug: var=content
 
-- name: Save genesis file
-  copy:
-    content: '{{ content }}'
+#- name: Save genesis file
+#  copy:
+#    content: '{{ content }}'
+#    dest: '{{ decimal_data }}/daemon/config/genesis.json'
+#    mode: '0750'
+
+- name: Generate genesis.json file from template
+  template:
+    src: ./genesis.json.j2
     dest: '{{ decimal_data }}/daemon/config/genesis.json'
-    mode: '0750'
 
 - name: Include tasks with common (master & slave) final actions
   include: node-common-in-last.yml
