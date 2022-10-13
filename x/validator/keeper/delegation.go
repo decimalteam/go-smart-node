@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"fmt"
 	"time"
 
@@ -35,6 +34,17 @@ func (k Keeper) GetAllDelegations(ctx sdk.Context) (delegations []types.Delegati
 		return false
 	})
 	return delegations
+}
+
+// GetAllDelegationsByValidator returns all delegations by validator stored in the application state.
+func (k Keeper) GetAllDelegationsByValidator(ctx sdk.Context) (delegations map[string][]types.Delegation) {
+	delegations = make(map[string][]types.Delegation)
+	k.IterateAllDelegations(ctx, func(delegation types.Delegation) bool {
+		valAddress := delegation.GetValidator().String()
+		delegations[valAddress] = append(delegations[valAddress], delegation)
+		return false
+	})
+	return
 }
 
 // GetValidatorDelegations returns all delegations to a specific validator. Useful for querier.
@@ -1036,17 +1046,30 @@ func (k Keeper) TotalStakeInBaseCoin(ctx sdk.Context, valAddress sdk.ValAddress)
 	for _, del := range delegations {
 		delStake := del.GetStake().GetStake()
 
-		if delStake.Denom != k.BaseDenom(ctx) {
-			delCoin, err := k.coinKeeper.GetCoin(ctx, delStake.Denom)
-			if err != nil {
-				return sdkmath.Int{}, err
-			}
-			totalAmountCoin := formulas.CalculateSaleReturn(delCoin.Volume, delCoin.Reserve, uint(delCoin.CRR), delStake.Amount)
-			totalStakeInBaseCoin.Add(totalAmountCoin)
-		} else {
-			totalStakeInBaseCoin.Add(delStake.Amount)
+		if del.Stake.SubTokenIDs != nil && len(del.Stake.SubTokenIDs) != 0 {
+			delStake = k.getSumSubTokensReserve(ctx, del.GetStake().GetID(), del.GetStake().GetSubTokenIDs())
 		}
+
+		baseCoin := k.ToBaseCoin(ctx, delStake)
+		totalStakeInBaseCoin.Add(baseCoin.Amount)
 	}
 
 	return totalStakeInBaseCoin, nil
+}
+
+func (k Keeper) getSumSubTokensReserve(ctx sdk.Context, id string, subToken []uint32) sdk.Coin {
+	sum := sdk.Coin{Amount: sdk.ZeroInt()}
+
+	if len(subToken) != 0 {
+		for _, v := range subToken {
+			subtoken, found := k.nftKeeper.GetSubToken(ctx, id, v)
+			if !found {
+				panic("not found subtoken")
+			}
+			sum.Denom = subtoken.Reserve.Denom
+			sum.Amount.Add(subtoken.Reserve.Amount)
+		}
+	}
+
+	return sum
 }

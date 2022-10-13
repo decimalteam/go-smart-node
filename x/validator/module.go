@@ -178,10 +178,10 @@ func (am AppModule) ConsensusVersion() uint64 {
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the module.
 func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
-	BeginBlocker(ctx, am.keeper, req)
+	keeper.BeginBlocker(ctx, am.keeper, req)
 }
 
 // EndBlock executes all ABCI EndBlock logic respective to the module.
 func (am AppModule) EndBlock(ctx sdk.Context, req abci.RequestEndBlock) []abci.ValidatorUpdate {
-	return EndBlocker(ctx, am.keeper, req)
+	return keeper.EndBlocker(ctx, am.keeper, req)
 }

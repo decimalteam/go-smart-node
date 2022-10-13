@@ -19,14 +19,15 @@ import (
 
 // Keeper maintains the link to data storage and exposes getter/setter methods for the various parts of the state machine.
 type Keeper struct {
-	storeKey   storetypes.StoreKey
-	cdc        codec.BinaryCodec
-	authKeeper types.AccountKeeper
-	bankKeeper types.BankKeeper
-	nftKeeper  types.NFTKeeper
-	coinKeeper types.CoinKeeper
-	hooks      types.StakingHooks
-	paramstore paramtypes.Subspace
+	storeKey       storetypes.StoreKey
+	cdc            codec.BinaryCodec
+	authKeeper     types.AccountKeeper
+	bankKeeper     types.BankKeeper
+	nftKeeper      types.NFTKeeper
+	coinKeeper     types.CoinKeeper
+	multisigKeeper types.MultisigKeeper
+	hooks          types.StakingHooks
+	paramstore     paramtypes.Subspace
 }
 
 // NewKeeper creates new Keeper instance.
@@ -38,6 +39,7 @@ func NewKeeper(
 	bk types.BankKeeper,
 	nk types.NFTKeeper,
 	ck types.CoinKeeper,
+	mk types.MultisigKeeper,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -54,14 +56,15 @@ func NewKeeper(
 	}
 
 	return Keeper{
-		storeKey:   key,
-		cdc:        cdc,
-		authKeeper: ak,
-		bankKeeper: bk,
-		nftKeeper:  nk,
-		coinKeeper: ck,
-		paramstore: ps,
-		hooks:      nil,
+		storeKey:       key,
+		cdc:            cdc,
+		authKeeper:     ak,
+		bankKeeper:     bk,
+		nftKeeper:      nk,
+		coinKeeper:     ck,
+		multisigKeeper: mk,
+		paramstore:     ps,
+		hooks:          nil,
 	}
 }
 

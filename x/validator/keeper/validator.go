@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	sdkmath "cosmossdk.io/math"
+	"encoding/binary"
 	"fmt"
 	"time"
 
@@ -111,26 +113,91 @@ func (k Keeper) SetValidatorByConsAddr(ctx sdk.Context, validator types.Validato
 }
 
 // validator index
-func (k Keeper) SetValidatorByPowerIndex(ctx sdk.Context, validator types.Validator, power int64) {
+func (k Keeper) SetValidatorByPowerIndex(ctx sdk.Context, validator types.Validator) {
 	// jailed validators are not kept in the power index
 	if validator.Jailed {
 		return
 	}
-
-	//store := ctx.KVStore(k.storeKey)
-	//store.Set(k.GetValidatorsByPowerIndexKey(ctx, validator, power), validator.GetOperator())
-}
-
-// validator index
-func (k Keeper) DeleteValidatorByPowerIndex(ctx sdk.Context, validator types.Validator, power int64) {
-	//store := ctx.KVStore(k.storeKey)
-	//store.Delete(k.GetValidatorsByPowerIndexKey(ctx, validator, power))
+	total, err := k.TotalStakeInBaseCoin(ctx, validator.GetOperator())
+	if err != nil {
+		panic(err)
+	}
+	store := ctx.KVStore(k.storeKey)
+	store.Set(k.GetValidatorByPowerIndexKey(validator, total.Int64()), validator.GetOperator())
 }
 
 // validator index
 func (k Keeper) SetNewValidatorByPowerIndex(ctx sdk.Context, validator types.Validator, power int64) {
-	//store := ctx.KVStore(k.storeKey)
-	//store.Set(k.GetValidatorsByPowerIndexKey(ctx, validator, power), validator.GetOperator())
+	store := ctx.KVStore(k.storeKey)
+	store.Set(k.GetValidatorByPowerIndexKey(validator, power), validator.GetOperator())
+}
+
+func (k Keeper) SetValidatorByPowerIndexWithoutCalc(ctx sdk.Context, validator types.Validator, power int64) {
+	// jailed validators are not kept in the power index
+	if validator.Jailed {
+		return
+	}
+	store := ctx.KVStore(k.storeKey)
+	store.Set(k.GetValidatorByPowerIndexKey(validator, power), validator.GetOperator())
+}
+
+// validator index
+func (k Keeper) DeleteValidatorByPowerIndex(ctx sdk.Context, validator types.Validator, power int64) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(k.GetValidatorByPowerIndexKey(validator, power))
+}
+
+func (k Keeper) GetAllValidatorsByPowerIndex(ctx sdk.Context) (types.Validators, []int64, sdkmath.Int) {
+	validators := make([]types.Validator, 0)
+	powers := make([]int64, 0)
+	totalPower := sdk.ZeroInt()
+	iterator := k.ValidatorsPowerStoreIterator(ctx)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		powerBytes := iterator.Key()[1:9]
+		power := binary.BigEndian.Uint64(powerBytes)
+		totalPower.Add(sdk.NewIntFromUint64(power))
+
+		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
+		k.MustGetValidatorRewards(ctx, &validator)
+
+		validators = append(validators, validator)
+		powers = append(powers, int64(power))
+	}
+
+	return validators, powers, totalPower
+}
+
+// GetValidatorByPowerIndexKey creates the validator by power index.
+// Power index is the key used in the power-store, and represents the relative power ranking of the validator.
+func (k Keeper) GetValidatorByPowerIndexKey(validator types.Validator, power int64) []byte {
+	// NOTE the address doesn't need to be stored because counter bytes must always be different
+	// NOTE the larger values are of higher value
+
+	//key := types.GetValidatorsByPowerIndexKey()
+	consensusPowerBytes := make([]byte, 8)
+	binary.BigEndian.PutUint64(consensusPowerBytes, uint64(power))
+
+	powerBytes := consensusPowerBytes
+	powerBytesLen := len(powerBytes) // 8
+
+	operAddrInvr := sdk.CopyBytes(validator.GetOperator())
+	addrLen := len(operAddrInvr)
+
+	for i, b := range operAddrInvr {
+		operAddrInvr[i] = ^b
+	}
+
+	// key is of format prefix || powerbytes || addrLen (1byte) || addrBytes
+	key := make([]byte, 1+powerBytesLen+1+addrLen)
+
+	key[0] = types.GetValidatorsByPowerIndexKey()[0]
+	copy(key[1:powerBytesLen+1], powerBytes)
+	key[powerBytesLen+1] = byte(addrLen)
+	copy(key[powerBytesLen+2:], operAddrInvr)
+
+	return key
 }
 
 //// validator index

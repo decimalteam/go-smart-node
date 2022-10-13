@@ -1,6 +1,7 @@
 package types
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -34,11 +35,13 @@ type BankKeeper interface {
 
 	GetSupply(ctx sdk.Context, denom string) sdk.Coin
 
+	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromModuleToModule(ctx sdk.Context, senderPool, recipientPool string, amt sdk.Coins) error
 	UndelegateCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	DelegateCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 
 	BurnCoins(ctx sdk.Context, name string, amt sdk.Coins) error
+	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
 }
 
 type NFTKeeper interface {
@@ -54,6 +57,12 @@ type CoinKeeper interface {
 	GetBaseDenom(ctx sdk.Context) string
 	GetDecreasingFactor(ctx sdk.Context, coin sdk.Coin) (sdk.Dec, error)
 	BurnPoolCoins(ctx sdk.Context, poolName string, coins sdk.Coins) error
+	UpdateCoinVR(ctx sdk.Context, denom string, volume sdkmath.Int, reserve sdkmath.Int) error
+}
+
+type MultisigKeeper interface {
+	GetWallet(ctx sdk.Context, address string) (wallet types.Wallet, err error)
+	SetWallet(ctx sdk.Context, wallet types.Wallet)
 }
 
 // ValidatorSet expected properties for the set of all validators (noalias)ю
