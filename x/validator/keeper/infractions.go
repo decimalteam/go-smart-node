@@ -19,7 +19,7 @@ func (k Keeper) HandleValidatorSignature(ctx sdk.Context, addr cryptotypes.Addre
 
 	// fetch the validator public key
 	consAddr := sdk.ConsAddress(addr)
-	validator, found := k.GetValidatorByConsAddr(ctx, consAddr)
+	validator, found := k.GetValidatorByConsAddrDecimal(ctx, consAddr)
 	if !found {
 		panic(fmt.Sprintf("Validator by consensus address %s not found", sdk.ConsAddress(addr)))
 	}

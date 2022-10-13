@@ -44,6 +44,12 @@ func (k Keeper) UndelegationTime(ctx sdk.Context) (res time.Duration) {
 	return
 }
 
+// compatible method for IBCKeeper
+func (k Keeper) UnbondingTime(ctx sdk.Context) (res time.Duration) {
+	k.paramstore.Get(ctx, types.KeyUndelegationTime, &res)
+	return
+}
+
 func (k Keeper) SignedBlocksWindow(ctx sdk.Context) (res int64) {
 	k.paramstore.Get(ctx, types.KeySignedBlocksWindow, &res)
 	return

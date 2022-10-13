@@ -2,6 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	ethtypes "github.com/evmos/ethermint/types"
 
@@ -9,7 +10,21 @@ import (
 )
 
 // GetHistoricalInfo gets the historical info at a given height.
-func (k Keeper) GetHistoricalInfo(ctx sdk.Context, height int64) (types.HistoricalInfo, bool) {
+// compatible for IBCKeeper
+func (k Keeper) GetHistoricalInfo(ctx sdk.Context, height int64) (stakingtypes.HistoricalInfo, bool) {
+	hi, found := k.GetHistoricalInfoDecimal(ctx, height)
+	if !found {
+		return stakingtypes.HistoricalInfo{}, false
+	}
+	// TODO: make conversion Validator->stakingtypes.Validator
+	return stakingtypes.HistoricalInfo{
+		Header: hi.Header,
+		Valset: []stakingtypes.Validator{},
+	}, true
+}
+
+// GetHistoricalInfo gets the historical info at a given height.
+func (k Keeper) GetHistoricalInfoDecimal(ctx sdk.Context, height int64) (types.HistoricalInfo, bool) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetHistoricalInfoKey(height)
 	value := store.Get(key)

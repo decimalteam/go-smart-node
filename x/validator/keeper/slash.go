@@ -45,7 +45,7 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 			infractionHeight, ctx.BlockHeight()))
 	}
 
-	validator, found := k.GetValidatorByConsAddr(ctx, consAddr)
+	validator, found := k.GetValidatorByConsAddrDecimal(ctx, consAddr)
 	if !found {
 		// If not found, the validator must have been overslashed and removed - so we don't need to do anything
 		// NOTE:  Correctness dependent on invariant that unbonding delegations / redelegations must also have been completely

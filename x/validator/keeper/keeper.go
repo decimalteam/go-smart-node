@@ -14,8 +14,8 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
-var _ types.ValidatorSet = Keeper{}
-var _ types.DelegationSet = Keeper{}
+//var _ types.ValidatorSet = Keeper{}
+//var _ types.DelegationSet = Keeper{}
 
 // Keeper maintains the link to data storage and exposes getter/setter methods for the various parts of the state machine.
 type Keeper struct {
@@ -33,11 +33,11 @@ type Keeper struct {
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	key storetypes.StoreKey,
+	ps paramtypes.Subspace,
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
 	nk types.NFTKeeper,
 	ck types.CoinKeeper,
-	ps paramtypes.Subspace,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {

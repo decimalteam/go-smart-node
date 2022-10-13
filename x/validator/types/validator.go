@@ -191,6 +191,16 @@ func (v Validator) IsUnbonding() bool {
 	return v.GetStatus() == BondStatus_Unbonding
 }
 
+func (v Validator) GetBondedTokens() sdk.Int {
+	// TODO: implement
+	return sdk.ZeroInt()
+}
+
+func (v Validator) GetConsensusPower(sdk.Int) int64 {
+	// TODO: implement
+	return 0
+}
+
 // constant used in flags to indicate that description field should not be updated
 const DoNotModifyDesc = "[do-not-modify]"
 

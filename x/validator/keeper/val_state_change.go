@@ -1,213 +1,108 @@
 package keeper
 
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	abci "github.com/tendermint/tendermint/abci/types"
+)
+
+// // BlockValidatorUpdates calculates the ValidatorUpdates for the current block
+// // Called in each EndBlock
 //
-//// BlockValidatorUpdates calculates the ValidatorUpdates for the current block
-//// Called in each EndBlock
-//func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
-//	// Calculate validator set changes.
-//	//
-//	// NOTE: ApplyAndReturnValidatorSetUpdates has to come before
-//	// UnbondAllMatureValidatorQueue.
-//	// This fixes a bug when the unbonding period is instant (is the case in
-//	// some of the tests). The test expected the validator to be completely
-//	// unbonded after the Endblocker (go from Bonded -> Unbonding during
-//	// ApplyAndReturnValidatorSetUpdates and then Unbonding -> Unbonded during
-//	// UnbondAllMatureValidatorQueue).
-//	validatorUpdates, err := k.ApplyAndReturnValidatorSetUpdates(ctx)
-//	if err != nil {
-//		panic(err)
-//	}
-//
-//	// unbond all mature validators from the unbonding queue
-//	k.UnbondAllMatureValidators(ctx)
-//
-//	// Remove all mature unbonding delegations from the ubd queue.
-//	matureUnbonds := k.DequeueAllMatureUBDQueue(ctx, ctx.BlockHeader().Time)
-//	for _, dvPair := range matureUnbonds {
-//		addr, err := sdk.ValAddressFromBech32(dvPair.ValidatorAddress)
+//	func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
+//		// Calculate validator set changes.
+//		//
+//		// NOTE: ApplyAndReturnValidatorSetUpdates has to come before
+//		// UnbondAllMatureValidatorQueue.
+//		// This fixes a bug when the unbonding period is instant (is the case in
+//		// some of the tests). The test expected the validator to be completely
+//		// unbonded after the Endblocker (go from Bonded -> Unbonding during
+//		// ApplyAndReturnValidatorSetUpdates and then Unbonding -> Unbonded during
+//		// UnbondAllMatureValidatorQueue).
+//		validatorUpdates, err := k.ApplyAndReturnValidatorSetUpdates(ctx)
 //		if err != nil {
 //			panic(err)
 //		}
-//		delegatorAddress := sdk.MustAccAddressFromBech32(dvPair.DelegatorAddress)
 //
-//		balances, err := k.CompleteUnbonding(ctx, delegatorAddress, addr)
-//		if err != nil {
-//			continue
-//		}
+//		// unbond all mature validators from the unbonding queue
+//		k.UnbondAllMatureValidators(ctx)
 //
-//		ctx.EventManager().EmitEvent(
-//			sdk.NewEvent(
-//				types.EventTypeCompleteUnbonding,
-//				sdk.NewAttribute(sdk.AttributeKeyAmount, balances.String()),
-//				sdk.NewAttribute(types.AttributeKeyValidator, dvPair.ValidatorAddress),
-//				sdk.NewAttribute(types.AttributeKeyDelegator, dvPair.DelegatorAddress),
-//			),
-//		)
-//	}
-//
-//	// Remove all mature redelegations from the red queue.
-//	matureRedelegations := k.DequeueAllMatureRedelegationQueue(ctx)
-//	for _, dvvTriplet := range matureRedelegations {
-//		valSrcAddr, err := sdk.ValAddressFromBech32(dvvTriplet.ValidatorSrcAddress)
-//		if err != nil {
-//			panic(err)
-//		}
-//		valDstAddr, err := sdk.ValAddressFromBech32(dvvTriplet.ValidatorDstAddress)
-//		if err != nil {
-//			panic(err)
-//		}
-//		delegatorAddress := sdk.MustAccAddressFromBech32(dvvTriplet.DelegatorAddress)
-//
-//		balances, err := k.CompleteRedelegation(
-//			ctx,
-//			delegatorAddress,
-//			valSrcAddr,
-//			valDstAddr,
-//		)
-//		if err != nil {
-//			continue
-//		}
-//
-//		ctx.EventManager().EmitEvent(
-//			sdk.NewEvent(
-//				types.EventTypeCompleteRedelegation,
-//				sdk.NewAttribute(sdk.AttributeKeyAmount, balances.String()),
-//				sdk.NewAttribute(types.AttributeKeyDelegator, dvvTriplet.DelegatorAddress),
-//				sdk.NewAttribute(types.AttributeKeySrcValidator, dvvTriplet.ValidatorSrcAddress),
-//				sdk.NewAttribute(types.AttributeKeyDstValidator, dvvTriplet.ValidatorDstAddress),
-//			),
-//		)
-//	}
-//
-//	return validatorUpdates
-//}
-//
-//// ApplyAndReturnValidatorSetUpdates applies and return accumulated updates to the bonded validator set. Also,
-//// * Updates the active valset as keyed by LastValidatorPowerKey.
-//// * Updates the total power as keyed by LastTotalPowerKey.
-//// * Updates validator status' according to updated powers.
-//// * Updates the fee pool bonded vs not-bonded tokens.
-//// * Updates relevant indices.
-//// It gets called once after genesis, another time maybe after genesis transactions,
-//// then once at every EndBlock.
-////
-//// CONTRACT: Only validators with non-zero power or zero-power that were bonded
-//// at the previous block height or were removed from the validator set entirely
-//// are returned to Tendermint.
-//func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []abci.ValidatorUpdate, err error) {
-//	params := k.GetParams(ctx)
-//	maxValidators := params.MaxValidators
-//	totalPower := sdk.ZeroInt()
-//	amtFromBondedToNotBonded, amtFromNotBondedToBonded := sdk.ZeroInt(), sdk.ZeroInt()
-//
-//	// Retrieve the last validator set.
-//	// The persistent set is updated later in this function.
-//	// (see LastValidatorPowerKey).
-//	last, err := k.getLastValidatorsByAddr(ctx)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	// Iterate over validators, highest power to lowest.
-//	iterator := k.ValidatorsPowerStoreIterator(ctx)
-//	defer iterator.Close()
-//
-//	for count := 0; iterator.Valid() && count < int(maxValidators); iterator.Next() {
-//		// everything that is iterated in this loop is becoming or already a
-//		// part of the bonded validator set
-//		valAddr := sdk.ValAddress(iterator.Value())
-//		validator := k.mustGetValidator(ctx, valAddr)
-//
-//		if validator.Jailed {
-//			panic("should never retrieve a jailed validator from the power store")
-//		}
-//
-//		// if we get to a zero-power validator (which we don't bond),
-//		// there are no more possible bonded validators
-//		if validator.PotentialConsensusPower() == 0 {
-//			break
-//		}
-//
-//		// apply the appropriate state change if necessary
-//		switch {
-//		case validator.IsUnbonded():
-//			validator, err = k.unbondedToBonded(ctx, validator)
+//		// Remove all mature unbonding delegations from the ubd queue.
+//		matureUnbonds := k.DequeueAllMatureUBDQueue(ctx, ctx.BlockHeader().Time)
+//		for _, dvPair := range matureUnbonds {
+//			addr, err := sdk.ValAddressFromBech32(dvPair.ValidatorAddress)
 //			if err != nil {
-//				return
+//				panic(err)
 //			}
-//			//amtFromNotBondedToBonded = amtFromNotBondedToBonded.Add(validator.GetTokens()) //TODO do token
-//		case validator.IsUnbonding():
-//			validator, err = k.unbondingToBonded(ctx, validator)
+//			delegatorAddress := sdk.MustAccAddressFromBech32(dvPair.DelegatorAddress)
+//
+//			balances, err := k.CompleteUnbonding(ctx, delegatorAddress, addr)
 //			if err != nil {
-//				return
+//				continue
 //			}
-//			//amtFromNotBondedToBonded = amtFromNotBondedToBonded.Add(validator.GetTokens())  //TODO do token
-//		case validator.IsBonded():
-//			// no state change
-//		default:
-//			panic("unexpected validator status")
+//
+//			ctx.EventManager().EmitEvent(
+//				sdk.NewEvent(
+//					types.EventTypeCompleteUnbonding,
+//					sdk.NewAttribute(sdk.AttributeKeyAmount, balances.String()),
+//					sdk.NewAttribute(types.AttributeKeyValidator, dvPair.ValidatorAddress),
+//					sdk.NewAttribute(types.AttributeKeyDelegator, dvPair.DelegatorAddress),
+//				),
+//			)
 //		}
 //
-//		// fetch the old power bytes
-//		valAddrStr, err := sdk.Bech32ifyAddressBytes(sdk.GetConfig().GetBech32ValidatorAddrPrefix(), valAddr)
-//		if err != nil {
-//			return nil, err
+//		// Remove all mature redelegations from the red queue.
+//		matureRedelegations := k.DequeueAllMatureRedelegationQueue(ctx)
+//		for _, dvvTriplet := range matureRedelegations {
+//			valSrcAddr, err := sdk.ValAddressFromBech32(dvvTriplet.ValidatorSrcAddress)
+//			if err != nil {
+//				panic(err)
+//			}
+//			valDstAddr, err := sdk.ValAddressFromBech32(dvvTriplet.ValidatorDstAddress)
+//			if err != nil {
+//				panic(err)
+//			}
+//			delegatorAddress := sdk.MustAccAddressFromBech32(dvvTriplet.DelegatorAddress)
+//
+//			balances, err := k.CompleteRedelegation(
+//				ctx,
+//				delegatorAddress,
+//				valSrcAddr,
+//				valDstAddr,
+//			)
+//			if err != nil {
+//				continue
+//			}
+//
+//			ctx.EventManager().EmitEvent(
+//				sdk.NewEvent(
+//					types.EventTypeCompleteRedelegation,
+//					sdk.NewAttribute(sdk.AttributeKeyAmount, balances.String()),
+//					sdk.NewAttribute(types.AttributeKeyDelegator, dvvTriplet.DelegatorAddress),
+//					sdk.NewAttribute(types.AttributeKeySrcValidator, dvvTriplet.ValidatorSrcAddress),
+//					sdk.NewAttribute(types.AttributeKeyDstValidator, dvvTriplet.ValidatorDstAddress),
+//				),
+//			)
 //		}
-//		oldPowerBytes, found := last[valAddrStr]
-//		newPower := validator.ConsensusPower()
-//		newPowerBytes := k.cdc.MustMarshal(&gogotypes.Int64Value{Value: newPower})
 //
-//		// update the validator set if power has changed
-//		if !found || !bytes.Equal(oldPowerBytes, newPowerBytes) {
-//			updates = append(updates, validator.ABCIValidatorUpdate(ethtypes.PowerReduction))
-//
-//			k.SetLastValidatorPower(ctx, valAddr, newPower)
-//		}
-//
-//		delete(last, valAddrStr)
-//		count++
-//
-//		totalPower = totalPower.Add(sdk.NewInt(newPower))
+//		return validatorUpdates
 //	}
 //
-//	noLongerBonded, err := sortNoLongerBonded(last)
-//	if err != nil {
-//		return nil, err
-//	}
+// ApplyAndReturnValidatorSetUpdates applies and return accumulated updates to the bonded validator set. Also,
+// * Updates the active valset as keyed by LastValidatorPowerKey.
+// * Updates the total power as keyed by LastTotalPowerKey.
+// * Updates validator status' according to updated powers.
+// * Updates the fee pool bonded vs not-bonded tokens.
+// * Updates relevant indices.
+// It gets called once after genesis, another time maybe after genesis transactions,
+// then once at every EndBlock.
 //
-//	for _, valAddrBytes := range noLongerBonded {
-//		validator := k.mustGetValidator(ctx, sdk.ValAddress(valAddrBytes))
-//		validator, err = k.bondedToUnbonding(ctx, validator)
-//		if err != nil {
-//			return
-//		}
-//		//amtFromBondedToNotBonded = amtFromBondedToNotBonded.Add(validator.GetTokens())  //TODO do token
-//		k.DeleteLastValidatorPower(ctx, validator.GetOperator())
-//		updates = append(updates, validator.ABCIValidatorUpdateZero())
-//	}
-//
-//	// Update the pools based on the recent updates in the validator set:
-//	// - The tokens from the non-bonded candidates that enter the new validator set need to be transferred
-//	// to the Bonded pool.
-//	// - The tokens from the bonded validators that are being kicked out from the validator set
-//	// need to be transferred to the NotBonded pool.
-//	switch {
-//	// Compare and subtract the respective amounts to only perform one transfer.
-//	// This is done in order to avoid doing multiple updates inside each iterator/loop.
-//	case amtFromNotBondedToBonded.GT(amtFromBondedToNotBonded):
-//		//k.sendCoinsToBonded(ctx, amtFromNotBondedToBonded.Sub(amtFromBondedToNotBonded))  //TODO do coins
-//	case amtFromNotBondedToBonded.LT(amtFromBondedToNotBonded):
-//		//k.sendCoinsToNotBonded(ctx, amtFromBondedToNotBonded.Sub(amtFromNotBondedToBonded))  //TODO do coins
-//	default: // equal amounts of tokens; no update required
-//	}
-//
-//	// set total power on lookup index if there are any updates
-//	if len(updates) > 0 {
-//		k.SetLastTotalPower(ctx, totalPower)
-//	}
-//
-//	return updates, err
-//}
+// CONTRACT: Only validators with non-zero power or zero-power that were bonded
+// at the previous block height or were removed from the validator set entirely
+// are returned to Tendermint.
+func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []abci.ValidatorUpdate, err error) {
+	return
+}
+
 //
 //// Validator state transitions
 //

@@ -7,6 +7,7 @@ import (
 	gogotypes "github.com/gogo/protobuf/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
@@ -23,12 +24,40 @@ func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.ValAddress) (validator ty
 	return validator, true
 }
 
-func (k Keeper) GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (validator types.Validator, found bool) {
+// compatible for StakingKeeper for Ethermint
+func (k Keeper) GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (validator stakingtypes.Validator, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	addr := store.Get(types.GetValidatorByConsAddrIndexKey(consAddr))
 	if addr == nil {
 		return validator, false
 	}
+	val, found := k.GetValidator(ctx, addr)
+	if !found {
+		return stakingtypes.Validator{}, false
+	}
+	// TODO: make right conversion
+	pk, err := val.ConsPubKey()
+	if err != nil {
+		return stakingtypes.Validator{}, false
+	}
+	stVal, err := stakingtypes.NewValidator(
+		val.GetOperator(),
+		pk,
+		stakingtypes.Description(val.Description),
+	)
+	if err != nil {
+		return stakingtypes.Validator{}, false
+	}
+	return stVal, true
+}
+
+func (k Keeper) GetValidatorByConsAddrDecimal(ctx sdk.Context, consAddr sdk.ConsAddress) (validator types.Validator, found bool) {
+	store := ctx.KVStore(k.storeKey)
+	addr := store.Get(types.GetValidatorByConsAddrIndexKey(consAddr))
+	if addr == nil {
+		return validator, false
+	}
+	// TODO: convert our validator for staking types
 	return k.GetValidator(ctx, addr)
 }
 
@@ -443,7 +472,7 @@ func (k Keeper) mustGetValidator(ctx sdk.Context, addr sdk.ValAddress) types.Val
 }
 
 func (k Keeper) mustGetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) types.Validator {
-	validator, found := k.GetValidatorByConsAddr(ctx, consAddr)
+	validator, found := k.GetValidatorByConsAddrDecimal(ctx, consAddr)
 	if !found {
 		panic(fmt.Errorf("validator with consensus-Address %s not found", consAddr))
 	}
