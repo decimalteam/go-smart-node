@@ -7,13 +7,13 @@ import (
 )
 
 func (k *Keeper) AddAccumRewards(ctx sdk.Context, valAddr sdk.ValAddress, r sdkmath.Int) error {
-	rewards, err := k.GetValidatorRewards(ctx, valAddr)
+	rewards, err := k.GetValidatorRS(ctx, valAddr)
 	if err != nil {
 		return err
 	}
 	rewards.Rewards.Add(r)
 	rewards.TotalRewards.Add(r)
-	k.SetValidatorRewards(ctx, valAddr, rewards)
+	k.SetValidatorRS(ctx, valAddr, rewards)
 
 	return nil
 }

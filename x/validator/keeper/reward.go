@@ -106,12 +106,12 @@ func (k Keeper) PayRewards(ctx sdk.Context, totalStake sdkmath.Int) error {
 			valEvent.Delegators = append(valEvent.Delegators, delEvent)
 		}
 		// update validator rewards
-		valRewards, err := k.GetValidatorRewards(ctx, validator)
+		valRewards, err := k.GetValidatorRS(ctx, validator)
 		if err != nil {
 			return err
 		}
 		valRewards.Rewards = sdk.ZeroInt()
-		k.SetValidatorRewards(ctx, validator, valRewards)
+		k.SetValidatorRS(ctx, validator, valRewards)
 
 		events.Validators = append(events.Validators, valEvent)
 	}

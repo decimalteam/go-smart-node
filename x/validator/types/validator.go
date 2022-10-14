@@ -157,11 +157,11 @@ func UnmarshalValidator(cdc codec.BinaryCodec, value []byte) (v Validator, err e
 	return v, err
 }
 
-func MustMarshalValidatorRewards(cdc codec.BinaryCodec, rewards *ValidatorRewards) []byte {
+func MustMarshalValidatorRewards(cdc codec.BinaryCodec, rewards *ValidatorRS) []byte {
 	return cdc.MustMarshal(rewards)
 }
 
-func MustUnmarshalValidatorRewards(cdc codec.BinaryCodec, value []byte) ValidatorRewards {
+func MustUnmarshalValidatorRewards(cdc codec.BinaryCodec, value []byte) ValidatorRS {
 	validator, err := UnmarshalValidatorRewards(cdc, value)
 	if err != nil {
 		panic(err)
@@ -171,7 +171,7 @@ func MustUnmarshalValidatorRewards(cdc codec.BinaryCodec, value []byte) Validato
 }
 
 // unmarshal a redelegation from a store value
-func UnmarshalValidatorRewards(cdc codec.BinaryCodec, value []byte) (v ValidatorRewards, err error) {
+func UnmarshalValidatorRewards(cdc codec.BinaryCodec, value []byte) (v ValidatorRS, err error) {
 	err = cdc.Unmarshal(value, &v)
 	return v, err
 }
