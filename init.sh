@@ -56,9 +56,9 @@ current_date=$(date -u +"%Y-%m-%dT%TZ")
 
 # disable produce empty block
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed -i '' 's/create_empty_blocks = true/create_empty_blocks = false/g' "$DECIMAL_CONFIG"
+    sed -i '' 's/create_empty_blocks = false/create_empty_blocks = true/g' "$DECIMAL_CONFIG"
   else
-    sed -i 's/create_empty_blocks = true/create_empty_blocks = false/g' "$DECIMAL_CONFIG"
+    sed -i 's/create_empty_blocks = false/create_empty_blocks = true/g' "$DECIMAL_CONFIG"
 fi
 
 if [[ $1 == "pending" ]]; then
