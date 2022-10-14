@@ -30,8 +30,8 @@
 - name: Copy validator key
   shell: 'cp -b -f {{ decimal_keys }}/priv_validator_key.json {{ decimal_data }}/daemon/config/priv_validator_key.json'
 
-#- name: Copy private validator state file
-#  shell: 'cp -b -f {{ decimal_keys }}/priv_validator_state.json {{ decimal_data }}/daemon/data/priv_validator_state.json'
+- name: Copy private validator state file
+  shell: 'cp -b -f {{ decimal_keys }}/priv_validator_state.json {{ decimal_data }}/daemon/data/priv_validator_state.json'
 
 - debug: var=initialization
 
