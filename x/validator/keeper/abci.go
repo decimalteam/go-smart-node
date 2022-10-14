@@ -105,8 +105,7 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 
 	for _, fee := range feesCollectedCoins {
 		feeInBaseCoin := k.ToBaseCoin(ctx, fee)
-
-		rewards.Add(feeInBaseCoin.Amount)
+		rewards = rewards.Add(feeInBaseCoin.Amount)
 	}
 	err = k.coinKeeper.BurnPoolCoins(ctx, authtypes.FeeCollectorName, feesCollectedCoins)
 	if err != nil {

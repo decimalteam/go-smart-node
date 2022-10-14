@@ -427,8 +427,8 @@ func GetHistoricalInfoKey(height int64) []byte {
 
 // AddressFromLastValidatorPowerKey creates the validator operator address from LastValidatorPowerKey.
 func AddressFromLastValidatorPowerKey(key []byte) []byte {
-	kv.AssertKeyAtLeastLength(key, 3)
-	return key[2:] // remove prefix bytes and address length
+	kv.AssertKeyAtLeastLength(key, 2)
+	return key[1:] // remove prefix bytes and address length
 }
 
 // ParseValidatorPowerKey parses the validators operator address from voting power key.

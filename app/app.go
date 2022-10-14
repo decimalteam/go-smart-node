@@ -191,7 +191,7 @@ var (
 
 	// Module account permissions
 	maccPerms = map[string][]string{
-		authtypes.FeeCollectorName:       {authtypes.Burner},
+		authtypes.FeeCollectorName:       {authtypes.Burner, authtypes.Minter},
 		distrtypes.ModuleName:            nil,
 		validatortypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		validatortypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
