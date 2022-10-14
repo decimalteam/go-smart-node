@@ -54,7 +54,6 @@ func (k Keeper) GetValidatorDelegations(ctx sdk.Context, validator sdk.ValAddres
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		delegation := types.MustUnmarshalDelegation(k.cdc, iterator.Value())
-
 		delegations = append(delegations, delegation)
 	}
 	return delegations
@@ -109,7 +108,7 @@ func (k Keeper) SetDelegation(ctx sdk.Context, delegation types.Delegation) {
 	store := ctx.KVStore(k.storeKey)
 	b := types.MustMarshalDelegation(k.cdc, delegation)
 	store.Set(types.GetDelegationKey(delegator, validator, denom), b)
-	store.Set(types.GetValidatorDelegatorDelegationKey(validator, delegator, denom), []byte{})
+	store.Set(types.GetValidatorDelegatorDelegationKey(validator, delegator, denom), b)
 }
 
 // RemoveDelegation removes a delegation
@@ -1044,7 +1043,7 @@ func (k Keeper) TotalStakeInBaseCoin(ctx sdk.Context, valAddress sdk.ValAddress)
 	delegations := k.GetValidatorDelegations(ctx, valAddress)
 	totalStakeInBaseCoin := sdk.ZeroInt()
 	for _, del := range delegations {
-		delStake := del.GetStake().GetStake()
+		delStake := del.Stake.Stake
 
 		if del.Stake.SubTokenIDs != nil && len(del.Stake.SubTokenIDs) != 0 {
 			delStake = k.getSumSubTokensReserve(ctx, del.GetStake().GetID(), del.GetStake().GetSubTokenIDs())

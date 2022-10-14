@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -38,7 +37,7 @@ func BeginBlocker(ctx sdk.Context, k Keeper, req abci.RequestBeginBlock) {
 		}
 	}
 
-	k.TrackHistoricalInfo(ctx)
+	//k.TrackHistoricalInfo(ctx)
 }
 
 // Called every block, update validator set
@@ -49,107 +48,113 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 	if err != nil {
 		panic(err)
 	}
+	for _, u := range validatorUpdates {
+		fmt.Printf("valset: %#v\n", u.PubKey.GetEd25519())
+	}
+	return []abci.ValidatorUpdate{} // k.BlockValidatorUpdates(ctx)
+	/*
 
-	height := ctx.BlockHeight()
 
-	// Unbond all mature validators from the unbonding queue.
-	k.UnbondAllMatureValidatorQueue(ctx)
+		height := ctx.BlockHeight()
 
-	//Remove all mature unbonding delegations from the ubd queue.
-	matureUnbonds := k.DequeueAllMatureUBDQueue(ctx, ctx.BlockHeader().Time)
-	for _, dvPair := range matureUnbonds {
-		delAddr := sdk.MustAccAddressFromBech32(dvPair.DelegatorAddress)
-		valAddr, err := sdk.ValAddressFromBech32(dvPair.ValidatorAddress)
+		// Unbond all mature validators from the unbonding queue.
+		k.UnbondAllMatureValidatorQueue(ctx)
+
+		//Remove all mature unbonding delegations from the ubd queue.
+		matureUnbonds := k.DequeueAllMatureUBDQueue(ctx, ctx.BlockHeader().Time)
+		for _, dvPair := range matureUnbonds {
+			delAddr := sdk.MustAccAddressFromBech32(dvPair.DelegatorAddress)
+			valAddr, err := sdk.ValAddressFromBech32(dvPair.ValidatorAddress)
+			if err != nil {
+				panic(err)
+			}
+
+			_, found := k.GetUndelegation(ctx, delAddr, valAddr)
+			if !found {
+				continue
+			}
+
+			err = k.CompleteUnbonding(ctx, dvPair.DelegatorAddress, dvPair.ValidatorAddress)
+			if err != nil {
+				continue
+			}
+
+			//ctxTime := ctx.BlockHeader().Time
+
+			//ctx.EventManager().EmitEvents(delegation.GetEvents(ctxTime))
+		}
+
+		// calculate emmission
+		rewards := types.GetRewardForBlock(uint64(height))
+
+		err = ctx.EventManager().EmitTypedEvents(&types.EventEmission{
+			Amount: rewards,
+		})
 		if err != nil {
 			panic(err)
 		}
 
-		_, found := k.GetUndelegation(ctx, delAddr, valAddr)
-		if !found {
-			continue
-		}
-
-		err = k.CompleteUnbonding(ctx, dvPair.DelegatorAddress, dvPair.ValidatorAddress)
-		if err != nil {
-			continue
-		}
-
-		//ctxTime := ctx.BlockHeader().Time
-
-		//ctx.EventManager().EmitEvents(delegation.GetEvents(ctxTime))
-	}
-
-	// calculate emmission
-	rewards := types.GetRewardForBlock(uint64(height))
-
-	err = ctx.EventManager().EmitTypedEvents(&types.EventEmission{
-		Amount: rewards,
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	// calculate rewards
-	baseDenom := k.BaseDenom(ctx)
-	baseCoin, err := k.coinKeeper.GetCoin(ctx, baseDenom)
-	if err != nil {
-		panic(err)
-	}
-
-	feeCollector := k.authKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
-	feesCollectedCoins := k.bankKeeper.GetAllBalances(ctx, feeCollector.GetAddress())
-
-	for _, fee := range feesCollectedCoins {
-		feeInBaseCoin := k.ToBaseCoin(ctx, fee)
-
-		rewards.Add(feeInBaseCoin.Amount)
-	}
-	err = k.coinKeeper.BurnPoolCoins(ctx, authtypes.FeeCollectorName, feesCollectedCoins)
-	if err != nil {
-		panic(err)
-	}
-
-	// create coins for delegators
-	err = k.bankKeeper.MintCoins(ctx, k.GetNotBondedPool(ctx).GetName(), sdk.NewCoins(sdk.NewCoin(baseDenom, rewards)))
-	if err != nil {
-		panic(err)
-	}
-	err = k.coinKeeper.UpdateCoinVR(ctx, baseDenom, baseCoin.Reserve, baseCoin.Volume.Add(rewards))
-	if err != nil {
-		panic(err)
-	}
-
-	// pay rewards to validators
-	remainder := sdk.NewIntFromBigInt(rewards.BigInt())
-
-	vals, powers, totalPower := k.GetAllValidatorsByPowerIndex(ctx)
-
-	for i, val := range vals {
-		if !val.Online {
-			continue
-		}
-		power := powers[i]
-
-		r := sdk.ZeroInt()
-		r = rewards.Mul(sdk.NewInt(power)).Quo(totalPower)
-		remainder = remainder.Sub(r)
-		err = k.AddAccumRewards(ctx, val.GetOperator(), r)
+		// calculate rewards
+		baseDenom := k.BaseDenom(ctx)
+		baseCoin, err := k.coinKeeper.GetCoin(ctx, baseDenom)
 		if err != nil {
 			panic(err)
 		}
-	}
 
-	err = k.bankKeeper.MintCoins(ctx, authtypes.FeeCollectorName, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), remainder)))
-	if err != nil {
-		panic(err)
-	}
+		feeCollector := k.authKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
+		feesCollectedCoins := k.bankKeeper.GetAllBalances(ctx, feeCollector.GetAddress())
 
-	if height%120 == 0 {
-		err = k.PayRewards(ctx, totalPower)
+		for _, fee := range feesCollectedCoins {
+			feeInBaseCoin := k.ToBaseCoin(ctx, fee)
+
+			rewards.Add(feeInBaseCoin.Amount)
+		}
+		err = k.coinKeeper.BurnPoolCoins(ctx, authtypes.FeeCollectorName, feesCollectedCoins)
 		if err != nil {
 			panic(err)
 		}
-	}
 
-	return nil // k.BlockValidatorUpdates(ctx)
+		// create coins for delegators
+		err = k.bankKeeper.MintCoins(ctx, k.GetNotBondedPool(ctx).GetName(), sdk.NewCoins(sdk.NewCoin(baseDenom, rewards)))
+		if err != nil {
+			panic(err)
+		}
+		err = k.coinKeeper.UpdateCoinVR(ctx, baseDenom, baseCoin.Reserve, baseCoin.Volume.Add(rewards))
+		if err != nil {
+			panic(err)
+		}
+
+		// pay rewards to validators
+		remainder := sdk.NewIntFromBigInt(rewards.BigInt())
+
+		vals, powers, totalPower := k.GetAllValidatorsByPowerIndex(ctx)
+
+		for i, val := range vals {
+			if !val.Online {
+				continue
+			}
+			power := powers[i]
+
+			r := sdk.ZeroInt()
+			r = rewards.Mul(sdk.NewInt(power)).Quo(totalPower)
+			remainder = remainder.Sub(r)
+			err = k.AddAccumRewards(ctx, val.GetOperator(), r)
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		err = k.bankKeeper.MintCoins(ctx, authtypes.FeeCollectorName, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), remainder)))
+		if err != nil {
+			panic(err)
+		}
+
+		if height%120 == 0 {
+			err = k.PayRewards(ctx, totalPower)
+			if err != nil {
+				panic(err)
+			}
+		}
+	*/
+
 }

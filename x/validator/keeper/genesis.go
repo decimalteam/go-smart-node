@@ -17,6 +17,10 @@ import (
 // In addition, it also sets any delegations found in data. Finally, it updates the bonded validators.
 // Returns final validator set after applying all declaration and delegations
 func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []abci.ValidatorUpdate) {
+	if err := data.UnpackInterfaces(k.cdc); err != nil {
+		panic(err)
+	}
+
 	bondedCoins := sdk.NewCoins()
 	notBondedCoins := sdk.NewCoins()
 
@@ -35,17 +39,17 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 
 		// Manually set indices for the first time
 		k.SetValidatorByConsAddr(ctx, validator)
-		var power int64
+		k.SetValidatorByPowerIndex(ctx, validator)
+
 		var hasPower bool
 		for _, lp := range data.LastValidatorPowers {
 			if lp.Address == validator.OperatorAddress {
-				power = lp.Power
 				hasPower = true
 				break
 			}
 		}
 		if hasPower {
-			k.SetValidatorByPowerIndex(ctx, validator, power)
+			k.SetValidatorByPowerIndex(ctx, validator)
 		}
 
 		// Call the creation hook if not exported
@@ -64,6 +68,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 	}
 
 	coinMap := make(map[string]bool)
+	coinMap[k.BaseDenom(ctx)] = true
 	for _, coinInfo := range k.coinKeeper.GetCoins(ctx) {
 		coinMap[coinInfo.Denom] = true
 	}
@@ -180,6 +185,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 
 		update := validator.ABCIValidatorUpdate(ethtypes.PowerReduction)
 		update.Power = lv.Power // keep the next-val-set offset, use the last power for the first block
+
 		res = append(res, update)
 	}
 	//} else {

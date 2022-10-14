@@ -452,6 +452,13 @@ func NewDSC(
 		app.GetSubspace(nfttypes.ModuleName),
 		app.BankKeeper,
 	)
+	app.MultisigKeeper = *multisigkeeper.NewKeeper(
+		appCodec,
+		keys[multisigtypes.StoreKey],
+		app.GetSubspace(multisigtypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+	)
 	app.ValidatorKeeper = validatorkeeper.NewKeeper(
 		appCodec,
 		keys[validatortypes.StoreKey],
@@ -460,6 +467,7 @@ func NewDSC(
 		app.BankKeeper,
 		&app.NFTKeeper,
 		&app.CoinKeeper,
+		&app.MultisigKeeper,
 	)
 
 	// Create Ethermint keepers
@@ -528,13 +536,6 @@ func NewDSC(
 	// If evidence needs to be handled for the app, set routes in router here and seal
 
 	// Create Decimal keepers
-	app.MultisigKeeper = *multisigkeeper.NewKeeper(
-		appCodec,
-		keys[multisigtypes.StoreKey],
-		app.GetSubspace(multisigtypes.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-	)
 	app.LegacyKeeper = *legacykeeper.NewKeeper(
 		appCodec,
 		keys[legacytypes.StoreKey],
@@ -647,8 +648,8 @@ func NewDSC(
 		multisigtypes.ModuleName,
 		swaptypes.ModuleName,
 		nfttypes.ModuleName,
-		feetypes.ModuleName,
 		legacytypes.ModuleName,
+		feetypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -661,7 +662,7 @@ func NewDSC(
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
-		distrtypes.ModuleName,
+		//distrtypes.ModuleName,
 		//stakingtypes.ModuleName,
 		//slashingtypes.ModuleName,
 		govtypes.ModuleName,

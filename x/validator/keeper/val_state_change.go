@@ -2,6 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	ethtypes "github.com/evmos/ethermint/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -100,6 +101,14 @@ import (
 // at the previous block height or were removed from the validator set entirely
 // are returned to Tendermint.
 func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []abci.ValidatorUpdate, err error) {
+	vals := k.GetAllValidators(ctx)
+	for _, val := range vals {
+		if val.IsBonded() && !val.IsJailed() && val.Online {
+			up := val.ABCIValidatorUpdate(ethtypes.PowerReduction)
+			up.Power = k.GetLastValidatorPower(ctx, val.GetOperator())
+			updates = append(updates, up)
+		}
+	}
 	return
 }
 

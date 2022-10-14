@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	sdkmath "cosmossdk.io/math"
 	"encoding/binary"
 	"fmt"
 	"time"
@@ -123,7 +122,7 @@ func (k Keeper) SetValidatorByPowerIndex(ctx sdk.Context, validator types.Valida
 		panic(err)
 	}
 	store := ctx.KVStore(k.storeKey)
-	store.Set(k.GetValidatorByPowerIndexKey(validator, total.Int64()), validator.GetOperator())
+	store.Set(k.GetValidatorByPowerIndexKey(validator, TokensToConsensusPower(total)), validator.GetOperator())
 }
 
 // validator index
@@ -540,7 +539,7 @@ func (k Keeper) UnbondAllMatureValidators(ctx sdk.Context) {
 func (k Keeper) mustGetValidator(ctx sdk.Context, addr sdk.ValAddress) types.Validator {
 	validator, found := k.GetValidator(ctx, addr)
 	if !found {
-		panic(fmt.Sprintf("validator record not found for address: %X\n", addr))
+		panic(fmt.Sprintf("validator record not found for address: %s\n", addr.String()))
 	}
 	return validator
 }

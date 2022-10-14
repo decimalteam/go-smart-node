@@ -15,7 +15,7 @@ import (
 	"github.com/tendermint/tendermint/libs/cli"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	tmrand "github.com/tendermint/tendermint/libs/rand"
-	"github.com/tendermint/tendermint/p2p"
+	pvm "github.com/tendermint/tendermint/privval"
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/go-bip39"
@@ -23,7 +23,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/input"
-	crypto_ed25519 "github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
@@ -190,10 +190,7 @@ $ %s selfdelegation 100000000del --home=/path/to/home/dir --from keyname
 			config := serverCtx.Config
 			config.SetRoot(clientCtx.HomeDir)
 
-			nodeKey, err := p2p.LoadOrGenNodeKey(config.NodeKeyFile())
-			if err != nil {
-				return err
-			}
+			privValidator := pvm.LoadFilePV(serverCtx.Config.PrivValidatorKeyFile(), serverCtx.Config.PrivValidatorStateFile())
 
 			genDoc, err := tmtypes.GenesisDocFromFile(config.GenesisFile())
 			if err != nil {
@@ -210,12 +207,19 @@ $ %s selfdelegation 100000000del --home=/path/to/home/dir --from keyname
 			}
 
 			// create validator
-			pubkey := crypto_ed25519.PubKey{Key: nodeKey.PubKey().Bytes()}
+			tmpubkey, err := privValidator.GetPubKey()
+			if err != nil {
+				return err
+			}
+			pubkey, err := cryptocodec.FromTmPubKeyInterface(tmpubkey)
+			if err != nil {
+				return err
+			}
 			valAdr := sdk.ValAddress(pubkey.Address())
 			validator, err := validatortypes.NewValidator(
 				valAdr,
 				clientCtx.FromAddress,
-				&pubkey,
+				pubkey,
 				validatortypes.NewDescription(
 					config.Moniker,
 					config.Moniker,
@@ -237,6 +241,13 @@ $ %s selfdelegation 100000000del --home=/path/to/home/dir --from keyname
 			power := validatortypes.LastValidatorPower{
 				Address: valAdr.String(),
 				Power:   validatorkeeper.TokensToConsensusPower(stakeCoin.Amount),
+			}
+			// record for tendermint validators
+			tmVal := tmtypes.GenesisValidator{
+				Address: sdk.ConsAddress(pubkey.Address()).Bytes(),
+				Name:    config.Moniker,
+				Power:   validatorkeeper.TokensToConsensusPower(stakeCoin.Amount),
+				PubKey:  tmpubkey,
 			}
 
 			// insert into validator state
@@ -265,6 +276,8 @@ $ %s selfdelegation 100000000del --home=/path/to/home/dir --from keyname
 				})
 			}
 			genesisState["bank"] = cdc.MustMarshalJSON(&bgs)
+			// insert into tendermint validators
+			genDoc.Validators = append(genDoc.Validators, tmVal)
 
 			genDoc.AppState, err = json.Marshal(genesisState)
 			if err != nil {
