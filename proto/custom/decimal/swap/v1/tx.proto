@@ -89,8 +89,8 @@ message MsgRedeemSwap {
   uint32 from_chain = 7;
   uint32 dest_chain = 8;
   uint32 v = 9;
-  string r = 10 [ (gogoproto.customtype) = "Hash" ];
-  string s = 11 [ (gogoproto.customtype) = "Hash" ];
+  string r = 10;
+  string s = 11;
 }
 
 // MsgRedeemSwapResponse defines the Msg/RedeemSwap response type.
