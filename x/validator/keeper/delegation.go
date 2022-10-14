@@ -8,6 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
@@ -618,7 +619,7 @@ func (k Keeper) Delegate(
 		for _, v := range subTokenIDs {
 			st, ok := k.nftKeeper.GetSubToken(ctx, denom, v)
 			if !ok {
-				return sdk.ZeroInt(), fmt.Errorf("not found sub token") // TODO error
+				return sdk.ZeroInt(), errors.NFTSubTokenNotFound
 			}
 			if reserve == nil {
 				reserve = st.Reserve

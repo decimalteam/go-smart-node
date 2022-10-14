@@ -165,6 +165,9 @@ func (msg *MsgEditValidator) ValidateBasic() error {
 	if _, err := sdk.ValAddressFromBech32(msg.OperatorAddress); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid operator address: %s", err)
 	}
+	if _, err := sdk.AccAddressFromBech32(msg.RewardAddress); err != nil {
+		return sdkerrors.ErrInvalidAddress.Wrapf("invalid operator address: %s", err)
+	}
 	if msg.Description == (Description{}) {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "empty description")
 	}
