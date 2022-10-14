@@ -177,7 +177,7 @@ func validCoinParams(coin FullCoinOld) bool {
 func convertCoins(coinsOld []FullCoinOld, addrTable *AddressTable) ([]FullCoinNew, error) {
 	var res []FullCoinNew
 	for _, coin := range coinsOld {
-		if coin.Symbol != "tdel" && coin.Symbol != "tdel" && !validCoinParams(coin) {
+		if coin.Symbol != "tdel" && !validCoinParams(coin) {
 			continue
 		}
 		res = append(res, FullCoinO2N(coin, addrTable))
