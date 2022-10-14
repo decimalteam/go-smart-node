@@ -9,6 +9,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+var daoAccount = "dx1mglzvd5vvfn0sntkcmsfwx768kwmaehs2txchf"
+var developAccount = "dx1n2e8claasqxdugl5d2cwwrzv59k625tl27lmrw"
+
 var DAOCommission = sdk.NewDec(5).QuoInt64(100)
 var DevelopCommission = sdk.NewDec(5).QuoInt64(100)
 
@@ -28,18 +31,20 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 		rewards := val.Rewards
 		accumRewards := rewards
 
-		daoWallet, err := k.getDAO(ctx)
-		if err != nil {
-			return err
-		}
-		developWallet, err := k.getDevelop(ctx)
-		if err != nil {
-			return err
-		}
+		//daoWallet, err := k.getDAO(ctx)
+		//if err != nil {
+		//	return err
+		//}
+		//developWallet, err := k.getDevelop(ctx)
+		//if err != nil {
+		//	return err
+		//}
+		daoWallet := sdk.MustAccAddressFromBech32(daoAccount)
+		developWallet := sdk.MustAccAddressFromBech32(developAccount)
 
 		// dao commission
 		daoVal := sdk.NewDecFromInt(rewards).Mul(DAOCommission).TruncateInt()
-		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, daoWallet, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), daoVal)))
+		err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, daoWallet, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), daoVal)))
 		if err != nil {
 			return err
 		}
