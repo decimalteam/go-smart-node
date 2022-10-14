@@ -236,7 +236,7 @@
         },
         "enable_call": true,
         "enable_create": true,
-        "evm_denom": "del",
+        "evm_denom": "tdel",
         "extra_eips": []
       }
     },
@@ -352,6 +352,29 @@
       }
     },
     "upgrade": {},
-    "vesting": {}
+    "vesting": {},
+    "validator": {
+      "validators": [],
+      "delegations": [],
+      "undelegations": [],
+      "redelegations": [],
+      "last_validator_powers": [],
+      "last_total_power": 0,
+      "params": {
+        "max_validators": 256,
+        "max_delegations": 1000,
+        "max_entries": 7,
+        "historical_entries": 10000,
+        "redelegation_time": "604800s",
+        "undelegation_time": "2419200s",
+        "base_denom": "tdel",
+        "signed_blocks_window": "24",
+        "min_signed_per_window": "0.500000000000000000",
+        "downtime_jail_duration": "0s",
+        "slash_fraction_double_sign": "0.050000000000000000",
+        "slash_fraction_downtime": "0.010000000000000000"
+      },
+      "exported": false
+    }
   }
 }

@@ -444,7 +444,9 @@ func convertLastValidatorPowers(pwrsOld []LastValidatorPowerOld) ([]LastValidato
 		if err != nil {
 			return []LastValidatorPowerNew{}, err
 		}
-		result = append(result, pwrNew)
+		if pwrNew.Power > 0 {
+			result = append(result, pwrNew)
+		}
 	}
 	return result, nil
 }
