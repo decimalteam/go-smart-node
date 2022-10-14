@@ -21,7 +21,7 @@ func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.ValAddress) (validator ty
 		return validator, false
 	}
 	validator = types.MustUnmarshalValidator(k.cdc, value)
-	k.MustGetValidatorRewards(ctx, &validator)
+	k.MustGetValidatorRS(ctx, &validator)
 
 	return validator, true
 }
@@ -69,35 +69,39 @@ func (k Keeper) SetValidator(ctx sdk.Context, validator types.Validator) {
 	store.Set(types.GetValidatorKey(validator.GetOperator()), bz)
 }
 
-func (k Keeper) SetValidatorRewards(ctx sdk.Context, valAddr sdk.ValAddress, rewards types.ValidatorRewards) {
+func (k Keeper) SetValidatorRS(ctx sdk.Context, valAddr sdk.ValAddress, rewards types.ValidatorRS) {
 	store := ctx.KVStore(k.storeKey)
 	bz := types.MustMarshalValidatorRewards(k.cdc, &rewards)
 	store.Set(types.GetValidatorRewards(valAddr), bz)
 }
 
-func (k Keeper) GetValidatorRewards(ctx sdk.Context, valAddr sdk.ValAddress) (rewards types.ValidatorRewards, err error) {
-	/*
-		store := ctx.KVStore(k.storeKey)
-		value := store.Get(types.GetValidatorKey(valAddr))
-		if value == nil {
-			return rewards, fmt.Errorf("not found rewards for validator")
-		}
-		rewards = types.MustUnmarshalValidatorRewards(k.cdc, value)
-		return rewards, nil
-	*/
-	return types.ValidatorRewards{
-		sdkmath.ZeroInt(),
-		sdkmath.ZeroInt(),
-	}, nil
+func (k Keeper) GetValidatorRS(ctx sdk.Context, valAddr sdk.ValAddress) (rewards types.ValidatorRS, err error) {
+	store := ctx.KVStore(k.storeKey)
+	value := store.Get(types.GetValidatorKey(valAddr))
+	if value == nil {
+		return rewards, fmt.Errorf("not found rewards for validator")
+	}
+	rewards = types.MustUnmarshalValidatorRewards(k.cdc, value)
+	return rewards, nil
 }
 
-func (k Keeper) MustGetValidatorRewards(ctx sdk.Context, validator *types.Validator) {
-	rewards, err := k.GetValidatorRewards(ctx, validator.GetOperator())
+func (k Keeper) MustGetValidatorRS(ctx sdk.Context, validator *types.Validator) {
+	rs, err := k.GetValidatorRS(ctx, validator.GetOperator())
 	if err != nil {
 		panic(err)
 	}
-	validator.Rewards = rewards.Rewards
-	validator.TotalRewards = rewards.TotalRewards
+	validator.Rewards = rs.Rewards
+	validator.TotalRewards = rs.TotalRewards
+	validator.Stake = rs.Stake
+}
+
+func (k Keeper) createValidator(ctx sdk.Context, validator types.Validator) {
+	k.SetValidator(ctx, validator)
+	k.SetValidatorRS(ctx, validator.GetOperator(), types.ValidatorRS{
+		Rewards:      validator.Rewards,
+		TotalRewards: validator.Rewards,
+		Stake:        validator.Stake,
+	})
 }
 
 // validator index
@@ -112,36 +116,24 @@ func (k Keeper) SetValidatorByConsAddr(ctx sdk.Context, validator types.Validato
 }
 
 // validator index
-func (k Keeper) SetValidatorByPowerIndex(ctx sdk.Context, validator types.Validator) {
+func (k Keeper) SetValidatorByPowerIndex(ctx sdk.Context, validator sdk.ValAddress, power int64) {
 	// jailed validators are not kept in the power index
-	if validator.Jailed {
-		return
-	}
-	total, err := k.TotalStakeInBaseCoin(ctx, validator.GetOperator())
-	if err != nil {
-		panic(err)
-	}
+	//if validator.Jailed {
+	//	return
+	//}
+
 	store := ctx.KVStore(k.storeKey)
-	store.Set(k.GetValidatorByPowerIndexKey(validator, TokensToConsensusPower(total)), validator.GetOperator())
+	store.Set(k.GetValidatorByPowerIndexKey(validator, power), validator)
 }
 
 // validator index
-func (k Keeper) SetNewValidatorByPowerIndex(ctx sdk.Context, validator types.Validator, power int64) {
+func (k Keeper) SetNewValidatorByPowerIndex(ctx sdk.Context, validator sdk.ValAddress, power int64) {
 	store := ctx.KVStore(k.storeKey)
-	store.Set(k.GetValidatorByPowerIndexKey(validator, power), validator.GetOperator())
-}
-
-func (k Keeper) SetValidatorByPowerIndexWithoutCalc(ctx sdk.Context, validator types.Validator, power int64) {
-	// jailed validators are not kept in the power index
-	if validator.Jailed {
-		return
-	}
-	store := ctx.KVStore(k.storeKey)
-	store.Set(k.GetValidatorByPowerIndexKey(validator, power), validator.GetOperator())
+	store.Set(k.GetValidatorByPowerIndexKey(validator, power), validator)
 }
 
 // validator index
-func (k Keeper) DeleteValidatorByPowerIndex(ctx sdk.Context, validator types.Validator, power int64) {
+func (k Keeper) DeleteValidatorByPowerIndex(ctx sdk.Context, validator sdk.ValAddress, power int64) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(k.GetValidatorByPowerIndexKey(validator, power))
 }
@@ -159,7 +151,7 @@ func (k Keeper) GetAllValidatorsByPowerIndex(ctx sdk.Context) (types.Validators,
 		totalPower.Add(sdk.NewIntFromUint64(power))
 
 		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
-		k.MustGetValidatorRewards(ctx, &validator)
+		k.MustGetValidatorRS(ctx, &validator)
 
 		validators = append(validators, validator)
 		powers = append(powers, int64(power))
@@ -170,7 +162,7 @@ func (k Keeper) GetAllValidatorsByPowerIndex(ctx sdk.Context) (types.Validators,
 
 // GetValidatorByPowerIndexKey creates the validator by power index.
 // Power index is the key used in the power-store, and represents the relative power ranking of the validator.
-func (k Keeper) GetValidatorByPowerIndexKey(validator types.Validator, power int64) []byte {
+func (k Keeper) GetValidatorByPowerIndexKey(validator sdk.ValAddress, power int64) []byte {
 	// NOTE the address doesn't need to be stored because counter bytes must always be different
 	// NOTE the larger values are of higher value
 
@@ -181,7 +173,7 @@ func (k Keeper) GetValidatorByPowerIndexKey(validator types.Validator, power int
 	powerBytes := consensusPowerBytes
 	powerBytesLen := len(powerBytes) // 8
 
-	operAddrInvr := sdk.CopyBytes(validator.GetOperator())
+	operAddrInvr := sdk.CopyBytes(validator)
 	addrLen := len(operAddrInvr)
 
 	for i, b := range operAddrInvr {
@@ -198,12 +190,6 @@ func (k Keeper) GetValidatorByPowerIndexKey(validator types.Validator, power int
 
 	return key
 }
-
-//// validator index
-//func (k Keeper) SetNewValidatorByPowerIndex(ctx sdk.Context, validator types.Validator, power int64) {
-//	store := ctx.KVStore(k.storeKey)
-//	store.Set(k.GetValidatorByPowerIndexKey(ctx, validator, power), validator.GetOperator())
-//}
 
 //// Update the tokens of an existing validator, update the validators power index key
 //func (k Keeper) AddValidatorTokensAndShares(ctx sdk.Context, validator types.Validator, tokensToAdd sdkmath.Int) (valOut types.Validator, addedShares sdk.Dec) {
@@ -277,7 +263,7 @@ func (k Keeper) GetAllValidators(ctx sdk.Context) (validators []types.Validator)
 
 	for ; iterator.Valid(); iterator.Next() {
 		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
-		k.MustGetValidatorRewards(ctx, &validator)
+		k.MustGetValidatorRS(ctx, &validator)
 
 		validators = append(validators, validator)
 	}
@@ -296,7 +282,7 @@ func (k Keeper) GetValidators(ctx sdk.Context, maxRetrieve uint32) (validators [
 	i := 0
 	for ; iterator.Valid() && i < int(maxRetrieve); iterator.Next() {
 		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
-		k.MustGetValidatorRewards(ctx, &validator)
+		k.MustGetValidatorRS(ctx, &validator)
 
 		validators[i] = validator
 		i++
@@ -317,7 +303,7 @@ func (k Keeper) GetBondedValidatorsByPower(ctx sdk.Context) []types.Validator {
 	for ; iterator.Valid() && i < int(maxValidators); iterator.Next() {
 		address := iterator.Value()
 		validator := k.mustGetValidator(ctx, address)
-		k.MustGetValidatorRewards(ctx, &validator)
+		k.MustGetValidatorRS(ctx, &validator)
 
 		if validator.IsBonded() {
 			validators[i] = validator

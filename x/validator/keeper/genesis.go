@@ -39,8 +39,12 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 
 		// Manually set indices for the first time
 		k.SetValidatorByConsAddr(ctx, validator)
-		k.SetValidatorByPowerIndex(ctx, validator)
-
+		//k.SetValidatorByPowerIndex(ctx, validator.GetOperator(), validator.Stake)
+		k.SetValidatorRS(ctx, validator.GetOperator(), types.ValidatorRS{
+			Rewards:      validator.Rewards,
+			TotalRewards: validator.Rewards,
+			Stake:        validator.Stake,
+		})
 		var hasPower bool
 		for _, lp := range data.LastValidatorPowers {
 			if lp.Address == validator.OperatorAddress {
@@ -49,7 +53,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 			}
 		}
 		if hasPower {
-			k.SetValidatorByPowerIndex(ctx, validator)
+			k.SetValidatorByPowerIndex(ctx, validator.GetOperator(), validator.Stake)
 		}
 
 		// Call the creation hook if not exported

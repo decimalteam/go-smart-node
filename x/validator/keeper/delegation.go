@@ -595,6 +595,68 @@ func (k Keeper) DequeueAllMatureUBDQueue(ctx sdk.Context, currTime time.Time) (m
 }
 
 ////////////////////////////////////////////////////////////////
+// CustomCoinStaked
+////////////////////////////////////////////////////////////////
+
+func (k Keeper) SetCustomCoinStaked(ctx sdk.Context, denom string, amount sdkmath.Int) {
+	store := ctx.KVStore(k.storeKey)
+
+	bz, err := amount.Marshal()
+	if err != nil {
+		panic(err)
+	}
+
+	store.Set(types.GetCustomCoinStaked(denom), bz)
+}
+
+func (k Keeper) GetCustomCoinStaked(ctx sdk.Context, denom string) sdkmath.Int {
+	store := ctx.KVStore(k.storeKey)
+
+	bz := store.Get(types.GetCustomCoinStaked(denom))
+	amount := sdk.ZeroInt()
+	err := amount.Unmarshal(bz)
+	if err != nil {
+		panic(err)
+	}
+
+	return amount
+}
+
+func (k Keeper) GetAllCustomCoinsStaked(ctx sdk.Context, amount sdkmath.Int) map[string]sdkmath.Int {
+	result := make(map[string]sdkmath.Int)
+
+	k.IterateAllCustomCoinStaked(ctx, func(denom string, amount sdkmath.Int) bool {
+		result[denom] = amount
+
+		return false
+	})
+
+	return result
+}
+
+func (k Keeper) IterateAllCustomCoinStaked(ctx sdk.Context, cb func(denom string, amount sdkmath.Int) bool) {
+	store := ctx.KVStore(k.storeKey)
+	delegatorPrefixKey := types.GetAllCustomCoinsStaked()
+
+	iterator := sdk.KVStorePrefixIterator(store, delegatorPrefixKey)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		amount := sdk.ZeroInt()
+		err := amount.Unmarshal(iterator.Value())
+		if err != nil {
+			panic(err)
+		}
+
+		denom := string(iterator.Key()[1:])
+
+		if cb(denom, amount) {
+			break
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
