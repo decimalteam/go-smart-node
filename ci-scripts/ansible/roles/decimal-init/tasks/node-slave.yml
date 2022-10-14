@@ -2,9 +2,9 @@
 - name: Include tasks for clear data and update binary files
   include: node-common-at-first.yml
 
-- name: Initialize private validator, p2p, genesis, and application configuration files
-  shell: '{{ decimal_bin }}/dscd init $(hostname) --chain-id={{ chain_id }}'
-  register: initialization
+#- name: Initialize private validator, p2p, genesis, and application configuration files
+#  shell: '{{ decimal_bin }}/dscd init $(hostname) --chain-id={{ chain_id }}'
+#  register: initialization
 
 - name: Create config directory if necessary
   file:
@@ -18,11 +18,17 @@
     state: directory
     recurse: true
 
+- name: Copy app.toml
+  shell: 'cp -b -f {{ decimal_keys }}/app.toml {{ decimal_data }}/daemon/config/app.toml'
+
+- name: Copy node_key.json
+  shell: 'cp -b -f {{ decimal_keys }}/node_key.json {{ decimal_data }}/daemon/config/node_key.json'
+
 - name: Copy config.toml
   shell: 'cp -b -f {{ decimal_keys }}/config.toml {{ decimal_data }}/daemon/config/config.toml'
 
-#- name: Copy validator key
-#  shell: 'cp -b -f {{ decimal_keys }}/priv_validator_key.json {{ decimal_data }}/daemon/config/priv_validator_key.json'
+- name: Copy validator key
+  shell: 'cp -b -f {{ decimal_keys }}/priv_validator_key.json {{ decimal_data }}/daemon/config/priv_validator_key.json'
 
 #- name: Copy private validator state file
 #  shell: 'cp -b -f {{ decimal_keys }}/priv_validator_state.json {{ decimal_data }}/daemon/data/priv_validator_state.json'
@@ -53,4 +59,3 @@
 
 - name: Include tasks with common (master & slave) final actions
   include: node-common-in-last.yml
-  
