@@ -11,8 +11,8 @@ func (k *Keeper) AddAccumRewards(ctx sdk.Context, valAddr sdk.ValAddress, r sdkm
 	if err != nil {
 		return err
 	}
-	rewards.Rewards.Add(r)
-	rewards.TotalRewards.Add(r)
+	rewards.Rewards = rewards.Rewards.Add(r)
+	rewards.TotalRewards = rewards.TotalRewards.Add(r)
 	k.SetValidatorRS(ctx, valAddr, rewards)
 
 	return nil

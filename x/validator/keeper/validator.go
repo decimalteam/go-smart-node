@@ -77,7 +77,7 @@ func (k Keeper) SetValidatorRS(ctx sdk.Context, valAddr sdk.ValAddress, rewards 
 
 func (k Keeper) GetValidatorRS(ctx sdk.Context, valAddr sdk.ValAddress) (rewards types.ValidatorRS, err error) {
 	store := ctx.KVStore(k.storeKey)
-	value := store.Get(types.GetValidatorKey(valAddr))
+	value := store.Get(types.GetValidatorRewards(valAddr))
 	if value == nil {
 		return rewards, fmt.Errorf("not found rewards for validator")
 	}
@@ -148,10 +148,13 @@ func (k Keeper) GetAllValidatorsByPowerIndex(ctx sdk.Context) (types.Validators,
 	for ; iterator.Valid(); iterator.Next() {
 		powerBytes := iterator.Key()[1:9]
 		power := binary.BigEndian.Uint64(powerBytes)
-		totalPower.Add(sdk.NewIntFromUint64(power))
 
-		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
-		k.MustGetValidatorRS(ctx, &validator)
+		totalPower = totalPower.Add(sdk.NewIntFromUint64(power))
+
+		validator, found := k.GetValidator(ctx, iterator.Value())
+		if !found {
+			panic("not found validator")
+		}
 
 		validators = append(validators, validator)
 		powers = append(powers, int64(power))
@@ -393,6 +396,7 @@ func (k Keeper) GetLastValidators(ctx sdk.Context) (validators []types.Validator
 		}
 
 		address := types.AddressFromLastValidatorPowerKey(iterator.Key())
+
 		validator := k.mustGetValidator(ctx, address)
 
 		validators[i] = validator
