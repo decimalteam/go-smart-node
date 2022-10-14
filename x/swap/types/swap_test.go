@@ -51,8 +51,8 @@ func TestEcrecover(t *testing.T) {
 		2,
 		1,
 		27,
-		&r,
-		&s}
+		"d8c0c8ff4a9b168be168f480bae61ead0a7f2b973f983a038f867621451fa553",
+		"641ba9f5749afbb425e83b69ecacb3a0c6e32e2431609d474d4300a7cce5eb41"}
 
 	transactionNumber, ok := sdk.NewIntFromString(msg.TransactionNumber)
 	require.True(t, ok)
@@ -63,10 +63,10 @@ func TestEcrecover(t *testing.T) {
 	require.Equal(t, "b3d218b80efdaaac18e3df1647786f1200fb330cf90bfef72baa0073f6bf872b", hex.EncodeToString(hash[:]))
 
 	R := big.NewInt(0)
-	R.SetBytes(msg.R[:])
+	R.SetBytes(_r[:])
 
 	S := big.NewInt(0)
-	S.SetBytes(msg.S[:])
+	S.SetBytes(_s[:])
 
 	type args struct {
 		sighash [32]byte
