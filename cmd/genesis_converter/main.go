@@ -173,7 +173,7 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord) (GenesisN
 	}
 	// inject to legacy records
 	// TODO: parametrize output?
-	if true {
+	if false {
 		fmt.Printf("!!! LEGACY RECORDS INJECTING !!! REMOVE FROM PRODUCTION\n")
 		_, err := os.Stat("legacy_test_mnemonics.txt")
 		if errors.Is(err, os.ErrNotExist) {
@@ -194,7 +194,7 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord) (GenesisN
 		if err != nil {
 			return GenesisNew{}, Statistic{}, err
 		}
-		coins := sdk.NewCoins(sdk.NewCoin("del", sdkmath.NewInt(3_141_592_653_589_793_238)))
+		coins := sdk.NewCoins(sdk.NewCoin("tdel", sdkmath.NewInt(3_141_592_653_589_793_238)))
 		fileScanner := bufio.NewScanner(inp)
 		fileScanner.Split(bufio.ScanLines)
 		for fileScanner.Scan() {

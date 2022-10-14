@@ -73,7 +73,7 @@ func filterCoins(coins sdk.Coins, coinSymbols map[string]bool) sdk.Coins {
 	var result = sdk.NewCoins()
 	for _, coin := range coins {
 		if coin.Denom == "tdel" {
-			result = result.Add(sdk.NewCoin("del", coin.Amount))
+			result = result.Add(sdk.NewCoin("tdel", coin.Amount))
 		} else {
 			if !coinSymbols[coin.Denom] {
 				continue
@@ -177,7 +177,7 @@ func validCoinParams(coin FullCoinOld) bool {
 func convertCoins(coinsOld []FullCoinOld, addrTable *AddressTable) ([]FullCoinNew, error) {
 	var res []FullCoinNew
 	for _, coin := range coinsOld {
-		if coin.Symbol != "tdel" && coin.Symbol != "del" && !validCoinParams(coin) {
+		if coin.Symbol != "tdel" && coin.Symbol != "tdel" && !validCoinParams(coin) {
 			continue
 		}
 		res = append(res, FullCoinO2N(coin, addrTable))
@@ -297,7 +297,7 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 				subtokens = append(subtokens, SubTokenNew{
 					ID:      uint32(id),
 					Owner:   "",
-					Reserve: sdk.NewCoin("del", sub.reserve),
+					Reserve: sdk.NewCoin("tdel", sub.reserve),
 				})
 			}
 			// 3. owners for subtokens
@@ -354,7 +354,7 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 				Denom:     colOld.Denom,
 				ID:        nftOld.ID,
 				URI:       nftOld.TokenURI,
-				Reserve:   sdk.NewCoin("del", initialReserve),
+				Reserve:   sdk.NewCoin("tdel", initialReserve),
 				AllowMint: nftOld.AllowMint,
 				Minted:    uint32(len(subtokens)),
 				Burnt:     0,

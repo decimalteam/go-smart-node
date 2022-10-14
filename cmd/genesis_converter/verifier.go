@@ -170,6 +170,8 @@ func verifyPools(balances []BalanceNew, validators []ValidatorNew, delegations [
 	}
 	bpool := addrTable.GetModule("bonded_tokens_pool").address
 	nbpool := addrTable.GetModule("not_bonded_tokens_pool").address
+	fmt.Printf("bonded_tokens_pool address = %s\n", bpool)
+	fmt.Printf("not_bonded_tokens_pool address = %s\n", nbpool)
 	for _, bal := range balances {
 		if bal.Address == bpool {
 			if !bal.Coins.IsEqual(bondedCoins) {
