@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -46,4 +47,23 @@ func (s Stake) GetStake() sdk.Coin {
 // GetSubTokenIDs returns the list of staked NFT sub-token IDs.
 func (s Stake) GetSubTokenIDs() []uint32 {
 	return s.SubTokenIDs
+}
+
+func (s Stake) AddSubTokens(newSubTokens []uint32) ([]uint32, error) {
+	if s.Type != StakeType_NFT {
+		return nil, fmt.Errorf("delegation type is coin")
+	}
+	existSubTokens := make(map[uint32]bool)
+	for _, v := range s.SubTokenIDs {
+		existSubTokens[v] = false
+	}
+
+	for _, v := range newSubTokens {
+		if _, ok := existSubTokens[v]; ok {
+			return nil, fmt.Errorf("subtoken exists in delegations")
+		}
+		s.SubTokenIDs = append(s.SubTokenIDs, v)
+	}
+
+	return newSubTokens, nil
 }

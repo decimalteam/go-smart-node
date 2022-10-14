@@ -1,21 +1,25 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	multisig "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	sdkmath "cosmossdk.io/math"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var DAOCommission = sdk.NewDec(5).QuoInt64(100)
 var DevelopCommission = sdk.NewDec(5).QuoInt64(100)
 
-func (k Keeper) PayRewards(ctx sdk.Context, totalStake sdkmath.Int) error {
+func (k Keeper) PayRewards(ctx sdk.Context) error {
 	events := types.EventPayRewards{}
-	nbPool := k.GetNotBondedPool(ctx).String()
 
 	validators := k.GetAllValidators(ctx)
 	delByValidator := k.GetAllDelegationsByValidator(ctx)
+	customCoinStaked := k.GetAllCustomCoinsStaked(ctx)
+	customCoinPrices := k.calculateCustomCoinPrices(ctx, customCoinStaked)
+
 	for _, val := range validators {
 		if val.Rewards.IsZero() {
 			continue
@@ -35,14 +39,14 @@ func (k Keeper) PayRewards(ctx sdk.Context, totalStake sdkmath.Int) error {
 
 		// dao commission
 		daoVal := sdk.NewDecFromInt(rewards).Mul(DAOCommission).TruncateInt()
-		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, nbPool, daoWallet, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), daoVal)))
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, daoWallet, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), daoVal)))
 		if err != nil {
 			return err
 		}
 
 		// develop commission
 		developVal := sdk.NewDecFromInt(rewards).Mul(DevelopCommission).TruncateInt()
-		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, nbPool, developWallet, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), developVal)))
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, developWallet, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), developVal)))
 		if err != nil {
 			return err
 		}
@@ -53,7 +57,7 @@ func (k Keeper) PayRewards(ctx sdk.Context, totalStake sdkmath.Int) error {
 		// validator commission
 		valComission := sdk.NewDecFromInt(rewards).Mul(val.Commission).TruncateInt()
 		valRewardAddress := sdk.MustAccAddressFromBech32(val.RewardAddress)
-		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, nbPool, valRewardAddress, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), valComission)))
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, valRewardAddress, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), valComission)))
 		if err != nil {
 			return err
 		}
@@ -70,6 +74,7 @@ func (k Keeper) PayRewards(ctx sdk.Context, totalStake sdkmath.Int) error {
 			Delegators:  nil,
 		}
 
+		totalStake := TokensFromConsensusPower(val.Stake)
 		remainder := rewards
 		for _, del := range delByValidator[validator.String()] {
 			reward := sdk.NewIntFromBigInt(rewards.BigInt())
@@ -79,15 +84,21 @@ func (k Keeper) PayRewards(ctx sdk.Context, totalStake sdkmath.Int) error {
 				delStake = k.getSumSubTokensReserve(ctx, del.GetStake().GetID(), del.GetStake().GetSubTokenIDs())
 			}
 
-			defAmount := k.ToBaseCoin(ctx, delStake)
-
-			reward = reward.Mul(defAmount.Amount).Quo(totalStake)
+			defAmount := delStake.Amount
+			if delStake.Denom != k.BaseDenom(ctx) {
+				delCoinPrice, ok := customCoinPrices[delStake.Denom]
+				if !ok {
+					return fmt.Errorf("not found price for custom coin")
+				}
+				defAmount = delCoinPrice.Mul(delStake.Amount)
+			}
+			reward = reward.Mul(defAmount).Quo(totalStake)
 			if reward.LT(sdk.NewInt(1)) {
 				continue
 			}
 
 			// pay reward
-			err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, nbPool, del.GetDelegator(), sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), reward)))
+			err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, del.GetDelegator(), sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), reward)))
 			if err != nil {
 				continue
 			}
@@ -213,4 +224,18 @@ func (k Keeper) getDevelop(ctx sdk.Context) (sdk.AccAddress, error) {
 
 	k.multisigKeeper.SetWallet(ctx, wallet)
 	return address, nil
+}
+
+func (k Keeper) calculateCustomCoinPrices(ctx sdk.Context, ccs map[string]sdkmath.Int) map[string]sdkmath.Int {
+	prices := make(map[string]sdkmath.Int)
+	for denom, staked := range ccs {
+		coin, err := k.coinKeeper.GetCoin(ctx, denom)
+		if err != nil {
+			panic(err)
+		}
+
+		prices[denom] = formulas.CalculateSaleReturn(coin.Volume, coin.Reserve, uint(coin.CRR), staked)
+	}
+
+	return prices
 }
