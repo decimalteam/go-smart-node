@@ -1,17 +1,18 @@
 syntax = "proto3";
 package decimal.legacy.v1;
 
-import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
+import "cosmos/msg/v1/msg.proto";
 
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/legacy/types";
 
 // Msg defines the module Msg service.
 service Msg {
-  // ReturnLegacy defines message for return coins,nft,wallets by account public key
+  // ReturnLegacy defines message for return coins, nft, multisig wallets by account public key.
   rpc ReturnLegacy(MsgReturnLegacy) returns (MsgReturnLegacyResponse);
 }
 
+// MsgReturnLegacy defines a SDK message for returning coins, nft, multisig wallets by account public key.
 message MsgReturnLegacy {
   option (cosmos.msg.v1.signer) = "sender";
 
@@ -19,4 +20,5 @@ message MsgReturnLegacy {
   bytes public_key = 2; 
 }
 
+// MsgReturnLegacyResponse defines the Msg/ReturnLegacy response type.
 message MsgReturnLegacyResponse{}

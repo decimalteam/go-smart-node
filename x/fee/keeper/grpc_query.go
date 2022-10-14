@@ -48,7 +48,7 @@ func (k Keeper) CoinPrice(c context.Context, req *types.QueryCoinPriceRequest) (
 	return &types.QueryCoinPriceResponse{Price: &price}, nil
 }
 
-func (k Keeper) ModuleParams(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+func (k Keeper) ModuleParams(c context.Context, req *types.QueryModuleParamsRequest) (*types.QueryModuleParamsResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -56,7 +56,7 @@ func (k Keeper) ModuleParams(c context.Context, req *types.QueryParamsRequest) (
 
 	params := k.GetModuleParams(ctx)
 
-	return &types.QueryParamsResponse{Params: params}, nil
+	return &types.QueryModuleParamsResponse{Params: params}, nil
 }
 
 /////////////

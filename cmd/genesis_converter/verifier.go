@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 
 	"cosmossdk.io/math"
@@ -140,4 +141,73 @@ func verifyNFTSupply(collections []CollectionNew) {
 
 		fmt.Printf("??? coll supply != len(ntfs): %d != %d\n", collSupply, len(nfts))
 	*/
+}
+
+func verifyPools(balances []BalanceNew, validators []ValidatorNew, delegations []DelegationNew,
+	undelegations []UndelegationNew, addrTable *AddressTable) {
+	valStatuses := make(map[string]string)
+	for _, val := range validators {
+		valStatuses[val.OperatorAddress] = val.Status
+	}
+	bondedCoins := sdk.NewCoins()
+	notBondedCoins := sdk.NewCoins()
+	for _, del := range delegations {
+		if del.Stake.Type == "STAKE_TYPE_COIN" {
+			switch valStatuses[del.Validator] {
+			case "BOND_STATUS_BONDED":
+				bondedCoins = bondedCoins.Add(del.Stake.Stake)
+			case "BOND_STATUS_UNBONDED", "BOND_STATUS_UNBONDING":
+				notBondedCoins = notBondedCoins.Add(del.Stake.Stake)
+			}
+		}
+	}
+	for _, ubd := range undelegations {
+		for _, entry := range ubd.Entries {
+			if entry.Stake.Type == "STAKE_TYPE_COIN" {
+				notBondedCoins = notBondedCoins.Add(entry.Stake.Stake)
+			}
+		}
+	}
+	bpool := addrTable.GetModule("bonded_tokens_pool").address
+	nbpool := addrTable.GetModule("not_bonded_tokens_pool").address
+	fmt.Printf("bonded_tokens_pool address = %s\n", bpool)
+	fmt.Printf("not_bonded_tokens_pool address = %s\n", nbpool)
+	for _, bal := range balances {
+		if bal.Address == bpool {
+			if !bal.Coins.IsEqual(bondedCoins) {
+				denoms := make(map[string]bool)
+				for _, c := range bal.Coins {
+					denoms[c.Denom] = true
+				}
+				for _, c := range bondedCoins {
+					denoms[c.Denom] = true
+				}
+				for denom := range denoms {
+					b1 := bal.Coins.AmountOf(denom)
+					b2 := bondedCoins.AmountOf(denom)
+					if !b1.Equal(b2) {
+						fmt.Printf("different bonded pool: (%s) %s <-> %s\n", denom, b1, b2)
+					}
+				}
+			}
+		}
+		if bal.Address == nbpool {
+			if !bal.Coins.IsEqual(notBondedCoins) {
+				denoms := make(map[string]bool)
+				for _, c := range bal.Coins {
+					denoms[c.Denom] = true
+				}
+				for _, c := range notBondedCoins {
+					denoms[c.Denom] = true
+				}
+				for denom := range denoms {
+					b1 := bal.Coins.AmountOf(denom)
+					b2 := notBondedCoins.AmountOf(denom)
+					if !b1.Equal(b2) {
+						fmt.Printf("different not bonded pool: (%s) %s <-> %s\n", denom, b1, b2)
+					}
+				}
+			}
+		}
+	}
 }

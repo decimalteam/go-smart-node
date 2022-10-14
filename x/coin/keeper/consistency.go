@@ -79,3 +79,68 @@ func (k *Keeper) CheckFutureVolumeChanges(ctx sdk.Context, coinInfo types.Coin, 
 	}
 	return nil
 }
+
+// Special burn for slashing in validator module
+// It decrease both volume and reserve
+// pool must be exists and must have burning right
+func (k *Keeper) BurnPoolCoins(ctx sdk.Context, poolName string, coins sdk.Coins) error {
+	for _, coin := range coins {
+		coinInfo, err := k.GetCoin(ctx, coin.Denom)
+		if err != nil {
+			return err
+		}
+		if coin.Denom == k.GetBaseDenom(ctx) {
+			err = k.UpdateCoinVR(ctx, coin.Denom, coinInfo.Volume.Sub(coin.Amount), coinInfo.Reserve)
+			continue
+		}
+		err = k.CheckFutureChanges(ctx, coinInfo, coin.Amount)
+		if err != nil {
+			return err
+		}
+		futureReserveToDecrease := formulas.CalculateSaleReturn(coinInfo.Volume, coinInfo.Reserve,
+			uint(coinInfo.CRR), coin.Amount)
+		coinInfo.Volume = coinInfo.Volume.Sub(coin.Amount)
+		coinInfo.Reserve = coinInfo.Reserve.Sub(futureReserveToDecrease)
+		err = k.UpdateCoinVR(ctx, coin.Denom, coinInfo.Volume, coinInfo.Reserve)
+		if err != nil {
+			return err
+		}
+	}
+	return k.bankKeeper.BurnCoins(ctx, poolName, coins)
+}
+
+func (k *Keeper) GetDecreasingFactor(ctx sdk.Context, coin sdk.Coin) (sdk.Dec, error) {
+	coinInfo, err := k.GetCoin(ctx, coin.Denom)
+	if err != nil {
+		return sdk.ZeroDec(), err
+	}
+	coinInCollector := k.bankKeeper.GetBalance(ctx, sdkAuthTypes.NewModuleAddress(sdkAuthTypes.FeeCollectorName), coin.Denom)
+	return CalculateDecreasingFactor(coinInfo, coinInCollector.Amount, coin.Amount), nil
+}
+
+// Helper function for slashing in validator module
+// CalculateDecreasingFactor checks future parameters for coin burn
+func CalculateDecreasingFactor(coinInfo types.Coin, amountInCollector sdkmath.Int, amountToBurn sdkmath.Int) sdk.Dec {
+	newAmount := amountToBurn
+	futureAmountToBurn := amountInCollector.Add(newAmount)
+	// check for minimal volume
+	if coinInfo.Volume.Sub(futureAmountToBurn).LT(config.MinCoinSupply) {
+		newAmount = coinInfo.Volume.Sub(config.MinCoinSupply).Sub(amountInCollector)
+		if newAmount.IsNegative() {
+			return sdk.ZeroDec()
+		}
+		futureAmountToBurn = amountInCollector.Add(newAmount)
+	}
+	reserveToDecrease := formulas.CalculateSaleReturn(coinInfo.Volume, coinInfo.Reserve,
+		uint(coinInfo.CRR), futureAmountToBurn)
+	if coinInfo.Reserve.Sub(reserveToDecrease).LT(config.MinCoinReserve) {
+		reserveToDecrease = coinInfo.Reserve.Sub(config.MinCoinReserve)
+		newAmount = formulas.CalculateSaleAmount(coinInfo.Volume, coinInfo.Reserve,
+			uint(coinInfo.CRR), reserveToDecrease)
+		newAmount = newAmount.Sub(amountInCollector)
+	}
+	if newAmount.IsNegative() {
+		return sdk.ZeroDec()
+	}
+	return sdk.NewDecFromInt(newAmount).Quo(sdk.NewDecFromInt(amountToBurn))
+}

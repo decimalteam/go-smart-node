@@ -4,7 +4,8 @@ import (
 	"encoding/binary"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tendermint/tendermint/crypto/tmhash"
+
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
 const (
@@ -83,7 +84,7 @@ func GetTokensKey() []byte {
 
 // GetTokenKey returns the key of the NFT token.
 func GetTokenKey(id string) []byte {
-	return append(GetTokensKey(), getHash(id)...)
+	return append(GetTokensKey(), helpers.CalcHashSHA256(id)...)
 }
 
 func GetTokenKeyByIDHash(id []byte) []byte {
@@ -92,12 +93,12 @@ func GetTokenKeyByIDHash(id []byte) []byte {
 
 // GetTokenCounterKey returns the key of the NFT token counter.
 func GetTokenCounterKey(id string) []byte {
-	return append(keyPrefixTokenCounter, getHash(id)...)
+	return append(keyPrefixTokenCounter, helpers.CalcHashSHA256(id)...)
 }
 
 // GetSubTokensKey returns the key prefix of the NFT sub-tokens.
 func GetSubTokensKey(id string) []byte {
-	return append(keyPrefixSubToken, getHash(id)...)
+	return append(keyPrefixSubToken, helpers.CalcHashSHA256(id)...)
 }
 
 // GetSubTokenKey returns the key of the NFT sub-token.
@@ -109,7 +110,7 @@ func GetSubTokenKey(id string, index uint32) []byte {
 
 // GetTokenURIKey returns the key of the NFT token URI.
 func GetTokenURIKey(tokenURI string) []byte {
-	return append(keyPrefixTokenURI, getHash(tokenURI)...)
+	return append(keyPrefixTokenURI, helpers.CalcHashSHA256(tokenURI)...)
 }
 
 // GetTokensByCollectionKey returns the key prefix of the NFT tokens of specific collection.
@@ -119,12 +120,12 @@ func GetTokensByCollectionKey(creator sdk.AccAddress, denom string) []byte {
 
 // GetTokenByCollectionKey returns the key prefix of the NFT token of specific collection.
 func GetTokenByCollectionKey(creator sdk.AccAddress, denom string, id string) []byte {
-	return append(GetTokensByCollectionKey(creator, denom), getHash(id)...)
+	return append(GetTokensByCollectionKey(creator, denom), helpers.CalcHashSHA256(id)...)
 }
 
 // GetSubTokensByOwnerKey returns the key prefix of the NFT sub-tokens of specific owner address and NFT token.
 func GetSubTokensByOwnerKey(owner sdk.AccAddress, id string) []byte {
-	return append(keyPrefixSubTokensByOwner, append(owner.Bytes(), getHash(id)...)...)
+	return append(keyPrefixSubTokensByOwner, append(owner.Bytes(), helpers.CalcHashSHA256(id)...)...)
 }
 
 // GetSubTokenByOwnerKey returns the key of the NFT sub-token of specific owner address NFT token and index.
@@ -134,22 +135,12 @@ func GetSubTokenByOwnerKey(owner sdk.AccAddress, id string, index uint32) []byte
 
 // getCollectionID returns the collection ID concatenated from creator address denom hash and c.
 func getCollectionID(creator sdk.AccAddress, denom string) []byte {
-	return append(creator.Bytes(), getHash(denom)...)
+	return append(creator.Bytes(), helpers.CalcHashSHA256(denom)...)
 }
 
 // getSubTokenID returns the sub-token ID concatenated from token ID and sub-token index.
 func getSubTokenID(id string, index uint32) []byte {
 	b := make([]byte, 4)
 	binary.BigEndian.PutUint32(b, index)
-	return append(getHash(id), b...)
-}
-
-// getHash returns sha256 hash (32 bytes) calculated from specified string.
-func getHash(str string) []byte {
-	h := tmhash.New()
-	_, err := h.Write([]byte(str))
-	if err != nil {
-		panic(err)
-	}
-	return h.Sum(nil)
+	return append(helpers.CalcHashSHA256(id), b...)
 }

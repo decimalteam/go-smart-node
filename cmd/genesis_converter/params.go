@@ -18,6 +18,7 @@ func copyParams(gs *GenesisNew, gsSource *GenesisNew) {
 	gs.AppState.Coin.Params = gsSource.AppState.Coin.Params
 	gs.AppState.Bank.Params = gsSource.AppState.Bank.Params
 	gs.AppState.Validator.Params = gsSource.AppState.Validator.Params
+	gs.AppState.NFT.Params = gsSource.AppState.NFT.Params
 	//
 	// gs.AppState.Genutil = gsSource.AppState.Genutil
 	gs.AppState.Swap = gsSource.AppState.Swap
@@ -25,14 +26,14 @@ func copyParams(gs *GenesisNew, gsSource *GenesisNew) {
 	gs.AppState.Capability = gsSource.AppState.Capability
 	gs.AppState.Crisis = gsSource.AppState.Crisis
 	gs.AppState.Distribution = gsSource.AppState.Distribution
-	gs.AppState.Evidence = gsSource.AppState.Evidence
+	//gs.AppState.Evidence = gsSource.AppState.Evidence
 	gs.AppState.Evm = gsSource.AppState.Evm
 	gs.AppState.Feegrant = gsSource.AppState.Feegrant
 	gs.AppState.Fee = gsSource.AppState.Fee
 	gs.AppState.Gov = gsSource.AppState.Gov
 	gs.AppState.Params = gsSource.AppState.Params
-	gs.AppState.Slashing = gsSource.AppState.Slashing
-	gs.AppState.Staking = gsSource.AppState.Staking
+	//gs.AppState.Slashing = gsSource.AppState.Slashing
+	//gs.AppState.Staking = gsSource.AppState.Staking
 	gs.AppState.Upgrade = gsSource.AppState.Upgrade
 	gs.AppState.Vesting = gsSource.AppState.Vesting
 	gs.AppState.IBC = gsSource.AppState.IBC
@@ -87,29 +88,40 @@ func extractAddress(acc interface{}) string {
 // fix bonded pool balance from staking
 func fixAfterCopy(gs *GenesisNew) {
 	// staking -> delegations[]: "delegator_address", "shares",
-	st, ok := gs.AppState.Staking.(map[string]interface{})
-	if !ok {
-		panic("Staking is not type map[string]interface{}")
-	}
-	delegations, ok := st["delegations"].([]interface{})
-	if !ok {
-		panic("Delegations is not type []interface{}")
-	}
 	bondings := sdk.NewCoins()
-	for _, delRaw := range delegations {
-		del, ok := delRaw.(map[string]interface{})
-		if !ok {
-			panic("Delegation is not type map[string]interface{}")
+	notbondings := sdk.NewCoins()
+	for _, del := range gs.AppState.Validator.Delegations {
+		if del.Stake.Type == "STAKE_TYPE_COIN" {
+			val := ValidatorNew{}
+			for i, v := range gs.AppState.Validator.Validators {
+				if v.OperatorAddress == del.Validator {
+					val = gs.AppState.Validator.Validators[i]
+					break
+				}
+			}
+			switch val.Status {
+			case "BOND_STATUS_BONDED":
+				bondings = bondings.Add(del.Stake.Stake)
+			case "BOND_STATUS_UNBONDED":
+				notbondings = notbondings.Add(del.Stake.Stake)
+			}
 		}
-		v, err := sdk.NewDecFromStr(del["shares"].(string))
-		if err != nil {
-			panic(err)
-		}
-		bondings = bondings.Add(sdk.NewCoin("del", v.RoundInt()))
 	}
-	// "bonded_tokens_pool"
+	for _, ubd := range gs.AppState.Validator.Undelegations {
+		for _, entry := range ubd.Entries {
+			if entry.Stake.Type == "STAKE_TYPE_COIN" {
+				notbondings = notbondings.Add(entry.Stake.Stake)
+			}
+		}
+	}
+
 	for i := range gs.AppState.Bank.Balances {
+		// "bonded_tokens_pool"
 		if gs.AppState.Bank.Balances[i].Address == "dx1fl48vsnmsdzcv85q5d2q4z5ajdha8yu3nz9atz" {
+			gs.AppState.Bank.Balances[i].Coins = bondings
+		}
+		// "not_bonded_tokens_pool"
+		if gs.AppState.Bank.Balances[i].Address == "dx1tygms3xhhs3yv487phx3dw4a95jn7t7l8zevak" {
 			gs.AppState.Bank.Balances[i].Coins = bondings
 		}
 	}

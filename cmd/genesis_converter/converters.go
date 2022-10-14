@@ -73,7 +73,7 @@ func filterCoins(coins sdk.Coins, coinSymbols map[string]bool) sdk.Coins {
 	var result = sdk.NewCoins()
 	for _, coin := range coins {
 		if coin.Denom == "tdel" {
-			result = result.Add(sdk.NewCoin("del", coin.Amount))
+			result = result.Add(sdk.NewCoin("tdel", coin.Amount))
 		} else {
 			if !coinSymbols[coin.Denom] {
 				continue
@@ -113,11 +113,12 @@ func convertBalances(accsOld []AccountOld, addrTable *AddressTable, legacyRecord
 
 		coins := filterCoins(acc.Value.Coins, coinSymbols)
 		// TODO: return when correct staking starts work
-		if acc.Value.Name == "not_bonded_tokens_pool" || acc.Value.Name == "bonded_tokens_pool" {
-			fmt.Printf("set '%s' module account balance to zero\n", acc.Value.Name)
-			coins = sdk.NewCoins()
-		}
-
+		/*
+			if acc.Value.Name == "not_bonded_tokens_pool" || acc.Value.Name == "bonded_tokens_pool" {
+				fmt.Printf("set '%s' module account balance to zero\n", acc.Value.Name)
+				coins = sdk.NewCoins()
+			}
+		*/
 		if newAddress > "" {
 			res = append(res, BalanceNew{Address: newAddress, Coins: coins})
 		} else {
@@ -176,7 +177,7 @@ func validCoinParams(coin FullCoinOld) bool {
 func convertCoins(coinsOld []FullCoinOld, addrTable *AddressTable) ([]FullCoinNew, error) {
 	var res []FullCoinNew
 	for _, coin := range coinsOld {
-		if coin.Symbol != "tdel" && coin.Symbol != "del" && !validCoinParams(coin) {
+		if coin.Symbol != "tdel" && coin.Symbol != "tdel" && !validCoinParams(coin) {
 			continue
 		}
 		res = append(res, FullCoinO2N(coin, addrTable))
@@ -296,7 +297,7 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 				subtokens = append(subtokens, SubTokenNew{
 					ID:      uint32(id),
 					Owner:   "",
-					Reserve: sdk.NewCoin("del", sub.reserve),
+					Reserve: sdk.NewCoin("tdel", sub.reserve),
 				})
 			}
 			// 3. owners for subtokens
@@ -353,7 +354,7 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 				Denom:     colOld.Denom,
 				ID:        nftOld.ID,
 				URI:       nftOld.TokenURI,
-				Reserve:   sdk.NewCoin("del", initialReserve),
+				Reserve:   sdk.NewCoin("tdel", initialReserve),
 				AllowMint: nftOld.AllowMint,
 				Minted:    uint32(len(subtokens)),
 				Burnt:     0,
@@ -395,6 +396,9 @@ func convertDelegations(delegations []DelegationOld, delegationsNFT []Delegation
 		delNew, err := DelegationO2NCoin(del, coinSymbols, addrTable)
 		if err != nil {
 			return []DelegationNew{}, err
+		}
+		if delNew.Stake.ID == "" {
+			continue
 		}
 		result = append(result, delNew)
 	}
@@ -440,7 +444,9 @@ func convertLastValidatorPowers(pwrsOld []LastValidatorPowerOld) ([]LastValidato
 		if err != nil {
 			return []LastValidatorPowerNew{}, err
 		}
-		result = append(result, pwrNew)
+		if pwrNew.Power > 0 {
+			result = append(result, pwrNew)
+		}
 	}
 	return result, nil
 }
