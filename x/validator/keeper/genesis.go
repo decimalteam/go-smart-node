@@ -124,7 +124,9 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 
 		for _, entry := range ubd.Entries {
 			k.InsertUBDQueue(ctx, ubd, entry.CompletionTime)
-			notBondedCoins = notBondedCoins.Add(entry.Stake.Stake)
+			if entry.Stake.Type == types.StakeType_Coin {
+				notBondedCoins = notBondedCoins.Add(entry.Stake.Stake)
+			}
 		}
 	}
 
