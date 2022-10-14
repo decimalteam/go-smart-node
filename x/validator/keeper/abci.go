@@ -147,11 +147,11 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 		panic(err)
 	}
 
-	//if height%120 == 0 {
-	//	err = k.PayRewards(ctx, totalPower)
-	//	if err != nil {
-	//		panic(err)
-	//	}
-	//}
+	if height%120 == 0 {
+		err = k.PayRewards(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}
 	return []abci.ValidatorUpdate{}
 }

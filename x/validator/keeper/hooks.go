@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
@@ -85,5 +86,43 @@ func (k Keeper) BeforeValidatorSlashed(ctx sdk.Context, valAddr sdk.ValAddress, 
 	if k.hooks != nil {
 		return k.hooks.BeforeValidatorSlashed(ctx, valAddr, fraction)
 	}
+	return nil
+}
+
+////////////////////////////////////////////////////////
+// Validator Module Hooks //////////////////////////////
+////////////////////////////////////////////////////////
+
+func (k Keeper) BeforeUpdateDelegation(ctx sdk.Context, del types.Delegation, denom string) {
+	switch del.GetStake().GetType() {
+	case types.StakeType_Coin:
+		if denom == k.BaseDenom(ctx) {
+			return
+		}
+
+		ccs := k.GetCustomCoinStaked(ctx, denom)
+		ccs = ccs.Sub(del.GetStake().GetStake().Amount)
+		k.SetCustomCoinStaked(ctx, denom, ccs)
+	case types.StakeType_NFT:
+		sum := k.getSumSubTokensReserve(ctx, denom, del.GetStake().GetSubTokenIDs())
+		if sum.Denom == k.BaseDenom(ctx) {
+			return
+		}
+
+		ccs := k.GetCustomCoinStaked(ctx, sum.Denom)
+		ccs = ccs.Sub(sum.Amount)
+		k.SetCustomCoinStaked(ctx, denom, ccs)
+	}
+}
+
+func (k Keeper) AfterUpdateDelegation(ctx sdk.Context, denom string, amount sdkmath.Int) error {
+	if denom == k.BaseDenom(ctx) {
+		return nil
+	}
+
+	amountInStore := k.GetCustomCoinStaked(ctx, denom)
+	amountInStore.Add(amount)
+	k.SetCustomCoinStaked(ctx, denom, amountInStore)
+
 	return nil
 }

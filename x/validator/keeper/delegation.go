@@ -622,7 +622,7 @@ func (k Keeper) GetCustomCoinStaked(ctx sdk.Context, denom string) sdkmath.Int {
 	return amount
 }
 
-func (k Keeper) GetAllCustomCoinsStaked(ctx sdk.Context, amount sdkmath.Int) map[string]sdkmath.Int {
+func (k Keeper) GetAllCustomCoinsStaked(ctx sdk.Context) map[string]sdkmath.Int {
 	result := make(map[string]sdkmath.Int)
 
 	k.IterateAllCustomCoinStaked(ctx, func(denom string, amount sdkmath.Int) bool {
@@ -700,9 +700,11 @@ func (k Keeper) Delegate(
 
 	// call the appropriate hook if present
 	if found {
-		err = k.BeforeDelegationSharesModified(ctx, delegator, validator.GetOperator())
+		k.BeforeUpdateDelegation(ctx, delegation, denom)
+		//err = k.BeforeDelegationSharesModified(ctx, delegator, validator.GetOperator())
 	} else {
-		err = k.BeforeDelegationCreated(ctx, delegator, validator.GetOperator())
+		// nothing now
+		//err = k.BeforeDelegationCreated(ctx, delegator, validator.GetOperator())
 	}
 
 	if err != nil {
@@ -781,16 +783,38 @@ func (k Keeper) Delegate(
 	}
 
 	// Update delegation
-	k.SetDelegation(ctx, delegation)
 
-	// update validator ConsensusPower
-	valAddress := validator.GetOperator()
-	totalStake, err = k.TotalStakeInBaseCoin(ctx, valAddress)
-	if err != nil {
-		return sdk.ZeroInt(), err
+	if found {
+		delegation.Stake.Stake = delegation.Stake.Stake.Add(stake.GetStake())
+
+		switch stake.Type {
+		case types.StakeType_Coin:
+		case types.StakeType_NFT:
+			delegation.Stake.SubTokenIDs, err = delegation.Stake.AddSubTokens(stake.SubTokenIDs)
+			if err != nil {
+				return sdkmath.Int{}, err
+			}
+		}
 	}
 
-	if err := k.AfterDelegationModified(ctx, delegator, valAddress); err != nil {
+	// Update delegation
+
+	k.SetDelegation(ctx, delegation)
+
+	// update validator info
+	valAddress := validator.GetOperator()
+	totalStake, err = k.TotalStakeInBaseCoin(ctx, valAddress)
+
+	k.DeleteValidatorByPowerIndex(ctx, valAddress, validator.Stake)
+	rs, err := k.GetValidatorRS(ctx, valAddress)
+	if err != nil {
+		return sdkmath.Int{}, err
+	}
+	rs.Stake = totalStake.Int64()
+	k.SetValidatorRS(ctx, valAddress, rs)
+	k.SetValidatorByPowerIndex(ctx, valAddress, totalStake.Int64())
+
+	if err = k.AfterUpdateDelegation(ctx, delegation.GetStake().GetStake().Denom, delegation.GetStake().GetStake().Amount); err != nil {
 		return sdk.ZeroInt(), err
 	}
 
