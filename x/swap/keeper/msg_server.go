@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 	"math/big"
 	"strings"
 
@@ -65,6 +66,7 @@ func (k Keeper) InitializeSwap(goCtx context.Context, msg *types.MsgInitializeSw
 
 func (k Keeper) RedeemSwap(goCtx context.Context, msg *types.MsgRedeemSwap) (*types.MsgRedeemSwapResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	fmt.Printf("####### RedeemSwap: %+v\n", msg)
 
 	transactionNumber, ok := sdk.NewIntFromString(msg.TransactionNumber)
 	if !ok {
@@ -72,6 +74,7 @@ func (k Keeper) RedeemSwap(goCtx context.Context, msg *types.MsgRedeemSwap) (*ty
 	}
 
 	hash, err := types.GetHash(transactionNumber, msg.TokenSymbol, msg.Amount, msg.Recipient, msg.FromChain, msg.DestChain)
+	fmt.Printf("####### RedeemSwap: hash = %s\n", hash)
 	if err != nil {
 		return nil, err
 	}
@@ -86,6 +89,7 @@ func (k Keeper) RedeemSwap(goCtx context.Context, msg *types.MsgRedeemSwap) (*ty
 	S := big.NewInt(0)
 	S.SetBytes(msg.S[:])
 
+	fmt.Printf("####### RedeemSwap: Ecrecover: v = %d, r = %x, s = %x\n", msg.V, R, S)
 	address, err := types.Ecrecover(hash, R, S, sdk.NewInt(int64(msg.V)).BigInt())
 	if err != nil {
 		return nil, err
