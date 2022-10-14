@@ -18,8 +18,8 @@
     state: directory
     recurse: true
 
-#- name: Copy node key
-#  shell: 'cp -b -f {{ decimal_keys }}/node_key.json {{ decimal_data }}/daemon/config/node_key.json'
+- name: Copy config.toml
+  shell: 'cp -b -f {{ decimal_keys }}/config.toml {{ decimal_data }}/daemon/config/config.toml'
 
 #- name: Copy validator key
 #  shell: 'cp -b -f {{ decimal_keys }}/priv_validator_key.json {{ decimal_data }}/daemon/config/priv_validator_key.json'
