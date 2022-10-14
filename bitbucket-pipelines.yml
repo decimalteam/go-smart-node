@@ -50,12 +50,12 @@ definitions:
 
           # run update playbook
           - if [[ $MESSAGE == *\[update\]* ]]; then
-            ansible-playbook -i hosts -l "$MASTER_HOST, $SLAVE_HOST" -e "ansible_user=$USERNAME chain_id=$CHAIN_ID_NEW artifacts=$BITBUCKET_CLONE_DIR/build" decimal-nodes-update.yml;
+            ansible-playbook -i hosts -l "$MASTER_HOST, $SLAVE_HOST" -e "ansible_user=$USERNAME chain_id=$CHAIN_ID artifacts=$BITBUCKET_CLONE_DIR/build" decimal-nodes-update.yml;
             else echo 0; fi
 
           # run reset playbook for MASTER HOSTS
           - if [[ $MESSAGE == *\[reset\]* ]]; then
-            ansible-playbook -i hosts -l "$MASTER_HOST" -e "ansible_user=$USERNAME mode=master decimal_keys=$DECIMAL_KEYS chain_id=$CHAIN_ID_NEW artifacts=$BITBUCKET_CLONE_DIR/build persistent_peers=$PERSISTENT_PEERS_NEW" decimal-nodes-init.yml;
+            ansible-playbook -i hosts -l "$MASTER_HOST" -e "ansible_user=$USERNAME mode=master decimal_keys=$DECIMAL_KEYS chain_id=$CHAIN_ID artifacts=$BITBUCKET_CLONE_DIR/build persistent_peers=$PERSISTENT_PEERS" decimal-nodes-init.yml;
             else echo 0; fi
 
           # run reset playbook for EXPLORER HOSTS
@@ -65,7 +65,7 @@ definitions:
 
           # run reset playbook for SLAVE HOSTS
           - if [[ $MESSAGE == *\[reset\]* ]]; then
-            ansible-playbook -i hosts -l "$SLAVE_HOST" -e "ansible_user=$USERNAME mode=slave decimal_keys=$DECIMAL_KEYS chain_id=$CHAIN_ID_NEW artifacts=$BITBUCKET_CLONE_DIR/build src_genesis=$SRC_GENESIS_NEW persistent_peers=$PERSISTENT_PEERS_NEW" decimal-nodes-init.yml;
+            ansible-playbook -i hosts -l "$SLAVE_HOST" -e "ansible_user=$USERNAME mode=slave decimal_keys=$DECIMAL_KEYS chain_id=$CHAIN_ID artifacts=$BITBUCKET_CLONE_DIR/build src_genesis=$SRC_GENESIS persistent_peers=$PERSISTENT_PEERS" decimal-nodes-init.yml;
             else echo 0; fi
 
     - parallel: &repo_build
