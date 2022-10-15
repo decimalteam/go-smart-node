@@ -48,22 +48,22 @@ definitions:
 
           # run update playbook
           - if [[ $MESSAGE == *\[update\]* ]]; then
-            ansible-playbook -i "$MASTER_HOSTS, $SLAVE_HOSTS" -e "ansible_user=$USERNAME decimal_keys=$DECIMAL_KEYS chain_id=$CHAIN_ID artifacts=$BITBUCKET_CLONE_DIR/build" decimal-nodes-update.yml;
+            ansible-playbook -i hosts -l "$MASTER_HOST, $SLAVE_HOST" -e "ansible_user=$USERNAME decimal_keys=$DECIMAL_KEYS chain_id=$CHAIN_ID artifacts=$BITBUCKET_CLONE_DIR/build" decimal-nodes-update.yml;
             else echo 0; fi
 
           # run reset playbook for MASTER HOSTS
           - if [[ $MESSAGE == *\[reset\]* ]]; then
-            ansible-playbook -i "$MASTER_HOSTS" -e "ansible_user=$USERNAME mode=master decimal_keys=$DECIMAL_KEYS chain_id=$CHAIN_ID artifacts=$BITBUCKET_CLONE_DIR/build persistent_peers=$PERSISTENT_PEERS" decimal-nodes-init.yml;
+            ansible-playbook -i hosts -l "$MASTER_HOST" -e "ansible_user=$USERNAME mode=master decimal_keys=$DECIMAL_KEYS chain_id=$CHAIN_ID artifacts=$BITBUCKET_CLONE_DIR/build persistent_peers=$PERSISTENT_PEERS" decimal-nodes-init.yml;
             else echo 0; fi
 
           # run reset playbook for EXPLORER HOSTS
           - if [[ $MESSAGE == *\[reset\]* ]]; then
-            ansible-playbook -i "$EXPLORER_HOSTS" -e "ansible_user=$USERNAME" decimal-explorer-init.yml;
+            ansible-playbook -i hosts -l "$EXPLORER_HOST" -e "ansible_user=$USERNAME" decimal-explorer-init.yml;
             else echo 0; fi
 
           # run reset playbook for SLAVE HOSTS
           - if [[ $MESSAGE == *\[reset\]* ]]; then
-            ansible-playbook -i "$SLAVE_HOSTS" -e "ansible_user=$USERNAME mode=slave chain_id=$CHAIN_ID decimal_keys=$DECIMAL_KEYS artifacts=$BITBUCKET_CLONE_DIR/build src_genesis=$SRC_GENESIS persistent_peers=$PERSISTENT_PEERS" decimal-nodes-init.yml;
+            ansible-playbook -i hosts -l "$SLAVE_HOST" -e "ansible_user=$USERNAME mode=slave chain_id=$CHAIN_ID decimal_keys=$DECIMAL_KEYS artifacts=$BITBUCKET_CLONE_DIR/build src_genesis=$SRC_GENESIS persistent_peers=$PERSISTENT_PEERS" decimal-nodes-init.yml;
             else echo 0; fi
 
     - parallel: &repo_build
