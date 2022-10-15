@@ -15,19 +15,28 @@ import (
 	"github.com/tendermint/tendermint/libs/cli"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	tmrand "github.com/tendermint/tendermint/libs/rand"
-	"github.com/tendermint/tendermint/types"
+	pvm "github.com/tendermint/tendermint/privval"
+	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/go-bip39"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/input"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/cosmos/cosmos-sdk/version"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
+
+	validatorkeeper "bitbucket.org/decimalteam/go-smart-node/x/validator/keeper"
+	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
 type printInfo struct {
@@ -122,13 +131,13 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 				return errors.Wrap(err, "Failed to marshall default genesis state")
 			}
 
-			genDoc := &types.GenesisDoc{}
+			genDoc := &tmtypes.GenesisDoc{}
 			if _, err := os.Stat(genFile); err != nil {
 				if !os.IsNotExist(err) {
 					return err
 				}
 			} else {
-				genDoc, err = types.GenesisDocFromFile(genFile)
+				genDoc, err = tmtypes.GenesisDocFromFile(genFile)
 				if err != nil {
 					return errors.Wrap(err, "Failed to read genesis doc from file")
 				}
@@ -153,6 +162,138 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 	cmd.Flags().BoolP(genutilcli.FlagOverwrite, "o", false, "overwrite the genesis.json file")
 	cmd.Flags().Bool(genutilcli.FlagRecover, false, "provide seed phrase to recover existing key instead of creating")
 	cmd.Flags().String(flags.FlagChainID, "", "genesis file chain-id, if left blank will be randomly created")
+
+	return cmd
+}
+
+// InitCmd returns a command that initializes all files needed for Tendermint
+// and the respective application.
+func SelfDelegationCmd(mbm module.BasicManager, txEncCfg client.TxEncodingConfig, defaultNodeHome string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "selfdelegation [stake]",
+		Short: "Add private validator to genesis file as validator with stake in base coin from specified account",
+		Long: fmt.Sprintf(`Add private validator to genesis file as validator with stake from specified account.
+Like gentx, but just add validator without transaction.
+
+Example:
+$ %s selfdelegation 100000000del --home=/path/to/home/dir --from keyname
+`, version.AppName),
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			serverCtx := server.GetServerContextFromCmd(cmd)
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			cdc := clientCtx.Codec
+
+			config := serverCtx.Config
+			config.SetRoot(clientCtx.HomeDir)
+
+			privValidator := pvm.LoadFilePV(serverCtx.Config.PrivValidatorKeyFile(), serverCtx.Config.PrivValidatorStateFile())
+
+			genDoc, err := tmtypes.GenesisDocFromFile(config.GenesisFile())
+			if err != nil {
+				return errors.Wrapf(err, "failed to read genesis doc file %s", config.GenesisFile())
+			}
+
+			var genesisState map[string]json.RawMessage
+			if err = json.Unmarshal(genDoc.AppState, &genesisState); err != nil {
+				return errors.Wrap(err, "failed to unmarshal genesis state")
+			}
+
+			if err = mbm.ValidateGenesis(cdc, txEncCfg, genesisState); err != nil {
+				return errors.Wrap(err, "failed to validate genesis state")
+			}
+
+			// create validator
+			tmpubkey, err := privValidator.GetPubKey()
+			if err != nil {
+				return err
+			}
+			pubkey, err := cryptocodec.FromTmPubKeyInterface(tmpubkey)
+			if err != nil {
+				return err
+			}
+			valAdr := sdk.ValAddress(pubkey.Address())
+			validator, err := validatortypes.NewValidator(
+				valAdr,
+				clientCtx.FromAddress,
+				pubkey,
+				validatortypes.NewDescription(
+					config.Moniker,
+					config.Moniker,
+					"http://example.org",
+					"example@exxample.org",
+					"Details",
+				),
+				sdk.MustNewDecFromStr("0.10"),
+			)
+			validator.Status = validatortypes.BondStatus_Bonded
+			validator.Online = true
+			// create delegation
+			stakeCoin, err := sdk.ParseCoinNormalized(args[0])
+			if err != nil {
+				return err
+			}
+			delegation := validatortypes.NewDelegation(clientCtx.FromAddress, valAdr, validatortypes.NewStakeCoin(stakeCoin))
+			// stake power
+			power := validatortypes.LastValidatorPower{
+				Address: valAdr.String(),
+				Power:   validatorkeeper.TokensToConsensusPower(stakeCoin.Amount),
+			}
+			// record for tendermint validators
+			// tmVal := tmtypes.GenesisValidator{
+			// 	Address: sdk.ConsAddress(pubkey.Address()).Bytes(),
+			// 	Name:    config.Moniker,
+			// 	Power:   validatorkeeper.TokensToConsensusPower(stakeCoin.Amount),
+			// 	PubKey:  tmpubkey,
+			// }
+
+			// insert into validator state
+			var vgs validatortypes.GenesisState
+			cdc.MustUnmarshalJSON(genesisState["validator"], &vgs)
+			vgs.Validators = append(vgs.Validators, validator)
+			vgs.Delegations = append(vgs.Delegations, delegation)
+			vgs.LastValidatorPowers = append(vgs.LastValidatorPowers, power)
+			vgs.LastTotalPower += power.Power
+			genesisState["validator"] = cdc.MustMarshalJSON(&vgs)
+			// insert into bond pool
+			poolAddress, _ := bech32.ConvertAndEncode("dx", authtypes.NewModuleAddress("bonded_tokens_pool"))
+			var bgs banktypes.GenesisState
+			cdc.MustUnmarshalJSON(genesisState["bank"], &bgs)
+			var added = false
+			for i := range bgs.Balances {
+				if bgs.Balances[i].Address == poolAddress {
+					bgs.Balances[i].Coins = bgs.Balances[i].Coins.Add(stakeCoin)
+					added = true
+				}
+			}
+			if !added {
+				bgs.Balances = append(bgs.Balances, banktypes.Balance{
+					Address: poolAddress,
+					Coins:   sdk.NewCoins(stakeCoin),
+				})
+			}
+			genesisState["bank"] = cdc.MustMarshalJSON(&bgs)
+			// insert into tendermint validators
+			//genDoc.Validators = append(genDoc.Validators, tmVal)
+
+			genDoc.AppState, err = json.Marshal(genesisState)
+			if err != nil {
+				return errors.Wrap(err, "Failed to marshal app state")
+			}
+
+			if err := genutil.ExportGenesisFile(genDoc, config.GenesisFile()); err != nil {
+				return errors.Wrap(err, "Failed to export gensis file")
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().String(cli.HomeFlag, defaultNodeHome, "node's home directory")
+	cmd.Flags().String(flags.FlagFrom, "", "key of staker")
 
 	return cmd
 }

@@ -1,10 +1,10 @@
 package types
 
 import (
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "cosmossdk.io/errors"
 )
 
-// RootCodespace is the codespace for all errors defined in this package
+// RootCodespace is the codespace for all errors defined in the project.
 const RootCodespace = "decimal"
 
 // root error codes for Decimal
@@ -14,5 +14,5 @@ const (
 
 // errors
 var (
-	ErrKeyTypeNotSupported = sdkerrors.Register(RootCodespace, codeKeyTypeNotSupported, "key type 'secp256k1' not supported")
+	ErrKeyTypeNotSupported = sdkerrors.New(RootCodespace, codeKeyTypeNotSupported, "key type 'secp256k1' not supported")
 )

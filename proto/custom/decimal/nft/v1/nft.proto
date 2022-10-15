@@ -1,0 +1,89 @@
+syntax = "proto3";
+package decimal.nft.v1;
+
+import "gogoproto/gogo.proto";
+
+import "cosmos_proto/cosmos.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
+
+// Collection defines NFT collection which is just a set of NFT tokens.
+message Collection {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // creator defines address of the NFT collection creator.
+  string creator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // denom defines the NFT collection name.
+  string denom = 2;
+  // supply defines total count of NFT tokens containing in the collection.
+  uint32 supply = 3;
+
+  // tokens defines the list of NFT tokens containing in the NFT collection.
+  repeated Token tokens = 4 [ (gogoproto.castrepeated) = "Tokens" ];
+}
+
+// CollectionCounter defines object containing counter of minted NFT tokens in the collection.
+message CollectionCounter {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // supply defines total count of minted NFT tokens in the collection.
+  uint32 supply = 1;
+}
+
+// Token defines NFT token.
+message Token {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // creator defines address of the NFT collection creator.
+  string creator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // denom defines the NFT collection name.
+  string denom = 2;
+  // id defines unique NFT token ID.
+  string id = 3 [ (gogoproto.customname) = "ID" ];
+  // uri defines URI to the NFT token metadata.
+  string uri = 4 [ (gogoproto.customname) = "URI" ];
+  // reserve defines default reserve of each minted NFT sub-token.
+  cosmos.base.v1beta1.Coin reserve = 5 [ (gogoproto.nullable) = false ];
+  // allow_mint defines ability to mint additional NFT sub-tokens.
+  bool allow_mint = 6;
+  // minted defines total count of minted NFT sub-tokens.
+  uint32 minted = 7;
+  // burnt defines total count of burnt NFT sub-tokens.
+  uint32 burnt = 8;
+
+  // sub_tokens defines the list of NFT sub-tokens existing in the NFT token.
+  repeated SubToken sub_tokens = 9 [ (gogoproto.castrepeated) = "SubTokens" ]; 
+}
+
+// TokenCounter defines object containing counters of minted and burnt NFT sub-tokens.
+message TokenCounter {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // minted defines total count of minted NFT sub-tokens.
+  uint32 minted = 1;
+  // burnt defines total count of burnt NFT sub-tokens.
+  uint32 burnt = 2;
+}
+
+// SubToken defines NFT sub-token.
+message SubToken {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // id defines NFT sub-token internal ID in the parent NFT token.
+  uint32 id = 1 [ (gogoproto.customname) = "ID" ];
+  // owner defines address of the current owner of the NFT sub-token.
+  string owner = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // reserve defines reserve of the NFT sub-token.
+  cosmos.base.v1beta1.Coin reserve = 3;
+}

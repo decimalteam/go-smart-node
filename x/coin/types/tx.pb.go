@@ -5,9 +5,11 @@ package types
 
 import (
 	context "context"
+	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
-	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
+	_ "github.com/cosmos/cosmos-proto"
 	types "github.com/cosmos/cosmos-sdk/types"
+	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
 	_ "github.com/gogo/protobuf/gogoproto"
 	grpc1 "github.com/gogo/protobuf/grpc"
 	proto "github.com/gogo/protobuf/proto"
@@ -30,15 +32,16 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// MsgCreateCoin defines a SDK message for creating a new coin.
 type MsgCreateCoin struct {
-	Sender         string                                 `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender" yaml:"sender"`
-	Title          string                                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title" yaml:"title"`
-	Symbol         string                                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol" yaml:"symbol"`
-	CRR            uint64                                 `protobuf:"varint,4,opt,name=crr,proto3" json:"constant_reserve_ratio" yaml:"constant_reserve_ratio"`
-	InitialVolume  github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,5,opt,name=initial_volume,json=initialVolume,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"initial_volume" yaml:"initial_volume"`
-	InitialReserve github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=initial_reserve,json=initialReserve,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"initial_reserve" yaml:"initial_reserve"`
-	LimitVolume    github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,7,opt,name=limit_volume,json=limitVolume,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"limit_volume" yaml:"limit_volume"`
-	Identity       string                                 `protobuf:"bytes,8,opt,name=identity,proto3" json:"identity" yaml:"identity"`
+	Sender         string                `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	Denom          string                `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
+	Title          string                `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	CRR            uint32                `protobuf:"varint,4,opt,name=crr,proto3" json:"crr,omitempty"`
+	InitialVolume  cosmossdk_io_math.Int `protobuf:"bytes,5,opt,name=initial_volume,json=initialVolume,proto3,customtype=cosmossdk.io/math.Int" json:"initial_volume"`
+	InitialReserve cosmossdk_io_math.Int `protobuf:"bytes,6,opt,name=initial_reserve,json=initialReserve,proto3,customtype=cosmossdk.io/math.Int" json:"initial_reserve"`
+	LimitVolume    cosmossdk_io_math.Int `protobuf:"bytes,7,opt,name=limit_volume,json=limitVolume,proto3,customtype=cosmossdk.io/math.Int" json:"limit_volume"`
+	Identity       string                `protobuf:"bytes,8,opt,name=identity,proto3" json:"identity,omitempty"`
 }
 
 func (m *MsgCreateCoin) Reset()         { *m = MsgCreateCoin{} }
@@ -74,6 +77,42 @@ func (m *MsgCreateCoin) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgCreateCoin proto.InternalMessageInfo
 
+func (m *MsgCreateCoin) GetSender() string {
+	if m != nil {
+		return m.Sender
+	}
+	return ""
+}
+
+func (m *MsgCreateCoin) GetDenom() string {
+	if m != nil {
+		return m.Denom
+	}
+	return ""
+}
+
+func (m *MsgCreateCoin) GetTitle() string {
+	if m != nil {
+		return m.Title
+	}
+	return ""
+}
+
+func (m *MsgCreateCoin) GetCRR() uint32 {
+	if m != nil {
+		return m.CRR
+	}
+	return 0
+}
+
+func (m *MsgCreateCoin) GetIdentity() string {
+	if m != nil {
+		return m.Identity
+	}
+	return ""
+}
+
+// MsgCreateCoinResponse defines the Msg/CreateCoin response type.
 type MsgCreateCoinResponse struct {
 }
 
@@ -110,11 +149,12 @@ func (m *MsgCreateCoinResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgCreateCoinResponse proto.InternalMessageInfo
 
+// MsgUpdateCoin defines a SDK message for modifying existing coin.
 type MsgUpdateCoin struct {
-	Sender      string                                 `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender" yaml:"sender"`
-	Symbol      string                                 `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol" yaml:"symbol"`
-	LimitVolume github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,3,opt,name=limit_volume,json=limitVolume,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"limit_volume" yaml:"limit_volume"`
-	Identity    string                                 `protobuf:"bytes,4,opt,name=identity,proto3" json:"identity" yaml:"identity"`
+	Sender      string                `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	Denom       string                `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
+	LimitVolume cosmossdk_io_math.Int `protobuf:"bytes,3,opt,name=limit_volume,json=limitVolume,proto3,customtype=cosmossdk.io/math.Int" json:"limit_volume"`
+	Identity    string                `protobuf:"bytes,4,opt,name=identity,proto3" json:"identity,omitempty"`
 }
 
 func (m *MsgUpdateCoin) Reset()         { *m = MsgUpdateCoin{} }
@@ -150,6 +190,7 @@ func (m *MsgUpdateCoin) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgUpdateCoin proto.InternalMessageInfo
 
+// MsgUpdateCoinResponse defines the Msg/UpdateCoin response type.
 type MsgUpdateCoinResponse struct {
 }
 
@@ -186,354 +227,18 @@ func (m *MsgUpdateCoinResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgUpdateCoinResponse proto.InternalMessageInfo
 
-type Send struct {
-	Coin     types.Coin `protobuf:"bytes,1,opt,name=coin,proto3" json:"coin" yaml:"coin"`
-	Receiver string     `protobuf:"bytes,2,opt,name=receiver,proto3" json:"receiver" yaml:"receiver"`
-}
-
-func (m *Send) Reset()         { *m = Send{} }
-func (m *Send) String() string { return proto.CompactTextString(m) }
-func (*Send) ProtoMessage()    {}
-func (*Send) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d51fdc6114423de8, []int{4}
-}
-func (m *Send) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *Send) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_Send.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *Send) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Send.Merge(m, src)
-}
-func (m *Send) XXX_Size() int {
-	return m.Size()
-}
-func (m *Send) XXX_DiscardUnknown() {
-	xxx_messageInfo_Send.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Send proto.InternalMessageInfo
-
-type MsgMultiSendCoin struct {
-	Sender string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender" yaml:"sender"`
-	Sends  []Send `protobuf:"bytes,2,rep,name=sends,proto3" json:"sends" yaml:"sends"`
-}
-
-func (m *MsgMultiSendCoin) Reset()         { *m = MsgMultiSendCoin{} }
-func (m *MsgMultiSendCoin) String() string { return proto.CompactTextString(m) }
-func (*MsgMultiSendCoin) ProtoMessage()    {}
-func (*MsgMultiSendCoin) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d51fdc6114423de8, []int{5}
-}
-func (m *MsgMultiSendCoin) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgMultiSendCoin) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgMultiSendCoin.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgMultiSendCoin) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgMultiSendCoin.Merge(m, src)
-}
-func (m *MsgMultiSendCoin) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgMultiSendCoin) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgMultiSendCoin.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgMultiSendCoin proto.InternalMessageInfo
-
-type MsgMultiSendCoinResponse struct {
-}
-
-func (m *MsgMultiSendCoinResponse) Reset()         { *m = MsgMultiSendCoinResponse{} }
-func (m *MsgMultiSendCoinResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgMultiSendCoinResponse) ProtoMessage()    {}
-func (*MsgMultiSendCoinResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d51fdc6114423de8, []int{6}
-}
-func (m *MsgMultiSendCoinResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgMultiSendCoinResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgMultiSendCoinResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgMultiSendCoinResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgMultiSendCoinResponse.Merge(m, src)
-}
-func (m *MsgMultiSendCoinResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgMultiSendCoinResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgMultiSendCoinResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgMultiSendCoinResponse proto.InternalMessageInfo
-
-type MsgBuyCoin struct {
-	Sender        string     `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender" yaml:"sender"`
-	CoinToBuy     types.Coin `protobuf:"bytes,2,opt,name=coin_to_buy,json=coinToBuy,proto3" json:"coin_to_buy" yaml:"coin_to_buy"`
-	MaxCoinToSell types.Coin `protobuf:"bytes,3,opt,name=max_coin_to_sell,json=maxCoinToSell,proto3" json:"max_coin_to_sell" yaml:"max_coin_to_sell"`
-}
-
-func (m *MsgBuyCoin) Reset()         { *m = MsgBuyCoin{} }
-func (m *MsgBuyCoin) String() string { return proto.CompactTextString(m) }
-func (*MsgBuyCoin) ProtoMessage()    {}
-func (*MsgBuyCoin) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d51fdc6114423de8, []int{7}
-}
-func (m *MsgBuyCoin) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgBuyCoin) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgBuyCoin.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgBuyCoin) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgBuyCoin.Merge(m, src)
-}
-func (m *MsgBuyCoin) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgBuyCoin) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgBuyCoin.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgBuyCoin proto.InternalMessageInfo
-
-type MsgBuyCoinResponse struct {
-}
-
-func (m *MsgBuyCoinResponse) Reset()         { *m = MsgBuyCoinResponse{} }
-func (m *MsgBuyCoinResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgBuyCoinResponse) ProtoMessage()    {}
-func (*MsgBuyCoinResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d51fdc6114423de8, []int{8}
-}
-func (m *MsgBuyCoinResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgBuyCoinResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgBuyCoinResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgBuyCoinResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgBuyCoinResponse.Merge(m, src)
-}
-func (m *MsgBuyCoinResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgBuyCoinResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgBuyCoinResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgBuyCoinResponse proto.InternalMessageInfo
-
-type MsgSellCoin struct {
-	Sender       string     `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender" yaml:"sender"`
-	CoinToSell   types.Coin `protobuf:"bytes,2,opt,name=coin_to_sell,json=coinToSell,proto3" json:"coin_to_sell" yaml:"coin_to_sell"`
-	MinCoinToBuy types.Coin `protobuf:"bytes,3,opt,name=min_coin_to_buy,json=minCoinToBuy,proto3" json:"min_coin_to_buy" yaml:"min_coin_to_buy"`
-}
-
-func (m *MsgSellCoin) Reset()         { *m = MsgSellCoin{} }
-func (m *MsgSellCoin) String() string { return proto.CompactTextString(m) }
-func (*MsgSellCoin) ProtoMessage()    {}
-func (*MsgSellCoin) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d51fdc6114423de8, []int{9}
-}
-func (m *MsgSellCoin) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgSellCoin) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgSellCoin.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgSellCoin) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgSellCoin.Merge(m, src)
-}
-func (m *MsgSellCoin) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgSellCoin) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgSellCoin.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgSellCoin proto.InternalMessageInfo
-
-type MsgSellCoinResponse struct {
-}
-
-func (m *MsgSellCoinResponse) Reset()         { *m = MsgSellCoinResponse{} }
-func (m *MsgSellCoinResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgSellCoinResponse) ProtoMessage()    {}
-func (*MsgSellCoinResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d51fdc6114423de8, []int{10}
-}
-func (m *MsgSellCoinResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgSellCoinResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgSellCoinResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgSellCoinResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgSellCoinResponse.Merge(m, src)
-}
-func (m *MsgSellCoinResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgSellCoinResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgSellCoinResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgSellCoinResponse proto.InternalMessageInfo
-
-type MsgSellAllCoin struct {
-	Sender       string     `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender" yaml:"sender"`
-	CoinToSell   types.Coin `protobuf:"bytes,2,opt,name=coin_to_sell,json=coinToSell,proto3" json:"coin_to_sell" yaml:"coin_to_sell"`
-	MinCoinToBuy types.Coin `protobuf:"bytes,3,opt,name=min_coin_to_buy,json=minCoinToBuy,proto3" json:"min_coin_to_buy" yaml:"min_coin_to_buy"`
-}
-
-func (m *MsgSellAllCoin) Reset()         { *m = MsgSellAllCoin{} }
-func (m *MsgSellAllCoin) String() string { return proto.CompactTextString(m) }
-func (*MsgSellAllCoin) ProtoMessage()    {}
-func (*MsgSellAllCoin) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d51fdc6114423de8, []int{11}
-}
-func (m *MsgSellAllCoin) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgSellAllCoin) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgSellAllCoin.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgSellAllCoin) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgSellAllCoin.Merge(m, src)
-}
-func (m *MsgSellAllCoin) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgSellAllCoin) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgSellAllCoin.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgSellAllCoin proto.InternalMessageInfo
-
-type MsgSellAllCoinResponse struct {
-}
-
-func (m *MsgSellAllCoinResponse) Reset()         { *m = MsgSellAllCoinResponse{} }
-func (m *MsgSellAllCoinResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgSellAllCoinResponse) ProtoMessage()    {}
-func (*MsgSellAllCoinResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d51fdc6114423de8, []int{12}
-}
-func (m *MsgSellAllCoinResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgSellAllCoinResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgSellAllCoinResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgSellAllCoinResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgSellAllCoinResponse.Merge(m, src)
-}
-func (m *MsgSellAllCoinResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgSellAllCoinResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgSellAllCoinResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgSellAllCoinResponse proto.InternalMessageInfo
-
+// MsgSendCoin defines a SDK message for transferring a coin.
 type MsgSendCoin struct {
-	Sender   string     `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender" yaml:"sender"`
-	Receiver string     `protobuf:"bytes,2,opt,name=receiver,proto3" json:"receiver" yaml:"receiver"`
-	Coin     types.Coin `protobuf:"bytes,3,opt,name=coin,proto3" json:"coin" yaml:"coin"`
+	Sender    string     `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	Recipient string     `protobuf:"bytes,2,opt,name=recipient,proto3" json:"recipient,omitempty"`
+	Coin      types.Coin `protobuf:"bytes,3,opt,name=coin,proto3" json:"coin"`
 }
 
 func (m *MsgSendCoin) Reset()         { *m = MsgSendCoin{} }
 func (m *MsgSendCoin) String() string { return proto.CompactTextString(m) }
 func (*MsgSendCoin) ProtoMessage()    {}
 func (*MsgSendCoin) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d51fdc6114423de8, []int{13}
+	return fileDescriptor_d51fdc6114423de8, []int{4}
 }
 func (m *MsgSendCoin) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -562,6 +267,7 @@ func (m *MsgSendCoin) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgSendCoin proto.InternalMessageInfo
 
+// MsgSendCoinResponse defines the Msg/SendCoin response type.
 type MsgSendCoinResponse struct {
 }
 
@@ -569,7 +275,7 @@ func (m *MsgSendCoinResponse) Reset()         { *m = MsgSendCoinResponse{} }
 func (m *MsgSendCoinResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgSendCoinResponse) ProtoMessage()    {}
 func (*MsgSendCoinResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d51fdc6114423de8, []int{14}
+	return fileDescriptor_d51fdc6114423de8, []int{5}
 }
 func (m *MsgSendCoinResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -598,17 +304,440 @@ func (m *MsgSendCoinResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgSendCoinResponse proto.InternalMessageInfo
 
+// MultiSendEntry defines a single entry of MsgMultiSendCoin message.
+type MultiSendEntry struct {
+	Recipient string     `protobuf:"bytes,1,opt,name=recipient,proto3" json:"recipient,omitempty"`
+	Coin      types.Coin `protobuf:"bytes,2,opt,name=coin,proto3" json:"coin"`
+}
+
+func (m *MultiSendEntry) Reset()         { *m = MultiSendEntry{} }
+func (m *MultiSendEntry) String() string { return proto.CompactTextString(m) }
+func (*MultiSendEntry) ProtoMessage()    {}
+func (*MultiSendEntry) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d51fdc6114423de8, []int{6}
+}
+func (m *MultiSendEntry) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MultiSendEntry) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MultiSendEntry.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MultiSendEntry) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MultiSendEntry.Merge(m, src)
+}
+func (m *MultiSendEntry) XXX_Size() int {
+	return m.Size()
+}
+func (m *MultiSendEntry) XXX_DiscardUnknown() {
+	xxx_messageInfo_MultiSendEntry.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MultiSendEntry proto.InternalMessageInfo
+
+// MsgMultiSendCoin defines a SDK message for multiple transferring coins as a batch.
+type MsgMultiSendCoin struct {
+	Sender string           `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	Sends  []MultiSendEntry `protobuf:"bytes,2,rep,name=sends,proto3" json:"sends"`
+}
+
+func (m *MsgMultiSendCoin) Reset()         { *m = MsgMultiSendCoin{} }
+func (m *MsgMultiSendCoin) String() string { return proto.CompactTextString(m) }
+func (*MsgMultiSendCoin) ProtoMessage()    {}
+func (*MsgMultiSendCoin) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d51fdc6114423de8, []int{7}
+}
+func (m *MsgMultiSendCoin) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgMultiSendCoin) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgMultiSendCoin.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgMultiSendCoin) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgMultiSendCoin.Merge(m, src)
+}
+func (m *MsgMultiSendCoin) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgMultiSendCoin) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgMultiSendCoin.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgMultiSendCoin proto.InternalMessageInfo
+
+// MsgMultiSendCoinResponse defines the Msg/MultiSendCoin response type.
+type MsgMultiSendCoinResponse struct {
+}
+
+func (m *MsgMultiSendCoinResponse) Reset()         { *m = MsgMultiSendCoinResponse{} }
+func (m *MsgMultiSendCoinResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgMultiSendCoinResponse) ProtoMessage()    {}
+func (*MsgMultiSendCoinResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d51fdc6114423de8, []int{8}
+}
+func (m *MsgMultiSendCoinResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgMultiSendCoinResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgMultiSendCoinResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgMultiSendCoinResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgMultiSendCoinResponse.Merge(m, src)
+}
+func (m *MsgMultiSendCoinResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgMultiSendCoinResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgMultiSendCoinResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgMultiSendCoinResponse proto.InternalMessageInfo
+
+// MsgBuyCoin defines a SDK message for buying a coin.
+type MsgBuyCoin struct {
+	Sender        string     `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	CoinToBuy     types.Coin `protobuf:"bytes,2,opt,name=coin_to_buy,json=coinToBuy,proto3" json:"coin_to_buy"`
+	MaxCoinToSell types.Coin `protobuf:"bytes,3,opt,name=max_coin_to_sell,json=maxCoinToSell,proto3" json:"max_coin_to_sell"`
+}
+
+func (m *MsgBuyCoin) Reset()         { *m = MsgBuyCoin{} }
+func (m *MsgBuyCoin) String() string { return proto.CompactTextString(m) }
+func (*MsgBuyCoin) ProtoMessage()    {}
+func (*MsgBuyCoin) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d51fdc6114423de8, []int{9}
+}
+func (m *MsgBuyCoin) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgBuyCoin) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgBuyCoin.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgBuyCoin) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgBuyCoin.Merge(m, src)
+}
+func (m *MsgBuyCoin) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgBuyCoin) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgBuyCoin.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgBuyCoin proto.InternalMessageInfo
+
+// MsgBuyCoinResponse defines the Msg/BuyCoin response type.
+type MsgBuyCoinResponse struct {
+}
+
+func (m *MsgBuyCoinResponse) Reset()         { *m = MsgBuyCoinResponse{} }
+func (m *MsgBuyCoinResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgBuyCoinResponse) ProtoMessage()    {}
+func (*MsgBuyCoinResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d51fdc6114423de8, []int{10}
+}
+func (m *MsgBuyCoinResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgBuyCoinResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgBuyCoinResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgBuyCoinResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgBuyCoinResponse.Merge(m, src)
+}
+func (m *MsgBuyCoinResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgBuyCoinResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgBuyCoinResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgBuyCoinResponse proto.InternalMessageInfo
+
+// MsgSellCoin defines a SDK message for selling a coin.
+type MsgSellCoin struct {
+	Sender       string     `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	CoinToSell   types.Coin `protobuf:"bytes,2,opt,name=coin_to_sell,json=coinToSell,proto3" json:"coin_to_sell"`
+	MinCoinToBuy types.Coin `protobuf:"bytes,3,opt,name=min_coin_to_buy,json=minCoinToBuy,proto3" json:"min_coin_to_buy"`
+}
+
+func (m *MsgSellCoin) Reset()         { *m = MsgSellCoin{} }
+func (m *MsgSellCoin) String() string { return proto.CompactTextString(m) }
+func (*MsgSellCoin) ProtoMessage()    {}
+func (*MsgSellCoin) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d51fdc6114423de8, []int{11}
+}
+func (m *MsgSellCoin) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgSellCoin) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgSellCoin.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgSellCoin) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgSellCoin.Merge(m, src)
+}
+func (m *MsgSellCoin) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgSellCoin) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgSellCoin.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgSellCoin proto.InternalMessageInfo
+
+// MsgSellCoinResponse defines the Msg/SellCoin response type.
+type MsgSellCoinResponse struct {
+}
+
+func (m *MsgSellCoinResponse) Reset()         { *m = MsgSellCoinResponse{} }
+func (m *MsgSellCoinResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgSellCoinResponse) ProtoMessage()    {}
+func (*MsgSellCoinResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d51fdc6114423de8, []int{12}
+}
+func (m *MsgSellCoinResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgSellCoinResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgSellCoinResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgSellCoinResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgSellCoinResponse.Merge(m, src)
+}
+func (m *MsgSellCoinResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgSellCoinResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgSellCoinResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgSellCoinResponse proto.InternalMessageInfo
+
+// MsgSellAllCoin defines a SDK message for selling a coin completely (to sell all having amount of a coin)
+type MsgSellAllCoin struct {
+	Sender          string     `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	CoinDenomToSell string     `protobuf:"bytes,2,opt,name=coin_denom_to_sell,json=coinDenomToSell,proto3" json:"coin_denom_to_sell,omitempty"`
+	MinCoinToBuy    types.Coin `protobuf:"bytes,3,opt,name=min_coin_to_buy,json=minCoinToBuy,proto3" json:"min_coin_to_buy"`
+}
+
+func (m *MsgSellAllCoin) Reset()         { *m = MsgSellAllCoin{} }
+func (m *MsgSellAllCoin) String() string { return proto.CompactTextString(m) }
+func (*MsgSellAllCoin) ProtoMessage()    {}
+func (*MsgSellAllCoin) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d51fdc6114423de8, []int{13}
+}
+func (m *MsgSellAllCoin) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgSellAllCoin) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgSellAllCoin.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgSellAllCoin) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgSellAllCoin.Merge(m, src)
+}
+func (m *MsgSellAllCoin) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgSellAllCoin) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgSellAllCoin.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgSellAllCoin proto.InternalMessageInfo
+
+// MsgSellAllCoinResponse defines the Msg/SellAllCoin response type.
+type MsgSellAllCoinResponse struct {
+}
+
+func (m *MsgSellAllCoinResponse) Reset()         { *m = MsgSellAllCoinResponse{} }
+func (m *MsgSellAllCoinResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgSellAllCoinResponse) ProtoMessage()    {}
+func (*MsgSellAllCoinResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d51fdc6114423de8, []int{14}
+}
+func (m *MsgSellAllCoinResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgSellAllCoinResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgSellAllCoinResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgSellAllCoinResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgSellAllCoinResponse.Merge(m, src)
+}
+func (m *MsgSellAllCoinResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgSellAllCoinResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgSellAllCoinResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgSellAllCoinResponse proto.InternalMessageInfo
+
+// MsgBurnCoin defines a SDK message for burning a coin.
+type MsgBurnCoin struct {
+	Sender string     `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	Coin   types.Coin `protobuf:"bytes,2,opt,name=coin,proto3" json:"coin"`
+}
+
+func (m *MsgBurnCoin) Reset()         { *m = MsgBurnCoin{} }
+func (m *MsgBurnCoin) String() string { return proto.CompactTextString(m) }
+func (*MsgBurnCoin) ProtoMessage()    {}
+func (*MsgBurnCoin) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d51fdc6114423de8, []int{15}
+}
+func (m *MsgBurnCoin) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgBurnCoin) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgBurnCoin.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgBurnCoin) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgBurnCoin.Merge(m, src)
+}
+func (m *MsgBurnCoin) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgBurnCoin) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgBurnCoin.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgBurnCoin proto.InternalMessageInfo
+
+// MsgBurnCoinResponse defines the Msg/BurnCoin response type.
+type MsgBurnCoinResponse struct {
+}
+
+func (m *MsgBurnCoinResponse) Reset()         { *m = MsgBurnCoinResponse{} }
+func (m *MsgBurnCoinResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgBurnCoinResponse) ProtoMessage()    {}
+func (*MsgBurnCoinResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d51fdc6114423de8, []int{16}
+}
+func (m *MsgBurnCoinResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgBurnCoinResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgBurnCoinResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgBurnCoinResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgBurnCoinResponse.Merge(m, src)
+}
+func (m *MsgBurnCoinResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgBurnCoinResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgBurnCoinResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgBurnCoinResponse proto.InternalMessageInfo
+
+// MsgRedeemCheck defines a SDK message for redeeming a check.
 type MsgRedeemCheck struct {
-	Sender string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender" yaml:"sender"`
-	Check  string `protobuf:"bytes,2,opt,name=check,proto3" json:"check" yaml:"check"`
-	Proof  string `protobuf:"bytes,3,opt,name=proof,proto3" json:"proof" yaml:"proof"`
+	Sender string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	Check  string `protobuf:"bytes,2,opt,name=check,proto3" json:"check,omitempty"`
+	Proof  string `protobuf:"bytes,3,opt,name=proof,proto3" json:"proof,omitempty"`
 }
 
 func (m *MsgRedeemCheck) Reset()         { *m = MsgRedeemCheck{} }
 func (m *MsgRedeemCheck) String() string { return proto.CompactTextString(m) }
 func (*MsgRedeemCheck) ProtoMessage()    {}
 func (*MsgRedeemCheck) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d51fdc6114423de8, []int{15}
+	return fileDescriptor_d51fdc6114423de8, []int{17}
 }
 func (m *MsgRedeemCheck) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -637,6 +766,7 @@ func (m *MsgRedeemCheck) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgRedeemCheck proto.InternalMessageInfo
 
+// MsgRedeemCheckResponse defines the Msg/RedeemCheck response type.
 type MsgRedeemCheckResponse struct {
 }
 
@@ -644,7 +774,7 @@ func (m *MsgRedeemCheckResponse) Reset()         { *m = MsgRedeemCheckResponse{}
 func (m *MsgRedeemCheckResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgRedeemCheckResponse) ProtoMessage()    {}
 func (*MsgRedeemCheckResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d51fdc6114423de8, []int{16}
+	return fileDescriptor_d51fdc6114423de8, []int{18}
 }
 func (m *MsgRedeemCheckResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -678,7 +808,9 @@ func init() {
 	proto.RegisterType((*MsgCreateCoinResponse)(nil), "decimal.coin.v1.MsgCreateCoinResponse")
 	proto.RegisterType((*MsgUpdateCoin)(nil), "decimal.coin.v1.MsgUpdateCoin")
 	proto.RegisterType((*MsgUpdateCoinResponse)(nil), "decimal.coin.v1.MsgUpdateCoinResponse")
-	proto.RegisterType((*Send)(nil), "decimal.coin.v1.Send")
+	proto.RegisterType((*MsgSendCoin)(nil), "decimal.coin.v1.MsgSendCoin")
+	proto.RegisterType((*MsgSendCoinResponse)(nil), "decimal.coin.v1.MsgSendCoinResponse")
+	proto.RegisterType((*MultiSendEntry)(nil), "decimal.coin.v1.MultiSendEntry")
 	proto.RegisterType((*MsgMultiSendCoin)(nil), "decimal.coin.v1.MsgMultiSendCoin")
 	proto.RegisterType((*MsgMultiSendCoinResponse)(nil), "decimal.coin.v1.MsgMultiSendCoinResponse")
 	proto.RegisterType((*MsgBuyCoin)(nil), "decimal.coin.v1.MsgBuyCoin")
@@ -687,8 +819,8 @@ func init() {
 	proto.RegisterType((*MsgSellCoinResponse)(nil), "decimal.coin.v1.MsgSellCoinResponse")
 	proto.RegisterType((*MsgSellAllCoin)(nil), "decimal.coin.v1.MsgSellAllCoin")
 	proto.RegisterType((*MsgSellAllCoinResponse)(nil), "decimal.coin.v1.MsgSellAllCoinResponse")
-	proto.RegisterType((*MsgSendCoin)(nil), "decimal.coin.v1.MsgSendCoin")
-	proto.RegisterType((*MsgSendCoinResponse)(nil), "decimal.coin.v1.MsgSendCoinResponse")
+	proto.RegisterType((*MsgBurnCoin)(nil), "decimal.coin.v1.MsgBurnCoin")
+	proto.RegisterType((*MsgBurnCoinResponse)(nil), "decimal.coin.v1.MsgBurnCoinResponse")
 	proto.RegisterType((*MsgRedeemCheck)(nil), "decimal.coin.v1.MsgRedeemCheck")
 	proto.RegisterType((*MsgRedeemCheckResponse)(nil), "decimal.coin.v1.MsgRedeemCheckResponse")
 }
@@ -696,76 +828,68 @@ func init() {
 func init() { proto.RegisterFile("decimal/coin/v1/tx.proto", fileDescriptor_d51fdc6114423de8) }
 
 var fileDescriptor_d51fdc6114423de8 = []byte{
-	// 1093 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x57, 0x4d, 0x6f, 0xdc, 0x44,
-	0x18, 0x5e, 0xef, 0x26, 0x69, 0x3a, 0xbb, 0x69, 0x2a, 0xa7, 0x49, 0xdd, 0x0d, 0xdd, 0x09, 0x06,
-	0x95, 0x54, 0x28, 0xb6, 0x92, 0x70, 0x2a, 0x27, 0x76, 0x4f, 0x14, 0x6d, 0x0f, 0xd3, 0x14, 0x04,
-	0x08, 0xad, 0xbc, 0xde, 0xc1, 0xb1, 0x62, 0x7b, 0x22, 0x7b, 0x76, 0xc9, 0xde, 0x38, 0x70, 0xe0,
-	0xc8, 0x91, 0x0b, 0x52, 0xf8, 0x03, 0x54, 0x42, 0xe2, 0xca, 0xb9, 0x37, 0x7a, 0x04, 0x0e, 0x16,
-	0x4a, 0x2e, 0x68, 0x8f, 0xfe, 0x05, 0xc8, 0x33, 0xe3, 0xcf, 0x38, 0x49, 0x9b, 0x20, 0x71, 0xe1,
-	0xb4, 0x9e, 0xe7, 0x99, 0xf7, 0xeb, 0x99, 0xd7, 0xaf, 0x67, 0x81, 0x32, 0xc2, 0xa6, 0xed, 0x1a,
-	0x8e, 0x6e, 0x12, 0xdb, 0xd3, 0x27, 0xdb, 0x3a, 0x3d, 0xd2, 0x0e, 0x7d, 0x42, 0x89, 0xbc, 0x2c,
-	0x18, 0x2d, 0x66, 0xb4, 0xc9, 0x76, 0xfb, 0x8e, 0x45, 0x2c, 0xc2, 0x38, 0x3d, 0x7e, 0xe2, 0xdb,
-	0xda, 0x1d, 0x93, 0x04, 0x2e, 0x09, 0xf4, 0xa1, 0x11, 0x60, 0x7d, 0xb2, 0x3d, 0xc4, 0xd4, 0xd8,
-	0x66, 0xce, 0x38, 0xaf, 0xfe, 0x36, 0x0f, 0x96, 0xfa, 0x81, 0xd5, 0xf3, 0xb1, 0x41, 0x71, 0x8f,
-	0xd8, 0x9e, 0xbc, 0x0b, 0x16, 0x02, 0xec, 0x8d, 0xb0, 0xaf, 0x48, 0x1b, 0xd2, 0xe6, 0xcd, 0xee,
-	0xfa, 0x2c, 0x84, 0x02, 0x89, 0x42, 0xb8, 0x34, 0x35, 0x5c, 0xe7, 0x91, 0xca, 0xd7, 0x2a, 0x12,
-	0x84, 0xac, 0x83, 0x79, 0x6a, 0x53, 0x07, 0x2b, 0x75, 0x66, 0x73, 0x6f, 0x16, 0x42, 0x0e, 0x44,
-	0x21, 0x6c, 0x71, 0x13, 0xb6, 0x54, 0x11, 0x87, 0x59, 0x94, 0xa9, 0x3b, 0x24, 0x8e, 0xd2, 0xc8,
-	0x45, 0x61, 0x48, 0x2e, 0x0a, 0x5b, 0xc7, 0x51, 0xd8, 0x83, 0xbc, 0x07, 0x1a, 0xa6, 0xef, 0x2b,
-	0x73, 0x1b, 0xd2, 0xe6, 0x5c, 0xb7, 0x7b, 0x12, 0xc2, 0x46, 0x0f, 0xa1, 0x59, 0x08, 0xd7, 0x4c,
-	0xe2, 0x05, 0xd4, 0xf0, 0xe8, 0xc0, 0xc7, 0x01, 0xf6, 0x27, 0x78, 0xe0, 0x1b, 0xd4, 0x26, 0x51,
-	0x08, 0xef, 0x73, 0x47, 0xd5, 0xbc, 0x8a, 0x62, 0x77, 0xf2, 0xd7, 0x12, 0xb8, 0x65, 0x7b, 0x36,
-	0xb5, 0x0d, 0x67, 0x30, 0x21, 0xce, 0xd8, 0xc5, 0xca, 0xfc, 0x86, 0xb4, 0xd9, 0xea, 0x7e, 0xfa,
-	0x22, 0x84, 0xb5, 0x3f, 0x43, 0xf8, 0xc0, 0xb2, 0xe9, 0xfe, 0x78, 0xa8, 0x99, 0xc4, 0xd5, 0x85,
-	0x9c, 0xfc, 0x67, 0x2b, 0x18, 0x1d, 0xe8, 0x74, 0x7a, 0x88, 0x03, 0xed, 0x43, 0x8f, 0xce, 0x42,
-	0x58, 0xf2, 0x13, 0x85, 0x70, 0x95, 0x27, 0x50, 0xc4, 0x55, 0xb4, 0x24, 0x80, 0x8f, 0xd9, 0x5a,
-	0xfe, 0x46, 0x02, 0xcb, 0xc9, 0x16, 0x91, 0xa2, 0xb2, 0xc0, 0x72, 0xf8, 0xfc, 0xb5, 0x73, 0x28,
-	0x3b, 0x8a, 0x42, 0xb8, 0x56, 0x4c, 0x42, 0x10, 0x2a, 0x4a, 0xd2, 0x45, 0x1c, 0x90, 0x8f, 0x40,
-	0xcb, 0xb1, 0x5d, 0x9b, 0x26, 0x32, 0xdc, 0x60, 0x29, 0x3c, 0x7b, 0xed, 0x14, 0x0a, 0x5e, 0xa2,
-	0x10, 0xae, 0xf0, 0xf8, 0x79, 0x54, 0x45, 0x4d, 0xb6, 0x14, 0x02, 0xbc, 0x0f, 0x16, 0xed, 0x11,
-	0xf6, 0xa8, 0x4d, 0xa7, 0xca, 0x22, 0x6b, 0x08, 0x38, 0x0b, 0x61, 0x8a, 0x45, 0x21, 0x5c, 0x16,
-	0x35, 0x08, 0x44, 0x45, 0x29, 0xf9, 0xa8, 0xf5, 0xed, 0x31, 0xac, 0x7d, 0x7f, 0x0c, 0xa5, 0xbf,
-	0x8f, 0x61, 0x4d, 0xbd, 0x0b, 0x56, 0x0b, 0x0d, 0x8d, 0x70, 0x70, 0x48, 0xbc, 0x00, 0xab, 0xbf,
-	0xd6, 0x59, 0xab, 0x3f, 0x3b, 0x1c, 0x5d, 0xab, 0xd5, 0xb3, 0xce, 0xad, 0xbf, 0x7a, 0xe7, 0x96,
-	0x95, 0x6d, 0xfc, 0x27, 0xca, 0xce, 0xfd, 0x1b, 0xca, 0x66, 0xfa, 0xa5, 0xca, 0xfe, 0x20, 0x81,
-	0xb9, 0xa7, 0xd8, 0x1b, 0xc9, 0x8f, 0xc1, 0x5c, 0x3c, 0x5b, 0x98, 0x9c, 0xcd, 0x9d, 0x7b, 0x1a,
-	0xaf, 0x42, 0x8b, 0x87, 0x8f, 0x26, 0x86, 0x8f, 0x16, 0x5b, 0x76, 0xd7, 0xe3, 0xca, 0x67, 0x21,
-	0x64, 0xdb, 0xa3, 0x10, 0x36, 0x93, 0xf7, 0xd4, 0xf6, 0x54, 0xc4, 0xc0, 0x38, 0x71, 0x1f, 0x9b,
-	0xd8, 0x9e, 0x60, 0x5f, 0x28, 0xcd, 0x12, 0x4f, 0xb0, 0x2c, 0xf1, 0x04, 0x51, 0x51, 0x4a, 0x96,
-	0x12, 0xff, 0x51, 0x02, 0xb7, 0xfb, 0x81, 0xd5, 0x1f, 0x3b, 0xd4, 0x8e, 0xf3, 0xbc, 0xfa, 0xe1,
-	0x3f, 0x06, 0xf3, 0xf1, 0x53, 0xa0, 0xd4, 0x37, 0x1a, 0x9b, 0xcd, 0x9d, 0x55, 0xad, 0x34, 0x85,
-	0xb5, 0xd8, 0x7d, 0xf7, 0xbe, 0xa8, 0x8e, 0xef, 0xcd, 0x46, 0x20, 0x5b, 0xaa, 0x88, 0xc3, 0xa5,
-	0x1c, 0xdb, 0x40, 0x29, 0xa7, 0x98, 0xea, 0xfb, 0x53, 0x1d, 0x80, 0x7e, 0x60, 0x75, 0xc7, 0xd3,
-	0xab, 0x67, 0x3e, 0x02, 0xcd, 0x38, 0xc7, 0x01, 0x25, 0x83, 0xe1, 0x78, 0xca, 0x14, 0xbd, 0xf0,
-	0x84, 0x1e, 0x8a, 0x1a, 0xf2, 0x56, 0x51, 0x08, 0xe5, 0xec, 0xa0, 0x04, 0xa8, 0xa2, 0x9b, 0xf1,
-	0x6a, 0x8f, 0x74, 0xc7, 0x53, 0xf9, 0x2b, 0x70, 0xdb, 0x35, 0x8e, 0x06, 0x09, 0x1d, 0x60, 0x87,
-	0x0f, 0xf8, 0x0b, 0x43, 0xed, 0x8a, 0x50, 0x67, 0x4c, 0xa3, 0x10, 0xde, 0xe5, 0xf1, 0xca, 0x8c,
-	0x8a, 0x96, 0x5c, 0xe3, 0xa8, 0xc7, 0xe2, 0x3e, 0xc5, 0x8e, 0x53, 0x12, 0xf3, 0x0e, 0x90, 0x33,
-	0xbd, 0x52, 0x19, 0x9f, 0xd7, 0x41, 0xb3, 0x1f, 0x58, 0xf1, 0xfe, 0xab, 0xeb, 0xb8, 0x0f, 0x5a,
-	0x85, 0xea, 0x2e, 0x15, 0xf2, 0x5d, 0x51, 0x5d, 0xab, 0x54, 0xd9, 0x4a, 0x51, 0x49, 0x5e, 0x15,
-	0x30, 0xd3, 0x92, 0xe4, 0x00, 0x2c, 0xbb, 0xb6, 0x37, 0xc8, 0x9f, 0xda, 0xa5, 0x52, 0x6e, 0x8b,
-	0x60, 0x65, 0xcb, 0xec, 0x23, 0x50, 0x22, 0x54, 0xd4, 0x72, 0x6d, 0xaf, 0x97, 0x1c, 0x60, 0x49,
-	0xc7, 0x55, 0xb0, 0x92, 0x13, 0x2c, 0x15, 0xf2, 0xe7, 0x3a, 0xb8, 0x25, 0xf0, 0x0f, 0xfe, 0xd7,
-	0xf2, 0x15, 0xb5, 0x54, 0xc0, 0x5a, 0x51, 0xb3, 0x54, 0xce, 0x3f, 0x24, 0xd1, 0x97, 0xd7, 0x99,
-	0x4c, 0xd7, 0x19, 0x97, 0xe9, 0xdc, 0x6e, 0x5c, 0x7f, 0x6e, 0x9f, 0xd3, 0x41, 0xa5, 0x89, 0xf6,
-	0x8b, 0xc4, 0x3a, 0x08, 0xe1, 0x11, 0xc6, 0x6e, 0x6f, 0x1f, 0x9b, 0x07, 0x57, 0xbe, 0x77, 0x9a,
-	0xb1, 0x75, 0xfe, 0xde, 0xc9, 0x80, 0x6c, 0xe8, 0xb2, 0xa5, 0x8a, 0x38, 0x1c, 0x1b, 0x1c, 0xfa,
-	0x84, 0x7c, 0x29, 0xae, 0x9d, 0xcc, 0x80, 0x01, 0x99, 0x01, 0x5b, 0xaa, 0x88, 0xc3, 0x95, 0x87,
-	0x98, 0x4b, 0x3b, 0xa9, 0x68, 0xe7, 0xf9, 0x3c, 0x68, 0xf4, 0x03, 0x4b, 0xde, 0x03, 0x20, 0x77,
-	0x99, 0xee, 0x9c, 0xf9, 0x40, 0x14, 0xee, 0x26, 0xed, 0x07, 0x17, 0xf3, 0x89, 0xf7, 0xd8, 0x6b,
-	0xee, 0xde, 0x52, 0xe9, 0x35, 0xe3, 0xab, 0xbd, 0x9e, 0xfd, 0x6e, 0xcb, 0x4f, 0xc0, 0x62, 0xda,
-	0x74, 0x6f, 0x54, 0xd9, 0x24, 0x6c, 0xfb, 0xed, 0x8b, 0xd8, 0xd4, 0xdf, 0x17, 0x60, 0xa9, 0xf8,
-	0x8d, 0x7d, 0xb3, 0xca, 0xac, 0xb0, 0xa5, 0xfd, 0xf0, 0xd2, 0x2d, 0xa9, 0xfb, 0x8f, 0xc0, 0x8d,
-	0xe4, 0x13, 0xb8, 0x5e, 0x65, 0x25, 0xc8, 0xf6, 0x5b, 0x17, 0x90, 0xc5, 0xda, 0xc5, 0xf0, 0x3a,
-	0xa7, 0x76, 0xce, 0x9e, 0x57, 0x7b, 0xf1, 0x25, 0x96, 0x3f, 0x01, 0xcd, 0xfc, 0x3c, 0x84, 0xe7,
-	0x19, 0x89, 0x0d, 0xed, 0x77, 0x2e, 0xd9, 0x90, 0x77, 0x9c, 0x7f, 0x4d, 0x2a, 0x1d, 0xe7, 0x36,
-	0x54, 0x3b, 0xae, 0xe8, 0xd8, 0xee, 0x93, 0x17, 0x27, 0x1d, 0xe9, 0xe5, 0x49, 0x47, 0xfa, 0xeb,
-	0xa4, 0x23, 0x7d, 0x77, 0xda, 0xa9, 0xbd, 0x3c, 0xed, 0xd4, 0x7e, 0x3f, 0xed, 0xd4, 0x3e, 0x7b,
-	0x6f, 0x68, 0xd3, 0xe1, 0xd8, 0x3c, 0xc0, 0x54, 0x23, 0xbe, 0xa5, 0x0b, 0x7f, 0x14, 0x1b, 0xae,
-	0x6e, 0x91, 0xad, 0xc0, 0x35, 0x7c, 0xba, 0xe5, 0x91, 0x11, 0xd6, 0x8f, 0xf8, 0xff, 0x52, 0x76,
-	0x43, 0x1d, 0x2e, 0xb0, 0x7f, 0x94, 0xbb, 0xff, 0x04, 0x00, 0x00, 0xff, 0xff, 0x9c, 0x30, 0xd3,
-	0x3a, 0xb4, 0x0e, 0x00, 0x00,
+	// 967 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x57, 0xcf, 0x6f, 0xe3, 0x44,
+	0x14, 0x8e, 0x9b, 0xfe, 0x7c, 0x69, 0xb6, 0x2b, 0xd3, 0x52, 0xd7, 0xac, 0x92, 0x52, 0x10, 0x14,
+	0x56, 0xb5, 0x69, 0x17, 0x71, 0x80, 0x03, 0x6a, 0x02, 0x88, 0x15, 0x4a, 0x0f, 0x6e, 0x01, 0x09,
+	0x09, 0x45, 0x8e, 0x3d, 0x78, 0x47, 0xb5, 0x3d, 0x91, 0x67, 0x12, 0x35, 0x57, 0x2e, 0x20, 0x21,
+	0x24, 0x8e, 0x88, 0x53, 0xef, 0x5c, 0x38, 0xec, 0xbf, 0x80, 0xb4, 0xc7, 0x6a, 0x4f, 0x08, 0xa1,
+	0x0a, 0xa5, 0x07, 0xf8, 0x2f, 0x40, 0xe3, 0x19, 0xbb, 0x76, 0xea, 0x34, 0x6d, 0x54, 0xed, 0x2d,
+	0x33, 0xdf, 0x7b, 0x9f, 0xbf, 0xef, 0x4d, 0xde, 0x1b, 0x1b, 0x34, 0x17, 0x39, 0x38, 0xb0, 0x7d,
+	0xd3, 0x21, 0x38, 0x34, 0xfb, 0xbb, 0x26, 0x3b, 0x31, 0xba, 0x11, 0x61, 0x44, 0x5d, 0x91, 0x88,
+	0xc1, 0x11, 0xa3, 0xbf, 0xab, 0xaf, 0x7a, 0xc4, 0x23, 0x31, 0x66, 0xf2, 0x5f, 0x22, 0x4c, 0xdf,
+	0x70, 0x08, 0x0d, 0x08, 0x6d, 0x0b, 0x40, 0x2c, 0x24, 0x54, 0x13, 0x2b, 0xb3, 0x63, 0x53, 0x64,
+	0xf6, 0x77, 0x3b, 0x88, 0xd9, 0xbb, 0xf1, 0x73, 0x24, 0xbe, 0x2e, 0xf1, 0x80, 0x7a, 0xfc, 0xc9,
+	0x01, 0xf5, 0x04, 0xb0, 0xf5, 0x6b, 0x19, 0xaa, 0x2d, 0xea, 0x35, 0x23, 0x64, 0x33, 0xd4, 0x24,
+	0x38, 0x54, 0xdf, 0x81, 0x79, 0x8a, 0x42, 0x17, 0x45, 0x9a, 0xb2, 0xa9, 0x6c, 0x2f, 0x35, 0xb4,
+	0xe7, 0x4f, 0x77, 0x56, 0xe5, 0xc3, 0xf6, 0x5d, 0x37, 0x42, 0x94, 0x1e, 0xb2, 0x08, 0x87, 0x9e,
+	0x25, 0xe3, 0xd4, 0x55, 0x98, 0x73, 0x51, 0x48, 0x02, 0x6d, 0x86, 0x27, 0x58, 0x62, 0xc1, 0x77,
+	0x19, 0x66, 0x3e, 0xd2, 0xca, 0x62, 0x37, 0x5e, 0xa8, 0x1b, 0x50, 0x76, 0xa2, 0x48, 0x9b, 0xdd,
+	0x54, 0xb6, 0xab, 0x8d, 0x85, 0xe1, 0x79, 0xbd, 0xdc, 0xb4, 0x2c, 0x8b, 0xef, 0xa9, 0x16, 0xdc,
+	0xc3, 0x21, 0x66, 0xd8, 0xf6, 0xdb, 0x7d, 0xe2, 0xf7, 0x02, 0xa4, 0xcd, 0xc5, 0x02, 0x1e, 0x3e,
+	0x3b, 0xaf, 0x97, 0xfe, 0x3c, 0xaf, 0xaf, 0x09, 0x11, 0xd4, 0x3d, 0x36, 0x30, 0x31, 0x03, 0x9b,
+	0x3d, 0x31, 0x1e, 0x87, 0xec, 0xf9, 0xd3, 0x1d, 0x90, 0xea, 0x1e, 0x87, 0xcc, 0xaa, 0x4a, 0x8a,
+	0x2f, 0x62, 0x06, 0xf5, 0x08, 0x56, 0x12, 0xce, 0x08, 0x51, 0x14, 0xf5, 0x91, 0x36, 0x7f, 0x7b,
+	0xd2, 0x44, 0x97, 0x25, 0x28, 0xd4, 0x03, 0x58, 0xf6, 0x71, 0x80, 0x59, 0xa2, 0x73, 0xe1, 0xf6,
+	0x94, 0x95, 0x98, 0x40, 0xaa, 0xd4, 0x61, 0x11, 0xbb, 0x28, 0x64, 0x98, 0x0d, 0xb4, 0xc5, 0xb8,
+	0x5a, 0xe9, 0xfa, 0xfd, 0xca, 0xb7, 0xff, 0xfc, 0xf6, 0xb6, 0xac, 0xf4, 0xd6, 0x3a, 0xac, 0xe5,
+	0x0e, 0xcb, 0x42, 0xb4, 0x4b, 0x42, 0x8a, 0xb6, 0xfe, 0x52, 0xe2, 0x63, 0xfc, 0xbc, 0xeb, 0xde,
+	0xf5, 0x31, 0x8e, 0x7a, 0x2d, 0xdf, 0xa1, 0xd7, 0xd9, 0x11, 0xaf, 0xeb, 0xdf, 0x9f, 0xd6, 0x4b,
+	0x3f, 0x9f, 0xd6, 0x95, 0x7f, 0x4f, 0xeb, 0xa5, 0xab, 0xbe, 0x2f, 0xdd, 0xa5, 0xbe, 0x7f, 0x57,
+	0xa0, 0xd2, 0xa2, 0xde, 0x21, 0x0a, 0xdd, 0x29, 0x5d, 0xbf, 0x07, 0x4b, 0x11, 0x72, 0x70, 0x17,
+	0xa3, 0x90, 0x09, 0xe7, 0xd7, 0x24, 0x5d, 0x86, 0xaa, 0x8f, 0x60, 0x96, 0xf7, 0x57, 0x5c, 0x8f,
+	0xca, 0xde, 0x86, 0x21, 0xe3, 0x79, 0x03, 0x1a, 0xb2, 0x01, 0x0d, 0x2e, 0xa9, 0x31, 0xcb, 0x4b,
+	0x65, 0xc5, 0xc1, 0xe3, 0x0d, 0xae, 0xc1, 0x4b, 0x19, 0x1b, 0xa9, 0xbd, 0x1f, 0x14, 0xb8, 0xd7,
+	0xea, 0xf9, 0x0c, 0x73, 0xe4, 0xe3, 0x90, 0x45, 0x83, 0xbc, 0x5e, 0xe5, 0xf6, 0x7a, 0x67, 0x6e,
+	0xa3, 0x77, 0x39, 0xab, 0x77, 0xeb, 0x17, 0x05, 0xee, 0xb7, 0xa8, 0x97, 0x0a, 0x9a, 0xb2, 0xe2,
+	0x1f, 0xc0, 0x1c, 0xff, 0x45, 0xb5, 0x99, 0xcd, 0xf2, 0x76, 0x65, 0xaf, 0x6e, 0x8c, 0x4c, 0x3f,
+	0x23, 0xef, 0x58, 0x0a, 0x12, 0x39, 0xe3, 0x2b, 0xa8, 0x83, 0x36, 0xaa, 0x2d, 0x2d, 0xe3, 0x50,
+	0x01, 0x68, 0x51, 0xaf, 0xd1, 0x1b, 0x4c, 0x29, 0xf9, 0x43, 0xa8, 0x70, 0x71, 0x6d, 0x46, 0xda,
+	0x9d, 0xde, 0xe0, 0xa6, 0x35, 0x5c, 0xe2, 0x39, 0x47, 0xa4, 0xd1, 0x1b, 0xa8, 0x9f, 0xc2, 0xfd,
+	0xc0, 0x3e, 0x69, 0x27, 0x24, 0x14, 0xf9, 0xfe, 0x4d, 0xff, 0x39, 0xd5, 0xc0, 0x3e, 0x69, 0xc6,
+	0x44, 0x87, 0xc8, 0xf7, 0xc7, 0x17, 0x60, 0x15, 0xd4, 0x4b, 0x8f, 0xa9, 0xf5, 0x8b, 0xa4, 0x41,
+	0x7c, 0x7f, 0x4a, 0xef, 0xfb, 0xb0, 0x9c, 0x93, 0x7d, 0x43, 0xf3, 0xe0, 0xa4, 0x9a, 0xd5, 0x4f,
+	0x60, 0x25, 0xc0, 0x61, 0x3b, 0x5b, 0xc2, 0x1b, 0x9a, 0x5f, 0x0e, 0x70, 0xd8, 0x4c, 0xaa, 0x38,
+	0xb9, 0x7d, 0x84, 0xc9, 0xd4, 0xfc, 0x19, 0x6f, 0x1f, 0xb1, 0xbf, 0x3f, 0xb5, 0xff, 0x87, 0xa0,
+	0xc6, 0xc2, 0xe3, 0x71, 0x98, 0xab, 0xc2, 0x92, 0xb5, 0xc2, 0x91, 0x8f, 0x38, 0xf0, 0xa2, 0x9c,
+	0x6a, 0xf0, 0x72, 0xde, 0x51, 0x6a, 0xf6, 0x47, 0x71, 0xd2, 0x8d, 0x5e, 0x14, 0x4e, 0xe9, 0x74,
+	0xaa, 0x11, 0x31, 0xe1, 0x4c, 0x12, 0x39, 0xa9, 0xcc, 0xef, 0xc4, 0x99, 0x58, 0xc8, 0x45, 0x28,
+	0x68, 0x3e, 0x41, 0xce, 0xf1, 0x74, 0x57, 0x95, 0xc3, 0x53, 0x93, 0xab, 0x2a, 0x5e, 0xf0, 0xdd,
+	0x6e, 0x44, 0xc8, 0x37, 0xc9, 0x1b, 0x47, 0xbc, 0x98, 0x54, 0xca, 0x8c, 0x90, 0x44, 0xe3, 0xde,
+	0x7f, 0x73, 0x50, 0x6e, 0x51, 0x4f, 0x3d, 0x02, 0xc8, 0xbc, 0x18, 0xd5, 0xae, 0x0e, 0xaa, 0xec,
+	0x5d, 0xac, 0xbf, 0x71, 0x3d, 0x9e, 0xb0, 0x73, 0xd6, 0xcc, 0x3d, 0x5d, 0xc8, 0x7a, 0x89, 0x17,
+	0xb3, 0x5e, 0xbd, 0x09, 0xd5, 0x03, 0x58, 0x4c, 0x67, 0xf2, 0x83, 0xa2, 0x9c, 0x04, 0xd5, 0x5f,
+	0xbf, 0x0e, 0x4d, 0xf9, 0xbe, 0x86, 0x6a, 0x7e, 0xd0, 0xbf, 0x5a, 0x94, 0x96, 0x0b, 0xd1, 0xdf,
+	0x9a, 0x18, 0x92, 0xd2, 0x7f, 0x06, 0x0b, 0xc9, 0x38, 0x7e, 0xa5, 0x28, 0x4b, 0x82, 0xfa, 0x6b,
+	0xd7, 0x80, 0x79, 0xef, 0xb2, 0xc1, 0xc7, 0x78, 0x17, 0xe8, 0x38, 0xef, 0xf9, 0x56, 0x52, 0xbf,
+	0x84, 0x4a, 0x76, 0x66, 0xd4, 0xc7, 0x25, 0xc9, 0x00, 0xfd, 0xcd, 0x09, 0x01, 0x59, 0xa1, 0x69,
+	0x7f, 0x3e, 0x28, 0x76, 0x26, 0xd0, 0x62, 0xa1, 0xa3, 0xcd, 0xc4, 0x85, 0x66, 0x1b, 0xa9, 0x50,
+	0x68, 0x26, 0xa0, 0x58, 0x68, 0x41, 0x07, 0x34, 0x0e, 0x9e, 0x0d, 0x6b, 0xca, 0xd9, 0xb0, 0xa6,
+	0xfc, 0x3d, 0xac, 0x29, 0x3f, 0x5d, 0xd4, 0x4a, 0x67, 0x17, 0xb5, 0xd2, 0x1f, 0x17, 0xb5, 0xd2,
+	0x57, 0xef, 0x76, 0x30, 0xeb, 0xf4, 0x9c, 0x63, 0xc4, 0x0c, 0x12, 0x79, 0xa6, 0xe4, 0x63, 0xc8,
+	0x0e, 0x4c, 0x8f, 0xec, 0xd0, 0xc0, 0x8e, 0xd8, 0x4e, 0x48, 0x5c, 0x64, 0x9e, 0x88, 0xef, 0x1c,
+	0x36, 0xe8, 0x22, 0xda, 0x99, 0x8f, 0xbf, 0x36, 0x1e, 0xfd, 0x1f, 0x00, 0x00, 0xff, 0xff, 0x6c,
+	0x46, 0xab, 0xd9, 0x04, 0x0d, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -780,20 +904,22 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
-	// CreateCoin defines message for new coin creation.
+	// CreateCoin defines message for creating a new coin.
 	CreateCoin(ctx context.Context, in *MsgCreateCoin, opts ...grpc.CallOption) (*MsgCreateCoinResponse, error)
 	// UpdateCoin defines message for modifying existing coin.
 	UpdateCoin(ctx context.Context, in *MsgUpdateCoin, opts ...grpc.CallOption) (*MsgUpdateCoinResponse, error)
-	// SendCoin defines message for transfering specific coin.
+	// SendCoin defines message for transferring a coin.
 	SendCoin(ctx context.Context, in *MsgSendCoin, opts ...grpc.CallOption) (*MsgSendCoinResponse, error)
-	// MultiSendCoin defines message for transfering specific coins as a batch.
+	// MultiSendCoin defines message for multiple transferring coins as a batch.
 	MultiSendCoin(ctx context.Context, in *MsgMultiSendCoin, opts ...grpc.CallOption) (*MsgMultiSendCoinResponse, error)
-	// BuyCoin defines message for buying specific coin.
+	// BuyCoin defines message for buying a coin.
 	BuyCoin(ctx context.Context, in *MsgBuyCoin, opts ...grpc.CallOption) (*MsgBuyCoinResponse, error)
-	// SellCoin defines message for selling specific coin.
+	// SellCoin defines message for selling a coin.
 	SellCoin(ctx context.Context, in *MsgSellCoin, opts ...grpc.CallOption) (*MsgSellCoinResponse, error)
-	// SellAllCoin defines message for selling all specific coin.
+	// SellAllCoin defines message for selling a coin completely (to sell all having amount of a coin).
 	SellAllCoin(ctx context.Context, in *MsgSellAllCoin, opts ...grpc.CallOption) (*MsgSellAllCoinResponse, error)
+	// BurnCoin defines message for burning a coin.
+	BurnCoin(ctx context.Context, in *MsgBurnCoin, opts ...grpc.CallOption) (*MsgBurnCoinResponse, error)
 	// RedeemCheck defines message for redeeming checks.
 	RedeemCheck(ctx context.Context, in *MsgRedeemCheck, opts ...grpc.CallOption) (*MsgRedeemCheckResponse, error)
 }
@@ -869,6 +995,15 @@ func (c *msgClient) SellAllCoin(ctx context.Context, in *MsgSellAllCoin, opts ..
 	return out, nil
 }
 
+func (c *msgClient) BurnCoin(ctx context.Context, in *MsgBurnCoin, opts ...grpc.CallOption) (*MsgBurnCoinResponse, error) {
+	out := new(MsgBurnCoinResponse)
+	err := c.cc.Invoke(ctx, "/decimal.coin.v1.Msg/BurnCoin", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *msgClient) RedeemCheck(ctx context.Context, in *MsgRedeemCheck, opts ...grpc.CallOption) (*MsgRedeemCheckResponse, error) {
 	out := new(MsgRedeemCheckResponse)
 	err := c.cc.Invoke(ctx, "/decimal.coin.v1.Msg/RedeemCheck", in, out, opts...)
@@ -880,20 +1015,22 @@ func (c *msgClient) RedeemCheck(ctx context.Context, in *MsgRedeemCheck, opts ..
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
-	// CreateCoin defines message for new coin creation.
+	// CreateCoin defines message for creating a new coin.
 	CreateCoin(context.Context, *MsgCreateCoin) (*MsgCreateCoinResponse, error)
 	// UpdateCoin defines message for modifying existing coin.
 	UpdateCoin(context.Context, *MsgUpdateCoin) (*MsgUpdateCoinResponse, error)
-	// SendCoin defines message for transfering specific coin.
+	// SendCoin defines message for transferring a coin.
 	SendCoin(context.Context, *MsgSendCoin) (*MsgSendCoinResponse, error)
-	// MultiSendCoin defines message for transfering specific coins as a batch.
+	// MultiSendCoin defines message for multiple transferring coins as a batch.
 	MultiSendCoin(context.Context, *MsgMultiSendCoin) (*MsgMultiSendCoinResponse, error)
-	// BuyCoin defines message for buying specific coin.
+	// BuyCoin defines message for buying a coin.
 	BuyCoin(context.Context, *MsgBuyCoin) (*MsgBuyCoinResponse, error)
-	// SellCoin defines message for selling specific coin.
+	// SellCoin defines message for selling a coin.
 	SellCoin(context.Context, *MsgSellCoin) (*MsgSellCoinResponse, error)
-	// SellAllCoin defines message for selling all specific coin.
+	// SellAllCoin defines message for selling a coin completely (to sell all having amount of a coin).
 	SellAllCoin(context.Context, *MsgSellAllCoin) (*MsgSellAllCoinResponse, error)
+	// BurnCoin defines message for burning a coin.
+	BurnCoin(context.Context, *MsgBurnCoin) (*MsgBurnCoinResponse, error)
 	// RedeemCheck defines message for redeeming checks.
 	RedeemCheck(context.Context, *MsgRedeemCheck) (*MsgRedeemCheckResponse, error)
 }
@@ -922,6 +1059,9 @@ func (*UnimplementedMsgServer) SellCoin(ctx context.Context, req *MsgSellCoin) (
 }
 func (*UnimplementedMsgServer) SellAllCoin(ctx context.Context, req *MsgSellAllCoin) (*MsgSellAllCoinResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SellAllCoin not implemented")
+}
+func (*UnimplementedMsgServer) BurnCoin(ctx context.Context, req *MsgBurnCoin) (*MsgBurnCoinResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BurnCoin not implemented")
 }
 func (*UnimplementedMsgServer) RedeemCheck(ctx context.Context, req *MsgRedeemCheck) (*MsgRedeemCheckResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RedeemCheck not implemented")
@@ -1057,6 +1197,24 @@ func _Msg_SellAllCoin_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_BurnCoin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgBurnCoin)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).BurnCoin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/decimal.coin.v1.Msg/BurnCoin",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).BurnCoin(ctx, req.(*MsgBurnCoin))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Msg_RedeemCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgRedeemCheck)
 	if err := dec(in); err != nil {
@@ -1106,6 +1264,10 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SellAllCoin",
 			Handler:    _Msg_SellAllCoin_Handler,
+		},
+		{
+			MethodName: "BurnCoin",
+			Handler:    _Msg_BurnCoin_Handler,
 		},
 		{
 			MethodName: "RedeemCheck",
@@ -1178,17 +1340,17 @@ func (m *MsgCreateCoin) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x20
 	}
-	if len(m.Symbol) > 0 {
-		i -= len(m.Symbol)
-		copy(dAtA[i:], m.Symbol)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Symbol)))
-		i--
-		dAtA[i] = 0x1a
-	}
 	if len(m.Title) > 0 {
 		i -= len(m.Title)
 		copy(dAtA[i:], m.Title)
 		i = encodeVarintTx(dAtA, i, uint64(len(m.Title)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Denom) > 0 {
+		i -= len(m.Denom)
+		copy(dAtA[i:], m.Denom)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Denom)))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -1262,10 +1424,10 @@ func (m *MsgUpdateCoin) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	i--
 	dAtA[i] = 0x1a
-	if len(m.Symbol) > 0 {
-		i -= len(m.Symbol)
-		copy(dAtA[i:], m.Symbol)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Symbol)))
+	if len(m.Denom) > 0 {
+		i -= len(m.Denom)
+		copy(dAtA[i:], m.Denom)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Denom)))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -1302,7 +1464,7 @@ func (m *MsgUpdateCoinResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *Send) Marshal() (dAtA []byte, err error) {
+func (m *MsgSendCoin) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1312,23 +1474,16 @@ func (m *Send) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Send) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgSendCoin) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *Send) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgSendCoin) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.Receiver) > 0 {
-		i -= len(m.Receiver)
-		copy(dAtA[i:], m.Receiver)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Receiver)))
-		i--
-		dAtA[i] = 0x12
-	}
 	{
 		size, err := m.Coin.MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
@@ -1338,7 +1493,84 @@ func (m *Send) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintTx(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0xa
+	dAtA[i] = 0x1a
+	if len(m.Recipient) > 0 {
+		i -= len(m.Recipient)
+		copy(dAtA[i:], m.Recipient)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Recipient)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Sender) > 0 {
+		i -= len(m.Sender)
+		copy(dAtA[i:], m.Sender)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Sender)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgSendCoinResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgSendCoinResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgSendCoinResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MultiSendEntry) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MultiSendEntry) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MultiSendEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.Coin.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	if len(m.Recipient) > 0 {
+		i -= len(m.Recipient)
+		copy(dAtA[i:], m.Recipient)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Recipient)))
+		i--
+		dAtA[i] = 0xa
+	}
 	return len(dAtA) - i, nil
 }
 
@@ -1585,16 +1817,13 @@ func (m *MsgSellAllCoin) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	i--
 	dAtA[i] = 0x1a
-	{
-		size, err := m.CoinToSell.MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarintTx(dAtA, i, uint64(size))
+	if len(m.CoinDenomToSell) > 0 {
+		i -= len(m.CoinDenomToSell)
+		copy(dAtA[i:], m.CoinDenomToSell)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.CoinDenomToSell)))
+		i--
+		dAtA[i] = 0x12
 	}
-	i--
-	dAtA[i] = 0x12
 	if len(m.Sender) > 0 {
 		i -= len(m.Sender)
 		copy(dAtA[i:], m.Sender)
@@ -1628,7 +1857,7 @@ func (m *MsgSellAllCoinResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgSendCoin) Marshal() (dAtA []byte, err error) {
+func (m *MsgBurnCoin) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1638,12 +1867,12 @@ func (m *MsgSendCoin) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgSendCoin) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgBurnCoin) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgSendCoin) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgBurnCoin) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1657,14 +1886,7 @@ func (m *MsgSendCoin) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintTx(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x1a
-	if len(m.Receiver) > 0 {
-		i -= len(m.Receiver)
-		copy(dAtA[i:], m.Receiver)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Receiver)))
-		i--
-		dAtA[i] = 0x12
-	}
+	dAtA[i] = 0x12
 	if len(m.Sender) > 0 {
 		i -= len(m.Sender)
 		copy(dAtA[i:], m.Sender)
@@ -1675,7 +1897,7 @@ func (m *MsgSendCoin) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgSendCoinResponse) Marshal() (dAtA []byte, err error) {
+func (m *MsgBurnCoinResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1685,12 +1907,12 @@ func (m *MsgSendCoinResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgSendCoinResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgBurnCoinResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgSendCoinResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgBurnCoinResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1786,11 +2008,11 @@ func (m *MsgCreateCoin) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.Title)
+	l = len(m.Denom)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.Symbol)
+	l = len(m.Title)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
@@ -1829,7 +2051,7 @@ func (m *MsgUpdateCoin) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.Symbol)
+	l = len(m.Denom)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
@@ -1851,18 +2073,46 @@ func (m *MsgUpdateCoinResponse) Size() (n int) {
 	return n
 }
 
-func (m *Send) Size() (n int) {
+func (m *MsgSendCoin) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = m.Coin.Size()
-	n += 1 + l + sovTx(uint64(l))
-	l = len(m.Receiver)
+	l = len(m.Sender)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
+	l = len(m.Recipient)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = m.Coin.Size()
+	n += 1 + l + sovTx(uint64(l))
+	return n
+}
+
+func (m *MsgSendCoinResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MultiSendEntry) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Recipient)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = m.Coin.Size()
+	n += 1 + l + sovTx(uint64(l))
 	return n
 }
 
@@ -1956,8 +2206,10 @@ func (m *MsgSellAllCoin) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = m.CoinToSell.Size()
-	n += 1 + l + sovTx(uint64(l))
+	l = len(m.CoinDenomToSell)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
 	l = m.MinCoinToBuy.Size()
 	n += 1 + l + sovTx(uint64(l))
 	return n
@@ -1972,7 +2224,7 @@ func (m *MsgSellAllCoinResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgSendCoin) Size() (n int) {
+func (m *MsgBurnCoin) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1982,16 +2234,12 @@ func (m *MsgSendCoin) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.Receiver)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
 	l = m.Coin.Size()
 	n += 1 + l + sovTx(uint64(l))
 	return n
 }
 
-func (m *MsgSendCoinResponse) Size() (n int) {
+func (m *MsgBurnCoinResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2099,6 +2347,38 @@ func (m *MsgCreateCoin) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Denom = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Title", wireType)
 			}
 			var stringLen uint64
@@ -2129,9 +2409,28 @@ func (m *MsgCreateCoin) Unmarshal(dAtA []byte) error {
 			}
 			m.Title = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 3:
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CRR", wireType)
+			}
+			m.CRR = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.CRR |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Symbol", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field InitialVolume", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2159,56 +2458,6 @@ func (m *MsgCreateCoin) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Symbol = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CRR", wireType)
-			}
-			m.CRR = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.CRR |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field InitialVolume", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
 			if err := m.InitialVolume.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -2217,7 +2466,7 @@ func (m *MsgCreateCoin) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field InitialReserve", wireType)
 			}
-			var byteLen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -2227,15 +2476,16 @@ func (m *MsgCreateCoin) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				byteLen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if byteLen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + byteLen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
@@ -2250,7 +2500,7 @@ func (m *MsgCreateCoin) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field LimitVolume", wireType)
 			}
-			var byteLen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -2260,15 +2510,16 @@ func (m *MsgCreateCoin) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				byteLen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if byteLen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + byteLen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
@@ -2445,7 +2696,7 @@ func (m *MsgUpdateCoin) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Symbol", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2473,13 +2724,13 @@ func (m *MsgUpdateCoin) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Symbol = string(dAtA[iNdEx:postIndex])
+			m.Denom = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field LimitVolume", wireType)
 			}
-			var byteLen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -2489,15 +2740,16 @@ func (m *MsgUpdateCoin) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				byteLen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if byteLen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + byteLen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
@@ -2611,7 +2863,7 @@ func (m *MsgUpdateCoinResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *Send) Unmarshal(dAtA []byte) error {
+func (m *MsgSendCoin) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2634,13 +2886,77 @@ func (m *Send) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Send: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgSendCoin: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Send: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgSendCoin: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Sender = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Recipient", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Recipient = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Coin", wireType)
 			}
@@ -2673,9 +2989,109 @@ func (m *Send) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 2:
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgSendCoinResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgSendCoinResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgSendCoinResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MultiSendEntry) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MultiSendEntry: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MultiSendEntry: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Receiver", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Recipient", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2703,7 +3119,40 @@ func (m *Send) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Receiver = string(dAtA[iNdEx:postIndex])
+			m.Recipient = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Coin", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Coin.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -2816,7 +3265,7 @@ func (m *MsgMultiSendCoin) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Sends = append(m.Sends, Send{})
+			m.Sends = append(m.Sends, MultiSendEntry{})
 			if err := m.Sends[len(m.Sends)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -3351,9 +3800,9 @@ func (m *MsgSellAllCoin) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CoinToSell", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field CoinDenomToSell", wireType)
 			}
-			var msglen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -3363,24 +3812,23 @@ func (m *MsgSellAllCoin) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.CoinToSell.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
+			m.CoinDenomToSell = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
@@ -3486,7 +3934,7 @@ func (m *MsgSellAllCoinResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgSendCoin) Unmarshal(dAtA []byte) error {
+func (m *MsgBurnCoin) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3509,10 +3957,10 @@ func (m *MsgSendCoin) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgSendCoin: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgBurnCoin: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgSendCoin: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgBurnCoin: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3548,38 +3996,6 @@ func (m *MsgSendCoin) Unmarshal(dAtA []byte) error {
 			m.Sender = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Receiver", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Receiver = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Coin", wireType)
 			}
@@ -3633,7 +4049,7 @@ func (m *MsgSendCoin) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgSendCoinResponse) Unmarshal(dAtA []byte) error {
+func (m *MsgBurnCoinResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3656,10 +4072,10 @@ func (m *MsgSendCoinResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgSendCoinResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgBurnCoinResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgSendCoinResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgBurnCoinResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

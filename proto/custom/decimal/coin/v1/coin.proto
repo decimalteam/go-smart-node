@@ -1,0 +1,104 @@
+syntax = "proto3";
+package decimal.coin.v1;
+
+import "gogoproto/gogo.proto";
+
+import "cosmos_proto/cosmos.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/coin/types";
+
+// Coin defines the coin.
+message Coin {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // denom defines the coin denomination.
+  string denom = 1;
+  // title defines the coin title.
+  string title = 2;
+  // creator defines the address of the account created the coin.
+  string creator = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // crr defines the coin constant reserve ratio determining coin tokenomics.
+  uint32 crr = 4 [ (gogoproto.customname) = "CRR" ];
+  // limit_volume defines maximum allowed supply for the coin.
+  string limit_volume = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  // identity is a string containing any other information related to the coin.
+  string identity = 6;
+
+  // volume defines the coin supply.
+  // NOTE: actual values are stored as CoinVR records in KVStore.
+  string volume = 7 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  // reserve defines the coin reserve in base coin.
+  // NOTE: actual values are stored as CoinVR records in KVStore.
+  string reserve = 8 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// Check defines the redeemed check.
+message Check {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = false;
+
+  // chain_id defines the chain ID for which the check was issued.
+  string chain_id = 1 [ (gogoproto.customname) = "ChainID" ];
+  // coin defines the coin attached to the check.
+  cosmos.base.v1beta1.Coin coin = 2 [ (gogoproto.nullable) = false ];
+  // nonce defines nonce used for the check.
+  bytes nonce = 3;
+  // due_block defines block number after which the check becomes expired.
+  uint64 due_block = 4;
+  // lock defines specific data needed to ensure the check correctness.
+  bytes lock = 5;
+  // v defines `v` value of the check signature.
+  string v = 6 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  // r defines `r` value of the check signature.
+  string r = 7 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  // s defines `s` value of the check signature.
+  string s = 8 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// CoinVR defines object containing just volume and reserve of the coin.
+message CoinVR {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // volume defines the coin supply.
+  string volume = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  // reserve defines the coin reserve in base coin.
+  string reserve = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}

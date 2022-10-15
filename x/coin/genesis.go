@@ -8,21 +8,29 @@ import (
 )
 
 // InitGenesis initializes the module's state from a provided genesis state.
-func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, gs types.GenesisState) {
+func InitGenesis(ctx sdk.Context, k keeper.Keeper, gs *types.GenesisState) {
 	// Initialize params
-	keeper.SetParams(ctx, gs.Params)
+	k.SetParams(ctx, gs.Params)
+
+	// Initialize base coin
+	coin := types.Coin{
+		Denom:  gs.Params.BaseDenom,
+		Title:  gs.Params.BaseTitle,
+		Volume: gs.Params.BaseVolume,
+	}
+	k.SetCoin(ctx, coin)
 
 	// Initialize coins
 	for _, coin := range gs.Coins {
 		// TODO: Validate firstly
-		keeper.SetCoin(ctx, coin)
+		k.SetCoin(ctx, coin)
 		// TODO: Is that enough?
 	}
 
 	// Initialize checks
 	for _, check := range gs.Checks {
 		// TODO: Validate firstly
-		keeper.SetCheck(ctx, &check)
+		k.SetCheck(ctx, &check)
 		// TODO: Is that enough?
 	}
 }

@@ -1,0 +1,28 @@
+syntax = "proto3";
+package decimal.legacy.v1;
+
+import "gogoproto/gogo.proto";
+
+import "cosmos_proto/cosmos.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/legacy/types";
+
+// Record defines the legacy record containing set of values that should be returned to the actual owner.
+message Record {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // legacy_address defines legacy address which is not valid anymore so cannot be used.
+  string legacy_address = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // coins defines complete list of tokens to be returned.
+  repeated cosmos.base.v1beta1.Coin coins = 2 [
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.nullable) = false
+  ];
+  // wallets defines complete list of multisig wallets to be returned.
+  repeated string wallets = 3;
+  // nfts defines list of token ids to be returned
+  repeated string nfts = 4 [ (gogoproto.customname) = "NFTs" ];
+}

@@ -1,0 +1,40 @@
+syntax = "proto3";
+package decimal.swap.v1;
+
+import "gogoproto/gogo.proto";
+
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/swap/types";
+
+// Chain defines a chain.
+message Chain {
+  // id defines the chain number ID.
+  uint32 id = 1;
+  // name defines the chain name.
+  string name = 2;
+  // active defines status of the chain.
+  bool active = 3;
+}
+
+// Swap defines a cross-chain swap.
+message Swap {
+  // hashed_secret defines the hash of secret used during cross-chain swap.
+  string hashed_secret = 1 [ (gogoproto.customtype) = "Hash", (gogoproto.nullable) = true ];
+  // from defines address used to initialize swap.
+  string from = 2;
+  // recipient defines address of the recipient swapped coins.
+  string recipient = 3;
+  // amount defines amount of coins the swap initialized.
+  string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  // timestamp defines time moment when the swap was initialized.
+  uint64 timestamp = 5;
+  // redeemed defines if the swap was redeemed.
+  bool redeemed = 6;
+  // refunded defines if the swap was refunded.
+  bool refunded = 7;
+}

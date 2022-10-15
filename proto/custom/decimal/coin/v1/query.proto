@@ -1,0 +1,76 @@
+syntax = "proto3";
+package decimal.coin.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+import "cosmos/base/query/v1beta1/pagination.proto";
+
+import "decimal/coin/v1/coin.proto";
+import "decimal/coin/v1/params.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/coin/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Coins queries all existing coins.
+  rpc Coins(QueryCoinsRequest) returns (QueryCoinsResponse) {
+    option (google.api.http).get = "/decimal/coin/v1/coins";
+  }
+
+  // Coin queries existing coin by specified denom.
+  rpc Coin(QueryCoinRequest) returns (QueryCoinResponse) {
+    option (google.api.http).get = "/decimal/coin/v1/coin/{denom}";
+  }
+
+  // Checks queries all redeemed checks.
+  rpc Checks(QueryChecksRequest) returns (QueryChecksResponse) {
+    option (google.api.http).get = "/decimal/coin/v1/checks";
+  }
+
+  // Check queries redeemed check by specified hash.
+  rpc Check(QueryCheckRequest) returns (QueryCheckResponse) {
+    option (google.api.http).get = "/decimal/coin/v1/check/{hash}";
+  }
+
+  // Params queries the module params.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/decimal/coin/v1/params";
+  }
+}
+
+// QueryCoinsRequest is request type for the Query/Coins RPC method.
+message QueryCoinsRequest { cosmos.base.query.v1beta1.PageRequest pagination = 1; }
+
+// QueryCoinsResponse is response type for the Query/Coins RPC method.
+message QueryCoinsResponse {
+  repeated Coin coins = 1 [ (gogoproto.nullable) = false ];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryCoinRequest is request type for the Query/Coin RPC method.
+message QueryCoinRequest { string denom = 1; }
+
+// QueryCoinResponse is response type for the Query/Coin RPC method.
+message QueryCoinResponse { Coin coin = 1 [ (gogoproto.nullable) = false ]; }
+
+// QueryChecksRequest is request type for the Query/Checks RPC method.
+message QueryChecksRequest { cosmos.base.query.v1beta1.PageRequest pagination = 1; }
+
+// QueryChecksResponse is response type for the Query/Checks RPC method.
+message QueryChecksResponse {
+  repeated Check checks = 1 [ (gogoproto.nullable) = false ];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryCheckRequest is request type for the Query/Check RPC method.
+message QueryCheckRequest { bytes hash = 1; }
+
+// QueryCheckResponse is response type for the Query/Check RPC method.
+message QueryCheckResponse { Check check = 1 [ (gogoproto.nullable) = false ]; }
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse { Params params = 1 [ (gogoproto.nullable) = false ]; }

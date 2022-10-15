@@ -1,0 +1,71 @@
+syntax = "proto3";
+package decimal.multisig.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+import "cosmos_proto/cosmos.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+
+import "decimal/multisig/v1/multisig.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/multisig/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Retrieves existing wallets by owner address.
+  rpc Wallets(QueryWalletsRequest) returns (QueryWalletsResponse) {
+    option (google.api.http).get = "/decimal/multisig/v1/wallets/{owner}";
+  }
+
+  // Retrieves existing wallet by wallet address.
+  rpc Wallet(QueryWalletRequest) returns (QueryWalletResponse) {
+    option (google.api.http).get = "/decimal/multisig/v1/wallet/{wallet}";
+  }
+
+  // Retrieves existing transactions by wallet address.
+  rpc Transactions(QueryTransactionsRequest) returns (QueryTransactionsResponse) {
+    option (google.api.http).get = "/decimal/multisig/v1/transactions/{wallet}";
+  }
+
+  // Retrieves existing transaction by id.
+  rpc Transaction(QueryTransactionRequest) returns (QueryTransactionResponse) {
+    option (google.api.http).get = "/decimal/multisig/v1/transaction/{id}";
+  }
+}
+
+// QueryWalletsRequest is request type for the Query/Wallets RPC method.
+message QueryWalletsRequest {
+  string owner = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+// QueryWalletsResponse is response type for the Query/Wallets RPC method.
+message QueryWalletsResponse {
+  repeated Wallet wallets = 1 [ (gogoproto.nullable) = false ];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryWalletRequest is request type for the Query/Wallet RPC method.
+message QueryWalletRequest { string wallet = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ]; }
+
+// QueryWalletResponse is response type for the Query/Wallet RPC method.
+message QueryWalletResponse { Wallet wallet = 1 [ (gogoproto.nullable) = false ]; }
+
+// QueryTransactionsRequest is request type for the Query/Transactions RPC method.
+message QueryTransactionsRequest {
+  string wallet = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+// QueryTransactionsResponse is response type for the Query/Transactions RPC method.
+message QueryTransactionsResponse {
+  repeated Transaction transactions = 1 [ (gogoproto.nullable) = false ];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryTransactionRequest is request type for the Query/Transaction RPC method.
+message QueryTransactionRequest { string id = 1; }
+
+// QueryTransactionResponse is response type for the Query/Transaction RPC method.
+message QueryTransactionResponse { Transaction transaction = 1 [ (gogoproto.nullable) = false ]; }

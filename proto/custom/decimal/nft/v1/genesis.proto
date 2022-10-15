@@ -1,0 +1,20 @@
+syntax = "proto3";
+package decimal.nft.v1;
+
+import "gogoproto/gogo.proto";
+
+import "cosmos_proto/cosmos.proto";
+
+import "decimal/nft/v1/nft.proto";
+import "decimal/nft/v1/params.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
+
+// GenesisState defines the module's genesis state.
+message GenesisState {
+  option (gogoproto.equal) = true;
+  // collections defines all existing NFT collections (including tokens and sub-tokens).
+  repeated Collection collections = 1 [ (gogoproto.nullable) = false ];
+  // params defines all the module's parameters.
+  Params params = 2 [ (gogoproto.nullable) = false ];
+}
