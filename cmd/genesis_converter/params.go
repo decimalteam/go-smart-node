@@ -122,7 +122,7 @@ func fixAfterCopy(gs *GenesisNew) {
 		}
 		// "not_bonded_tokens_pool"
 		if gs.AppState.Bank.Balances[i].Address == "dx1tygms3xhhs3yv487phx3dw4a95jn7t7l8zevak" {
-			gs.AppState.Bank.Balances[i].Coins = bondings
+			gs.AppState.Bank.Balances[i].Coins = notbondings
 		}
 	}
 }
