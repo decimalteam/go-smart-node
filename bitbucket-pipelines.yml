@@ -29,7 +29,7 @@ definitions:
           - cd "${PACKAGE_PATH}"
           - go get ./...
           - go test ./...
-          - COSMOS_BUILD_OPTIONS=goleveldb make install
+          - go install ./cmd/dscd/
           - mkdir ${BITBUCKET_CLONE_DIR}/build
           - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build
         artifacts:
