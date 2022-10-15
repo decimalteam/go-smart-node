@@ -2,11 +2,9 @@
 - name: Include tasks for clear data and update binary files
   include: node-common-at-first.yml
 
-#- name: Initialize private validator, p2p, genesis, and application configuration files
-#  shell: '{{ decimal_bin }}/dscd init $(hostname) --network testnet --chain-id={{ chain_id }}'
-#  register: initialization
-
-#- debug: var=initialization
+# - name: Initialize private validator, p2p, genesis, and application configuration files
+#   shell: '{{ decimal_bin }}/dscd init $(hostname) --chain-id={{ chain_id }}'
+#   register: initialization
 
 - name: Create config directory if necessary
   file:
@@ -20,10 +18,10 @@
     state: directory
     recurse: true
 
-- name: Copy app.toml
+- name: Copy app.toml config
   shell: 'cp -b -f {{ decimal_keys }}/app.toml {{ decimal_data }}/daemon/config/app.toml'
 
-- name: Copy config.toml
+- name: Copy config.toml config
   shell: 'cp -b -f {{ decimal_keys }}/config.toml {{ decimal_data }}/daemon/config/config.toml'
 
 - name: Copy node key
@@ -35,6 +33,8 @@
 - name: Copy private validator state file
   shell: 'cp -b -f {{ decimal_keys }}/priv_validator_state.json {{ decimal_data }}/daemon/data/priv_validator_state.json'
 
+#- debug: var=initialization
+
 - name: Generate genesis.json file from template
   template:
     src: ./genesis.json.j2
@@ -42,9 +42,6 @@
 
 - name: Sets chain-id in config.toml
   shell: '{{ decimal_bin }}/dscd config chain-id {{ chain_id }}'
-
-#- name: Set trust mode for the node in config.toml
-#  shell: '{{ decimal_bin }}/dscd config trust-node true'
 
 - name: Include tasks with common (master & slave) final actions
   include: node-common-in-last.yml
