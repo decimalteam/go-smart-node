@@ -107,6 +107,7 @@ func (at *AddressTable) InitModules() {
 			permissions: []string{"minter", "burner"},
 		},
 	}
+
 }
 
 func (at *AddressTable) GetModule(name string) moduleInfo {
