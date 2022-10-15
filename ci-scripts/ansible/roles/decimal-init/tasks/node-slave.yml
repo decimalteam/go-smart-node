@@ -8,6 +8,18 @@
 
 #- debug: var=initialization
 
+- name: Create config directory if necessary
+  file:
+    path: '{{ decimal_data }}/daemon/config'
+    state: directory
+    recurse: true
+
+- name: Create data directory if necessary
+  file:
+    path: '{{ decimal_data }}/daemon/data'
+    state: directory
+    recurse: true
+
 - name: Copy app.toml
   shell: 'cp -b -f {{ decimal_keys }}/app.toml {{ decimal_data }}/daemon/config/app.toml'
 
