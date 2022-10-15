@@ -7,7 +7,7 @@ const (
 	// StoreKey defines the primary module store key
 	StoreKey = ModuleName
 
-	// MemStoreKey defines the in-memory store key
+	// MemStoreKey defines the in-memory store key_
 	MemStoreKey = "mem_" + ModuleName
 
 	// RouterKey defines module's messages routing
