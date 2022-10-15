@@ -96,7 +96,7 @@ definitions:
                - cd "${PACKAGE_PATH}"
                - go get ./...
                - go test ./...
-               - go install ./cmd/dscd/
+               - COSMOS_BUILD_OPTIONS=goleveldb make install
                - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/centos/8/
                - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/centos/8/
              artifacts:
@@ -126,7 +126,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - go install ./cmd/dscd/
+              - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ol/8.5/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ol/8.5/
             artifacts:
@@ -156,7 +156,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - go install ./cmd/dscd/
+              - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
             artifacts:
@@ -187,7 +187,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - go install ./cmd/dscd/
+              - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/22.04/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/22.04/
             artifacts:
@@ -218,7 +218,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - go install ./cmd/dscd/
+              - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/20.04/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/20.04/
             artifacts:
@@ -249,7 +249,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - go install ./cmd/dscd/
+              - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/18.04/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/18.04/
             artifacts:
@@ -280,7 +280,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - go install ./cmd/dscd/
+              - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/16.04/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/16.04/
             artifacts:
@@ -311,7 +311,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - go install ./cmd/dscd/
+              - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/11/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/11/
             artifacts:
@@ -342,7 +342,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - go install ./cmd/dscd/
+              - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/10/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/10/
             artifacts:
@@ -373,7 +373,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - go install ./cmd/dscd/
+              - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/9/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/9/
             artifacts:
