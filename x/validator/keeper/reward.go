@@ -234,12 +234,20 @@ func (k Keeper) getDevelop(ctx sdk.Context) (sdk.AccAddress, error) {
 }
 
 func (k Keeper) calculateCustomCoinPrices(ctx sdk.Context, ccs map[string]sdkmath.Int) map[string]sdkmath.Int {
+	ctx.Logger().Debug("custom coin staked", "is", ccs)
 	prices := make(map[string]sdkmath.Int)
 	for denom, staked := range ccs {
 		coin, err := k.coinKeeper.GetCoin(ctx, denom)
 		if err != nil {
 			panic(err)
 		}
+		ctx.Logger().Debug("custom coin staked",
+			"coin", coin.Denom,
+			"volume", coin.Volume,
+			"reserve", coin.Reserve,
+			"crr", coin.CRR,
+			"staked", staked,
+		)
 
 		prices[denom] = formulas.CalculateSaleReturn(coin.Volume, coin.Reserve, uint(coin.CRR), staked)
 	}

@@ -159,6 +159,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 	}
 
 	// if balance is different from bonded coins panic because genesis is most likely malformed
+	ctx.Logger().Debug("bonded Coins", "is", bondedCoins)
 	if !bondedBalance.IsEqual(bondedCoins) {
 		panic(fmt.Sprintf("bonded pool balance is different from bonded coins: %s <-> %s", bondedBalance, bondedCoins))
 	}
