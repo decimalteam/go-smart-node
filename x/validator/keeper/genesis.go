@@ -106,9 +106,11 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 			switch valStatus[delegation.Validator] {
 			case types.BondStatus_Bonded:
 				bondedCoins = bondedCoins.Add(delegation.Stake.Stake)
-				ccs := k.GetCustomCoinStaked(ctx, delegation.Stake.Stake.Denom)
-				ccs = ccs.Add(delegation.Stake.Stake.Amount)
-				k.SetCustomCoinStaked(ctx, delegation.Stake.Stake.Denom, ccs)
+				if delegation.Stake.Stake.Denom != data.Params.BaseDenom {
+					ccs := k.GetCustomCoinStaked(ctx, delegation.Stake.Stake.Denom)
+					ccs = ccs.Add(delegation.Stake.Stake.Amount)
+					k.SetCustomCoinStaked(ctx, delegation.Stake.Stake.Denom, ccs)
+				}
 			case types.BondStatus_Unbonding, types.BondStatus_Unbonded:
 				notBondedCoins = notBondedCoins.Add(delegation.Stake.Stake)
 			default:
