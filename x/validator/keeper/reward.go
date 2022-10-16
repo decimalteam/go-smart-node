@@ -22,6 +22,8 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 	delByValidator := k.GetAllDelegationsByValidator(ctx)
 	customCoinStaked := k.GetAllCustomCoinsStaked(ctx)
 	customCoinPrices := k.calculateCustomCoinPrices(ctx, customCoinStaked)
+	ctx.Logger().Debug("custom coin staked", "is", customCoinStaked)
+	ctx.Logger().Debug("custom prices", "is", customCoinPrices)
 
 	for _, val := range validators {
 		if val.Rewards.IsZero() {
@@ -93,7 +95,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 			if delStake.Denom != k.BaseDenom(ctx) {
 				delCoinPrice, ok := customCoinPrices[delStake.Denom]
 				if !ok {
-					return fmt.Errorf("not found price for custom coin")
+					return fmt.Errorf("not found price for custom coin %s, base denom is %s, validator is %s, delegator is %s", delStake.Denom, k.BaseDenom(ctx), validator.String(), del.Delegator)
 				}
 				defAmount = delCoinPrice.Mul(delStake.Amount)
 			}
