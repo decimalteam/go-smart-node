@@ -404,7 +404,7 @@ pipelines:
           deployment: Test
           <<: *deploy
 
-   custom:
+  custom:
     worker-dev-smart-chain:
       - step:
           name: Build worker
