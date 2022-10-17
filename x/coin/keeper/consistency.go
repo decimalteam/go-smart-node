@@ -89,6 +89,10 @@ func (k *Keeper) BurnPoolCoins(ctx sdk.Context, poolName string, coins sdk.Coins
 		if err != nil {
 			return err
 		}
+		if coin.Denom == k.GetBaseDenom(ctx) {
+			err = k.UpdateCoinVR(ctx, coin.Denom, coinInfo.Volume.Sub(coin.Amount), coinInfo.Reserve)
+			continue
+		}
 		err = k.CheckFutureChanges(ctx, coinInfo, coin.Amount)
 		if err != nil {
 			return err

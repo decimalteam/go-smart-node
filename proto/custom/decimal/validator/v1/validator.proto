@@ -58,23 +58,26 @@ message Validator {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
+  // stake is power of all delegations stake
+  // NOTE: It is stored separately in the KVStore.
+  int64 stake = 13;
 }
 
-message ValidatorRewards {
+message ValidatorRS {
   // rewards defines accumulated amount of collected rewards that are not yet distributed to a delegators.
-  // NOTE: It is stored separately in the KVStore.
   string rewards = 1 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   // total_rewards defines total amount of all collected rewards.
-  // NOTE: It is stored separately in the KVStore.
   string total_rewards = 2 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
+  // stake is power of all delegations stake
+  int64 stake = 3;
 }
 
 // ValAddresses defines a repeated set of validator addresses.

@@ -194,14 +194,23 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord) (GenesisN
 		if err != nil {
 			return GenesisNew{}, Statistic{}, err
 		}
-		coins := sdk.NewCoins(sdk.NewCoin("del", sdkmath.NewInt(3_141_592_653_589_793_238)))
+		coins := sdk.NewCoins(sdk.NewCoin("tdel", sdkmath.NewInt(3_141_592_653_589_793_238)))
+		allCoins := sdk.NewCoins()
 		fileScanner := bufio.NewScanner(inp)
 		fileScanner.Split(bufio.ScanLines)
 		for fileScanner.Scan() {
 			row := strings.Split(fileScanner.Text(), "\t")
 			legacyRecords.AddCoins(row[0], coins)
+			allCoins = allCoins.Add(coins...)
 		}
 		inp.Close()
+		// add to pool
+		legAddr := addrTable.GetModule("legacy_coin_pool").address
+		for i := range gsNew.AppState.Bank.Balances {
+			if gsNew.AppState.Bank.Balances[i].Address == legAddr {
+				gsNew.AppState.Bank.Balances[i].Coins = gsNew.AppState.Bank.Balances[i].Coins.Add(allCoins...)
+			}
+		}
 	}
 	// legacy records
 	var records []LegacyRecordNew

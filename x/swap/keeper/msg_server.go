@@ -136,7 +136,7 @@ func (k Keeper) RedeemSwap(goCtx context.Context, msg *types.MsgRedeemSwap) (*ty
 		TokenSymbol:       msg.TokenSymbol,
 		TransactionNumber: msg.TransactionNumber,
 		FromChain:         msg.FromChain,
-		DestChain:         msg.FromChain,
+		DestChain:         msg.DestChain,
 		V:                 hexutil.EncodeUint64(uint64(msg.V)),
 		R:                 hexutil.Encode(_r[:]),
 		S:                 hexutil.Encode(_s[:]),

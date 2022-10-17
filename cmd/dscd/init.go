@@ -243,12 +243,12 @@ $ %s selfdelegation 100000000del --home=/path/to/home/dir --from keyname
 				Power:   validatorkeeper.TokensToConsensusPower(stakeCoin.Amount),
 			}
 			// record for tendermint validators
-			tmVal := tmtypes.GenesisValidator{
-				Address: sdk.ConsAddress(pubkey.Address()).Bytes(),
-				Name:    config.Moniker,
-				Power:   validatorkeeper.TokensToConsensusPower(stakeCoin.Amount),
-				PubKey:  tmpubkey,
-			}
+			// tmVal := tmtypes.GenesisValidator{
+			// 	Address: sdk.ConsAddress(pubkey.Address()).Bytes(),
+			// 	Name:    config.Moniker,
+			// 	Power:   validatorkeeper.TokensToConsensusPower(stakeCoin.Amount),
+			// 	PubKey:  tmpubkey,
+			// }
 
 			// insert into validator state
 			var vgs validatortypes.GenesisState
@@ -277,7 +277,7 @@ $ %s selfdelegation 100000000del --home=/path/to/home/dir --from keyname
 			}
 			genesisState["bank"] = cdc.MustMarshalJSON(&bgs)
 			// insert into tendermint validators
-			genDoc.Validators = append(genDoc.Validators, tmVal)
+			//genDoc.Validators = append(genDoc.Validators, tmVal)
 
 			genDoc.AppState, err = json.Marshal(genesisState)
 			if err != nil {

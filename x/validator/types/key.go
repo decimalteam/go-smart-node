@@ -72,6 +72,8 @@ const (
 //   - MissedBlock:          0x61<cons_addr><block_id> : []byte{}
 //   - StartingBlock:        0x62<cons_addr>           : <block_id>
 
+// Delegation related records:
+//   - CustomCoinStaked:  0x71<denom>   :  sdkmath.Int
 var (
 	keyPrefixLastValidatorPowers        = []byte{0x11} // prefix for each key to a validator index (for bonded validators)
 	keyPrefixLastTotalPower             = []byte{0x12} // prefix for the total power record
@@ -92,6 +94,7 @@ var (
 	keyPrefixMissedBlock                = []byte{0x61} // prefix for missed blocks
 	keyPrefixStartHeight                = []byte{0x62} // prefix for starting block
 	keyPrefixDelegationByValIndex       = []byte{0x37} // prefix for each key for a delegation key (by validator address)
+	keyPrefixCustomCoinStaked           = []byte{0x71} // prefix for custom coin total staked in delegations
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -424,8 +427,8 @@ func GetHistoricalInfoKey(height int64) []byte {
 
 // AddressFromLastValidatorPowerKey creates the validator operator address from LastValidatorPowerKey.
 func AddressFromLastValidatorPowerKey(key []byte) []byte {
-	kv.AssertKeyAtLeastLength(key, 3)
-	return key[2:] // remove prefix bytes and address length
+	kv.AssertKeyAtLeastLength(key, 2)
+	return key[1:] // remove prefix bytes and address length
 }
 
 // ParseValidatorPowerKey parses the validators operator address from voting power key.
@@ -476,4 +479,16 @@ func GetMissedBlockKey(addr sdk.ConsAddress, height int64) []byte {
 func GetStartHeightKey(addr sdk.ConsAddress) []byte {
 	// key format: prefix (1 byte) || consensus address
 	return append(keyPrefixStartHeight, addr.Bytes()...)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Custom Coins Staked /////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+func GetAllCustomCoinsStaked() []byte {
+	return keyPrefixCustomCoinStaked
+}
+
+func GetCustomCoinStaked(denom string) []byte {
+	return append(keyPrefixCustomCoinStaked, []byte(denom)...)
 }

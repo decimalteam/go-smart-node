@@ -191,10 +191,11 @@ var (
 
 	// Module account permissions
 	maccPerms = map[string][]string{
-		authtypes.FeeCollectorName:       {authtypes.Burner},
+		authtypes.FeeCollectorName:       {authtypes.Burner, authtypes.Minter},
 		distrtypes.ModuleName:            nil,
 		validatortypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		validatortypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
+		validatortypes.ModuleName:        {authtypes.Burner, authtypes.Minter}, // used to store coins that will soon be paid out
 		govtypes.ModuleName:              {authtypes.Burner},
 		evmtypes.ModuleName:              {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
 		cointypes.ModuleName:             {authtypes.Minter, authtypes.Burner},
