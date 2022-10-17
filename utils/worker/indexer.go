@@ -3,7 +3,7 @@ package worker
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -31,7 +31,7 @@ func (w *Worker) getWork() {
 	defer resp.Body.Close()
 
 	// Parse response
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	w.panicError(err)
 	height, err := strconv.Atoi(string(bodyBytes))
 	w.panicError(err)
@@ -73,7 +73,7 @@ func (w *Worker) sendBlock(height int64, json []byte) {
 				"block", height,
 			)
 			// Parse response
-			bodyBytes, err := ioutil.ReadAll(resp.Body)
+			bodyBytes, err := io.ReadAll(resp.Body)
 			if err != nil {
 				w.logger.Error(
 					fmt.Sprintf("Error: unable to send block to the indexer: %s", err.Error()),

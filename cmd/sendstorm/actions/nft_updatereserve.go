@@ -67,7 +67,7 @@ func (gg *UpdateReserveNFTGenerator) Generate() Action {
 		// get max reserve of subtokens
 		newReserve := sdk.ZeroInt()
 		for _, s := range subToUpdate {
-			key := NFTSubTokenKey{Denom: nftToUpdateReserve.Denom, TokenID: nftToUpdateReserve.ID, ID: s}
+			key := NFTSubTokenKey{TokenID: nftToUpdateReserve.ID, ID: s}
 			reserve, ok := gg.knownSubtokenReserves[key]
 			if !ok {
 				continue
@@ -119,15 +119,7 @@ func (aa *UpdateReserveNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeCon
 		aa.subIds,
 		aa.newReserve,
 	)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
-	if err != nil {
-		return nil, err
-	}
-	err = tx.SignTransaction(sa.Account())
-	if err != nil {
-		return nil, err
-	}
-	return tx.BytesToSend()
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (aa *UpdateReserveNFTAction) String() string {

@@ -98,7 +98,8 @@ func (ac *RedeemCheckAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *
 		return nil, err
 	}
 
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
+	// Redeem check has fixed fee, zero at fee decorator
+	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), sdk.ZeroDec(), feeConfig.Params)
 	if err != nil {
 		return nil, err
 	}

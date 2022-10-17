@@ -1,6 +1,8 @@
 package types
 
 import (
+	"encoding/hex"
+
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -104,8 +106,8 @@ func NewMsgRedeemSwap(
 	fromChain uint32,
 	destChain uint32,
 	v uint32,
-	r *Hash,
-	s *Hash,
+	r string,
+	s string,
 ) *MsgRedeemSwap {
 	return &MsgRedeemSwap{
 		Sender:            sender.String(),
@@ -117,8 +119,8 @@ func NewMsgRedeemSwap(
 		FromChain:         fromChain,
 		DestChain:         destChain,
 		V:                 v,
-		R:                 r.Copy(),
-		S:                 s.Copy(),
+		R:                 r,
+		S:                 s,
 	}
 }
 
@@ -159,6 +161,20 @@ func (msg MsgRedeemSwap) ValidateBasic() error {
 	}
 	if _, ok := sdk.NewIntFromString(msg.TransactionNumber); !ok {
 		return errors.InvalidTransactionNumber
+	}
+	bz, err := hex.DecodeString(msg.R)
+	if err != nil {
+		return errors.InvalidHexStringR
+	}
+	if len(bz) != 32 {
+		return errors.InvalidLengthR
+	}
+	bz, err = hex.DecodeString(msg.S)
+	if err != nil {
+		return errors.InvalidHexStringS
+	}
+	if len(bz) != 32 {
+		return errors.InvalidLengthS
 	}
 	return nil
 }

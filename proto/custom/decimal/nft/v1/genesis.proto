@@ -14,7 +14,7 @@ option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
 message GenesisState {
   option (gogoproto.equal) = true;
   // collections defines all existing NFT collections (including tokens and sub-tokens).
-  repeated Collection collections = 2 [ (gogoproto.nullable) = false ];
+  repeated Collection collections = 1 [ (gogoproto.nullable) = false ];
   // params defines all the module's parameters.
-  Params params = 1 [ (gogoproto.nullable) = false ];
+  Params params = 2 [ (gogoproto.nullable) = false ];
 }

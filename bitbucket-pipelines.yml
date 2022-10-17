@@ -43,28 +43,30 @@ definitions:
           - MESSAGE=`git log --format=%B -n 1 $BITBUCKET_COMMIT` # getting commit message
           - pip3 install ansible==2.10.7
 
+          - export no_proxy="*"
+
           - chmod 700 ci-scripts/ansible
           - cd ci-scripts/ansible
 
           # run update playbook
           - if [[ $MESSAGE == *\[update\]* ]]; then
-            ansible-playbook -i "$MASTER_HOSTS" -e "ansible_user=$USERNAME chain_id=$CHAIN_ID artifacts=$BITBUCKET_CLONE_DIR/build" decimal-nodes-update.yml;
+            ansible-playbook -i hosts -l "$MASTER_HOST, $SLAVE_HOST" -e "ansible_user=$USERNAME chain_id=$CHAIN_ID artifacts=$BITBUCKET_CLONE_DIR/build" decimal-nodes-update.yml;
             else echo 0; fi
 
           # run reset playbook for MASTER HOSTS
           - if [[ $MESSAGE == *\[reset\]* ]]; then
-            ansible-playbook -i "$MASTER_HOSTS" -e "ansible_user=$USERNAME mode=master chain_id=$CHAIN_ID artifacts=$BITBUCKET_CLONE_DIR/build persistent_peers=$PERSISTENT_PEERS" decimal-nodes-init.yml;
+            ansible-playbook -i hosts -l "$MASTER_HOST" -e "ansible_user=$USERNAME mode=master decimal_keys=$DECIMAL_KEYS chain_id=$CHAIN_ID artifacts=$BITBUCKET_CLONE_DIR/build persistent_peers=$PERSISTENT_PEERS" decimal-nodes-init.yml;
             else echo 0; fi
 
           # run reset playbook for EXPLORER HOSTS
           - if [[ $MESSAGE == *\[reset\]* ]]; then
-            ansible-playbook -i "$EXPLORER_HOSTS" -e "ansible_user=$USERNAME" decimal-explorer-init.yml;
+            ansible-playbook -i hosts -l "$EXPLORER_HOST" -e "ansible_user=$USERNAME" decimal-explorer-init.yml;
             else echo 0; fi
 
           # run reset playbook for SLAVE HOSTS
-          #- if [[ $MESSAGE == *\[reset\]* ]]; then
-          #  ansible-playbook -i "$SLAVE_HOSTS" -e "ansible_user=$USERNAME mode=slave chain_id=$CHAIN_ID artifacts=$BITBUCKET_CLONE_DIR/build src_genesis=$SRC_GENESIS persistent_peers=$PERSISTENT_PEERS" decimal-nodes-init.yml;
-          #  else echo 0; fi
+          - if [[ $MESSAGE == *\[reset\]* ]]; then
+            ansible-playbook -i hosts -l "$SLAVE_HOST" -e "ansible_user=$USERNAME mode=slave decimal_keys=$DECIMAL_KEYS chain_id=$CHAIN_ID artifacts=$BITBUCKET_CLONE_DIR/build src_genesis=$SRC_GENESIS persistent_peers=$PERSISTENT_PEERS" decimal-nodes-init.yml;
+            else echo 0; fi
 
     - parallel: &repo_build
 
@@ -94,7 +96,7 @@ definitions:
                - cd "${PACKAGE_PATH}"
                - go get ./...
                - go test ./...
-               - go install ./cmd/dscd/
+               - COSMOS_BUILD_OPTIONS=goleveldb make install
                - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/centos/8/
                - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/centos/8/
              artifacts:
@@ -124,7 +126,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - go install ./cmd/dscd/
+              - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ol/8.5/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ol/8.5/
             artifacts:
@@ -154,7 +156,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - go install ./cmd/dscd/
+              - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
             artifacts:
@@ -185,7 +187,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - go install ./cmd/dscd/
+              - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/22.04/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/22.04/
             artifacts:
@@ -216,7 +218,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - go install ./cmd/dscd/
+              - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/20.04/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/20.04/
             artifacts:
@@ -247,7 +249,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - go install ./cmd/dscd/
+              - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/18.04/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/18.04/
             artifacts:
@@ -278,7 +280,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - go install ./cmd/dscd/
+              - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/16.04/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/16.04/
             artifacts:
@@ -309,7 +311,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - go install ./cmd/dscd/
+              - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/11/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/11/
             artifacts:
@@ -340,7 +342,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - go install ./cmd/dscd/
+              - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/10/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/10/
             artifacts:
@@ -371,7 +373,7 @@ definitions:
               - cd "${PACKAGE_PATH}"
               - go get ./...
               - go test ./...
-              - go install ./cmd/dscd/
+              - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/9/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/9/
             artifacts:
@@ -446,7 +448,52 @@ pipelines:
             - pip3 install ansible==2.10.7
             - chmod 700 ci-scripts/ansible
             - cd ci-scripts/ansible
-            - ansible-playbook -i "$WORKER_HOSTS" -e "ansible_user=$USERNAME artifacts=$BITBUCKET_CLONE_DIR/build INDEXER_URL_WORKER=$INDEXER_URL_WORKER RPC_URL_WORKER=$RPC_URL_WORKER WEB3_URL_WORKER=$WEB3_URL_WORKER" decimal-worker-build.yml
+            - ansible-playbook -i hosts -l "$WORKER_HOST" -e "ansible_user=$USERNAME artifacts=$BITBUCKET_CLONE_DIR/build INDEXER_URL_WORKER=$INDEXER_URL_WORKER RPC_URL_WORKER=$RPC_URL_WORKER WEB3_URL_WORKER=$WEB3_URL_WORKER" decimal-worker-build.yml
+
+    worker-testnet-smart-chain:
+      - step:
+          name: Build worker
+          image: centos:centos8
+          caches:
+            - go-src
+            - go-pkg
+          script:
+            - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
+            - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://centos8-repo.crypton.studio|g' /etc/yum.repos.d/CentOS-Linux-*
+            - dnf install -y epel-release
+            - dnf install -y snappy gcc git which wget make
+            - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
+            - tar -xvf go1.18.5.linux-amd64.tar.gz
+            - mv go /usr/local
+            - export GOROOT=/usr/local/go
+            - export GOPATH=~/go
+            - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+            - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+            - mkdir -pv "${PACKAGE_PATH}"
+            - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+            - export GO111MODULE=on
+            - cd "${PACKAGE_PATH}"
+            - go get ./...
+            - go build cmd/worker/*
+            - COSMOS_BUILD_OPTIONS=goleveldb make install
+            - mkdir ${BITBUCKET_CLONE_DIR}/build
+            - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build
+            - cp ${PACKAGE_PATH}/cmd/worker/* ${BITBUCKET_CLONE_DIR}/build
+          artifacts:
+            - build/**
+
+      - step:
+          name: Deploy
+          deployment: Staging
+          caches:
+            - pip
+          script:
+            - MESSAGE=`git log --format=%B -n 1 $BITBUCKET_COMMIT` # getting commit message
+            - pip3 install ansible==2.10.7
+            - chmod 700 ci-scripts/ansible
+            - cd ci-scripts/ansible
+            - ansible-playbook -i hosts -l "$WORKER_HOST" -e "ansible_user=$USERNAME artifacts=$BITBUCKET_CLONE_DIR/build INDEXER_URL_WORKER=$INDEXER_URL_WORKER RPC_URL_WORKER=$RPC_URL_WORKER WEB3_URL_WORKER=$WEB3_URL_WORKER" decimal-worker-build.yml
+
 
     build-and-deploy-binary-files-to-repo-DEVnet:
       - parallel: *repo_build

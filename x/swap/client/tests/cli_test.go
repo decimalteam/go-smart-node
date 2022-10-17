@@ -51,7 +51,8 @@ func TestCliSwapRedeem(t *testing.T) {
 	// r = 61 73 64 62 6e 31 32 33 38 37 67 61
 	// s = 34 66 73 37
 	cmd.SetArgs([]string{"0x12345", adr1.String(), "1000", "btc", "1234567", "3", "1", "9",
-		"617364626e31323338376761", "34667337"})
+		"d8c0c8ff4a9b168be168f480bae61ead0a7f2b973f983a038f867621451fa553",
+		"641ba9f5749afbb425e83b69ecacb3a0c6e32e2431609d474d4300a7cce5eb41"})
 	err = cmd.ExecuteContext(ctx)
 	require.NoError(t, err)
 
@@ -67,8 +68,8 @@ func TestCliSwapRedeem(t *testing.T) {
 	require.Equal(t, uint32(3), msg.FromChain)
 	require.Equal(t, uint32(1), msg.DestChain)
 	require.Equal(t, uint32(9), msg.V)
-	require.Equal(t, types.Hash([32]byte{0x61, 0x73, 0x64, 0x62, 0x6e, 0x31, 0x32, 0x33, 0x38, 0x37, 0x67, 0x61}), *msg.R)
-	require.Equal(t, types.Hash([32]byte{0x34, 0x66, 0x73, 0x37}), *msg.S)
+	require.Equal(t, "d8c0c8ff4a9b168be168f480bae61ead0a7f2b973f983a038f867621451fa553", msg.R)
+	require.Equal(t, "641ba9f5749afbb425e83b69ecacb3a0c6e32e2431609d474d4300a7cce5eb41", msg.S)
 
 }
 

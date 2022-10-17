@@ -1,6 +1,8 @@
 package actions
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 // helpers
 const charsAll = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

@@ -3,10 +3,11 @@ package main
 import (
 	"errors"
 	"fmt"
-	tmcfg "github.com/tendermint/tendermint/config"
 	"io"
 	"os"
 	"path/filepath"
+
+	tmcfg "github.com/tendermint/tendermint/config"
 
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
@@ -113,6 +114,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		ethermintclient.ValidateChainID(
 			InitCmd(app.ModuleBasics, app.DefaultNodeHome),
 		),
+		SelfDelegationCmd(app.ModuleBasics, encodingConfig.TxConfig, app.DefaultNodeHome),
 		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
 		genutilcli.GenTxCmd(app.ModuleBasics, encodingConfig.TxConfig, banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
 		genutilcli.ValidateGenesisCmd(app.ModuleBasics),

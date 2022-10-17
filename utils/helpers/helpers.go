@@ -9,6 +9,8 @@ import (
 
 	"github.com/dustin/go-humanize"
 
+	"github.com/tendermint/tendermint/crypto/tmhash"
+
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -133,4 +135,14 @@ func DurationToString(d time.Duration) string {
 		amount = humanize.CommafWithDigits(days, 3)
 	}
 	return fmt.Sprintf("%s %s", amount, unit)
+}
+
+// CalcHashSHA256 returns sha256 hash (32 bytes) calculated from specified string.
+func CalcHashSHA256(str string) []byte {
+	h := tmhash.New()
+	_, err := h.Write([]byte(str))
+	if err != nil {
+		panic(err)
+	}
+	return h.Sum(nil)
 }

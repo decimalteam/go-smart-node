@@ -134,8 +134,8 @@ func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
 			}
 
 			upgradeMsg := BuildUpgradeNeededMsg(plan)
-			logger.Error(upgradeMsg)
-			panic(upgradeMsg)
+			logger.Info(upgradeMsg)
+			os.Exit(0)
 		}
 
 		// We have an upgrade handler for this upgrade name, so apply the upgrade

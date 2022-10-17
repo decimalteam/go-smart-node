@@ -4,72 +4,69 @@ import (
 	"testing"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	"bitbucket.org/decimalteam/go-smart-node/x/swap"
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
-	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
-func TestChainOperations(t *testing.T) {
-	dsc, ctx := getBaseAppWithCustomKeeper(t)
-	addrs, _ := generateAddresses(dsc, ctx, 10,
-		sdk.NewCoins(
-			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
-		),
-	)
-
-	gs := types.DefaultGenesisState()
-
-	swap.InitGenesis(ctx, dsc.SwapKeeper, gs)
-
-	swapService, err := sdk.AccAddressFromBech32(gs.Params.ServiceAddress)
-	require.NoError(t, err)
-
-	// invalid sender to activate chain
-	msg := types.NewMsgActivateChain(addrs[0], 1, "some chain")
-	err = msg.ValidateBasic()
-	require.NoError(t, err)
-	goCtx := sdk.WrapSDKContext(ctx)
-	_, err = dsc.SwapKeeper.ActivateChain(goCtx, msg)
-	require.Error(t, err)
-
-	// valid sender to activate chain
-	msg = types.NewMsgActivateChain(swapService, 1, "some chain")
-	err = msg.ValidateBasic()
-	require.NoError(t, err)
-	goCtx = sdk.WrapSDKContext(ctx)
-	_, err = dsc.SwapKeeper.ActivateChain(goCtx, msg)
-	require.NoError(t, err)
-
-	chain, ok := dsc.SwapKeeper.GetChain(ctx, 1)
-	require.True(t, ok)
-	require.Equal(t, types.Chain{Id: 1, Name: "some chain", Active: true}, chain)
-
-	// invalid sender to deactivate chain
-	msgD := types.NewMsgDeactivateChain(addrs[0], 1)
-	err = msgD.ValidateBasic()
-	require.NoError(t, err)
-	goCtx = sdk.WrapSDKContext(ctx)
-	_, err = dsc.SwapKeeper.DeactivateChain(goCtx, msgD)
-	require.Error(t, err)
-
-	// valid sender to deactivate chain
-	msgD = types.NewMsgDeactivateChain(swapService, 1)
-	err = msg.ValidateBasic()
-	require.NoError(t, err)
-	goCtx = sdk.WrapSDKContext(ctx)
-	_, err = dsc.SwapKeeper.DeactivateChain(goCtx, msgD)
-	require.NoError(t, err)
-
-	chain, ok = dsc.SwapKeeper.GetChain(ctx, 1)
-	require.True(t, ok)
-	require.Equal(t, types.Chain{Id: 1, Name: "some chain", Active: false}, chain)
-}
+//func TestChainOperations(t *testing.T) {
+//	dsc, ctx := getBaseAppWithCustomKeeper(t)
+//	addrs, _ := generateAddresses(dsc, ctx, 10,
+//		sdk.NewCoins(
+//			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
+//		),
+//	)
+//
+//	gs := types.DefaultGenesisState()
+//
+//	swap.InitGenesis(ctx, dsc.SwapKeeper, gs)
+//
+//	swapService, err := sdk.AccAddressFromBech32(gs.Params.ServiceAddress)
+//	require.NoError(t, err)
+//
+//	// invalid sender to activate chain
+//	msg := types.NewMsgActivateChain(addrs[0], 1, "some chain")
+//	err = msg.ValidateBasic()
+//	require.NoError(t, err)
+//	goCtx := sdk.WrapSDKContext(ctx)
+//	_, err = dsc.SwapKeeper.ActivateChain(goCtx, msg)
+//	require.Error(t, err)
+//
+//	// valid sender to activate chain
+//	msg = types.NewMsgActivateChain(swapService, 1, "some chain")
+//	err = msg.ValidateBasic()
+//	require.NoError(t, err)
+//	goCtx = sdk.WrapSDKContext(ctx)
+//	_, err = dsc.SwapKeeper.ActivateChain(goCtx, msg)
+//	require.NoError(t, err)
+//
+//	chain, ok := dsc.SwapKeeper.GetChain(ctx, 1)
+//	require.True(t, ok)
+//	require.Equal(t, types.Chain{Id: 1, Name: "some chain", Active: true}, chain)
+//
+//	// invalid sender to deactivate chain
+//	msgD := types.NewMsgDeactivateChain(addrs[0], 1)
+//	err = msgD.ValidateBasic()
+//	require.NoError(t, err)
+//	goCtx = sdk.WrapSDKContext(ctx)
+//	_, err = dsc.SwapKeeper.DeactivateChain(goCtx, msgD)
+//	require.Error(t, err)
+//
+//	// valid sender to deactivate chain
+//	msgD = types.NewMsgDeactivateChain(swapService, 1)
+//	err = msg.ValidateBasic()
+//	require.NoError(t, err)
+//	goCtx = sdk.WrapSDKContext(ctx)
+//	_, err = dsc.SwapKeeper.DeactivateChain(goCtx, msgD)
+//	require.NoError(t, err)
+//
+//	chain, ok = dsc.SwapKeeper.GetChain(ctx, 1)
+//	require.True(t, ok)
+//	require.Equal(t, types.Chain{Id: 1, Name: "some chain", Active: false}, chain)
+//}
 
 // TODO: need test for SwapRedeem?
 

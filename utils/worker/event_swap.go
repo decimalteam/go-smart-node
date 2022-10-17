@@ -7,13 +7,9 @@ import (
 	sdkmath "cosmossdk.io/math"
 
 	abci "github.com/tendermint/tendermint/abci/types"
-
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-
-	swaptypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
 )
 
-var swapPool = authtypes.NewModuleAddress(swaptypes.SwapPool)
+// var swapPool = authtypes.NewModuleAddress(swaptypes.SwapPool)
 
 type EventActivateChain struct {
 	Sender string `json:"sender"`

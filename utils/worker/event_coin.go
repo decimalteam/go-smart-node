@@ -11,9 +11,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// TODO: get from blockchain
-const baseCoinSymbol = "del"
-
 type UpdateCoinVR struct {
 	Volume  sdkmath.Int `json:"volume"`
 	Reserve sdkmath.Int `json:"reserve"`

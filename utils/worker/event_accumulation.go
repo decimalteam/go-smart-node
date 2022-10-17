@@ -215,14 +215,6 @@ func (ea *EventAccumulator) addBurnSubTokens(e EventBurnToken) {
 	ea.BurnSubTokens = append(ea.BurnSubTokens, e)
 }
 
-// set tx hash for some messages
-func (ea *EventAccumulator) setTxHash(txs []Tx) error {
-	// hash of CreateCoin
-	// hash of MintNFT, TransferNFT
-
-	return nil
-}
-
 func mustConvertAndEncode(address sdk.AccAddress) string {
 	res, err := bech32.ConvertAndEncode("dx", address)
 	if err != nil {

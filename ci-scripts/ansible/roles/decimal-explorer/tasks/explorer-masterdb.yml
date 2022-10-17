@@ -4,7 +4,7 @@
 
 - name: Drop schema "public" with cascade
   postgresql_schema:
-    db: explorerdev
+    db: explorer
     name: public
     state: absent
     cascade_drop: true
@@ -13,7 +13,7 @@
 
 - name: Create schema "public"
   postgresql_schema:
-    db: explorerdev
+    db: explorer
     name: public
     state: present
   become: true
@@ -21,7 +21,7 @@
 
 - name: REVOKE ALL ON SCHEMA public FROM public
   postgresql_privs:
-    db: explorerdev
+    db: explorer
     state: absent
     privs: ALL
     type: schema
@@ -32,12 +32,12 @@
 
 - name: GRANT ALL ON SCHEMA public TO explorer
   postgresql_privs:
-    db: explorerdev
+    db: explorer
     state: present
     privs: ALL
     type: schema
     objs: public
-    role: explorerdev
+    role: explorer
   become: true
   become_user: postgres
 

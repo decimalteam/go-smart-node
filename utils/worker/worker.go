@@ -13,6 +13,7 @@ import (
 	web3hexutil "github.com/ethereum/go-ethereum/common/hexutil"
 	web3types "github.com/ethereum/go-ethereum/core/types"
 	web3 "github.com/ethereum/go-ethereum/ethclient"
+	ethrpc "github.com/ethereum/go-ethereum/rpc"
 
 	"github.com/tendermint/tendermint/libs/log"
 	rpc "github.com/tendermint/tendermint/rpc/client/http"
@@ -23,17 +24,24 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
+const (
+	TxReceiptsBatchSize = 16
+	RequestTimeout      = 16 * time.Second
+	RequestRetryDelay   = 32 * time.Millisecond
+)
+
 type Worker struct {
-	ctx         context.Context
-	httpClient  *http.Client
-	cdc         params.EncodingConfig
-	logger      log.Logger
-	config      *Config
-	hostname    string
-	rpcClient   *rpc.HTTP
-	web3Client  *web3.Client
-	web3ChainId *big.Int
-	query       chan *ParseTask
+	ctx          context.Context
+	httpClient   *http.Client
+	cdc          params.EncodingConfig
+	logger       log.Logger
+	config       *Config
+	hostname     string
+	rpcClient    *rpc.HTTP
+	web3Client   *web3.Client
+	web3ChainId  *big.Int
+	ethRpcClient *ethrpc.Client
+	query        chan *ParseTask
 }
 
 type Config struct {
@@ -61,17 +69,22 @@ func NewWorker(cdc params.EncodingConfig, logger log.Logger, config *Config) (*W
 	if err != nil {
 		return nil, err
 	}
+	ethRpcClient, err := ethrpc.Dial(config.Web3Endpoint)
+	if err != nil {
+		return nil, err
+	}
 	worker := &Worker{
-		ctx:         context.Background(),
-		httpClient:  httpClient,
-		cdc:         cdc,
-		logger:      logger,
-		config:      config,
-		hostname:    hostname,
-		rpcClient:   rpcClient,
-		web3Client:  web3Client,
-		web3ChainId: web3ChainId,
-		query:       make(chan *ParseTask, 1000),
+		ctx:          context.Background(),
+		httpClient:   httpClient,
+		cdc:          cdc,
+		logger:       logger,
+		config:       config,
+		hostname:     hostname,
+		rpcClient:    rpcClient,
+		web3Client:   web3Client,
+		web3ChainId:  web3ChainId,
+		ethRpcClient: ethRpcClient,
+		query:        make(chan *ParseTask, 1000),
 	}
 	return worker, nil
 }
@@ -87,24 +100,35 @@ func (w *Worker) Start() {
 
 func (w *Worker) executeFromQuery(wg *sync.WaitGroup) {
 	defer wg.Done()
-	w.getWork()
 	for {
+
+		// Determine number of work to retrieve from the node
+		w.getWork()
+
+		// Retrieve block result from the node and prepare it for the indexer service
 		task := <-w.query
-		b := w.GetBlockResult(task.height, task.txNum)
-		// Send
-		data, err := json.Marshal(*b)
+		block := w.GetBlockResult(task.height, task.txNum)
+		if block == nil {
+			continue
+		}
+
+		// Send retrieved block result from the  indexer service
+		data, err := json.Marshal(*block)
 		w.panicError(err)
 		w.sendBlock(task.height, data)
-
-		w.getWork()
 	}
 }
 
 func (w *Worker) GetBlockResult(height int64, txNum int) *Block {
 	accum := NewEventAccumulator()
 
+	w.logger.Info("Retrieving block results...", "block", height)
+
 	// Fetch requested block from Tendermint RPC
 	block := w.fetchBlock(height)
+	if block == nil {
+		return nil
+	}
 
 	// Fetch everything needed from Tendermint RPC aand EVM
 	start := time.Now()
@@ -113,7 +137,7 @@ func (w *Worker) GetBlockResult(height int64, txNum int) *Block {
 	sizeChan := make(chan int)
 	web3BlockChan := make(chan *web3types.Block)
 	web3ReceiptsChan := make(chan web3types.Receipts)
-	go w.fetchBlockTxResults(height, *block, accum, txsChan, resultsChan)
+	go w.fetchBlockResults(height, *block, accum, txsChan, resultsChan)
 	go w.fetchBlockSize(height, sizeChan)
 	txs := <-txsChan
 	results := <-resultsChan
