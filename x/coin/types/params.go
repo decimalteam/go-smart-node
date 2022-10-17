@@ -6,6 +6,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
+	cmdconfig "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
@@ -13,7 +14,7 @@ import (
 
 // Coin params default values.
 var (
-	DefaultBaseDenom  string      = "del"
+	DefaultBaseDenom  string      = cmdconfig.BaseDenom
 	DefaultBaseTitle  string      = "Decimal coin"
 	DefaultBaseVolume sdkmath.Int = helpers.EtherToWei(sdkmath.NewInt(340_000_000))
 )

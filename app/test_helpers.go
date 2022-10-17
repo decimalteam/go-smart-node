@@ -152,7 +152,7 @@ func AddTestAddrsIncremental(app *DSC, ctx sdk.Context, accNum int, accAmt sdk.C
 func GetAddrs(dsc *DSC, ctx sdk.Context, number int) []sdk.AccAddress {
 	addrs := AddTestAddrsIncremental(dsc, ctx, number, sdk.Coins{
 		{
-			Denom:  "del",
+			Denom:  "tdel",
 			Amount: helpers.EtherToWei(sdk.NewInt(1000000000000)),
 		},
 	})

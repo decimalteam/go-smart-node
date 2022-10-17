@@ -1,9 +1,8 @@
 package keeper_test
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/testutil"
-	feekeeper "bitbucket.org/decimalteam/go-smart-node/x/fee/keeper"
-	feetestutil "bitbucket.org/decimalteam/go-smart-node/x/fee/testutil"
+	"testing"
+
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
@@ -17,11 +16,15 @@ import (
 	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
-	"testing"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/testutil"
+	feekeeper "bitbucket.org/decimalteam/go-smart-node/x/fee/keeper"
+	feetestutil "bitbucket.org/decimalteam/go-smart-node/x/fee/testutil"
 )
 
 var (
-	baseDenom = "del"
+	baseDenom = cmdcfg.BaseDenom
 	pk        = ed25519.GenPrivKey().PubKey()
 	oracle    = sdk.AccAddress(pk.Address()).String()
 )

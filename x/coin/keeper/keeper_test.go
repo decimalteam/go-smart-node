@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"testing"
+
 	"bitbucket.org/decimalteam/go-smart-node/testutil"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
 	coinkeeper "bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
@@ -16,7 +18,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
-	"testing"
 
 	"github.com/stretchr/testify/require"
 
@@ -24,6 +25,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
+	cmdconfig "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -35,7 +37,7 @@ var (
 	pk1   = ed25519.GenPrivKey().PubKey()
 	addr1 = sdk.AccAddress(pk.Address())
 
-	baseDenom  = "del"
+	baseDenom  = cmdconfig.BaseDenom
 	baseAmount = helpers.EtherToWei(sdkmath.NewInt(1000000000000))
 	//baseInitialReserve = sdk.NewCoin(baseDenom, helpers.EtherToWei(10000))
 )

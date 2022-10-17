@@ -1,13 +1,15 @@
 package types_test
 
 import (
+	"testing"
+
 	"github.com/cosmos/cosmos-sdk/types/address"
 	"github.com/stretchr/testify/require"
-	"testing"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
@@ -23,7 +25,7 @@ var (
 func TestDelegations(t *testing.T) {
 	val := sdk.ValAddress(keysAddr1)
 	del := sdk.AccAddress(keysAddr2)
-	denom := "del"
+	denom := cmdcfg.BaseDenom
 
 	key := append(append(append(types.GetAllDelegationsKey(), address.MustLengthPrefix(del)...), address.MustLengthPrefix(val)...), []byte(denom)...)
 	// <delegator> <validator> <denom>
@@ -50,7 +52,6 @@ func TestRedelegations(t *testing.T) {
 	del := sdk.AccAddress(keysAddr2)
 	val_src := sdk.ValAddress(keysAddr3)
 	val_dst := sdk.ValAddress(keysAddr1)
-	//denom := "del"
 
 	key := append(append(append(types.GetAllREDsKey(), address.MustLengthPrefix(del)...), address.MustLengthPrefix(val_src)...), address.MustLengthPrefix(val_dst)...)
 	// <delegator> <src_validator> <dst_validator>

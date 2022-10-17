@@ -1,11 +1,14 @@
 package keeper_test
 
 import (
+	"encoding/hex"
+	"testing"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/testutil"
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/keeper"
 	swaptestutil "bitbucket.org/decimalteam/go-smart-node/x/swap/testutil"
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/types"
-	"encoding/hex"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -20,7 +23,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
-	"testing"
 )
 
 var (
@@ -33,7 +35,7 @@ var (
 	pk3   = ed25519.GenPrivKey().PubKey()
 	user3 = sdk.AccAddress(pk3.Address())
 
-	defaultTokenSymbol string = "del"
+	defaultTokenSymbol string = cmdcfg.BaseDenom
 	defaultAmount             = sdk.NewInt(10)
 	defaultCoins              = sdk.NewCoins(sdk.NewCoin(defaultTokenSymbol, defaultAmount))
 

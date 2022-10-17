@@ -3,10 +3,12 @@ package types
 import (
 	"testing"
 
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto/ed25519"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
 func TestValidateWallet(t *testing.T) {
@@ -138,7 +140,7 @@ func TestValidateTransaction(t *testing.T) {
 			sender:      addrs[0],
 			wallet:      wallet.Address,
 			receiver:    addrs[1].String(),
-			coins:       sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1)))),
+			coins:       sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(1)))),
 			expectError: false,
 		},
 		{
@@ -146,7 +148,7 @@ func TestValidateTransaction(t *testing.T) {
 			sender:      addrs[0],
 			wallet:      wallet.Address + "0",
 			receiver:    addrs[1].String(),
-			coins:       sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1)))),
+			coins:       sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(1)))),
 			expectError: true,
 		},
 		{
@@ -154,7 +156,7 @@ func TestValidateTransaction(t *testing.T) {
 			sender:      addrs[0],
 			wallet:      wallet.Address,
 			receiver:    addrs[1].String() + "0",
-			coins:       sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1)))),
+			coins:       sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(1)))),
 			expectError: true,
 		},
 		{
@@ -162,7 +164,7 @@ func TestValidateTransaction(t *testing.T) {
 			sender:      addrs[0],
 			wallet:      wallet.Address,
 			receiver:    addrs[1].String(),
-			coins:       sdk.NewCoins(sdk.NewCoin("del", sdk.ZeroInt())), // it will be empty
+			coins:       sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, sdk.ZeroInt())), // it will be empty
 			expectError: true,
 		},
 	}
@@ -191,7 +193,7 @@ func TestValidateSignTransaction(t *testing.T) {
 	require.NoError(t, err)
 
 	tx, err := NewTransaction(wallet.Address, addrs[1].String(),
-		sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1)))),
+		sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(1)))),
 		3, 100, []byte{1})
 	require.NoError(t, err)
 
