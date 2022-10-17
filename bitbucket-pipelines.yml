@@ -449,6 +449,51 @@ pipelines:
             - cd ci-scripts/ansible
             - ansible-playbook -i hosts -l "$WORKER_HOST" -e "ansible_user=$USERNAME artifacts=$BITBUCKET_CLONE_DIR/build INDEXER_URL_WORKER=$INDEXER_URL_WORKER RPC_URL_WORKER=$RPC_URL_WORKER WEB3_URL_WORKER=$WEB3_URL_WORKER" decimal-worker-build.yml
 
+    worker-testnet-smart-chain:
+      - step:
+          name: Build worker
+          image: centos:centos8
+          caches:
+            - go-src
+            - go-pkg
+          script:
+            - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
+            - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://centos8-repo.crypton.studio|g' /etc/yum.repos.d/CentOS-Linux-*
+            - dnf install -y epel-release
+            - dnf install -y snappy gcc git which wget make
+            - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
+            - tar -xvf go1.18.5.linux-amd64.tar.gz
+            - mv go /usr/local
+            - export GOROOT=/usr/local/go
+            - export GOPATH=~/go
+            - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+            - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+            - mkdir -pv "${PACKAGE_PATH}"
+            - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+            - export GO111MODULE=on
+            - cd "${PACKAGE_PATH}"
+            - go get ./...
+            - go build cmd/worker/*
+            - COSMOS_BUILD_OPTIONS=goleveldb make install
+            - mkdir ${BITBUCKET_CLONE_DIR}/build
+            - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build
+            - cp ${PACKAGE_PATH}/cmd/worker/* ${BITBUCKET_CLONE_DIR}/build
+          artifacts:
+            - build/**
+
+      - step:
+          name: Deploy
+          deployment: Staging
+          caches:
+            - pip
+          script:
+            - MESSAGE=`git log --format=%B -n 1 $BITBUCKET_COMMIT` # getting commit message
+            - pip3 install ansible==2.10.7
+            - chmod 700 ci-scripts/ansible
+            - cd ci-scripts/ansible
+            - ansible-playbook -i hosts -l "$WORKER_HOST" -e "ansible_user=$USERNAME artifacts=$BITBUCKET_CLONE_DIR/build INDEXER_URL_WORKER=$INDEXER_URL_WORKER RPC_URL_WORKER=$RPC_URL_WORKER WEB3_URL_WORKER=$WEB3_URL_WORKER" decimal-worker-build.yml
+
+
     build-and-deploy-binary-files-to-repo-DEVnet:
       - parallel: *repo_build
       - step:
