@@ -464,6 +464,9 @@ func (msg *MsgRedelegateNFT) ValidateBasic() error {
 	if _, err := sdk.ValAddressFromBech32(msg.ValidatorDst); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid destination validator address: %s", err)
 	}
+	if msg.ValidatorSrc == msg.ValidatorDst {
+		return errors.SelfRedelegation
+	}
 	if len(msg.TokenID) == 0 {
 		return sdkerrors.ErrInvalidRequest.Wrapf("empty token ID")
 	}
