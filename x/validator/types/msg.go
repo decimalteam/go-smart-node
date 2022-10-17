@@ -406,6 +406,9 @@ func (msg *MsgRedelegate) ValidateBasic() error {
 	if _, err := sdk.ValAddressFromBech32(msg.ValidatorDst); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid destination validator address: %s", err)
 	}
+	if msg.ValidatorSrc == msg.ValidatorDst {
+		return errors.SelfRedelegation
+	}
 	if !msg.Coin.IsValid() || !msg.Coin.Amount.IsPositive() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid shares amount")
 	}
