@@ -83,7 +83,7 @@ func (k msgServer) CreateValidator(goCtx context.Context, msg *types.MsgCreateVa
 	k.SetValidator(ctx, validator)
 	k.SetValidatorByConsAddr(ctx, validator)
 	// TODO: calculate power
-	k.SetNewValidatorByPowerIndex(ctx, validator, 0)
+	k.SetNewValidatorByPowerIndex(ctx, validator.GetOperator(), 0)
 
 	// call the after-creation hook
 	if err := k.AfterValidatorCreated(ctx, validator.GetOperator()); err != nil {
@@ -93,8 +93,8 @@ func (k msgServer) CreateValidator(goCtx context.Context, msg *types.MsgCreateVa
 	// move coins from the msg.Address account to a (self-delegation) delegator account
 	// the validator account and global shares are updated within here
 	// NOTE source will always be from a wallet which are unbonded
-	_, err = k.Keeper.Delegate(ctx, sdk.AccAddress(valAddr), msg.Stake.Denom,
-		&msg.Stake.Amount, nil, types.BondStatus_Unbonded, validator, true)
+	_, _, err = k.Keeper.Delegate(ctx, sdk.AccAddress(valAddr), msg.Stake.Denom,
+		&msg.Stake.Amount, nil, validator)
 	if err != nil {
 		return nil, err
 	}
@@ -244,17 +244,17 @@ func (k msgServer) Delegate(goCtx context.Context, msg *types.MsgDelegate) (*typ
 		return nil, err
 	}
 
-	baseCoin := k.Keeper.ToBaseCoin(ctx, msg.Coin)
-
-	_, err = k.Keeper.Delegate(ctx, delegatorAddress, msg.Coin.Denom, &msg.Coin.Amount, nil, types.BondStatus_Unbonded, validator, true)
+	_, stake, err := k.Keeper.Delegate(ctx, delegatorAddress, msg.Coin.Denom, &msg.Coin.Amount, nil, validator)
 	if err != nil {
 		return nil, err
 	}
 
+	baseCoin := k.Keeper.ToBaseCoin(ctx, msg.Coin)
+
 	err = events.EmitTypedEvent(ctx, &types.EventDelegate{
 		Delegator:  msg.Delegator,
 		Validator:  msg.Validator,
-		Stake:      types.NewStakeCoin(msg.Coin),
+		Stake:      stake,
 		AmountBase: baseCoin.Amount,
 	})
 	if err != nil {
@@ -293,192 +293,212 @@ func (k msgServer) DelegateNFT(goCtx context.Context, msg *types.MsgDelegateNFT)
 		}
 	}
 
-	_, err := k.Keeper.Delegate(ctx, delegatorAddress, msg.TokenID, nil, msg.SubTokenIDs, types.BondStatus_Unbonded, validator, true)
+	_, stake, err := k.Keeper.Delegate(ctx, delegatorAddress, msg.TokenID, nil, msg.SubTokenIDs, validator)
+	if err != nil {
+		return nil, err
+	}
 
-	//bondDenom := k.BondDenom(ctx)
-	//if msg.Amount.Denom != bondDenom {
-	//	return nil, sdkerrors.Wrapf(
-	//		sdkerrors.ErrInvalidRequest, "invalid coin denomination: got %s, expected %s", msg.Amount.Denom, bondDenom,
-	//	)
-	//}
-	//
-	//// NOTE: source funds are always unbonded
-	//newShares, err := k.Keeper.Delegate(ctx, delegatorAddress, msg.Amount.Amount, types.Unbonded, validator, true)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//if msg.Amount.Amount.IsInt64() {
-	//	defer func() {
-	//		telemetry.IncrCounter(1, types.ModuleName, "delegate")
-	//		telemetry.SetGaugeWithLabels(
-	//			[]string{"tx", "msg", msg.Type()},
-	//			float32(msg.Amount.Amount.Int64()),
-	//			[]metrics.Label{telemetry.NewLabel("denom", msg.Amount.Denom)},
-	//		)
-	//	}()
-	//}
-	//
-	//ctx.EventManager().EmitEvents(sdk.Events{
-	//	sdk.NewEvent(
-	//		types.EventTypeDelegate,
-	//		sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress),
-	//		sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Amount.String()),
-	//		sdk.NewAttribute(types.AttributeKeyNewShares, newShares.String()),
-	//	),
-	//	sdk.NewEvent(
-	//		sdk.EventTypeMessage,
-	//		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-	//		sdk.NewAttribute(sdk.AttributeKeySender, msg.DelegatorAddress),
-	//	),
-	//})
+	baseCoin := k.Keeper.ToBaseCoin(ctx, stake.Stake)
+
+	err = events.EmitTypedEvent(ctx, &types.EventDelegate{
+		Delegator:  msg.Delegator,
+		Validator:  msg.Validator,
+		Stake:      stake,
+		AmountBase: baseCoin.Amount,
+	})
+	if err != nil {
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
+	}
 
 	return &types.MsgDelegateNFTResponse{}, nil
 }
 
 // Redelegate defines a method for performing a redelegation of coins from a source validator to destination one.
 func (k msgServer) Redelegate(goCtx context.Context, msg *types.MsgRedelegate) (*types.MsgRedelegateResponse, error) {
-	//ctx := sdk.UnwrapSDKContext(goCtx)
-	//valSrcAddr, err := sdk.ValAddressFromBech32(msg.ValidatorSrcAddress)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//delegatorAddress, err := sdk.AccAddressFromBech32(msg.DelegatorAddress)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//shares, err := k.ValidateUnbondAmount(
-	//	ctx, delegatorAddress, valSrcAddr, msg.Amount.Amount,
-	//)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//bondDenom := k.BondDenom(ctx)
-	//if msg.Amount.Denom != bondDenom {
-	//	return nil, sdkerrors.Wrapf(
-	//		sdkerrors.ErrInvalidRequest, "invalid coin denomination: got %s, expected %s", msg.Amount.Denom, bondDenom,
-	//	)
-	//}
-	//
-	//valDstAddr, err := sdk.ValAddressFromBech32(msg.ValidatorDstAddress)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//completionTime, err := k.BeginRedelegation(
-	//	ctx, delegatorAddress, valSrcAddr, valDstAddr, shares,
-	//)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//if msg.Amount.Amount.IsInt64() {
-	//	defer func() {
-	//		telemetry.IncrCounter(1, types.ModuleName, "redelegate")
-	//		telemetry.SetGaugeWithLabels(
-	//			[]string{"tx", "msg", msg.Type()},
-	//			float32(msg.Amount.Amount.Int64()),
-	//			[]metrics.Label{telemetry.NewLabel("denom", msg.Amount.Denom)},
-	//		)
-	//	}()
-	//}
-	//
-	//ctx.EventManager().EmitEvents(sdk.Events{
-	//	sdk.NewEvent(
-	//		types.EventTypeRedelegate,
-	//		sdk.NewAttribute(types.AttributeKeySrcValidator, msg.ValidatorSrcAddress),
-	//		sdk.NewAttribute(types.AttributeKeyDstValidator, msg.ValidatorDstAddress),
-	//		sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Amount.String()),
-	//		sdk.NewAttribute(types.AttributeKeyCompletionTime, completionTime.Format(time.RFC3339)),
-	//	),
-	//	sdk.NewEvent(
-	//		sdk.EventTypeMessage,
-	//		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-	//		sdk.NewAttribute(sdk.AttributeKeySender, msg.DelegatorAddress),
-	//	),
-	//})
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	valSrcAddr, err := sdk.ValAddressFromBech32(msg.ValidatorSrc)
+	if err != nil {
+		return nil, err
+	}
+	delegatorAddress, err := sdk.AccAddressFromBech32(msg.Delegator)
+	if err != nil {
+		return nil, err
+	}
+	valDstAddr, err := sdk.ValAddressFromBech32(msg.ValidatorDst)
+	if err != nil {
+		return nil, err
+	}
+
+	stake := types.NewStakeCoin(msg.Coin)
+	remainStake, err := k.CalculateUnbondStake(ctx, delegatorAddress, valSrcAddr, stake)
+	if err != nil {
+		return nil, err
+	}
+
+	completionTime, err := k.BeginRedelegation(
+		ctx, delegatorAddress, valSrcAddr, valDstAddr, stake, remainStake,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	baseCoin := k.ToBaseCoin(ctx, stake.Stake)
+
+	err = events.EmitTypedEvent(ctx, &types.EventRedelegate{
+		Delegator:    msg.Delegator,
+		ValidatorSrc: msg.ValidatorSrc,
+		ValidatorDst: msg.ValidatorDst,
+		Stake:        stake,
+		AmountBase:   baseCoin.Amount,
+		CompleteAt:   completionTime,
+	})
+	if err != nil {
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
+	}
 
 	return &types.MsgRedelegateResponse{
-		//CompletionTime: completionTime,
+		CompletionTime: completionTime,
 	}, nil
 }
 
 // RedelegateNFT defines a method for performing a redelegation of NFTs from a source validator to destination one.
 func (k msgServer) RedelegateNFT(goCtx context.Context, msg *types.MsgRedelegateNFT) (*types.MsgRedelegateNFTResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	valSrcAddr, err := sdk.ValAddressFromBech32(msg.ValidatorSrc)
+	if err != nil {
+		return nil, err
+	}
+	delegatorAddress, err := sdk.AccAddressFromBech32(msg.Delegator)
+	if err != nil {
+		return nil, err
+	}
+	valDstAddr, err := sdk.ValAddressFromBech32(msg.ValidatorDst)
+	if err != nil {
+		return nil, err
+	}
 
-	// TODO: Implement!
+	subtokens, err := k.prepareSubTokens(ctx, msg.TokenID, msg.SubTokenIDs)
+	if err != nil {
+		return nil, err
+	}
+	stake := types.NewStakeNFT(msg.TokenID, msg.SubTokenIDs, sumSubTokens(subtokens))
+	remainStake, err := k.CalculateUnbondStake(ctx, delegatorAddress, valSrcAddr, stake)
+	if err != nil {
+		return nil, err
+	}
 
-	return &types.MsgRedelegateNFTResponse{}, nil
+	completionTime, err := k.BeginRedelegation(
+		ctx, delegatorAddress, valSrcAddr, valDstAddr, stake, remainStake,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	baseCoin := k.ToBaseCoin(ctx, stake.Stake)
+
+	err = events.EmitTypedEvent(ctx, &types.EventRedelegate{
+		Delegator:    msg.Delegator,
+		ValidatorSrc: msg.ValidatorSrc,
+		ValidatorDst: msg.ValidatorDst,
+		Stake:        stake,
+		AmountBase:   baseCoin.Amount,
+		CompleteAt:   completionTime,
+	})
+	if err != nil {
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
+	}
+
+	return &types.MsgRedelegateNFTResponse{
+		CompletionTime: completionTime,
+	}, nil
 }
 
 // Undelegate defines a method for performing an undelegation of coins from a validator.
 func (k msgServer) Undelegate(goCtx context.Context, msg *types.MsgUndelegate) (*types.MsgUndelegateResponse, error) {
-	//ctx := sdk.UnwrapSDKContext(goCtx)
-	//
-	//addr, err := sdk.ValAddressFromBech32(msg.ValidatorAddress)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//delegatorAddress, err := sdk.AccAddressFromBech32(msg.DelegatorAddress)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//shares, err := k.ValidateUnbondAmount(
-	//	ctx, delegatorAddress, addr, msg.Amount.Amount,
-	//)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//bondDenom := k.BondDenom(ctx)
-	//if msg.Amount.Denom != bondDenom {
-	//	return nil, sdkerrors.Wrapf(
-	//		sdkerrors.ErrInvalidRequest, "invalid coin denomination: got %s, expected %s", msg.Amount.Denom, bondDenom,
-	//	)
-	//}
-	//
-	//completionTime, err := k.Keeper.Undelegate(ctx, delegatorAddress, addr, shares)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//if msg.Amount.Amount.IsInt64() {
-	//	defer func() {
-	//		telemetry.IncrCounter(1, types.ModuleName, "undelegate")
-	//		telemetry.SetGaugeWithLabels(
-	//			[]string{"tx", "msg", msg.Type()},
-	//			float32(msg.Amount.Amount.Int64()),
-	//			[]metrics.Label{telemetry.NewLabel("denom", msg.Amount.Denom)},
-	//		)
-	//	}()
-	//}
-	//
-	//ctx.EventManager().EmitEvents(sdk.Events{
-	//	sdk.NewEvent(
-	//		types.EventTypeUnbond,
-	//		sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress),
-	//		sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Amount.String()),
-	//		sdk.NewAttribute(types.AttributeKeyCompletionTime, completionTime.Format(time.RFC3339)),
-	//	),
-	//	sdk.NewEvent(
-	//		sdk.EventTypeMessage,
-	//		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-	//		sdk.NewAttribute(sdk.AttributeKeySender, msg.DelegatorAddress),
-	//	),
-	//})
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	validatorAddr, err := sdk.ValAddressFromBech32(msg.Validator)
+	if err != nil {
+		return nil, err
+	}
+	delegatorAddress, err := sdk.AccAddressFromBech32(msg.Delegator)
+	if err != nil {
+		return nil, err
+	}
+
+	stake := types.NewStakeCoin(msg.Coin)
+	remainStake, err := k.CalculateUnbondStake(ctx, delegatorAddress, validatorAddr, stake)
+	if err != nil {
+		return nil, err
+	}
+
+	completionTime, err := k.Keeper.Undelegate(ctx, delegatorAddress, validatorAddr, stake, remainStake)
+	if err != nil {
+		return nil, err
+	}
+
+	baseCoin := k.ToBaseCoin(ctx, stake.Stake)
+
+	err = events.EmitTypedEvent(ctx, &types.EventUndelegate{
+		Delegator:  msg.Delegator,
+		Validator:  msg.Validator,
+		Stake:      stake,
+		AmountBase: baseCoin.Amount,
+		CompleteAt: completionTime,
+	})
+	if err != nil {
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
+	}
 
 	return &types.MsgUndelegateResponse{
-		//CompletionTime: completionTime,
+		CompletionTime: completionTime,
 	}, nil
 }
 
 // UndelegateNFT defines a method for performing an undelegation of NFTs from a validator.
 func (k msgServer) UndelegateNFT(goCtx context.Context, msg *types.MsgUndelegateNFT) (*types.MsgUndelegateNFTResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	// TODO: Implement!
+	validatorAddr, err := sdk.ValAddressFromBech32(msg.Validator)
+	if err != nil {
+		return nil, err
+	}
+	delegatorAddress, err := sdk.AccAddressFromBech32(msg.Delegator)
+	if err != nil {
+		return nil, err
+	}
 
-	return &types.MsgUndelegateNFTResponse{}, nil
+	subtokens, err := k.prepareSubTokens(ctx, msg.TokenID, msg.SubTokenIDs)
+	if err != nil {
+		return nil, err
+	}
+	stake := types.NewStakeNFT(msg.TokenID, msg.SubTokenIDs, sumSubTokens(subtokens))
+	remainStake, err := k.CalculateUnbondStake(ctx, delegatorAddress, validatorAddr, stake)
+	if err != nil {
+		return nil, err
+	}
+
+	completionTime, err := k.Keeper.Undelegate(ctx, delegatorAddress, validatorAddr, stake, remainStake)
+	if err != nil {
+		return nil, err
+	}
+
+	baseCoin := k.ToBaseCoin(ctx, stake.Stake)
+
+	err = events.EmitTypedEvent(ctx, &types.EventUndelegate{
+		Delegator:  msg.Delegator,
+		Validator:  msg.Validator,
+		Stake:      stake,
+		AmountBase: baseCoin.Amount,
+		CompleteAt: completionTime,
+	})
+	if err != nil {
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
+	}
+
+	return &types.MsgUndelegateNFTResponse{
+		CompletionTime: completionTime,
+	}, nil
 }
 
 // CancelRedelegation defines a method for canceling the redelegation and delegate back the validator.
