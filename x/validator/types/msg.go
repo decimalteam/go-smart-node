@@ -5,6 +5,8 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
 )
 
 var (
@@ -165,6 +167,9 @@ func (msg *MsgEditValidator) ValidateBasic() error {
 	if _, err := sdk.ValAddressFromBech32(msg.OperatorAddress); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid operator address: %s", err)
 	}
+	if _, err := sdk.AccAddressFromBech32(msg.RewardAddress); err != nil {
+		return sdkerrors.ErrInvalidAddress.Wrapf("invalid operator address: %s", err)
+	}
 	if msg.Description == (Description{}) {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "empty description")
 	}
@@ -301,7 +306,7 @@ func NewMsgDelegateNFT(
 	delegatorAddr sdk.AccAddress,
 	validatorAddr sdk.ValAddress,
 	tokenID string,
-	subTokenIDs []int64,
+	subTokenIDs []uint32,
 ) *MsgDelegateNFT {
 	return &MsgDelegateNFT{
 		Delegator:   delegatorAddr.String(),
@@ -344,6 +349,9 @@ func (msg *MsgDelegateNFT) ValidateBasic() error {
 	}
 	if len(msg.SubTokenIDs) == 0 {
 		return sdkerrors.ErrInvalidRequest.Wrapf("empty sub-token IDs")
+	}
+	if !isUnique(msg.SubTokenIDs) {
+		return errors.SubTokenIDsDublicates
 	}
 	return nil
 }
@@ -398,6 +406,9 @@ func (msg *MsgRedelegate) ValidateBasic() error {
 	if _, err := sdk.ValAddressFromBech32(msg.ValidatorDst); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid destination validator address: %s", err)
 	}
+	if msg.ValidatorSrc == msg.ValidatorDst {
+		return errors.SelfRedelegation
+	}
 	if !msg.Coin.IsValid() || !msg.Coin.Amount.IsPositive() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid shares amount")
 	}
@@ -414,7 +425,7 @@ func NewMsgRedelegateNFT(
 	validatorSrcAddr sdk.ValAddress,
 	validatorDstAddr sdk.ValAddress,
 	tokenID string,
-	subTokenIDs []int64,
+	subTokenIDs []uint32,
 ) *MsgRedelegateNFT {
 	return &MsgRedelegateNFT{
 		Delegator:    delegatorAddr.String(),
@@ -456,11 +467,17 @@ func (msg *MsgRedelegateNFT) ValidateBasic() error {
 	if _, err := sdk.ValAddressFromBech32(msg.ValidatorDst); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid destination validator address: %s", err)
 	}
+	if msg.ValidatorSrc == msg.ValidatorDst {
+		return errors.SelfRedelegation
+	}
 	if len(msg.TokenID) == 0 {
 		return sdkerrors.ErrInvalidRequest.Wrapf("empty token ID")
 	}
 	if len(msg.SubTokenIDs) == 0 {
 		return sdkerrors.ErrInvalidRequest.Wrapf("empty sub-token IDs")
+	}
+	if !isUnique(msg.SubTokenIDs) {
+		return errors.SubTokenIDsDublicates
 	}
 	return nil
 }
@@ -525,7 +542,7 @@ func NewMsgUndelegateNFT(
 	delegatorAddr sdk.AccAddress,
 	validatorAddr sdk.ValAddress,
 	tokenID string,
-	subTokenIDs []int64,
+	subTokenIDs []uint32,
 ) *MsgUndelegateNFT {
 	return &MsgUndelegateNFT{
 		Delegator:   delegatorAddr.String(),
@@ -568,6 +585,9 @@ func (msg *MsgUndelegateNFT) ValidateBasic() error {
 	}
 	if len(msg.SubTokenIDs) == 0 {
 		return sdkerrors.ErrInvalidRequest.Wrapf("empty sub-token IDs")
+	}
+	if !isUnique(msg.SubTokenIDs) {
+		return errors.SubTokenIDsDublicates
 	}
 	return nil
 }
@@ -644,7 +664,7 @@ func NewMsgCancelRedelegationNFT(
 	validatorDstAddr sdk.ValAddress,
 	creationHeight int64,
 	tokenID string,
-	subTokenIDs []int64,
+	subTokenIDs []uint32,
 ) *MsgCancelRedelegationNFT {
 	return &MsgCancelRedelegationNFT{
 		Delegator:      delegatorAddr.String(),
@@ -695,6 +715,9 @@ func (msg *MsgCancelRedelegationNFT) ValidateBasic() error {
 	}
 	if len(msg.SubTokenIDs) == 0 {
 		return sdkerrors.ErrInvalidRequest.Wrapf("empty sub-token IDs")
+	}
+	if !isUnique(msg.SubTokenIDs) {
+		return errors.SubTokenIDsDublicates
 	}
 	return nil
 }
@@ -765,7 +788,7 @@ func NewMsgCancelUndelegationNFT(
 	validatorAddr sdk.ValAddress,
 	creationHeight int64,
 	tokenID string,
-	subTokenIDs []int64,
+	subTokenIDs []uint32,
 ) *MsgCancelUndelegationNFT {
 	return &MsgCancelUndelegationNFT{
 		Delegator:      delegatorAddr.String(),
@@ -813,5 +836,20 @@ func (msg *MsgCancelUndelegationNFT) ValidateBasic() error {
 	if len(msg.SubTokenIDs) == 0 {
 		return sdkerrors.ErrInvalidRequest.Wrapf("empty sub-token IDs")
 	}
+	if !isUnique(msg.SubTokenIDs) {
+		return errors.SubTokenIDsDublicates
+	}
 	return nil
+}
+
+// returns true if all list elements apperas only one time
+func isUnique(list []uint32) bool {
+	var looked = make(map[uint32]bool)
+	for _, id := range list {
+		if looked[id] {
+			return false
+		}
+		looked[id] = true
+	}
+	return true
 }

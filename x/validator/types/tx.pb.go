@@ -435,7 +435,7 @@ type MsgDelegateNFT struct {
 	// token_id defines the NFT token ID.
 	TokenID string `protobuf:"bytes,3,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
 	// sub_token_ids defines list of NFT sub-token IDs.
-	SubTokenIDs []int64 `protobuf:"varint,4,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
+	SubTokenIDs []uint32 `protobuf:"varint,4,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
 }
 
 func (m *MsgDelegateNFT) Reset()         { *m = MsgDelegateNFT{} }
@@ -611,7 +611,7 @@ type MsgRedelegateNFT struct {
 	// token_id defines the NFT token ID.
 	TokenID string `protobuf:"bytes,4,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
 	// sub_token_ids defines list of NFT sub-token IDs.
-	SubTokenIDs []int64 `protobuf:"varint,5,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
+	SubTokenIDs []uint32 `protobuf:"varint,5,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
 }
 
 func (m *MsgRedelegateNFT) Reset()         { *m = MsgRedelegateNFT{} }
@@ -791,7 +791,7 @@ type MsgUndelegateNFT struct {
 	// token_id defines the NFT token ID.
 	TokenID string `protobuf:"bytes,3,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
 	// sub_token_ids defines list of NFT sub-token IDs.
-	SubTokenIDs []int64 `protobuf:"varint,4,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
+	SubTokenIDs []uint32 `protobuf:"varint,4,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
 }
 
 func (m *MsgUndelegateNFT) Reset()         { *m = MsgUndelegateNFT{} }
@@ -969,7 +969,7 @@ type MsgCancelRedelegationNFT struct {
 	// token_id defines the NFT token ID.
 	TokenID string `protobuf:"bytes,5,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
 	// sub_token_ids defines list of NFT sub-token IDs.
-	SubTokenIDs []int64 `protobuf:"varint,6,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
+	SubTokenIDs []uint32 `protobuf:"varint,6,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
 }
 
 func (m *MsgCancelRedelegationNFT) Reset()         { *m = MsgCancelRedelegationNFT{} }
@@ -1135,7 +1135,7 @@ type MsgCancelUndelegationNFT struct {
 	// token_id defines the NFT token ID.
 	TokenID string `protobuf:"bytes,4,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
 	// sub_token_ids defines list of NFT sub-token IDs.
-	SubTokenIDs []int64 `protobuf:"varint,5,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
+	SubTokenIDs []uint32 `protobuf:"varint,5,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
 }
 
 func (m *MsgCancelUndelegationNFT) Reset()         { *m = MsgCancelUndelegationNFT{} }
@@ -1285,7 +1285,7 @@ var fileDescriptor_edf91c3e395c558d = []byte{
 	0xa6, 0x42, 0xe3, 0x37, 0x6f, 0x6c, 0xfd, 0xe3, 0x34, 0x17, 0xc1, 0x04, 0x41, 0xbb, 0xd0, 0x6a,
 	0x1a, 0x1a, 0xa5, 0x3a, 0x59, 0xcd, 0x1d, 0xec, 0x97, 0xcf, 0x6d, 0x39, 0x63, 0x1b, 0xb5, 0xc6,
 	0x39, 0x3a, 0xb9, 0xa1, 0xf1, 0x6b, 0x20, 0x8f, 0x3b, 0x4a, 0xd3, 0xc7, 0xe2, 0x62, 0x76, 0x21,
-	0xb3, 0x94, 0xa9, 0x16, 0x0e, 0xf6, 0xcb, 0xb9, 0xcd, 0x8e, 0xe2, 0xe1, 0x71, 0x23, 0x87, 0xfd,
+	0xb3, 0x94, 0xaf, 0x16, 0x0e, 0xf6, 0xcb, 0xb9, 0xcd, 0x8e, 0xe2, 0xe1, 0x71, 0x23, 0x87, 0xfd,
 	0x0f, 0x0d, 0x0f, 0x94, 0xa3, 0x08, 0xe6, 0xa2, 0xb4, 0x99, 0x22, 0x5f, 0xa6, 0x69, 0xc1, 0x35,
 	0xa0, 0x76, 0xdc, 0xbc, 0xbf, 0x09, 0xf2, 0x8c, 0x65, 0x13, 0xdb, 0xea, 0x50, 0x51, 0xce, 0x33,
 	0xf8, 0xa6, 0xad, 0x46, 0xcd, 0x35, 0x4c, 0x3c, 0x71, 0x92, 0x98, 0xd7, 0x30, 0x61, 0xd5, 0x93,
@@ -1322,7 +1322,7 @@ var fileDescriptor_edf91c3e395c558d = []byte{
 	0xea, 0xe3, 0xd7, 0x15, 0x83, 0x28, 0x1d, 0x75, 0x17, 0x12, 0x11, 0xd9, 0xba, 0xe4, 0xb9, 0x27,
 	0x50, 0x36, 0x25, 0x1d, 0x2d, 0x63, 0x53, 0xb6, 0xc9, 0xb2, 0x85, 0x34, 0x28, 0xdd, 0x09, 0xfd,
 	0x1a, 0x4f, 0x7f, 0xfd, 0x55, 0xc6, 0xe9, 0x65, 0x7e, 0xed, 0xef, 0x00, 0x00, 0x00, 0xff, 0xff,
-	0x9d, 0xe6, 0xb1, 0xbe, 0x8a, 0x18, 0x00, 0x00,
+	0xdf, 0x9a, 0x7e, 0xbf, 0x8a, 0x18, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -2272,8 +2272,7 @@ func (m *MsgDelegateNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.SubTokenIDs) > 0 {
 		dAtA7 := make([]byte, len(m.SubTokenIDs)*10)
 		var j6 int
-		for _, num1 := range m.SubTokenIDs {
-			num := uint64(num1)
+		for _, num := range m.SubTokenIDs {
 			for num >= 1<<7 {
 				dAtA7[j6] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -2443,8 +2442,7 @@ func (m *MsgRedelegateNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.SubTokenIDs) > 0 {
 		dAtA11 := make([]byte, len(m.SubTokenIDs)*10)
 		var j10 int
-		for _, num1 := range m.SubTokenIDs {
-			num := uint64(num1)
+		for _, num := range m.SubTokenIDs {
 			for num >= 1<<7 {
 				dAtA11[j10] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -2622,8 +2620,7 @@ func (m *MsgUndelegateNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if len(m.SubTokenIDs) > 0 {
 		dAtA16 := make([]byte, len(m.SubTokenIDs)*10)
 		var j15 int
-		for _, num1 := range m.SubTokenIDs {
-			num := uint64(num1)
+		for _, num := range m.SubTokenIDs {
 			for num >= 1<<7 {
 				dAtA16[j15] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -2798,8 +2795,7 @@ func (m *MsgCancelRedelegationNFT) MarshalToSizedBuffer(dAtA []byte) (int, error
 	if len(m.SubTokenIDs) > 0 {
 		dAtA20 := make([]byte, len(m.SubTokenIDs)*10)
 		var j19 int
-		for _, num1 := range m.SubTokenIDs {
-			num := uint64(num1)
+		for _, num := range m.SubTokenIDs {
 			for num >= 1<<7 {
 				dAtA20[j19] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -2971,8 +2967,7 @@ func (m *MsgCancelUndelegationNFT) MarshalToSizedBuffer(dAtA []byte) (int, error
 	if len(m.SubTokenIDs) > 0 {
 		dAtA23 := make([]byte, len(m.SubTokenIDs)*10)
 		var j22 int
-		for _, num1 := range m.SubTokenIDs {
-			num := uint64(num1)
+		for _, num := range m.SubTokenIDs {
 			for num >= 1<<7 {
 				dAtA23[j22] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -4610,7 +4605,7 @@ func (m *MsgDelegateNFT) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 4:
 			if wireType == 0 {
-				var v int64
+				var v uint32
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return ErrIntOverflowTx
@@ -4620,7 +4615,7 @@ func (m *MsgDelegateNFT) Unmarshal(dAtA []byte) error {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					v |= int64(b&0x7F) << shift
+					v |= uint32(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -4661,10 +4656,10 @@ func (m *MsgDelegateNFT) Unmarshal(dAtA []byte) error {
 				}
 				elementCount = count
 				if elementCount != 0 && len(m.SubTokenIDs) == 0 {
-					m.SubTokenIDs = make([]int64, 0, elementCount)
+					m.SubTokenIDs = make([]uint32, 0, elementCount)
 				}
 				for iNdEx < postIndex {
-					var v int64
+					var v uint32
 					for shift := uint(0); ; shift += 7 {
 						if shift >= 64 {
 							return ErrIntOverflowTx
@@ -4674,7 +4669,7 @@ func (m *MsgDelegateNFT) Unmarshal(dAtA []byte) error {
 						}
 						b := dAtA[iNdEx]
 						iNdEx++
-						v |= int64(b&0x7F) << shift
+						v |= uint32(b&0x7F) << shift
 						if b < 0x80 {
 							break
 						}
@@ -5176,7 +5171,7 @@ func (m *MsgRedelegateNFT) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 5:
 			if wireType == 0 {
-				var v int64
+				var v uint32
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return ErrIntOverflowTx
@@ -5186,7 +5181,7 @@ func (m *MsgRedelegateNFT) Unmarshal(dAtA []byte) error {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					v |= int64(b&0x7F) << shift
+					v |= uint32(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -5227,10 +5222,10 @@ func (m *MsgRedelegateNFT) Unmarshal(dAtA []byte) error {
 				}
 				elementCount = count
 				if elementCount != 0 && len(m.SubTokenIDs) == 0 {
-					m.SubTokenIDs = make([]int64, 0, elementCount)
+					m.SubTokenIDs = make([]uint32, 0, elementCount)
 				}
 				for iNdEx < postIndex {
-					var v int64
+					var v uint32
 					for shift := uint(0); ; shift += 7 {
 						if shift >= 64 {
 							return ErrIntOverflowTx
@@ -5240,7 +5235,7 @@ func (m *MsgRedelegateNFT) Unmarshal(dAtA []byte) error {
 						}
 						b := dAtA[iNdEx]
 						iNdEx++
-						v |= int64(b&0x7F) << shift
+						v |= uint32(b&0x7F) << shift
 						if b < 0x80 {
 							break
 						}
@@ -5711,7 +5706,7 @@ func (m *MsgUndelegateNFT) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 4:
 			if wireType == 0 {
-				var v int64
+				var v uint32
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return ErrIntOverflowTx
@@ -5721,7 +5716,7 @@ func (m *MsgUndelegateNFT) Unmarshal(dAtA []byte) error {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					v |= int64(b&0x7F) << shift
+					v |= uint32(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -5762,10 +5757,10 @@ func (m *MsgUndelegateNFT) Unmarshal(dAtA []byte) error {
 				}
 				elementCount = count
 				if elementCount != 0 && len(m.SubTokenIDs) == 0 {
-					m.SubTokenIDs = make([]int64, 0, elementCount)
+					m.SubTokenIDs = make([]uint32, 0, elementCount)
 				}
 				for iNdEx < postIndex {
-					var v int64
+					var v uint32
 					for shift := uint(0); ; shift += 7 {
 						if shift >= 64 {
 							return ErrIntOverflowTx
@@ -5775,7 +5770,7 @@ func (m *MsgUndelegateNFT) Unmarshal(dAtA []byte) error {
 						}
 						b := dAtA[iNdEx]
 						iNdEx++
-						v |= int64(b&0x7F) << shift
+						v |= uint32(b&0x7F) << shift
 						if b < 0x80 {
 							break
 						}
@@ -6315,7 +6310,7 @@ func (m *MsgCancelRedelegationNFT) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 6:
 			if wireType == 0 {
-				var v int64
+				var v uint32
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return ErrIntOverflowTx
@@ -6325,7 +6320,7 @@ func (m *MsgCancelRedelegationNFT) Unmarshal(dAtA []byte) error {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					v |= int64(b&0x7F) << shift
+					v |= uint32(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -6366,10 +6361,10 @@ func (m *MsgCancelRedelegationNFT) Unmarshal(dAtA []byte) error {
 				}
 				elementCount = count
 				if elementCount != 0 && len(m.SubTokenIDs) == 0 {
-					m.SubTokenIDs = make([]int64, 0, elementCount)
+					m.SubTokenIDs = make([]uint32, 0, elementCount)
 				}
 				for iNdEx < postIndex {
-					var v int64
+					var v uint32
 					for shift := uint(0); ; shift += 7 {
 						if shift >= 64 {
 							return ErrIntOverflowTx
@@ -6379,7 +6374,7 @@ func (m *MsgCancelRedelegationNFT) Unmarshal(dAtA []byte) error {
 						}
 						b := dAtA[iNdEx]
 						iNdEx++
-						v |= int64(b&0x7F) << shift
+						v |= uint32(b&0x7F) << shift
 						if b < 0x80 {
 							break
 						}
@@ -6822,7 +6817,7 @@ func (m *MsgCancelUndelegationNFT) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 5:
 			if wireType == 0 {
-				var v int64
+				var v uint32
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return ErrIntOverflowTx
@@ -6832,7 +6827,7 @@ func (m *MsgCancelUndelegationNFT) Unmarshal(dAtA []byte) error {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					v |= int64(b&0x7F) << shift
+					v |= uint32(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -6873,10 +6868,10 @@ func (m *MsgCancelUndelegationNFT) Unmarshal(dAtA []byte) error {
 				}
 				elementCount = count
 				if elementCount != 0 && len(m.SubTokenIDs) == 0 {
-					m.SubTokenIDs = make([]int64, 0, elementCount)
+					m.SubTokenIDs = make([]uint32, 0, elementCount)
 				}
 				for iNdEx < postIndex {
-					var v int64
+					var v uint32
 					for shift := uint(0); ; shift += 7 {
 						if shift >= 64 {
 							return ErrIntOverflowTx
@@ -6886,7 +6881,7 @@ func (m *MsgCancelUndelegationNFT) Unmarshal(dAtA []byte) error {
 						}
 						b := dAtA[iNdEx]
 						iNdEx++
-						v |= int64(b&0x7F) << shift
+						v |= uint32(b&0x7F) << shift
 						if b < 0x80 {
 							break
 						}

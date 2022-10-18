@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bytes"
 	"fmt"
 	"time"
 
@@ -8,6 +9,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
+	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
@@ -665,468 +668,388 @@ func (k Keeper) IterateAllCustomCoinStaked(ctx sdk.Context, cb func(denom string
 
 // Delegate performs a delegation, set/update everything necessary within the store.
 // tokenSrc indicates the bond status of the incoming funds.
+// NFT subtoken ownership MUST BE checked before
 func (k Keeper) Delegate(
-	ctx sdk.Context, delegator sdk.AccAddress, denom string, coinAmount *sdkmath.Int, subTokenIDs []uint32, tokenSrc types.BondStatus,
-	validator types.Validator, subtractAccount bool,
-) (totalStake sdkmath.Int, err error) {
-	// create stake entity
-	var stake types.Stake
-	switch {
-	case coinAmount != nil && subTokenIDs == nil: // if stake is coin
-		stake = types.NewStakeCoin(sdk.NewCoin(denom, *coinAmount))
-	case subTokenIDs != nil && coinAmount == nil: // if stake is nft
-		if len(subTokenIDs) == 0 {
-			return sdk.ZeroInt(), fmt.Errorf("not coin delegate and not nft delegate, who is you") //TODO Error
-		}
-
-		var reserve *sdk.Coin
-		for _, v := range subTokenIDs {
-			st, ok := k.nftKeeper.GetSubToken(ctx, denom, v)
-			if !ok {
-				return sdk.ZeroInt(), fmt.Errorf("not found sub token") // TODO error
-			}
-			if reserve == nil {
-				reserve = st.Reserve
-			}
-			reserve.Add(*st.Reserve)
-		}
-		stake = types.NewStakeNFT(denom, subTokenIDs, *reserve)
-	default:
-		return sdkmath.Int{}, fmt.Errorf("not coin delegate and not nft delegate, who is you") //TODO error
-	}
-
-	// Get or create the delegation object
-	delegation, found := k.GetDelegation(ctx, delegator, validator.GetOperator(), denom)
-	if !found {
+	ctx sdk.Context, delegator sdk.AccAddress, validator types.Validator, stake types.Stake,
+) error {
+	var err error
+	// 1. Get or create the delegation object
+	delegation, delegationFound := k.GetDelegation(ctx, delegator, validator.GetOperator(), stake.ID)
+	if !delegationFound {
+		// k.BeforeUpdateDelegation(ctx, delegation, denom)
 		delegation = types.NewDelegation(delegator, validator.GetOperator(), stake)
+	} else {
+		// k.BeforeDelegationCreated(ctx, delegator, validator.GetOperator())
+		delegation.Stake, err = delegation.Stake.Add(stake)
+		if err != nil {
+			return err
+		}
 	}
 
 	// call the appropriate hook if present
-	if found {
-		k.BeforeUpdateDelegation(ctx, delegation, denom)
-		//err = k.BeforeDelegationSharesModified(ctx, delegator, validator.GetOperator())
-	} else {
-		// nothing now
-		//err = k.BeforeDelegationCreated(ctx, delegator, validator.GetOperator())
-	}
+	// if delegationFound {
+	// 	k.BeforeUpdateDelegation(ctx, delegation, denom)
+	// } else {
+	// 	// nothing now
+	// 	//err = k.BeforeDelegationCreated(ctx, delegator, validator.GetOperator())
+	// }
 
-	if err != nil {
-		return sdk.ZeroInt(), err
-	}
+	// if err != nil {
+	// 	return sdk.ZeroInt(), types.Stake{}, err
+	// }
 
-	// if subtractAccount is true then we are
-	// performing a delegation and not a redelegation, thus the source tokens are
-	// all non bonded
+	// 3. transfer coin/nft
 	notBondedPool := k.GetNotBondedPool(ctx).GetAddress()
 	bondedPool := k.GetBondedPool(ctx).GetAddress()
-	if subtractAccount {
-		if tokenSrc == types.BondStatus_Bonded {
-			panic("delegation token source cannot be bonded")
-		}
+	var receiverName string
+	var receiverPool sdk.AccAddress
+	switch {
+	case validator.IsBonded():
+		receiverName = types.BondedPoolName
+		receiverPool = bondedPool
+	case validator.IsUnbonding(), validator.IsUnbonded():
+		receiverName = types.NotBondedPoolName
+		receiverPool = notBondedPool
+	default:
+		return errors.ValidatorStatusUnknown
+	}
 
-		var sendName string
-		var sendPool sdk.AccAddress
-		switch {
-		case validator.IsBonded():
-			sendName = types.BondedPoolName
-			sendPool = bondedPool
-		case validator.IsUnbonding(), validator.IsUnbonded():
-			sendName = types.NotBondedPoolName
-			sendPool = notBondedPool
-		default:
-			panic("invalid validator status")
+	// the transfer of user assets is carried out in coins or nft
+	switch stake.Type {
+	case types.StakeType_Coin:
+		if err := k.bankKeeper.DelegateCoinsFromAccountToModule(ctx, delegator, receiverName, sdk.NewCoins(stake.Stake)); err != nil {
+			return err
 		}
-
-		// the transfer of user assets is carried out in coins or nft
-		switch {
-		case coinAmount != nil && subTokenIDs == nil:
-			coins := sdk.NewCoins(stake.Stake)
-			if err := k.bankKeeper.DelegateCoinsFromAccountToModule(ctx, delegator, sendName, coins); err != nil {
-				return sdk.ZeroInt(), err
-			}
-		case subTokenIDs != nil && coinAmount == nil:
-			if err := k.nftKeeper.TransferSubTokens(ctx, delegator, sendPool, denom, subTokenIDs); err != nil {
-				return sdk.ZeroInt(), err
-			}
-		}
-	} else {
-		// potentially transfer tokens between pools, if
-		switch {
-		case tokenSrc == types.BondStatus_Bonded && validator.IsBonded():
-			// do nothing
-		case (tokenSrc == types.BondStatus_Unbonded || tokenSrc == types.BondStatus_Unbonding) && !validator.IsBonded():
-			// do nothing
-		case (tokenSrc == types.BondStatus_Unbonded || tokenSrc == types.BondStatus_Unbonding) && validator.IsBonded():
-			// transfer pools
-			// stake is coin or nft
-			switch {
-			case coinAmount != nil && subTokenIDs == nil:
-				coins := sdk.NewCoins(stake.GetStake())
-				k.sendCoinsToBonded(ctx, coins)
-			case subTokenIDs != nil && coinAmount == nil:
-				if err = k.nftKeeper.TransferSubTokens(ctx, notBondedPool, bondedPool, denom, subTokenIDs); err != nil {
-					return sdk.ZeroInt(), err
-				}
-			}
-		case tokenSrc == types.BondStatus_Bonded && !validator.IsBonded():
-			// transfer pools
-			// stake is coin or nft
-			switch {
-			case coinAmount != nil && subTokenIDs == nil:
-				coins := sdk.NewCoins(stake.GetStake())
-				k.sendCoinsToNotBonded(ctx, coins)
-			case subTokenIDs != nil && coinAmount == nil:
-				if err = k.nftKeeper.TransferSubTokens(ctx, bondedPool, notBondedPool, denom, subTokenIDs); err != nil {
-					return sdk.ZeroInt(), err
-				}
-			}
-		default:
-			panic("unknown token source bond status")
+	case types.StakeType_NFT:
+		if err := k.nftKeeper.TransferSubTokens(ctx, delegator, receiverPool, stake.ID, stake.SubTokenIDs); err != nil {
+			return err
 		}
 	}
 
 	// Update delegation
-
-	if found {
-		delegation.Stake.Stake = delegation.Stake.Stake.Add(stake.GetStake())
-
-		switch stake.Type {
-		case types.StakeType_Coin:
-		case types.StakeType_NFT:
-			delegation.Stake.SubTokenIDs, err = delegation.Stake.AddSubTokens(stake.SubTokenIDs)
-			if err != nil {
-				return sdkmath.Int{}, err
-			}
-		}
-	}
-
-	// Update delegation
-
 	k.SetDelegation(ctx, delegation)
 
-	// update validator info
-	valAddress := validator.GetOperator()
-	totalStake, err = k.TotalStakeInBaseCoin(ctx, valAddress)
+	/*
+		// update validator info
+		valAddress := validator.GetOperator()
+		totalStake, err = k.TotalStakeInBaseCoin(ctx, valAddress)
 
-	k.DeleteValidatorByPowerIndex(ctx, valAddress, validator.Stake)
-	rs, err := k.GetValidatorRS(ctx, valAddress)
-	if err != nil {
-		return sdkmath.Int{}, err
-	}
-	rs.Stake = totalStake.Int64()
-	k.SetValidatorRS(ctx, valAddress, rs)
-	k.SetValidatorByPowerIndex(ctx, valAddress, totalStake.Int64())
-
+		k.DeleteValidatorByPowerIndex(ctx, valAddress, validator.Stake)
+		rs, err := k.GetValidatorRS(ctx, valAddress)
+		if err != nil {
+			return err
+		}
+		// TODO: this line can panic
+		rs.Stake = totalStake.Int64()
+		k.SetValidatorRS(ctx, valAddress, rs)
+		k.SetValidatorByPowerIndex(ctx, valAddress, totalStake.Int64())
+	*/
 	if err = k.AfterUpdateDelegation(ctx, delegation.GetStake().GetStake().Denom, delegation.GetStake().GetStake().Amount); err != nil {
-		return sdk.ZeroInt(), err
+		return err
 	}
 
-	return totalStake, nil
+	return nil
 }
 
-// Unbond unbonds a particular delegation and perform associated store operations.
-//func (k Keeper) Unbond(
-//	ctx sdk.Context, delegator sdk.AccAddress, validator types.Validator,
-//	denom string, coinAmount *sdkmath.Int, subTokenIDs []uint32,
-//) (amount sdkmath.Int, err error) {
-//	// check if a delegation object exists in the store
-//	delegation, found := k.GetDelegation(ctx, delegator, validator.GetOperator(), denom)
-//	if !found {
-//		return amount, types.ErrNoDelegatorForAddress
-//	}
+func (k Keeper) TransferStakeBetweenPools(ctx sdk.Context, statusSrc types.BondStatus, statusDst types.BondStatus, stake types.Stake) error {
+	notBondedPool := k.GetNotBondedPool(ctx).GetAddress()
+	bondedPool := k.GetBondedPool(ctx).GetAddress()
+
+	switch {
+	case statusSrc == types.BondStatus_Bonded && statusDst == types.BondStatus_Bonded:
+		// do nothing
+	case (statusSrc == types.BondStatus_Unbonded || statusSrc == types.BondStatus_Unbonding) &&
+		(statusDst == types.BondStatus_Unbonded || statusDst == types.BondStatus_Unbonding):
+		// do nothing
+	case statusSrc == types.BondStatus_Bonded && (statusDst == types.BondStatus_Unbonded || statusDst == types.BondStatus_Unbonding):
+		// transfer pools bond->not bond
+		switch stake.Type {
+		case types.StakeType_Coin:
+			if err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.BondedPoolName, types.NotBondedPoolName, sdk.NewCoins(stake.Stake)); err != nil {
+				return err
+			}
+		case types.StakeType_NFT:
+			if err := k.nftKeeper.TransferSubTokens(ctx, bondedPool, notBondedPool, stake.ID, stake.SubTokenIDs); err != nil {
+				return err
+			}
+		}
+	case (statusSrc == types.BondStatus_Unbonded || statusSrc == types.BondStatus_Unbonding) && statusDst == types.BondStatus_Bonded:
+		// transfer pools not bond->bond
+		switch stake.Type {
+		case types.StakeType_Coin:
+			if err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.NotBondedPoolName, types.BondedPoolName, sdk.NewCoins(stake.Stake)); err != nil {
+				return err
+			}
+		case types.StakeType_NFT:
+			if err := k.nftKeeper.TransferSubTokens(ctx, notBondedPool, bondedPool, stake.ID, stake.SubTokenIDs); err != nil {
+				return err
+			}
+		}
+	default:
+		return errors.IncompatibleBondStatuses
+	}
+	return nil
+}
+
+// Undelegate unbonds a stake from a given validator.
+// stake and remainStake must be calculated before by CalculateUnbondStake
+// It create an unbonding object and insert into the unbonding queue which will be
+// processed during EndBlocker.
+func (k Keeper) Undelegate(
+	ctx sdk.Context, delegator sdk.AccAddress, valAddress sdk.ValAddress,
+	stake types.Stake, remainStake types.Stake,
+) (time.Time, error) {
+	validator, found := k.GetValidator(ctx, valAddress)
+	if !found {
+		return time.Time{}, errors.ValidatorNotFound
+	}
+
+	if k.HasMaxUndelegationEntries(ctx, delegator, valAddress) {
+		return time.Time{}, errors.MaxUndelegationEntries
+	}
+
+	// modify delegation
+	delegation := types.NewDelegation(delegator, valAddress, remainStake)
+	if remainStake.IsEmpty() {
+		k.RemoveDelegation(ctx, delegation)
+	} else {
+		k.SetDelegation(ctx, delegation)
+	}
+
+	// transfer in pool
+	err := k.TransferStakeBetweenPools(ctx, validator.GetStatus(), types.BondStatus_Unbonding, stake)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	completionTime := ctx.BlockHeader().Time.Add(k.UndelegationTime(ctx))
+	ubd := k.SetUndelegationEntry(ctx, delegator, valAddress, ctx.BlockHeight(), completionTime, stake)
+	k.InsertUBDQueue(ctx, ubd, completionTime)
+
+	return completionTime, nil
+}
+
+// // CompleteUnbonding completes the unbonding of all mature entries in the
+// // retrieved unbonding delegation object and returns the total unbonding balance
+// // or an error upon failure.
 //
-//	// call the before-delegation-modified hook
-//	if err := k.BeforeDelegationSharesModified(ctx, delegator, validator.GetOperator()); err != nil {
-//		return amount, err
-//	}
+//	func (k Keeper) CompleteUnbonding(ctx sdk.Context, delegator sdk.AccAddress, validator sdk.ValAddress) (sdk.Coins, error) {
+//		ubd, found := k.GetUndelegation(ctx, delegator, validator)
+//		if !found {
+//			return nil, types.ErrNoUndelegation
+//		}
 //
-//	//// ensure that we have enough shares to remove
-//	//if delegation.Shares.LT(shares) {
-//	//	return amount, sdkerrors.Wrap(types.ErrNotEnoughDelegationShares, delegation.Shares.String())
-//	//}
+//		bondDenom := k.GetParams(ctx).BondDenom
+//		balances := sdk.NewCoins()
+//		ctxTime := ctx.BlockHeader().Time
 //
-//	// subtract shares from delegation
-//	//delegation.Shares = delegation.Shares.Sub(shares)
+//		delegator, err := sdk.AccAddressFromBech32(ubd.DelegatorAddress)
+//		if err != nil {
+//			return nil, err
+//		}
 //
-//	isValidatorOperator := delegator.Equals(validator.GetOperator())
+//		// loop through all the entries and complete unbonding mature entries
+//		for i := 0; i < len(ubd.Entries); i++ {
+//			entry := ubd.Entries[i]
+//			if entry.IsMature(ctxTime) {
+//				ubd.RemoveEntry(int64(i))
+//				i--
 //
-//	// If the delegation is the operator of the validator and undelegating will decrease the validator's
-//	// self-delegation below their minimum, we jail the validator.
-//	if isValidatorOperator && !validator.Jailed &&
-//		validator.TokensFromShares(delegation.Shares).TruncateInt().LT(validator.MinSelfDelegation) {
-//		k.jailValidator(ctx, validator)
-//		validator = k.mustGetValidator(ctx, validator.GetOperator())
-//	}
+//				// track undelegation only when remaining or truncated shares are non-zero
+//				if !entry.Balance.IsZero() {
+//					amt := sdk.NewCoin(bondDenom, entry.Balance)
+//					if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(
+//						ctx, types.NotBondedPoolName, delegator, sdk.NewCoins(amt),
+//					); err != nil {
+//						return nil, err
+//					}
 //
-//	if delegation.Shares.IsZero() {
-//		err = k.RemoveDelegation(ctx, delegation)
-//	} else {
-//		k.SetDelegation(ctx, delegation)
-//		// call the after delegation modification hook
-//		err = k.AfterDelegationModified(ctx, delegator, delegation.GetValidatorAddr())
-//	}
-//
-//	if err != nil {
-//		return amount, err
-//	}
-//
-//	// remove the shares and coins from the validator
-//	// NOTE that the amount is later (in keeper.Delegation) moved between staking module pools
-//	validator, amount = k.RemoveValidatorTokensAndShares(ctx, validator, shares)
-//	if validator.DelegatorShares.IsZero() && validator.IsUnbonded() {
-//		// if not unbonded, we must instead remove validator in EndBlocker once it finishes its unbonding period
-//		k.RemoveValidator(ctx, validator.GetOperator())
-//	}
-//
-//	return amount, nil
-//}
-//
-//// Undelegate unbonds an amount of delegator shares from a given validator. It
-//// will verify that the unbonding entries between the delegator and validator
-//// are not exceeded and unbond the staked tokens (based on shares) by creating
-//// an unbonding object and inserting it into the unbonding queue which will be
-//// processed during the staking EndBlocker.
-//func (k Keeper) Undelegate(
-//	ctx sdk.Context, delegator sdk.AccAddress, valAddress sdk.ValAddress,
-//	denom string, coinAmount *sdkmath.Int, subTokenIDs []uint32,
-//) (time.Time, error) {
-//	validator, found := k.GetValidator(ctx, valAddress)
-//	if !found {
-//		return time.Time{}, types.ErrNoDelegatorForAddress
-//	}
-//
-//	if k.HasMaxUndelegationEntries(ctx, delegator, valAddress) {
-//		return time.Time{}, types.ErrMaxUndelegationEntries
-//	}
-//
-//	returnAmount, err := k.Unbond(ctx, delegator, validator, sharesAmount)
-//	if err != nil {
-//		return time.Time{}, err
-//	}
-//
-//	// transfer the validator tokens to the not bonded pool
-//	if validator.IsBonded() {
-//		k.sendCoinsToNotBonded(ctx, returnAmount)
-//	}
-//
-//	completionTime := ctx.BlockHeader().Time.Add(k.UnbondingTime(ctx))
-//	ubd := k.SetUndelegationEntry(ctx, delegator, validator, ctx.BlockHeight(), completionTime, returnAmount)
-//	k.InsertUBDQueue(ctx, ubd, completionTime)
-//
-//	return completionTime, nil
-//}
-//
-//// CompleteUnbonding completes the unbonding of all mature entries in the
-//// retrieved unbonding delegation object and returns the total unbonding balance
-//// or an error upon failure.
-//func (k Keeper) CompleteUnbonding(ctx sdk.Context, delegator sdk.AccAddress, validator sdk.ValAddress) (sdk.Coins, error) {
-//	ubd, found := k.GetUndelegation(ctx, delegator, validator)
-//	if !found {
-//		return nil, types.ErrNoUndelegation
-//	}
-//
-//	bondDenom := k.GetParams(ctx).BondDenom
-//	balances := sdk.NewCoins()
-//	ctxTime := ctx.BlockHeader().Time
-//
-//	delegator, err := sdk.AccAddressFromBech32(ubd.DelegatorAddress)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	// loop through all the entries and complete unbonding mature entries
-//	for i := 0; i < len(ubd.Entries); i++ {
-//		entry := ubd.Entries[i]
-//		if entry.IsMature(ctxTime) {
-//			ubd.RemoveEntry(int64(i))
-//			i--
-//
-//			// track undelegation only when remaining or truncated shares are non-zero
-//			if !entry.Balance.IsZero() {
-//				amt := sdk.NewCoin(bondDenom, entry.Balance)
-//				if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(
-//					ctx, types.NotBondedPoolName, delegator, sdk.NewCoins(amt),
-//				); err != nil {
-//					return nil, err
+//					balances = balances.Add(amt)
 //				}
-//
-//				balances = balances.Add(amt)
 //			}
 //		}
+//
+//		// set the unbonding delegation or remove it if there are no more entries
+//		if len(ubd.Entries) == 0 {
+//			k.RemoveUndelegation(ctx, ubd)
+//		} else {
+//			k.SetUndelegation(ctx, ubd)
+//		}
+//
+//		return balances, nil
 //	}
 //
-//	// set the unbonding delegation or remove it if there are no more entries
-//	if len(ubd.Entries) == 0 {
-//		k.RemoveUndelegation(ctx, ubd)
-//	} else {
-//		k.SetUndelegation(ctx, ubd)
-//	}
+
+// BeginRedelegation begins unbonding / redelegation and creates a redelegation
+// record.
+// stake and remainStake MUST BE calculated before by ValidateUnbondStake
+func (k Keeper) BeginRedelegation(
+	ctx sdk.Context, delegator sdk.AccAddress, validatorSrc, validatorDst sdk.ValAddress, stake types.Stake, remainStake types.Stake,
+) (completionTime time.Time, err error) {
+	// 1. preparations, checks
+	if bytes.Equal(validatorSrc, validatorDst) {
+		return time.Time{}, errors.SelfRedelegation
+	}
+
+	dstValidator, found := k.GetValidator(ctx, validatorDst)
+	if !found {
+		return time.Time{}, errors.BadRedelegationDst
+	}
+
+	srcValidator, found := k.GetValidator(ctx, validatorSrc)
+	if !found {
+		return time.Time{}, errors.BadRedelegationSrc
+	}
+
+	// check if this is a transitive redelegation
+	if k.HasReceivingRedelegation(ctx, delegator, validatorSrc) {
+		return time.Time{}, errors.TransitiveRedelegation
+	}
+
+	if k.HasMaxRedelegationEntries(ctx, delegator, validatorSrc, validatorDst) {
+		return time.Time{}, errors.MaxRedelegationEntries
+	}
+
+	// 2. modify or remove current delegation
+	// call the before-delegation-modified hook
+	if err := k.BeforeDelegationSharesModified(ctx, delegator, srcValidator.GetOperator()); err != nil {
+		return time.Time{}, err
+	}
+	delegation := types.NewDelegation(delegator, validatorSrc, remainStake)
+	if remainStake.IsEmpty() {
+		k.RemoveDelegation(ctx, delegation)
+	} else {
+		k.SetDelegation(ctx, delegation)
+		// call the after delegation modification hook
+		if err := k.AfterDelegationModified(ctx, delegator, srcValidator.GetOperator()); err != nil {
+			return time.Time{}, err
+		}
+	}
+
+	// 3. transfer in pool
+	err = k.TransferStakeBetweenPools(ctx, srcValidator.GetStatus(), dstValidator.GetStatus(), stake)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	// create the unbonding delegation
+	completionTime, height, completeNow := k.getBeginInfo(ctx, validatorSrc)
+
+	if completeNow { // no need to create the redelegation object
+		return completionTime, nil
+	}
+
+	red := k.SetRedelegationEntry(
+		ctx, delegator, validatorSrc, validatorDst,
+		height, completionTime, stake,
+	)
+	k.InsertRedelegationQueue(ctx, red, completionTime)
+
+	return completionTime, nil
+}
+
+// // CompleteRedelegation completes the redelegations of all mature entries in the
+// // retrieved redelegation object and returns the total redelegation (initial)
+// // balance or an error upon failure.
+// func (k Keeper) CompleteRedelegation(
 //
-//	return balances, nil
-//}
-//
-//// BeginRedelegation begins unbonding / redelegation and creates a redelegation
-//// record.
-//func (k Keeper) BeginRedelegation(
-//	ctx sdk.Context, delegator sdk.AccAddress, validatorSrc, validatorDst sdk.ValAddress, sharesAmount sdk.Dec,
-//) (completionTime time.Time, err error) {
-//	if bytes.Equal(validatorSrc, validatorDst) {
-//		return time.Time{}, types.ErrSelfRedelegation
-//	}
-//
-//	dstValidator, found := k.GetValidator(ctx, validatorDst)
-//	if !found {
-//		return time.Time{}, types.ErrBadRedelegationDst
-//	}
-//
-//	srcValidator, found := k.GetValidator(ctx, validatorSrc)
-//	if !found {
-//		return time.Time{}, types.ErrBadRedelegationDst
-//	}
-//
-//	// check if this is a transitive redelegation
-//	if k.HasReceivingRedelegation(ctx, delegator, validatorSrc) {
-//		return time.Time{}, types.ErrTransitiveRedelegation
-//	}
-//
-//	if k.HasMaxRedelegationEntries(ctx, delegator, validatorSrc, validatorDst) {
-//		return time.Time{}, types.ErrMaxRedelegationEntries
-//	}
-//
-//	returnAmount, err := k.Unbond(ctx, delegator, validatorSrc, sharesAmount)
-//	if err != nil {
-//		return time.Time{}, err
-//	}
-//
-//	if returnAmount.IsZero() {
-//		return time.Time{}, types.ErrTinyRedelegationAmount
-//	}
-//
-//	sharesCreated, err := k.Delegate(ctx, delegator, returnAmount, srcValidator.GetStatus(), dstValidator, false)
-//	if err != nil {
-//		return time.Time{}, err
-//	}
-//
-//	// create the unbonding delegation
-//	completionTime, height, completeNow := k.getBeginInfo(ctx, validatorSrc)
-//
-//	if completeNow { // no need to create the redelegation object
-//		return completionTime, nil
-//	}
-//
-//	red := k.SetRedelegationEntry(
-//		ctx, delegator, validatorSrc, validatorDst,
-//		height, completionTime, returnAmount, sharesAmount, sharesCreated,
-//	)
-//	k.InsertRedelegationQueue(ctx, red, completionTime)
-//
-//	return completionTime, nil
-//}
-//
-//// CompleteRedelegation completes the redelegations of all mature entries in the
-//// retrieved redelegation object and returns the total redelegation (initial)
-//// balance or an error upon failure.
-//func (k Keeper) CompleteRedelegation(
 //	ctx sdk.Context, delegator sdk.AccAddress, validatorSrc, validatorDst sdk.ValAddress,
-//) (sdk.Coins, error) {
-//	red, found := k.GetRedelegation(ctx, delegator, validatorSrc, validatorDst)
-//	if !found {
-//		return nil, types.ErrNoRedelegation
-//	}
 //
-//	bondDenom := k.GetParams(ctx).BondDenom
-//	balances := sdk.NewCoins()
-//	ctxTime := ctx.BlockHeader().Time
+//	) (sdk.Coins, error) {
+//		red, found := k.GetRedelegation(ctx, delegator, validatorSrc, validatorDst)
+//		if !found {
+//			return nil, types.ErrNoRedelegation
+//		}
 //
-//	// loop through all the entries and complete mature redelegation entries
-//	for i := 0; i < len(red.Entries); i++ {
-//		entry := red.Entries[i]
-//		if entry.IsMature(ctxTime) {
-//			red.RemoveEntry(int64(i))
-//			i--
+//		bondDenom := k.GetParams(ctx).BondDenom
+//		balances := sdk.NewCoins()
+//		ctxTime := ctx.BlockHeader().Time
 //
-//			if !entry.InitialBalance.IsZero() {
-//				balances = balances.Add(sdk.NewCoin(bondDenom, entry.InitialBalance))
+//		// loop through all the entries and complete mature redelegation entries
+//		for i := 0; i < len(red.Entries); i++ {
+//			entry := red.Entries[i]
+//			if entry.IsMature(ctxTime) {
+//				red.RemoveEntry(int64(i))
+//				i--
+//
+//				if !entry.InitialBalance.IsZero() {
+//					balances = balances.Add(sdk.NewCoin(bondDenom, entry.InitialBalance))
+//				}
 //			}
 //		}
+//
+//		// set the redelegation or remove it if there are no more entries
+//		if len(red.Entries) == 0 {
+//			k.RemoveRedelegation(ctx, red)
+//		} else {
+//			k.SetRedelegation(ctx, red)
+//		}
+//
+//		return balances, nil
 //	}
 //
-//	// set the redelegation or remove it if there are no more entries
-//	if len(red.Entries) == 0 {
-//		k.RemoveRedelegation(ctx, red)
-//	} else {
-//		k.SetRedelegation(ctx, red)
-//	}
-//
-//	return balances, nil
-//}
-//
-//// ValidateUnbondAmount validates that a given unbond or redelegation amount is
-//// valied based on upon the converted shares. If the amount is valid, the total
-//// amount of respective shares is returned, otherwise an error is returned.
-//func (k Keeper) ValidateUnbondAmount(
-//	ctx sdk.Context, delegator sdk.AccAddress, validator sdk.ValAddress, amt sdkmath.Int,
-//) (shares sdk.Dec, err error) {
-//	validator, found := k.GetValidator(ctx, validator)
-//	if !found {
-//		return shares, types.ErrNoValidatorFound
-//	}
-//
-//	del, found := k.GetDelegation(ctx, delegator, validator)
-//	if !found {
-//		return shares, types.ErrNoDelegation
-//	}
-//
-//	shares, err = validator.SharesFromTokens(amt)
-//	if err != nil {
-//		return shares, err
-//	}
-//
-//	sharesTruncated, err := validator.SharesFromTokensTruncated(amt)
-//	if err != nil {
-//		return shares, err
-//	}
-//
-//	delShares := del.GetShares()
-//	if sharesTruncated.GT(delShares) {
-//		return shares, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid shares amount")
-//	}
-//
-//	// Cap the shares at the delegation's shares. Shares being greater could occur
-//	// due to rounding, however we don't want to truncate the shares or take the
-//	// minimum because we want to allow for the full withdraw of shares from a
-//	// delegation.
-//	if shares.GT(delShares) {
-//		shares = delShares
-//	}
-//
-//	return shares, nil
-//}
-//
-//// getBeginInfo returns the completion time and height of a redelegation, along with
-//// a boolean signaling if the redelegation is complete based on the source validator.
-//func (k Keeper) getBeginInfo(ctx sdk.Context, validatorSrc sdk.ValAddress) (completionTime time.Time, height int64, completeNow bool) {
-//	validator, found := k.GetValidator(ctx, validatorSrc)
-//
-//	// TODO: When would the validator not be found?
-//	switch {
-//	case !found || validator.IsBonded():
-//		// the longest wait - just unbonding period from now
-//		completionTime = ctx.BlockHeader().Time.Add(k.UnbondingTime(ctx))
-//		height = ctx.BlockHeight()
-//
-//		return completionTime, height, false
-//
-//	case validator.IsUnbonded():
-//		return completionTime, height, true
-//
-//	case validator.IsUnbonding():
-//		return validator.UnbondingTime, validator.UnbondingHeight, false
-//
-//	default:
-//		panic(fmt.Sprintf("unknown validator status: %s", validator.Status))
-//	}
-//}
+
+// CalculateRemainStake validates that a given stake can be
+// substracted from source. If the stake is valid, the remain stake is returned,
+// otherwise an error is returned.
+func (k Keeper) CalculateRemainStake(
+	ctx sdk.Context, source, stake types.Stake,
+) (types.Stake, error) {
+	if source.Type != stake.Type {
+		return types.Stake{}, errors.WrongStakeType
+	}
+
+	var remainStake types.Stake
+
+	switch stake.Type {
+	case types.StakeType_Coin:
+		if !source.Stake.IsGTE(stake.Stake) {
+			return types.Stake{}, errors.StakeTooSmall
+		}
+		remainStake = types.NewStakeCoin(source.Stake.Sub(stake.Stake))
+	case types.StakeType_NFT:
+		if !types.SetHasSubset(source.SubTokenIDs, stake.SubTokenIDs) {
+			return types.Stake{}, errors.StakeDoesNotHaveSubTokenID
+		}
+		remainIDs := types.SetSubstract(source.SubTokenIDs, stake.SubTokenIDs)
+		subtokens, err := k.prepareSubTokens(ctx, stake.ID, stake.SubTokenIDs)
+		if err != nil {
+			return types.Stake{}, errors.NFTSubTokenNotFound
+		}
+		amount := source.Stake
+		for _, sub := range subtokens {
+			amount = amount.Sub(*sub.Reserve)
+		}
+		remainStake = types.NewStakeNFT(stake.ID, remainIDs, amount)
+	}
+
+	return remainStake, nil
+}
+
+// getBeginInfo returns the completion time and height of a redelegation, along with
+// a boolean signaling if the redelegation is complete based on the source validator.
+func (k Keeper) getBeginInfo(ctx sdk.Context, validatorSrc sdk.ValAddress) (completionTime time.Time, height int64, completeNow bool) {
+	validator, found := k.GetValidator(ctx, validatorSrc)
+
+	// TODO: When would the validator not be found?
+	switch {
+	case !found || validator.IsBonded():
+		// the longest wait - just unbonding period from now
+		completionTime = ctx.BlockHeader().Time.Add(k.UndelegationTime(ctx))
+		height = ctx.BlockHeight()
+
+		return completionTime, height, false
+
+	case validator.IsUnbonded():
+		return completionTime, height, true
+
+	case validator.IsUnbonding():
+		return validator.UnbondingTime, validator.UnbondingHeight, false
+
+	default:
+		panic(fmt.Sprintf("unknown validator status: %s", validator.Status))
+	}
+}
 
 func (k Keeper) TotalStakeInBaseCoin(ctx sdk.Context, valAddress sdk.ValAddress) (sdkmath.Int, error) {
 	delegations := k.GetValidatorDelegations(ctx, valAddress)
@@ -1159,5 +1082,34 @@ func (k Keeper) getSumSubTokensReserve(ctx sdk.Context, id string, subToken []ui
 		}
 	}
 
+	return sum
+}
+
+// reads subtokens and fill reserve if it's nil
+func (k Keeper) prepareSubTokens(ctx sdk.Context, tokenID string, subTokenIDs []uint32) ([]nfttypes.SubToken, error) {
+	var result []nfttypes.SubToken
+	nft, found := k.nftKeeper.GetToken(ctx, tokenID)
+	if !found {
+		return []nfttypes.SubToken{}, errors.NFTTokenNotFound
+	}
+	for _, subID := range subTokenIDs {
+		subtoken, found := k.nftKeeper.GetSubToken(ctx, tokenID, subID)
+		if !found {
+			return []nfttypes.SubToken{}, errors.NFTSubTokenNotFound
+		}
+		if subtoken.Reserve == nil {
+			subtoken.Reserve = &nft.Reserve
+		}
+		result = append(result, subtoken)
+	}
+	return result, nil
+}
+
+func sumSubTokens(subtokens []nfttypes.SubToken) sdk.Coin {
+	sum := sdk.Coin{Amount: sdk.ZeroInt()}
+	for _, sub := range subtokens {
+		sum.Denom = sub.Reserve.Denom
+		sum.Amount = sum.Amount.Add(sub.Reserve.Amount)
+	}
 	return sum
 }
