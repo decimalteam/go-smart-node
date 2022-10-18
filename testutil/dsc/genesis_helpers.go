@@ -7,15 +7,19 @@ import (
 
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
+
+const basePower = 1000
 
 // GenesisStateWithValSet returns a new genesis state with the validator set
 func GenesisStateWithValSet(cdc codec.Codec, genesisState map[string]json.RawMessage,
@@ -26,11 +30,13 @@ func GenesisStateWithValSet(cdc codec.Codec, genesisState map[string]json.RawMes
 	authGenesis := authtypes.NewGenesisState(authtypes.DefaultParams(), genAccs)
 	genesisState[authtypes.ModuleName] = cdc.MustMarshalJSON(authGenesis)
 
-	validators := make([]stakingtypes.Validator, 0, len(valSet.Validators))
-	delegations := make([]stakingtypes.Delegation, 0, len(valSet.Validators))
+	validators := make([]validatortypes.Validator, 0, len(valSet.Validators))
+	delegations := make([]validatortypes.Delegation, 0, len(valSet.Validators))
 
-	bondAmt := sdk.DefaultPowerReduction
+	bondSum := sdk.NewCoins()
+	baseStake := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(1000)))
 
+	var lastPowers []validatortypes.LastValidatorPower
 	for _, val := range valSet.Validators {
 		pk, err := cryptocodec.FromTmPubKeyInterface(val.PubKey)
 		if err != nil {
@@ -42,26 +48,30 @@ func GenesisStateWithValSet(cdc codec.Codec, genesisState map[string]json.RawMes
 			return nil, fmt.Errorf("failed to create new any: %w", err)
 		}
 
-		validator := stakingtypes.Validator{
-			OperatorAddress:   sdk.ValAddress(val.Address).String(),
-			ConsensusPubkey:   pkAny,
-			Jailed:            false,
-			Status:            stakingtypes.Bonded,
-			Tokens:            bondAmt,
-			DelegatorShares:   sdk.OneDec(),
-			Description:       stakingtypes.Description{},
-			UnbondingHeight:   int64(0),
-			UnbondingTime:     time.Unix(0, 0).UTC(),
-			Commission:        stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
-			MinSelfDelegation: sdkmath.ZeroInt(),
+		validator := validatortypes.Validator{
+			OperatorAddress: sdk.ValAddress(val.Address).String(),
+			RewardAddress:   sdk.AccAddress(val.Address).String(),
+			ConsensusPubkey: pkAny,
+			Online:          true,
+			Jailed:          false,
+			Status:          validatortypes.BondStatus_Bonded,
+			Description:     validatortypes.Description{},
+			UnbondingHeight: int64(0),
+			UnbondingTime:   time.Unix(0, 0).UTC(),
+			Commission:      sdk.ZeroDec(),
 		}
 		validators = append(validators, validator)
-		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress(), val.Address.Bytes(), sdk.OneDec()))
-
+		stake := validatortypes.NewStakeCoin(baseStake)
+		bondSum = bondSum.Add(baseStake)
+		delegations = append(delegations, validatortypes.NewDelegation(genAccs[0].GetAddress(), val.Address.Bytes(), stake))
+		lastPowers = append(lastPowers, validatortypes.LastValidatorPower{
+			Address: validator.OperatorAddress,
+			Power:   basePower,
+		})
 	}
 	// set validators and delegations
-	stakingGenesis := stakingtypes.NewGenesisState(stakingtypes.DefaultParams(), validators, delegations)
-	genesisState[stakingtypes.ModuleName] = cdc.MustMarshalJSON(stakingGenesis)
+	validatorGenesis := validatortypes.NewGenesisState(validatortypes.DefaultParams(), validators, delegations, lastPowers)
+	genesisState[validatortypes.ModuleName] = cdc.MustMarshalJSON(validatorGenesis)
 
 	totalSupply := sdk.NewCoins()
 	for _, b := range balances {
@@ -69,15 +79,12 @@ func GenesisStateWithValSet(cdc codec.Codec, genesisState map[string]json.RawMes
 		totalSupply = totalSupply.Add(b.Coins...)
 	}
 
-	for range delegations {
-		// add delegated tokens to total supply
-		totalSupply = totalSupply.Add(sdk.NewCoin(sdk.DefaultBondDenom, bondAmt))
-	}
+	totalSupply = totalSupply.Add(bondSum...)
 
 	// add bonded amount to bonded pool module account
 	balances = append(balances, banktypes.Balance{
-		Address: authtypes.NewModuleAddress(stakingtypes.BondedPoolName).String(),
-		Coins:   sdk.Coins{sdk.NewCoin(sdk.DefaultBondDenom, bondAmt)},
+		Address: authtypes.NewModuleAddress(validatortypes.BondedPoolName).String(),
+		Coins:   bondSum,
 	})
 
 	// update total supply
