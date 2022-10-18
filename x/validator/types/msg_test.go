@@ -193,8 +193,7 @@ func TestMsgRedelegateNFT(t *testing.T) {
 	}
 }
 
-/*
-// test ValidateBasic for MsgUnbond
+// test ValidateBasic for MsgUndelegate
 func TestMsgUndelegate(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -219,4 +218,151 @@ func TestMsgUndelegate(t *testing.T) {
 		}
 	}
 }
-*/
+
+// test ValidateBasic for MsgUndelegateNFT
+func TestMsgUndelegateNFT(t *testing.T) {
+	tests := []struct {
+		name          string
+		delegatorAddr sdk.AccAddress
+		validatorAddr sdk.ValAddress
+		tokenID       string
+		subTokens     []uint32
+		expectPass    bool
+	}{
+		{"regular", sdk.AccAddress(valAddr1), valAddr2, "abcdef", []uint32{1, 2}, true},
+		{"empty token id", sdk.AccAddress(valAddr1), valAddr2, "", []uint32{1, 2}, false},
+		{"empty subtokens", sdk.AccAddress(valAddr1), valAddr2, "abcdef", []uint32{}, false},
+		{"repeated subtokens", sdk.AccAddress(valAddr1), valAddr2, "abcdef", []uint32{1, 2, 1}, false},
+		{"empty delegator", sdk.AccAddress(emptyAddr), valAddr1, "abcdef", []uint32{1, 2}, false},
+		{"empty validator", sdk.AccAddress(valAddr1), emptyAddr, "abcdef", []uint32{1, 2}, false},
+	}
+
+	for _, tc := range tests {
+		msg := types.NewMsgUndelegateNFT(tc.delegatorAddr, tc.validatorAddr, tc.tokenID, tc.subTokens)
+		if tc.expectPass {
+			require.Nil(t, msg.ValidateBasic(), "test: %v", tc.name)
+		} else {
+			require.NotNil(t, msg.ValidateBasic(), "test: %v", tc.name)
+		}
+	}
+}
+
+// test ValidateBasic for MsgCancelRedelegation
+func TestMsgCancelRedelegate(t *testing.T) {
+	tests := []struct {
+		name             string
+		delegatorAddr    sdk.AccAddress
+		validatorAddrSrc sdk.ValAddress
+		validatorAddrDst sdk.ValAddress
+		amount           sdk.Coin
+		height           int64
+		expectPass       bool
+	}{
+		{"regular", sdk.AccAddress(valAddr1), valAddr2, valAddr3, sdk.NewInt64Coin(sdk.DefaultBondDenom, 1), 1, true},
+		{"zero amount", sdk.AccAddress(valAddr1), valAddr2, valAddr3, sdk.NewInt64Coin(sdk.DefaultBondDenom, 0), 1, false},
+		{"nil amount", sdk.AccAddress(valAddr1), valAddr2, valAddr3, sdk.Coin{}, 1, false},
+		{"empty delegator", sdk.AccAddress(emptyAddr), valAddr1, valAddr3, sdk.NewInt64Coin(sdk.DefaultBondDenom, 1), 1, false},
+		{"empty validator src", sdk.AccAddress(valAddr1), emptyAddr, valAddr3, sdk.NewInt64Coin(sdk.DefaultBondDenom, 1), 1, false},
+		{"empty validator dst", sdk.AccAddress(valAddr1), valAddr1, emptyAddr, sdk.NewInt64Coin(sdk.DefaultBondDenom, 1), 1, false},
+		{"zero height", sdk.AccAddress(valAddr1), valAddr2, valAddr3, sdk.NewInt64Coin(sdk.DefaultBondDenom, 1), 0, false},
+	}
+
+	for _, tc := range tests {
+		msg := types.NewMsgCancelRedelegation(tc.delegatorAddr, tc.validatorAddrSrc, tc.validatorAddrDst, tc.height, tc.amount)
+		if tc.expectPass {
+			require.Nil(t, msg.ValidateBasic(), "test: %v", tc.name)
+		} else {
+			require.NotNil(t, msg.ValidateBasic(), "test: %v", tc.name)
+		}
+	}
+}
+
+// test ValidateBasic for MsgCancelRedelegation
+func TestMsgCancelRedelegateNFT(t *testing.T) {
+	tests := []struct {
+		name             string
+		delegatorAddr    sdk.AccAddress
+		validatorAddrSrc sdk.ValAddress
+		validatorAddrDst sdk.ValAddress
+		tokenID          string
+		subTokens        []uint32
+		height           int64
+		expectPass       bool
+	}{
+		{"regular", sdk.AccAddress(valAddr1), valAddr2, valAddr3, "abcdef", []uint32{1}, 1, true},
+		{"empty token id", sdk.AccAddress(valAddr1), valAddr2, valAddr3, "", []uint32{1}, 1, false},
+		{"empty subtokens", sdk.AccAddress(valAddr1), valAddr2, valAddr3, "abcdef", []uint32{}, 1, false},
+		{"repeated subtokens", sdk.AccAddress(valAddr1), valAddr2, valAddr3, "abcdef", []uint32{1, 2, 1}, 1, false},
+		{"empty delegator", sdk.AccAddress(emptyAddr), valAddr1, valAddr3, "abcdef", []uint32{1}, 1, false},
+		{"empty validator src", sdk.AccAddress(valAddr1), emptyAddr, valAddr3, "abcdef", []uint32{1}, 1, false},
+		{"empty validator dst", sdk.AccAddress(valAddr1), valAddr1, emptyAddr, "abcdef", []uint32{1}, 1, false},
+		{"zero height", sdk.AccAddress(valAddr1), valAddr2, valAddr3, "abcdef", []uint32{1}, 0, false},
+	}
+
+	for _, tc := range tests {
+		msg := types.NewMsgCancelRedelegationNFT(tc.delegatorAddr, tc.validatorAddrSrc, tc.validatorAddrDst, tc.height, tc.tokenID, tc.subTokens)
+		if tc.expectPass {
+			require.Nil(t, msg.ValidateBasic(), "test: %v", tc.name)
+		} else {
+			require.NotNil(t, msg.ValidateBasic(), "test: %v", tc.name)
+		}
+	}
+}
+
+// test ValidateBasic for MsgCancelUndelegation
+func TestMsgCancelUndelegate(t *testing.T) {
+	tests := []struct {
+		name          string
+		delegatorAddr sdk.AccAddress
+		validatorAddr sdk.ValAddress
+		amount        sdk.Coin
+		height        int64
+		expectPass    bool
+	}{
+		{"regular", sdk.AccAddress(valAddr1), valAddr2, sdk.NewInt64Coin(sdk.DefaultBondDenom, 1), 1, true},
+		{"zero amount", sdk.AccAddress(valAddr1), valAddr2, sdk.NewInt64Coin(sdk.DefaultBondDenom, 0), 1, false},
+		{"nil amount", sdk.AccAddress(valAddr1), valAddr2, sdk.Coin{}, 1, false},
+		{"empty delegator", sdk.AccAddress(emptyAddr), valAddr1, sdk.NewInt64Coin(sdk.DefaultBondDenom, 1), 1, false},
+		{"empty validator", sdk.AccAddress(valAddr1), emptyAddr, sdk.NewInt64Coin(sdk.DefaultBondDenom, 1), 1, false},
+		{"zero height", sdk.AccAddress(valAddr1), valAddr2, sdk.NewInt64Coin(sdk.DefaultBondDenom, 1), 0, false},
+	}
+
+	for _, tc := range tests {
+		msg := types.NewMsgCancelUndelegation(tc.delegatorAddr, tc.validatorAddr, tc.height, tc.amount)
+		if tc.expectPass {
+			require.Nil(t, msg.ValidateBasic(), "test: %v", tc.name)
+		} else {
+			require.NotNil(t, msg.ValidateBasic(), "test: %v", tc.name)
+		}
+	}
+}
+
+// test ValidateBasic for MsgCancelUndelegationNFT
+func TestMsgCancelUndelegateNFT(t *testing.T) {
+	tests := []struct {
+		name          string
+		delegatorAddr sdk.AccAddress
+		validatorAddr sdk.ValAddress
+		tokenID       string
+		subTokens     []uint32
+		height        int64
+		expectPass    bool
+	}{
+		{"regular", sdk.AccAddress(valAddr1), valAddr2, "abcdef", []uint32{1}, 1, true},
+		{"empty token id", sdk.AccAddress(valAddr1), valAddr2, "", []uint32{1}, 1, false},
+		{"empty subtokens", sdk.AccAddress(valAddr1), valAddr2, "abcdef", []uint32{}, 1, false},
+		{"repeated subtokens", sdk.AccAddress(valAddr1), valAddr2, "abcdef", []uint32{1, 2, 1}, 1, false},
+		{"empty delegator", sdk.AccAddress(emptyAddr), valAddr1, "abcdef", []uint32{1}, 1, false},
+		{"empty validator", sdk.AccAddress(valAddr1), emptyAddr, "abcdef", []uint32{1}, 1, false},
+		{"zero height", sdk.AccAddress(valAddr1), valAddr2, "abcdef", []uint32{1}, 0, false},
+	}
+
+	for _, tc := range tests {
+		msg := types.NewMsgCancelUndelegationNFT(tc.delegatorAddr, tc.validatorAddr, tc.height, tc.tokenID, tc.subTokens)
+		if tc.expectPass {
+			require.Nil(t, msg.ValidateBasic(), "test: %v", tc.name)
+		} else {
+			require.NotNil(t, msg.ValidateBasic(), "test: %v", tc.name)
+		}
+	}
+}
