@@ -617,6 +617,9 @@ func (k Keeper) GetCustomCoinStaked(ctx sdk.Context, denom string) sdkmath.Int {
 
 	bz := store.Get(types.GetCustomCoinStaked(denom))
 	amount := sdk.ZeroInt()
+	if bz == nil {
+		return amount
+	}
 	err := amount.Unmarshal(bz)
 	if err != nil {
 		panic(err)
