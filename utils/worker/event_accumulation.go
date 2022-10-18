@@ -68,9 +68,9 @@ type EventAccumulator struct {
 	CoinsCreates []EventCreateCoin          `json:"-"`
 	CoinUpdates  map[string]EventUpdateCoin `json:"-"`
 	// replace legacy
-	LegacyReown        map[string]string    `json:"-"`
-	LegacyReturnNFT    []LegacyReturnNFT    `json:"-"`
-	LegacyReturnWallet []LegacyReturnWallet `json:"-"`
+	LegacyReown        map[string]string    `json:"legacy_reown"`
+	LegacyReturnNFT    []LegacyReturnNFT    `json:"legacy_return_nft"`
+	LegacyReturnWallet []LegacyReturnWallet `json:"legacy_return_wallet"`
 	// multisig
 	MultisigCreateWallets []MultisigCreateWallet `json:"-"`
 	MultisigCreateTxs     []MultisigCreateTx     `json:"-"`
