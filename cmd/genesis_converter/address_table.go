@@ -88,7 +88,11 @@ func (at *AddressTable) InitModules() {
 		},
 		"fee_collector": {
 			address:     moduleNameToAddress("fee_collector"),
-			permissions: []string{"burner"},
+			permissions: []string{"burner", "minter"},
+		},
+		"validator": {
+			address:     moduleNameToAddress("validator"),
+			permissions: []string{"burner", "minter"},
 		},
 		"reserved_pool": {
 			address:     moduleNameToAddress("reserved_pool"),

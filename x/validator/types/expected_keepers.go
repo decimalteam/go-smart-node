@@ -58,6 +58,7 @@ type CoinKeeper interface {
 	GetDecreasingFactor(ctx sdk.Context, coin sdk.Coin) (sdk.Dec, error)
 	BurnPoolCoins(ctx sdk.Context, poolName string, coins sdk.Coins) error
 	UpdateCoinVR(ctx sdk.Context, denom string, volume sdkmath.Int, reserve sdkmath.Int) error
+	IsCoinExists(ctx sdk.Context, denom string) bool
 }
 
 type MultisigKeeper interface {
