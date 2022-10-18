@@ -670,41 +670,19 @@ func (k Keeper) IterateAllCustomCoinStaked(ctx sdk.Context, cb func(denom string
 // tokenSrc indicates the bond status of the incoming funds.
 // NFT subtoken ownership MUST BE checked before
 func (k Keeper) Delegate(
-	ctx sdk.Context, delegator sdk.AccAddress, denom string, coinAmount *sdkmath.Int, subTokenIDs []uint32,
-	validator types.Validator,
-) (totalStake sdkmath.Int, stake types.Stake, err error) {
-	// 1. create stake entity
-	switch {
-	case coinAmount != nil && subTokenIDs == nil: // if stake is coin
-		stake = types.NewStakeCoin(sdk.NewCoin(denom, *coinAmount))
-	case len(subTokenIDs) > 0 && coinAmount == nil: // if stake is nft
-		subtokens, err := k.prepareSubTokens(ctx, denom, subTokenIDs)
-		if err != nil {
-			return sdk.ZeroInt(), types.Stake{}, err
-		}
-		stake = types.NewStakeNFT(denom, subTokenIDs, sumSubTokens(subtokens))
-	default:
-		return sdkmath.Int{}, types.Stake{}, fmt.Errorf("not coin delegate and not nft delegate, who is you") //TODO error
-	}
-
-	// 2. Get or create the delegation object
-	delegation, delegationFound := k.GetDelegation(ctx, delegator, validator.GetOperator(), denom)
+	ctx sdk.Context, delegator sdk.AccAddress, validator types.Validator, stake types.Stake,
+) error {
+	var err error
+	// 1. Get or create the delegation object
+	delegation, delegationFound := k.GetDelegation(ctx, delegator, validator.GetOperator(), stake.ID)
 	if !delegationFound {
 		// k.BeforeUpdateDelegation(ctx, delegation, denom)
 		delegation = types.NewDelegation(delegator, validator.GetOperator(), stake)
 	} else {
 		// k.BeforeDelegationCreated(ctx, delegator, validator.GetOperator())
-		// do not delegate sub token twice
-		if stake.Type == types.StakeType_NFT && types.SetHasIntersection(delegation.Stake.SubTokenIDs, stake.SubTokenIDs) {
-			return sdkmath.Int{}, types.Stake{}, errors.DelegateSubTokenTwice
-		}
-		// update delegation
-		delegation.Stake.Stake = delegation.Stake.Stake.Add(stake.GetStake())
-		if stake.Type == types.StakeType_NFT {
-			delegation.Stake.SubTokenIDs, err = delegation.Stake.AddSubTokens(stake.SubTokenIDs)
-			if err != nil {
-				return sdkmath.Int{}, types.Stake{}, err
-			}
+		delegation.Stake, err = delegation.Stake.Add(stake)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -733,44 +711,44 @@ func (k Keeper) Delegate(
 		receiverName = types.NotBondedPoolName
 		receiverPool = notBondedPool
 	default:
-		return sdk.ZeroInt(), types.Stake{}, errors.ValidatorStatusUnknown
+		return errors.ValidatorStatusUnknown
 	}
 
 	// the transfer of user assets is carried out in coins or nft
 	switch stake.Type {
 	case types.StakeType_Coin:
 		if err := k.bankKeeper.DelegateCoinsFromAccountToModule(ctx, delegator, receiverName, sdk.NewCoins(stake.Stake)); err != nil {
-			return sdk.ZeroInt(), types.Stake{}, err
+			return err
 		}
 	case types.StakeType_NFT:
 		if err := k.nftKeeper.TransferSubTokens(ctx, delegator, receiverPool, stake.ID, stake.SubTokenIDs); err != nil {
-			return sdk.ZeroInt(), types.Stake{}, err
+			return err
 		}
 	}
 
 	// Update delegation
-
 	k.SetDelegation(ctx, delegation)
 
-	// update validator info
-	valAddress := validator.GetOperator()
-	totalStake, err = k.TotalStakeInBaseCoin(ctx, valAddress)
+	/*
+		// update validator info
+		valAddress := validator.GetOperator()
+		totalStake, err = k.TotalStakeInBaseCoin(ctx, valAddress)
 
-	k.DeleteValidatorByPowerIndex(ctx, valAddress, validator.Stake)
-	rs, err := k.GetValidatorRS(ctx, valAddress)
-	if err != nil {
-		return sdkmath.Int{}, types.Stake{}, err
-	}
-	// TODO: this line can panic
-	rs.Stake = totalStake.Int64()
-	k.SetValidatorRS(ctx, valAddress, rs)
-	k.SetValidatorByPowerIndex(ctx, valAddress, totalStake.Int64())
-
+		k.DeleteValidatorByPowerIndex(ctx, valAddress, validator.Stake)
+		rs, err := k.GetValidatorRS(ctx, valAddress)
+		if err != nil {
+			return err
+		}
+		// TODO: this line can panic
+		rs.Stake = totalStake.Int64()
+		k.SetValidatorRS(ctx, valAddress, rs)
+		k.SetValidatorByPowerIndex(ctx, valAddress, totalStake.Int64())
+	*/
 	if err = k.AfterUpdateDelegation(ctx, delegation.GetStake().GetStake().Denom, delegation.GetStake().GetStake().Amount); err != nil {
-		return sdk.ZeroInt(), types.Stake{}, err
+		return err
 	}
 
-	return totalStake, stake, nil
+	return nil
 }
 
 func (k Keeper) TransferStakeBetweenPools(ctx sdk.Context, statusSrc types.BondStatus, statusDst types.BondStatus, stake types.Stake) error {
@@ -1010,44 +988,35 @@ func (k Keeper) BeginRedelegation(
 //		return balances, nil
 //	}
 //
-// CalculateUnbondStake validates that a given undelegation or redelegation stake can be
-// found on validator. If the stake is valid, the remain stake is returned,
+
+// CalculateRemainStake validates that a given stake can be
+// substracted from source. If the stake is valid, the remain stake is returned,
 // otherwise an error is returned.
-func (k Keeper) CalculateUnbondStake(
-	ctx sdk.Context, delegator sdk.AccAddress, validator sdk.ValAddress, stake types.Stake,
+func (k Keeper) CalculateRemainStake(
+	ctx sdk.Context, source, stake types.Stake,
 ) (types.Stake, error) {
-	_, found := k.GetValidator(ctx, validator)
-	if !found {
-		return types.Stake{}, errors.ValidatorNotFound
-	}
-
-	delegation, found := k.GetDelegation(ctx, delegator, validator, stake.ID)
-	if !found {
-		return types.Stake{}, errors.DelegationNotFound
-	}
-
-	if delegation.Stake.Type != stake.Type {
-		return types.Stake{}, errors.DelegationWrongType
+	if source.Type != stake.Type {
+		return types.Stake{}, errors.WrongStakeType
 	}
 
 	var remainStake types.Stake
 
 	switch stake.Type {
 	case types.StakeType_Coin:
-		if !delegation.Stake.Stake.IsGTE(stake.Stake) {
-			return types.Stake{}, errors.DelegationTooSmall
+		if !source.Stake.IsGTE(stake.Stake) {
+			return types.Stake{}, errors.StakeTooSmall
 		}
-		remainStake = types.NewStakeCoin(delegation.Stake.Stake.Sub(stake.Stake))
+		remainStake = types.NewStakeCoin(source.Stake.Sub(stake.Stake))
 	case types.StakeType_NFT:
-		if !types.SetHasSubset(delegation.Stake.SubTokenIDs, stake.SubTokenIDs) {
+		if !types.SetHasSubset(source.SubTokenIDs, stake.SubTokenIDs) {
 			return types.Stake{}, errors.StakeDoesNotHaveSubTokenID
 		}
-		remainIDs := types.SetSubstract(delegation.Stake.SubTokenIDs, stake.SubTokenIDs)
+		remainIDs := types.SetSubstract(source.SubTokenIDs, stake.SubTokenIDs)
 		subtokens, err := k.prepareSubTokens(ctx, stake.ID, stake.SubTokenIDs)
 		if err != nil {
 			return types.Stake{}, errors.NFTSubTokenNotFound
 		}
-		amount := delegation.Stake.Stake
+		amount := source.Stake
 		for _, sub := range subtokens {
 			amount = amount.Sub(*sub.Reserve)
 		}

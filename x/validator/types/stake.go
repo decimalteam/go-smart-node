@@ -77,6 +77,27 @@ func (s Stake) IsEmpty() bool {
 	return s.Stake.IsZero() || s.Type == StakeType_Coin && len(s.SubTokenIDs) == 0
 }
 
+func (s Stake) Add(a Stake) (Stake, error) {
+	if s.Type != a.Type {
+		return Stake{}, errors.WrongStakeType
+	}
+	if s.ID != a.ID {
+		return Stake{}, errors.WrongStakeID
+	}
+	var result Stake
+	var err error
+	result.Type = s.Type
+	result.ID = s.ID
+	result.Stake = s.Stake.Add(a.GetStake())
+	if s.Type == StakeType_NFT {
+		result.SubTokenIDs, err = s.AddSubTokens(a.SubTokenIDs)
+		if err != nil {
+			return Stake{}, err
+		}
+	}
+	return result, nil
+}
+
 // return true if set has subset of IDs
 func SetHasSubset(set []uint32, subset []uint32) bool {
 	for _, id1 := range subset {
