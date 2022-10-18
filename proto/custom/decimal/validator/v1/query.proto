@@ -191,7 +191,7 @@ message QueryDelegationsRequest {
 // QueryDelegationsResponse is response type for the Query/Delegations RPC method.
 message QueryDelegationsResponse {
   // delegations defines the delegations list.
-  repeated Delegation delegations = 1;
+  repeated Delegation delegations = 1 [ (gogoproto.nullable) = false ];
 }
 
 // QueryRedelegationsRequest is request type for the Query/Redelegations RPC method.
