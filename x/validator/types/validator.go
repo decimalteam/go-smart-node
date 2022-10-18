@@ -2,6 +2,7 @@ package types
 
 import (
 	"bytes"
+	ethtypes "github.com/evmos/ethermint/types"
 	"sort"
 	"strings"
 	"time"
@@ -314,9 +315,7 @@ func (v Validator) ConsensusPower() int64 {
 
 // PotentialConsensusPower returns the potential consensus-engine power.
 func (v Validator) PotentialConsensusPower() int64 {
-	//worth := sdk.ZeroInt()
-	return 0
-	//return keeper.TokensToConsensusPower(worth)
+	return sdk.TokensToConsensusPower(v.Stake, ethtypes.PowerReduction)
 }
 
 // UpdateStatus updates the location of the shares within a validator to reflect the new status.

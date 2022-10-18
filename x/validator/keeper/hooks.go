@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
@@ -115,14 +114,32 @@ func (k Keeper) BeforeUpdateDelegation(ctx sdk.Context, del types.Delegation, de
 	}
 }
 
-func (k Keeper) AfterUpdateDelegation(ctx sdk.Context, denom string, amount sdkmath.Int) error {
-	if denom == k.BaseDenom(ctx) {
-		return nil
+func (k Keeper) AfterUpdateDelegation(ctx sdk.Context, delegation types.Delegation) {
+	var denom string
+	var amount = sdk.ZeroInt()
+	switch delegation.GetStake().GetType() {
+	case types.StakeType_Coin:
+		stake := delegation.GetStake().GetStake()
+
+		denom = stake.Denom
+		if denom == k.BaseDenom(ctx) {
+			return
+		}
+
+		amount = k.ToBaseCoin(ctx, stake).Amount
+	case types.StakeType_NFT:
+		reserve := k.getSumSubTokensReserve(ctx, delegation.GetStake().GetID(), delegation.GetStake().GetSubTokenIDs())
+		if reserve.Denom == k.BaseDenom(ctx) {
+			return
+		}
+
+		denom = reserve.Denom
+		amount = k.ToBaseCoin(ctx, reserve).Amount
 	}
 
-	amountInStore := k.GetCustomCoinStaked(ctx, denom)
-	amountInStore.Add(amount)
-	k.SetCustomCoinStaked(ctx, denom, amountInStore)
+	ccs := k.GetCustomCoinStaked(ctx, denom)
+	ccs.Add(amount)
+	k.SetCustomCoinStaked(ctx, denom, ccs)
 
-	return nil
+	return
 }
