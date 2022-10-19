@@ -11,7 +11,7 @@ func NewStakeCoin(stake sdk.Coin) Stake {
 		Type:        StakeType_Coin,
 		ID:          stake.Denom,
 		Stake:       stake,
-		SubTokenIDs: []uint32{},
+		SubTokenIDs: nil,
 	}
 }
 
