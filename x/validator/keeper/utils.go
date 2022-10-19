@@ -59,17 +59,15 @@ func (k Keeper) delegationsTotalStake(ctx sdk.Context, delegations []types.Deleg
 }
 
 func (k Keeper) getSumSubTokensReserve(ctx sdk.Context, id string, subToken []uint32) sdk.Coin {
-	sum := sdk.Coin{Amount: sdk.ZeroInt()}
+	st, err := k.prepareSubTokens(ctx, id, subToken)
+	if err != nil {
+		panic(err)
+	}
 
-	if len(subToken) != 0 {
-		for _, v := range subToken {
-			subtoken, found := k.nftKeeper.GetSubToken(ctx, id, v)
-			if !found {
-				panic("not found subtoken")
-			}
-			sum.Denom = subtoken.Reserve.Denom
-			sum.Amount.Add(subtoken.Reserve.Amount)
-		}
+	sum := sdk.Coin{Amount: sdk.ZeroInt()}
+	for _, subtoken := range st {
+		sum.Denom = subtoken.Reserve.Denom
+		sum.Amount = sum.Amount.Add(subtoken.Reserve.Amount)
 	}
 
 	return sum

@@ -1,6 +1,11 @@
 package keeper_test
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/keeper"
+	sdkmath "cosmossdk.io/math"
 	"reflect"
 	"testing"
 	"time"
@@ -19,34 +24,289 @@ func TestDelegation(t *testing.T) {
 	var err error
 	_, dsc, ctx := createTestInput(t)
 
+	valK := dsc.ValidatorKeeper
+
 	// remove genesis validator delegations
-	delegations := dsc.ValidatorKeeper.GetAllDelegations(ctx)
+	delegations := valK.GetAllDelegations(ctx)
 	require.Len(t, delegations, 1)
 
-	dsc.ValidatorKeeper.RemoveDelegation(ctx, delegations[0])
+	valK.RemoveDelegation(ctx, delegations[0])
 
 	addrDels := app.AddTestAddrsIncremental(dsc, ctx, 3, defaultCoins)
 	valAddrs := app.ConvertAddrsToValAddrs(addrDels)
 
+	// create custom coin
+	ccDenom := "custom"
+	initVolume := keeper.TokensFromConsensusPower(100000000000)
+	initReserve := keeper.TokensFromConsensusPower(1000)
+	limitVolume := keeper.TokensFromConsensusPower(100000000000000000)
+	crr := uint64(50)
+
+	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(addrDels[0], ccDenom, "d", crr, initVolume, initReserve, limitVolume, ""))
+	require.NoError(t, err)
+	// ----------------------------
+
+	// create nfts
+	nftDenom := "nft_denom"
+	subTokenReserve := sdk.NewCoin(cmdcfg.BaseDenom, keeper.TokensFromConsensusPower(100))
+
+	_, err = dsc.NFTKeeper.MintToken(ctx, nfttypes.NewMsgMintToken(addrDels[0], "collection", nftDenom, "uri", true, addrDels[0], 5, subTokenReserve))
+	require.NoError(t, err)
+	// ----------------------------
+
+	// create nfts with custom coin reserve
+	nftCCDenom := "nft_cc_denom"
+	subTokenCCReserve := sdk.NewCoin(ccDenom, keeper.TokensFromConsensusPower(100000000))
+
+	_, err = dsc.NFTKeeper.MintToken(ctx, nfttypes.NewMsgMintToken(addrDels[0], "collection", nftCCDenom, "uri2", true, addrDels[0], 5, subTokenCCReserve))
+	require.NoError(t, err)
+	// ----------------------------
+
+	defaultStake := types.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, keeper.TokensFromConsensusPower(2)))
+	defaultNftStake := types.NewStakeNFT(nftDenom, []uint32{1, 2, 3}, subTokenReserve)
+	ccStake := types.NewStakeCoin(sdk.NewCoin(ccDenom, keeper.TokensFromConsensusPower(400000000)))
+	ccNftStake := types.NewStakeNFT(nftCCDenom, []uint32{1, 2, 3}, subTokenCCReserve)
+
 	// construct the validators
-	amts := []sdk.Int{sdk.NewInt(9), sdk.NewInt(8), sdk.NewInt(7)}
+	amts := []sdkmath.Int{sdk.NewInt(9), sdk.NewInt(8), sdk.NewInt(7)}
 	var validators [3]types.Validator
 	for i := range amts {
 		validators[i], err = types.NewValidator(valAddrs[i], addrDels[i], PKs[i], types.Description{}, sdk.ZeroDec())
 		require.NoError(t, err)
-		dsc.ValidatorKeeper.SetValidator(ctx, validators[i])
+		validators[i].Status = types.BondStatus_Bonded
+		valK.CreateValidator(ctx, validators[i])
+	}
+
+	valAddr := validators[0].GetOperator()
+
+	// delegate validator base coin
+	{
+		val, _ := valK.GetValidator(ctx, valAddr)
+		del := addrDels[0]
+
+		err = valK.Delegate(ctx, del, val, defaultStake)
+		require.NoError(t, err)
+
+		rs, err := valK.GetValidatorRS(ctx, val.GetOperator())
+		require.NoError(t, err)
+
+		// validator power updated
+		require.Equal(t, keeper.TokensToConsensusPower(val.Stake.Add(defaultStake.Stake.Amount)), keeper.TokensToConsensusPower(rs.Stake))
+	}
+
+	// delegate validator nfts with base reserve
+	{
+		val, _ := valK.GetValidator(ctx, valAddr)
+		del := addrDels[0]
+
+		err = valK.Delegate(ctx, del, val, defaultNftStake)
+		require.NoError(t, err)
+
+		rs, err := valK.GetValidatorRS(ctx, val.GetOperator())
+		require.NoError(t, err)
+
+		// validator power updated
+		require.Equal(t, keeper.TokensToConsensusPower(val.Stake.Add(subTokenReserve.Amount.Mul(sdk.NewInt(3)))), keeper.TokensToConsensusPower(rs.Stake))
+	}
+
+	//custom coin delegate
+	valK.SetCustomCoinStaked(ctx, ccDenom, sdk.ZeroInt())
+	{
+		val, _ := valK.GetValidator(ctx, valAddr)
+		del := addrDels[0]
+		expectedStakeInBaseCoins := formulas.CalculateSaleReturn(initVolume, initReserve, uint(crr), ccStake.Stake.Amount)
+
+		err = valK.Delegate(ctx, del, val, ccStake)
+		require.NoError(t, err)
+
+		rs, err := valK.GetValidatorRS(ctx, val.GetOperator())
+		require.NoError(t, err)
+
+		// validator power updated
+		require.Equal(t, keeper.TokensToConsensusPower(val.Stake.Add(expectedStakeInBaseCoins)), keeper.TokensToConsensusPower(rs.Stake))
+		ccStaked := valK.GetCustomCoinStaked(ctx, ccDenom)
+		// custom coin staked updated
+		require.True(t, ccStake.Stake.Amount.Equal(ccStaked))
+	}
+
+	//  delegate validator nfts with custom coin reserve
+	{
+		val, _ := valK.GetValidator(ctx, valAddr)
+		del := addrDels[0]
+		ccs := valK.GetCustomCoinStaked(ctx, ccDenom)
+		totalReserve := subTokenCCReserve.Amount.Mul(sdk.NewInt(3))
+		expectedStakeInBaseCoins := formulas.CalculateSaleReturn(initVolume, initReserve, uint(crr), totalReserve)
+
+		err = valK.Delegate(ctx, del, val, ccNftStake)
+		require.NoError(t, err)
+
+		rs, err := valK.GetValidatorRS(ctx, val.GetOperator())
+		require.NoError(t, err)
+
+		// validator power updated
+		require.Equal(t, keeper.TokensToConsensusPower(val.Stake.Add(expectedStakeInBaseCoins)), keeper.TokensToConsensusPower(rs.Stake))
+		ccStaked := valK.GetCustomCoinStaked(ctx, ccDenom)
+		// custom coin staked updated
+		require.True(t, ccs.Add(totalReserve).Equal(ccStaked))
+	}
+
+	// delegate again base coin
+	{
+		val, _ := valK.GetValidator(ctx, valAddr)
+		del := addrDels[0]
+		oldDelegation, found := valK.GetDelegation(ctx, del, val.GetOperator(), defaultStake.Stake.Denom)
+		require.True(t, found)
+
+		err = valK.Delegate(ctx, del, val, defaultStake)
+		require.NoError(t, err)
+
+		rs, err := valK.GetValidatorRS(ctx, val.GetOperator())
+		require.NoError(t, err)
+
+		newDelegation, found := valK.GetDelegation(ctx, del, val.GetOperator(), defaultStake.Stake.Denom)
+		require.True(t, found)
+
+		oldDelegation.Stake, err = oldDelegation.Stake.Add(defaultStake)
+		require.NoError(t, err)
+
+		// new amount added to current delegation
+		require.True(t, newDelegation.Equal(oldDelegation))
+		// validator power updated
+		require.Equal(t, keeper.TokensToConsensusPower(val.Stake.Add(defaultStake.Stake.Amount)), keeper.TokensToConsensusPower(rs.Stake))
+	}
+
+	// delegate again custom coin
+	{
+		val, _ := valK.GetValidator(ctx, valAddr)
+		del := addrDels[0]
+		oldCcs := valK.GetCustomCoinStaked(ctx, ccDenom)
+		expectedStakeInBaseCoins := formulas.CalculateSaleReturn(initVolume, initReserve, uint(crr), ccStake.Stake.Amount)
+
+		oldDelegation, found := valK.GetDelegation(ctx, del, val.GetOperator(), ccStake.Stake.Denom)
+		require.True(t, found)
+
+		err = valK.Delegate(ctx, del, val, ccStake)
+		require.NoError(t, err)
+
+		rs, err := valK.GetValidatorRS(ctx, val.GetOperator())
+		require.NoError(t, err)
+
+		newDelegation, found := valK.GetDelegation(ctx, del, val.GetOperator(), ccStake.Stake.Denom)
+		require.True(t, found)
+
+		oldDelegation.Stake, err = oldDelegation.Stake.Add(ccStake)
+		require.NoError(t, err)
+
+		// new amount added to current delegation
+		require.True(t, newDelegation.Equal(oldDelegation))
+		// validator power updated
+		require.Equal(t, keeper.TokensToConsensusPower(val.Stake.Add(expectedStakeInBaseCoins)), keeper.TokensToConsensusPower(rs.Stake))
+		ccStaked := valK.GetCustomCoinStaked(ctx, ccDenom)
+		// custom coin staked updated
+		require.True(t, oldCcs.Add(ccStake.Stake.Amount).Equal(ccStaked))
+	}
+
+	// delegate again nfts with base coin reserve
+	{
+		stake := defaultNftStake
+		stake.SubTokenIDs = []uint32{4, 5}
+		val, _ := valK.GetValidator(ctx, valAddr)
+		del := addrDels[0]
+		oldDelegation, found := valK.GetDelegation(ctx, del, val.GetOperator(), stake.ID)
+		require.True(t, found)
+
+		err = valK.Delegate(ctx, del, val, stake)
+		require.NoError(t, err)
+
+		rs, err := valK.GetValidatorRS(ctx, val.GetOperator())
+		require.NoError(t, err)
+
+		newDelegation, found := valK.GetDelegation(ctx, del, val.GetOperator(), stake.ID)
+		require.True(t, found)
+
+		oldDelegation.Stake, err = oldDelegation.Stake.Add(stake)
+		require.NoError(t, err)
+
+		// new amount added to current delegation
+		require.True(t, newDelegation.Equal(oldDelegation))
+		// validator power updated
+		require.Equal(t, keeper.TokensToConsensusPower(val.Stake.Add(subTokenReserve.Amount.Mul(sdk.NewInt(2)))), keeper.TokensToConsensusPower(rs.Stake))
+	}
+
+	// delegate again nfts with custom coin reserve
+	{
+		coin, _ := dsc.CoinKeeper.GetCoin(ctx, ccDenom)
+		stake := ccNftStake
+		stake.SubTokenIDs = []uint32{4, 5}
+		val, _ := valK.GetValidator(ctx, valAddr)
+		del := addrDels[0]
+		ccs := valK.GetCustomCoinStaked(ctx, ccDenom)
+		totalReserve := subTokenCCReserve.Amount.Mul(sdk.NewInt(2))
+		expectedStakeInBaseCoins := formulas.CalculateSaleReturn(coin.Volume, coin.Reserve, uint(crr), totalReserve)
+
+		oldDelegation, found := valK.GetDelegation(ctx, del, val.GetOperator(), stake.ID)
+		require.True(t, found)
+
+		err = valK.Delegate(ctx, del, val, stake)
+		require.NoError(t, err)
+
+		rs, err := valK.GetValidatorRS(ctx, val.GetOperator())
+		require.NoError(t, err)
+
+		newDelegation, found := valK.GetDelegation(ctx, del, val.GetOperator(), stake.ID)
+		require.True(t, found)
+
+		oldDelegation.Stake, err = oldDelegation.Stake.Add(stake)
+		require.NoError(t, err)
+
+		// new amount added to current delegation
+		require.True(t, newDelegation.Equal(oldDelegation))
+
+		// validator power updated
+		require.Equal(t, keeper.TokensToConsensusPower(val.Stake.Add(expectedStakeInBaseCoins)), keeper.TokensToConsensusPower(rs.Stake))
+		ccStaked := valK.GetCustomCoinStaked(ctx, ccDenom)
+		// custom coin staked updated
+		require.True(t, ccs.Add(totalReserve).Equal(ccStaked))
+	}
+	delegations = valK.GetDelegatorDelegations(ctx, addrDels[0], 5)
+	require.Len(t, delegations, 4)
+}
+
+func TestDelegationsInStore(t *testing.T) {
+	var err error
+	_, dsc, ctx := createTestInput(t)
+
+	valK := dsc.ValidatorKeeper
+
+	// remove genesis validator delegations
+	delegations := valK.GetAllDelegations(ctx)
+	require.Len(t, delegations, 1)
+
+	valK.RemoveDelegation(ctx, delegations[0])
+
+	addrDels := app.AddTestAddrsIncremental(dsc, ctx, 3, defaultCoins)
+	valAddrs := app.ConvertAddrsToValAddrs(addrDels)
+
+	amts := []sdkmath.Int{sdk.NewInt(9), sdk.NewInt(8), sdk.NewInt(7)}
+	var validators [3]types.Validator
+	for i := range amts {
+		validators[i], err = types.NewValidator(valAddrs[i], addrDels[i], PKs[i], types.Description{}, sdk.ZeroDec())
+		require.NoError(t, err)
+		validators[i].Status = types.BondStatus_Bonded
+		valK.CreateValidator(ctx, validators[i])
 	}
 
 	defaultStake := types.NewStakeCoin(sdk.NewInt64Coin(cmdcfg.BaseDenom, 9))
 	// first add a validators[0] to delegate too
 	bond1to1 := types.NewDelegation(addrDels[0], valAddrs[0], defaultStake)
 
-	// check the empty keeper first
+	//check the empty keeper first
 	_, found := dsc.ValidatorKeeper.GetDelegation(ctx, addrDels[0], valAddrs[0], bond1to1.Stake.ID)
 	require.False(t, found)
 
-	// set and retrieve a record
+	//set and retrieve a record
 	dsc.ValidatorKeeper.SetDelegation(ctx, bond1to1)
+
 	resBond, found := dsc.ValidatorKeeper.GetDelegation(ctx, addrDels[0], valAddrs[0], bond1to1.Stake.ID)
 	require.True(t, found)
 	require.Equal(t, bond1to1, resBond)

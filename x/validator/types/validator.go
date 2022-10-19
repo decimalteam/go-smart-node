@@ -61,6 +61,7 @@ func NewValidator(
 		UnbondingTime:   time.Unix(0, 0).UTC(),
 		Rewards:         sdkmath.ZeroInt(),
 		TotalRewards:    sdkmath.ZeroInt(),
+		Stake:           sdk.ZeroInt(),
 	}, nil
 }
 

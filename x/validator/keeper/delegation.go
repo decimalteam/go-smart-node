@@ -678,7 +678,7 @@ func (k Keeper) Delegate(
 		//k.BeforeUpdateDelegation(ctx, delegation, denom)
 		delegation = types.NewDelegation(delegator, validator.GetOperator(), stake)
 	} else {
-		//k.BeforeDelegationCreated(ctx, delegator, validator.GetOperator())
+		k.BeforeUpdateDelegation(ctx, delegation, stake.ID)
 		delegation.Stake, err = delegation.Stake.Add(stake)
 		if err != nil {
 			return err
@@ -688,14 +688,13 @@ func (k Keeper) Delegate(
 	if err != nil {
 		return err
 	}
-
 	// call the appropriate hook if present
-	if delegationFound {
-		k.BeforeUpdateDelegation(ctx, delegation, stake.ID)
-	} else {
-		// nothing now
-		//err = k.BeforeDelegationCreated(ctx, delegator, validator.GetOperator())
-	}
+	//if delegationFound {
+	//k.BeforeUpdateDelegation(ctx, delegation, stake.ID)
+	//} else {
+	// nothing now
+	//err = k.BeforeDelegationCreated(ctx, delegator, validator.GetOperator())
+	//}
 
 	// 3. transfer coin/nft
 	notBondedPool := k.GetNotBondedPool(ctx).GetAddress()
@@ -739,7 +738,7 @@ func (k Keeper) Delegate(
 	}
 
 	// calculate validator new stake
-	delStake := k.baseCoinFromStake(ctx, delegation.Stake)
+	delStake := k.baseCoinFromStake(ctx, stake)
 	rs.Stake = rs.Stake.Add(delStake.Amount)
 	validator.Stake = validator.Stake.Add(delStake.Amount)
 
@@ -1123,7 +1122,6 @@ func (k Keeper) baseCoinFromStake(ctx sdk.Context, stake types.Stake) sdk.Coin {
 		base = k.ToBaseCoin(ctx, stake.GetStake())
 	case types.StakeType_NFT:
 		reserve := k.getSumSubTokensReserve(ctx, stake.GetID(), stake.GetSubTokenIDs())
-
 		base = k.ToBaseCoin(ctx, reserve)
 	}
 

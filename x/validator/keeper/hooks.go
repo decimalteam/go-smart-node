@@ -107,10 +107,9 @@ func (k Keeper) BeforeUpdateDelegation(ctx sdk.Context, del types.Delegation, de
 		if sum.Denom == k.BaseDenom(ctx) {
 			return
 		}
-
 		ccs := k.GetCustomCoinStaked(ctx, sum.Denom)
 		ccs = ccs.Sub(sum.Amount)
-		k.SetCustomCoinStaked(ctx, denom, ccs)
+		k.SetCustomCoinStaked(ctx, sum.Denom, ccs)
 	}
 }
 
@@ -126,7 +125,8 @@ func (k Keeper) AfterUpdateDelegation(ctx sdk.Context, delegation types.Delegati
 			return
 		}
 
-		amount = k.ToBaseCoin(ctx, stake).Amount
+		amount = stake.Amount
+		//amount = k.ToBaseCoin(ctx, stake).Amount
 	case types.StakeType_NFT:
 		reserve := k.getSumSubTokensReserve(ctx, delegation.GetStake().GetID(), delegation.GetStake().GetSubTokenIDs())
 		if reserve.Denom == k.BaseDenom(ctx) {
@@ -134,11 +134,11 @@ func (k Keeper) AfterUpdateDelegation(ctx sdk.Context, delegation types.Delegati
 		}
 
 		denom = reserve.Denom
-		amount = k.ToBaseCoin(ctx, reserve).Amount
+		amount = reserve.Amount //k.ToBaseCoin(ctx, reserve).Amount
 	}
 
 	ccs := k.GetCustomCoinStaked(ctx, denom)
-	ccs.Add(amount)
+	ccs = ccs.Add(amount)
 	k.SetCustomCoinStaked(ctx, denom, ccs)
 
 	return

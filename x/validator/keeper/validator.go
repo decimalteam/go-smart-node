@@ -30,7 +30,7 @@ func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.ValAddress) (validator ty
 		// not found rewards
 		validator.Rewards = sdkmath.ZeroInt()
 		validator.TotalRewards = sdkmath.ZeroInt()
-		validator.Stake = 0
+		validator.Stake = sdk.ZeroInt()
 	}
 
 	return validator, true
@@ -82,6 +82,18 @@ func (k Keeper) SetValidatorRS(ctx sdk.Context, valAddr sdk.ValAddress, rewards 
 	store := ctx.KVStore(k.storeKey)
 	bz := types.MustMarshalValidatorRewards(k.cdc, &rewards)
 	store.Set(types.GetValidatorRewards(valAddr), bz)
+}
+
+func (k Keeper) CreateValidator(ctx sdk.Context, validator types.Validator) {
+	k.SetValidator(ctx, validator)
+	k.SetValidatorRS(ctx, validator.GetOperator(), types.ValidatorRS{
+		Rewards:      sdk.ZeroInt(),
+		TotalRewards: sdk.ZeroInt(),
+		Stake:        validator.Stake,
+	})
+	k.SetNewValidatorByPowerIndex(ctx, validator)
+	k.SetValidatorByConsAddr(ctx, validator)
+	k.SetLastValidatorPower(ctx, validator.GetOperator(), TokensToConsensusPower(validator.Stake))
 }
 
 func (k Keeper) GetValidatorRS(ctx sdk.Context, valAddr sdk.ValAddress) (rewards types.ValidatorRS, err error) {
