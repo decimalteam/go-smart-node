@@ -7,7 +7,6 @@ import (
 
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
-	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -15,10 +14,10 @@ import (
 
 // NewHistoricalInfo will create a historical information struct from header and validator set.
 // It will first sort validator set before inclusion into historical info.
-func NewHistoricalInfo(header tmproto.Header, valSet Validators, powerReduction sdkmath.Int) HistoricalInfo {
+func NewHistoricalInfo(header tmproto.Header, valSet Validators) HistoricalInfo {
 	// Must sort in the same way that tendermint does
 	sort.SliceStable(valSet, func(i, j int) bool {
-		return ValidatorsByVotingPower(valSet).Less(i, j, powerReduction)
+		return ValidatorsByVotingPower(valSet).Less(i, j)
 	})
 
 	return HistoricalInfo{

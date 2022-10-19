@@ -2,7 +2,6 @@ package types
 
 import (
 	"bytes"
-	ethtypes "github.com/evmos/ethermint/types"
 	"sort"
 	"strings"
 	"time"
@@ -17,6 +16,8 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	ethtypes "github.com/evmos/ethermint/types"
 )
 
 const (
@@ -113,7 +114,7 @@ type ValidatorsByVotingPower []Validator
 
 func (valz ValidatorsByVotingPower) Len() int { return len(valz) }
 
-func (valz ValidatorsByVotingPower) Less(i, j int, r sdkmath.Int) bool {
+func (valz ValidatorsByVotingPower) Less(i, j int) bool {
 	if valz[i].ConsensusPower() == valz[j].ConsensusPower() {
 		addrI, errI := valz[i].GetConsAddr()
 		addrJ, errJ := valz[j].GetConsAddr()
