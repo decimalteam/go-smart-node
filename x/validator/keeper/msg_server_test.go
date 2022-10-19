@@ -1,21 +1,124 @@
 package keeper_test
 
-//
-//import (
-//	"testing"
-//	"time"
-//
-//	"github.com/stretchr/testify/require"
-//
-//	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-//
-//	"github.com/cosmos/cosmos-sdk/simapp"
-//	sdk "github.com/cosmos/cosmos-sdk/types"
-//	"github.com/cosmos/cosmos-sdk/x/bank/testutil"
-//
-//	"bitbucket.org/decimalteam/go-smart-node/x/validator/keeper"
-//	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
-//)
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/keeper"
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
+)
+
+func TestCreateValidator(t *testing.T) {
+	_, dsc, ctx := createTestInput(t)
+	msgsrv := keeper.NewMsgServerImpl(dsc.ValidatorKeeper)
+
+	stake := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(100)))
+	accs, vals := generateAddresses(dsc, ctx, 10, sdk.NewCoins(stake))
+
+	goCtx := sdk.WrapSDKContext(ctx)
+
+	// 0.
+	startBalance := dsc.BankKeeper.GetBalance(ctx, dsc.ValidatorKeeper.GetNotBondedPool(ctx).GetAddress(), stake.Denom)
+	// 1. create regular validator
+	msg, err := types.NewMsgCreateValidator(
+		vals[0],
+		accs[0],
+		PKs[0],
+		types.Description{
+			Moniker: "monik",
+		},
+		sdk.OneDec(), stake)
+	require.NoError(t, err)
+	require.NoError(t, msg.ValidateBasic())
+	_, err = msgsrv.CreateValidator(goCtx, msg)
+	require.NoError(t, err)
+
+	// check validator
+	validator, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[0])
+	require.True(t, found)
+	require.Equal(t, vals[0].String(), validator.OperatorAddress)
+	require.Equal(t, accs[0].String(), validator.RewardAddress)
+	pk, err := validator.ConsPubKey()
+	require.NoError(t, err)
+	require.Equal(t, PKs[0], pk)
+	require.Equal(t, types.Description{Moniker: "monik"}, validator.Description)
+	require.Equal(t, sdk.OneDec(), validator.Commission)
+
+	// check delegations
+	delegations := dsc.ValidatorKeeper.GetValidatorDelegations(ctx, vals[0])
+	require.Len(t, delegations, 1)
+	require.Equal(t, stake, delegations[0].Stake.Stake)
+
+	// check pool changes
+	balance := dsc.BankKeeper.GetBalance(ctx, dsc.ValidatorKeeper.GetNotBondedPool(ctx).GetAddress(), stake.Denom)
+	require.Equal(t, stake.Amount, balance.Amount.Sub(startBalance.Amount))
+
+	// 2. create with same public key
+	msg, err = types.NewMsgCreateValidator(
+		vals[1],
+		accs[1],
+		PKs[0],
+		types.Description{
+			Moniker: "monik2",
+		},
+		sdk.OneDec(), stake)
+	require.NoError(t, err)
+	require.NoError(t, msg.ValidateBasic())
+	_, err = msgsrv.CreateValidator(goCtx, msg)
+	require.Error(t, err)
+}
+
+func TestEditValidator(t *testing.T) {
+	_, dsc, ctx := createTestInput(t)
+	msgsrv := keeper.NewMsgServerImpl(dsc.ValidatorKeeper)
+
+	stake := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(100)))
+	accs, vals := generateAddresses(dsc, ctx, 10, sdk.NewCoins(stake))
+
+	goCtx := sdk.WrapSDKContext(ctx)
+	// 1. create validator
+	msg, err := types.NewMsgCreateValidator(
+		vals[0],
+		accs[0],
+		PKs[0],
+		types.Description{
+			Moniker:  "monik",
+			Identity: "somesome",
+		},
+		sdk.OneDec(), stake)
+	require.NoError(t, err)
+	require.NoError(t, msg.ValidateBasic())
+	_, err = msgsrv.CreateValidator(goCtx, msg)
+	require.NoError(t, err)
+
+	// 2. edit
+	msgEdit := types.NewMsgEditValidator(
+		vals[0],
+		accs[1],
+		types.Description{
+			Moniker:  "monik2",
+			Identity: types.DoNotModifyDesc, //
+		},
+	)
+	require.NoError(t, msgEdit.ValidateBasic())
+	_, err = msgsrv.EditValidator(goCtx, msgEdit)
+	require.NoError(t, err)
+
+	validator, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[0])
+	require.True(t, found)
+	require.Equal(t, accs[1].String(), validator.RewardAddress)
+	require.Equal(t, types.Description{
+		Moniker:  "monik2",
+		Identity: "somesome",
+	}, validator.Description)
+}
+
 //
 //func TestCancelUnbondingDelegation(t *testing.T) {
 //	// setup the app

@@ -126,7 +126,7 @@ func (k msgServer) EditValidator(goCtx context.Context, msg *types.MsgEditValida
 	// validator must already be registered
 	validator, found := k.GetValidator(ctx, valAddr)
 	if !found {
-		return nil, types.ErrNoValidatorFound
+		return nil, errors.ValidatorNotFound
 	}
 
 	// replace all editable fields (clients should autofill existing values)
@@ -173,6 +173,7 @@ func (k msgServer) SetOnline(goCtx context.Context, msg *types.MsgSetOnline) (*t
 		}
 	}
 
+	// TODO: move Online and Jailed to store keys?
 	validator.Online = true
 	validator.Jailed = false
 

@@ -21,7 +21,17 @@ func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.ValAddress) (validator ty
 		return validator, false
 	}
 	validator = types.MustUnmarshalValidator(k.cdc, value)
-	k.MustGetValidatorRS(ctx, &validator)
+	rewards, err := k.GetValidatorRS(ctx, addr)
+	if err == nil {
+		validator.Rewards = rewards.Rewards
+		validator.TotalRewards = rewards.TotalRewards
+		validator.Stake = rewards.Stake
+	} else {
+		// not found rewards
+		validator.Rewards = sdkmath.ZeroInt()
+		validator.TotalRewards = sdkmath.ZeroInt()
+		validator.Stake = 0
+	}
 
 	return validator, true
 }
@@ -59,7 +69,6 @@ func (k Keeper) GetValidatorByConsAddrDecimal(ctx sdk.Context, consAddr sdk.Cons
 	if addr == nil {
 		return validator, false
 	}
-	// TODO: convert our validator for staking types
 	return k.GetValidator(ctx, addr)
 }
 

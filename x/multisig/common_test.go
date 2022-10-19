@@ -3,46 +3,49 @@ package multisig_test
 import (
 	"testing"
 
-	"bitbucket.org/decimalteam/go-smart-node/app"
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	"bitbucket.org/decimalteam/go-smart-node/x/multisig/keeper"
-	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
+	"github.com/stretchr/testify/require"
+
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
-	"github.com/stretchr/testify/require"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+
+	"bitbucket.org/decimalteam/go-smart-node/app"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	"bitbucket.org/decimalteam/go-smart-node/x/multisig/keeper"
+	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 )
 
-//func TestDoubleWallet(t *testing.T) {
-//	const addrCount = 100
-//
-//	_, dsc, ctx := getBaseAppWithCustomKeeper(t)
-//	addrs, _ := generateAddresses(dsc, ctx, addrCount,
-//		sdk.NewCoins(
-//			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
-//		),
-//	)
-//
-//	var sender = addrs[0]
-//	var owners = []string{addrs[1].String(), addrs[2].String(), addrs[3].String()}
-//	var weights = []uint32{1, 1, 1}
-//	var threshold uint32 = 2
-//
-//	msg := types.NewMsgCreateWallet(sender, owners, weights, threshold)
-//	err := msg.ValidateBasic()
-//	require.NoError(t, err)
-//
-//	ctx = ctx.WithTxBytes([]byte{byte(1)}) // for wallet salt
-//	goCtx := sdk.WrapSDKContext(ctx)
-//	_, err = dsc.MultisigKeeper.CreateWallet(goCtx, msg)
-//	require.NoError(t, err)
-//
-//	// try to create wallet again
-//	_, err = dsc.MultisigKeeper.CreateWallet(goCtx, msg)
-//	require.Error(t, err)
-//}
+func TestDoubleWallet(t *testing.T) {
+	const addrCount = 100
+
+	_, dsc, ctx := getBaseAppWithCustomKeeper(t)
+	addrs, _ := generateAddresses(dsc, ctx, addrCount,
+		sdk.NewCoins(
+			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
+		),
+	)
+
+	var sender = addrs[0]
+	var owners = []string{addrs[1].String(), addrs[2].String(), addrs[3].String()}
+	var weights = []uint32{1, 1, 1}
+	var threshold uint32 = 2
+
+	msg := types.NewMsgCreateWallet(sender, owners, weights, threshold)
+	err := msg.ValidateBasic()
+	require.NoError(t, err)
+
+	ctx = ctx.WithTxBytes([]byte{byte(1)}) // for wallet salt
+	goCtx := sdk.WrapSDKContext(ctx)
+	_, err = dsc.MultisigKeeper.CreateWallet(goCtx, msg)
+	require.NoError(t, err)
+
+	// try to create wallet again
+	_, err = dsc.MultisigKeeper.CreateWallet(goCtx, msg)
+	require.Error(t, err)
+}
 
 func TestAccountWithSameAddress(t *testing.T) {
 	const addrCount = 100
