@@ -47,42 +47,8 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 
 	height := ctx.BlockHeight()
 
-	/*
-			validatorUpdates, err := k.ApplyAndReturnValidatorSetUpdates(ctx)
-			if err != nil {
-				panic(err)
-			}
-			return []abci.ValidatorUpdate{} // k.BlockValidatorUpdates(ctx)
+	updates := k.BlockValidatorUpdates(ctx)
 
-
-
-		// Unbond all mature validators from the unbonding queue.
-		k.UnbondAllMatureValidatorQueue(ctx)
-
-		//Remove all mature unbonding delegations from the ubd queue.
-		matureUnbonds := k.DequeueAllMatureUBDQueue(ctx, ctx.BlockHeader().Time)
-		for _, dvPair := range matureUnbonds {
-			delAddr := sdk.MustAccAddressFromBech32(dvPair.DelegatorAddress)
-			valAddr, err := sdk.ValAddressFromBech32(dvPair.ValidatorAddress)
-			if err != nil {
-				panic(err)
-			}
-
-			_, found := k.GetUndelegation(ctx, delAddr, valAddr)
-			if !found {
-				continue
-			}
-
-			err = k.CompleteUnbonding(ctx, dvPair.DelegatorAddress, dvPair.ValidatorAddress)
-			if err != nil {
-				continue
-			}
-
-			//ctxTime := ctx.BlockHeader().Time
-
-			//ctx.EventManager().EmitEvents(delegation.GetEvents(ctxTime))
-		}
-	*/
 	// calculate emmission
 	rewards := types.GetRewardForBlock(uint64(height))
 
@@ -117,7 +83,7 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 	if err != nil {
 		panic(err)
 	}
-	err = k.coinKeeper.UpdateCoinVR(ctx, baseDenom, baseCoin.Reserve, baseCoin.Volume.Add(rewards))
+	err = k.coinKeeper.UpdateCoinVR(ctx, baseDenom, baseCoin.Volume.Add(rewards), baseCoin.Reserve)
 	if err != nil {
 		panic(err)
 	}
@@ -153,5 +119,5 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 			panic(err)
 		}
 	}
-	return []abci.ValidatorUpdate{}
+	return updates
 }

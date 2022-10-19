@@ -81,7 +81,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 			Delegators:  nil,
 		}
 
-		totalStake := TokensFromConsensusPower(val.Stake)
+		totalStake := val.Stake
 		remainder := rewards
 		for _, del := range delByValidator[validator.String()] {
 			reward := sdk.NewIntFromBigInt(rewards.BigInt())
