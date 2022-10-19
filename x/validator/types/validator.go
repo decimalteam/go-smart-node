@@ -111,7 +111,7 @@ type ValidatorsByVotingPower []Validator
 
 func (valz ValidatorsByVotingPower) Len() int { return len(valz) }
 
-func (valz ValidatorsByVotingPower) Less(i, j int, r sdkmath.Int) bool {
+func (valz ValidatorsByVotingPower) Less(i, j int) bool {
 	if valz[i].ConsensusPower() == valz[j].ConsensusPower() {
 		addrI, errI := valz[i].GetConsAddr()
 		addrJ, errJ := valz[j].GetConsAddr()
@@ -314,9 +314,7 @@ func (v Validator) ConsensusPower() int64 {
 
 // PotentialConsensusPower returns the potential consensus-engine power.
 func (v Validator) PotentialConsensusPower() int64 {
-	//worth := sdk.ZeroInt()
-	return 0
-	//return keeper.TokensToConsensusPower(worth)
+	return v.Stake
 }
 
 // UpdateStatus updates the location of the shares within a validator to reflect the new status.
