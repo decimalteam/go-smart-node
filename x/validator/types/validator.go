@@ -58,8 +58,8 @@ func NewValidator(
 		Jailed:          false,
 		UnbondingHeight: 0,
 		UnbondingTime:   time.Unix(0, 0).UTC(),
-		Rewards:         sdkmath.Int{},
-		TotalRewards:    sdkmath.Int{},
+		Rewards:         sdkmath.ZeroInt(),
+		TotalRewards:    sdkmath.ZeroInt(),
 	}, nil
 }
 
