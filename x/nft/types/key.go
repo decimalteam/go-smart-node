@@ -123,11 +123,6 @@ func GetTokenByCollectionKey(creator sdk.AccAddress, denom string, id string) []
 	return append(GetTokensByCollectionKey(creator, denom), helpers.CalcHashSHA256(id)...)
 }
 
-// GetSubTokensByOwnerKey returns the key prefix of the NFT sub-tokens of specific owner address and NFT token.
-func GetSubTokensByOwnerKey(owner sdk.AccAddress, id string) []byte {
-	return append(keyPrefixSubTokensByOwner, append(owner.Bytes(), helpers.CalcHashSHA256(id)...)...)
-}
-
 // GetSubTokenByOwnerKey returns the key of the NFT sub-token of specific owner address NFT token and index.
 func GetSubTokenByOwnerKey(owner sdk.AccAddress, id string, index uint32) []byte {
 	return append(keyPrefixSubTokensByOwner, append(owner.Bytes(), getSubTokenID(id, index)...)...)

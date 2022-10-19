@@ -496,7 +496,7 @@ func TestUndelegation(t *testing.T) {
 		// validator power updated
 		require.Equal(t, keeper.TokensToConsensusPower(val.Stake.Sub(unStake.Stake.Amount)), keeper.TokensToConsensusPower(rs.Stake))
 
-		coins.Add(unStake.Stake)
+		coins = coins.Add(unStake.Stake)
 		defaultStake = remainStake
 	}
 	// undelegate custom coin del
@@ -526,7 +526,7 @@ func TestUndelegation(t *testing.T) {
 		// validator power updated
 		require.Equal(t, keeper.TokensToConsensusPower(val.Stake.Sub(unStakeInBaseCoin)), keeper.TokensToConsensusPower(rs.Stake))
 
-		coins.Add(unStake.Stake)
+		coins = coins.Add(unStake.Stake)
 		ccStake = remainStake
 	}
 	// undelegate nfts with base coin reserve
@@ -613,7 +613,7 @@ func TestUndelegation(t *testing.T) {
 		// validator power updated
 		require.Equal(t, keeper.TokensToConsensusPower(val.Stake.Sub(unStake.Stake.Amount)), keeper.TokensToConsensusPower(rs.Stake))
 
-		coins.Add(unStake.Stake)
+		coins = coins.Add(unStake.Stake)
 		defaultStake = remainStake
 	}
 	// undelegate again custom coin del
@@ -642,7 +642,7 @@ func TestUndelegation(t *testing.T) {
 		// validator power updated
 		require.Equal(t, keeper.TokensToConsensusPower(val.Stake.Sub(unStakeInBaseCoin)), keeper.TokensToConsensusPower(rs.Stake))
 
-		coins.Add(unStake.Stake)
+		coins = coins.Add(unStake.Stake)
 		ccStake = remainStake
 	}
 	// undelegate again nfts with base coin reserve
@@ -673,35 +673,29 @@ func TestUndelegation(t *testing.T) {
 		}
 	}
 
-	ctx.WithBlockTime(time.Now().Add(time.Hour * 1000))
-
 	balances := dsc.BankKeeper.GetAllBalances(ctx, valK.GetNotBondedPool(ctx).GetAddress())
+	require.True(t, balances.IsEqual(coins))
 	expectBalances := balances.Sub(coins...)
-	defaultNftBalance := dsc.NFTKeeper.GetSubTokensByOwner(ctx, valK.GetNotBondedPool(ctx).GetAddress(), nftDenom)
-	customNftBalance := dsc.NFTKeeper.GetSubTokensByOwner(ctx, valK.GetNotBondedPool(ctx).GetAddress(), nftCCDenom)
 
-	expectDefaultNftBalance := make([]nfttypes.SubToken, 0)
-	for _, v := range defaultNftBalance {
-		if _, ok := defaultNfts[v.ID]; !ok {
-			expectDefaultNftBalance = append(expectDefaultNftBalance, v)
-		}
-	}
-	expectCustomNftBalance := make([]nfttypes.SubToken, 0)
-	for _, v := range customNftBalance {
-		if _, ok := defaultNfts[v.ID]; !ok {
-			expectCustomNftBalance = append(expectCustomNftBalance, v)
-		}
-	}
-
+	blockHeader := ctx.BlockHeader()
+	blockHeader.Time = blockHeader.Time.Add(time.Hour * 100000)
+	ctx = ctx.WithBlockHeader(blockHeader)
 	_, err = valK.CompleteUnbonding(ctx, delAddr, valAddr)
 	require.NoError(t, err)
 
 	balances = dsc.BankKeeper.GetAllBalances(ctx, valK.GetNotBondedPool(ctx).GetAddress())
 	require.True(t, expectBalances.IsEqual(balances))
-	defaultNftBalance = dsc.NFTKeeper.GetSubTokensByOwner(ctx, valK.GetNotBondedPool(ctx).GetAddress(), nftDenom)
-	require.Equal(t, expectDefaultNftBalance, defaultNftBalance)
-	customNftBalance = dsc.NFTKeeper.GetSubTokensByOwner(ctx, valK.GetNotBondedPool(ctx).GetAddress(), nftCCDenom)
-	require.Equal(t, expectCustomNftBalance, customNftBalance)
+
+	for i := range defaultNfts {
+		st, ok := dsc.NFTKeeper.GetSubToken(ctx, nftDenom, i)
+		require.True(t, ok)
+		require.Equal(t, st.Owner, delAddr.String())
+	}
+	for i := range customNfts {
+		st, ok := dsc.NFTKeeper.GetSubToken(ctx, nftCCDenom, i)
+		require.True(t, ok)
+		require.Equal(t, st.Owner, delAddr.String())
+	}
 }
 
 func TestRedelegation(t *testing.T) {
@@ -995,10 +989,14 @@ func TestRedelegation(t *testing.T) {
 		expectDelegations[unStake.ID] = oldExDel
 	}
 
+	blockHeader := ctx.BlockHeader()
+	blockHeader.Time = blockHeader.Time.Add(time.Hour * 1000000)
+	ctx = ctx.WithBlockHeader(blockHeader)
 	_, err = valK.CompleteRedelegation(ctx, delAddr, valSrcAddr, valDstAddr)
 	require.NoError(t, err)
 
 	delegations = valK.GetValidatorDelegations(ctx, valDstAddr)
+	require.NotNil(t, delegations)
 	for _, v := range delegations {
 		exDel, ok := expectDelegations[v.Stake.ID]
 		require.True(t, ok)

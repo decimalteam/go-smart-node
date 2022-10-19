@@ -17,16 +17,6 @@ func (k *Keeper) GetSubTokens(ctx sdk.Context, id string) (subTokens []types.Sub
 	return
 }
 
-func (k *Keeper) GetSubTokensByOwner(ctx sdk.Context, owner sdk.AccAddress, id string) (subTokens []types.SubToken) {
-	k.iterateSubTokensByOwner(ctx, owner, id,
-		func(subToken *types.SubToken) bool {
-			subTokens = append(subTokens, *subToken)
-			return false
-		},
-	)
-	return
-}
-
 // GetSubToken returns the NFT sub-token with specified ID.
 func (k *Keeper) GetSubToken(ctx sdk.Context, id string, index uint32) (subToken types.SubToken, found bool) {
 	store := ctx.KVStore(k.storeKey)
@@ -68,28 +58,6 @@ func (k *Keeper) iterateSubTokens(ctx sdk.Context, id string, handler func(subTo
 	store := ctx.KVStore(k.storeKey)
 
 	it := sdk.KVStorePrefixIterator(store, types.GetSubTokensKey(id))
-	for ; it.Valid(); it.Next() {
-		var subToken types.SubToken
-		k.cdc.MustUnmarshalLengthPrefixed(it.Value(), &subToken)
-
-		if handler(&subToken) {
-			break
-		}
-	}
-
-	err := it.Close()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// iterateSubTokens iterates over existing NFT sub-tokens from the NFT token with specified ID.
-func (k *Keeper) iterateSubTokensByOwner(ctx sdk.Context, owner sdk.AccAddress, id string, handler func(subToken *types.SubToken) (stop bool)) error {
-	store := ctx.KVStore(k.storeKey)
-
-	it := sdk.KVStorePrefixIterator(store, types.GetSubTokensByOwnerKey(owner, id))
 	for ; it.Valid(); it.Next() {
 		var subToken types.SubToken
 		k.cdc.MustUnmarshalLengthPrefixed(it.Value(), &subToken)
