@@ -808,7 +808,7 @@ func (k Keeper) Undelegate(
 		return time.Time{}, errors.MaxUndelegationEntries
 	}
 
-	err := k.unbond(ctx, delegator, valAddress, stake, remainStake)
+	err := k.Unbond(ctx, delegator, valAddress, stake, remainStake)
 	if err != nil {
 		return time.Time{}, err
 	}
@@ -923,13 +923,7 @@ func (k Keeper) BeginRedelegation(
 
 	// 2. modify or remove current delegation
 	// call the before-delegation-modified hook
-	delegation, found := k.GetDelegation(ctx, delegator, validatorSrc, stake.GetID())
-	if !found {
-		panic("not found delegation")
-	}
-	k.BeforeUpdateDelegation(ctx, delegation, stake.ID)
-
-	err = k.unbond(ctx, delegator, validatorSrc, stake, stake)
+	err = k.Unbond(ctx, delegator, validatorSrc, stake, remainStake)
 	if err != nil {
 		return time.Time{}, err
 	}
@@ -1030,7 +1024,7 @@ func (k Keeper) CompleteRedelegation(
 	return events, nil
 }
 
-func (k Keeper) unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress, stake, remainStake types.Stake) (err error) {
+func (k Keeper) Unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress, stake, remainStake types.Stake) (err error) {
 	// check if a delegation object exists in the store
 	delegation, found := k.GetDelegation(ctx, delAddr, valAddr, stake.ID)
 	if !found {
@@ -1051,11 +1045,9 @@ func (k Keeper) unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValA
 		err = k.RemoveDelegation(ctx, delegation)
 	} else {
 		k.SetDelegation(ctx, delegation)
-		// call the after delegation modification hook
-
-		k.AfterUpdateDelegation(ctx, delegation)
 	}
 
+	k.AfterUpdateDelegation(ctx, delegation)
 	stakeBaseCoin := k.baseCoinFromStake(ctx, stake)
 
 	// clean index
@@ -1095,6 +1087,7 @@ func (k Keeper) CalculateRemainStake(
 		}
 		remainStake = types.NewStakeCoin(source.Stake.Sub(stake.Stake))
 	case types.StakeType_NFT:
+		source.Stake = k.getSumSubTokensReserve(ctx, source.ID, source.GetSubTokenIDs())
 		if !types.SetHasSubset(source.SubTokenIDs, stake.SubTokenIDs) {
 			return types.Stake{}, errors.StakeDoesNotHaveSubTokenID
 		}
