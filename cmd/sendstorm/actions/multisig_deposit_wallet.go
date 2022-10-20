@@ -5,11 +5,13 @@ import (
 	"math/rand"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // like SendCoin, but for multisig wallets as recipients
@@ -50,7 +52,7 @@ func (gg *DepositMultisigWalletGenerator) Generate() Action {
 		recipient: recipient,
 		coin: sdk.NewCoin(
 			RandomChoice(gg.rnd, gg.knownCoins),
-			helpers.FinneyToWei(sdk.NewInt(RandomRange(gg.rnd, gg.bottomRange, gg.upperRange))),
+			helpers.FinneyToWei(sdkmath.NewInt(RandomRange(gg.rnd, gg.bottomRange, gg.upperRange))),
 		),
 	}
 }
@@ -80,15 +82,8 @@ func (aa *DepositMultisigWalletAction) GenerateTx(sa *stormTypes.StormAccount, f
 	}
 
 	msg := dscTx.NewMsgSendCoin(sender, recipient, aa.coin)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig)
-	if err != nil {
-		return nil, err
-	}
-	err = tx.SignTransaction(sa.Account())
-	if err != nil {
-		return nil, err
-	}
-	return tx.BytesToSend()
+
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (aa *DepositMultisigWalletAction) String() string {

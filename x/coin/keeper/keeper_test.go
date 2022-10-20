@@ -1,12 +1,15 @@
 package keeper_test
 
 import (
+	"context"
+	"fmt"
+	"testing"
+
 	"bitbucket.org/decimalteam/go-smart-node/testutil"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
 	coinkeeper "bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/testcoin"
 	cointestutil "bitbucket.org/decimalteam/go-smart-node/x/coin/testutil"
-	"context"
-	"fmt"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -18,7 +21,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
-	"testing"
 
 	"github.com/stretchr/testify/require"
 
@@ -28,7 +30,6 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/testcoin"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 

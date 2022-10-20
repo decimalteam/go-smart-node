@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"time"
 
-	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
-	dscWallet "bitbucket.org/decimalteam/go-smart-node/sdk/wallet"
-	helpers "bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/go-resty/resty/v2"
 	"github.com/spf13/cobra"
+
+	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
+	dscWallet "bitbucket.org/decimalteam/go-smart-node/sdk/wallet"
+	helpers "bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
 func cmdFaucet() *cobra.Command {
@@ -56,7 +58,7 @@ func cmdFaucet() *cobra.Command {
 				msg := dscTx.NewMsgSendCoin(
 					reactor.faucetAccount.SdkAddress(),
 					acc.Account().SdkAddress(),
-					sdk.NewCoin(reactor.api.BaseCoin(), helpers.EtherToWei(sdk.NewInt(amountToSend))),
+					sdk.NewCoin(reactor.api.BaseCoin(), helpers.EtherToWei(sdkmath.NewInt(amountToSend))),
 				)
 				tx, err := dscTx.BuildTransaction(
 					reactor.faucetAccount,

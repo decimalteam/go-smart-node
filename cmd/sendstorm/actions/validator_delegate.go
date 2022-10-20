@@ -4,10 +4,11 @@ import (
 	"math/rand"
 	"time"
 
-	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
-	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
 type DelegateGenerator struct {
@@ -48,7 +49,7 @@ func (gg *DelegateGenerator) Generate() Action {
 	validator := RandomChoice(gg.rnd, gg.knownValidators)
 	amount := RandomRange(gg.rnd, gg.stackBottom, gg.stackUp)
 	return &DelegateAction{
-		coin:             sdk.NewCoin(denom, helpers.FinneyToWei(sdk.NewInt(amount))),
+		coin:             sdk.NewCoin(denom, helpers.FinneyToWei(sdkmath.NewInt(amount))),
 		validatorAddress: validator,
 	}
 }
@@ -75,15 +76,7 @@ func (ac *DelegateAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *sto
 
 	// TODO
 
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{}, "", sa.FeeDenom(), feeConfig)
-	if err != nil {
-		return nil, err
-	}
-	err = tx.SignTransaction(sa.Account())
-	if err != nil {
-		return nil, err
-	}
-	return tx.BytesToSend()
+	return feeConfig.MakeTransaction(sa, nil)
 }
 
 func (ac *DelegateAction) String() string {

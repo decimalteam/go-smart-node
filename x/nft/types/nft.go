@@ -1,10 +1,12 @@
 package types
 
 import (
+	"strings"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/errors"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"strings"
 )
 
 func (c *Collection) Validate() error {

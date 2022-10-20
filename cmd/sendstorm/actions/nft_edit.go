@@ -77,15 +77,8 @@ func (aa *EditNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stor
 		aa.id,
 		aa.newTokenUri,
 	)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig)
-	if err != nil {
-		return nil, err
-	}
-	err = tx.SignTransaction(sa.Account())
-	if err != nil {
-		return nil, err
-	}
-	return tx.BytesToSend()
+
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (aa *EditNFTAction) String() string {

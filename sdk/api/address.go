@@ -25,7 +25,7 @@ func (api *API) Address(address string) (*AddressResult, error) {
 	client := authTypes.NewQueryClient(api.grpcClient)
 	res, err := client.Account(
 		context.Background(),
-		&authTypes.QueryAccountRequest{address},
+		&authTypes.QueryAccountRequest{Address: address},
 	)
 	// if address is correct bech32, but account not found, just return empty info
 	if status.Code(err) == codes.NotFound {
@@ -85,4 +85,39 @@ func (api *API) AddressBalance(address string) (sdk.Coins, error) {
 		req.Pagination.Key = res.Pagination.NextKey
 	}
 	return balance, nil
+}
+
+// AllAccounts returns full list of accounts in blockchain
+func (api *API) AllAccounts() ([]string, error) {
+	client := authTypes.NewQueryClient(api.grpcClient)
+	var result []string
+	req := &authTypes.QueryAccountsRequest{Pagination: &query.PageRequest{Limit: queryLimit}}
+	for {
+		res, err := client.Accounts(
+			context.Background(),
+			req,
+		)
+		if err != nil {
+			return []string{}, err
+		}
+		for _, raw := range res.Accounts {
+			var acc1 ethermintTypes.EthAccount
+			var acc2 authTypes.ModuleAccount
+			err = proto.Unmarshal(raw.Value, &acc1)
+			if err == nil {
+				result = append(result, acc1.Address)
+				continue
+			}
+			err = proto.Unmarshal(raw.Value, &acc2)
+			if err == nil {
+				result = append(result, acc2.Address)
+				continue
+			}
+		}
+		if len(res.Pagination.NextKey) == 0 {
+			break
+		}
+		req.Pagination.Key = res.Pagination.NextKey
+	}
+	return result, nil
 }

@@ -21,4 +21,8 @@ var (
 	InvalidServiceAddress    = errors.New(codespace, 112, "invalid service address")
 	InsufficientPoolFunds    = errors.New(codespace, 113, "insufficient pool funds")
 	ChainNumbersAreSame      = errors.New(codespace, 114, "from chain and dest chain are same")
+	InvalidHexStringR        = errors.New(codespace, 115, "invalid hex representation of R")
+	InvalidHexStringS        = errors.New(codespace, 116, "invalid hex representation of S")
+	InvalidLengthR           = errors.New(codespace, 117, "length R must be 32 bytes")
+	InvalidLengthS           = errors.New(codespace, 118, "length R must be 32 bytes")
 )

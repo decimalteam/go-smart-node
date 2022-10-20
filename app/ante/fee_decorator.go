@@ -5,16 +5,19 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	sdkAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	evmTypes "github.com/evmos/ethermint/x/evm/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coinconfig "bitbucket.org/decimalteam/go-smart-node/x/coin/config"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
+	feeerrors "bitbucket.org/decimalteam/go-smart-node/x/fee/errors"
 	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 )
 
@@ -38,8 +41,7 @@ func NewFeeDecorator(ck cointypes.CoinKeeper, bk evmTypes.BankKeeper, ak evmType
 }
 
 // AnteHandle implements sdk.AnteHandler function.
-func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
-	simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	// no fee on blockchain start
 	if ctx.BlockHeight() == 0 {
 		return next(ctx, tx, simulate)
@@ -69,16 +71,20 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 	feePayerAcc := fd.accountKeeper.GetAccount(ctx, feeTx.FeePayer())
 	baseDenom := fd.coinKeeper.GetBaseDenom(ctx)
 
+	ctx = ctx.WithValue(cointypes.ContextFeeKey{}, feeFromTx)
+
 	if feePayerAcc == nil {
 		return ctx, FeePayerAddressDoesNotExist
 	}
 
 	// fee from transaction is zero (empty), we deduct calculated fee from payer
 	if feeFromTx.IsZero() {
-		// deduct the fees
+		// NOTE: commissionInBaseCoin may be zero in case of RedeemCheck
+		// do not remove this condition
 		if commissionInBaseCoin.IsZero() {
 			return next(ctx, tx, simulate)
 		}
+		// deduct the fees
 		err = DeductFees(ctx, fd.bankKeeper, fd.coinKeeper, feeTx.FeePayer(), sdk.NewCoin(baseDenom, commissionInBaseCoin))
 		if err != nil {
 			return ctx, err
@@ -107,8 +113,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx,
 			return ctx, CoinReserveInsufficient
 		}
 
-		feeInBaseCoin = formulas.CalculateSaleReturn(coinInfo.Volume, coinInfo.Reserve,
-			uint(coinInfo.CRR), feeFromTx[0].Amount)
+		feeInBaseCoin = formulas.CalculateSaleReturn(coinInfo.Volume, coinInfo.Reserve, uint(coinInfo.CRR), feeFromTx[0].Amount)
 
 		if coinInfo.Reserve.Sub(feeInBaseCoin).LT(coinconfig.MinCoinReserve) {
 			return ctx, CoinReserveBecomeInsufficient
@@ -164,6 +169,16 @@ func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper coin
 	err := bankKeeper.SendCoinsFromAccountToModule(ctx, feePayerAddress, sdkAuthTypes.FeeCollectorName, sdk.NewCoins(fee))
 	if err != nil {
 		return FailedToSendCoins
+	}
+
+	// Emit fee deduction event
+	// need for correct balance calculation for external services
+	err = events.EmitTypedEvent(ctx, &feetypes.EventPayCommission{
+		Payer: feePayerAddress.String(),
+		Coins: sdk.NewCoins(fee),
+	})
+	if err != nil {
+		return feeerrors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	return nil

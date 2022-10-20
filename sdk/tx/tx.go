@@ -106,9 +106,9 @@ func (constructor *TxConstructor) SignTransaction(acc *wallet.Account) error {
 		return fmt.Errorf("chain ID is not set up")
 	}
 	// TODO
-	//if acc.accountNumber == 0 || acc.sequence == 0 {
+	// if acc.accountNumber == 0 || acc.sequence == 0 {
 	//	return tx, errors.New("account number or sequence is not set up")
-	//}
+	// }
 
 	// save signatures
 	var prevSignatures []signing.SignatureV2

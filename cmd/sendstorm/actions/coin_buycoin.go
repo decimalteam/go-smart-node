@@ -5,12 +5,16 @@ import (
 	"math/rand"
 	"time"
 
-	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
-	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
-	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
+	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
+
+	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 )
 
 // MsgBuyCoin
@@ -46,7 +50,7 @@ func (abg *BuyCoinGenerator) Update(ui UpdateInfo) {
 
 func (abg *BuyCoinGenerator) Generate() Action {
 	var coinInfo dscApi.Coin
-	var amountToSell sdk.Int
+	var amountToSell sdkmath.Int
 	var coinName string
 	if len(abg.knownCoins) <= 1 {
 		return &EmptyAction{}
@@ -64,7 +68,7 @@ func (abg *BuyCoinGenerator) Generate() Action {
 			break
 		}
 	}
-	amountToBuy := helpers.FinneyToWei(sdk.NewInt(RandomRange(abg.rnd, abg.bottomRange, abg.upperRange)))
+	amountToBuy := helpers.FinneyToWei(sdkmath.NewInt(RandomRange(abg.rnd, abg.bottomRange, abg.upperRange)))
 	amountToSell = formulas.CalculatePurchaseAmount(coinInfo.Volume, coinInfo.Reserve, uint(coinInfo.CRR), amountToBuy)
 	// respect limit volume to decrease amount of errors
 	if coinInfo.Volume.Add(amountToBuy).GT(coinInfo.LimitVolume) {
@@ -108,15 +112,8 @@ func (ab *BuyCoinAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stor
 		ab.coinToBuy,
 		ab.maxCoinToSell,
 	)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig)
-	if err != nil {
-		return nil, err
-	}
-	err = tx.SignTransaction(sa.Account())
-	if err != nil {
-		return nil, err
-	}
-	return tx.BytesToSend()
+
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (ab *BuyCoinAction) String() string {

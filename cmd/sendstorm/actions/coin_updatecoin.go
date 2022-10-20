@@ -5,11 +5,13 @@ import (
 	"math/rand"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // MsgUpdateCoin
@@ -26,7 +28,7 @@ type UpdateCoinGenerator struct {
 type UpdateCoinAction struct {
 	creator        sdk.AccAddress
 	symbol         string
-	newLimitVolume sdk.Int
+	newLimitVolume sdkmath.Int
 	newIdentity    string
 }
 
@@ -65,7 +67,7 @@ func (aug *UpdateCoinGenerator) Generate() Action {
 		}
 	}
 
-	delta := helpers.FinneyToWei(sdk.NewInt(RandomRange(aug.rnd, aug.bottomRange, aug.upperRange)))
+	delta := helpers.FinneyToWei(sdkmath.NewInt(RandomRange(aug.rnd, aug.bottomRange, aug.upperRange)))
 
 	creator, err := sdk.AccAddressFromBech32(coinInfo.Creator)
 	if err != nil {
@@ -100,15 +102,8 @@ func (au *UpdateCoinAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *s
 		return nil, err
 	}
 	msg := dscTx.NewMsgUpdateCoin(sender, au.symbol, au.newLimitVolume, au.newIdentity)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig)
-	if err != nil {
-		return nil, err
-	}
-	err = tx.SignTransaction(sa.Account())
-	if err != nil {
-		return nil, err
-	}
-	return tx.BytesToSend()
+
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (au *UpdateCoinAction) String() string {

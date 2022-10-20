@@ -3,18 +3,20 @@ package multisig_test
 import (
 	"testing"
 
-	"bitbucket.org/decimalteam/go-smart-node/app"
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	"bitbucket.org/decimalteam/go-smart-node/x/multisig/keeper"
-	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
+	"github.com/stretchr/testify/require"
+
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
-	"github.com/stretchr/testify/require"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
+	"bitbucket.org/decimalteam/go-smart-node/app"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	"bitbucket.org/decimalteam/go-smart-node/x/multisig/keeper"
+	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 )
 
 func TestDoubleWallet(t *testing.T) {

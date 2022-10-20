@@ -1,3 +1,6 @@
+run:
+  tests: false
+
 linters:
   enable:
     - bodyclose
@@ -21,9 +24,9 @@ linters:
     - govet
     - ineffassign
     - interfacer
-#    - lll
+    #- lll
     - misspell
-    # - maligned
+    #- maligned
     - nakedret
     - prealloc
     - scopelint

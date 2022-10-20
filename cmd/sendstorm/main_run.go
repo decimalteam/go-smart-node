@@ -114,7 +114,16 @@ func cmdRun() *cobra.Command {
 					if err != nil {
 						fmt.Printf("api.Transaction = %v\n", err)
 					}
-					fmt.Printf("TxResult = %v\n\n\n", txRes)
+					fmt.Printf("TxHash= %s\n", res.Hash)
+					fmt.Printf("TxResult = %v\n", txRes)
+					fmt.Printf("Events:\n")
+					for _, ev := range txRes.Events {
+						fmt.Printf("%s:\n", ev.Type)
+						for _, kv := range ev.Attributes {
+							fmt.Printf("\t%s = %s\n", string(kv.Key), string(kv.Value))
+						}
+					}
+					fmt.Printf("\n\n\n")
 				}
 				acc.IncrementSequence()
 				go acc.UpdateBalance()

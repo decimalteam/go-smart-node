@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"encoding/hex"
 	"fmt"
 	"strconv"
 
@@ -80,7 +79,7 @@ $ %s tx %s init 0x12345 1000 bnb 128943 1 3 --from mykey`, config.AppBinName, ty
 	// workaround for cosmos
 	cmd.Flags().String(flags.FlagChainID, "", "network chain id")
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }
@@ -127,22 +126,8 @@ $ %s tx %s redeem 0x12345 dx1..addr 1000 del 128943 3 1 0 ae45.. df350.. --from 
 				return err
 			}
 
-			r, err := hex.DecodeString(args[8])
-			if err != nil {
-				return err
-			}
-			s, err := hex.DecodeString(args[9])
-			if err != nil {
-				return err
-			}
-			var _r types.Hash
-			copy(_r[:], r)
-
-			var _s types.Hash
-			copy(_s[:], s)
-
 			msg := types.NewMsgRedeemSwap(
-				sender, from, recipient, amount, tokenSymbol, txNumber, uint32(fromChain), uint32(destChain), uint32(v), &_r, &_s)
+				sender, from, recipient, amount, tokenSymbol, txNumber, uint32(fromChain), uint32(destChain), uint32(v), args[8], args[9])
 			err = msg.ValidateBasic()
 			if err != nil {
 				return err
@@ -156,7 +141,7 @@ $ %s tx %s redeem 0x12345 dx1..addr 1000 del 128943 3 1 0 ae45.. df350.. --from 
 	// workaround for cosmos
 	cmd.Flags().String(flags.FlagChainID, "", "network chain id")
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }
@@ -199,7 +184,7 @@ $ %s tx %s chain-activate 2 "Ethereum" --from mykey`, config.AppBinName, types.M
 	// workaround for cosmos
 	cmd.Flags().String(flags.FlagChainID, "", "network chain id")
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }
@@ -240,7 +225,7 @@ $ %s tx %s chain-deactivate 2 --from mykey`, config.AppBinName, types.ModuleName
 	// workaround for cosmos
 	cmd.Flags().String(flags.FlagChainID, "", "network chain id")
 
-	_ = cmd.MarkFlagRequired(flags.FlagFrom)
+	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
 
 	return cmd
 }

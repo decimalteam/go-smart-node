@@ -5,11 +5,12 @@ import (
 	"math/rand"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
-
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // MsgMintNFT
@@ -65,7 +66,7 @@ func (gg *MintNFTGenerator) Generate() Action {
 		quantity:  uint32(RandomRange(gg.rnd, gg.quantityBottom, gg.quantityUp)),
 		reserve: sdk.NewCoin(
 			RandomChoice(gg.rnd, gg.knownCoins),
-			helpers.EtherToWei(sdk.NewInt(RandomRange(gg.rnd, gg.reserveBottom, gg.reserveUp))),
+			helpers.EtherToWei(sdkmath.NewInt(RandomRange(gg.rnd, gg.reserveBottom, gg.reserveUp))),
 		),
 		allowMint: gg.rnd.Int31n(2) == 0,
 	}
@@ -77,7 +78,7 @@ func (aa *MintNFTAction) ChooseAccounts(saList []*stormTypes.StormAccount) []*st
 		if saList[i].IsDirty() {
 			continue
 		}
-		if saList[i].BalanceForCoin(aa.reserve.Denom).LT(aa.reserve.Amount.Mul(sdk.NewInt(int64(aa.quantity)))) {
+		if saList[i].BalanceForCoin(aa.reserve.Denom).LT(aa.reserve.Amount.Mul(sdkmath.NewInt(int64(aa.quantity)))) {
 			continue
 		}
 		res = append(res, saList[i])
@@ -110,15 +111,8 @@ func (aa *MintNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stor
 		aa.quantity,
 		aa.reserve,
 	)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig)
-	if err != nil {
-		return nil, err
-	}
-	err = tx.SignTransaction(sa.Account())
-	if err != nil {
-		return nil, err
-	}
-	return tx.BytesToSend()
+
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (aa *MintNFTAction) String() string {

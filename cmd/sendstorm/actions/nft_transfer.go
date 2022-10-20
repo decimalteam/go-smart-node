@@ -39,10 +39,12 @@ func (gg *TransferNFTGenerator) Generate() Action {
 	if len(gg.knownNFT) == 0 {
 		return &EmptyAction{}
 	}
-	i := int(RandomRange(gg.rnd, 0, int64(len(gg.knownNFT))))
-	nftToTransfer := gg.knownNFT[i]
-	i = int(RandomRange(gg.rnd, 0, int64(len(nftToTransfer.SubTokens))))
-	tokenOwner := nftToTransfer.SubTokens[i].Owner
+	nftToTransfer := RandomChoice(gg.rnd, gg.knownNFT)
+	if len(nftToTransfer.SubTokens) == 0 {
+		return &EmptyAction{}
+	}
+	subtoken := RandomChoice(gg.rnd, nftToTransfer.SubTokens)
+	tokenOwner := subtoken.Owner
 	subIds := make([]uint32, 0)
 	for _, sub := range nftToTransfer.SubTokens {
 		if sub.Owner == tokenOwner {
@@ -100,15 +102,8 @@ func (aa *TransferNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *
 		aa.id,
 		aa.subIds,
 	)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig)
-	if err != nil {
-		return nil, err
-	}
-	err = tx.SignTransaction(sa.Account())
-	if err != nil {
-		return nil, err
-	}
-	return tx.BytesToSend()
+
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (aa *TransferNFTAction) String() string {

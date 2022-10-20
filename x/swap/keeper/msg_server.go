@@ -3,14 +3,16 @@ package keeper
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 	"math/big"
 	"strings"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/errors"
-
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var _ types.MsgServer = &Keeper{}
@@ -47,12 +49,12 @@ func (k Keeper) InitializeSwap(goCtx context.Context, msg *types.MsgInitializeSw
 
 	err = events.EmitTypedEvent(ctx, &types.EventInitializeSwap{
 		Sender:            msg.Sender,
-		From:              msg.Sender,
-		DestChain:         msg.DestChain,
 		Recipient:         msg.Recipient,
 		Amount:            msg.Amount.String(),
-		TransactionNumber: msg.TransactionNumber,
 		TokenSymbol:       msg.TokenSymbol,
+		TransactionNumber: msg.TransactionNumber,
+		FromChain:         msg.FromChain,
+		DestChain:         msg.DestChain,
 	})
 	if err != nil {
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())
@@ -64,6 +66,7 @@ func (k Keeper) InitializeSwap(goCtx context.Context, msg *types.MsgInitializeSw
 
 func (k Keeper) RedeemSwap(goCtx context.Context, msg *types.MsgRedeemSwap) (*types.MsgRedeemSwapResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	fmt.Printf("####### RedeemSwap: %+v\n", msg)
 
 	transactionNumber, ok := sdk.NewIntFromString(msg.TransactionNumber)
 	if !ok {
@@ -71,6 +74,7 @@ func (k Keeper) RedeemSwap(goCtx context.Context, msg *types.MsgRedeemSwap) (*ty
 	}
 
 	hash, err := types.GetHash(transactionNumber, msg.TokenSymbol, msg.Amount, msg.Recipient, msg.FromChain, msg.DestChain)
+	fmt.Printf("####### RedeemSwap: hash = %s\n", hash)
 	if err != nil {
 		return nil, err
 	}
@@ -79,12 +83,22 @@ func (k Keeper) RedeemSwap(goCtx context.Context, msg *types.MsgRedeemSwap) (*ty
 		return nil, errors.AlreadyRedeemed
 	}
 
+	_r, err := hex.DecodeString(msg.R)
+	if err != nil {
+		return nil, errors.InvalidHexStringR
+	}
+	_s, err := hex.DecodeString(msg.S)
+	if err != nil {
+		return nil, errors.InvalidHexStringS
+	}
+
 	R := big.NewInt(0)
-	R.SetBytes(msg.R[:])
+	R.SetBytes(_r[:])
 
 	S := big.NewInt(0)
-	S.SetBytes(msg.S[:])
+	S.SetBytes(_s[:])
 
+	fmt.Printf("####### RedeemSwap: Ecrecover: v = %d, r = %x, s = %x\n", msg.V, R, S)
 	address, err := types.Ecrecover(hash, R, S, sdk.NewInt(int64(msg.V)).BigInt())
 	if err != nil {
 		return nil, err
@@ -117,11 +131,16 @@ func (k Keeper) RedeemSwap(goCtx context.Context, msg *types.MsgRedeemSwap) (*ty
 	err = events.EmitTypedEvent(ctx, &types.EventRedeemSwap{
 		Sender:            msg.Sender,
 		From:              msg.From,
-		DestChain:         msg.DestChain,
 		Recipient:         msg.Recipient,
 		Amount:            msg.Amount.String(),
-		TransactionNumber: msg.TransactionNumber,
 		TokenSymbol:       msg.TokenSymbol,
+		TransactionNumber: msg.TransactionNumber,
+		FromChain:         msg.FromChain,
+		DestChain:         msg.DestChain,
+		V:                 hexutil.EncodeUint64(uint64(msg.V)),
+		R:                 hexutil.Encode(_r[:]),
+		S:                 hexutil.Encode(_s[:]),
+		HashRedeem:        hash.String(),
 	})
 	if err != nil {
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())
@@ -149,8 +168,9 @@ func (k Keeper) ActivateChain(goCtx context.Context, msg *types.MsgActivateChain
 	k.SetChain(ctx, &chain)
 
 	err := events.EmitTypedEvent(ctx, &types.EventActivateChain{
-		ID:   msg.ID,
-		Name: msg.Name,
+		Sender: msg.Sender,
+		ID:     msg.ID,
+		Name:   msg.Name,
 	})
 	if err != nil {
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())
@@ -176,7 +196,8 @@ func (k Keeper) DeactivateChain(goCtx context.Context, msg *types.MsgDeactivateC
 	k.SetChain(ctx, &chain)
 
 	err := events.EmitTypedEvent(ctx, &types.EventDeactivateChain{
-		ID: msg.ID,
+		Sender: msg.Sender,
+		ID:     msg.ID,
 	})
 	if err != nil {
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())

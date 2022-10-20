@@ -100,7 +100,7 @@ func (k Keeper) CreateTransaction(goCtx context.Context, msg *types.MsgCreateTra
 		Sender:      msg.Sender,
 		Wallet:      msg.Wallet,
 		Receiver:    msg.Receiver,
-		Coins:       msg.Coins.String(),
+		Coins:       msg.Coins,
 		Transaction: transaction.Id,
 	})
 	if err != nil {
@@ -201,6 +201,18 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 	})
 	if err != nil {
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())
+	}
+
+	if confirmed {
+		// Emit transaction events
+		err = events.EmitTypedEvent(ctx, &types.EventConfirmTransaction{
+			Wallet:      wallet.Address,
+			Transaction: transaction.Id,
+			Coins:       transaction.Coins,
+		})
+		if err != nil {
+			return nil, errors.Internal.Wrapf("err: %s", err.Error())
+		}
 	}
 
 	return &types.MsgSignTransactionResponse{}, nil

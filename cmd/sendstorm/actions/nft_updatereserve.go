@@ -5,13 +5,14 @@ import (
 	"math/rand"
 	"time"
 
-	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // MsgUpdateReserveNFT
@@ -66,7 +67,7 @@ func (gg *UpdateReserveNFTGenerator) Generate() Action {
 		// get max reserve of subtokens
 		newReserve := sdk.ZeroInt()
 		for _, s := range subToUpdate {
-			key := NFTSubTokenKey{Denom: nftToUpdateReserve.Denom, TokenID: nftToUpdateReserve.ID, ID: s}
+			key := NFTSubTokenKey{TokenID: nftToUpdateReserve.ID, ID: s}
 			reserve, ok := gg.knownSubtokenReserves[key]
 			if !ok {
 				continue
@@ -75,7 +76,7 @@ func (gg *UpdateReserveNFTGenerator) Generate() Action {
 				newReserve = reserve.Amount
 			}
 		}
-		newReserve = newReserve.Add(helpers.EtherToWei(sdk.NewInt(increase)))
+		newReserve = newReserve.Add(helpers.EtherToWei(sdkmath.NewInt(increase)))
 
 		return &UpdateReserveNFTAction{
 			creator:    nftToUpdateReserve.Creator,
@@ -118,15 +119,8 @@ func (aa *UpdateReserveNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeCon
 		aa.subIds,
 		aa.newReserve,
 	)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig)
-	if err != nil {
-		return nil, err
-	}
-	err = tx.SignTransaction(sa.Account())
-	if err != nil {
-		return nil, err
-	}
-	return tx.BytesToSend()
+
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (aa *UpdateReserveNFTAction) String() string {

@@ -63,6 +63,11 @@ func (k Keeper) MintToken(c context.Context, msg *types.MsgMintToken) (*types.Ms
 		if !token.AllowMint {
 			return nil, errors.NotAllowedMint
 		}
+
+		// make sure the same denom is used
+		if token.Reserve.Denom != msg.Reserve.Denom {
+			return nil, errors.WrongReserveCoinDenom
+		}
 	}
 
 	if !collectionExists && tokenExists {
@@ -81,11 +86,12 @@ func (k Keeper) MintToken(c context.Context, msg *types.MsgMintToken) (*types.Ms
 	}
 
 	// update NFT collection in the store
-	collection.Supply++
 	if !collectionExists {
+		collection.Supply = 1
 		// write collection with it's counter
 		k.SetCollection(ctx, collection)
-	} else {
+	} else if !tokenExists {
+		collection.Supply++
 		// write collection counter separately
 		k.setCollectionCounter(ctx, sender, collection.Denom, types.CollectionCounter{
 			Supply: collection.Supply,
@@ -310,42 +316,9 @@ func (k Keeper) SendToken(c context.Context, msg *types.MsgSendToken) (*types.Ms
 	sender := sdk.MustAccAddressFromBech32(msg.Sender)
 	recipient := sdk.MustAccAddressFromBech32(msg.Recipient)
 
-	// retrieve NFT token
-	token, tokenExists := k.GetToken(ctx, msg.TokenID)
-	if !tokenExists {
-		return nil, errors.UnknownNFT
-	}
-
-	// retrieve NFT sub-tokens
-	subTokens := make([]types.SubToken, len(msg.SubTokenIDs))
-	for i, subTokenID := range msg.SubTokenIDs {
-		subToken, subTokenExists := k.GetSubToken(ctx, token.ID, subTokenID)
-		if !subTokenExists {
-			return nil, errors.SubTokenDoesNotExists
-		}
-		// ensure NFT sub-token is owned by the sender
-		if subToken.Owner != msg.Sender {
-			return nil, errors.OwnerDoesNotOwnSubTokenID
-		}
-		subTokens[i] = subToken
-	}
-
-	// transfer NFT sub-tokens
-	for _, subToken := range subTokens {
-		subToken.Owner = msg.Recipient
-		k.SetSubToken(ctx, token.ID, subToken)
-		k.transferSubToken(ctx, sender, recipient, token.ID, subToken.ID)
-	}
-
-	// emit NFT sub-tokens transfer event
-	err := events.EmitTypedEvent(ctx, &types.EventSendToken{
-		Sender:      msg.Sender,
-		ID:          msg.TokenID,
-		Recipient:   msg.Recipient,
-		SubTokenIDs: msg.SubTokenIDs,
-	})
+	err := k.TransferSubTokens(ctx, sender, recipient, msg.TokenID, msg.GetSubTokenIDs())
 	if err != nil {
-		return nil, errors.Internal.Wrapf("err: %s", err.Error())
+		return nil, err
 	}
 
 	return &types.MsgSendTokenResponse{}, nil
@@ -384,6 +357,9 @@ func (k Keeper) BurnToken(c context.Context, msg *types.MsgBurnToken) (*types.Ms
 		if subToken.Owner != msg.Sender {
 			return nil, errors.OwnerDoesNotOwnSubTokenID
 		}
+		if subToken.Reserve == nil {
+			subToken.Reserve = &token.Reserve
+		}
 		subTokens[i] = subToken
 	}
 
@@ -421,4 +397,46 @@ func (k Keeper) BurnToken(c context.Context, msg *types.MsgBurnToken) (*types.Ms
 	}
 
 	return &types.MsgBurnTokenResponse{}, nil
+}
+
+func (k Keeper) TransferSubTokens(ctx sdk.Context, sender, recipient sdk.AccAddress, tokenID string, subTokenIDs []uint32) error {
+	// retrieve NFT token
+	token, tokenExists := k.GetToken(ctx, tokenID)
+	if !tokenExists {
+		return errors.UnknownNFT
+	}
+
+	// retrieve NFT sub-tokens
+	subTokens := make([]types.SubToken, len(subTokenIDs))
+	for i, subTokenID := range subTokenIDs {
+		subToken, subTokenExists := k.GetSubToken(ctx, token.ID, subTokenID)
+		if !subTokenExists {
+			return errors.SubTokenDoesNotExists
+		}
+		// ensure NFT sub-token is owned by the sender
+		if subToken.Owner != sender.String() {
+			return errors.OwnerDoesNotOwnSubTokenID
+		}
+		subTokens[i] = subToken
+	}
+
+	// transfer NFT sub-tokens
+	for _, subToken := range subTokens {
+		subToken.Owner = recipient.String()
+		k.SetSubToken(ctx, token.ID, subToken)
+		k.transferSubToken(ctx, sender, recipient, token.ID, subToken.ID)
+	}
+
+	// emit NFT sub-tokens transfer event
+	err := events.EmitTypedEvent(ctx, &types.EventSendToken{
+		Sender:      sender.String(),
+		ID:          tokenID,
+		Recipient:   recipient.String(),
+		SubTokenIDs: subTokenIDs,
+	})
+	if err != nil {
+		return errors.Internal.Wrapf("err: %s", err.Error())
+	}
+
+	return nil
 }

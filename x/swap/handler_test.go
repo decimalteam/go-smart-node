@@ -71,8 +71,6 @@ func TestChainOperations(t *testing.T) {
 	require.Equal(t, types.Chain{Id: 1, Name: "some chain", Active: false}, chain)
 }
 
-// TODO: need test for SwapRedeem?
-
 // getBaseAppWithCustomKeeper Returns a simapp with custom keepers
 // to avoid messing with the hooks.
 func getBaseAppWithCustomKeeper(t *testing.T) (*app.DSC, sdk.Context) {

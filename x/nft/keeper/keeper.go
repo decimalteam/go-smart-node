@@ -65,7 +65,7 @@ func (k *Keeper) SetParams(ctx sdk.Context, params types.Params) {
 
 // GetMinReserve returns minimum allowed reserve for each NFT sub-token.
 func (k *Keeper) GetMinReserve(ctx sdk.Context) sdkmath.Int {
-	if k.cacheParams.MinReserveAmount.Sign() == 0 {
+	if k.cacheParams.MinReserveAmount.IsNil() {
 		k.cacheParams = k.GetParams(ctx)
 	}
 	return k.cacheParams.MinReserveAmount

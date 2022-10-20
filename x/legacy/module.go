@@ -15,7 +15,6 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
@@ -99,11 +98,7 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper         keeper.Keeper
-	accountKeeper  authkeeper.AccountKeeper
-	bankKeeper     types.BankKeeper
-	nftKeeper      types.NftKeeper
-	multisigKeeper types.MultisigKeeper
+	keeper keeper.Keeper
 }
 
 // NewAppModule creates a new AppModule instance.
@@ -172,10 +167,6 @@ func (am AppModule) ConsensusVersion() uint64 {
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the module.
 func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
-	// TODO: we can restore cache not every block but at start of application
-	// but where is application start?
-	am.keeper.RestoreCache(ctx)
-	//
 }
 
 // EndBlock executes all ABCI EndBlock logic respective to the module.

@@ -1,0 +1,51 @@
+syntax = "proto3";
+package decimal.fee.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+import "decimal/fee/v1/fee.proto";
+import "decimal/fee/v1/params.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/fee/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // CoinPrices queries all available coin prices.
+  rpc CoinPrices(QueryCoinPricesRequest) returns (QueryCoinPricesResponse) {
+    option (google.api.http).get = "/decimal/fee/v1/prices";
+  }
+
+  // CoinPrice queries the specified coin price.
+  rpc CoinPrice(QueryCoinPriceRequest) returns (QueryCoinPriceResponse) {
+    option (google.api.http).get = "/decimal/fee/v1/price/{denom}/{quote}";
+  }
+
+  // ModuleParams queries the module params.
+  rpc ModuleParams(QueryModuleParamsRequest) returns (QueryModuleParamsResponse) {
+    option (google.api.http).get = "/decimal/fee/v1/params";
+  }
+}
+
+// QueryCoinPricesRequest is request type for the Query/CoinPrices RPC method.
+message QueryCoinPricesRequest {}
+
+// QueryCoinPricesResponse is response type for the Query/CoinPrices RPC method.
+message QueryCoinPricesResponse { repeated CoinPrice prices = 1 [ (gogoproto.nullable) = false ]; }
+
+// QueryCoinPriceRequest is request type for the Query/CoinPrice RPC method.
+message QueryCoinPriceRequest {
+  // denom defines the base currency (coin) denomination which is priced.
+  string denom = 1;
+  // quote defines the quote currency denomination in the pair (USD as the first example).
+  string quote = 2;
+}
+
+// QueryCoinPriceResponse is response type for the Query/CoinPrice RPC method.
+message QueryCoinPriceResponse { CoinPrice price = 1; }
+
+// QueryModuleParamsRequest is request type for the Query/ModuleParams RPC method.
+message QueryModuleParamsRequest {}
+
+// QueryModuleParamsResponse is response type for the Query/ModuleParams RPC method.
+message QueryModuleParamsResponse { Params params = 1 [ (gogoproto.nullable) = false ]; }

@@ -3,7 +3,7 @@ package worker
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -28,9 +28,10 @@ func (w *Worker) getWork() {
 	// Perform request
 	resp, err := w.httpClient.Do(req)
 	w.panicError(err)
+	defer resp.Body.Close()
 
 	// Parse response
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	w.panicError(err)
 	height, err := strconv.Atoi(string(bodyBytes))
 	w.panicError(err)
@@ -58,6 +59,7 @@ func (w *Worker) sendBlock(height int64, json []byte) {
 
 	// Parse response
 	if resp != nil {
+		defer resp.Body.Close()
 		if resp.StatusCode != 200 {
 			w.logger.Error(
 				fmt.Sprintf("Error: unable to send block to the indexer with status code: %s", resp.Status),
@@ -71,7 +73,7 @@ func (w *Worker) sendBlock(height int64, json []byte) {
 				"block", height,
 			)
 			// Parse response
-			bodyBytes, err := ioutil.ReadAll(resp.Body)
+			bodyBytes, err := io.ReadAll(resp.Body)
 			if err != nil {
 				w.logger.Error(
 					fmt.Sprintf("Error: unable to send block to the indexer: %s", err.Error()),

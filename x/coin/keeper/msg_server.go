@@ -10,6 +10,7 @@ import (
 
 	dscconfig "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
+	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	"golang.org/x/crypto/sha3"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -18,6 +19,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/btcutil/base58"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
@@ -357,7 +359,10 @@ func (k Keeper) BurnCoin(goCtx context.Context, msg *types.MsgBurnCoin) (*types.
 	}
 	if !k.IsCoinBase(ctx, msg.Coin.Denom) {
 		// change coin volume
-		k.UpdateCoinVR(ctx, coin.Denom, coin.Volume.Sub(msg.Coin.Amount), coin.Reserve)
+		err = k.UpdateCoinVR(ctx, coin.Denom, coin.Volume.Sub(msg.Coin.Amount), coin.Reserve)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Emit transaction events
@@ -423,12 +428,23 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 	}
 
 	// Calculate correct fee
-	feeAmountBase := helpers.FinneyToWei(sdk.NewIntFromUint64(30))
+	params := k.feeKeeper.GetModuleParams(ctx)
+	delPrice, err := k.feeKeeper.GetPrice(ctx, k.GetBaseDenom(ctx), feeconfig.DefaultQuote)
+	if err != nil {
+		return nil, err
+	}
+	feeAmountBase := helpers.DecToDecWithE18(params.CoinRedeemCheck).Quo(delPrice.Price).RoundInt()
 	feeAmount := feeAmountBase
 	if coinDenom != baseCoinDenom {
 		feeAmount = formulas.CalculateSaleAmount(coin.Volume, coin.Reserve, uint(coin.CRR), feeAmountBase)
 	}
 	feeCoin := sdk.NewCoin(coinDenom, feeAmount)
+
+	// check case when fee pay will break reserve/volume limits
+	err = k.CheckFutureChanges(ctx, coin, feeCoin.Amount.Neg())
+	if err != nil {
+		return nil, err
+	}
 
 	// Ensure that check issuer account holds enough coins
 	if balance.Amount.LT(coinAmount) {
@@ -495,12 +511,19 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 	// Write check to the storage
 	k.SetCheck(ctx, check)
 
-	// Send fee from issuer to the module
-	// TODO: Make sure it is correct way to get fees
-	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, issuer, types.ModuleName, sdk.NewCoins(feeCoin))
+	// Send fee from issuer to the fee_collector
+	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, issuer, sdkAuthTypes.FeeCollectorName, sdk.NewCoins(feeCoin))
 	if err != nil {
 		return nil, err
 
+	}
+	// Emit transaction events
+	err = events.EmitTypedEvent(ctx, &feetypes.EventPayCommission{
+		Payer: issuer.String(),
+		Coins: sdk.NewCoins(feeCoin),
+	})
+	if err != nil {
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
 	// Send check coins from issuer to the transaction sender

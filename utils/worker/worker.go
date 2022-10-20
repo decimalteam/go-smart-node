@@ -13,6 +13,7 @@ import (
 	web3hexutil "github.com/ethereum/go-ethereum/common/hexutil"
 	web3types "github.com/ethereum/go-ethereum/core/types"
 	web3 "github.com/ethereum/go-ethereum/ethclient"
+	ethrpc "github.com/ethereum/go-ethereum/rpc"
 
 	"github.com/tendermint/tendermint/libs/log"
 	rpc "github.com/tendermint/tendermint/rpc/client/http"
@@ -23,17 +24,24 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
+const (
+	TxReceiptsBatchSize = 16
+	RequestTimeout      = 16 * time.Second
+	RequestRetryDelay   = 32 * time.Millisecond
+)
+
 type Worker struct {
-	ctx         context.Context
-	httpClient  *http.Client
-	cdc         params.EncodingConfig
-	logger      log.Logger
-	config      *Config
-	hostname    string
-	rpcClient   *rpc.HTTP
-	web3Client  *web3.Client
-	web3ChainId *big.Int
-	query       chan *ParseTask
+	ctx          context.Context
+	httpClient   *http.Client
+	cdc          params.EncodingConfig
+	logger       log.Logger
+	config       *Config
+	hostname     string
+	rpcClient    *rpc.HTTP
+	web3Client   *web3.Client
+	web3ChainId  *big.Int
+	ethRpcClient *ethrpc.Client
+	query        chan *ParseTask
 }
 
 type Config struct {
@@ -61,17 +69,22 @@ func NewWorker(cdc params.EncodingConfig, logger log.Logger, config *Config) (*W
 	if err != nil {
 		return nil, err
 	}
+	ethRpcClient, err := ethrpc.Dial(config.Web3Endpoint)
+	if err != nil {
+		return nil, err
+	}
 	worker := &Worker{
-		ctx:         context.Background(),
-		httpClient:  httpClient,
-		cdc:         cdc,
-		logger:      logger,
-		config:      config,
-		hostname:    hostname,
-		rpcClient:   rpcClient,
-		web3Client:  web3Client,
-		web3ChainId: web3ChainId,
-		query:       make(chan *ParseTask, 1000),
+		ctx:          context.Background(),
+		httpClient:   httpClient,
+		cdc:          cdc,
+		logger:       logger,
+		config:       config,
+		hostname:     hostname,
+		rpcClient:    rpcClient,
+		web3Client:   web3Client,
+		web3ChainId:  web3ChainId,
+		ethRpcClient: ethRpcClient,
+		query:        make(chan *ParseTask, 1000),
 	}
 	return worker, nil
 }
@@ -87,39 +100,50 @@ func (w *Worker) Start() {
 
 func (w *Worker) executeFromQuery(wg *sync.WaitGroup) {
 	defer wg.Done()
-	w.getWork()
 	for {
-		task := <-w.query
-		w.getBlockResultAndSend(task.height, task.txNum)
+
+		// Determine number of work to retrieve from the node
 		w.getWork()
+
+		// Retrieve block result from the node and prepare it for the indexer service
+		task := <-w.query
+		block := w.GetBlockResult(task.height, task.txNum)
+		if block == nil {
+			continue
+		}
+
+		// Send retrieved block result from the  indexer service
+		data, err := json.Marshal(*block)
+		w.panicError(err)
+		w.sendBlock(task.height, data)
 	}
 }
 
-func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
+func (w *Worker) GetBlockResult(height int64, txNum int) *Block {
+	accum := NewEventAccumulator()
+
+	w.logger.Info("Retrieving block results...", "block", height)
 
 	// Fetch requested block from Tendermint RPC
 	block := w.fetchBlock(height)
+	if block == nil {
+		return nil
+	}
 
-	// Fetch everything needed from Tendermint RPC
+	// Fetch everything needed from Tendermint RPC aand EVM
 	start := time.Now()
 	txsChan := make(chan []Tx)
 	resultsChan := make(chan *ctypes.ResultBlockResults)
 	sizeChan := make(chan int)
 	web3BlockChan := make(chan *web3types.Block)
 	web3ReceiptsChan := make(chan web3types.Receipts)
-	var parseTxNum int
-	if txNum == -1 {
-		parseTxNum = len(block.Block.Data.Txs)
-	} else {
-		parseTxNum = txNum
-	}
-	go w.fetchBlockTxs(height, parseTxNum, txsChan)
-	go w.fetchBlockTxResults(height, resultsChan)
+	go w.fetchBlockResults(height, *block, accum, txsChan, resultsChan)
 	go w.fetchBlockSize(height, sizeChan)
 	txs := <-txsChan
 	results := <-resultsChan
 	size := <-sizeChan
 	go w.fetchBlockWeb3(height, web3BlockChan)
+
 	web3Block := <-web3BlockChan
 	go w.fetchBlockTxReceiptsWeb3(web3Block, web3ReceiptsChan)
 	web3Body := web3Block.Body()
@@ -148,14 +172,20 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 	}
 	web3Receipts := <-web3ReceiptsChan
 
-	w.logger.Info(
-		fmt.Sprintf("Compiled block (%s)", helpers.DurationToString(time.Since(start))),
-		"block", height,
-		"txs", len(txs),
-		"begin-block-events", len(results.BeginBlockEvents),
-		"end-block-events", len(results.EndBlockEvents),
-	)
+	for _, event := range results.BeginBlockEvents {
+		err := accum.AddEvent(event, "")
+		if err != nil {
+			w.panicError(err)
+		}
+	}
+	for _, event := range results.EndBlockEvents {
+		err := accum.AddEvent(event, "")
+		if err != nil {
+			w.panicError(err)
+		}
+	}
 
+	// TODO: move to event accumulator
 	// Retrieve emission and rewards
 	var emission string
 	var rewards []ProposerReward
@@ -198,8 +228,16 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 		}
 	}
 
+	w.logger.Info(
+		fmt.Sprintf("Compiled block (%s)", helpers.DurationToString(time.Since(start))),
+		"block", height,
+		"txs", len(txs),
+		"begin-block-events", len(results.BeginBlockEvents),
+		"end-block-events", len(results.EndBlockEvents),
+	)
+
 	// Create and fill Block object and then marshal to JSON
-	b := Block{
+	return &Block{
 		ID:                block.BlockID,
 		Evidence:          block.Block.Evidence,
 		Header:            block.Block.Header,
@@ -211,6 +249,7 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 		EndBlockEvents:    w.parseEvents(results.EndBlockEvents),
 		BeginBlockEvents:  w.parseEvents(results.BeginBlockEvents),
 		Size:              size,
+		StateChanges:      *accum,
 		EVM: BlockEVM{
 			Header:       web3Block.Header(),
 			Transactions: web3Transactions,
@@ -218,11 +257,6 @@ func (w *Worker) getBlockResultAndSend(height int64, txNum int) {
 			Receipts:     web3Receipts,
 		},
 	}
-	data, err := json.Marshal(b)
-	w.panicError(err)
-
-	// Send
-	w.sendBlock(height, data)
 }
 
 func (w *Worker) panicError(err error) {

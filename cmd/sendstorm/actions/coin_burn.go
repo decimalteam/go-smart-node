@@ -8,6 +8,7 @@ import (
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -39,7 +40,7 @@ func (gg *BurnCoinGenerator) Generate() Action {
 	return &BurnCoinAction{
 		coin: sdk.NewCoin(
 			RandomChoice(gg.rnd, gg.knownCoins),
-			helpers.FinneyToWei(sdk.NewInt(RandomRange(gg.rnd, gg.bottomRange, gg.upperRange))),
+			helpers.FinneyToWei(sdkmath.NewInt(RandomRange(gg.rnd, gg.bottomRange, gg.upperRange))),
 		),
 	}
 }
@@ -65,15 +66,7 @@ func (aa *BurnCoinAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *sto
 	}
 
 	msg := dscTx.NewMsgBurnCoin(sender, aa.coin)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig)
-	if err != nil {
-		return nil, err
-	}
-	err = tx.SignTransaction(sa.Account())
-	if err != nil {
-		return nil, err
-	}
-	return tx.BytesToSend()
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (aa *BurnCoinAction) String() string {

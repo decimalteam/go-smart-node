@@ -42,12 +42,11 @@ func (k Keeper) Wallets(c context.Context, req *types.QueryWalletsRequest) (*typ
 		req.Pagination,
 		func(_, value []byte) error {
 			var wallet types.Wallet
-
 			if err := k.cdc.UnmarshalLengthPrefixed(value, &wallet); err != nil {
 				return err
 			}
 			for _, o := range wallet.Owners {
-				if req.Owner == o {
+				if o == req.Owner {
 					wallets = append(wallets, wallet)
 					break
 				}
@@ -92,8 +91,9 @@ func (k Keeper) Transactions(c context.Context, req *types.QueryTransactionsRequ
 			if err := k.cdc.UnmarshalLengthPrefixed(value, &tx); err != nil {
 				return err
 			}
-
-			transactions = append(transactions, tx)
+			if tx.Wallet == req.Wallet {
+				transactions = append(transactions, tx)
+			}
 			return nil
 		},
 	)

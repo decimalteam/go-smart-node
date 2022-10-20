@@ -3,6 +3,8 @@ package types
 import (
 	"strings"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
+
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -47,6 +49,22 @@ func GetDecimalAddressFromBech32(address string) (sdk.AccAddress, error) {
 	}
 
 	addressBz, err := sdk.GetFromBech32(address, bech32Prefix)
+	if err != nil {
+		return nil, sdkerrors.ErrInvalidAddress
+	}
+
+	// safety check: shouldn't happen
+	if err := sdk.VerifyAddressFormat(addressBz); err != nil {
+		return nil, err
+	}
+
+	return sdk.AccAddress(addressBz), nil
+}
+
+// GetDecimalAddressFromHex returns the sdk.Account address of given address.
+// The function fails if the provided hex address is invalid or does not start with 0x.
+func GetDecimalAddressFromHex(address string) (sdk.AccAddress, error) {
+	addressBz, err := hexutil.Decode(address)
 	if err != nil {
 		return nil, sdkerrors.ErrInvalidAddress
 	}

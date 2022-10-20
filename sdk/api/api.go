@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	tmservice "github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -58,8 +59,8 @@ func NewAPI(opts ConnectionOptions) (*API, error) {
 	// gRPC client
 
 	api.grpcClient, err = grpc.Dial(
-		fmt.Sprintf("%s:%d", opts.EndpointHost, opts.GRPCPort), // your gRPC server address.
-		grpc.WithInsecure(), // The Cosmos SDK doesn't support any transport security mechanism.
+		fmt.Sprintf("%s:%d", opts.EndpointHost, opts.GRPCPort),   // your gRPC server address.
+		grpc.WithTransportCredentials(insecure.NewCredentials()), // The Cosmos SDK doesn't support any transport security mechanism.
 	)
 	if err != nil {
 		return nil, err
@@ -98,7 +99,7 @@ func (api *API) grpcGetParameters() error {
 		if err != nil {
 			return err
 		}
-		api.chainID = resp.Block.Header.ChainID
+		api.chainID = resp.SdkBlock.Header.ChainID
 	}
 	// base coin
 	{
@@ -127,6 +128,16 @@ func (api *API) GetFeeCalculationOptions() *tx.FeeCalculationOptions {
 		FeeParams: api.feeParams,
 		AppCodec:  api.appCodec,
 	}
+}
+
+// GetParameters() get blockchain parameters
+func (api *API) GetLastHeight() int64 {
+	client := tmservice.NewServiceClient(api.grpcClient)
+	resp, err := client.GetLatestBlock(context.Background(), &tmservice.GetLatestBlockRequest{})
+	if err != nil {
+		return 0
+	}
+	return resp.SdkBlock.Header.Height
 }
 
 // Init global cosmos sdk config

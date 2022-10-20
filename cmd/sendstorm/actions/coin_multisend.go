@@ -9,6 +9,7 @@ import (
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -49,7 +50,7 @@ func (asg *MultiSendCoinGenerator) Generate() Action {
 	for i := int64(0); i < n; i++ {
 		coin := sdk.NewCoin(
 			RandomChoice(asg.rnd, asg.knownCoins),
-			helpers.FinneyToWei(sdk.NewInt(RandomRange(asg.rnd, asg.bottomRange, asg.upperRange))),
+			helpers.FinneyToWei(sdkmath.NewInt(RandomRange(asg.rnd, asg.bottomRange, asg.upperRange))),
 		)
 		sums = sums.Add(coin)
 		sends[i] = dscTx.MultiSendEntry{
@@ -94,15 +95,8 @@ func (as *MultiSendCoinAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig
 	}
 
 	msg := dscTx.NewMsgMultiSendCoin(sender, as.sends)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig)
-	if err != nil {
-		return nil, err
-	}
-	err = tx.SignTransaction(sa.Account())
-	if err != nil {
-		return nil, err
-	}
-	return tx.BytesToSend()
+
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (as *MultiSendCoinAction) String() string {

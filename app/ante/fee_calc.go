@@ -4,6 +4,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coin "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -14,8 +15,11 @@ import (
 )
 
 // CalculateFee calculates fee in base coin
+
 func CalculateFee(cdc codec.BinaryCodec, msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee.Params) (sdkmath.Int, error) {
 	params = fee.DefaultParams()
+	// Do not place commission for tx bytes to end because of RedeemCheck case
+	commission := helpers.DecToDecWithE18(params.TxByteFee.MulInt64(txBytesLen))
 
 	msgsFee := sdk.ZeroDec()
 	for _, msg := range msgs {
@@ -35,7 +39,11 @@ func CalculateFee(cdc codec.BinaryCodec, msgs []sdk.Msg, txBytesLen int64, delPr
 		case *coin.MsgSellAllCoin:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinSell))
 		case *coin.MsgRedeemCheck:
-			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinRedeemCheck))
+			// NOTE: for redeem check commission will be payed by check issuer in keeper
+			// Here commission will be set to zero to enable redeem for new accounts
+			// without coins
+			msgsFee = sdk.ZeroDec()
+			commission = sdk.ZeroDec()
 		case *coin.MsgUpdateCoin:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinUpdate))
 		case *coin.MsgBurnCoin:
@@ -84,14 +92,14 @@ func CalculateFee(cdc codec.BinaryCodec, msgs []sdk.Msg, txBytesLen int64, delPr
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.NftBurnToken))
 		// fee
 		case *fee.MsgUpdateCoinPrices:
+		case *upgradetypes.MsgSoftwareUpgrade:
+		case *upgradetypes.MsgCancelUpgrade:
 		default:
 			return sdkmath.ZeroInt(), UnknownTransaction
 		}
 	}
 
-	bytesFee := helpers.DecToDecWithE18(params.TxByteFee.MulInt64(txBytesLen))
-
-	commission := bytesFee.Add(msgsFee)
+	commission = commission.Add(msgsFee)
 
 	// change commission according to DEL price
 	commissionInBaseCoin := commission.Quo(delPrice).RoundInt()

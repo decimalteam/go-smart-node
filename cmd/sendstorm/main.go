@@ -12,6 +12,7 @@ const (
 	nodeFlag      = "node"
 	turnOnDebug   = "debug"
 	commitFlag    = "commit"
+	customFee     = "customfee"
 )
 
 func main() {
@@ -27,6 +28,7 @@ func main() {
 	rootCmd.PersistentFlags().String(nodeFlag, "localhost", "hostname or IP of decimal node without http:// or port")
 	rootCmd.PersistentFlags().Bool(turnOnDebug, false, "write api requests/responses to sendstorm.log")
 	rootCmd.PersistentFlags().Bool(commitFlag, false, "use broadcast_tx_commit (wait for block completion) for transaction sending (very slow)")
+	rootCmd.PersistentFlags().Bool(customFee, false, "use custom coins for fee")
 
 	rootCmd.AddCommand(
 		cmdGenerate(),
