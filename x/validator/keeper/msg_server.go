@@ -211,6 +211,7 @@ func (k msgServer) SetOffline(goCtx context.Context, msg *types.MsgSetOffline) (
 	validator.Online = false
 	// TODO: optimize
 	k.SetValidator(ctx, validator)
+	k.DeleteValidatorByPowerIndex(ctx, validator)
 
 	err = events.EmitTypedEvent(ctx, &types.EventSetOffline{
 		Sender:    sdk.AccAddress(valAddr).String(),

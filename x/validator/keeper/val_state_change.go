@@ -1,15 +1,17 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	"bytes"
 	"fmt"
+	"runtime/debug"
+	"sort"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/evmos/ethermint/types"
 	gogotypes "github.com/gogo/protobuf/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"runtime/debug"
-	"sort"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
 // BlockValidatorUpdates calculates the ValidatorUpdates for the current block
@@ -101,6 +103,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 	maxValidators := params.MaxValidators
 	totalPower := sdk.ZeroInt()
 	amtFromBondedToNotBonded, amtFromNotBondedToBonded := sdk.NewCoins(), sdk.NewCoins()
+	nftsFromBondedToNotBonded, nftsFromNotBondedToBonded := []nftTransferRecord{}, []nftTransferRecord{}
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -116,7 +119,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		return nil, err
 	}
 
-	validators := k.GetLastValidators(ctx)
+	//validators := k.GetLastValidators(ctx)
 	delegations := k.GetAllDelegationsByValidator(ctx)
 	//for _, validator := range validators {
 	//	if validator.Jailed {
@@ -140,18 +143,21 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 	//	k.SetValidatorByPowerIndex(ctx, validator)
 	//}
 
-	for i := 0; i < len(validators) && i < int(maxValidators); i++ {
+	// Iterate over validators, highest power to lowest.
+	iterator := k.ValidatorsPowerStoreIterator(ctx)
+	defer iterator.Close()
+	for count := 0; iterator.Valid() && count < int(maxValidators); iterator.Next() {
 		// everything that is iterated in this loop is becoming or already a
 		// part of the bonded validator set
-		validator := validators[i]
-		valAddr := validator.GetOperator().String()
+		valAddr := sdk.ValAddress(iterator.Value()).String()
+		validator := k.mustGetValidator(ctx, sdk.ValAddress(iterator.Value()))
 		if validator.Jailed {
 			return nil, fmt.Errorf("ApplyAndReturnValidatorSetUpdates: should never retrieve a jailed validator from the power store")
 		}
 
 		// if we get to a zero-power validator (which we don't bond),
 		// there are no more possible bonded validators
-		if validator.ConsensusPower() == 0 {
+		if validator.PotentialConsensusPower() == 0 {
 			break
 		}
 
@@ -171,8 +177,10 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 				case types.StakeType_Coin:
 					amtFromNotBondedToBonded = amtFromNotBondedToBonded.Add(delegation.GetStake().GetStake())
 				case types.StakeType_NFT:
-					nftReserve := k.getSumSubTokensReserve(ctx, delegation.GetStake().GetID(), delegation.GetStake().GetSubTokenIDs())
-					amtFromNotBondedToBonded = amtFromNotBondedToBonded.Add(nftReserve)
+					nftsFromNotBondedToBonded = append(nftsFromNotBondedToBonded, nftTransferRecord{
+						tokenID:     delegation.GetStake().GetID(),
+						subTokenIDs: delegation.GetStake().GetSubTokenIDs(),
+					})
 				}
 			}
 		case validator.IsUnbonding():
@@ -189,8 +197,10 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 				case types.StakeType_Coin:
 					amtFromNotBondedToBonded = amtFromNotBondedToBonded.Add(delegation.GetStake().GetStake())
 				case types.StakeType_NFT:
-					nftReserve := k.getSumSubTokensReserve(ctx, delegation.GetStake().GetID(), delegation.GetStake().GetSubTokenIDs())
-					amtFromNotBondedToBonded = amtFromNotBondedToBonded.Add(nftReserve)
+					nftsFromNotBondedToBonded = append(nftsFromNotBondedToBonded, nftTransferRecord{
+						tokenID:     delegation.GetStake().GetID(),
+						subTokenIDs: delegation.GetStake().GetSubTokenIDs(),
+					})
 				}
 			}
 		case validator.IsBonded():
@@ -213,7 +223,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		}
 
 		delete(last, valAddr)
-		i++
+		count++
 
 		totalPower = totalPower.Add(sdk.NewInt(newPower))
 	}
@@ -227,7 +237,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		validator := k.mustGetValidator(ctx, sdk.ValAddress(valAddrBytes))
 		validator, err = k.bondedToUnbonding(ctx, validator)
 		if err != nil {
-			return
+			return nil, err
 		}
 
 		for _, delegation := range delegations[validator.GetOperator().String()] {
@@ -235,8 +245,10 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 			case types.StakeType_Coin:
 				amtFromBondedToNotBonded = amtFromBondedToNotBonded.Add(delegation.GetStake().GetStake())
 			case types.StakeType_NFT:
-				nftReserve := k.getSumSubTokensReserve(ctx, delegation.GetStake().GetID(), delegation.GetStake().GetSubTokenIDs())
-				amtFromBondedToNotBonded = amtFromBondedToNotBonded.Add(nftReserve)
+				nftsFromBondedToNotBonded = append(nftsFromBondedToNotBonded, nftTransferRecord{
+					tokenID:     delegation.GetStake().GetID(),
+					subTokenIDs: delegation.GetStake().GetSubTokenIDs(),
+				})
 			}
 		}
 
@@ -249,8 +261,14 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 	// to the Bonded pool.
 	// - The tokens from the bonded validators that are being kicked out from the validator set
 	// need to be transferred to the NotBonded pool.
-	k.sendCoinsToNotBonded(ctx, amtFromNotBondedToBonded)
-	k.sendCoinsToBonded(ctx, amtFromBondedToNotBonded)
+	err = k.transferBetweenPools(ctx, types.BondStatus_Bonded, types.BondStatus_Unbonded, amtFromBondedToNotBonded, nftsFromBondedToNotBonded)
+	if err != nil {
+		return nil, err
+	}
+	err = k.transferBetweenPools(ctx, types.BondStatus_Unbonded, types.BondStatus_Bonded, amtFromNotBondedToBonded, nftsFromNotBondedToBonded)
+	if err != nil {
+		return nil, err
+	}
 
 	// set total power on lookup index if there are any updates
 	if len(updates) > 0 {

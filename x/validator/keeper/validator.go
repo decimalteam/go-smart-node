@@ -11,6 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
@@ -100,7 +101,7 @@ func (k Keeper) GetValidatorRS(ctx sdk.Context, valAddr sdk.ValAddress) (rewards
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.GetValidatorRewards(valAddr))
 	if value == nil {
-		return rewards, fmt.Errorf("not found rewards for validator")
+		return rewards, errors.RewardsNotFound
 	}
 	rewards = types.MustUnmarshalValidatorRewards(k.cdc, value)
 	return rewards, nil

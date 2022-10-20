@@ -3,10 +3,10 @@ package keeper
 import (
 	"fmt"
 
+	sdkmath "cosmossdk.io/math"
 	ethtypes "github.com/evmos/ethermint/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
@@ -30,10 +30,10 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 	ctx = ctx.WithBlockHeight(1 - sdk.ValidatorUpdateDelay)
 
 	k.SetParams(ctx, data.Params)
-	k.SetLastTotalPower(ctx, sdkmath.NewInt(data.LastTotalPower))
 
 	var valStatus = make(map[string]types.BondStatus)
 
+	lastTotalPower := sdkmath.ZeroInt()
 	for _, validator := range data.Validators {
 		k.SetValidator(ctx, validator)
 
@@ -50,6 +50,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 		if hasPower {
 			k.SetLastValidatorPower(ctx, validator.GetOperator(), TokensToConsensusPower(validator.Stake))
 			k.SetValidatorByPowerIndex(ctx, validator)
+			lastTotalPower = lastTotalPower.AddRaw(TokensToConsensusPower(validator.Stake))
 		}
 
 		k.SetValidatorRS(ctx, validator.GetOperator(), types.ValidatorRS{
@@ -72,6 +73,8 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 
 		valStatus[validator.OperatorAddress] = validator.GetStatus()
 	}
+
+	k.SetLastTotalPower(ctx, lastTotalPower)
 
 	coinMap := make(map[string]bool)
 	coinMap[k.BaseDenom(ctx)] = true

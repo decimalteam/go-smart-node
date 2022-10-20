@@ -181,8 +181,10 @@ func (msg *MsgEditValidator) ValidateBasic() error {
 ////////////////////////////////////////////////////////////////
 
 // NewMsgSetOnline creates a new instance of MsgSetOnline.
-func NewMsgSetOnline() *MsgSetOnline {
-	return &MsgSetOnline{}
+func NewMsgSetOnline(operatorAddr sdk.ValAddress) *MsgSetOnline {
+	return &MsgSetOnline{
+		Validator: operatorAddr.String(),
+	}
 }
 
 // Route should return the name of the module.
@@ -218,8 +220,10 @@ func (msg *MsgSetOnline) ValidateBasic() error {
 ////////////////////////////////////////////////////////////////
 
 // NewMsgSetOffline creates a new instance of MsgSetOffline.
-func NewMsgSetOffline() *MsgSetOffline {
-	return &MsgSetOffline{}
+func NewMsgSetOffline(operatorAddr sdk.ValAddress) *MsgSetOffline {
+	return &MsgSetOffline{
+		Validator: operatorAddr.String(),
+	}
 }
 
 // Route should return the name of the module.

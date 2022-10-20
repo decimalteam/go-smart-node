@@ -732,9 +732,18 @@ func (k Keeper) Delegate(
 
 	// clean index
 	k.DeleteValidatorByPowerIndex(ctx, validator)
+
 	rs, err := k.GetValidatorRS(ctx, valAddress)
 	if err != nil {
-		return err
+		if err == errors.RewardsNotFound {
+			rs = types.ValidatorRS{
+				Rewards:      sdkmath.ZeroInt(),
+				TotalRewards: sdkmath.ZeroInt(),
+				Stake:        sdkmath.ZeroInt(),
+			}
+		} else {
+			return err
+		}
 	}
 
 	// calculate validator new stake
@@ -752,6 +761,27 @@ func (k Keeper) Delegate(
 }
 
 func (k Keeper) TransferStakeBetweenPools(ctx sdk.Context, statusSrc types.BondStatus, statusDst types.BondStatus, stake types.Stake) error {
+	switch stake.Type {
+	case types.StakeType_Coin:
+		return k.transferBetweenPools(ctx, statusSrc, statusDst, sdk.NewCoins(stake.Stake), nil)
+	case types.StakeType_NFT:
+		return k.transferBetweenPools(ctx, statusSrc, statusDst, nil, []nftTransferRecord{
+			{
+				tokenID:     stake.ID,
+				subTokenIDs: stake.SubTokenIDs,
+			},
+		})
+	}
+	return nil
+}
+
+// universal transfer between pools
+type nftTransferRecord struct {
+	tokenID     string
+	subTokenIDs []uint32
+}
+
+func (k Keeper) transferBetweenPools(ctx sdk.Context, statusSrc types.BondStatus, statusDst types.BondStatus, coins sdk.Coins, nfts []nftTransferRecord) error {
 	notBondedPool := k.GetNotBondedPool(ctx).GetAddress()
 	bondedPool := k.GetBondedPool(ctx).GetAddress()
 
@@ -763,26 +793,30 @@ func (k Keeper) TransferStakeBetweenPools(ctx sdk.Context, statusSrc types.BondS
 		// do nothing
 	case statusSrc == types.BondStatus_Bonded && (statusDst == types.BondStatus_Unbonded || statusDst == types.BondStatus_Unbonding):
 		// transfer pools bond->not bond
-		switch stake.Type {
-		case types.StakeType_Coin:
-			if err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.BondedPoolName, types.NotBondedPoolName, sdk.NewCoins(stake.Stake)); err != nil {
+		if !coins.IsZero() {
+			if err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.BondedPoolName, types.NotBondedPoolName, coins); err != nil {
 				return err
 			}
-		case types.StakeType_NFT:
-			if err := k.nftKeeper.TransferSubTokens(ctx, bondedPool, notBondedPool, stake.ID, stake.SubTokenIDs); err != nil {
-				return err
+		}
+		if len(nfts) > 0 {
+			for _, rec := range nfts {
+				if err := k.nftKeeper.TransferSubTokens(ctx, bondedPool, notBondedPool, rec.tokenID, rec.subTokenIDs); err != nil {
+					return err
+				}
 			}
 		}
 	case (statusSrc == types.BondStatus_Unbonded || statusSrc == types.BondStatus_Unbonding) && statusDst == types.BondStatus_Bonded:
 		// transfer pools not bond->bond
-		switch stake.Type {
-		case types.StakeType_Coin:
-			if err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.NotBondedPoolName, types.BondedPoolName, sdk.NewCoins(stake.Stake)); err != nil {
+		if !coins.IsZero() {
+			if err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.NotBondedPoolName, types.BondedPoolName, coins); err != nil {
 				return err
 			}
-		case types.StakeType_NFT:
-			if err := k.nftKeeper.TransferSubTokens(ctx, notBondedPool, bondedPool, stake.ID, stake.SubTokenIDs); err != nil {
-				return err
+		}
+		if len(nfts) > 0 {
+			for _, rec := range nfts {
+				if err := k.nftKeeper.TransferSubTokens(ctx, notBondedPool, bondedPool, rec.tokenID, rec.subTokenIDs); err != nil {
+					return err
+				}
 			}
 		}
 	default:

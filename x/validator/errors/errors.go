@@ -43,4 +43,5 @@ var (
 	REDEntryNotFound                = errors.New(codespace, 136, "redelegation entry not found for height")
 	REDAlreadyProcessed             = errors.New(codespace, 137, "redelegation is already processed")
 	CoinDoesNotExist                = errors.New(codespace, 138, "coin does not exist")
+	RewardsNotFound                 = errors.New(codespace, 139, "not found rewards for validator")
 )
