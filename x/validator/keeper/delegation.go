@@ -301,7 +301,7 @@ func (k Keeper) InsertRedelegationQueue(ctx sdk.Context, red types.Redelegation,
 // time 0 until endTime.
 func (k Keeper) RedelegationQueueIterator(ctx sdk.Context, endTime time.Time) sdk.Iterator {
 	store := ctx.KVStore(k.storeKey)
-	return store.Iterator(types.GetRedelegationsTimeKey(endTime), sdk.InclusiveEndBytes(types.GetRedelegationsTimeKey(endTime)))
+	return store.Iterator(types.GetAllRedelegationsTimeKey(), sdk.InclusiveEndBytes(types.GetRedelegationsTimeKey(endTime)))
 }
 
 // DequeueAllMatureRedelegationQueue returns a concatenated list of all the
@@ -570,7 +570,7 @@ func (k Keeper) InsertUBDQueue(ctx sdk.Context, ubd types.Undelegation, completi
 // UBDQueueIterator returns all the unbonding queue timeslices from time 0 until endTime.
 func (k Keeper) UBDQueueIterator(ctx sdk.Context, endTime time.Time) sdk.Iterator {
 	store := ctx.KVStore(k.storeKey)
-	return store.Iterator(types.GetUndelegationsTimeKey(endTime),
+	return store.Iterator(types.GetAllUndelegationsTimeKey(),
 		sdk.InclusiveEndBytes(types.GetUndelegationsTimeKey(endTime)))
 }
 
@@ -756,7 +756,8 @@ func (k Keeper) Delegate(
 	k.SetValidatorByPowerIndex(ctx, validator)
 
 	k.AfterUpdateDelegation(ctx, delegation)
-
+	vals, powers, _ := k.GetAllValidatorsByPowerIndex(ctx)
+	fmt.Println(vals, powers)
 	return nil
 }
 
@@ -969,11 +970,11 @@ func (k Keeper) BeginRedelegation(
 	}
 
 	// create the unbonding delegation
-	completionTime, height, completeNow := k.getBeginInfo(ctx, validatorSrc)
+	completionTime, height, _ := k.getBeginInfo(ctx, validatorSrc)
 
-	if completeNow { // no need to create the redelegation object
-		return completionTime, nil
-	}
+	//if completeNow { // no need to create the redelegation object
+	//	return completionTime, nil
+	//}
 
 	red := k.SetRedelegationEntry(
 		ctx, delegator, validatorSrc, validatorDst,
@@ -1148,6 +1149,9 @@ func (k Keeper) baseCoinFromStake(ctx sdk.Context, stake types.Stake) sdk.Coin {
 	case types.StakeType_Coin:
 		base = k.ToBaseCoin(ctx, stake.GetStake())
 	case types.StakeType_NFT:
+		if stake.SubTokenIDs == nil || len(stake.SubTokenIDs) == 0 {
+			return sdk.Coin{Amount: sdk.ZeroInt()}
+		}
 		reserve := k.getSumSubTokensReserve(ctx, stake.GetID(), stake.GetSubTokenIDs())
 		base = k.ToBaseCoin(ctx, reserve)
 	}

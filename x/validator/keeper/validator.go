@@ -94,7 +94,6 @@ func (k Keeper) CreateValidator(ctx sdk.Context, validator types.Validator) {
 	})
 	k.SetNewValidatorByPowerIndex(ctx, validator)
 	k.SetValidatorByConsAddr(ctx, validator)
-	k.SetLastValidatorPower(ctx, validator.GetOperator(), TokensToConsensusPower(validator.Stake))
 }
 
 func (k Keeper) GetValidatorRS(ctx sdk.Context, valAddr sdk.ValAddress) (rewards types.ValidatorRS, err error) {
@@ -192,7 +191,7 @@ func (k Keeper) GetValidatorByPowerIndexKey(validator types.Validator) []byte {
 	// NOTE the larger values are of higher value
 
 	//key := types.GetValidatorsByPowerIndexKey()
-	consensusPower := validator.ConsensusPower()
+	consensusPower := validator.PotentialConsensusPower()
 	consensusPowerBytes := make([]byte, 8)
 	binary.BigEndian.PutUint64(consensusPowerBytes, uint64(consensusPower))
 
