@@ -1,5 +1,5 @@
 package v2
 
 const (
-	UpgradeName = "https://devnet-dsc-repo.decimalchain.com/701"
+	UpgradeName = "https://devnet-dsc-repo.decimalchain.com/37200"
 )
