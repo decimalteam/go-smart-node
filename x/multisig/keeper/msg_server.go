@@ -203,18 +203,6 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
-	if confirmed {
-		// Emit transaction events
-		err = events.EmitTypedEvent(ctx, &types.EventConfirmTransaction{
-			Wallet:      wallet.Address,
-			Transaction: transaction.Id,
-			Coins:       transaction.Coins,
-		})
-		if err != nil {
-			return nil, errors.Internal.Wrapf("err: %s", err.Error())
-		}
-	}
-
 	return &types.MsgSignTransactionResponse{}, nil
 }
 

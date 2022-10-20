@@ -351,7 +351,7 @@ func (m *MsgSignTransactionResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgSignTransactionResponse proto.InternalMessageInfo
 
-// //////
+////////
 // MsgCreateUniversalTransaction defines a SDK message for creating multisig transaction in existing wallet.
 type MsgCreateUniversalTransaction struct {
 	Sender  string      `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`

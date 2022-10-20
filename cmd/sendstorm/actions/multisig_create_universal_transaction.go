@@ -109,15 +109,8 @@ func (aa *CreateMultisigUniversalTransactionAction) GenerateTx(sa *stormTypes.St
 	if err != nil {
 		return nil, err
 	}
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig)
-	if err != nil {
-		return nil, err
-	}
-	err = tx.SignTransaction(sa.Account())
-	if err != nil {
-		return nil, err
-	}
-	return tx.BytesToSend()
+
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (aa *CreateMultisigUniversalTransactionAction) String() string {
