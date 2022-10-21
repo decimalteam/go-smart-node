@@ -31,7 +31,7 @@ func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.ValAddress) (validator ty
 		// not found rewards
 		validator.Rewards = sdkmath.ZeroInt()
 		validator.TotalRewards = sdkmath.ZeroInt()
-		validator.Stake = sdk.ZeroInt()
+		validator.Stake = 0
 	}
 
 	return validator, true

@@ -43,14 +43,14 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 		for _, lp := range data.LastValidatorPowers {
 			if lp.Address == validator.OperatorAddress {
 				hasPower = true
-				validator.Stake = TokensFromConsensusPower(lp.Power)
+				validator.Stake = lp.Power
 				break
 			}
 		}
 		if hasPower {
-			k.SetLastValidatorPower(ctx, validator.GetOperator(), TokensToConsensusPower(validator.Stake))
+			k.SetLastValidatorPower(ctx, validator.GetOperator(), validator.Stake)
 			k.SetValidatorByPowerIndex(ctx, validator)
-			lastTotalPower = lastTotalPower.AddRaw(TokensToConsensusPower(validator.Stake))
+			lastTotalPower = lastTotalPower.AddRaw(validator.Stake)
 		}
 
 		k.SetValidatorRS(ctx, validator.GetOperator(), types.ValidatorRS{

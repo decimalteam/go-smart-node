@@ -97,7 +97,7 @@ func TestSetGetRewards(t *testing.T) {
 	rewards1 := validatortypes.ValidatorRS{
 		Rewards:      sdkmath.NewInt(1),
 		TotalRewards: sdkmath.NewInt(2),
-		Stake:        keeper.TokensFromConsensusPower(3),
+		Stake:        3,
 	}
 
 	dsc.ValidatorKeeper.SetValidatorRS(ctx, vals[0], rewards1)

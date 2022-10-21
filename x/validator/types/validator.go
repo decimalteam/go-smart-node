@@ -16,8 +16,6 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
-	ethtypes "github.com/evmos/ethermint/types"
 )
 
 const (
@@ -62,7 +60,7 @@ func NewValidator(
 		UnbondingTime:   time.Unix(0, 0).UTC(),
 		Rewards:         sdkmath.ZeroInt(),
 		TotalRewards:    sdkmath.ZeroInt(),
-		Stake:           sdk.ZeroInt(),
+		Stake:           0,
 	}, nil
 }
 
@@ -317,7 +315,7 @@ func (v Validator) ConsensusPower() int64 {
 
 // PotentialConsensusPower returns the potential consensus-engine power.
 func (v Validator) PotentialConsensusPower() int64 {
-	return sdk.TokensToConsensusPower(v.Stake, ethtypes.PowerReduction)
+	return v.Stake
 }
 
 // UpdateStatus updates the location of the shares within a validator to reflect the new status.

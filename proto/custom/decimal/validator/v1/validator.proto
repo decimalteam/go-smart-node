@@ -60,11 +60,7 @@ message Validator {
   ];
   // stake is power of all delegations stake
   // NOTE: It is stored separately in the KVStore.
-  string stake = 13[
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false
-  ];
+  int64 stake = 13;
 }
 
 message ValidatorRS {
@@ -81,11 +77,7 @@ message ValidatorRS {
     (gogoproto.nullable) = false
   ];
   // stake is power of all delegations stake
-  string stake = 3[
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false
-  ];
+  int64 stake = 3;
 }
 
 // ValAddresses defines a repeated set of validator addresses.

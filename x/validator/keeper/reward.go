@@ -91,15 +91,15 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 				delStake = k.getSumSubTokensReserve(ctx, del.GetStake().GetID(), del.GetStake().GetSubTokenIDs())
 			}
 
-			defAmount := delStake.Amount
+			baseAmount := delStake.Amount
 			if delStake.Denom != k.BaseDenom(ctx) {
 				delCoinPrice, ok := customCoinPrices[delStake.Denom]
 				if !ok {
 					return fmt.Errorf("not found price for custom coin %s, base denom is %s, validator is %s, delegator is %s", delStake.Denom, k.BaseDenom(ctx), validator.String(), del.Delegator)
 				}
-				defAmount = delCoinPrice.Mul(delStake.Amount)
+				baseAmount = delCoinPrice.Mul(delStake.Amount)
 			}
-			reward = reward.Mul(defAmount).Quo(totalStake)
+			reward = reward.Mul(baseAmount).Quo(TokensFromConsensusPower(totalStake))
 			if reward.LT(sdk.NewInt(1)) {
 				continue
 			}

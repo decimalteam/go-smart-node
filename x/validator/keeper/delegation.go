@@ -739,7 +739,7 @@ func (k Keeper) Delegate(
 			rs = types.ValidatorRS{
 				Rewards:      sdkmath.ZeroInt(),
 				TotalRewards: sdkmath.ZeroInt(),
-				Stake:        sdkmath.ZeroInt(),
+				Stake:        0,
 			}
 		} else {
 			return err
@@ -748,16 +748,15 @@ func (k Keeper) Delegate(
 
 	// calculate validator new stake
 	delStake := k.baseCoinFromStake(ctx, stake)
-	rs.Stake = rs.Stake.Add(delStake.Amount)
-	validator.Stake = validator.Stake.Add(delStake.Amount)
+	power := TokensToConsensusPower(delStake.Amount)
+	rs.Stake += power
+	validator.Stake += power
 
 	// write index
 	k.SetValidatorRS(ctx, valAddress, rs)
 	k.SetValidatorByPowerIndex(ctx, validator)
 
 	k.AfterUpdateDelegation(ctx, delegation)
-	vals, powers, _ := k.GetAllValidatorsByPowerIndex(ctx)
-	fmt.Println(vals, powers)
 	return nil
 }
 
@@ -1084,6 +1083,7 @@ func (k Keeper) Unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValA
 
 	k.AfterUpdateDelegation(ctx, delegation)
 	stakeBaseCoin := k.baseCoinFromStake(ctx, stake)
+	stakePower := TokensToConsensusPower(stakeBaseCoin.Amount)
 
 	// clean index
 	k.DeleteValidatorByPowerIndex(ctx, validator)
@@ -1093,8 +1093,8 @@ func (k Keeper) Unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValA
 	}
 
 	// calculate validator new stake
-	validator.Stake = validator.Stake.Sub(stakeBaseCoin.Amount)
-	rs.Stake = rs.Stake.Sub(stakeBaseCoin.Amount)
+	validator.Stake -= stakePower
+	rs.Stake -= stakePower
 
 	// write index
 	k.SetValidatorRS(ctx, valAddr, rs)

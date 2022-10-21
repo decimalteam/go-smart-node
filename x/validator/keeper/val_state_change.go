@@ -143,8 +143,6 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 	//	k.SetValidatorByPowerIndex(ctx, validator)
 	//}
 
-	vals, powers, _ := k.GetAllValidatorsByPowerIndex(ctx)
-	fmt.Println(vals, powers)
 	// Iterate over validators, highest power to lowest.
 	iterator := k.ValidatorsPowerStoreIterator(ctx)
 	defer iterator.Close()
