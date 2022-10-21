@@ -49,6 +49,20 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 
 	updates := k.BlockValidatorUpdates(ctx)
 
+	k.PayValidators(ctx)
+
+	if height%120 == 0 {
+		err := k.PayRewards(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return updates
+}
+
+func (k Keeper) PayValidators(ctx sdk.Context) {
+	height := ctx.BlockHeight()
+
 	// calculate emmission
 	rewards := types.GetRewardForBlock(uint64(height))
 
@@ -78,16 +92,6 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 		panic(err)
 	}
 
-	// create coins for delegators
-	err = k.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(baseDenom, rewards)))
-	if err != nil {
-		panic(err)
-	}
-	err = k.coinKeeper.UpdateCoinVR(ctx, baseDenom, baseCoin.Volume.Add(rewards), baseCoin.Reserve)
-	if err != nil {
-		panic(err)
-	}
-
 	// pay rewards to validators
 	remainder := sdk.NewIntFromBigInt(rewards.BigInt())
 
@@ -108,16 +112,21 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 		}
 	}
 
+	// create coins for delegators
+	// remainder to FeeCollector
 	err = k.bankKeeper.MintCoins(ctx, authtypes.FeeCollectorName, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), remainder)))
+	// distributed to validator module for delegators
+	distributed := rewards.Sub(remainder)
+	err = k.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(baseDenom, distributed)))
+	if err != nil {
+		panic(err)
+	}
+	err = k.coinKeeper.UpdateCoinVR(ctx, baseDenom, baseCoin.Volume.Add(distributed), baseCoin.Reserve)
 	if err != nil {
 		panic(err)
 	}
 
-	if height%120 == 0 {
-		err = k.PayRewards(ctx)
-		if err != nil {
-			panic(err)
-		}
+	if err != nil {
+		panic(err)
 	}
-	return updates
 }
