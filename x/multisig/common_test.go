@@ -305,7 +305,6 @@ func getBaseAppWithCustomKeeper(t *testing.T) (*codec.LegacyAmino, *app.DSC, sdk
 		dsc.BankKeeper,
 		dsc.MsgServiceRouter(),
 	)
-	//dsc.MultisigKeeper.SetParams(ctx, types.DefaultParams())
 
 	return codec.NewLegacyAmino(), dsc, ctx
 }

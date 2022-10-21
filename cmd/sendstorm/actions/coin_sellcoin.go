@@ -59,8 +59,6 @@ func (asg *SellCoinGenerator) Generate() Action {
 		}
 	}
 
-	// TODO: random coin for fee
-
 	for _, ci := range asg.knownFullCoins {
 		if ci.Denom == coinName {
 			coinInfo = ci

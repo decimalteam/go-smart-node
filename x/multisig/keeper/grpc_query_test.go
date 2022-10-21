@@ -163,9 +163,10 @@ func (s *KeeperTestSuite) TestGRPCQueryTransactions() {
 			if tc.expPass {
 				require.NoError(err)
 				for _, resTx := range res.Transactions {
-					if _, ok := hits[resTx.Id]; ok {
-						// TODO: fix
-						//require.Equal(tx.String(), resTx.String()) // TODO replace after regenerate proto
+					if tx, ok := hits[resTx.Id]; ok {
+						// TODO: add more checks
+						require.Equal(tx.Id, resTx.Id)
+						require.Equal(tx.Wallet, resTx.Wallet)
 						delete(hits, resTx.Id)
 					} else {
 						s.T().Fatal("wallet does not set, but it was included in the resp")
