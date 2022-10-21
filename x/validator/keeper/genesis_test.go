@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -29,6 +30,28 @@ func bootstrapGenesisTest(t *testing.T, numAddrs int) (*app.DSC, sdk.Context, []
 		sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(10))),
 	)
 	return dsc, ctx, addrDels
+}
+
+// compare simple, without nft
+func isEqualDelegations(dels1, dels2 []types.Delegation) bool {
+	if len(dels1) != len(dels2) {
+		return false
+	}
+	for i := range dels1 {
+		isHere := false
+		for j := range dels2 {
+			if dels1[i].Delegator == dels2[j].Delegator &&
+				dels1[i].Validator == dels2[j].Validator &&
+				dels1[i].Stake.Equal(dels2[j].Stake) {
+				isHere = true
+				break
+			}
+		}
+		if !isHere {
+			return false
+		}
+	}
+	return true
 }
 
 func TestInitGenesis(t *testing.T) {
@@ -102,7 +125,7 @@ func TestInitGenesis(t *testing.T) {
 
 	actualGenesis := dsc.ValidatorKeeper.ExportGenesis(ctx)
 	require.Equal(t, genesisState.Params, actualGenesis.Params)
-	require.Equal(t, genesisState.Delegations, actualGenesis.Delegations)
+	require.True(t, isEqualDelegations(genesisState.Delegations, actualGenesis.Delegations))
 	require.EqualValues(t, dsc.ValidatorKeeper.GetAllValidators(ctx), actualGenesis.Validators)
 
 	// Ensure validators have addresses.
@@ -177,62 +200,74 @@ func TestInitGenesis_PoolsBalanceMismatch(t *testing.T) {
 	)
 }
 
-//func TestInitGenesisLargeValidatorSet(t *testing.T) {
-//	size := 200
-//	require.True(t, size > 100)
-//
-//	app, ctx, addrs := bootstrapGenesisTest(t, 200)
-//	genesisValidators := app.StakingKeeper.GetAllValidators(ctx)
-//
-//	params := app.StakingKeeper.GetParams(ctx)
-//	delegations := []types.Delegation{}
-//	validators := make([]types.Validator, size)
-//
-//	var err error
-//
-//	bondedPoolAmt := sdk.ZeroInt()
-//	for i := range validators {
-//		validators[i], err = types.NewValidator(
-//			sdk.ValAddress(addrs[i]),
-//			PKs[i],
-//			types.NewDescription(fmt.Sprintf("#%d", i), "", "", "", ""),
-//		)
-//		require.NoError(t, err)
-//		validators[i].Status = types.Bonded
-//
-//		tokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 1)
-//		if i < 100 {
-//			tokens = app.StakingKeeper.TokensFromConsensusPower(ctx, 2)
-//		}
-//
-//		validators[i].Tokens = tokens
-//		validators[i].DelegatorShares = sdk.NewDecFromInt(tokens)
-//
-//		// add bonded coins
-//		bondedPoolAmt = bondedPoolAmt.Add(tokens)
-//	}
-//
-//	validators = append(validators, genesisValidators...)
-//	genesisState := types.NewGenesisState(params, validators, delegations)
-//
-//	// mint coins in the bonded pool representing the validators coins
-//	require.NoError(t,
-//		testutil.FundModuleAccount(
-//			app.BankKeeper,
-//			ctx,
-//			types.BondedPoolName,
-//			sdk.NewCoins(sdk.NewCoin(params.BondDenom, bondedPoolAmt)),
-//		),
-//	)
-//
-//	vals := app.StakingKeeper.InitGenesis(ctx, genesisState)
-//
-//	abcivals := make([]abci.ValidatorUpdate, 100)
-//	for i, val := range validators[:100] {
-//		abcivals[i] = val.ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx))
-//	}
-//
-//	// remove genesis validator
-//	vals = vals[:100]
-//	require.Equal(t, abcivals, vals)
-//}
+func TestInitGenesisLargeValidatorSet(t *testing.T) {
+	size := 200
+	require.True(t, size > 100)
+
+	dsc, ctx, addrs := bootstrapGenesisTest(t, 200)
+	genesisValidators := dsc.ValidatorKeeper.GetAllValidators(ctx)
+
+	params := dsc.ValidatorKeeper.GetParams(ctx)
+	params.MaxValidators = 100
+	dsc.ValidatorKeeper.SetParams(ctx, params)
+
+	delegations := dsc.ValidatorKeeper.GetAllDelegations(ctx)
+	validators := make([]types.Validator, size)
+	powers := []types.LastValidatorPower{}
+
+	var err error
+
+	bondedPoolAmt := sdk.ZeroInt()
+	for i := range validators {
+		validators[i], err = types.NewValidator(
+			sdk.ValAddress(addrs[i]),
+			addrs[i],
+			PKs[i],
+			types.NewDescription(fmt.Sprintf("#%d", i), "", "", "", ""),
+			sdk.ZeroDec(),
+		)
+		require.NoError(t, err)
+		validators[i].Status = types.BondStatus_Bonded
+
+		validators[i].Stake = 1
+		if i < 100 {
+			validators[i].Stake = 2
+		}
+		tokens := helpers.EtherToWei(sdkmath.NewInt(validators[i].Stake))
+		powers = append(powers, types.LastValidatorPower{
+			Address: sdk.ValAddress(addrs[i]).String(),
+			Power:   validators[i].Stake,
+		})
+		delegations = append(delegations, types.NewDelegation(
+			addrs[i],
+			sdk.ValAddress(addrs[i]),
+			types.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, tokens)),
+		))
+		// add bonded coins
+		bondedPoolAmt = bondedPoolAmt.Add(tokens)
+	}
+
+	validators = append(validators, genesisValidators...)
+	genesisState := types.NewGenesisState(params, validators, delegations, powers)
+
+	// mint coins in the bonded pool representing the validators coins
+	require.NoError(t,
+		testvalidator.FundModuleAccount(
+			dsc.BankKeeper,
+			ctx,
+			types.BondedPoolName,
+			sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, bondedPoolAmt)),
+		),
+	)
+
+	vals := dsc.ValidatorKeeper.InitGenesis(ctx, genesisState)
+
+	abcivals := make([]abci.ValidatorUpdate, 100)
+	for i, val := range validators[:100] {
+		abcivals[i] = val.ABCIValidatorUpdate(sdkmath.ZeroInt())
+	}
+
+	// remove genesis validator
+	vals = vals[:100]
+	require.Equal(t, abcivals, vals)
+}
