@@ -61,6 +61,36 @@ func (k Keeper) Wallets(c context.Context, req *types.QueryWalletsRequest) (*typ
 	return &types.QueryWalletsResponse{Wallets: wallets, Pagination: pageRes}, nil
 }
 
+func (k Keeper) Transactions(c context.Context, req *types.QueryTransactionsRequest) (*types.QueryTransactionsResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+	ctx := sdk.UnwrapSDKContext(c)
+
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTransaction)
+	txResponses := make([]types.Transaction, 0)
+	pageRes, err := query.Paginate(
+		store,
+		req.Pagination,
+		func(_, value []byte) error {
+			var tx types.Transaction
+
+			if err := k.cdc.UnmarshalLengthPrefixed(value, &tx); err != nil {
+				return err
+			}
+			if tx.Wallet == req.Wallet {
+				txResponses = append(txResponses, tx)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.QueryTransactionsResponse{Transactions: txResponses, Pagination: pageRes}, nil
+}
+
 func (k Keeper) Transaction(c context.Context, req *types.QueryTransactionRequest) (*types.QueryTransactionResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
@@ -72,105 +102,12 @@ func (k Keeper) Transaction(c context.Context, req *types.QueryTransactionReques
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryTransactionResponse{Transaction: tx}, nil
-}
+	completed := k.IsCompleted(ctx, req.Id)
+	signers := k.GetSigners(ctx, req.Id)
 
-func (k Keeper) Transactions(c context.Context, req *types.QueryTransactionsRequest) (*types.QueryTransactionsResponse, error) {
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid request")
-	}
-	ctx := sdk.UnwrapSDKContext(c)
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTransaction)
-	transactions := make([]types.Transaction, 0)
-	pageRes, err := query.Paginate(
-		store,
-		req.Pagination,
-		func(_, value []byte) error {
-			var tx types.Transaction
-
-			if err := k.cdc.UnmarshalLengthPrefixed(value, &tx); err != nil {
-				return err
-			}
-			if tx.Wallet == req.Wallet {
-				transactions = append(transactions, tx)
-			}
-			return nil
-		},
-	)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	return &types.QueryTransactionsResponse{Transactions: transactions, Pagination: pageRes}, nil
-}
-
-func (k Keeper) UniversalTransactions(c context.Context, req *types.QueryUniversalTransactionsRequest) (*types.QueryUniversalTransactionsResponse, error) {
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid request")
-	}
-	ctx := sdk.UnwrapSDKContext(c)
-	wallet, err := k.GetWallet(ctx, req.Wallet)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUniversalTransaction)
-	txResponses := make([]types.UniversalTransactionResponse, 0)
-	pageRes, err := query.Paginate(
-		store,
-		req.Pagination,
-		func(_, value []byte) error {
-			var tx types.UniversalTransaction
-			var txres types.UniversalTransactionResponse
-
-			if err := k.cdc.UnmarshalLengthPrefixed(value, &tx); err != nil {
-				return err
-			}
-			if tx.Wallet == req.Wallet {
-				txres.Transaction = tx
-				txres.Completed = k.IsCompleted(ctx, tx.Id)
-				for _, owner := range wallet.Owners {
-					if k.IsSigned(ctx, tx.Id, owner) {
-						txres.Signers = append(txres.Signers, owner)
-					}
-				}
-				txResponses = append(txResponses, txres)
-			}
-			return nil
-		},
-	)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	return &types.QueryUniversalTransactionsResponse{Transactions: txResponses, Pagination: pageRes}, nil
-}
-
-func (k Keeper) UniversalTransaction(c context.Context, req *types.QueryUniversalTransactionRequest) (*types.QueryUniversalTransactionResponse, error) {
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid request")
-	}
-	ctx := sdk.UnwrapSDKContext(c)
-
-	tx, err := k.GetUniversalTransaction(ctx, req.Id)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	wallet, err := k.GetWallet(ctx, tx.Wallet)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	var txres types.UniversalTransactionResponse
-
-	txres.Transaction = tx
-	txres.Completed = k.IsCompleted(ctx, tx.Id)
-	for _, owner := range wallet.Owners {
-		if k.IsSigned(ctx, tx.Id, owner) {
-			txres.Signers = append(txres.Signers, owner)
-		}
-	}
-
-	return &types.QueryUniversalTransactionResponse{Transaction: txres}, nil
+	return &types.QueryTransactionResponse{
+		Transaction: tx,
+		Signers:     signers,
+		Completed:   completed,
+	}, nil
 }

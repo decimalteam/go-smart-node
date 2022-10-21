@@ -53,10 +53,6 @@ func CalculateFee(cdc codec.BinaryCodec, msgs []sdk.Msg, txBytesLen int64, delPr
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.MultisigCreateWallet))
 		case *multisig.MsgCreateTransaction:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.MultisigCreateTransaction))
-		case *multisig.MsgSignTransaction:
-			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.MultisigSignTransaction))
-		case *multisig.MsgCreateUniversalTransaction:
-			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.MultisigCreateTransaction))
 			var internal sdk.Msg
 			err := cdc.UnpackAny(m.Content, &internal)
 			if err != nil {
@@ -68,7 +64,7 @@ func CalculateFee(cdc codec.BinaryCodec, msgs []sdk.Msg, txBytesLen int64, delPr
 				return sdkmath.ZeroInt(), err
 			}
 			msgsFee = msgsFee.Add(sdk.NewDecFromInt(internalFee))
-		case *multisig.MsgSignUniversalTransaction:
+		case *multisig.MsgSignTransaction:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.MultisigSignTransaction))
 		// swap
 		case *swap.MsgInitializeSwap:

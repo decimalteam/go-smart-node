@@ -124,31 +124,6 @@ func (k *Keeper) GetAllWallets(ctx sdk.Context) (wallets []types.Wallet, err err
 	return
 }
 
-////////////////////////////////////////////////////////////////
-// Transaction
-////////////////////////////////////////////////////////////////
-
-// GetTransaction returns multisig wallet transaction metadata with specified address transaction ID.
-func (k *Keeper) GetTransaction(ctx sdk.Context, txID string) (transaction types.Transaction, err error) {
-	store := ctx.KVStore(k.storeKey)
-	key := append(types.KeyPrefixTransaction, []byte(txID)...)
-	value := store.Get(key)
-	if len(value) == 0 {
-		err = errors.TransactionNotFound
-		return
-	}
-	err = k.cdc.UnmarshalLengthPrefixed(value, &transaction)
-	return
-}
-
-// SetTransaction sets the entire multisig wallet transaction metadata struct for a multisig wallet.
-func (k *Keeper) SetTransaction(ctx sdk.Context, transaction types.Transaction) {
-	store := ctx.KVStore(k.storeKey)
-	value := k.cdc.MustMarshalLengthPrefixed(&transaction)
-	key := append(types.KeyPrefixTransaction, []byte(transaction.Id)...)
-	store.Set(key, value)
-}
-
 // GetTransactions returns transactions for specified multisig wallet.
 func (k *Keeper) GetTransactions(ctx sdk.Context, wallet string) (transactions []types.Transaction, err error) {
 	store := ctx.KVStore(k.storeKey)
@@ -193,24 +168,24 @@ func (k *Keeper) GetAllTransactions(ctx sdk.Context) (transactions []types.Trans
 }
 
 ////////////////////////////////////////////////////////////////
-// Universal Transaction
+// Transaction
 ////////////////////////////////////////////////////////////////
 
-// SetUniversalTransaction sets the entire multisig wallet universal transaction metadata struct for a multisig wallet.
-func (k *Keeper) SetUniversalTransaction(ctx sdk.Context, transaction types.UniversalTransaction) error {
+// SetTransaction sets the entire multisig wallet universal transaction metadata struct for a multisig wallet.
+func (k *Keeper) SetTransaction(ctx sdk.Context, transaction types.Transaction) error {
 	store := ctx.KVStore(k.storeKey)
 	value, err := k.cdc.MarshalLengthPrefixed(&transaction)
 	if err != nil {
 		return err
 	}
-	key := append(types.KeyPrefixUniversalTransaction, []byte(transaction.Id)...)
+	key := append(types.KeyPrefixTransaction, []byte(transaction.Id)...)
 	store.Set(key, value)
 	return nil
 }
 
-func (k *Keeper) GetUniversalTransaction(ctx sdk.Context, txID string) (transaction types.UniversalTransaction, err error) {
+func (k *Keeper) GetTransaction(ctx sdk.Context, txID string) (transaction types.Transaction, err error) {
 	store := ctx.KVStore(k.storeKey)
-	key := append(types.KeyPrefixUniversalTransaction, []byte(txID)...)
+	key := append(types.KeyPrefixTransaction, []byte(txID)...)
 	value := store.Get(key)
 	if len(value) == 0 {
 		err = errors.TransactionNotFound
@@ -243,4 +218,18 @@ func (k *Keeper) IsCompleted(ctx sdk.Context, txID string) bool {
 	store := ctx.KVStore(k.storeKey)
 	key := append(types.KeyPrefixCompletedTransaction, []byte(txID)...)
 	return store.Has(key)
+}
+
+// IsSigned check signature for transaction.
+func (k *Keeper) GetSigners(ctx sdk.Context, txID string) []string {
+	store := ctx.KVStore(k.storeKey)
+	var result []string
+	it := sdk.KVStorePrefixIterator(store, types.GetSignaturePrefixKey(txID))
+	defer it.Close()
+
+	for ; it.Valid(); it.Next() {
+		result = append(result, types.ExtractSignerFromKey(it.Key(), txID))
+	}
+
+	return result
 }

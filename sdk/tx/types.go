@@ -41,9 +41,6 @@ type (
 	MsgCreateWallet      = multisigtypes.MsgCreateWallet
 	MsgCreateTransaction = multisigtypes.MsgCreateTransaction
 	MsgSignTransaction   = multisigtypes.MsgSignTransaction
-
-	MsgCreateUniversalTransaction = multisigtypes.MsgCreateUniversalTransaction
-	MsgSignUniversalTransaction   = multisigtypes.MsgSignUniversalTransaction
 )
 
 var (
@@ -66,7 +63,4 @@ var (
 	NewMsgCreateWallet      = multisigtypes.NewMsgCreateWallet
 	NewMsgCreateTransaction = multisigtypes.NewMsgCreateTransaction
 	NewMsgSignTransaction   = multisigtypes.NewMsgSignTransaction
-
-	NewMsgCreateUniversalTransaction = multisigtypes.NewMsgCreateUniversalTransaction
-	NewMsgSignUniversalTransaction   = multisigtypes.NewMsgSignUniversalTransaction
 )

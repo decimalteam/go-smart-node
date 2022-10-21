@@ -221,7 +221,7 @@ func universalMultiSig() {
 	}
 	{
 		bindAcc(api, acc1)
-		msg, _ := dscTx.NewMsgCreateUniversalTransaction(acc1.SdkAddress(), wal.Address,
+		msg, _ := dscTx.NewMsgCreateTransaction(acc1.SdkAddress(), wal.Address,
 			dscTx.NewMsgSendCoin(wAdr, acc4.SdkAddress(), sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(10)))),
 		)
 		tx, err := dscTx.BuildTransaction(acc1, []sdk.Msg{msg}, "", api.BaseCoin(), api.GetFeeCalculationOptions())
@@ -234,13 +234,13 @@ func universalMultiSig() {
 		fmt.Printf("create tx result: %#v\n\n", res)
 	}
 
-	mtxs, _ := api.MultisigUniversalTransactionsByWallet(wal.Address)
+	mtxs, _ := api.MultisigTransactionsByWallet(wal.Address)
 	for _, mtx := range mtxs {
-		fmt.Printf("signing tx: %s\n\n", mtx.Transaction.Id)
+		fmt.Printf("signing tx: %s\n\n", mtx.Id)
 		fmt.Printf("signing tx: %#v\n\n", mtx)
 		for _, acc := range []*dscWallet.Account{acc2, acc3} {
 			bindAcc(api, acc)
-			msg := dscTx.NewMsgSignUniversalTransaction(acc.SdkAddress(), mtx.Transaction.Id)
+			msg := dscTx.NewMsgSignTransaction(acc.SdkAddress(), mtx.Id)
 			tx, _ := dscTx.BuildTransaction(acc, []sdk.Msg{msg}, "", api.BaseCoin(), api.GetFeeCalculationOptions())
 			tx.SignTransaction(acc)
 			bz, _ := tx.BytesToSend()

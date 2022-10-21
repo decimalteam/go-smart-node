@@ -224,15 +224,6 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 		}
 		ui.MultisigTransactions = append(ui.MultisigTransactions, txs...)
 	}
-	fmt.Printf("updateGeneratorsInfo: multisig universal txs\n")
-	for _, wallet := range ui.MultisigWallets {
-		txs, err := reactor.api.MultisigUniversalTransactionsByWallet(wallet.Address)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		ui.MultisigUniversalTransactions = append(ui.MultisigUniversalTransactions, txs...)
-	}
 	// multisig balances
 	for _, wallet := range ui.MultisigWallets {
 		balance, err := reactor.api.AddressBalance(wallet.Address)

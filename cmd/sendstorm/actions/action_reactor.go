@@ -56,10 +56,6 @@ func (ar *ActionReactor) Add(generatorName string, weight int64) error {
 		wag.AG = NewCreateMultisigTransactionGenerator(100, 10000)
 	case "SignMultisigTransaction":
 		wag.AG = NewSignMultisigTransactionGenerator()
-	case "CreateMultisigUniversalTransaction":
-		wag.AG = NewCreateMultisigUniversalTransactionGenerator(100, 10000)
-	case "SignMultisigUniversalTransaction":
-		wag.AG = NewSignMultisigUniversalTransactionGenerator()
 	// validator
 	case "CreateValidator":
 		wag.AG = NewCreateValidatorGenerator(100, 1000)

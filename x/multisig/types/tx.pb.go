@@ -7,9 +7,8 @@ import (
 	context "context"
 	fmt "fmt"
 	_ "github.com/cosmos/cosmos-proto"
-	types1 "github.com/cosmos/cosmos-sdk/codec/types"
-	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
-	types "github.com/cosmos/cosmos-sdk/types"
+	types "github.com/cosmos/cosmos-sdk/codec/types"
+	_ "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
 	_ "github.com/gogo/protobuf/gogoproto"
 	grpc1 "github.com/gogo/protobuf/grpc"
@@ -147,12 +146,12 @@ func (m *MsgCreateWalletResponse) GetWallet() string {
 	return ""
 }
 
+////////
 // MsgCreateTransaction defines a SDK message for creating multisig transaction in existing wallet.
 type MsgCreateTransaction struct {
-	Sender   string                                   `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	Wallet   string                                   `protobuf:"bytes,2,opt,name=wallet,proto3" json:"wallet,omitempty"`
-	Receiver string                                   `protobuf:"bytes,3,opt,name=receiver,proto3" json:"receiver,omitempty"`
-	Coins    github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,4,rep,name=coins,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"coins"`
+	Sender  string     `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	Wallet  string     `protobuf:"bytes,2,opt,name=wallet,proto3" json:"wallet,omitempty"`
+	Content *types.Any `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
 }
 
 func (m *MsgCreateTransaction) Reset()         { *m = MsgCreateTransaction{} }
@@ -202,21 +201,14 @@ func (m *MsgCreateTransaction) GetWallet() string {
 	return ""
 }
 
-func (m *MsgCreateTransaction) GetReceiver() string {
+func (m *MsgCreateTransaction) GetContent() *types.Any {
 	if m != nil {
-		return m.Receiver
-	}
-	return ""
-}
-
-func (m *MsgCreateTransaction) GetCoins() github_com_cosmos_cosmos_sdk_types.Coins {
-	if m != nil {
-		return m.Coins
+		return m.Content
 	}
 	return nil
 }
 
-// MsgCreateTransactionResponse defines the Msg/CreateTransaction response type.
+// MsgCreateTransactionResponse defines the MsgCreateTransaction response type.
 type MsgCreateTransactionResponse struct {
 	ID string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 }
@@ -351,203 +343,6 @@ func (m *MsgSignTransactionResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgSignTransactionResponse proto.InternalMessageInfo
 
-////////
-// MsgCreateUniversalTransaction defines a SDK message for creating multisig transaction in existing wallet.
-type MsgCreateUniversalTransaction struct {
-	Sender  string      `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	Wallet  string      `protobuf:"bytes,2,opt,name=wallet,proto3" json:"wallet,omitempty"`
-	Content *types1.Any `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
-}
-
-func (m *MsgCreateUniversalTransaction) Reset()         { *m = MsgCreateUniversalTransaction{} }
-func (m *MsgCreateUniversalTransaction) String() string { return proto.CompactTextString(m) }
-func (*MsgCreateUniversalTransaction) ProtoMessage()    {}
-func (*MsgCreateUniversalTransaction) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7cc044ddcb4e7d33, []int{6}
-}
-func (m *MsgCreateUniversalTransaction) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgCreateUniversalTransaction) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgCreateUniversalTransaction.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgCreateUniversalTransaction) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgCreateUniversalTransaction.Merge(m, src)
-}
-func (m *MsgCreateUniversalTransaction) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgCreateUniversalTransaction) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgCreateUniversalTransaction.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgCreateUniversalTransaction proto.InternalMessageInfo
-
-func (m *MsgCreateUniversalTransaction) GetSender() string {
-	if m != nil {
-		return m.Sender
-	}
-	return ""
-}
-
-func (m *MsgCreateUniversalTransaction) GetWallet() string {
-	if m != nil {
-		return m.Wallet
-	}
-	return ""
-}
-
-func (m *MsgCreateUniversalTransaction) GetContent() *types1.Any {
-	if m != nil {
-		return m.Content
-	}
-	return nil
-}
-
-// MsgCreateUniversalTransactionResponse defines the Msg/CreateTransaction response type.
-type MsgCreateUniversalTransactionResponse struct {
-	ID string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-}
-
-func (m *MsgCreateUniversalTransactionResponse) Reset()         { *m = MsgCreateUniversalTransactionResponse{} }
-func (m *MsgCreateUniversalTransactionResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgCreateUniversalTransactionResponse) ProtoMessage()    {}
-func (*MsgCreateUniversalTransactionResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7cc044ddcb4e7d33, []int{7}
-}
-func (m *MsgCreateUniversalTransactionResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgCreateUniversalTransactionResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgCreateUniversalTransactionResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgCreateUniversalTransactionResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgCreateUniversalTransactionResponse.Merge(m, src)
-}
-func (m *MsgCreateUniversalTransactionResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgCreateUniversalTransactionResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgCreateUniversalTransactionResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgCreateUniversalTransactionResponse proto.InternalMessageInfo
-
-func (m *MsgCreateUniversalTransactionResponse) GetID() string {
-	if m != nil {
-		return m.ID
-	}
-	return ""
-}
-
-// MsgSignUniversalTransaction defines a SDK message for signing existing multisig transaction.
-type MsgSignUniversalTransaction struct {
-	Sender string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	ID     string `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
-}
-
-func (m *MsgSignUniversalTransaction) Reset()         { *m = MsgSignUniversalTransaction{} }
-func (m *MsgSignUniversalTransaction) String() string { return proto.CompactTextString(m) }
-func (*MsgSignUniversalTransaction) ProtoMessage()    {}
-func (*MsgSignUniversalTransaction) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7cc044ddcb4e7d33, []int{8}
-}
-func (m *MsgSignUniversalTransaction) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgSignUniversalTransaction) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgSignUniversalTransaction.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgSignUniversalTransaction) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgSignUniversalTransaction.Merge(m, src)
-}
-func (m *MsgSignUniversalTransaction) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgSignUniversalTransaction) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgSignUniversalTransaction.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgSignUniversalTransaction proto.InternalMessageInfo
-
-func (m *MsgSignUniversalTransaction) GetSender() string {
-	if m != nil {
-		return m.Sender
-	}
-	return ""
-}
-
-func (m *MsgSignUniversalTransaction) GetID() string {
-	if m != nil {
-		return m.ID
-	}
-	return ""
-}
-
-// MsgSignUniversalTransactionResponse defines the Msg/SignTransaction response type.
-type MsgSignUniversalTransactionResponse struct {
-}
-
-func (m *MsgSignUniversalTransactionResponse) Reset()         { *m = MsgSignUniversalTransactionResponse{} }
-func (m *MsgSignUniversalTransactionResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgSignUniversalTransactionResponse) ProtoMessage()    {}
-func (*MsgSignUniversalTransactionResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7cc044ddcb4e7d33, []int{9}
-}
-func (m *MsgSignUniversalTransactionResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgSignUniversalTransactionResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgSignUniversalTransactionResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgSignUniversalTransactionResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgSignUniversalTransactionResponse.Merge(m, src)
-}
-func (m *MsgSignUniversalTransactionResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgSignUniversalTransactionResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgSignUniversalTransactionResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgSignUniversalTransactionResponse proto.InternalMessageInfo
-
 func init() {
 	proto.RegisterType((*MsgCreateWallet)(nil), "decimal.multisig.v1.MsgCreateWallet")
 	proto.RegisterType((*MsgCreateWalletResponse)(nil), "decimal.multisig.v1.MsgCreateWalletResponse")
@@ -555,60 +350,46 @@ func init() {
 	proto.RegisterType((*MsgCreateTransactionResponse)(nil), "decimal.multisig.v1.MsgCreateTransactionResponse")
 	proto.RegisterType((*MsgSignTransaction)(nil), "decimal.multisig.v1.MsgSignTransaction")
 	proto.RegisterType((*MsgSignTransactionResponse)(nil), "decimal.multisig.v1.MsgSignTransactionResponse")
-	proto.RegisterType((*MsgCreateUniversalTransaction)(nil), "decimal.multisig.v1.MsgCreateUniversalTransaction")
-	proto.RegisterType((*MsgCreateUniversalTransactionResponse)(nil), "decimal.multisig.v1.MsgCreateUniversalTransactionResponse")
-	proto.RegisterType((*MsgSignUniversalTransaction)(nil), "decimal.multisig.v1.MsgSignUniversalTransaction")
-	proto.RegisterType((*MsgSignUniversalTransactionResponse)(nil), "decimal.multisig.v1.MsgSignUniversalTransactionResponse")
 }
 
 func init() { proto.RegisterFile("decimal/multisig/v1/tx.proto", fileDescriptor_7cc044ddcb4e7d33) }
 
 var fileDescriptor_7cc044ddcb4e7d33 = []byte{
-	// 699 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x55, 0x4f, 0x4f, 0x13, 0x41,
-	0x14, 0xef, 0xb6, 0x58, 0x64, 0x2a, 0x21, 0xae, 0x0d, 0x2c, 0x6b, 0x2d, 0x4d, 0x95, 0x58, 0x8d,
-	0xdd, 0xa1, 0xd5, 0x18, 0x82, 0x07, 0x43, 0xf1, 0x62, 0x0c, 0x97, 0x45, 0x63, 0xe2, 0xc5, 0xec,
-	0x9f, 0x71, 0x3a, 0xe9, 0xee, 0x0c, 0xee, 0x4c, 0x0b, 0x5c, 0x3d, 0x78, 0xf2, 0xe0, 0x47, 0xe0,
-	0xec, 0xc9, 0x03, 0x1f, 0x82, 0x98, 0x98, 0x10, 0x4f, 0x9e, 0x50, 0xcb, 0xc1, 0xaf, 0x61, 0xba,
-	0x3b, 0xbb, 0xd8, 0x52, 0x4a, 0x51, 0xe3, 0xa9, 0x7d, 0xf3, 0x7e, 0xef, 0xbd, 0xdf, 0xfb, 0xbd,
-	0x79, 0xb3, 0xa0, 0xe0, 0x22, 0x87, 0xf8, 0x96, 0x07, 0xfd, 0xb6, 0x27, 0x08, 0x27, 0x18, 0x76,
-	0x6a, 0x50, 0x6c, 0x1b, 0x9b, 0x01, 0x13, 0x4c, 0xbd, 0x22, 0xbd, 0x46, 0xec, 0x35, 0x3a, 0x35,
-	0x3d, 0x8f, 0x19, 0x66, 0xa1, 0x1f, 0xf6, 0xfe, 0x45, 0x50, 0x7d, 0x1e, 0x33, 0x86, 0x3d, 0x04,
-	0x43, 0xcb, 0x6e, 0xbf, 0x82, 0x16, 0xdd, 0x89, 0x5d, 0x0e, 0xe3, 0x3e, 0xe3, 0x2f, 0xa3, 0x98,
-	0xc8, 0x90, 0xae, 0x62, 0x64, 0x41, 0xdb, 0xe2, 0x08, 0x76, 0x6a, 0x36, 0x12, 0x56, 0x0d, 0x3a,
-	0x8c, 0x50, 0xe9, 0x9f, 0x93, 0x7e, 0x9f, 0x87, 0xc4, 0x7c, 0x8e, 0x23, 0x47, 0x79, 0x57, 0x01,
-	0x33, 0xeb, 0x1c, 0xaf, 0x05, 0xc8, 0x12, 0xe8, 0xb9, 0xe5, 0x79, 0x48, 0xa8, 0x4b, 0x20, 0xcb,
-	0x11, 0x75, 0x51, 0xa0, 0x29, 0x25, 0xa5, 0x32, 0xd5, 0xd0, 0xbe, 0xec, 0x55, 0xf3, 0xb2, 0xdc,
-	0xaa, 0xeb, 0x06, 0x88, 0xf3, 0x0d, 0x11, 0x10, 0x8a, 0x4d, 0x89, 0x53, 0x67, 0x41, 0x96, 0x6d,
-	0x51, 0x14, 0x70, 0x2d, 0x5d, 0xca, 0x54, 0xa6, 0x4c, 0x69, 0xa9, 0x1a, 0x98, 0xdc, 0x42, 0x04,
-	0x37, 0x05, 0xd7, 0x32, 0xa5, 0x4c, 0x65, 0xda, 0x8c, 0x4d, 0xb5, 0x00, 0xa6, 0x44, 0x33, 0x40,
-	0xbc, 0xc9, 0x3c, 0x57, 0x9b, 0x28, 0x29, 0x95, 0x69, 0xf3, 0xf8, 0x60, 0x25, 0xf7, 0xe6, 0xe7,
-	0xc7, 0xdb, 0x32, 0x79, 0xf9, 0x09, 0x98, 0x1b, 0x60, 0x68, 0x22, 0xbe, 0xc9, 0x28, 0x47, 0x3d,
-	0xa6, 0x5b, 0xe1, 0xc9, 0xd9, 0x4c, 0x23, 0x5c, 0x79, 0x37, 0x0d, 0xf2, 0x49, 0xb6, 0xa7, 0x81,
-	0x45, 0xb9, 0xe5, 0x08, 0xc2, 0xe8, 0x1f, 0x34, 0x7d, 0x5c, 0x3c, 0x3d, 0x5e, 0x71, 0xf5, 0x1e,
-	0xb8, 0x18, 0x20, 0x07, 0x91, 0x0e, 0x0a, 0xb4, 0xcc, 0x19, 0x31, 0x09, 0x52, 0xb5, 0xc0, 0x85,
-	0xde, 0x24, 0xb9, 0x36, 0x51, 0xca, 0x54, 0x72, 0xf5, 0x79, 0x43, 0xe2, 0x7b, 0xb3, 0x36, 0xe4,
-	0xac, 0x8d, 0x35, 0x46, 0x68, 0x63, 0x69, 0xff, 0x70, 0x21, 0xf5, 0xe1, 0xdb, 0x42, 0x05, 0x13,
-	0xd1, 0x6c, 0xdb, 0x86, 0xc3, 0x7c, 0x79, 0x4d, 0xe4, 0x4f, 0x95, 0xbb, 0x2d, 0x28, 0x76, 0x36,
-	0x11, 0x0f, 0x03, 0xb8, 0x19, 0x65, 0xee, 0xd7, 0xfb, 0x3e, 0x28, 0x0c, 0x53, 0x28, 0x11, 0x7d,
-	0x16, 0xa4, 0x89, 0x2b, 0x55, 0xca, 0x76, 0x0f, 0x17, 0xd2, 0x8f, 0x1f, 0x99, 0x69, 0xe2, 0x96,
-	0x5b, 0x40, 0x5d, 0xe7, 0x78, 0x83, 0x60, 0xfa, 0x77, 0xba, 0x46, 0xf9, 0xd3, 0x83, 0xf9, 0xfb,
-	0x49, 0x16, 0x80, 0x7e, 0xb2, 0x58, 0x4c, 0xb1, 0xfc, 0x59, 0x01, 0xd7, 0x92, 0x1e, 0x9e, 0xd1,
-	0x9e, 0x8c, 0xdc, 0xf2, 0xfe, 0xf7, 0xb8, 0x1f, 0x80, 0x49, 0x87, 0x51, 0x81, 0xa8, 0x08, 0xa7,
-	0x9d, 0xab, 0xe7, 0x8d, 0x68, 0xb9, 0x8d, 0x78, 0xb9, 0x8d, 0x55, 0xba, 0xd3, 0xc8, 0x7d, 0xda,
-	0xab, 0x4e, 0xae, 0x45, 0x40, 0x33, 0x8e, 0xe8, 0xef, 0xf6, 0x21, 0x58, 0x1c, 0xd9, 0xce, 0x99,
-	0xb3, 0x11, 0xe0, 0xaa, 0x94, 0xeb, 0x1f, 0xa9, 0x31, 0xd6, 0x90, 0x16, 0xc1, 0xf5, 0x11, 0x55,
-	0x63, 0xd2, 0xf5, 0x1f, 0x13, 0x20, 0xb3, 0xce, 0xb1, 0x6a, 0x83, 0x4b, 0x7d, 0xef, 0xd0, 0x0d,
-	0x63, 0xc8, 0xb3, 0x69, 0x0c, 0xbc, 0x05, 0xfa, 0x9d, 0x71, 0x50, 0x89, 0x40, 0xaf, 0xc1, 0xe5,
-	0x93, 0xbb, 0x7f, 0x6b, 0x74, 0x8a, 0xdf, 0xa0, 0x7a, 0x6d, 0x6c, 0x68, 0x52, 0xb2, 0x05, 0x66,
-	0x06, 0x97, 0xe2, 0xe6, 0x69, 0x59, 0x06, 0x80, 0x3a, 0x1c, 0x13, 0x98, 0x14, 0x7b, 0xa7, 0x00,
-	0x7d, 0xc4, 0xb5, 0xaf, 0x8f, 0xa6, 0x3f, 0x2c, 0x46, 0x5f, 0x39, 0x7f, 0x4c, 0x42, 0xe7, 0xad,
-	0x02, 0xb4, 0xd3, 0x6f, 0xdd, 0xa8, 0xe6, 0x86, 0x52, 0x59, 0x3e, 0x6f, 0x44, 0x4c, 0xa4, 0x61,
-	0xee, 0x77, 0x8b, 0xca, 0x41, 0xb7, 0xa8, 0x7c, 0xef, 0x16, 0x95, 0xf7, 0x47, 0xc5, 0xd4, 0xc1,
-	0x51, 0x31, 0xf5, 0xf5, 0xa8, 0x98, 0x7a, 0xb1, 0x6c, 0x13, 0x61, 0xb7, 0x9d, 0x16, 0x12, 0x06,
-	0x0b, 0x30, 0x94, 0x05, 0x04, 0xb2, 0x7c, 0x88, 0x59, 0x95, 0xfb, 0x56, 0x20, 0xaa, 0x94, 0xb9,
-	0x08, 0x6e, 0x1f, 0x7f, 0xdb, 0xc3, 0x27, 0xd4, 0xce, 0x86, 0x6b, 0x7c, 0xf7, 0x57, 0x00, 0x00,
-	0x00, 0xff, 0xff, 0xeb, 0x4f, 0xaa, 0xb6, 0xfc, 0x07, 0x00, 0x00,
+	// 543 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x54, 0xcd, 0x8e, 0xd2, 0x50,
+	0x14, 0x9e, 0x16, 0x03, 0xe1, 0xe2, 0x64, 0x62, 0x25, 0x33, 0xb5, 0x21, 0x95, 0x10, 0x13, 0xd1,
+	0x48, 0xaf, 0x8c, 0x89, 0x31, 0xba, 0x1a, 0xc6, 0x8d, 0x31, 0x6c, 0x3a, 0x26, 0x26, 0x6e, 0x4c,
+	0x7f, 0x8e, 0x97, 0x1b, 0xda, 0x7b, 0xb1, 0xe7, 0x02, 0xc3, 0xd6, 0x27, 0xf0, 0x11, 0x7c, 0x04,
+	0x17, 0xf3, 0x08, 0x2e, 0xd4, 0xd5, 0xc4, 0x95, 0x2b, 0x63, 0x60, 0xe1, 0x6b, 0x98, 0xa1, 0x2d,
+	0x08, 0x33, 0x2a, 0xd1, 0x1d, 0xe7, 0x7e, 0xdf, 0xfd, 0xbe, 0xef, 0x9c, 0x7b, 0x28, 0xa9, 0x85,
+	0x10, 0xf0, 0xd8, 0x8b, 0x68, 0x3c, 0x8c, 0x14, 0x47, 0xce, 0xe8, 0xa8, 0x4d, 0xd5, 0xb1, 0x33,
+	0x48, 0xa4, 0x92, 0xc6, 0xd5, 0x0c, 0x75, 0x72, 0xd4, 0x19, 0xb5, 0xad, 0x2a, 0x93, 0x4c, 0xce,
+	0x71, 0x7a, 0xf6, 0x2b, 0xa5, 0x5a, 0xd7, 0x98, 0x94, 0x2c, 0x02, 0x3a, 0xaf, 0xfc, 0xe1, 0x2b,
+	0xea, 0x89, 0x49, 0x0e, 0x05, 0x12, 0x63, 0x89, 0x2f, 0xd3, 0x3b, 0x69, 0x91, 0x41, 0x76, 0x5a,
+	0x51, 0xdf, 0x43, 0xa0, 0xa3, 0xb6, 0x0f, 0xca, 0x6b, 0xd3, 0x40, 0x72, 0x91, 0xe1, 0x7b, 0x19,
+	0x1e, 0xe3, 0x3c, 0x58, 0x8c, 0x2c, 0x05, 0x1a, 0xef, 0x34, 0xb2, 0xd3, 0x45, 0x76, 0x98, 0x80,
+	0xa7, 0xe0, 0xb9, 0x17, 0x45, 0xa0, 0x8c, 0xbb, 0xa4, 0x88, 0x20, 0x42, 0x48, 0x4c, 0xad, 0xae,
+	0x35, 0xcb, 0x1d, 0xf3, 0xcb, 0x49, 0xab, 0x9a, 0xd9, 0x1d, 0x84, 0x61, 0x02, 0x88, 0x47, 0x2a,
+	0xe1, 0x82, 0xb9, 0x19, 0xcf, 0xd8, 0x25, 0x45, 0x39, 0x16, 0x90, 0xa0, 0xa9, 0xd7, 0x0b, 0xcd,
+	0xb2, 0x9b, 0x55, 0x86, 0x49, 0x4a, 0x63, 0xe0, 0xac, 0xa7, 0xd0, 0x2c, 0xd4, 0x0b, 0xcd, 0x6d,
+	0x37, 0x2f, 0x8d, 0x1a, 0x29, 0xab, 0x5e, 0x02, 0xd8, 0x93, 0x51, 0x68, 0x5e, 0xaa, 0x6b, 0xcd,
+	0x6d, 0x77, 0x79, 0xf0, 0xb0, 0xf2, 0xe6, 0xc7, 0xfb, 0xdb, 0x99, 0x78, 0xe3, 0x29, 0xd9, 0x5b,
+	0x4b, 0xe8, 0x02, 0x0e, 0xa4, 0x40, 0x38, 0x4b, 0x3a, 0x9e, 0x9f, 0xfc, 0x3d, 0x69, 0xca, 0x6b,
+	0x7c, 0xd0, 0x48, 0x75, 0xa1, 0xf6, 0x2c, 0xf1, 0x04, 0x7a, 0x81, 0xe2, 0x52, 0xfc, 0x43, 0xd3,
+	0x4b, 0x73, 0x7d, 0x33, 0x73, 0xe3, 0x11, 0x29, 0x05, 0x52, 0x28, 0x10, 0xca, 0x2c, 0xd4, 0xb5,
+	0x66, 0x65, 0xbf, 0xea, 0xa4, 0xaf, 0xed, 0xe4, 0xaf, 0xed, 0x1c, 0x88, 0x49, 0xa7, 0xf2, 0xf9,
+	0xa4, 0x55, 0x3a, 0x4c, 0x89, 0x6e, 0x7e, 0x63, 0x75, 0x26, 0xf7, 0x49, 0xed, 0xa2, 0x2e, 0x16,
+	0x83, 0xd9, 0x25, 0x3a, 0x0f, 0xb3, 0x4e, 0x8a, 0xd3, 0x6f, 0xd7, 0xf5, 0x27, 0x8f, 0x5d, 0x9d,
+	0x87, 0x8d, 0x3e, 0x31, 0xba, 0xc8, 0x8e, 0x38, 0x13, 0xff, 0xd7, 0x7b, 0xaa, 0xaf, 0xaf, 0xeb,
+	0xaf, 0x86, 0xac, 0x11, 0xeb, 0xbc, 0x59, 0x1e, 0x71, 0xff, 0x93, 0x4e, 0x0a, 0x5d, 0x64, 0x86,
+	0x4f, 0x2e, 0xaf, 0x6c, 0xdf, 0x0d, 0xe7, 0x82, 0x3f, 0x8b, 0xb3, 0xb6, 0x01, 0xd6, 0x9d, 0x4d,
+	0x58, 0x8b, 0x71, 0xbc, 0x26, 0x57, 0xce, 0xbf, 0xf8, 0xad, 0x3f, 0x4b, 0xfc, 0x42, 0xb5, 0xda,
+	0x1b, 0x53, 0x17, 0x96, 0x7d, 0xb2, 0xb3, 0x3e, 0xe6, 0x9b, 0xbf, 0x53, 0x59, 0x23, 0x5a, 0x74,
+	0x43, 0x62, 0x6e, 0xd6, 0x71, 0x3f, 0x4e, 0x6d, 0xed, 0x74, 0x6a, 0x6b, 0xdf, 0xa7, 0xb6, 0xf6,
+	0x76, 0x66, 0x6f, 0x9d, 0xce, 0xec, 0xad, 0xaf, 0x33, 0x7b, 0xeb, 0xc5, 0x03, 0x9f, 0x2b, 0x7f,
+	0x18, 0xf4, 0x41, 0x39, 0x32, 0x61, 0x34, 0xd3, 0x55, 0xe0, 0xc5, 0x94, 0xc9, 0x16, 0xc6, 0x5e,
+	0xa2, 0x5a, 0x42, 0x86, 0x40, 0x8f, 0x97, 0x5f, 0x2e, 0x35, 0x19, 0x00, 0xfa, 0xc5, 0xf9, 0x4e,
+	0xde, 0xfb, 0x19, 0x00, 0x00, 0xff, 0xff, 0x1d, 0x16, 0xbc, 0x89, 0xda, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -629,10 +410,6 @@ type MsgClient interface {
 	CreateTransaction(ctx context.Context, in *MsgCreateTransaction, opts ...grpc.CallOption) (*MsgCreateTransactionResponse, error)
 	// SignTransaction defines message for signing existing multisig transaction.
 	SignTransaction(ctx context.Context, in *MsgSignTransaction, opts ...grpc.CallOption) (*MsgSignTransactionResponse, error)
-	// CreateUniversalTransaction defines message for creating multisig transaction in existing wallet.
-	CreateUniversalTransaction(ctx context.Context, in *MsgCreateUniversalTransaction, opts ...grpc.CallOption) (*MsgCreateUniversalTransactionResponse, error)
-	// SignUniversalTransaction defines message for signing existing multisig transaction.
-	SignUniversalTransaction(ctx context.Context, in *MsgSignUniversalTransaction, opts ...grpc.CallOption) (*MsgSignUniversalTransactionResponse, error)
 }
 
 type msgClient struct {
@@ -670,24 +447,6 @@ func (c *msgClient) SignTransaction(ctx context.Context, in *MsgSignTransaction,
 	return out, nil
 }
 
-func (c *msgClient) CreateUniversalTransaction(ctx context.Context, in *MsgCreateUniversalTransaction, opts ...grpc.CallOption) (*MsgCreateUniversalTransactionResponse, error) {
-	out := new(MsgCreateUniversalTransactionResponse)
-	err := c.cc.Invoke(ctx, "/decimal.multisig.v1.Msg/CreateUniversalTransaction", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) SignUniversalTransaction(ctx context.Context, in *MsgSignUniversalTransaction, opts ...grpc.CallOption) (*MsgSignUniversalTransactionResponse, error) {
-	out := new(MsgSignUniversalTransactionResponse)
-	err := c.cc.Invoke(ctx, "/decimal.multisig.v1.Msg/SignUniversalTransaction", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	// CreateWallet defines message for creating multisig wallet.
@@ -696,10 +455,6 @@ type MsgServer interface {
 	CreateTransaction(context.Context, *MsgCreateTransaction) (*MsgCreateTransactionResponse, error)
 	// SignTransaction defines message for signing existing multisig transaction.
 	SignTransaction(context.Context, *MsgSignTransaction) (*MsgSignTransactionResponse, error)
-	// CreateUniversalTransaction defines message for creating multisig transaction in existing wallet.
-	CreateUniversalTransaction(context.Context, *MsgCreateUniversalTransaction) (*MsgCreateUniversalTransactionResponse, error)
-	// SignUniversalTransaction defines message for signing existing multisig transaction.
-	SignUniversalTransaction(context.Context, *MsgSignUniversalTransaction) (*MsgSignUniversalTransactionResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -714,12 +469,6 @@ func (*UnimplementedMsgServer) CreateTransaction(ctx context.Context, req *MsgCr
 }
 func (*UnimplementedMsgServer) SignTransaction(ctx context.Context, req *MsgSignTransaction) (*MsgSignTransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SignTransaction not implemented")
-}
-func (*UnimplementedMsgServer) CreateUniversalTransaction(ctx context.Context, req *MsgCreateUniversalTransaction) (*MsgCreateUniversalTransactionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateUniversalTransaction not implemented")
-}
-func (*UnimplementedMsgServer) SignUniversalTransaction(ctx context.Context, req *MsgSignUniversalTransaction) (*MsgSignUniversalTransactionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SignUniversalTransaction not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -780,42 +529,6 @@ func _Msg_SignTransaction_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_CreateUniversalTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgCreateUniversalTransaction)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).CreateUniversalTransaction(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/decimal.multisig.v1.Msg/CreateUniversalTransaction",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).CreateUniversalTransaction(ctx, req.(*MsgCreateUniversalTransaction))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_SignUniversalTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgSignUniversalTransaction)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).SignUniversalTransaction(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/decimal.multisig.v1.Msg/SignUniversalTransaction",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).SignUniversalTransaction(ctx, req.(*MsgSignUniversalTransaction))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "decimal.multisig.v1.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -831,14 +544,6 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SignTransaction",
 			Handler:    _Msg_SignTransaction_Handler,
-		},
-		{
-			MethodName: "CreateUniversalTransaction",
-			Handler:    _Msg_CreateUniversalTransaction_Handler,
-		},
-		{
-			MethodName: "SignUniversalTransaction",
-			Handler:    _Msg_SignUniversalTransaction_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -957,24 +662,15 @@ func (m *MsgCreateTransaction) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.Coins) > 0 {
-		for iNdEx := len(m.Coins) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Coins[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintTx(dAtA, i, uint64(size))
+	if m.Content != nil {
+		{
+			size, err := m.Content.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
 			}
-			i--
-			dAtA[i] = 0x22
+			i -= size
+			i = encodeVarintTx(dAtA, i, uint64(size))
 		}
-	}
-	if len(m.Receiver) > 0 {
-		i -= len(m.Receiver)
-		copy(dAtA[i:], m.Receiver)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Receiver)))
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -1085,145 +781,6 @@ func (m *MsgSignTransactionResponse) MarshalToSizedBuffer(dAtA []byte) (int, err
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgCreateUniversalTransaction) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgCreateUniversalTransaction) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgCreateUniversalTransaction) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.Content != nil {
-		{
-			size, err := m.Content.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintTx(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.Wallet) > 0 {
-		i -= len(m.Wallet)
-		copy(dAtA[i:], m.Wallet)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Wallet)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Sender) > 0 {
-		i -= len(m.Sender)
-		copy(dAtA[i:], m.Sender)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Sender)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgCreateUniversalTransactionResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgCreateUniversalTransactionResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgCreateUniversalTransactionResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.ID) > 0 {
-		i -= len(m.ID)
-		copy(dAtA[i:], m.ID)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ID)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgSignUniversalTransaction) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgSignUniversalTransaction) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgSignUniversalTransaction) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.ID) > 0 {
-		i -= len(m.ID)
-		copy(dAtA[i:], m.ID)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ID)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Sender) > 0 {
-		i -= len(m.Sender)
-		copy(dAtA[i:], m.Sender)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Sender)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgSignUniversalTransactionResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgSignUniversalTransactionResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgSignUniversalTransactionResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	return len(dAtA) - i, nil
-}
-
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -1291,15 +848,9 @@ func (m *MsgCreateTransaction) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.Receiver)
-	if l > 0 {
+	if m.Content != nil {
+		l = m.Content.Size()
 		n += 1 + l + sovTx(uint64(l))
-	}
-	if len(m.Coins) > 0 {
-		for _, e := range m.Coins {
-			l = e.Size()
-			n += 1 + l + sovTx(uint64(l))
-		}
 	}
 	return n
 }
@@ -1335,66 +886,6 @@ func (m *MsgSignTransaction) Size() (n int) {
 }
 
 func (m *MsgSignTransactionResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	return n
-}
-
-func (m *MsgCreateUniversalTransaction) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Sender)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = len(m.Wallet)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	if m.Content != nil {
-		l = m.Content.Size()
-		n += 1 + l + sovTx(uint64(l))
-	}
-	return n
-}
-
-func (m *MsgCreateUniversalTransactionResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.ID)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	return n
-}
-
-func (m *MsgSignUniversalTransaction) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Sender)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = len(m.ID)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	return n
-}
-
-func (m *MsgSignUniversalTransactionResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1795,39 +1286,7 @@ func (m *MsgCreateTransaction) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Receiver", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Receiver = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Coins", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Content", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -1854,8 +1313,10 @@ func (m *MsgCreateTransaction) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Coins = append(m.Coins, types.Coin{})
-			if err := m.Coins[len(m.Coins)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if m.Content == nil {
+				m.Content = &types.Any{}
+			}
+			if err := m.Content.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2103,402 +1564,6 @@ func (m *MsgSignTransactionResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: MsgSignTransactionResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgCreateUniversalTransaction) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgCreateUniversalTransaction: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgCreateUniversalTransaction: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Sender = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Wallet", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Wallet = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Content", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Content == nil {
-				m.Content = &types1.Any{}
-			}
-			if err := m.Content.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgCreateUniversalTransactionResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgCreateUniversalTransactionResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgCreateUniversalTransactionResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ID", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ID = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgSignUniversalTransaction) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgSignUniversalTransaction: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgSignUniversalTransaction: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Sender = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ID", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ID = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgSignUniversalTransactionResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgSignUniversalTransactionResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgSignUniversalTransactionResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

@@ -42,3 +42,15 @@ func GetSignatureKey(txID string, signer string) []byte {
 	key = append(key, []byte(signer)...)
 	return key
 }
+
+func GetSignaturePrefixKey(txID string) []byte {
+	key := []byte{prefixUniversalSign}
+	key = append(key, []byte(txID)...)
+	key = append(key, prefixUniversalSign)
+	return key
+}
+
+func ExtractSignerFromKey(key []byte, txID string) string {
+	skip := 1 + len(txID) + 1
+	return string(key[skip:])
+}

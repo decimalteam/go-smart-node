@@ -35,21 +35,22 @@ func (gg *SignMultisigTransactionGenerator) Update(ui UpdateInfo) {
 }
 
 func isExecuted(wallet dscApi.MultisigWallet, tx dscApi.MultisigTransaction) bool {
-	var signedWeight uint32
-	for i := range wallet.Owners {
-		if tx.Signers[i] != "" {
-			signedWeight += wallet.Weights[i]
+	/*
+		TODO
+		var signedWeight uint32
+		for i := range wallet.Owners {
+			if tx.Signers[i] != "" {
+				signedWeight += wallet.Weights[i]
+			}
 		}
-	}
-	return signedWeight >= wallet.Threshold
+	*/
+	return false
 }
 
 func extractPossibleSigners(wallet dscApi.MultisigWallet, tx dscApi.MultisigTransaction) []string {
 	var result []string
 	for i := range wallet.Owners {
-		if tx.Signers[i] == "" {
-			result = append(result, wallet.Owners[i])
-		}
+		result = append(result, wallet.Owners[i])
 	}
 	return result
 }

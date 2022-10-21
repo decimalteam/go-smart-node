@@ -31,37 +31,7 @@ func NewWallet(owners []string, weights []uint32, threshold uint32, salt []byte)
 }
 
 // NewTransaction returns a new Transaction.
-func NewTransaction(wallet, receiver string, coins sdk.Coins, signersCount int, height int64, salt []byte) (*Transaction, error) {
-
-	// temporary transaction struct to create TxID
-	t := Transaction{
-		Id:        sdk.AccAddress(salt).String(),
-		Wallet:    wallet,
-		Receiver:  receiver,
-		Coins:     coins,
-		Signers:   make([]string, signersCount),
-		CreatedAt: height,
-	}
-
-	bz := sha3.Sum256(sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&t)))
-	id, err := bech32.ConvertAndEncode(MultisigTransactionIDPrefix, bz[12:])
-	if err != nil {
-		return nil, errors.UnableToCreateTransaction
-	}
-
-	return &Transaction{
-		Id:       id,
-		Wallet:   wallet,
-		Receiver: receiver,
-		Coins:    coins,
-		// create transaction withlist of empty strings; filled string mean 'signed by owner'
-		Signers:   make([]string, signersCount),
-		CreatedAt: height,
-	}, nil
-}
-
-// NewTransaction returns a new Transaction.
-func NewUniversalTransaction(unpacker codectypes.AnyUnpacker, wallet string, txContent codectypes.Any, signersCount int, height int64, salt []byte) (*UniversalTransaction, error) {
+func NewTransaction(unpacker codectypes.AnyUnpacker, wallet string, txContent codectypes.Any, signersCount int, height int64, salt []byte) (*Transaction, error) {
 
 	h := make([]byte, 8)
 	binary.BigEndian.PutUint64(h, uint64(height))
@@ -83,7 +53,7 @@ func NewUniversalTransaction(unpacker codectypes.AnyUnpacker, wallet string, txC
 		return nil, err
 	}
 
-	return &UniversalTransaction{
+	return &Transaction{
 		Id:        id,
 		Wallet:    wallet,
 		Message:   txContent,

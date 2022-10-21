@@ -83,76 +83,6 @@ func TestAccountWithSameAddress(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestLowBalance(t *testing.T) {
-	const addrCount = 100
-
-	_, dsc, ctx := getBaseAppWithCustomKeeper(t)
-	addrs, _ := generateAddresses(dsc, ctx, addrCount,
-		sdk.NewCoins(
-			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
-		),
-	)
-
-	var sender = addrs[0]
-	var owners = []string{addrs[1].String(), addrs[2].String(), addrs[3].String()}
-	var weights = []uint32{1, 1, 1}
-	var threshold uint32 = 2
-
-	// create wallet with empty balance
-	msg := types.NewMsgCreateWallet(sender, owners, weights, threshold)
-	err := msg.ValidateBasic()
-	require.NoError(t, err)
-	ctx = ctx.WithTxBytes([]byte{byte(1)}) // for wallet salt
-	goCtx := sdk.WrapSDKContext(ctx)
-	walletResponse, err := dsc.MultisigKeeper.CreateWallet(goCtx, msg)
-	require.NoError(t, err)
-
-	msgTx := types.NewMsgCreateTransaction(addrs[1], walletResponse.Wallet, addrs[10].String(), sdk.NewCoins(sdk.NewCoin("del", sdk.NewInt(1))))
-	err = msgTx.ValidateBasic()
-	require.NoError(t, err)
-	goCtx = sdk.WrapSDKContext(ctx)
-	_, err = dsc.MultisigKeeper.CreateTransaction(goCtx, msgTx)
-	require.Error(t, err)
-}
-
-func TestSenderNotOwner(t *testing.T) {
-	const addrCount = 100
-
-	_, dsc, ctx := getBaseAppWithCustomKeeper(t)
-	addrs, _ := generateAddresses(dsc, ctx, addrCount,
-		sdk.NewCoins(
-			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
-		),
-	)
-
-	var sender = addrs[0]
-	var owners = []string{addrs[1].String(), addrs[2].String(), addrs[3].String()}
-	var weights = []uint32{1, 1, 1}
-	var threshold uint32 = 2
-
-	// create wallet with empty balance
-	msg := types.NewMsgCreateWallet(sender, owners, weights, threshold)
-	err := msg.ValidateBasic()
-	require.NoError(t, err)
-	ctx = ctx.WithTxBytes([]byte{byte(1)}) // for wallet salt
-	goCtx := sdk.WrapSDKContext(ctx)
-	walletResponse, err := dsc.MultisigKeeper.CreateWallet(goCtx, msg)
-	require.NoError(t, err)
-
-	// send 10 coins to wallet
-	wAdr, err := sdk.AccAddressFromBech32(walletResponse.Wallet)
-	require.NoError(t, err)
-	err = dsc.BankKeeper.SendCoins(ctx, sender, wAdr, sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(10)))))
-	require.NoError(t, err)
-
-	msgTx := types.NewMsgCreateTransaction(sender, walletResponse.Wallet, addrs[10].String(), sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1)))))
-	err = msgTx.ValidateBasic()
-	require.NoError(t, err)
-	goCtx = sdk.WrapSDKContext(ctx)
-	_, err = dsc.MultisigKeeper.CreateTransaction(goCtx, msgTx)
-	require.Error(t, err)
-}
-
 func TestSignTransaction(t *testing.T) {
 	const addrCount = 100
 
@@ -185,8 +115,13 @@ func TestSignTransaction(t *testing.T) {
 	require.NoError(t, err)
 
 	// create 'send 1 coin' to receiver
-	msgTx := types.NewMsgCreateTransaction(addrs[1], walletResponse.Wallet, receiver.String(),
-		sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1)))))
+	msgTx, err := types.NewMsgCreateTransaction(addrs[1], walletResponse.Wallet,
+		cointypes.NewMsgSendCoin(
+			sdk.MustAccAddressFromBech32(walletResponse.Wallet),
+			receiver,
+			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1))),
+		),
+	)
 	err = msgTx.ValidateBasic()
 	require.NoError(t, err)
 	goCtx = sdk.WrapSDKContext(ctx)
@@ -245,8 +180,14 @@ func TestTryOverspend(t *testing.T) {
 	txIDs := []string{}
 	for i := 0; i < 2; i++ {
 		ctx = ctx.WithTxBytes([]byte{byte(i)}) // for tx id salt
-		msgTx := types.NewMsgCreateTransaction(addrs[1], walletResponse.Wallet, receiver.String(),
-			sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(10)))))
+		msgTx, err := types.NewMsgCreateTransaction(addrs[1], walletResponse.Wallet,
+			cointypes.NewMsgSendCoin(
+				sdk.MustAccAddressFromBech32(walletResponse.Wallet),
+				receiver,
+				sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(10))),
+			),
+		)
+		require.NoError(t, err)
 		err = msgTx.ValidateBasic()
 		require.NoError(t, err)
 		goCtx = sdk.WrapSDKContext(ctx)
@@ -311,27 +252,27 @@ func TestUniversalTx(t *testing.T) {
 	require.NoError(t, err)
 
 	// create universal tx
-	msgU, err := types.NewMsgCreateUniversalTransaction(
+	msgU, err := types.NewMsgCreateTransaction(
 		addrs[1], walletResponse.Wallet,
 		cointypes.NewMsgSendCoin(wAdr, receiver, sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(10)))),
 	)
 	require.NoError(t, err)
 
-	txres, err := dsc.MultisigKeeper.CreateUniversalTransaction(goCtx, msgU)
+	txres, err := dsc.MultisigKeeper.CreateTransaction(goCtx, msgU)
 	require.NoError(t, err)
 
 	// second owner sign
-	msgS := types.NewMsgSignUniversalTransaction(addrs[2], txres.ID)
-	_, err = dsc.MultisigKeeper.SignUniversalTransaction(goCtx, msgS)
+	msgS := types.NewMsgSignTransaction(addrs[2], txres.ID)
+	_, err = dsc.MultisigKeeper.SignTransaction(goCtx, msgS)
 	require.NoError(t, err)
 
 	// check for double sign
-	_, err = dsc.MultisigKeeper.SignUniversalTransaction(goCtx, msgS)
+	_, err = dsc.MultisigKeeper.SignTransaction(goCtx, msgS)
 	require.Error(t, err)
 
 	// third owner sign
-	msgS = types.NewMsgSignUniversalTransaction(addrs[3], txres.ID)
-	_, err = dsc.MultisigKeeper.SignUniversalTransaction(goCtx, msgS)
+	msgS = types.NewMsgSignTransaction(addrs[3], txres.ID)
+	_, err = dsc.MultisigKeeper.SignTransaction(goCtx, msgS)
 	require.NoError(t, err)
 
 	// check internal tx result
@@ -342,8 +283,8 @@ func TestUniversalTx(t *testing.T) {
 	require.True(t, dsc.MultisigKeeper.IsCompleted(ctx, txres.ID))
 
 	// fourth owner, transaction already completed
-	msgS = types.NewMsgSignUniversalTransaction(addrs[4], txres.ID)
-	_, err = dsc.MultisigKeeper.SignUniversalTransaction(goCtx, msgS)
+	msgS = types.NewMsgSignTransaction(addrs[4], txres.ID)
+	_, err = dsc.MultisigKeeper.SignTransaction(goCtx, msgS)
 	require.Error(t, err)
 
 }

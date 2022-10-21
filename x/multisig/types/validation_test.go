@@ -3,10 +3,14 @@ package types
 import (
 	"testing"
 
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
+
+	sdkcodec "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/crypto/ed25519"
+
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 
 func TestValidateWallet(t *testing.T) {
@@ -129,47 +133,33 @@ func TestValidateTransaction(t *testing.T) {
 		tag         string
 		sender      sdk.AccAddress
 		wallet      string
-		receiver    string
-		coins       sdk.Coins
+		receiver    sdk.AccAddress
+		coin        sdk.Coin
 		expectError bool
 	}{
 		{
 			tag:         "valid transaction",
 			sender:      addrs[0],
 			wallet:      wallet.Address,
-			receiver:    addrs[1].String(),
-			coins:       sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1)))),
+			receiver:    addrs[1],
+			coin:        sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1))),
 			expectError: false,
 		},
 		{
 			tag:         "invalid wallet",
 			sender:      addrs[0],
 			wallet:      wallet.Address + "0",
-			receiver:    addrs[1].String(),
-			coins:       sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1)))),
-			expectError: true,
-		},
-		{
-			tag:         "invalid receiver",
-			sender:      addrs[0],
-			wallet:      wallet.Address,
-			receiver:    addrs[1].String() + "0",
-			coins:       sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1)))),
-			expectError: true,
-		},
-		{
-			tag:         "invalid coins",
-			sender:      addrs[0],
-			wallet:      wallet.Address,
-			receiver:    addrs[1].String(),
-			coins:       sdk.NewCoins(sdk.NewCoin("del", sdk.ZeroInt())), // it will be empty
+			receiver:    addrs[1],
+			coin:        sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1))),
 			expectError: true,
 		},
 	}
 
 	for _, tc := range testCases {
-		msg := NewMsgCreateTransaction(tc.sender, tc.wallet, tc.receiver, tc.coins)
-		err := msg.ValidateBasic()
+		wAdr := sdk.MustAccAddressFromBech32(wallet.Address)
+		msg, err := NewMsgCreateTransaction(tc.sender, tc.wallet, cointypes.NewMsgSendCoin(wAdr, tc.receiver, tc.coin))
+		require.NoError(t, err)
+		err = msg.ValidateBasic()
 		if tc.expectError {
 			require.Error(t, err, tc.tag)
 		} else {
@@ -190,8 +180,12 @@ func TestValidateSignTransaction(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	tx, err := NewTransaction(wallet.Address, addrs[1].String(),
-		sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1)))),
+	tx, err := NewTransaction(ModuleCdc, wallet.Address,
+		*sdkcodec.UnsafePackAny(cointypes.NewMsgSendCoin(
+			sdk.MustAccAddressFromBech32(wallet.Address),
+			addrs[1],
+			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1))),
+		)),
 		3, 100, []byte{1})
 	require.NoError(t, err)
 

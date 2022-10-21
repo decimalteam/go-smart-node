@@ -17,9 +17,6 @@ const (
 	TypeMsgCreateWallet      = "create_wallet"
 	TypeMsgCreateTransaction = "create_transaction"
 	TypeMsgSignTransaction   = "sign_transaction"
-
-	TypeMsgCreateUniversalTransaction = "create_universal_transaction"
-	TypeMsgSignUniversalTransaction   = "sign_universal_transaction"
 )
 
 ////////////////////////////////////////////////////////////////
@@ -107,15 +104,17 @@ func (msg MsgCreateWallet) ValidateBasic() error {
 func NewMsgCreateTransaction(
 	sender sdk.AccAddress,
 	wallet string,
-	receiver string,
-	coins sdk.Coins,
-) *MsgCreateTransaction {
-	return &MsgCreateTransaction{
-		Sender:   sender.String(),
-		Wallet:   wallet,
-		Receiver: receiver,
-		Coins:    coins,
+	content sdk.Msg,
+) (*MsgCreateTransaction, error) {
+	anys, err := sdktx.SetMsgs([]sdk.Msg{content})
+	if err != nil {
+		return nil, err
 	}
+	return &MsgCreateTransaction{
+		Sender:  sender.String(),
+		Wallet:  wallet,
+		Content: anys[0],
+	}, nil
 }
 
 // Route returns name of the route for the message.
@@ -146,19 +145,7 @@ func (msg *MsgCreateTransaction) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Wallet); err != nil {
 		return errors.InvalidWallet
 	}
-	if _, err := sdk.AccAddressFromBech32(msg.Receiver); err != nil {
-		return errors.InvalidReceiver
-	}
-	if len(msg.Coins) == 0 {
-		return errors.NoCoinsToSend
-	}
-	// Check to amount should be positive, but sdk.Coin cannot be negative
-	// and sdk.Coins cannot cointain coins zero amount
-	for _, coin := range msg.Coins {
-		if coin.Amount.LTE(sdk.ZeroInt()) {
-			return errors.InvalidAmount
-		}
-	}
+
 	return nil
 }
 
@@ -198,109 +185,6 @@ func (msg *MsgSignTransaction) GetSigners() []sdk.AccAddress {
 
 // ValidateBasic performs basic validation of the message.
 func (msg *MsgSignTransaction) ValidateBasic() error {
-	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return errors.InvalidSender
-	}
-	prefix, _, err := bech32.DecodeAndConvert(msg.ID)
-	if err != nil {
-		return errors.InvalidTransactionIDError
-	}
-	if prefix != MultisigTransactionIDPrefix {
-		return errors.InvalidTransactionIDPrefix
-	}
-	// TODO: TxID length
-	return nil
-}
-
-////////////////////////////////////////////////////////////////
-// MsgCreateUniversalTransaction
-////////////////////////////////////////////////////////////////
-
-// NewMsgCreateTransaction creates a new MsgCreateTransaction instance.
-func NewMsgCreateUniversalTransaction(
-	sender sdk.AccAddress,
-	wallet string,
-	content sdk.Msg,
-) (*MsgCreateUniversalTransaction, error) {
-	anys, err := sdktx.SetMsgs([]sdk.Msg{content})
-	if err != nil {
-		return nil, err
-	}
-	return &MsgCreateUniversalTransaction{
-		Sender:  sender.String(),
-		Wallet:  wallet,
-		Content: anys[0],
-	}, nil
-}
-
-// Route returns name of the route for the message.
-func (msg *MsgCreateUniversalTransaction) Route() string { return RouterKey }
-
-// Type returns the name of the type for the message.
-func (msg *MsgCreateUniversalTransaction) Type() string { return TypeMsgCreateUniversalTransaction }
-
-// GetSignBytes returns the canonical byte representation of the message used to generate a signature.
-func (msg *MsgCreateUniversalTransaction) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-}
-
-// GetSigners returns the list of signers required to sign the message.
-func (msg *MsgCreateUniversalTransaction) GetSigners() []sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil
-	}
-	return []sdk.AccAddress{addr}
-}
-
-// ValidateBasic performs basic validation of the message.
-func (msg *MsgCreateUniversalTransaction) ValidateBasic() error {
-	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return errors.InvalidSender
-	}
-	if _, err := sdk.AccAddressFromBech32(msg.Wallet); err != nil {
-		return errors.InvalidWallet
-	}
-
-	return nil
-}
-
-////////////////////////////////////////////////////////////////
-// MsgSignUniversalTransaction
-////////////////////////////////////////////////////////////////
-
-func NewMsgSignUniversalTransaction(
-	sender sdk.AccAddress,
-	txID string,
-) *MsgSignUniversalTransaction {
-	return &MsgSignUniversalTransaction{
-		Sender: sender.String(),
-		ID:     txID,
-	}
-}
-
-// Route returns name of the route for the message.
-func (msg *MsgSignUniversalTransaction) Route() string { return RouterKey }
-
-// Type returns the name of the type for the message.
-func (msg *MsgSignUniversalTransaction) Type() string { return TypeMsgSignUniversalTransaction }
-
-// GetSignBytes returns the canonical byte representation of the message used to generate a signature.
-func (msg *MsgSignUniversalTransaction) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-}
-
-// GetSigners returns the list of signers required to sign the message.
-func (msg *MsgSignUniversalTransaction) GetSigners() []sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil
-	}
-	return []sdk.AccAddress{addr}
-}
-
-// ValidateBasic performs basic validation of the message.
-func (msg *MsgSignUniversalTransaction) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return errors.InvalidSender
 	}

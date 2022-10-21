@@ -6,8 +6,7 @@ package types
 import (
 	fmt "fmt"
 	_ "github.com/cosmos/cosmos-proto"
-	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
-	types "github.com/cosmos/cosmos-sdk/types"
+	_ "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
@@ -103,13 +102,10 @@ func (m *EventCreateWallet) GetThreshold() uint32 {
 	return 0
 }
 
-// EventCreateTransaction defines event emitted when new multisig transaction is created.
 type EventCreateTransaction struct {
-	Sender      string                                   `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	Wallet      string                                   `protobuf:"bytes,2,opt,name=wallet,proto3" json:"wallet,omitempty"`
-	Receiver    string                                   `protobuf:"bytes,3,opt,name=receiver,proto3" json:"receiver,omitempty"`
-	Coins       github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,4,rep,name=coins,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"coins"`
-	Transaction string                                   `protobuf:"bytes,5,opt,name=transaction,proto3" json:"transaction,omitempty"`
+	Sender      string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	Wallet      string `protobuf:"bytes,2,opt,name=wallet,proto3" json:"wallet,omitempty"`
+	Transaction string `protobuf:"bytes,4,opt,name=transaction,proto3" json:"transaction,omitempty"`
 }
 
 func (m *EventCreateTransaction) Reset()         { *m = EventCreateTransaction{} }
@@ -159,20 +155,6 @@ func (m *EventCreateTransaction) GetWallet() string {
 	return ""
 }
 
-func (m *EventCreateTransaction) GetReceiver() string {
-	if m != nil {
-		return m.Receiver
-	}
-	return ""
-}
-
-func (m *EventCreateTransaction) GetCoins() github_com_cosmos_cosmos_sdk_types.Coins {
-	if m != nil {
-		return m.Coins
-	}
-	return nil
-}
-
 func (m *EventCreateTransaction) GetTransaction() string {
 	if m != nil {
 		return m.Transaction
@@ -180,7 +162,6 @@ func (m *EventCreateTransaction) GetTransaction() string {
 	return ""
 }
 
-// EventSignTransaction defines event emitted when the multisig transaction is signed.
 type EventSignTransaction struct {
 	Sender        string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
 	Wallet        string `protobuf:"bytes,2,opt,name=wallet,proto3" json:"wallet,omitempty"`
@@ -265,195 +246,42 @@ func (m *EventSignTransaction) GetConfirmed() bool {
 	return false
 }
 
-type EventCreateUniversalTransaction struct {
-	Sender      string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	Wallet      string `protobuf:"bytes,2,opt,name=wallet,proto3" json:"wallet,omitempty"`
-	Transaction string `protobuf:"bytes,4,opt,name=transaction,proto3" json:"transaction,omitempty"`
-}
-
-func (m *EventCreateUniversalTransaction) Reset()         { *m = EventCreateUniversalTransaction{} }
-func (m *EventCreateUniversalTransaction) String() string { return proto.CompactTextString(m) }
-func (*EventCreateUniversalTransaction) ProtoMessage()    {}
-func (*EventCreateUniversalTransaction) Descriptor() ([]byte, []int) {
-	return fileDescriptor_52a14a7690049f30, []int{3}
-}
-func (m *EventCreateUniversalTransaction) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *EventCreateUniversalTransaction) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_EventCreateUniversalTransaction.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *EventCreateUniversalTransaction) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EventCreateUniversalTransaction.Merge(m, src)
-}
-func (m *EventCreateUniversalTransaction) XXX_Size() int {
-	return m.Size()
-}
-func (m *EventCreateUniversalTransaction) XXX_DiscardUnknown() {
-	xxx_messageInfo_EventCreateUniversalTransaction.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_EventCreateUniversalTransaction proto.InternalMessageInfo
-
-func (m *EventCreateUniversalTransaction) GetSender() string {
-	if m != nil {
-		return m.Sender
-	}
-	return ""
-}
-
-func (m *EventCreateUniversalTransaction) GetWallet() string {
-	if m != nil {
-		return m.Wallet
-	}
-	return ""
-}
-
-func (m *EventCreateUniversalTransaction) GetTransaction() string {
-	if m != nil {
-		return m.Transaction
-	}
-	return ""
-}
-
-type EventSignUniversalTransaction struct {
-	Sender        string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	Wallet        string `protobuf:"bytes,2,opt,name=wallet,proto3" json:"wallet,omitempty"`
-	Transaction   string `protobuf:"bytes,3,opt,name=transaction,proto3" json:"transaction,omitempty"`
-	SignerWeight  uint32 `protobuf:"varint,4,opt,name=signer_weight,json=signerWeight,proto3" json:"signer_weight,omitempty"`
-	Confirmations uint32 `protobuf:"varint,5,opt,name=confirmations,proto3" json:"confirmations,omitempty"`
-	Confirmed     bool   `protobuf:"varint,6,opt,name=confirmed,proto3" json:"confirmed,omitempty"`
-}
-
-func (m *EventSignUniversalTransaction) Reset()         { *m = EventSignUniversalTransaction{} }
-func (m *EventSignUniversalTransaction) String() string { return proto.CompactTextString(m) }
-func (*EventSignUniversalTransaction) ProtoMessage()    {}
-func (*EventSignUniversalTransaction) Descriptor() ([]byte, []int) {
-	return fileDescriptor_52a14a7690049f30, []int{4}
-}
-func (m *EventSignUniversalTransaction) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *EventSignUniversalTransaction) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_EventSignUniversalTransaction.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *EventSignUniversalTransaction) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EventSignUniversalTransaction.Merge(m, src)
-}
-func (m *EventSignUniversalTransaction) XXX_Size() int {
-	return m.Size()
-}
-func (m *EventSignUniversalTransaction) XXX_DiscardUnknown() {
-	xxx_messageInfo_EventSignUniversalTransaction.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_EventSignUniversalTransaction proto.InternalMessageInfo
-
-func (m *EventSignUniversalTransaction) GetSender() string {
-	if m != nil {
-		return m.Sender
-	}
-	return ""
-}
-
-func (m *EventSignUniversalTransaction) GetWallet() string {
-	if m != nil {
-		return m.Wallet
-	}
-	return ""
-}
-
-func (m *EventSignUniversalTransaction) GetTransaction() string {
-	if m != nil {
-		return m.Transaction
-	}
-	return ""
-}
-
-func (m *EventSignUniversalTransaction) GetSignerWeight() uint32 {
-	if m != nil {
-		return m.SignerWeight
-	}
-	return 0
-}
-
-func (m *EventSignUniversalTransaction) GetConfirmations() uint32 {
-	if m != nil {
-		return m.Confirmations
-	}
-	return 0
-}
-
-func (m *EventSignUniversalTransaction) GetConfirmed() bool {
-	if m != nil {
-		return m.Confirmed
-	}
-	return false
-}
-
 func init() {
 	proto.RegisterType((*EventCreateWallet)(nil), "decimal.multisig.v1.EventCreateWallet")
 	proto.RegisterType((*EventCreateTransaction)(nil), "decimal.multisig.v1.EventCreateTransaction")
 	proto.RegisterType((*EventSignTransaction)(nil), "decimal.multisig.v1.EventSignTransaction")
-	proto.RegisterType((*EventCreateUniversalTransaction)(nil), "decimal.multisig.v1.EventCreateUniversalTransaction")
-	proto.RegisterType((*EventSignUniversalTransaction)(nil), "decimal.multisig.v1.EventSignUniversalTransaction")
 }
 
 func init() { proto.RegisterFile("decimal/multisig/v1/events.proto", fileDescriptor_52a14a7690049f30) }
 
 var fileDescriptor_52a14a7690049f30 = []byte{
-	// 524 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x54, 0xc1, 0x6e, 0xd3, 0x40,
-	0x10, 0x8d, 0x93, 0x34, 0x34, 0x5b, 0x72, 0xc0, 0x44, 0x95, 0x5b, 0x81, 0x63, 0x05, 0x0e, 0xbe,
-	0xc4, 0xdb, 0x00, 0x07, 0xae, 0xa4, 0xe2, 0x07, 0x5c, 0x50, 0x25, 0x2e, 0xd5, 0xda, 0x1e, 0x36,
-	0xab, 0xda, 0xbb, 0xd5, 0xee, 0xc6, 0x81, 0x0f, 0xe0, 0x8a, 0xf8, 0x0b, 0x24, 0xce, 0x48, 0x7c,
-	0x02, 0x3d, 0x56, 0x9c, 0x38, 0x01, 0x4a, 0x7e, 0x04, 0xd9, 0xbb, 0x6d, 0x02, 0x3d, 0xf4, 0xd6,
-	0xf6, 0x64, 0xcf, 0x9b, 0xf7, 0xd6, 0x3b, 0xf3, 0xc6, 0x83, 0x82, 0x0c, 0x52, 0x56, 0x90, 0x1c,
-	0x17, 0xb3, 0x5c, 0x33, 0xc5, 0x28, 0x2e, 0xc7, 0x18, 0x4a, 0xe0, 0x5a, 0x45, 0x27, 0x52, 0x68,
-	0xe1, 0xde, 0xb7, 0x8c, 0xe8, 0x9c, 0x11, 0x95, 0xe3, 0xdd, 0x3e, 0x15, 0x54, 0xd4, 0x79, 0x5c,
-	0xbd, 0x19, 0xea, 0xee, 0x4e, 0x2a, 0x54, 0x21, 0xd4, 0x91, 0x49, 0x98, 0xc0, 0xa6, 0x7c, 0x13,
-	0xe1, 0x84, 0x28, 0xc0, 0xe5, 0x38, 0x01, 0x4d, 0xc6, 0x38, 0x15, 0x8c, 0x9b, 0xfc, 0xf0, 0xbb,
-	0x83, 0xee, 0xbd, 0xac, 0x3e, 0xbb, 0x2f, 0x81, 0x68, 0x38, 0x24, 0x79, 0x0e, 0xda, 0xdd, 0x43,
-	0x1d, 0x05, 0x3c, 0x03, 0xe9, 0x39, 0x81, 0x13, 0x76, 0x27, 0xde, 0x8f, 0xaf, 0xa3, 0xbe, 0x3d,
-	0xf7, 0x45, 0x96, 0x49, 0x50, 0xea, 0x40, 0x4b, 0xc6, 0x69, 0x6c, 0x79, 0x95, 0x62, 0x5e, 0x6b,
-	0xbd, 0xe6, 0x55, 0x0a, 0xc3, 0x73, 0xb7, 0x51, 0x47, 0xcc, 0x39, 0x48, 0xe5, 0xb5, 0x82, 0x56,
-	0xd8, 0x8d, 0x6d, 0xe4, 0x7a, 0xe8, 0xce, 0x1c, 0x18, 0x9d, 0x6a, 0xe5, 0xb5, 0x83, 0x56, 0xd8,
-	0x8b, 0xcf, 0x43, 0xf7, 0x01, 0xea, 0xea, 0xa9, 0x04, 0x35, 0x15, 0x79, 0xe6, 0x6d, 0x04, 0x4e,
-	0xd8, 0x8b, 0x57, 0xc0, 0xf0, 0x5b, 0x13, 0x6d, 0xaf, 0x55, 0xf2, 0x4a, 0x12, 0xae, 0x48, 0xaa,
-	0x99, 0xe0, 0xd7, 0x52, 0xce, 0x33, 0xb4, 0x29, 0x21, 0x05, 0x56, 0x82, 0xf4, 0x5a, 0x57, 0x68,
-	0x2e, 0x98, 0x2e, 0x41, 0x1b, 0x95, 0x19, 0xa6, 0xd4, 0xad, 0x27, 0x3b, 0x91, 0xe5, 0x57, 0x76,
-	0x45, 0xd6, 0xae, 0x68, 0x5f, 0x30, 0x3e, 0xd9, 0x3b, 0xfd, 0x35, 0x68, 0x7c, 0xf9, 0x3d, 0x08,
-	0x29, 0xd3, 0xd3, 0x59, 0x12, 0xa5, 0xa2, 0xb0, 0x4e, 0xdb, 0xc7, 0x48, 0x65, 0xc7, 0x58, 0xbf,
-	0x3f, 0x01, 0x55, 0x0b, 0x54, 0x6c, 0x4e, 0x76, 0x03, 0xb4, 0xa5, 0x57, 0xbd, 0xa8, 0xfb, 0xd6,
-	0x8d, 0xd7, 0xa1, 0xe1, 0x87, 0x26, 0xea, 0xd7, 0x9d, 0x3b, 0x60, 0x94, 0x5f, 0x77, 0xdf, 0xfe,
-	0xbb, 0x5e, 0xeb, 0xd2, 0xf5, 0xdc, 0x47, 0xa8, 0xa7, 0x18, 0xe5, 0x20, 0x8f, 0xcc, 0x20, 0x78,
-	0xed, 0xda, 0xfa, 0xbb, 0x06, 0x3c, 0xac, 0x31, 0xf7, 0x31, 0xea, 0xa5, 0x82, 0xbf, 0x65, 0xb2,
-	0x20, 0x95, 0x48, 0xd9, 0xf9, 0xf8, 0x17, 0xac, 0x26, 0xc8, 0x02, 0x90, 0x79, 0x9d, 0xc0, 0x09,
-	0x37, 0xe3, 0x15, 0x30, 0xfc, 0xec, 0xa0, 0xc1, 0xda, 0x04, 0xbd, 0xe6, 0x95, 0x45, 0x8a, 0xe4,
-	0x37, 0xdc, 0x92, 0xf6, 0x65, 0xc7, 0x3e, 0x36, 0xd1, 0xc3, 0x0b, 0xc7, 0x6e, 0xcb, 0x3d, 0x6f,
-	0xd0, 0xba, 0x49, 0x7c, 0xba, 0xf0, 0x9d, 0xb3, 0x85, 0xef, 0xfc, 0x59, 0xf8, 0xce, 0xa7, 0xa5,
-	0xdf, 0x38, 0x5b, 0xfa, 0x8d, 0x9f, 0x4b, 0xbf, 0xf1, 0xe6, 0x79, 0xc2, 0x74, 0x32, 0x4b, 0x8f,
-	0x41, 0x47, 0x42, 0x52, 0x6c, 0x97, 0xaa, 0x06, 0x52, 0x60, 0x2a, 0x46, 0xaa, 0x20, 0x52, 0x8f,
-	0xb8, 0xc8, 0x00, 0xbf, 0x5b, 0xad, 0xe2, 0xfa, 0x2f, 0x4a, 0x3a, 0xf5, 0x86, 0x7c, 0xfa, 0x37,
-	0x00, 0x00, 0xff, 0xff, 0xa5, 0x68, 0x6e, 0x7b, 0xab, 0x05, 0x00, 0x00,
+	// 415 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x53, 0xbd, 0x8e, 0xd3, 0x40,
+	0x10, 0xce, 0x5e, 0x8e, 0x40, 0x16, 0x5c, 0x60, 0xa2, 0xd3, 0x72, 0x42, 0x96, 0x15, 0x28, 0xdc,
+	0x24, 0x4b, 0x44, 0x43, 0xcb, 0x21, 0x5e, 0xc0, 0x87, 0x74, 0x12, 0xcd, 0x69, 0x6d, 0x0f, 0x9b,
+	0x15, 0xf6, 0xee, 0x69, 0x67, 0x2e, 0x81, 0x07, 0xa0, 0xe7, 0x09, 0x78, 0x0a, 0xde, 0x01, 0xca,
+	0x13, 0x15, 0x25, 0x4a, 0x5e, 0x04, 0xd9, 0xde, 0x93, 0x0f, 0x51, 0xd0, 0x41, 0xe7, 0xef, 0xcf,
+	0x33, 0xe3, 0xf1, 0xf0, 0xb4, 0x82, 0xd2, 0x34, 0xaa, 0x96, 0xcd, 0x65, 0x4d, 0x06, 0x8d, 0x96,
+	0x9b, 0x95, 0x84, 0x0d, 0x58, 0xc2, 0xe5, 0x85, 0x77, 0xe4, 0xe2, 0x07, 0xc1, 0xb1, 0xbc, 0x76,
+	0x2c, 0x37, 0xab, 0xe3, 0x99, 0x76, 0xda, 0x75, 0xba, 0x6c, 0x9f, 0x7a, 0xeb, 0xf1, 0xc3, 0xd2,
+	0x61, 0xe3, 0xf0, 0xbc, 0x17, 0x7a, 0x10, 0xa4, 0xa4, 0x47, 0xb2, 0x50, 0x08, 0x72, 0xb3, 0x2a,
+	0x80, 0xd4, 0x4a, 0x96, 0xce, 0xd8, 0x5e, 0x9f, 0x7f, 0x65, 0xfc, 0xfe, 0xab, 0xb6, 0xec, 0x4b,
+	0x0f, 0x8a, 0xe0, 0x4c, 0xd5, 0x35, 0x50, 0xfc, 0x94, 0x4f, 0x10, 0x6c, 0x05, 0x5e, 0xb0, 0x94,
+	0x65, 0xd3, 0x13, 0xf1, 0xfd, 0xcb, 0x62, 0x16, 0xde, 0xfb, 0xa2, 0xaa, 0x3c, 0x20, 0x9e, 0x92,
+	0x37, 0x56, 0xe7, 0xc1, 0xd7, 0x26, 0xb6, 0x5d, 0x56, 0x1c, 0xfc, 0x2d, 0xd1, 0xfb, 0xe2, 0x23,
+	0x3e, 0x71, 0x5b, 0x0b, 0x1e, 0xc5, 0x38, 0x1d, 0x67, 0xd3, 0x3c, 0xa0, 0x58, 0xf0, 0xdb, 0x5b,
+	0x30, 0x7a, 0x4d, 0x28, 0x0e, 0xd3, 0x71, 0x16, 0xe5, 0xd7, 0x30, 0x7e, 0xc4, 0xa7, 0xb4, 0xf6,
+	0x80, 0x6b, 0x57, 0x57, 0xe2, 0x56, 0xca, 0xb2, 0x28, 0x1f, 0x88, 0xf9, 0x67, 0xc6, 0x8f, 0x6e,
+	0x4c, 0xf2, 0xda, 0x2b, 0x8b, 0xaa, 0x24, 0xe3, 0xec, 0x3f, 0x19, 0x27, 0xe5, 0x77, 0x69, 0x28,
+	0x29, 0x0e, 0xdb, 0x58, 0x7e, 0x93, 0x9a, 0x7f, 0x3c, 0xe0, 0xb3, 0xae, 0xc1, 0x53, 0xa3, 0xed,
+	0x7f, 0x6e, 0x6f, 0xfc, 0x47, 0x7b, 0xf1, 0x63, 0x1e, 0xa1, 0xd1, 0x16, 0xfc, 0x79, 0xff, 0xbd,
+	0xbb, 0x11, 0xa2, 0xfc, 0x5e, 0x4f, 0x9e, 0x75, 0x5c, 0xfc, 0x84, 0x47, 0xa5, 0xb3, 0x6f, 0x8d,
+	0x6f, 0x54, 0x1b, 0xc2, 0xb0, 0x86, 0xdf, 0xc9, 0x76, 0x51, 0x81, 0x80, 0x4a, 0x4c, 0x52, 0x96,
+	0xdd, 0xc9, 0x07, 0xe2, 0x24, 0xff, 0xb6, 0x4b, 0xd8, 0xd5, 0x2e, 0x61, 0x3f, 0x77, 0x09, 0xfb,
+	0xb4, 0x4f, 0x46, 0x57, 0xfb, 0x64, 0xf4, 0x63, 0x9f, 0x8c, 0xde, 0x3c, 0x2f, 0x0c, 0x15, 0x97,
+	0xe5, 0x3b, 0xa0, 0xa5, 0xf3, 0x5a, 0x86, 0x03, 0x20, 0x50, 0x8d, 0xd4, 0x6e, 0x81, 0x8d, 0xf2,
+	0xb4, 0xb0, 0xae, 0x02, 0xf9, 0x7e, 0x38, 0x1b, 0xfa, 0x70, 0x01, 0x58, 0x4c, 0xba, 0xbf, 0xf9,
+	0xd9, 0xaf, 0x00, 0x00, 0x00, 0xff, 0xff, 0xe4, 0xa0, 0xf3, 0xf1, 0x57, 0x03, 0x00, 0x00,
 }
 
 func (m *EventCreateWallet) Marshal() (dAtA []byte, err error) {
@@ -550,28 +378,7 @@ func (m *EventCreateTransaction) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 		copy(dAtA[i:], m.Transaction)
 		i = encodeVarintEvents(dAtA, i, uint64(len(m.Transaction)))
 		i--
-		dAtA[i] = 0x2a
-	}
-	if len(m.Coins) > 0 {
-		for iNdEx := len(m.Coins) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Coins[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintEvents(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x22
-		}
-	}
-	if len(m.Receiver) > 0 {
-		i -= len(m.Receiver)
-		copy(dAtA[i:], m.Receiver)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.Receiver)))
-		i--
-		dAtA[i] = 0x1a
+		dAtA[i] = 0x22
 	}
 	if len(m.Wallet) > 0 {
 		i -= len(m.Wallet)
@@ -606,114 +413,6 @@ func (m *EventSignTransaction) MarshalTo(dAtA []byte) (int, error) {
 }
 
 func (m *EventSignTransaction) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.Confirmed {
-		i--
-		if m.Confirmed {
-			dAtA[i] = 1
-		} else {
-			dAtA[i] = 0
-		}
-		i--
-		dAtA[i] = 0x30
-	}
-	if m.Confirmations != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.Confirmations))
-		i--
-		dAtA[i] = 0x28
-	}
-	if m.SignerWeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.SignerWeight))
-		i--
-		dAtA[i] = 0x20
-	}
-	if len(m.Transaction) > 0 {
-		i -= len(m.Transaction)
-		copy(dAtA[i:], m.Transaction)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.Transaction)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.Wallet) > 0 {
-		i -= len(m.Wallet)
-		copy(dAtA[i:], m.Wallet)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.Wallet)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Sender) > 0 {
-		i -= len(m.Sender)
-		copy(dAtA[i:], m.Sender)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.Sender)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *EventCreateUniversalTransaction) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *EventCreateUniversalTransaction) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *EventCreateUniversalTransaction) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Transaction) > 0 {
-		i -= len(m.Transaction)
-		copy(dAtA[i:], m.Transaction)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.Transaction)))
-		i--
-		dAtA[i] = 0x22
-	}
-	if len(m.Wallet) > 0 {
-		i -= len(m.Wallet)
-		copy(dAtA[i:], m.Wallet)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.Wallet)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Sender) > 0 {
-		i -= len(m.Sender)
-		copy(dAtA[i:], m.Sender)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.Sender)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *EventSignUniversalTransaction) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *EventSignUniversalTransaction) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *EventSignUniversalTransaction) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -820,16 +519,6 @@ func (m *EventCreateTransaction) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
 	}
-	l = len(m.Receiver)
-	if l > 0 {
-		n += 1 + l + sovEvents(uint64(l))
-	}
-	if len(m.Coins) > 0 {
-		for _, e := range m.Coins {
-			l = e.Size()
-			n += 1 + l + sovEvents(uint64(l))
-		}
-	}
 	l = len(m.Transaction)
 	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
@@ -838,57 +527,6 @@ func (m *EventCreateTransaction) Size() (n int) {
 }
 
 func (m *EventSignTransaction) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Sender)
-	if l > 0 {
-		n += 1 + l + sovEvents(uint64(l))
-	}
-	l = len(m.Wallet)
-	if l > 0 {
-		n += 1 + l + sovEvents(uint64(l))
-	}
-	l = len(m.Transaction)
-	if l > 0 {
-		n += 1 + l + sovEvents(uint64(l))
-	}
-	if m.SignerWeight != 0 {
-		n += 1 + sovEvents(uint64(m.SignerWeight))
-	}
-	if m.Confirmations != 0 {
-		n += 1 + sovEvents(uint64(m.Confirmations))
-	}
-	if m.Confirmed {
-		n += 2
-	}
-	return n
-}
-
-func (m *EventCreateUniversalTransaction) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Sender)
-	if l > 0 {
-		n += 1 + l + sovEvents(uint64(l))
-	}
-	l = len(m.Wallet)
-	if l > 0 {
-		n += 1 + l + sovEvents(uint64(l))
-	}
-	l = len(m.Transaction)
-	if l > 0 {
-		n += 1 + l + sovEvents(uint64(l))
-	}
-	return n
-}
-
-func (m *EventSignUniversalTransaction) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1258,73 +896,7 @@ func (m *EventCreateTransaction) Unmarshal(dAtA []byte) error {
 			}
 			m.Wallet = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Receiver", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthEvents
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Receiver = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
 		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Coins", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Coins = append(m.Coins, types.Coin{})
-			if err := m.Coins[len(m.Coins)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 5:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Transaction", wireType)
 			}
@@ -1404,356 +976,6 @@ func (m *EventSignTransaction) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: EventSignTransaction: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthEvents
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Sender = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Wallet", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthEvents
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Wallet = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Transaction", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthEvents
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Transaction = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SignerWeight", wireType)
-			}
-			m.SignerWeight = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.SignerWeight |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 5:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Confirmations", wireType)
-			}
-			m.Confirmations = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Confirmations |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 6:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Confirmed", wireType)
-			}
-			var v int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				v |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			m.Confirmed = bool(v != 0)
-		default:
-			iNdEx = preIndex
-			skippy, err := skipEvents(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthEvents
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *EventCreateUniversalTransaction) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowEvents
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: EventCreateUniversalTransaction: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EventCreateUniversalTransaction: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthEvents
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Sender = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Wallet", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthEvents
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Wallet = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Transaction", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthEvents
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Transaction = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipEvents(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthEvents
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *EventSignUniversalTransaction) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowEvents
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: EventSignUniversalTransaction: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EventSignUniversalTransaction: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
