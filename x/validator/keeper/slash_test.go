@@ -1,60 +1,73 @@
 package keeper_test
 
-//// bootstrapSlashTest creates 3 validators and bootstrap the app.
-//func bootstrapSlashTest(t *testing.T, power int64) (*simapp.SimApp, sdk.Context, []sdk.AccAddress, []sdk.ValAddress) {
-//	_, app, ctx := createTestInput(t)
-//
-//	addrDels, addrVals := generateAddresses(app, ctx, 100)
-//
-//	amt := app.StakingKeeper.TokensFromConsensusPower(ctx, power)
-//	totalSupply := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), amt.MulRaw(int64(len(addrDels)))))
-//
-//	notBondedPool := app.StakingKeeper.GetNotBondedPool(ctx)
-//	require.NoError(t, testutil.FundModuleAccount(app.BankKeeper, ctx, notBondedPool.GetName(), totalSupply))
-//
-//	app.AccountKeeper.SetModuleAccount(ctx, notBondedPool)
-//
-//	numVals := int64(3)
-//	bondedCoins := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), amt.MulRaw(numVals)))
-//	bondedPool := app.StakingKeeper.GetBondedPool(ctx)
-//
-//	// set bonded pool balance
-//	app.AccountKeeper.SetModuleAccount(ctx, bondedPool)
-//	require.NoError(t, testutil.FundModuleAccount(app.BankKeeper, ctx, bondedPool.GetName(), bondedCoins))
-//
-//	for i := int64(0); i < numVals; i++ {
-//		validator := testvalidator.NewValidator(t, addrVals[i], PKs[i])
-//		validator, _ = validator.AddTokensFromDel(amt)
-//		validator = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validator, true)
-//		app.StakingKeeper.SetValidatorByConsAddr(ctx, validator)
-//	}
-//
-//	return app, ctx, addrDels, addrVals
-//}
-//
-//// tests Jail, Unjail
-//func TestRevocation(t *testing.T) {
-//	app, ctx, _, addrVals := bootstrapSlashTest(t, 5)
-//
-//	consAddr := sdk.ConsAddress(PKs[0].Address())
-//
-//	// initial state
-//	val, found := app.StakingKeeper.GetValidator(ctx, addrVals[0])
-//	require.True(t, found)
-//	require.False(t, val.IsJailed())
-//
-//	// test jail
-//	app.StakingKeeper.Jail(ctx, consAddr)
-//	val, found = app.StakingKeeper.GetValidator(ctx, addrVals[0])
-//	require.True(t, found)
-//	require.True(t, val.IsJailed())
-//
-//	// test unjail
-//	app.StakingKeeper.Unjail(ctx, consAddr)
-//	val, found = app.StakingKeeper.GetValidator(ctx, addrVals[0])
-//	require.True(t, found)
-//	require.False(t, val.IsJailed())
-//}
+import (
+	"testing"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"bitbucket.org/decimalteam/go-smart-node/app"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/testvalidator"
+)
+
+// // bootstrapSlashTest creates 3 validators and bootstrap the app.
+func bootstrapSlashTest(t *testing.T, power int64) (*app.DSC, sdk.Context, []sdk.AccAddress, []sdk.ValAddress) {
+	_, dsc, ctx := createTestInput(t)
+
+	addrDels, addrVals := generateAddresses(dsc, ctx, 10,
+		sdk.NewCoins(
+			sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(100))),
+		))
+	/*
+		amt := dsc.ValidatorKeeper.TokensFromConsensusPower(ctx, power)
+		totalSupply := sdk.NewCoins(sdk.NewCoin(dsc.ValidatorKeeper.BaseDenom(ctx), amt.MulRaw(int64(len(addrDels)))))
+		require.NoError(t, testutil.FundModuleAccount(dsc.BankKeeper, ctx, notBondedPool.GetName(), totalSupply))
+	*/
+	notBondedPool := dsc.ValidatorKeeper.GetNotBondedPool(ctx)
+	dsc.AccountKeeper.SetModuleAccount(ctx, notBondedPool)
+
+	numVals := int64(3)
+	//bondedCoins := sdk.NewCoins(sdk.NewCoin(dsc.ValidatorKeeper.BondDenom(ctx), amt.MulRaw(numVals)))
+	bondedPool := dsc.ValidatorKeeper.GetBondedPool(ctx)
+
+	// set bonded pool balance
+	dsc.AccountKeeper.SetModuleAccount(ctx, bondedPool)
+	//require.NoError(t, testutil.FundModuleAccount(dsc.BankKeeper, ctx, bondedPool.GetName(), bondedCoins))
+
+	for i := int64(0); i < numVals; i++ {
+		validator := testvalidator.NewValidator(t, addrVals[i], PKs[i])
+		dsc.ValidatorKeeper.SetValidator(ctx, validator)
+		dsc.ValidatorKeeper.SetValidatorByConsAddr(ctx, validator)
+	}
+
+	return dsc, ctx, addrDels, addrVals
+}
+
+// // tests Jail, Unjail
+// func TestRevocation(t *testing.T) {
+// 	dsc, ctx, _, addrVals := bootstrapSlashTest(t, 5)
+
+// 	consAddr := sdk.ConsAddress(PKs[0].Address())
+
+// 	// initial state
+// 	val, found := dsc.ValidatorKeeper.GetValidator(ctx, addrVals[0])
+// 	require.True(t, found)
+// 	require.False(t, val.IsJailed())
+
+// 	// test jail
+// 	dsc.ValidatorKeeper.Jail(ctx, consAddr)
+// 	val, found = dsc.ValidatorKeeper.GetValidator(ctx, addrVals[0])
+// 	require.True(t, found)
+// 	require.True(t, val.IsJailed())
+
+// 	// test unjail
+// 	dsc.ValidatorKeeper.Unjail(ctx, consAddr)
+// 	val, found = dsc.ValidatorKeeper.GetValidator(ctx, addrVals[0])
+// 	require.True(t, found)
+// 	require.False(t, val.IsJailed())
+// }
+
 //
 //// tests slashUnbondingDelegation
 //func TestSlashUnbondingDelegation(t *testing.T) {
