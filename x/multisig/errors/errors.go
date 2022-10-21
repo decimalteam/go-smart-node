@@ -46,4 +46,9 @@ var (
 	UnknownWalletInTx               = errors.New(codespace, 128, "multisig transaction have unknown wallet")
 	TxSignersNotEqualToWalletOwners = errors.New(codespace, 129, "in multisig transaction signers count != wallet owners:")
 	UnknownSignerInTx               = errors.New(codespace, 130, "multisig transaction have unknown signer")
+
+	NoSignersInInternal         = errors.New(codespace, 131, "no signers in internal message")
+	WalletIsNotSignerInInternal = errors.New(codespace, 132, "wallet isn't in signers in internal message")
+	NoHandlerForInternal        = errors.New(codespace, 133, "no handlers to process internal message")
+	EmptyInternalMessage        = errors.New(codespace, 134, "empty internal message")
 )

@@ -77,6 +77,7 @@ func (aa *EditNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stor
 		aa.id,
 		aa.newTokenUri,
 	)
+
 	return feeConfig.MakeTransaction(sa, msg)
 }
 

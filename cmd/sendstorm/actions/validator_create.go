@@ -82,6 +82,7 @@ func (ac *CreateValidatorAction) GenerateTx(sa *stormTypes.StormAccount, feeConf
 		)
 		tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
 	*/
+
 	return feeConfig.MakeTransaction(sa, nil)
 }
 

@@ -3,6 +3,7 @@ package ante
 import (
 	"fmt"
 
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	sdkAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -25,15 +26,17 @@ type FeeDecorator struct {
 	bankKeeper    evmTypes.BankKeeper
 	accountKeeper evmTypes.AccountKeeper
 	feeKeeper     feetypes.FeeKeeper
+	cdc           codec.BinaryCodec
 }
 
 // NewFeeDecorator creates new FeeDecorator to deduct fee
-func NewFeeDecorator(ck cointypes.CoinKeeper, bk evmTypes.BankKeeper, ak evmTypes.AccountKeeper, fk feetypes.FeeKeeper) FeeDecorator {
+func NewFeeDecorator(ck cointypes.CoinKeeper, bk evmTypes.BankKeeper, ak evmTypes.AccountKeeper, fk feetypes.FeeKeeper, cdc codec.BinaryCodec) FeeDecorator {
 	return FeeDecorator{
 		coinKeeper:    ck,
 		bankKeeper:    bk,
 		accountKeeper: ak,
 		feeKeeper:     fk,
+		cdc:           cdc,
 	}
 }
 
@@ -58,7 +61,8 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 	if err != nil {
 		return ctx, err
 	}
-	commissionInBaseCoin, err := CalculateFee(tx.GetMsgs(), int64(len(ctx.TxBytes())), delPrice.Price, fd.feeKeeper.GetModuleParams(ctx))
+
+	commissionInBaseCoin, err := CalculateFee(fd.cdc, tx.GetMsgs(), int64(len(ctx.TxBytes())), delPrice.Price, fd.feeKeeper.GetModuleParams(ctx))
 	if err != nil {
 		return ctx, err
 	}
