@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"testing"
 	"time"
 
@@ -13,6 +12,7 @@ import (
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"

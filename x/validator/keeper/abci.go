@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"fmt"
 	"time"
 
@@ -10,6 +9,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 

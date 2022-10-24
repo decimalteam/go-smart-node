@@ -1,21 +1,21 @@
 package keeper_test
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
-	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
-	"bitbucket.org/decimalteam/go-smart-node/x/validator/keeper"
-	sdkmath "cosmossdk.io/math"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
