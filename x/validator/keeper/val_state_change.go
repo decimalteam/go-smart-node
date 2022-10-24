@@ -109,29 +109,14 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		return nil, err
 	}
 
-	//validators := k.GetLastValidators(ctx)
+	validators := k.GetAllValidatorsByPowerIndexReversed(ctx)
 	delegations := k.GetAllDelegationsByValidator(ctx)
-	//for _, validator := range validators {
-	//	if validator.Jailed {
-	//		continue
-	//	}
-	//
-	//	valAddr := validator.GetOperator()
-	//	k.DeleteValidatorByPowerIndex(ctx, validator)
-	//	stakePower, err := k.delegationsTotalStake(ctx, delegations[valAddr.String()])
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	rs, err := k.GetValidatorRS(ctx, valAddr)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	rs.Stake = stakePower
-	//	k.SetValidatorRS(ctx, valAddr, rs)
-	//
-	//	//k.checkDelegations(ctx, validator, delegations[validator.ValAddress.String()]) TODO not needed?
-	//	k.SetValidatorByPowerIndex(ctx, validator)
-	//}
+	for _, validator := range validators {
+		if validator.Jailed {
+			continue
+		}
+		k.CheckDelegations(ctx, validator, delegations[validator.GetOperator().String()])
+	}
 
 	// Iterate over validators, highest power to lowest.
 	iterator := k.ValidatorsPowerStoreIterator(ctx)
@@ -447,4 +432,65 @@ func sortNoLongerBonded(last validatorsByAddr) ([][]byte, error) {
 	})
 
 	return noLongerBonded, nil
+}
+
+func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator, delegations []types.Delegation) {
+	if len(delegations) <= int(k.MaxDelegations(ctx)) {
+		return
+	}
+
+	sort.SliceStable(delegations, func(i, j int) bool {
+		amountI := k.baseCoinFromStake(ctx, delegations[i].Stake).Amount
+		amountJ := k.baseCoinFromStake(ctx, delegations[j].Stake).Amount
+		return amountI.GT(amountJ)
+	})
+
+	for i := int(k.MaxDelegations(ctx)); i < len(delegations); i++ {
+		stake := delegations[i].Stake
+		delegator := delegations[i].GetDelegator()
+		switch validator.Status {
+		case types.BondStatus_Bonded:
+			switch stake.Type {
+			case types.StakeType_Coin:
+				amt := stake.Stake
+
+				if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(
+					ctx, types.BondedPoolName, delegator, sdk.NewCoins(amt),
+				); err != nil {
+					panic(err)
+				}
+
+			case types.StakeType_NFT:
+				if err := k.nftKeeper.TransferSubTokens(ctx, k.GetBondedPool(ctx).GetAddress(), delegator, stake.GetID(), stake.GetSubTokenIDs()); err != nil {
+					panic(err)
+				}
+			}
+		case types.BondStatus_Unbonded:
+			switch stake.Type {
+			case types.StakeType_Coin:
+				amt := stake.Stake
+
+				if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(
+					ctx, types.NotBondedPoolName, delegator, sdk.NewCoins(amt),
+				); err != nil {
+					panic(err)
+				}
+
+			case types.StakeType_NFT:
+				if err := k.nftKeeper.TransferSubTokens(ctx, k.GetNotBondedPool(ctx).GetAddress(), delegator, stake.GetID(), stake.GetSubTokenIDs()); err != nil {
+					panic(err)
+				}
+			}
+		}
+
+		remainStake, err := k.CalculateRemainStake(ctx, delegations[i].Stake, delegations[i].Stake)
+		if err != nil {
+			panic(err)
+		}
+
+		err = k.Unbond(ctx, delegator, validator.GetOperator(), delegations[i].Stake, remainStake)
+		if err != nil {
+			panic(err)
+		}
+	}
 }

@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"testing"
 	"time"
 
@@ -13,6 +12,7 @@ import (
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
@@ -532,4 +532,100 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 		require.True(t, found)
 		require.Equal(t, subtoken.Owner, accs[0].String())
 	}
+}
+
+func TestCheckDelegations(t *testing.T) {
+	_, dsc, ctx := createTestInput(t)
+
+	defaultParams := dsc.ValidatorKeeper.GetParams(ctx)
+	defaultParams.MaxDelegations = 3
+	dsc.ValidatorKeeper.SetParams(ctx, defaultParams)
+
+	msgsrv := keeper.NewMsgServerImpl(dsc.ValidatorKeeper)
+
+	// 0. genesis
+	balance := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10000000)))
+	accs, vals := generateAddresses(dsc, ctx, 10, sdk.NewCoins(balance))
+
+	genesisVals := dsc.ValidatorKeeper.GetValidators(ctx, 10)
+	require.Len(t, genesisVals, 1)
+	genesisVal := genesisVals[0]
+	require.True(t, genesisVal.ConsensusPower() > 0)
+	require.Equal(t, genesisVal.ConsensusPower(), dsc.ValidatorKeeper.GetLastTotalPower(ctx).Int64())
+
+	// create custom coin
+	ccDenom := "custom"
+	initVolume := keeper.TokensFromConsensusPower(100000000000)
+	initReserve := keeper.TokensFromConsensusPower(1000)
+	limitVolume := keeper.TokensFromConsensusPower(100000000000000000)
+	crr := uint64(50)
+
+	_, err := dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[0], ccDenom, "d", crr, initVolume, initReserve, limitVolume, ""))
+	require.NoError(t, err)
+	// ----------------------------
+
+	// create custom coin
+	ccDenom2 := "custom2"
+
+	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[1], ccDenom2, "da", crr, initVolume, initReserve, limitVolume, ""))
+	require.NoError(t, err)
+	// ----------------------------
+
+	// create custom coin
+	ccDenom3 := "custom3"
+
+	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[2], ccDenom3, "d", crr, initVolume, initReserve, limitVolume, ""))
+	require.NoError(t, err)
+	// ----------------------------
+
+	goCtx := sdk.WrapSDKContext(ctx)
+	valK := dsc.ValidatorKeeper
+	////////////////////////////////////////////////
+	// 1. create two validators
+
+	creatorStake := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(100)))
+	// first
+	{
+		msgCreate, err := types.NewMsgCreateValidator(vals[0], accs[0], PKs[0], types.Description{Moniker: "monik"},
+			sdk.ZeroDec(), creatorStake)
+		require.NoError(t, err)
+
+		_, err = msgsrv.CreateValidator(goCtx, msgCreate)
+		require.NoError(t, err)
+	}
+	// delegates
+	stake1 := types.NewStakeCoin(sdk.NewCoin(ccDenom, helpers.EtherToWei(sdkmath.NewInt(1000))))
+	stake2 := types.NewStakeCoin(sdk.NewCoin(ccDenom2, helpers.EtherToWei(sdkmath.NewInt(1200))))
+	stake3 := types.NewStakeCoin(sdk.NewCoin(ccDenom3, helpers.EtherToWei(sdkmath.NewInt(1400))))
+	{
+		val, _ := valK.GetValidator(ctx, vals[0])
+
+		{
+			err = valK.Delegate(ctx, accs[0], val, stake1)
+			require.NoError(t, err)
+			err = valK.Delegate(ctx, accs[1], val, stake2)
+			require.NoError(t, err)
+			err = valK.Delegate(ctx, accs[2], val, stake3)
+			require.NoError(t, err)
+		}
+	}
+
+	{
+		val, _ := valK.GetValidator(ctx, vals[0])
+
+		dels := valK.GetAllDelegationsByValidator(ctx)
+		require.Len(t, dels[val.GetOperator().String()], 4)
+
+		valK.CheckDelegations(ctx, val, dels[val.GetOperator().String()])
+
+		dels = valK.GetAllDelegationsByValidator(ctx)
+		require.Len(t, dels[val.GetOperator().String()], 3)
+
+		updatedRS, err := valK.GetValidatorRS(ctx, val.GetOperator())
+		require.NoError(t, err)
+
+		minus := keeper.TokensToConsensusPower(valK.ToBaseCoin(ctx, stake1.Stake).Amount)
+		require.Equal(t, val.Stake-minus, updatedRS.Stake)
+	}
+
 }

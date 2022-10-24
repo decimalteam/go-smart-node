@@ -184,6 +184,22 @@ func (k Keeper) GetAllValidatorsByPowerIndex(ctx sdk.Context) (types.Validators,
 	return validators, powers, totalPower
 }
 
+func (k Keeper) GetAllValidatorsByPowerIndexReversed(ctx sdk.Context) []types.Validator {
+	var validators []types.Validator
+
+	iterator := k.ValidatorsPowerStoreIterator(ctx)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		validator, found := k.GetValidator(ctx, iterator.Value())
+		if !found {
+			panic("validator not found")
+		}
+		validators = append(validators, validator)
+	}
+	return validators
+}
+
 // GetValidatorByPowerIndexKey creates the validator by power index.
 // Power index is the key used in the power-store, and represents the relative power ranking of the validator.
 func (k Keeper) GetValidatorByPowerIndexKey(validator types.Validator) []byte {

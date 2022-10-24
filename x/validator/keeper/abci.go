@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -8,6 +9,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
@@ -43,6 +45,7 @@ func BeginBlocker(ctx sdk.Context, k Keeper, req abci.RequestBeginBlock) {
 
 // Called every block, update validator set
 func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.ValidatorUpdate {
+	start := time.Now()
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
 
 	height := ctx.BlockHeight()
@@ -52,10 +55,17 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 	k.PayValidators(ctx)
 
 	if height%120 == 0 {
+		ctx.Logger().Debug(
+			fmt.Sprintf("Duration 120 block (%s)", helpers.DurationToString(time.Since(start))),
+		)
 		err := k.PayRewards(ctx)
 		if err != nil {
 			panic(err)
 		}
+	} else {
+		ctx.Logger().Debug(
+			fmt.Sprintf("Duration simple block (%s)", helpers.DurationToString(time.Since(start))),
+		)
 	}
 	return updates
 }
