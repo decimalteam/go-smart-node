@@ -118,9 +118,9 @@ func (s Stake) Equal(a Stake) bool {
 				isHere = true
 				break
 			}
-			if !isHere {
-				return false
-			}
+		}
+		if !isHere {
+			return false
 		}
 	}
 	return true
@@ -157,7 +157,7 @@ func SetHasIntersection(set []uint32, otherset []uint32) bool {
 
 // returns elements of (set-subset)
 func SetSubstract(set []uint32, subset []uint32) []uint32 {
-	var result []uint32
+	var result = []uint32{}
 	for _, id1 := range set {
 		substract := true
 		for _, id2 := range subset {
