@@ -72,20 +72,24 @@ func (p *Params) Validate() (err error) {
 }
 
 func validateMaxCollectionSize(i interface{}) error {
-	_, ok := i.(uint32)
+	v, ok := i.(uint32)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
-	// TODO
+	if v == 0 {
+		return fmt.Errorf("max collection size must be positive: %d", v)
+	}
 	return nil
 }
 
 func validateMaxTokenQuantity(i interface{}) error {
-	_, ok := i.(uint32)
+	v, ok := i.(uint32)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
-	// TODO
+	if v == 0 {
+		return fmt.Errorf("max token quantity must be positive: %d", v)
+	}
 	return nil
 }
 

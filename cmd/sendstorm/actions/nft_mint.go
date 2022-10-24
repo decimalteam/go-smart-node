@@ -111,15 +111,8 @@ func (aa *MintNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stor
 		aa.quantity,
 		aa.reserve,
 	)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
-	if err != nil {
-		return nil, err
-	}
-	err = tx.SignTransaction(sa.Account())
-	if err != nil {
-		return nil, err
-	}
-	return tx.BytesToSend()
+
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (aa *MintNFTAction) String() string {

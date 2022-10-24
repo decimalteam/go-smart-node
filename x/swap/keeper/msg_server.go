@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 	"math/big"
 	"strings"
 
@@ -65,6 +66,7 @@ func (k Keeper) InitializeSwap(goCtx context.Context, msg *types.MsgInitializeSw
 
 func (k Keeper) RedeemSwap(goCtx context.Context, msg *types.MsgRedeemSwap) (*types.MsgRedeemSwapResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	fmt.Printf("####### RedeemSwap: %+v\n", msg)
 
 	transactionNumber, ok := sdk.NewIntFromString(msg.TransactionNumber)
 	if !ok {
@@ -72,6 +74,7 @@ func (k Keeper) RedeemSwap(goCtx context.Context, msg *types.MsgRedeemSwap) (*ty
 	}
 
 	hash, err := types.GetHash(transactionNumber, msg.TokenSymbol, msg.Amount, msg.Recipient, msg.FromChain, msg.DestChain)
+	fmt.Printf("####### RedeemSwap: hash = %s\n", hash)
 	if err != nil {
 		return nil, err
 	}
@@ -80,12 +83,22 @@ func (k Keeper) RedeemSwap(goCtx context.Context, msg *types.MsgRedeemSwap) (*ty
 		return nil, errors.AlreadyRedeemed
 	}
 
+	_r, err := hex.DecodeString(msg.R)
+	if err != nil {
+		return nil, errors.InvalidHexStringR
+	}
+	_s, err := hex.DecodeString(msg.S)
+	if err != nil {
+		return nil, errors.InvalidHexStringS
+	}
+
 	R := big.NewInt(0)
-	R.SetBytes(msg.R[:])
+	R.SetBytes(_r[:])
 
 	S := big.NewInt(0)
-	S.SetBytes(msg.S[:])
+	S.SetBytes(_s[:])
 
+	fmt.Printf("####### RedeemSwap: Ecrecover: v = %d, r = %x, s = %x\n", msg.V, R, S)
 	address, err := types.Ecrecover(hash, R, S, sdk.NewInt(int64(msg.V)).BigInt())
 	if err != nil {
 		return nil, err
@@ -123,10 +136,10 @@ func (k Keeper) RedeemSwap(goCtx context.Context, msg *types.MsgRedeemSwap) (*ty
 		TokenSymbol:       msg.TokenSymbol,
 		TransactionNumber: msg.TransactionNumber,
 		FromChain:         msg.FromChain,
-		DestChain:         msg.FromChain,
+		DestChain:         msg.DestChain,
 		V:                 hexutil.EncodeUint64(uint64(msg.V)),
-		R:                 hexutil.Encode(msg.R[:]),
-		S:                 hexutil.Encode(msg.S[:]),
+		R:                 hexutil.Encode(_r[:]),
+		S:                 hexutil.Encode(_s[:]),
 		HashRedeem:        hash.String(),
 	})
 	if err != nil {

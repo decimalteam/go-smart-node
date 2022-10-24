@@ -119,15 +119,8 @@ func (aa *UpdateReserveNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeCon
 		aa.subIds,
 		aa.newReserve,
 	)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
-	if err != nil {
-		return nil, err
-	}
-	err = tx.SignTransaction(sa.Account())
-	if err != nil {
-		return nil, err
-	}
-	return tx.BytesToSend()
+
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (aa *UpdateReserveNFTAction) String() string {

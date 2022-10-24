@@ -15,7 +15,6 @@ func TestSwapRedeem(t *testing.T) {
 	cmdcfg.SetBip44CoinType(cfg)
 
 	const validRecipient = "dx1tlhpwr6t9nnq95xjet3ap2lc9zlxyw9dhr9y0z"
-	zeroHash := Hash([32]byte{0})
 
 	sender, err := sdk.AccAddressFromBech32("dx1lx4lvt8sjuxj8vw5dcf6knnq0pacre4w6hdh2v")
 	require.NoError(t, err)
@@ -29,6 +28,8 @@ func TestSwapRedeem(t *testing.T) {
 		transactionNumber string
 		fromChain         uint32
 		destChain         uint32
+		r                 string
+		s                 string
 		expectError       bool
 	}{
 		{
@@ -40,6 +41,8 @@ func TestSwapRedeem(t *testing.T) {
 			transactionNumber: "123",
 			fromChain:         1,
 			destChain:         3,
+			r:                 "d8c0c8ff4a9b168be168f480bae61ead0a7f2b973f983a038f867621451fa553",
+			s:                 "641ba9f5749afbb425e83b69ecacb3a0c6e32e2431609d474d4300a7cce5eb41",
 			expectError:       false,
 		},
 		{
@@ -119,6 +122,58 @@ func TestSwapRedeem(t *testing.T) {
 			destChain:         3,
 			expectError:       true,
 		},
+		{
+			tag:               "invalid R 1",
+			sender:            sender,
+			recipient:         validRecipient,
+			amount:            sdk.NewInt(1),
+			tokenSymbol:       "del",
+			transactionNumber: "123",
+			fromChain:         1,
+			destChain:         3,
+			r:                 "d8c0c8ff4a9b168be168f480bae61ead0a7f2b973f983a038f867621451fa55",
+			s:                 "641ba9f5749afbb425e83b69ecacb3a0c6e32e2431609d474d4300a7cce5eb41",
+			expectError:       true,
+		},
+		{
+			tag:               "invalid R 2",
+			sender:            sender,
+			recipient:         validRecipient,
+			amount:            sdk.NewInt(1),
+			tokenSymbol:       "del",
+			transactionNumber: "123",
+			fromChain:         1,
+			destChain:         3,
+			r:                 "d8c0c8ff4a9b168be168f480bae61ead0a7f2b973f983a038f867621451fa55z",
+			s:                 "641ba9f5749afbb425e83b69ecacb3a0c6e32e2431609d474d4300a7cce5eb41",
+			expectError:       true,
+		},
+		{
+			tag:               "invalid S 1",
+			sender:            sender,
+			recipient:         validRecipient,
+			amount:            sdk.NewInt(1),
+			tokenSymbol:       "del",
+			transactionNumber: "123",
+			fromChain:         1,
+			destChain:         3,
+			r:                 "d8c0c8ff4a9b168be168f480bae61ead0a7f2b973f983a038f867621451fa553",
+			s:                 "641ba9f5749afbb425e83b69ecacb3a0c6e32e2431609d474d4300a7cce5eb4",
+			expectError:       true,
+		},
+		{
+			tag:               "invalid S 2",
+			sender:            sender,
+			recipient:         validRecipient,
+			amount:            sdk.NewInt(1),
+			tokenSymbol:       "del",
+			transactionNumber: "123",
+			fromChain:         1,
+			destChain:         3,
+			r:                 "d8c0c8ff4a9b168be168f480bae61ead0a7f2b973f983a038f867621451fa553",
+			s:                 "641ba9f5749afbb425e83b69ecacb3a0c6e32e2431609d474d4300a7cce5eb4z",
+			expectError:       true,
+		},
 	}
 	for _, tc := range testCases {
 		msg := NewMsgRedeemSwap(
@@ -131,8 +186,8 @@ func TestSwapRedeem(t *testing.T) {
 			tc.fromChain,
 			tc.destChain,
 			0,
-			&zeroHash,
-			&zeroHash,
+			tc.r,
+			tc.s,
 		)
 		err := msg.ValidateBasic()
 		if tc.expectError {

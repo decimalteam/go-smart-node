@@ -11,9 +11,9 @@ option go_package = "bitbucket.org/decimalteam/go-smart-node/x/multisig/types";
 // GenesisState defines the module's genesis state.
 message GenesisState {
   // wallets defines all registered multisig wallets.
-  repeated Wallet wallets = 2 [ (gogoproto.nullable) = false ];
+  repeated Wallet wallets = 1 [ (gogoproto.nullable) = false ];
   // transactions defines all registered multisig transactions.
-  repeated Transaction transactions = 3 [ (gogoproto.nullable) = false ];
+  repeated Transaction transactions = 2 [ (gogoproto.nullable) = false ];
   // params defines all the module's parameters.
-  Params params = 1 [ (gogoproto.nullable) = false ];
+  Params params = 3 [ (gogoproto.nullable) = false ];
 }

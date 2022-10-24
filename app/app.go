@@ -54,13 +54,8 @@ import (
 	crisis "github.com/cosmos/cosmos-sdk/x/crisis"
 	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
-	distr "github.com/cosmos/cosmos-sdk/x/distribution"
 	distrclient "github.com/cosmos/cosmos-sdk/x/distribution/client"
-	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-	evidence "github.com/cosmos/cosmos-sdk/x/evidence"
-	evidencekeeper "github.com/cosmos/cosmos-sdk/x/evidence/keeper"
-	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
 	feegrant "github.com/cosmos/cosmos-sdk/x/feegrant"
 	feegrantkeeper "github.com/cosmos/cosmos-sdk/x/feegrant/keeper"
 	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
@@ -77,12 +72,6 @@ import (
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
-	slashing "github.com/cosmos/cosmos-sdk/x/slashing"
-	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
-	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	staking "github.com/cosmos/cosmos-sdk/x/staking"
-	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
@@ -93,7 +82,6 @@ import (
 	ibcclientclient "github.com/cosmos/ibc-go/v5/modules/core/02-client/client"
 	ibchost "github.com/cosmos/ibc-go/v5/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v5/modules/core/keeper"
-	ibctesting "github.com/cosmos/ibc-go/v5/testing"
 
 	// Ethermint
 	ethencoding "github.com/evmos/ethermint/encoding"
@@ -133,6 +121,10 @@ import (
 	swapkeeper "bitbucket.org/decimalteam/go-smart-node/x/swap/keeper"
 	swaptypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
 	upgrade "bitbucket.org/decimalteam/go-smart-node/x/upgrade"
+
+	validator "bitbucket.org/decimalteam/go-smart-node/x/validator"
+	validatorkeeper "bitbucket.org/decimalteam/go-smart-node/x/validator/keeper"
+	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
 // TODO: Move to some other place and use address with known private key!
@@ -162,8 +154,8 @@ var (
 		genutil.AppModuleBasic{},
 		bank.AppModuleBasic{},
 		capability.AppModuleBasic{},
-		staking.AppModuleBasic{},
-		distr.AppModuleBasic{},
+		//staking.AppModuleBasic{},
+		//distr.AppModuleBasic{},
 		gov.NewAppModuleBasic([]govclient.ProposalHandler{
 			// SDK proposal handlers
 			paramsclient.ProposalHandler,
@@ -178,11 +170,11 @@ var (
 		}),
 		params.AppModuleBasic{},
 		crisis.AppModuleBasic{},
-		slashing.AppModuleBasic{},
+		//slashing.AppModuleBasic{},
 		authzmodule.AppModuleBasic{},
 		feegrantmodule.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
-		evidence.AppModuleBasic{},
+		//evidence.AppModuleBasic{},
 		// IBC
 		ibc.AppModuleBasic{},
 		// Ethermint
@@ -194,20 +186,22 @@ var (
 		multisig.AppModuleBasic{},
 		swap.AppModuleBasic{},
 		fee.AppModuleBasic{},
+		validator.AppModuleBasic{},
 	)
 
 	// Module account permissions
 	maccPerms = map[string][]string{
-		authtypes.FeeCollectorName:     {authtypes.Burner},
-		distrtypes.ModuleName:          nil,
-		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
-		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
-		govtypes.ModuleName:            {authtypes.Burner},
-		evmtypes.ModuleName:            {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
-		cointypes.ModuleName:           {authtypes.Minter, authtypes.Burner},
-		nfttypes.ReservedPool:          {authtypes.Minter, authtypes.Burner},
-		legacytypes.LegacyCoinPool:     nil, // special account to hold legacy balances
-		swaptypes.SwapPool:             nil, // special account to hold locked coins in swap process
+		authtypes.FeeCollectorName:       {authtypes.Burner, authtypes.Minter},
+		distrtypes.ModuleName:            nil,
+		validatortypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
+		validatortypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
+		validatortypes.ModuleName:        {authtypes.Burner, authtypes.Minter}, // used to store coins that will soon be paid out
+		govtypes.ModuleName:              {authtypes.Burner},
+		evmtypes.ModuleName:              {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
+		cointypes.ModuleName:             {authtypes.Minter, authtypes.Burner},
+		nfttypes.ReservedPool:            {authtypes.Minter, authtypes.Burner},
+		legacytypes.LegacyCoinPool:       nil, // special account to hold legacy balances
+		swaptypes.SwapPool:               nil, // special account to hold locked coins in swap process
 	}
 
 	// Module accounts that are allowed to receive tokens
@@ -221,7 +215,7 @@ var (
 var (
 	_ servertypes.Application = (*DSC)(nil)
 	_ simapp.App              = (*DSC)(nil)
-	_ ibctesting.TestingApp   = (*DSC)(nil)
+	//_ ibctesting.TestingApp   = (*DSC)(nil)
 )
 
 // DSC implements an extended ABCI application. It is an application that may process
@@ -245,16 +239,16 @@ type DSC struct {
 	AccountKeeper    authkeeper.AccountKeeper
 	BankKeeper       bankkeeper.Keeper
 	CapabilityKeeper *capabilitykeeper.Keeper
-	StakingKeeper    stakingkeeper.Keeper
-	SlashingKeeper   slashingkeeper.Keeper
-	DistrKeeper      distrkeeper.Keeper
-	GovKeeper        govkeeper.Keeper
-	CrisisKeeper     crisiskeeper.Keeper
-	UpgradeKeeper    upgradekeeper.Keeper
-	ParamsKeeper     paramskeeper.Keeper
-	FeeGrantKeeper   feegrantkeeper.Keeper
-	AuthzKeeper      authzkeeper.Keeper
-	EvidenceKeeper   evidencekeeper.Keeper
+	//StakingKeeper    stakingkeeper.Keeper
+	//SlashingKeeper   slashingkeeper.Keeper
+	//DistrKeeper    distrkeeper.Keeper
+	GovKeeper      govkeeper.Keeper
+	CrisisKeeper   crisiskeeper.Keeper
+	UpgradeKeeper  upgradekeeper.Keeper
+	ParamsKeeper   paramskeeper.Keeper
+	FeeGrantKeeper feegrantkeeper.Keeper
+	AuthzKeeper    authzkeeper.Keeper
+	//EvidenceKeeper   evidencekeeper.Keeper
 
 	// IBC keepers
 	IBCKeeper *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
@@ -266,12 +260,13 @@ type DSC struct {
 	EvmKeeper *evmkeeper.Keeper
 
 	// Decimal keepers
-	CoinKeeper     coinkeeper.Keeper
-	SwapKeeper     swapkeeper.Keeper
-	MultisigKeeper multisigkeeper.Keeper
-	NFTKeeper      nftkeeper.Keeper
-	FeeKeeper      feekeeper.Keeper
-	LegacyKeeper   legacykeeper.Keeper
+	CoinKeeper      coinkeeper.Keeper
+	SwapKeeper      swapkeeper.Keeper
+	MultisigKeeper  multisigkeeper.Keeper
+	NFTKeeper       nftkeeper.Keeper
+	FeeKeeper       feekeeper.Keeper
+	LegacyKeeper    legacykeeper.Keeper
+	ValidatorKeeper validatorkeeper.Keeper
 
 	// Module manager
 	mm *module.Manager
@@ -325,12 +320,12 @@ func NewDSC(
 		// SDK keys
 		authtypes.StoreKey,
 		banktypes.StoreKey,
-		stakingtypes.StoreKey,
-		distrtypes.StoreKey,
-		slashingtypes.StoreKey,
+		//stakingtypes.StoreKey,
+		//distrtypes.StoreKey,
+		//slashingtypes.StoreKey,
 		govtypes.StoreKey,
 		paramstypes.StoreKey,
-		evidencetypes.StoreKey,
+		//evidencetypes.StoreKey,
 		capabilitytypes.StoreKey,
 		feegrant.StoreKey,
 		authzkeeper.StoreKey,
@@ -345,6 +340,7 @@ func NewDSC(
 		nfttypes.StoreKey,
 		feetypes.StoreKey,
 		legacytypes.StoreKey,
+		validatortypes.StoreKey,
 		upgradetypes.StoreKey,
 	)
 
@@ -396,28 +392,28 @@ func NewDSC(
 		app.GetSubspace(banktypes.ModuleName),
 		app.BlockedAddrs(),
 	)
-	app.StakingKeeper = stakingkeeper.NewKeeper(
-		appCodec,
-		keys[stakingtypes.StoreKey],
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.GetSubspace(stakingtypes.ModuleName),
-	)
-	app.DistrKeeper = distrkeeper.NewKeeper(
-		appCodec,
-		keys[distrtypes.StoreKey],
-		app.GetSubspace(distrtypes.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-		&app.StakingKeeper,
-		authtypes.FeeCollectorName,
-	)
-	app.SlashingKeeper = slashingkeeper.NewKeeper(
-		appCodec,
-		keys[slashingtypes.StoreKey],
-		&app.StakingKeeper,
-		app.GetSubspace(slashingtypes.ModuleName),
-	)
+	// app.StakingKeeper = stakingkeeper.NewKeeper(
+	// 	appCodec,
+	// 	keys[stakingtypes.StoreKey],
+	// 	app.AccountKeeper,
+	// 	app.BankKeeper,
+	// 	app.GetSubspace(stakingtypes.ModuleName),
+	// )
+	// app.DistrKeeper = distrkeeper.NewKeeper(
+	// 	appCodec,
+	// 	keys[distrtypes.StoreKey],
+	// 	app.GetSubspace(distrtypes.ModuleName),
+	// 	app.AccountKeeper,
+	// 	app.BankKeeper,
+	// 	&app.StakingKeeper,
+	// 	authtypes.FeeCollectorName,
+	// )
+	// app.SlashingKeeper = slashingkeeper.NewKeeper(
+	// 	appCodec,
+	// 	keys[slashingtypes.StoreKey],
+	// 	&app.StakingKeeper,
+	// 	app.GetSubspace(slashingtypes.ModuleName),
+	// )
 	app.CrisisKeeper = crisiskeeper.NewKeeper(
 		app.GetSubspace(crisistypes.ModuleName),
 		invCheckPeriod,
@@ -438,8 +434,42 @@ func NewDSC(
 
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
-	app.StakingKeeper.SetHooks(
-		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
+	// app.StakingKeeper.SetHooks(
+	// 	stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
+	// )
+
+	// Create decimal keeper because Validator = Staking+Slashing+Evidence
+	app.CoinKeeper = *coinkeeper.NewKeeper(
+		appCodec,
+		keys[cointypes.StoreKey],
+		app.GetSubspace(cointypes.ModuleName),
+		app.AccountKeeper,
+		&app.FeeKeeper,
+		app.BankKeeper,
+	)
+	app.NFTKeeper = *nftkeeper.NewKeeper(
+		appCodec,
+		keys[nfttypes.StoreKey],
+		app.GetSubspace(nfttypes.ModuleName),
+		app.BankKeeper,
+	)
+	app.MultisigKeeper = *multisigkeeper.NewKeeper(
+		appCodec,
+		keys[multisigtypes.StoreKey],
+		app.GetSubspace(multisigtypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.MsgServiceRouter(),
+	)
+	app.ValidatorKeeper = validatorkeeper.NewKeeper(
+		appCodec,
+		keys[validatortypes.StoreKey],
+		app.GetSubspace(validatortypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+		&app.NFTKeeper,
+		&app.CoinKeeper,
+		&app.MultisigKeeper,
 	)
 
 	// Create Ethermint keepers
@@ -457,7 +487,7 @@ func NewDSC(
 		app.GetSubspace(evmtypes.ModuleName),
 		app.AccountKeeper,
 		app.BankKeeper,
-		&app.StakingKeeper,
+		&app.ValidatorKeeper,
 		app.FeeKeeper,
 		cast.ToString(appOpts.Get(ethsrvflags.EVMTracer)),
 	)
@@ -480,7 +510,7 @@ func NewDSC(
 		appCodec,
 		keys[ibchost.StoreKey],
 		app.GetSubspace(ibchost.ModuleName),
-		app.StakingKeeper,
+		app.ValidatorKeeper,
 		app.UpgradeKeeper,
 		scopedIBCKeeper,
 	)
@@ -489,7 +519,6 @@ func NewDSC(
 	govLegacyRouter := govtypesv1beta1.NewRouter()
 	govLegacyRouter.AddRoute(govtypes.RouterKey, govtypesv1beta1.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
-		AddRoute(distrtypes.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.DistrKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
 		AddRoute(ibchost.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 	govConfig := govtypes.DefaultConfig()
@@ -500,43 +529,15 @@ func NewDSC(
 		app.GetSubspace(govtypes.ModuleName),
 		app.AccountKeeper,
 		app.BankKeeper,
-		app.StakingKeeper,
+		app.ValidatorKeeper,
 		govLegacyRouter,
 		app.BaseApp.MsgServiceRouter(),
 		govConfig,
 	)
 
-	// Create evidence keeper with router
-	app.EvidenceKeeper = *evidencekeeper.NewKeeper(
-		appCodec,
-		keys[evidencetypes.StoreKey],
-		&app.StakingKeeper,
-		app.SlashingKeeper,
-	)
 	// If evidence needs to be handled for the app, set routes in router here and seal
 
 	// Create Decimal keepers
-	app.CoinKeeper = *coinkeeper.NewKeeper(
-		appCodec,
-		keys[cointypes.StoreKey],
-		app.GetSubspace(cointypes.ModuleName),
-		app.AccountKeeper,
-		&app.FeeKeeper,
-		app.BankKeeper,
-	)
-	app.MultisigKeeper = *multisigkeeper.NewKeeper(
-		appCodec,
-		keys[multisigtypes.StoreKey],
-		app.GetSubspace(multisigtypes.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-	)
-	app.NFTKeeper = *nftkeeper.NewKeeper(
-		appCodec,
-		keys[nfttypes.StoreKey],
-		app.GetSubspace(nfttypes.ModuleName),
-		app.BankKeeper,
-	)
 	app.LegacyKeeper = *legacykeeper.NewKeeper(
 		appCodec,
 		keys[legacytypes.StoreKey],
@@ -562,17 +563,17 @@ func NewDSC(
 	// must be passed by reference here.
 	app.mm = module.NewManager(
 		// SDK app modules
-		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx, encodingConfig.TxConfig),
+		genutil.NewAppModule(app.AccountKeeper, app.ValidatorKeeper, app.BaseApp.DeliverTx, encodingConfig.TxConfig),
 		auth.NewAppModule(appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts),
 		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants),
 		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
-		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
-		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
-		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+		//slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
+		//distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
+		//staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		upgrade.NewAppModule(appCodec, app.UpgradeKeeper),
-		evidence.NewAppModule(app.EvidenceKeeper),
+		//evidence.NewAppModule(app.EvidenceKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
@@ -588,6 +589,7 @@ func NewDSC(
 		nft.NewAppModule(appCodec, app.NFTKeeper),
 		fee.NewAppModule(appCodec, app.FeeKeeper),
 		legacy.NewAppModule(app.appCodec, app.LegacyKeeper),
+		validator.NewAppModule(appCodec, app.ValidatorKeeper, app.AccountKeeper, app.BankKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -600,10 +602,11 @@ func NewDSC(
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		evmtypes.ModuleName,
-		distrtypes.ModuleName,
-		slashingtypes.ModuleName,
-		evidencetypes.ModuleName,
-		stakingtypes.ModuleName,
+		validatortypes.ModuleName,
+		//distrtypes.ModuleName,
+		//slashingtypes.ModuleName,
+		//evidencetypes.ModuleName,
+		//stakingtypes.ModuleName,
 		ibchost.ModuleName,
 		// no-op modules
 		authtypes.ModuleName,
@@ -626,7 +629,8 @@ func NewDSC(
 	app.mm.SetOrderEndBlockers(
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
-		stakingtypes.ModuleName,
+		validatortypes.ModuleName,
+		//stakingtypes.ModuleName,
 		evmtypes.ModuleName,
 		//claimstypes.ModuleName,
 		// no-op modules
@@ -634,10 +638,10 @@ func NewDSC(
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
-		distrtypes.ModuleName,
-		slashingtypes.ModuleName,
+		//distrtypes.ModuleName,
+		//slashingtypes.ModuleName,
 		genutiltypes.ModuleName,
-		evidencetypes.ModuleName,
+		//evidencetypes.ModuleName,
 		authz.ModuleName,
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
@@ -646,8 +650,8 @@ func NewDSC(
 		multisigtypes.ModuleName,
 		swaptypes.ModuleName,
 		nfttypes.ModuleName,
-		feetypes.ModuleName,
 		legacytypes.ModuleName,
+		feetypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -660,12 +664,12 @@ func NewDSC(
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
-		distrtypes.ModuleName,
-		stakingtypes.ModuleName,
-		slashingtypes.ModuleName,
+		//distrtypes.ModuleName,
+		//stakingtypes.ModuleName,
+		//slashingtypes.ModuleName,
 		govtypes.ModuleName,
 		ibchost.ModuleName,
-		evidencetypes.ModuleName,
+		//evidencetypes.ModuleName,
 		authz.ModuleName,
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
@@ -681,6 +685,7 @@ func NewDSC(
 		swaptypes.ModuleName,
 		nfttypes.ModuleName,
 		legacytypes.ModuleName,
+		validatortypes.ModuleName,
 		genutiltypes.ModuleName,
 		// NOTE: crisis module must go at the end to check for invariants on each module
 		crisistypes.ModuleName,
@@ -697,11 +702,11 @@ func NewDSC(
 		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
 		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
-		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
-		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
-		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
+		//staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+		//distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.ValidatorKeeper),
+		//slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		params.NewAppModule(app.ParamsKeeper),
-		evidence.NewAppModule(app.EvidenceKeeper),
+		//evidence.NewAppModule(app.EvidenceKeeper),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		ibc.NewAppModule(app.IBCKeeper),
@@ -947,8 +952,9 @@ func (app *DSC) GetBaseApp() *baseapp.BaseApp {
 }
 
 // GetStakingKeeper implements the TestingApp interface.
-func (app *DSC) GetStakingKeeper() stakingkeeper.Keeper {
-	return app.StakingKeeper
+// TODO: fix it?
+func (app *DSC) GetStakingKeeper() validatorkeeper.Keeper {
+	return app.ValidatorKeeper
 }
 
 // GetIBCKeeper implements the TestingApp interface.
@@ -999,9 +1005,9 @@ func initParamsKeeper(
 	// SDK subspaces
 	paramsKeeper.Subspace(authtypes.ModuleName)
 	paramsKeeper.Subspace(banktypes.ModuleName)
-	paramsKeeper.Subspace(stakingtypes.ModuleName)
-	paramsKeeper.Subspace(distrtypes.ModuleName)
-	paramsKeeper.Subspace(slashingtypes.ModuleName)
+	//paramsKeeper.Subspace(stakingtypes.ModuleName)
+	//paramsKeeper.Subspace(distrtypes.ModuleName)
+	//paramsKeeper.Subspace(slashingtypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govtypesv1.ParamKeyTable())
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	// IBC subspaces
@@ -1015,6 +1021,7 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(multisigtypes.ModuleName)
 	paramsKeeper.Subspace(nfttypes.ModuleName)
 	paramsKeeper.Subspace(swaptypes.ModuleName)
+	paramsKeeper.Subspace(validatortypes.ModuleName)
 	return paramsKeeper
 }
 

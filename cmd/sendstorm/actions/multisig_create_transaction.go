@@ -24,7 +24,7 @@ type CreateMultisigTransactionGenerator struct {
 }
 
 type CreateMultisigTransactionAction struct {
-	coins           sdk.Coins
+	coin            sdk.Coin
 	receiver        string
 	wallet          string
 	possibleSenders []string // wallet owners
@@ -69,7 +69,7 @@ func (gg *CreateMultisigTransactionGenerator) Generate() Action {
 	amount := helpers.FinneyToWei(sdkmath.NewInt(RandomRange(gg.rnd, gg.bottomRange, upperLimit)))
 	coinToSend := sdk.NewCoin(balance[j].Denom, amount)
 	return &CreateMultisigTransactionAction{
-		coins:           sdk.NewCoins(coinToSend),
+		coin:            coinToSend,
 		receiver:        RandomChoice(gg.rnd, gg.knownAddresses),
 		wallet:          wallet.Address,
 		possibleSenders: wallet.Owners,
@@ -96,19 +96,24 @@ func (aa *CreateMultisigTransactionAction) GenerateTx(sa *stormTypes.StormAccoun
 		return nil, err
 	}
 
-	msg := dscTx.NewMsgCreateTransaction(sender, aa.wallet, aa.receiver, aa.coins)
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
+	wAdr, err := sdk.AccAddressFromBech32(aa.wallet)
 	if err != nil {
 		return nil, err
 	}
-	err = tx.SignTransaction(sa.Account())
+	rAdr, err := sdk.AccAddressFromBech32(aa.receiver)
 	if err != nil {
 		return nil, err
 	}
-	return tx.BytesToSend()
+
+	msg, err := dscTx.NewMsgCreateTransaction(sender, aa.wallet, dscTx.NewMsgSendCoin(wAdr, rAdr, aa.coin))
+	if err != nil {
+		return nil, err
+	}
+
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (aa *CreateMultisigTransactionAction) String() string {
 	return fmt.Sprintf("CreateMultisigTransaction{wallet: %s, receiver: %s, coin: %s}",
-		aa.wallet, aa.receiver, aa.coins.String())
+		aa.wallet, aa.receiver, aa.coin.String())
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -24,6 +25,7 @@ type Keeper struct {
 
 	accountKeeper auth.AccountKeeperI
 	bankKeeper    bank.Keeper
+	router        *baseapp.MsgServiceRouter
 }
 
 // NewKeeper creates a multisig keeper
@@ -33,6 +35,7 @@ func NewKeeper(
 	ps paramtypes.Subspace,
 	accountKeeper auth.AccountKeeperI,
 	bankKeeper bank.Keeper,
+	router *baseapp.MsgServiceRouter,
 ) *Keeper {
 	return &Keeper{
 		storeKey:      storeKey,
@@ -40,6 +43,7 @@ func NewKeeper(
 		ps:            ps,
 		accountKeeper: accountKeeper,
 		bankKeeper:    bankKeeper,
+		router:        router,
 	}
 }
 
@@ -120,31 +124,6 @@ func (k *Keeper) GetAllWallets(ctx sdk.Context) (wallets []types.Wallet, err err
 	return
 }
 
-////////////////////////////////////////////////////////////////
-// Transaction
-////////////////////////////////////////////////////////////////
-
-// GetTransaction returns multisig wallet transaction metadata with specified address transaction ID.
-func (k *Keeper) GetTransaction(ctx sdk.Context, txID string) (transaction types.Transaction, err error) {
-	store := ctx.KVStore(k.storeKey)
-	key := append(types.KeyPrefixTransaction, []byte(txID)...)
-	value := store.Get(key)
-	if len(value) == 0 {
-		err = errors.TransactionNotFound
-		return
-	}
-	err = k.cdc.UnmarshalLengthPrefixed(value, &transaction)
-	return
-}
-
-// SetTransaction sets the entire multisig wallet transaction metadata struct for a multisig wallet.
-func (k *Keeper) SetTransaction(ctx sdk.Context, transaction types.Transaction) {
-	store := ctx.KVStore(k.storeKey)
-	value := k.cdc.MustMarshalLengthPrefixed(&transaction)
-	key := append(types.KeyPrefixTransaction, []byte(transaction.Id)...)
-	store.Set(key, value)
-}
-
 // GetTransactions returns transactions for specified multisig wallet.
 func (k *Keeper) GetTransactions(ctx sdk.Context, wallet string) (transactions []types.Transaction, err error) {
 	store := ctx.KVStore(k.storeKey)
@@ -186,4 +165,71 @@ func (k *Keeper) GetAllTransactions(ctx sdk.Context) (transactions []types.Trans
 	}
 
 	return
+}
+
+////////////////////////////////////////////////////////////////
+// Transaction
+////////////////////////////////////////////////////////////////
+
+// SetTransaction sets the entire multisig wallet universal transaction metadata struct for a multisig wallet.
+func (k *Keeper) SetTransaction(ctx sdk.Context, transaction types.Transaction) error {
+	store := ctx.KVStore(k.storeKey)
+	value, err := k.cdc.MarshalLengthPrefixed(&transaction)
+	if err != nil {
+		return err
+	}
+	key := append(types.KeyPrefixTransaction, []byte(transaction.Id)...)
+	store.Set(key, value)
+	return nil
+}
+
+func (k *Keeper) GetTransaction(ctx sdk.Context, txID string) (transaction types.Transaction, err error) {
+	store := ctx.KVStore(k.storeKey)
+	key := append(types.KeyPrefixTransaction, []byte(txID)...)
+	value := store.Get(key)
+	if len(value) == 0 {
+		err = errors.TransactionNotFound
+		return
+	}
+	err = k.cdc.UnmarshalLengthPrefixed(value, &transaction)
+	return
+}
+
+// SetUniversalSign mark signature for transaction and wallet owner.
+func (k *Keeper) SetUniversalSign(ctx sdk.Context, txID, signer string) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetSignatureKey(txID, signer)
+	store.Set(key, []byte{})
+}
+
+// IsSigned check signature for transaction.
+func (k *Keeper) IsSigned(ctx sdk.Context, txID, signer string) bool {
+	store := ctx.KVStore(k.storeKey)
+	return store.Has(types.GetSignatureKey(txID, signer))
+}
+
+func (k *Keeper) SetCompleted(ctx sdk.Context, txID string) {
+	store := ctx.KVStore(k.storeKey)
+	key := append(types.KeyPrefixCompletedTransaction, []byte(txID)...)
+	store.Set(key, []byte{})
+}
+
+func (k *Keeper) IsCompleted(ctx sdk.Context, txID string) bool {
+	store := ctx.KVStore(k.storeKey)
+	key := append(types.KeyPrefixCompletedTransaction, []byte(txID)...)
+	return store.Has(key)
+}
+
+// IsSigned check signature for transaction.
+func (k *Keeper) GetSigners(ctx sdk.Context, txID string) []string {
+	store := ctx.KVStore(k.storeKey)
+	var result []string
+	it := sdk.KVStorePrefixIterator(store, types.GetSignaturePrefixKey(txID))
+	defer it.Close()
+
+	for ; it.Valid(); it.Next() {
+		result = append(result, types.ExtractSignerFromKey(it.Key(), txID))
+	}
+
+	return result
 }

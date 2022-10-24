@@ -54,18 +54,18 @@ type GenesisNew struct {
 		Capability   interface{} `json:"capability"`
 		Crisis       interface{} `json:"crisis"`
 		Distribution interface{} `json:"distribution"`
-		Evidence     interface{} `json:"evidence"`
-		Evm          interface{} `json:"evm"`
-		Feegrant     interface{} `json:"feegrant"`
-		Fee          interface{} `json:"customfee"`
-		Gov          interface{} `json:"gov"`
-		IBC          interface{} `json:"ibc"`
-		Params       interface{} `json:"params"`
-		Slashing     interface{} `json:"slashing"`
-		Staking      interface{} `json:"staking"`
-		Upgrade      interface{} `json:"upgrade"`
-		Vesting      interface{} `json:"vesting"`
-		Validator    struct {
+		//Evidence     interface{} `json:"evidence"`
+		Evm      interface{} `json:"evm"`
+		Feegrant interface{} `json:"feegrant"`
+		Fee      interface{} `json:"customfee"`
+		Gov      interface{} `json:"gov"`
+		IBC      interface{} `json:"ibc"`
+		Params   interface{} `json:"params"`
+		//Slashing     interface{} `json:"slashing"`
+		//Staking      interface{} `json:"staking"`
+		Upgrade   interface{} `json:"upgrade"`
+		Vesting   interface{} `json:"vesting"`
+		Validator struct {
 			Validators          []ValidatorNew          `json:"validators"`
 			Delegations         []DelegationNew         `json:"delegations"`
 			Undelegations       []UndelegationNew       `json:"undelegations"`
@@ -174,7 +174,7 @@ type FullCoinNew struct {
 func FullCoinO2N(coin FullCoinOld, addrTable *AddressTable) FullCoinNew {
 	symbol := coin.Symbol
 	if symbol == "tdel" {
-		symbol = "del"
+		symbol = "tdel"
 	}
 	crr, _ := strconv.ParseInt(coin.CRR, 10, 64)
 	return FullCoinNew{
@@ -339,7 +339,7 @@ type ValidatorNew struct {
 	RewardAddress   string `json:"reward_address"`   // dx1
 	ConsensusPubKey struct {
 		Type string `json:"@type"`
-		Key  string `json:"key"`
+		Key  []byte `json:"key"`
 	} `json:"consensus_pubkey"`
 	Description struct {
 		Details         string `json:"details"`
@@ -371,7 +371,7 @@ func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable) (ValidatorNew, e
 	if err != nil {
 		return ValidatorNew{}, err
 	}
-	result.ConsensusPubKey.Key = base64.RawStdEncoding.EncodeToString(pk.Bytes())
+	result.ConsensusPubKey.Key = pk.Bytes()
 	// description
 	result.Description.Details = valOld.Description.Details
 	result.Description.Identity = valOld.Description.Identity
@@ -475,7 +475,7 @@ func DelegationO2NNFT(delOld DelegationNFTOld, addrTable *AddressTable) (Delegat
 	delNew.Stake.Stake = delOld.Coin
 	// fix for testnet
 	if delNew.Stake.Stake.Denom == "tdel" {
-		delNew.Stake.Stake.Denom = "del"
+		delNew.Stake.Stake.Denom = "tdel"
 	}
 	for _, s := range delOld.SubTokenIds {
 		id, err := strconv.ParseInt(s, 10, 32)
@@ -542,7 +542,7 @@ func UnbondingO2NNFT(ubdOld UnbondingNFTRecordOld, addrTable *AddressTable) (Und
 			return UndelegationNew{}, fmt.Errorf("delegator '%s' creation_height error: %s", ubdOld.DelegatorAddress, err.Error())
 		}
 		entryNew.Stake.ID = entryOld.TokenID
-		entryNew.Stake.Stake = sdk.NewCoin("del", entryOld.Balance.Amount)
+		entryNew.Stake.Stake = sdk.NewCoin("tdel", entryOld.Balance.Amount)
 		entryNew.Stake.Type = "STAKE_TYPE_NFT"
 		for _, s := range entryOld.SubTokenIds {
 			id, err := strconv.ParseInt(s, 10, 32)

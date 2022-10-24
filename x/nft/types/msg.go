@@ -305,7 +305,7 @@ func (msg *MsgBurnToken) ValidateBasic() error {
 	return nil
 }
 
-/* --------------------------------------------------------------------------- */
+////////////////////////////////////////////////////////////////
 
 func CheckUnique(arr []uint32) bool {
 	for i, el := range arr {

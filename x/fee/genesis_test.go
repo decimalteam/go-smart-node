@@ -3,13 +3,15 @@ package fee_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
-	"github.com/stretchr/testify/require"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
 func TestDefaultGenesis(t *testing.T) {

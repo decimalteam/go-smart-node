@@ -1,10 +1,15 @@
 package keeper_test
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	gocontext "context"
 	"fmt"
+
+	sdkcodec "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
+
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 )
 
 func (s *KeeperTestSuite) TestGRPCQueryWallets() {
@@ -159,7 +164,9 @@ func (s *KeeperTestSuite) TestGRPCQueryTransactions() {
 				require.NoError(err)
 				for _, resTx := range res.Transactions {
 					if tx, ok := hits[resTx.Id]; ok {
-						require.Equal(tx.String(), resTx.String()) // TODO replace after regenerate proto
+						// TODO: add more checks
+						require.Equal(tx.Id, resTx.Id)
+						require.Equal(tx.Wallet, resTx.Wallet)
 						delete(hits, resTx.Id)
 					} else {
 						s.T().Fatal("wallet does not set, but it was included in the resp")
@@ -181,6 +188,12 @@ func (s *KeeperTestSuite) TestGRPCQueryCoinPrice() {
 	tx := types.Transaction{
 		Id:     "first",
 		Wallet: existsWallet.Address,
+		Message: *sdkcodec.UnsafePackAny(cointypes.NewMsgSendCoin(
+			sdk.MustAccAddressFromBech32(existsWallet.Address),
+			user1,
+			sdk.NewInt64Coin("del", 1)),
+		),
+		CreatedAt: 100,
 	}
 	k.SetTransaction(ctx, tx)
 
@@ -216,7 +229,9 @@ func (s *KeeperTestSuite) TestGRPCQueryCoinPrice() {
 			res, err := queryClient.Transaction(gocontext.Background(), req)
 			if tc.expPass {
 				require.NoError(err)
-				require.Equal(tx.String(), res.Transaction.String()) // TODO replace after regenerate proto
+				require.Equal(tx.Id, res.Transaction.Id)
+				require.Equal(tx.Wallet, res.Transaction.Wallet)
+				require.Equal(tx.Message.Value, res.Transaction.Message.Value)
 			} else {
 				require.Error(err)
 				require.Nil(res)

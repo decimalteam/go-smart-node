@@ -29,7 +29,8 @@ func GetTxCmd() *cobra.Command {
 
 	coinCmd.AddCommand(
 		NewCreateWalletCmd(),
-		NewCreateTransactionCmd(),
+		//NewCreateTransactionCmd(),
+		NewSignTransactionCmd(),
 	)
 
 	return coinCmd
@@ -109,61 +110,64 @@ $ %s tx %s create-wallet dx1a..a,dx1b..b,dx1c..c 1,2,3 5 --from mykey`, config.A
 	return cmd
 }
 
-func NewCreateTransactionCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "create-transaction [wallet] [receiver] [coins]",
-		Short: "Creates transaction for multisig wallet to send coins. Transaction sender must be in wallet owners",
-		Long: fmt.Sprintf(`Creates new transaction to send coins from multisignature wallet to receiver.
+/*
+	func NewCreateTransactionCmd() *cobra.Command {
+		cmd := &cobra.Command{
+			Use:   "create-transaction [wallet] [receiver] [coins]",
+			Short: "Creates transaction for multisig wallet to send coins. Transaction sender must be in wallet owners",
+			Long: fmt.Sprintf(`Creates new transaction to send coins from multisignature wallet to receiver.
+
 Coins must be comma separated coins.
 
-Example: 	
+Example:
 $ %s tx %s create-transaction dx1..wallet dx1..receiver 1000del,200tony --from mykey`, config.AppBinName, types.ModuleName),
-		Args: cobra.ExactArgs(3),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
 
-			var (
-				from        = clientCtx.GetFromAddress()
-				wallet      = args[0]
-				receiver    = args[1]
-				coinsString = args[2]
-			)
+			Args: cobra.ExactArgs(3),
+			RunE: func(cmd *cobra.Command, args []string) error {
+				clientCtx, err := client.GetClientTxContext(cmd)
+				if err != nil {
+					return err
+				}
 
-			if _, err := sdk.AccAddressFromBech32(wallet); err != nil {
-				return fmt.Errorf("invalid wallet address %s: %s", wallet, err.Error())
-			}
+				var (
+					from        = clientCtx.GetFromAddress()
+					wallet      = args[0]
+					receiver    = args[1]
+					coinsString = args[2]
+				)
 
-			if _, err := sdk.AccAddressFromBech32(receiver); err != nil {
-				return fmt.Errorf("invalid receiver address %s: %s", receiver, err.Error())
-			}
+				if _, err := sdk.AccAddressFromBech32(wallet); err != nil {
+					return fmt.Errorf("invalid wallet address %s: %s", wallet, err.Error())
+				}
 
-			coins, err := sdk.ParseCoinsNormalized(coinsString)
-			if err != nil {
-				return fmt.Errorf("error whil parse coins %s: %s", coinsString, err.Error())
-			}
+				if _, err := sdk.AccAddressFromBech32(receiver); err != nil {
+					return fmt.Errorf("invalid receiver address %s: %s", receiver, err.Error())
+				}
 
-			msg := types.NewMsgCreateTransaction(from, wallet, receiver, coins)
-			err = msg.ValidateBasic()
-			if err != nil {
-				return err
-			}
+				coins, err := sdk.ParseCoinsNormalized(coinsString)
+				if err != nil {
+					return fmt.Errorf("error whil parse coins %s: %s", coinsString, err.Error())
+				}
 
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
-		},
+				msg := types.NewMsgCreateTransaction(from, wallet, receiver, coins)
+				err = msg.ValidateBasic()
+				if err != nil {
+					return err
+				}
+
+				return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+			},
+		}
+
+		flags.AddTxFlagsToCmd(cmd)
+		// workaround for cosmos
+		cmd.Flags().String(flags.FlagChainID, "", "network chain id")
+
+		_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
+
+		return cmd
 	}
-
-	flags.AddTxFlagsToCmd(cmd)
-	// workaround for cosmos
-	cmd.Flags().String(flags.FlagChainID, "", "network chain id")
-
-	_ = cmd.MarkFlagRequired(flags.FlagFrom) // nolint:errcheck
-
-	return cmd
-}
-
+*/
 func NewSignTransactionCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "sign-transaction [tx_id]",

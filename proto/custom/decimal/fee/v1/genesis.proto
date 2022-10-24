@@ -13,7 +13,7 @@ option go_package = "bitbucket.org/decimalteam/go-smart-node/x/fee/types";
 // GenesisState defines the module's genesis state.
 message GenesisState {
   // prices defines complete list of initial coin prices.
-  repeated CoinPrice prices = 2 [ (gogoproto.nullable) = false ];
+  repeated CoinPrice prices = 1 [ (gogoproto.nullable) = false ];
   // params defines all the module's parameters.
-  Params params = 1 [ (gogoproto.nullable) = false ];
+  Params params = 2 [ (gogoproto.nullable) = false ];
 }

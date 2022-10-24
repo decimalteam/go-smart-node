@@ -59,8 +59,6 @@ func (asg *SellCoinGenerator) Generate() Action {
 		}
 	}
 
-	// TODO: random coin for fee
-
 	for _, ci := range asg.knownFullCoins {
 		if ci.Denom == coinName {
 			coinInfo = ci
@@ -110,16 +108,8 @@ func (as *SellCoinAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *sto
 		as.coinToSell,
 		as.minCoinToBuy,
 	)
-	// TODO: fee in custom coin
-	tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
-	if err != nil {
-		return nil, err
-	}
-	err = tx.SignTransaction(sa.Account())
-	if err != nil {
-		return nil, err
-	}
-	return tx.BytesToSend()
+
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (as *SellCoinAction) String() string {

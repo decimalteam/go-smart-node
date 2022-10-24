@@ -13,10 +13,8 @@ import (
 )
 
 func (w *Worker) fetchBlock(height int64) *ctypes.ResultBlock {
-	start := time.Now()
-
 	// Request until get block
-	for first := true; true; first = false {
+	for first, start, deadline := true, time.Now(), time.Now().Add(RequestTimeout); true; first = false {
 		// Request block
 		result, err := w.rpcClient.Block(w.ctx, &height)
 		if err == nil {
@@ -32,6 +30,10 @@ func (w *Worker) fetchBlock(height int64) *ctypes.ResultBlock {
 				)
 			}
 			return result
+		}
+		// Stop trying when the deadline is reached
+		if time.Now().After(deadline) {
+			return nil
 		}
 		// Sleep some time before next try
 		time.Sleep(RequestRetryDelay)
@@ -56,8 +58,8 @@ func (w *Worker) fetchBlockResults(height int64, block ctypes.ResultBlock, ea *E
 	// Request block results from the node
 	// NOTE: Try to retrieve results in the loop since it looks like there is some delay before results are ready to by retrieved
 	var blockResults *ctypes.ResultBlockResults
-	for c := 0; true; c++ {
-		if c > 0 {
+	for c := 1; true; c++ {
+		if c > 5 {
 			w.logger.Debug(fmt.Sprintf("%d attempt to fetch block height: %d, time %s", c, height, time.Now().String()))
 		}
 		// Request block results

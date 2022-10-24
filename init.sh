@@ -41,7 +41,7 @@ dscd keys add $FAUCET_KEY --keyring-backend $KEYRING --algo $KEYALGO >> keys-and
 dscd init $MONIKER --chain-id $CHAINID
 
 # Change parameter token denominations to del
-jq <"$DECIMAL_GENESIS" '.app_state["staking"]["params"]["bond_denom"]="del"' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
+jq <"$DECIMAL_GENESIS" '.app_state["validator"]["params"]["base_denom"]="del"' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
 jq <"$DECIMAL_GENESIS" '.app_state["crisis"]["constant_fee"]["denom"]="del"' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
 jq <"$DECIMAL_GENESIS" '.app_state["gov"]["deposit_params"]["min_deposit"][0]["denom"]="del"' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
 jq <"$DECIMAL_GENESIS" '.app_state["evm"]["params"]["evm_denom"]="del"' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
@@ -53,25 +53,12 @@ jq <"$DECIMAL_GENESIS" '.consensus_params["block"]["max_gas"]="10000000"' > "$DE
 # Set claims start time
 node_address=$(dscd keys show $KEY | grep  "address: " | cut -c12-)
 current_date=$(date -u +"%Y-%m-%dT%TZ")
-jq <"$DECIMAL_GENESIS" -r --arg current_date "$current_date" '.app_state["claims"]["params"]["airdrop_start_time"]=$current_date' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
-
-# Set claims records for validator account
-#amount_to_claim=10000
-#jq <"$DECIMAL_GENESIS" -r --arg node_address "$node_address" --arg amount_to_claim "$amount_to_claim" '.app_state["claims"]["claims_records"]=[{"initial_claimable_amount":$amount_to_claim, "actions_completed":[false, false, false, false],"address":$node_address}]' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
-
-# Set claims decay
-#jq <"$DECIMAL_GENESIS" -r --arg current_date "$current_date" '.app_state["claims"]["params"]["duration_of_decay"]="1000000s"' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
-#jq <"$DECIMAL_GENESIS" -r --arg current_date "$current_date" '.app_state["claims"]["params"]["duration_until_decay"]="100000s"' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
-
-# Claim module account:
-# 0xA61808Fe40fEb8B3433778BBC2ecECCAA47c8c47 || dx15cvq3ljql6utxseh0zau9m8ve2j8erz8prfj7l
-#jq <"$DECIMAL_GENESIS" -r --arg amount_to_claim "$amount_to_claim" '.app_state["bank"]["balances"] += [{"address":"dx15cvq3ljql6utxseh0zau9m8ve2j8erz8prfj7l","coins":[{"denom":"del", "amount":$amount_to_claim}]}]' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
 
 # disable produce empty block
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed -i '' 's/create_empty_blocks = true/create_empty_blocks = false/g' "$DECIMAL_CONFIG"
+    sed -i '' 's/create_empty_blocks = false/create_empty_blocks = true/g' "$DECIMAL_CONFIG"
   else
-    sed -i 's/create_empty_blocks = true/create_empty_blocks = false/g' "$DECIMAL_CONFIG"
+    sed -i 's/create_empty_blocks = false/create_empty_blocks = true/g' "$DECIMAL_CONFIG"
 fi
 
 if [[ $1 == "pending" ]]; then
@@ -102,19 +89,9 @@ fi
 dscd add-genesis-account $KEY 100000000000000000000000000del --keyring-backend $KEYRING
 dscd add-genesis-account $FAUCET_KEY 100000000000000000000000000del --keyring-backend $KEYRING
 
-# Update total supply with claim values
-# validators_supply=$(jq <"$DECIMAL_GENESIS" -r '.app_state["bank"]["supply"][0]["amount"]')
-# Bc is required to add this big numbers
-# total_supply=$(bc <<< "$amount_to_claim+$validators_supply")
-#total_supply=100000000000000000000000000
-#jq <"$DECIMAL_GENESIS" -r --arg total_supply "$total_supply" '.app_state["bank"]["supply"][0]["amount"]=$total_supply' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
+dscd selfdelegation 100000000000000000000000del --keyring-backend $KEYRING --from $KEY
 
-# Sign genesis transaction
-dscd gentx $KEY 1000000000000000000000del --keyring-backend $KEYRING --chain-id $CHAINID
-
-# Collect genesis tx
-echo "### Collect genesis tx"
-dscd collect-gentxs
+jq < "$DECIMAL_GENESIS" 'del(.app_state["bank"]["supply"])' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
 
 # Run this to ensure everything worked and that the genesis file is setup correctly
 echo "### Validate genesis"

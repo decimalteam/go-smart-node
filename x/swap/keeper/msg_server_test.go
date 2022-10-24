@@ -1,13 +1,15 @@
 package keeper_test
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/swap/types"
-	sdkmath "cosmossdk.io/math"
+	"encoding/hex"
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"testing"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/swap/types"
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 func (s *KeeperTestSuite) TestMsgActivateChain() {
@@ -159,8 +161,8 @@ func (s *KeeperTestSuite) TestMsgRedeem() {
 		FromChain:         defaultChainID,
 		DestChain:         destChainID,
 		V:                 0,
-		R:                 nil,
-		S:                 nil,
+		R:                 "",
+		S:                 "",
 	}
 
 	transactionNumber, _ := sdk.NewIntFromString(swap.TransactionNumber)
@@ -183,8 +185,8 @@ func (s *KeeperTestSuite) TestMsgRedeem() {
 	copy(_s[:], sH.BigInt().Bytes())
 
 	swap.V = uint32(v.Uint64())
-	swap.R = &_r
-	swap.S = &_s
+	swap.R = hex.EncodeToString(_r[:])
+	swap.S = hex.EncodeToString(_s[:])
 
 	k.SetChain(ctx, &types.Chain{
 		Id:     defaultChainID,
@@ -205,17 +207,20 @@ func (s *KeeperTestSuite) TestMsgRedeem() {
 	}{
 		{
 			"valid request",
-			types.NewMsgRedeemSwap(user2, user2.String(), user3.String(), defaultAmount, defaultTokenSymbol, "1", defaultChainID, destChainID, swap.V, &_r, &_s),
+			types.NewMsgRedeemSwap(user2, user2.String(), user3.String(), defaultAmount, defaultTokenSymbol, "1",
+				defaultChainID, destChainID, swap.V, hex.EncodeToString(_r[:]), hex.EncodeToString(_s[:])),
 			false,
 		},
 		{
 			"swap is already redeemed",
-			types.NewMsgRedeemSwap(user2, user2.String(), user3.String(), defaultAmount, defaultTokenSymbol, "1", defaultChainID, destChainID, swap.V, &_r, &_s),
+			types.NewMsgRedeemSwap(user2, user2.String(), user3.String(), defaultAmount, defaultTokenSymbol, "1",
+				defaultChainID, destChainID, swap.V, hex.EncodeToString(_r[:]), hex.EncodeToString(_s[:])),
 			true,
 		},
 		{
 			"invalid transaction number",
-			types.NewMsgRedeemSwap(user2, user2.String(), user3.String(), defaultAmount, defaultTokenSymbol, "asf", defaultChainID, destChainID, 27, &_r, &_s),
+			types.NewMsgRedeemSwap(user2, user2.String(), user3.String(), defaultAmount, defaultTokenSymbol, "asf",
+				defaultChainID, destChainID, 27, hex.EncodeToString(_r[:]), hex.EncodeToString(_s[:])),
 			true,
 		},
 	}

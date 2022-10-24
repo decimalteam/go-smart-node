@@ -3,23 +3,26 @@ package legacy_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	cosmosAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	cosmosBankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/tendermint/tendermint/libs/strings"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+
+	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy"
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
-	multisig "bitbucket.org/decimalteam/go-smart-node/x/multisig"
+	"bitbucket.org/decimalteam/go-smart-node/x/multisig"
 	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	nftkeeper "bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	cosmosAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	cosmosBankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
-	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/strings"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
 func TestInitGenesisForLegacy(t *testing.T) {
