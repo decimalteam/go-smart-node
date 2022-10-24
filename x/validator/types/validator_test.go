@@ -10,7 +10,6 @@ import (
 
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec/legacy"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
@@ -289,11 +288,11 @@ func TestValidatorsSortTendermint(t *testing.T) {
 		pk2 := ed25519.GenPrivKey().PubKey()
 		vals[i] = newValidator(t, sdk.ValAddress(pk2.Address()), pk)
 		vals[i].Status = types.BondStatus_Bonded
-		vals[i].Stake = sdkmath.NewInt(rand.Int63())
+		vals[i].Stake = rand.Int63()
 	}
 	// create some validators with the same power
 	for i := 0; i < 10; i++ {
-		vals[i].Stake = sdkmath.NewInt(1000000)
+		vals[i].Stake = 1000000
 	}
 
 	valz := types.Validators(vals)
@@ -321,7 +320,7 @@ func TestValidatorToTm(t *testing.T) {
 		pk := ed25519.GenPrivKey().PubKey()
 		val := newValidator(t, sdk.ValAddress(pk.Address()), pk)
 		val.Status = types.BondStatus_Bonded
-		val.Stake = sdkmath.NewInt(rand.Int63())
+		val.Stake = rand.Int63()
 		vals[i] = val
 		tmPk, err := cryptocodec.ToTmPubKeyInterface(pk)
 		require.NoError(t, err)
