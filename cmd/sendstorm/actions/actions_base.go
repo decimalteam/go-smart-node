@@ -48,7 +48,7 @@ type UpdateInfo struct {
 	NFTs                 []*dscApi.NFTToken
 	NFTSubTokenReserves  map[NFTSubTokenKey]sdk.Coin
 	MultisigWallets      []dscApi.MultisigWallet
-	MultisigTransactions []dscApi.MultisigTransaction
+	MultisigTransactions []dscApi.MultisigTransactionInfo
 	MultisigBalances     map[string]sdk.Coins
 	Validators           []string
 	Stakes               []GenericStake

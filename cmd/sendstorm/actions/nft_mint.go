@@ -111,6 +111,7 @@ func (aa *MintNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stor
 		aa.quantity,
 		aa.reserve,
 	)
+
 	return feeConfig.MakeTransaction(sa, msg)
 }
 

@@ -34,10 +34,6 @@ func NewNFTBlowScenario(api *dscApi.API, accs []*stormTypes.StormAccount) *NFTBl
 }
 
 func (sc *NFTBlowScenario) CreateNFTs(subtokensCount uint32) error {
-	price, params, err := sc.api.GetFeeParams("del", "usd")
-	if err != nil {
-		return err
-	}
 	for _, acc := range sc.accs {
 		acc.UpdateBalance()
 		acc.UpdateNumberSequence()
@@ -52,7 +48,7 @@ func (sc *NFTBlowScenario) CreateNFTs(subtokensCount uint32) error {
 			subtokensCount,
 			sdk.NewCoin("del", helpers.EtherToWei(sdkmath.NewInt(1))),
 		)
-		tx, err := dscTx.BuildTransaction(acc.Account(), []sdk.Msg{msg}, "-", "del", price, params)
+		tx, err := dscTx.BuildTransaction(acc.Account(), []sdk.Msg{msg}, "-", "del", sc.api.GetFeeCalculationOptions())
 		if err != nil {
 			fmt.Printf("CreateNFTs-BuildTransaction err: %s\n", err.Error())
 			continue
@@ -93,10 +89,6 @@ func (sc *NFTBlowScenario) UpdateNFT() {
 
 func (sc *NFTBlowScenario) SendNFT() error {
 	sc.UpdateNFT()
-	price, params, err := sc.api.GetFeeParams("del", "usd")
-	if err != nil {
-		return err
-	}
 	for j, acc := range sc.accs {
 		acc.UpdateBalance()
 		acc.UpdateNumberSequence()
@@ -132,7 +124,7 @@ func (sc *NFTBlowScenario) SendNFT() error {
 			nft.ID,
 			subTokens,
 		)
-		tx, err := dscTx.BuildTransaction(acc.Account(), []sdk.Msg{msg}, "-", "del", price, params)
+		tx, err := dscTx.BuildTransaction(acc.Account(), []sdk.Msg{msg}, "-", "del", sc.api.GetFeeCalculationOptions())
 		if err != nil {
 			fmt.Printf("SendNFT-BuildTransaction err: %s\n", err.Error())
 			continue

@@ -59,8 +59,6 @@ func (asg *SellCoinGenerator) Generate() Action {
 		}
 	}
 
-	// TODO: random coin for fee
-
 	for _, ci := range asg.knownFullCoins {
 		if ci.Denom == coinName {
 			coinInfo = ci
@@ -110,6 +108,7 @@ func (as *SellCoinAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *sto
 		as.coinToSell,
 		as.minCoinToBuy,
 	)
+
 	return feeConfig.MakeTransaction(sa, msg)
 }
 

@@ -10,6 +10,12 @@ import (
 type MultisigWallet = multisigtypes.Wallet
 type MultisigTransaction = multisigtypes.Transaction
 
+type MultisigTransactionInfo struct {
+	Transaction MultisigTransaction
+	Signers     []string
+	Completed   bool
+}
+
 func (api *API) MultisigWalletsByOwner(owner string) ([]MultisigWallet, error) {
 	client := multisigtypes.NewQueryClient(api.grpcClient)
 	wallets := make([]MultisigWallet, 0)
@@ -72,7 +78,7 @@ func (api *API) MultisigTransactionsByWallet(address string) ([]MultisigTransact
 	return txs, nil
 }
 
-func (api *API) MultisigTransactionsByID(txID string) (MultisigTransaction, error) {
+func (api *API) MultisigTransactionsByID(txID string) (MultisigTransactionInfo, error) {
 	client := multisigtypes.NewQueryClient(api.grpcClient)
 	res, err := client.Transaction(
 		context.Background(),
@@ -81,7 +87,11 @@ func (api *API) MultisigTransactionsByID(txID string) (MultisigTransaction, erro
 		},
 	)
 	if err != nil {
-		return MultisigTransaction{}, err
+		return MultisigTransactionInfo{}, err
 	}
-	return res.Transaction, nil
+	return MultisigTransactionInfo{
+		Transaction: res.Transaction,
+		Signers:     res.Signers,
+		Completed:   res.Completed,
+	}, nil
 }
