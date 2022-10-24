@@ -863,22 +863,17 @@ func (k Keeper) Undelegate(
 // CompleteUnbonding completes the unbonding of all mature entries in the
 // retrieved unbonding delegation object and returns the total unbonding balance
 // or an error upon failure.
-func (k Keeper) CompleteUnbonding(ctx sdk.Context, delegator sdk.AccAddress, validator sdk.ValAddress) (events types.EventAssets, err error) {
+func (k Keeper) CompleteUnbonding(ctx sdk.Context, delegator sdk.AccAddress, validator sdk.ValAddress) (err error) {
 	ubd, found := k.GetUndelegation(ctx, delegator, validator)
 	if !found {
-		return events, types.ErrNoUndelegation
+		return types.ErrNoUndelegation
 	}
 
 	ctxTime := ctx.BlockHeader().Time
-	events = types.EventAssets{
-		Coins: sdk.NewCoins(),
-		Nfts:  make([]types.NftAsset, 0),
-	}
-	nfts := map[string][]uint32{}
 
 	delegator, err = sdk.AccAddressFromBech32(ubd.Delegator)
 	if err != nil {
-		return events, err
+		return err
 	}
 
 	// loop through all the entries and complete unbonding mature entries
@@ -895,24 +890,23 @@ func (k Keeper) CompleteUnbonding(ctx sdk.Context, delegator sdk.AccAddress, val
 				if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(
 					ctx, types.NotBondedPoolName, delegator, sdk.NewCoins(amt),
 				); err != nil {
-					return events, err
+					return err
 				}
-
-				events.Coins = events.Coins.Add(amt)
 			case types.StakeType_NFT:
 				if err := k.nftKeeper.TransferSubTokens(ctx, k.GetNotBondedPool(ctx).GetAddress(), delegator, stake.GetID(), stake.GetSubTokenIDs()); err != nil {
-					return events, err
+					return err
 				}
-				nfts[stake.ID] = append(nfts[stake.ID], stake.SubTokenIDs...)
+			}
+
+			err = ctx.EventManager().EmitTypedEvent(&types.EventUndelegateComplete{
+				Delegator: delegator.String(),
+				Validator: validator.String(),
+				Stake:     stake,
+			})
+			if err != nil {
+				return err
 			}
 		}
-	}
-
-	for id, subTokens := range nfts {
-		events.Nfts = append(events.Nfts, types.NftAsset{
-			Id:        id,
-			SubTokens: subTokens,
-		})
 	}
 
 	// set the unbonding delegation or remove it if there are no more entries
@@ -922,7 +916,7 @@ func (k Keeper) CompleteUnbonding(ctx sdk.Context, delegator sdk.AccAddress, val
 		k.SetUndelegation(ctx, ubd)
 	}
 
-	return events, nil
+	return nil
 }
 
 // BeginRedelegation begins unbonding / redelegation and creates a redelegation
@@ -989,17 +983,12 @@ func (k Keeper) BeginRedelegation(
 // balance or an error upon failure.
 func (k Keeper) CompleteRedelegation(
 	ctx sdk.Context, delegator sdk.AccAddress, validatorSrc, validatorDst sdk.ValAddress,
-) (events types.EventAssets, err error) {
+) (err error) {
 	red, found := k.GetRedelegation(ctx, delegator, validatorSrc, validatorDst)
 	if !found {
-		return events, types.ErrNoRedelegation
+		return types.ErrNoRedelegation
 	}
 
-	events = types.EventAssets{
-		Coins: sdk.NewCoins(),
-		Nfts:  make([]types.NftAsset, 0),
-	}
-	nfts := map[string][]uint32{}
 	ctxTime := ctx.BlockHeader().Time
 
 	// loop through all the entries and complete mature redelegation entries
@@ -1018,34 +1007,35 @@ func (k Keeper) CompleteRedelegation(
 				if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(
 					ctx, types.NotBondedPoolName, delegator, sdk.NewCoins(amt),
 				); err != nil {
-					return events, err
+					return err
 				}
 
-				events.Coins = events.Coins.Add(amt)
 			case types.StakeType_NFT:
 				if err := k.nftKeeper.TransferSubTokens(ctx, k.GetNotBondedPool(ctx).GetAddress(), delegator, stake.GetID(), stake.GetSubTokenIDs()); err != nil {
-					return events, err
+					return err
 				}
-				nfts[stake.ID] = append(nfts[stake.ID], stake.SubTokenIDs...)
+			}
+
+			err = ctx.EventManager().EmitTypedEvent(&types.EventRedelegateComplete{
+				Delegator:    delegator.String(),
+				ValidatorSrc: validatorSrc.String(),
+				ValidatorDst: validatorDst.String(),
+				Stake:        stake,
+			})
+			if err != nil {
+				return err
 			}
 
 			// delegate
 			validator, found := k.GetValidator(ctx, validatorDst)
 			if !found {
-				return types.EventAssets{}, fmt.Errorf("not found validator %s", validatorDst)
+				return fmt.Errorf("not found validator %s", validatorDst)
 			}
 			err := k.Delegate(ctx, delegator, validator, entry.Stake)
 			if err != nil {
-				return types.EventAssets{}, err
+				return err
 			}
 		}
-	}
-
-	for id, subTokens := range nfts {
-		events.Nfts = append(events.Nfts, types.NftAsset{
-			Id:        id,
-			SubTokens: subTokens,
-		})
 	}
 
 	// set the redelegation or remove it if there are no more entries
@@ -1055,7 +1045,7 @@ func (k Keeper) CompleteRedelegation(
 		k.SetRedelegation(ctx, red)
 	}
 
-	return events, nil
+	return nil
 }
 
 func (k Keeper) Unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress, stake, remainStake types.Stake) (err error) {

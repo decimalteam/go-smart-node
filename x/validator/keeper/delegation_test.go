@@ -678,7 +678,7 @@ func TestUndelegation(t *testing.T) {
 	blockHeader := ctx.BlockHeader()
 	blockHeader.Time = blockHeader.Time.Add(time.Hour * 100000)
 	ctx = ctx.WithBlockHeader(blockHeader)
-	_, err = valK.CompleteUnbonding(ctx, delAddr, valAddr)
+	err = valK.CompleteUnbonding(ctx, delAddr, valAddr)
 	require.NoError(t, err)
 
 	balances = dsc.BankKeeper.GetAllBalances(ctx, valK.GetNotBondedPool(ctx).GetAddress())
@@ -989,7 +989,7 @@ func TestRedelegation(t *testing.T) {
 	blockHeader := ctx.BlockHeader()
 	blockHeader.Time = blockHeader.Time.Add(time.Hour * 1000000)
 	ctx = ctx.WithBlockHeader(blockHeader)
-	_, err = valK.CompleteRedelegation(ctx, delAddr, valSrcAddr, valDstAddr)
+	err = valK.CompleteRedelegation(ctx, delAddr, valSrcAddr, valDstAddr)
 	require.NoError(t, err)
 
 	delegations = valK.GetValidatorDelegations(ctx, valDstAddr)
