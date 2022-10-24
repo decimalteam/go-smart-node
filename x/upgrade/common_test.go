@@ -6,7 +6,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/app"
 )
 
-// getBaseAppWithCustomKeeper Returns a simapp with custom CoinKeeper
+// getBaseAppW  ithCustomKeeper Returns a simapp with custom CoinKeeper
 // to avoid messing with the hooks.
 //func getBaseAppWithCustomKeeper(skip map[int64]bool) (*codec.LegacyAmino, *app.DSC, sdk.Context) {
 //	dsc := app.Setup(false, feemarkettypes.DefaultGenesisState())
