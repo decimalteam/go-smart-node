@@ -607,225 +607,214 @@ func (suite *KeeperTestSuite) TestGRPCQueryPoolParameters() {
 	suite.Equal(dsc.ValidatorKeeper.GetParams(ctx), resp.Params)
 }
 
-/*
-	func (suite *KeeperTestSuite) TestGRPCQueryHistoricalInfo() {
-		dsc, ctx, queryClient := suite.dsc, suite.ctx, suite.queryClient
+func (suite *KeeperTestSuite) TestGRPCQueryHistoricalInfo() {
+	dsc, ctx, queryClient := suite.dsc, suite.ctx, suite.queryClient
 
-		hi, found := app.StakingKeeper.GetHistoricalInfo(ctx, 5)
-		suite.True(found)
+	hi, found := dsc.ValidatorKeeper.GetHistoricalInfoDecimal(ctx, 5)
+	suite.True(found)
 
-		var req *types.QueryHistoricalInfoRequest
-		testCases := []struct {
-			msg      string
-			malleate func()
-			expPass  bool
-		}{
-			{
-				"empty request",
-				func() {
-					req = &types.QueryHistoricalInfoRequest{}
-				},
-				false,
+	var req *types.QueryHistoricalInfoRequest
+	testCases := []struct {
+		msg      string
+		malleate func()
+		expPass  bool
+	}{
+		{
+			"empty request",
+			func() {
+				req = &types.QueryHistoricalInfoRequest{}
 			},
-			{
-				"invalid request with negative height",
-				func() {
-					req = &types.QueryHistoricalInfoRequest{Height: -1}
-				},
-				false,
+			false,
+		},
+		{
+			"invalid request with negative height",
+			func() {
+				req = &types.QueryHistoricalInfoRequest{Height: -1}
 			},
-			{
-				"valid request with old height",
-				func() {
-					req = &types.QueryHistoricalInfoRequest{Height: 4}
-				},
-				false,
+			false,
+		},
+		{
+			"valid request with old height",
+			func() {
+				req = &types.QueryHistoricalInfoRequest{Height: 4}
 			},
-			{
-				"valid request with current height",
-				func() {
-					req = &types.QueryHistoricalInfoRequest{Height: 5}
-				},
-				true,
+			false,
+		},
+		{
+			"valid request with current height",
+			func() {
+				req = &types.QueryHistoricalInfoRequest{Height: 5}
 			},
-		}
-
-		for _, tc := range testCases {
-			suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
-				tc.malleate()
-				res, err := queryClient.HistoricalInfo(gocontext.Background(), req)
-				if tc.expPass {
-					suite.NoError(err)
-					suite.NotNil(res)
-					suite.True(hi.Equal(res.Hist))
-				} else {
-					suite.Error(err)
-					suite.Nil(res)
-				}
-			})
-		}
+			true,
+		},
 	}
 
-	func (suite *KeeperTestSuite) TestGRPCQueryRedelegations() {
-		dsc, ctx, queryClient, addrs, vals := suite.dsc, suite.ctx, suite.queryClient, suite.addrs, suite.vals
+	for _, tc := range testCases {
+		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
+			tc.malleate()
+			res, err := queryClient.HistoricalInfo(gocontext.Background(), req)
+			if tc.expPass {
+				suite.NoError(err)
+				suite.NotNil(res)
+				suite.True(hi.Equal(res.Hist))
+			} else {
+				suite.Error(err)
+				suite.Nil(res)
+			}
+		})
+	}
+}
 
-		addrAcc, addrAcc1 := addrs[0], addrs[1]
-		valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
-		val1, val2, val3, val4 := vals[0], vals[1], valAddrs[3], valAddrs[4]
-		delAmount := app.StakingKeeper.TokensFromConsensusPower(ctx, 1)
-		_, err := app.StakingKeeper.Delegate(ctx, addrAcc1, delAmount, types.Unbonded, val1, true)
-		suite.NoError(err)
-		applyValidatorSetUpdates(suite.T(), ctx, app.StakingKeeper, -1)
+func (suite *KeeperTestSuite) TestGRPCQueryRedelegations() {
+	dsc, ctx, queryClient, addrs, vals := suite.dsc, suite.ctx, suite.queryClient, suite.addrs, suite.vals
 
-		rdAmount := app.StakingKeeper.TokensFromConsensusPower(ctx, 1)
-		_, err = app.StakingKeeper.BeginRedelegation(ctx, addrAcc1, val1.GetOperator(), val2.GetOperator(), sdk.NewDecFromInt(rdAmount))
-		suite.NoError(err)
-		applyValidatorSetUpdates(suite.T(), ctx, app.StakingKeeper, -1)
+	addrAcc, addrAcc1 := addrs[0], addrs[1]
+	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
+	val1, val2, val3 := vals[0], vals[1], valAddrs[3]
+	//applyValidatorSetUpdates(suite.T(), ctx, dsc.ValidatorKeeper, -1)
+	val1.Status = types.BondStatus_Bonded
+	dsc.ValidatorKeeper.SetValidator(ctx, val1)
 
-		redel, found := app.StakingKeeper.GetRedelegation(ctx, addrAcc1, val1.GetOperator(), val2.GetOperator())
-		suite.True(found)
+	// create redelegation
+	delegation, found := dsc.ValidatorKeeper.GetDelegation(ctx, addrAcc, val1.GetOperator(), cmdcfg.BaseDenom)
+	suite.True(found)
+	redStake := types.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10))))
+	remainStake, err := dsc.ValidatorKeeper.CalculateRemainStake(ctx, delegation.Stake, redStake)
+	suite.NoError(err)
+	_, err = dsc.ValidatorKeeper.BeginRedelegation(ctx, addrAcc, val1.GetOperator(), val2.GetOperator(), redStake, remainStake)
+	suite.NoError(err)
 
-		var req *types.QueryRedelegationsRequest
-		testCases := []struct {
-			msg      string
-			malleate func()
-			expPass  bool
-			expErr   bool
-		}{
-			{
-				"request redelegations for non existent addr",
-				func() {
-					req = &types.QueryRedelegationsRequest{DelegatorAddr: addrAcc.String()}
-				},
-				false,
-				false,
-			},
-			{
-				"request redelegations with non existent pairs",
-				func() {
-					req = &types.QueryRedelegationsRequest{
-						DelegatorAddr: addrAcc.String(), SrcValidatorAddr: val3.String(),
-						DstValidatorAddr: val4.String(),
-					}
-				},
-				false,
-				true,
-			},
-			{
-				"request redelegations with delegatoraddr, sourceValAddr, destValAddr",
-				func() {
-					req = &types.QueryRedelegationsRequest{
-						DelegatorAddr: addrAcc1.String(), SrcValidatorAddr: val1.OperatorAddress,
-						DstValidatorAddr: val2.OperatorAddress, Pagination: &query.PageRequest{},
-					}
-				},
-				true,
-				false,
-			},
-			{
-				"request redelegations with delegatoraddr and sourceValAddr",
-				func() {
-					req = &types.QueryRedelegationsRequest{
-						DelegatorAddr: addrAcc1.String(), SrcValidatorAddr: val1.OperatorAddress,
-						Pagination: &query.PageRequest{},
-					}
-				},
-				true,
-				false,
-			},
-			{
-				"query redelegations with sourceValAddr only",
-				func() {
-					req = &types.QueryRedelegationsRequest{
-						SrcValidatorAddr: val1.GetOperator().String(),
-						Pagination:       &query.PageRequest{Limit: 1, CountTotal: true},
-					}
-				},
-				true,
-				false,
-			},
-		}
+	redel, found := dsc.ValidatorKeeper.GetRedelegation(ctx, addrAcc, val1.GetOperator(), val2.GetOperator())
+	suite.True(found)
 
-		for _, tc := range testCases {
-			suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
-				tc.malleate()
-				res, err := queryClient.Redelegations(gocontext.Background(), req)
-				if tc.expPass && !tc.expErr {
-					suite.NoError(err)
-					suite.Len(res.RedelegationResponses, len(redel.Entries))
-					suite.Equal(redel.DelegatorAddress, res.RedelegationResponses[0].Redelegation.DelegatorAddress)
-					suite.Equal(redel.ValidatorSrcAddress, res.RedelegationResponses[0].Redelegation.ValidatorSrcAddress)
-					suite.Equal(redel.ValidatorDstAddress, res.RedelegationResponses[0].Redelegation.ValidatorDstAddress)
-					suite.Len(redel.Entries, len(res.RedelegationResponses[0].Entries))
-				} else if !tc.expPass && !tc.expErr {
-					suite.NoError(err)
-					suite.Nil(res.RedelegationResponses)
-				} else {
-					suite.Error(err)
-					suite.Nil(res)
+	var req *types.QueryRedelegationsRequest
+	testCases := []struct {
+		msg      string
+		malleate func()
+		expPass  bool
+		expErr   bool
+	}{
+		{
+			"request redelegations for non existent addr",
+			func() {
+				req = &types.QueryRedelegationsRequest{Delegator: addrAcc1.String()}
+			},
+			false,
+			true,
+		},
+		{
+			"request redelegations with non existent pairs",
+			func() {
+				req = &types.QueryRedelegationsRequest{
+					Delegator: addrAcc.String(), Validator: val3.String(),
 				}
-			})
-		}
+			},
+			false,
+			false,
+		},
+		{
+			"request redelegations with delegator, validator",
+			func() {
+				req = &types.QueryRedelegationsRequest{
+					Delegator: addrAcc.String(), Validator: val1.OperatorAddress,
+				}
+			},
+			true,
+			false,
+		},
+		{
+			"query redelegations with sourceValAddr only",
+			func() {
+				req = &types.QueryRedelegationsRequest{
+					Validator: val1.GetOperator().String(),
+				}
+			},
+			false,
+			true,
+		},
 	}
 
-	func (suite *KeeperTestSuite) TestGRPCQueryValidatorUndelegations() {
-		dsc, ctx, queryClient, addrs, vals := suite.dsc, suite.ctx, suite.queryClient, suite.addrs, suite.vals
-		addrAcc1, _ := addrs[0], addrs[1]
-		val1 := vals[0]
-		valAddr1, err1 := sdk.ValAddressFromBech32(val1.OperatorAddress)
-		suite.NoError(err1)
-
-		// first undelegation
-		delegation, found := dsc.ValidatorKeeper.GetDelegation(ctx, addrAcc1, valAddr1, cmdcfg.BaseDenom)
-		suite.True(found)
-		ubdStake1 := types.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10))))
-		remainStake1, err := dsc.ValidatorKeeper.CalculateRemainStake(ctx, delegation.Stake, ubdStake1)
-		suite.NoError(err)
-		_, err = dsc.ValidatorKeeper.Undelegate(ctx, addrAcc1, valAddr1, ubdStake1, remainStake1)
-		suite.NoError(err)
-
-		var req *types.QueryValidatorUndelegationsRequest
-		testCases := []struct {
-			msg      string
-			malleate func()
-			expPass  bool
-		}{
-			{
-				"empty request",
-				func() {
-					req = &types.QueryValidatorUndelegationsRequest{}
-				},
-				false,
-			},
-			{
-				"valid request",
-				func() {
-					req = &types.QueryValidatorUndelegationsRequest{
-						Validator:  val1.GetOperator().String(),
-						Pagination: &query.PageRequest{Limit: 1, CountTotal: true},
-					}
-				},
-				true,
-			},
-		}
-
-		for _, tc := range testCases {
-			suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
-				tc.malleate()
-				res, err := queryClient.ValidatorUndelegations(gocontext.Background(), req)
-				if tc.expPass {
-					suite.NoError(err)
-					suite.Equal(uint64(1), res.Pagination.Total)
-					suite.Equal(1, len(res.Undelegations))
-					suite.Equal(res.Undelegations[0].Validator, val1.OperatorAddress)
-				} else {
-					suite.Error(err)
-					suite.Nil(res)
-				}
-			})
-		}
+	for _, tc := range testCases {
+		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
+			tc.malleate()
+			res, err := queryClient.Redelegations(gocontext.Background(), req)
+			if tc.expPass && !tc.expErr {
+				suite.NoError(err)
+				suite.Len(res.Redelegations, 1)
+				suite.Len(res.Redelegations[0].Entries, 1)
+				suite.Equal(redel.Delegator, res.Redelegations[0].Delegator)
+				suite.Equal(redel.ValidatorSrc, res.Redelegations[0].ValidatorSrc)
+				suite.Equal(redel.ValidatorDst, res.Redelegations[0].ValidatorDst)
+				suite.Len(redel.Entries, len(res.Redelegations[0].Entries))
+			} else if !tc.expPass && !tc.expErr {
+				suite.NoError(err)
+				suite.Nil(res.Redelegations)
+			} else {
+				suite.Error(err)
+				suite.Nil(res)
+			}
+		})
 	}
-*/
+}
+
+func (suite *KeeperTestSuite) TestGRPCQueryValidatorUndelegations() {
+	dsc, ctx, queryClient, addrs, vals := suite.dsc, suite.ctx, suite.queryClient, suite.addrs, suite.vals
+	addrAcc1, _ := addrs[0], addrs[1]
+	val1 := vals[0]
+	valAddr1, err1 := sdk.ValAddressFromBech32(val1.OperatorAddress)
+	suite.NoError(err1)
+
+	// first undelegation
+	delegation, found := dsc.ValidatorKeeper.GetDelegation(ctx, addrAcc1, valAddr1, cmdcfg.BaseDenom)
+	suite.True(found)
+	ubdStake1 := types.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10))))
+	remainStake1, err := dsc.ValidatorKeeper.CalculateRemainStake(ctx, delegation.Stake, ubdStake1)
+	suite.NoError(err)
+	_, err = dsc.ValidatorKeeper.Undelegate(ctx, addrAcc1, valAddr1, ubdStake1, remainStake1)
+	suite.NoError(err)
+
+	var req *types.QueryValidatorUndelegationsRequest
+	testCases := []struct {
+		msg      string
+		malleate func()
+		expPass  bool
+	}{
+		{
+			"empty request",
+			func() {
+				req = &types.QueryValidatorUndelegationsRequest{}
+			},
+			false,
+		},
+		{
+			"valid request",
+			func() {
+				req = &types.QueryValidatorUndelegationsRequest{
+					Validator:  val1.GetOperator().String(),
+					Pagination: &query.PageRequest{Limit: 1, CountTotal: true},
+				}
+			},
+			true,
+		},
+	}
+
+	for _, tc := range testCases {
+		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
+			tc.malleate()
+			res, err := queryClient.ValidatorUndelegations(gocontext.Background(), req)
+			if tc.expPass {
+				suite.NoError(err)
+				suite.Equal(uint64(1), res.Pagination.Total)
+				suite.Equal(1, len(res.Undelegations))
+				suite.Equal(res.Undelegations[0].Validator, val1.OperatorAddress)
+			} else {
+				suite.Error(err)
+				suite.Nil(res)
+			}
+		})
+	}
+}
+
 func createValidators(t *testing.T, ctx sdk.Context, dsc *app.DSC, powers []int64) ([]sdk.AccAddress, []sdk.ValAddress, []types.Validator) {
 	stake := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(100)))
 	coins := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(300)))

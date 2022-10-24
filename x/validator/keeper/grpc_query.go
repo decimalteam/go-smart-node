@@ -178,13 +178,14 @@ func (k Querier) ValidatorUndelegations(c context.Context, req *types.QueryValid
 	}
 
 	store := ctx.KVStore(k.storeKey)
-	valStore := prefix.NewStore(store, types.GetUBDsByValIndexKey(valAddr))
+	byValKey := types.GetUBDsByValIndexKey(valAddr)
+	valStore := prefix.NewStore(store, byValKey)
 
 	ubds := []types.Undelegation{}
 
 	pageRes, err := query.Paginate(valStore, req.Pagination,
 		func(key []byte, _ []byte) error {
-			realKey := types.GetUBDKeyFromValIndexKey(key)
+			realKey := types.GetUBDKeyFromValIndexKey(append(byValKey, key...))
 			value := store.Get(realKey)
 			ubd, err := types.UnmarshalUBD(k.cdc, value)
 			if err != nil {
