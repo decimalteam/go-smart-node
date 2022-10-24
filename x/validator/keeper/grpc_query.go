@@ -139,25 +139,28 @@ func (k Querier) ValidatorRedelegations(c context.Context, req *types.QueryValid
 	}
 
 	store := ctx.KVStore(k.storeKey)
-	valStore := prefix.NewStore(store, types.GetREDsFromValSrcIndexKey(valAddr))
+	fromValSrcKey := types.GetREDsFromValSrcIndexKey(valAddr)
+	valStore := prefix.NewStore(store, fromValSrcKey)
 
-	redelegations, pageRes, err := query.GenericFilteredPaginate(k.cdc, valStore, req.Pagination,
-		func(key []byte, red *types.Redelegation) (*types.Redelegation, error) {
-			return red, nil
-		}, func() *types.Redelegation {
-			return &types.Redelegation{}
-		})
+	var redelegations []types.Redelegation
+
+	pageRes, err := query.Paginate(valStore, req.Pagination, func(key []byte, _ []byte) error {
+		realKey := types.GetREDKeyFromValSrcIndexKey(append(fromValSrcKey, key...))
+		value := store.Get(realKey)
+		red, err := types.UnmarshalRED(k.cdc, value)
+		if err != nil {
+			return err
+		}
+		redelegations = append(redelegations, red)
+		return nil
+	})
+
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	redels := []types.Redelegation{}
-	for _, red := range redelegations {
-		redels = append(redels, *red)
-	}
-
 	return &types.QueryValidatorRedelegationsResponse{
-		Redelegations: redels,
+		Redelegations: redelegations,
 		Pagination:    pageRes,
 	}, nil
 }

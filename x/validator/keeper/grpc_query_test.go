@@ -757,6 +757,168 @@ func (suite *KeeperTestSuite) TestGRPCQueryRedelegations() {
 	}
 }
 
+func (suite *KeeperTestSuite) TestGRPCQueryDelegatorRedelegations() {
+	dsc, ctx, queryClient, addrs, vals := suite.dsc, suite.ctx, suite.queryClient, suite.addrs, suite.vals
+
+	addrAcc, addrAcc1 := addrs[0], addrs[1]
+	val1, val2 := vals[0], vals[1]
+	//applyValidatorSetUpdates(suite.T(), ctx, dsc.ValidatorKeeper, -1)
+	val1.Status = types.BondStatus_Bonded
+	dsc.ValidatorKeeper.SetValidator(ctx, val1)
+
+	// create redelegation
+	delegation, found := dsc.ValidatorKeeper.GetDelegation(ctx, addrAcc, val1.GetOperator(), cmdcfg.BaseDenom)
+	suite.True(found)
+	redStake := types.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10))))
+	remainStake, err := dsc.ValidatorKeeper.CalculateRemainStake(ctx, delegation.Stake, redStake)
+	suite.NoError(err)
+	_, err = dsc.ValidatorKeeper.BeginRedelegation(ctx, addrAcc, val1.GetOperator(), val2.GetOperator(), redStake, remainStake)
+	suite.NoError(err)
+
+	redel, found := dsc.ValidatorKeeper.GetRedelegation(ctx, addrAcc, val1.GetOperator(), val2.GetOperator())
+	suite.True(found)
+
+	var req *types.QueryDelegatorRedelegationsRequest
+	testCases := []struct {
+		msg      string
+		malleate func()
+		expCount int
+		expErr   bool
+	}{
+		{
+			"request redelegations for non existent redelegations for addr",
+			func() {
+				req = &types.QueryDelegatorRedelegationsRequest{Delegator: addrAcc1.String()}
+			},
+			0,
+			false,
+		},
+		{
+			"request redelegations with delegator",
+			func() {
+				req = &types.QueryDelegatorRedelegationsRequest{
+					Delegator: addrAcc.String(),
+				}
+			},
+			1,
+			false,
+		},
+		{
+			"request redelegations with invalid address delegator",
+			func() {
+				req = &types.QueryDelegatorRedelegationsRequest{
+					Delegator: "dx1asasadasd",
+				}
+			},
+			0,
+			true,
+		},
+	}
+
+	for _, tc := range testCases {
+		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
+			tc.malleate()
+			res, err := queryClient.DelegatorRedelegations(gocontext.Background(), req)
+			if tc.expCount > 0 && !tc.expErr {
+				suite.NoError(err)
+				suite.Len(res.Redelegations, tc.expCount)
+				suite.Len(res.Redelegations[0].Entries, 1)
+				suite.Equal(redel.Delegator, res.Redelegations[0].Delegator)
+				suite.Equal(redel.ValidatorSrc, res.Redelegations[0].ValidatorSrc)
+				suite.Equal(redel.ValidatorDst, res.Redelegations[0].ValidatorDst)
+				suite.Len(redel.Entries, len(res.Redelegations[0].Entries))
+			} else if tc.expCount == 0 && !tc.expErr {
+				suite.NoError(err)
+				suite.Len(res.Redelegations, 0)
+			} else {
+				suite.Error(err)
+				suite.Nil(res)
+			}
+		})
+	}
+}
+
+func (suite *KeeperTestSuite) TestGRPCQueryValidatorRedelegations() {
+	dsc, ctx, queryClient, addrs, vals := suite.dsc, suite.ctx, suite.queryClient, suite.addrs, suite.vals
+
+	addrAcc := addrs[0]
+	val1, val2 := vals[0], vals[1]
+	//applyValidatorSetUpdates(suite.T(), ctx, dsc.ValidatorKeeper, -1)
+	val1.Status = types.BondStatus_Bonded
+	dsc.ValidatorKeeper.SetValidator(ctx, val1)
+
+	// create redelegation
+	delegation, found := dsc.ValidatorKeeper.GetDelegation(ctx, addrAcc, val1.GetOperator(), cmdcfg.BaseDenom)
+	suite.True(found)
+	redStake := types.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10))))
+	remainStake, err := dsc.ValidatorKeeper.CalculateRemainStake(ctx, delegation.Stake, redStake)
+	suite.NoError(err)
+	_, err = dsc.ValidatorKeeper.BeginRedelegation(ctx, addrAcc, val1.GetOperator(), val2.GetOperator(), redStake, remainStake)
+	suite.NoError(err)
+
+	redel, found := dsc.ValidatorKeeper.GetRedelegation(ctx, addrAcc, val1.GetOperator(), val2.GetOperator())
+	suite.True(found)
+
+	var req *types.QueryValidatorRedelegationsRequest
+	testCases := []struct {
+		msg      string
+		malleate func()
+		expCount int
+		expErr   bool
+	}{
+		{
+			"request redelegations for non existent redelegations for addr",
+			func() {
+				req = &types.QueryValidatorRedelegationsRequest{Validator: val2.OperatorAddress}
+			},
+			0,
+			false,
+		},
+		{
+			"request redelegations with delegator",
+			func() {
+				req = &types.QueryValidatorRedelegationsRequest{
+					Validator: val1.OperatorAddress,
+				}
+			},
+			1,
+			false,
+		},
+		{
+			"request redelegations with invalid address delegator",
+			func() {
+				req = &types.QueryValidatorRedelegationsRequest{
+					Validator: "dx1asasadasd",
+				}
+			},
+			0,
+			true,
+		},
+	}
+
+	for _, tc := range testCases {
+		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
+			tc.malleate()
+			res, err := queryClient.ValidatorRedelegations(gocontext.Background(), req)
+			if tc.expCount > 0 && !tc.expErr {
+				suite.NoError(err)
+				suite.Len(res.Redelegations, tc.expCount)
+				suite.Len(res.Redelegations[0].Entries, 1)
+				suite.Equal(redel.Delegator, res.Redelegations[0].Delegator)
+				suite.Equal(redel.ValidatorSrc, res.Redelegations[0].ValidatorSrc)
+				suite.Equal(redel.ValidatorDst, res.Redelegations[0].ValidatorDst)
+				suite.Len(redel.Entries, len(res.Redelegations[0].Entries))
+			} else if tc.expCount == 0 && !tc.expErr {
+				suite.NoError(err)
+				suite.Len(res.Redelegations, 0)
+			} else {
+				suite.Error(err)
+				suite.Nil(res)
+			}
+		})
+	}
+}
+
 func (suite *KeeperTestSuite) TestGRPCQueryValidatorUndelegations() {
 	dsc, ctx, queryClient, addrs, vals := suite.dsc, suite.ctx, suite.queryClient, suite.addrs, suite.vals
 	addrAcc1, _ := addrs[0], addrs[1]
