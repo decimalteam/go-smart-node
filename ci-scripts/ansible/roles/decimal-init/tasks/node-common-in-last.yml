@@ -1,10 +1,10 @@
 ---
-- name: Set persistent peers
-  ini_file:
-    path: '{{ decimal_data }}/daemon/config/config.toml'
-    section: 'p2p'
-    option: 'persistent_peers'
-    value: '"{{ persistent_peers }}"'
+#- name: Set persistent peers
+#  ini_file:
+#    path: '{{ decimal_data }}/daemon/config/config.toml'
+#    section: 'p2p'
+#    option: 'persistent_peers'
+#    value: '"{{ persistent_peers }}"'
 
 - name: Enable prometheus metrics
   ini_file:
