@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"testing"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
@@ -84,6 +85,15 @@ func TestDecreasingFactor(t *testing.T) {
 			amountToBurn:      helpers.EtherToWei(sdkmath.NewInt(500)),
 			expectFactor:      sdk.MustNewDecFromStr("0.134067950943311560"),
 		},
+		{
+			name:              "normal, result 0.5",
+			crr:               100,
+			volume:            helpers.EtherToWei(sdkmath.NewInt(1000)),
+			reserve:           helpers.EtherToWei(sdkmath.NewInt(2000)),
+			amountInCollector: helpers.EtherToWei(sdkmath.NewInt(400)),
+			amountToBurn:      helpers.EtherToWei(sdkmath.NewInt(200)),
+			expectFactor:      sdk.MustNewDecFromStr("0.5"),
+		},
 	}
 	for _, tc := range testCases {
 		coinInfo := types.Coin{
@@ -93,5 +103,34 @@ func TestDecreasingFactor(t *testing.T) {
 		}
 		factor := CalculateDecreasingFactor(coinInfo, tc.amountInCollector, tc.amountToBurn)
 		require.True(t, tc.expectFactor.Equal(factor), tc.name)
+	}
+}
+
+// This test need for finding coin parameters for specific CalculateDecreasingFactor
+// Normaly must skip
+func TestDecreasingParams(t *testing.T) {
+	t.Skip()
+	CRR := []uint32{10, 20, 30, 40, 50, 60, 70, 80, 90, 100}
+	VOLUME := []int64{1000, 2000}
+	RESERVE := []int64{1000, 2000}
+	ACOL := []int64{100, 200, 300, 400, 500}
+	ABURN := []int64{100, 200, 300, 400, 500}
+
+	for _, crr := range CRR {
+		for _, vol := range VOLUME {
+			for _, res := range RESERVE {
+				coinInfo := types.Coin{
+					CRR:     crr,
+					Volume:  helpers.EtherToWei(sdk.NewInt(vol)),
+					Reserve: helpers.EtherToWei(sdk.NewInt(res)),
+				}
+				for _, col := range ACOL {
+					for _, burn := range ABURN {
+						factor := CalculateDecreasingFactor(coinInfo, helpers.EtherToWei(sdk.NewInt(col)), helpers.EtherToWei(sdk.NewInt(burn)))
+						fmt.Printf("crr=%d, vol=%d, res=%d, coll=%d, burn=%d, factor=%s\n", crr, vol, res, col, burn, factor)
+					}
+				}
+			}
+		}
 	}
 }
