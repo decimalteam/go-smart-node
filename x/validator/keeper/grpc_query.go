@@ -99,27 +99,28 @@ func (k Querier) ValidatorDelegations(c context.Context, req *types.QueryValidat
 	}
 
 	store := ctx.KVStore(k.storeKey)
-	valStore := prefix.NewStore(store, types.GetValidatorDelegationsKey(valAddr))
+	byValPrefix := types.GetValidatorDelegationsKey(valAddr)
+	valStore := prefix.NewStore(store, byValPrefix)
 	if err != nil {
 		return nil, err
 	}
-	k.GetValidatorDelegations(ctx, valAddr)
-	delegations, pageRes, err := query.GenericFilteredPaginate(k.cdc, valStore, req.Pagination, func(key []byte, delegation *types.Delegation) (*types.Delegation, error) {
-		return delegation, nil
-	}, func() *types.Delegation {
-		return &types.Delegation{}
+
+	var delegations []types.Delegation
+	pageRes, err := query.Paginate(valStore, req.Pagination, func(key []byte, _ []byte) error {
+		realKey := types.GetDelegationKeyFromValIndexKey(append(byValPrefix, key...))
+		del, err := types.UnmarshalDelegation(k.cdc, store.Get(realKey))
+		if err != nil {
+			return err
+		}
+		delegations = append(delegations, del)
+		return nil
 	})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	dels := types.Delegations{}
-	for _, d := range delegations {
-		dels = append(dels, *d)
-	}
-
 	return &types.QueryValidatorDelegationsResponse{
-		Delegations: dels, Pagination: pageRes,
+		Delegations: delegations, Pagination: pageRes,
 	}, nil
 }
 
@@ -236,7 +237,8 @@ func (k Querier) Delegations(c context.Context, req *types.QueryDelegationsReque
 	iterator := sdk.KVStorePrefixIterator(store, types.GetValidatorDelegatorDelegationsKey(valAddr, delAddr))
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		del, err := types.UnmarshalDelegation(k.cdc, iterator.Value())
+		realKey := types.GetDelegationKeyFromValIndexKey(iterator.Key())
+		del, err := types.UnmarshalDelegation(k.cdc, store.Get(realKey))
 		if err != nil {
 			return nil, err
 		}
