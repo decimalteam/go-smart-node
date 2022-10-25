@@ -351,7 +351,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryDelegatorDelegations() {
 				del := response.Delegations[0]
 				suite.Equal(delegation.Delegator, del.Delegator)
 				suite.Equal(delegation.Validator, del.Validator)
-				suite.True(delegation.Stake.Equal(del.Stake))
+				suite.True(delegation.Stake.Equal(&del.Stake))
 			},
 			false,
 		},
@@ -428,7 +428,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidatorDelegations() {
 				suite.NotNil(res.Pagination.NextKey)
 				suite.Equal(uint64(2), res.Pagination.Total)
 				suite.Equal(addrVal1, res.Delegations[0].Validator)
-				suite.True(delegation.Stake.Equal(res.Delegations[0].Stake))
+				suite.True(delegation.Stake.Equal(&res.Delegations[0].Stake))
 			} else if !tc.expPass && !tc.expErr {
 				suite.NoError(err)
 				suite.Nil(res.Delegations)
@@ -1002,8 +1002,8 @@ func createValidators(t *testing.T, ctx sdk.Context, dsc *app.DSC, powers []int6
 	dsc.ValidatorKeeper.SetValidator(ctx, val2)
 	dsc.ValidatorKeeper.SetValidatorByConsAddr(ctx, val1)
 	dsc.ValidatorKeeper.SetValidatorByConsAddr(ctx, val2)
-	dsc.ValidatorKeeper.SetNewValidatorByPowerIndex(ctx, val1.GetOperator(), val1.ConsensusPower())
-	dsc.ValidatorKeeper.SetNewValidatorByPowerIndex(ctx, val2.GetOperator(), val2.ConsensusPower())
+	dsc.ValidatorKeeper.SetNewValidatorByPowerIndex(ctx, val1)
+	dsc.ValidatorKeeper.SetNewValidatorByPowerIndex(ctx, val2)
 
 	err := dsc.ValidatorKeeper.Delegate(ctx, addrs[0], val1, types.NewStakeCoin(stake))
 	require.NoError(t, err)
