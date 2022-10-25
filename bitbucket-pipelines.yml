@@ -433,6 +433,7 @@ pipelines:
             - cd "${PACKAGE_PATH}"
             - go get ./...
             - go build cmd/worker/*
+            - COSMOS_BUILD_OPTIONS=goleveldb make install
             - mkdir ${BITBUCKET_CLONE_DIR}/build
             - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build
             - cp ${PACKAGE_PATH}/cmd/worker/* ${BITBUCKET_CLONE_DIR}/build
@@ -476,6 +477,7 @@ pipelines:
             - cd "${PACKAGE_PATH}"
             - go get ./...
             - go build cmd/worker/*
+            - COSMOS_BUILD_OPTIONS=goleveldb make install
             - mkdir ${BITBUCKET_CLONE_DIR}/build
             - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build
             - cp ${PACKAGE_PATH}/cmd/worker/* ${BITBUCKET_CLONE_DIR}/build
