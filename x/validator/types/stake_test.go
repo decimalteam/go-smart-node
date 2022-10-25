@@ -25,7 +25,7 @@ func TestStakeEqual(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		require.Equal(t, tc.expEqual, tc.stake1.Equal(tc.stake2), tc.name)
+		require.Equal(t, tc.expEqual, tc.stake1.Equal(&tc.stake2), tc.name)
 	}
 }
 

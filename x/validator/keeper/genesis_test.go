@@ -42,7 +42,7 @@ func isEqualDelegations(dels1, dels2 []types.Delegation) bool {
 		for j := range dels2 {
 			if dels1[i].Delegator == dels2[j].Delegator &&
 				dels1[i].Validator == dels2[j].Validator &&
-				dels1[i].Stake.Equal(dels2[j].Stake) {
+				dels1[i].Stake.Equal(&dels2[j].Stake) {
 				isHere = true
 				break
 			}

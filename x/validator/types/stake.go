@@ -98,7 +98,7 @@ func (s Stake) Add(a Stake) (Stake, error) {
 	return result, nil
 }
 
-func (s Stake) Equal(a Stake) bool {
+func (s Stake) Equal(a *Stake) bool {
 	if s.Type != a.Type {
 		return false
 	}

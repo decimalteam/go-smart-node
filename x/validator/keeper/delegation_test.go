@@ -491,7 +491,7 @@ func TestUndelegation(t *testing.T) {
 		require.True(t, found)
 
 		// tokens are sub from delegation
-		require.True(t, delegation.Stake.Equal(remainStake))
+		require.True(t, delegation.Stake.Equal(&remainStake))
 		// validator power updated
 		require.Equal(t, val.Stake-keeper.TokensToConsensusPower(unStake.Stake.Amount), rs.Stake)
 
@@ -521,7 +521,7 @@ func TestUndelegation(t *testing.T) {
 		// custom coin staked are sub
 		require.True(t, ccs.Sub(unStake.Stake.Amount).Equal(valK.GetCustomCoinStaked(ctx, ccDenom)))
 		// tokens are sub from delegation
-		require.True(t, delegation.Stake.Equal(remainStake))
+		require.True(t, delegation.Stake.Equal(&remainStake))
 		// validator power updated
 		require.Equal(t, val.Stake-keeper.TokensToConsensusPower(unStakeInBaseCoin), rs.Stake)
 
@@ -547,7 +547,7 @@ func TestUndelegation(t *testing.T) {
 		require.True(t, found)
 
 		// tokens are sub from delegation
-		require.True(t, delegation.Stake.Equal(remainStake))
+		require.True(t, delegation.Stake.Equal(&remainStake))
 		// validator power updated
 		require.Equal(t, val.Stake-keeper.TokensToConsensusPower(reserveTotalStake), rs.Stake)
 
@@ -581,7 +581,7 @@ func TestUndelegation(t *testing.T) {
 		// custom coin staked are sub
 		require.True(t, ccs.Sub(reserveTotalStake).Equal(valK.GetCustomCoinStaked(ctx, ccDenom)))
 		// tokens are sub from delegation
-		require.True(t, delegation.Stake.Equal(remainStake))
+		require.True(t, delegation.Stake.Equal(&remainStake))
 		// validator power updated
 		require.Equal(t, val.Stake-keeper.TokensToConsensusPower(unStakeInBaseCoin), rs.Stake)
 
@@ -608,7 +608,7 @@ func TestUndelegation(t *testing.T) {
 		require.True(t, found)
 
 		// tokens are sub from delegation
-		require.True(t, delegation.Stake.Equal(remainStake))
+		require.True(t, delegation.Stake.Equal(&remainStake))
 		// validator power updated
 		require.Equal(t, val.Stake-keeper.TokensToConsensusPower(unStake.Stake.Amount), rs.Stake)
 
@@ -662,7 +662,7 @@ func TestUndelegation(t *testing.T) {
 		require.True(t, found)
 
 		// tokens are sub from delegation
-		require.True(t, delegation.Stake.Equal(remainStake))
+		require.True(t, delegation.Stake.Equal(&remainStake))
 		// validator power updated
 		require.Equal(t, val.Stake-keeper.TokensToConsensusPower(reserveTotalStake), rs.Stake)
 
@@ -788,7 +788,7 @@ func TestRedelegation(t *testing.T) {
 		require.True(t, found)
 
 		// tokens are sub from delegation
-		require.True(t, delegation.Stake.Equal(remainStake))
+		require.True(t, delegation.Stake.Equal(&remainStake))
 		// validator power updated
 		require.Equal(t, valSrc.Stake-keeper.TokensToConsensusPower(unStake.Stake.Amount), rs.Stake)
 
@@ -822,7 +822,7 @@ func TestRedelegation(t *testing.T) {
 		// custom coin staked are sub
 		require.True(t, ccs.Sub(unStake.Stake.Amount).Equal(valK.GetCustomCoinStaked(ctx, ccDenom)))
 		// tokens are sub from delegation
-		require.True(t, delegation.Stake.Equal(remainStake))
+		require.True(t, delegation.Stake.Equal(&remainStake))
 		// validator power updated
 		require.Equal(t, valSrc.Stake-keeper.TokensToConsensusPower(unStakeInBaseCoin), rs.Stake)
 
@@ -852,7 +852,7 @@ func TestRedelegation(t *testing.T) {
 		require.True(t, found)
 
 		// tokens are sub from delegation
-		require.True(t, delegation.Stake.Equal(remainStake))
+		require.True(t, delegation.Stake.Equal(&remainStake))
 		// validator power updated
 		require.Equal(t, valSrc.Stake-keeper.TokensToConsensusPower(reserveTotalStake), rs.Stake)
 
@@ -887,7 +887,7 @@ func TestRedelegation(t *testing.T) {
 		// custom coin staked are sub
 		require.True(t, ccs.Sub(reserveTotalStake).Equal(valK.GetCustomCoinStaked(ctx, ccDenom)))
 		// tokens are sub from delegation
-		require.True(t, delegation.Stake.Equal(remainStake))
+		require.True(t, delegation.Stake.Equal(&remainStake))
 		// validator power updated
 		require.Equal(t, valSrc.Stake-keeper.TokensToConsensusPower(unStakeInBaseCoin), rs.Stake)
 
@@ -916,7 +916,7 @@ func TestRedelegation(t *testing.T) {
 		require.True(t, found)
 
 		// tokens are sub from delegation
-		require.True(t, delegation.Stake.Equal(remainStake))
+		require.True(t, delegation.Stake.Equal(&remainStake))
 		// validator power updated
 		require.Equal(t, valSrc.Stake-keeper.TokensToConsensusPower(unStake.Stake.Amount), rs.Stake)
 
@@ -976,7 +976,7 @@ func TestRedelegation(t *testing.T) {
 		require.True(t, found)
 
 		// tokens are sub from delegation
-		require.True(t, delegation.Stake.Equal(remainStake))
+		require.True(t, delegation.Stake.Equal(&remainStake))
 		// validator power updated
 		require.Equal(t, val.Stake-keeper.TokensToConsensusPower(reserveTotalStake), rs.Stake)
 
