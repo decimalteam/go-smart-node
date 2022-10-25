@@ -11,6 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
@@ -98,27 +99,28 @@ func (k Querier) ValidatorDelegations(c context.Context, req *types.QueryValidat
 	}
 
 	store := ctx.KVStore(k.storeKey)
-	valStore := prefix.NewStore(store, types.GetValidatorDelegationsKey(valAddr))
+	byValPrefix := types.GetValidatorDelegationsKey(valAddr)
+	valStore := prefix.NewStore(store, byValPrefix)
 	if err != nil {
 		return nil, err
 	}
-	k.GetValidatorDelegations(ctx, valAddr)
-	delegations, pageRes, err := query.GenericFilteredPaginate(k.cdc, valStore, req.Pagination, func(key []byte, delegation *types.Delegation) (*types.Delegation, error) {
-		return delegation, nil
-	}, func() *types.Delegation {
-		return &types.Delegation{}
+
+	var delegations []types.Delegation
+	pageRes, err := query.Paginate(valStore, req.Pagination, func(key []byte, _ []byte) error {
+		realKey := types.GetDelegationKeyFromValIndexKey(append(byValPrefix, key...))
+		del, err := types.UnmarshalDelegation(k.cdc, store.Get(realKey))
+		if err != nil {
+			return err
+		}
+		delegations = append(delegations, del)
+		return nil
 	})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	dels := types.Delegations{}
-	for _, d := range delegations {
-		dels = append(dels, *d)
-	}
-
 	return &types.QueryValidatorDelegationsResponse{
-		Delegations: dels, Pagination: pageRes,
+		Delegations: delegations, Pagination: pageRes,
 	}, nil
 }
 
@@ -138,25 +140,28 @@ func (k Querier) ValidatorRedelegations(c context.Context, req *types.QueryValid
 	}
 
 	store := ctx.KVStore(k.storeKey)
-	valStore := prefix.NewStore(store, types.GetREDsFromValSrcIndexKey(valAddr))
+	fromValSrcKey := types.GetREDsFromValSrcIndexKey(valAddr)
+	valStore := prefix.NewStore(store, fromValSrcKey)
 
-	redelegations, pageRes, err := query.GenericFilteredPaginate(k.cdc, valStore, req.Pagination,
-		func(key []byte, red *types.Redelegation) (*types.Redelegation, error) {
-			return red, nil
-		}, func() *types.Redelegation {
-			return &types.Redelegation{}
-		})
+	var redelegations []types.Redelegation
+
+	pageRes, err := query.Paginate(valStore, req.Pagination, func(key []byte, _ []byte) error {
+		realKey := types.GetREDKeyFromValSrcIndexKey(append(fromValSrcKey, key...))
+		value := store.Get(realKey)
+		red, err := types.UnmarshalRED(k.cdc, value)
+		if err != nil {
+			return err
+		}
+		redelegations = append(redelegations, red)
+		return nil
+	})
+
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	redels := []types.Redelegation{}
-	for _, red := range redelegations {
-		redels = append(redels, *red)
-	}
-
 	return &types.QueryValidatorRedelegationsResponse{
-		Redelegations: redels,
+		Redelegations: redelegations,
 		Pagination:    pageRes,
 	}, nil
 }
@@ -177,25 +182,28 @@ func (k Querier) ValidatorUndelegations(c context.Context, req *types.QueryValid
 	}
 
 	store := ctx.KVStore(k.storeKey)
-	valStore := prefix.NewStore(store, types.GetUBDsByValIndexKey(valAddr))
+	byValKey := types.GetUBDsByValIndexKey(valAddr)
+	valStore := prefix.NewStore(store, byValKey)
 
-	undelegations, pageRes, err := query.GenericFilteredPaginate(k.cdc, valStore, req.Pagination,
-		func(key []byte, ubd *types.Undelegation) (*types.Undelegation, error) {
-			return ubd, nil
-		}, func() *types.Undelegation {
-			return &types.Undelegation{}
+	ubds := []types.Undelegation{}
+
+	pageRes, err := query.Paginate(valStore, req.Pagination,
+		func(key []byte, _ []byte) error {
+			realKey := types.GetUBDKeyFromValIndexKey(append(byValKey, key...))
+			value := store.Get(realKey)
+			ubd, err := types.UnmarshalUBD(k.cdc, value)
+			if err != nil {
+				return err
+			}
+			ubds = append(ubds, ubd)
+			return nil
 		})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	undels := []types.Undelegation{}
-	for _, ubd := range undelegations {
-		undels = append(undels, *ubd)
-	}
-
 	return &types.QueryValidatorUndelegationsResponse{
-		Undelegations: undels,
+		Undelegations: ubds,
 		Pagination:    pageRes,
 	}, nil
 }
@@ -229,7 +237,8 @@ func (k Querier) Delegations(c context.Context, req *types.QueryDelegationsReque
 	iterator := sdk.KVStorePrefixIterator(store, types.GetValidatorDelegatorDelegationsKey(valAddr, delAddr))
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		del, err := types.UnmarshalDelegation(k.cdc, iterator.Value())
+		realKey := types.GetDelegationKeyFromValIndexKey(iterator.Key())
+		del, err := types.UnmarshalDelegation(k.cdc, store.Get(realKey))
 		if err != nil {
 			return nil, err
 		}
@@ -282,8 +291,8 @@ func (k Querier) Redelegations(c context.Context, req *types.QueryRedelegationsR
 	return &types.QueryRedelegationsResponse{Redelegations: result}, nil
 }
 
-// Undelegations queries undelegations info for given validator delegator pair.
-func (k Querier) Undelegations(c context.Context, req *types.QueryUndelegationsRequest) (*types.QueryUndelegationsResponse, error) {
+// Undelegation queries undelegations info for given validator delegator pair.
+func (k Querier) Undelegation(c context.Context, req *types.QueryUndelegationRequest) (*types.QueryUndelegationResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
@@ -306,20 +315,11 @@ func (k Querier) Undelegations(c context.Context, req *types.QueryUndelegationsR
 		return nil, err
 	}
 
-	var result []types.Undelegation
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.GetUBDByValIndexKey(delAddr, valAddr))
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		red, err := types.UnmarshalUBD(k.cdc, iterator.Value())
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, red)
+	result, found := k.Keeper.GetUndelegation(ctx, delAddr, valAddr)
+	if !found {
+		return nil, errors.UBDNotFound
 	}
-
-	return &types.QueryUndelegationsResponse{Undelegations: result}, nil
+	return &types.QueryUndelegationResponse{Undelegation: result}, nil
 }
 
 // DelegatorDelegations queries all delegations of a give delegator address
@@ -534,8 +534,8 @@ func (k Querier) Pool(c context.Context, _ *types.QueryPoolRequest) (*types.Quer
 	notBondedPool := k.GetNotBondedPool(ctx)
 
 	pool := types.NewPool(
-		k.bankKeeper.GetAllBalances(ctx, notBondedPool.GetAddress()),
 		k.bankKeeper.GetAllBalances(ctx, bondedPool.GetAddress()),
+		k.bankKeeper.GetAllBalances(ctx, notBondedPool.GetAddress()),
 	)
 
 	return &types.QueryPoolResponse{Pool: pool}, nil

@@ -37,6 +37,7 @@ func TestMsgCreateValidator(t *testing.T) {
 		{"empty pubkey", "a", "b", "c", "d", "e", commission1, valAddr1, rewardAddr1, emptyPubkey, coinPos, false},
 		{"empty bond", "a", "b", "c", "d", "e", commission2, valAddr1, rewardAddr1, pk1, coinZero, false},
 		{"nil bond", "a", "b", "c", "d", "e", commission2, valAddr1, rewardAddr1, pk1, sdk.Coin{}, false},
+		{"negative commission", "a", "b", "c", "d", "e", sdk.MustNewDecFromStr("-0.1"), valAddr1, rewardAddr1, pk1, coinPos, false},
 	}
 
 	for _, tc := range tests {
