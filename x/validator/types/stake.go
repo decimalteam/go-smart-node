@@ -98,6 +98,34 @@ func (s Stake) Add(a Stake) (Stake, error) {
 	return result, nil
 }
 
+func (s Stake) Equal(a Stake) bool {
+	if s.Type != a.Type {
+		return false
+	}
+	if s.ID != a.ID {
+		return false
+	}
+	if !s.Stake.Equal(a.Stake) {
+		return false
+	}
+	if len(s.SubTokenIDs) != len(a.SubTokenIDs) {
+		return false
+	}
+	for _, id1 := range s.SubTokenIDs {
+		isHere := false
+		for _, id2 := range a.SubTokenIDs {
+			if id1 == id2 {
+				isHere = true
+				break
+			}
+		}
+		if !isHere {
+			return false
+		}
+	}
+	return true
+}
+
 // return true if set has subset of IDs
 func SetHasSubset(set []uint32, subset []uint32) bool {
 	for _, id1 := range subset {
@@ -129,7 +157,7 @@ func SetHasIntersection(set []uint32, otherset []uint32) bool {
 
 // returns elements of (set-subset)
 func SetSubstract(set []uint32, subset []uint32) []uint32 {
-	var result []uint32
+	var result = []uint32{}
 	for _, id1 := range set {
 		substract := true
 		for _, id2 := range subset {

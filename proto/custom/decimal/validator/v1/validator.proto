@@ -245,10 +245,16 @@ message Pool {
   option (gogoproto.goproto_stringer) = true;
 
   // bonded defines complete list of coins delegated and currently bonded.
-  repeated cosmos.base.v1beta1.Coin bonded = 1 [ (gogoproto.nullable) = false ];
+  repeated cosmos.base.v1beta1.Coin bonded = 1 [ 
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.nullable) = false
+  ];
   
   // not_bonded defines complete list of coins delegated but not bonded (redelegating or undelegating).
-  repeated cosmos.base.v1beta1.Coin not_bonded = 2 [ (gogoproto.nullable) = false ];
+  repeated cosmos.base.v1beta1.Coin not_bonded = 2 [
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.nullable) = false
+  ];
 }
 
 // ValidatorSigningInfo defines a validator's signing info for monitoring their

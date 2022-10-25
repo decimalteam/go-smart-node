@@ -391,7 +391,7 @@ func (k Keeper) GetUndelegationsFromValidator(ctx sdk.Context, validator sdk.Val
 func (k Keeper) IterateUndelegations(ctx sdk.Context, fn func(index int64, ubd types.Undelegation) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
 
-	iterator := sdk.KVStorePrefixIterator(store, types.GetAllDelegationsKey())
+	iterator := sdk.KVStorePrefixIterator(store, types.GetAllUBDsKey())
 	defer iterator.Close()
 
 	for i := int64(0); iterator.Valid(); iterator.Next() {
