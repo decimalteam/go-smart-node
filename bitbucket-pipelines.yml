@@ -397,7 +397,7 @@ pipelines:
           deployment: Staging
           <<: *deploy
 
-    develop:
+    develop-of-develop:
       - step: *build
       - step:
           deployment: Test
