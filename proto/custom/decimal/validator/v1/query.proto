@@ -49,9 +49,9 @@ service Query {
     option (google.api.http).get = "/decimal/validator/v1/validators/{validator}/delegations/{delegator}/redelegations";
   }
 
-  // Undelegations queries undelegations info for given validator delegator pair.
-  rpc Undelegations(QueryUndelegationsRequest) returns (QueryUndelegationsResponse) {
-    option (google.api.http).get = "/decimal/validator/v1/validators/{validator}/delegations/{delegator}/undelegations";
+  // Undelegation queries undelegation info for given validator delegator pair.
+  rpc Undelegation(QueryUndelegationRequest) returns (QueryUndelegationResponse) {
+    option (google.api.http).get = "/decimal/validator/v1/validators/{validator}/delegations/{delegator}/undelegation";
   }
 
   // DelegatorDelegations queries all delegations of a given delegator address.
@@ -212,8 +212,8 @@ message QueryRedelegationsResponse {
   repeated Redelegation redelegations = 1 [ (gogoproto.nullable) = false ];
 }
 
-// QueryUndelegationsRequest is request type for the Query/Undelegations RPC method.
-message QueryUndelegationsRequest {
+// QueryUndelegationRequest is request type for the Query/Undelegation RPC method.
+message QueryUndelegationRequest {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
@@ -225,9 +225,9 @@ message QueryUndelegationsRequest {
 }
 
 // QueryDelegationsResponse is response type for the Query/Undelegations RPC method.
-message QueryUndelegationsResponse {
-  // undelegations defines the undelegations list for given delegator validator pair.
-  repeated Undelegation undelegations = 1 [ (gogoproto.nullable) = false ];
+message QueryUndelegationResponse {
+  // undelegations defines the undelegation for given delegator validator pair.
+  Undelegation undelegation = 1 [ (gogoproto.nullable) = false ];
 }
 
 // QueryDelegatorDelegationsRequest is request type for the Query/DelegatorDelegations RPC method.

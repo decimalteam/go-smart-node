@@ -113,6 +113,9 @@ func (msg *MsgCreateValidator) ValidateBasic() error {
 	if msg.Commission.IsNil() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "empty commission")
 	}
+	if msg.Commission.IsNegative() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "negative commission")
+	}
 	if !msg.Stake.IsValid() || !msg.Stake.Amount.IsPositive() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid initial delegation")
 	}
