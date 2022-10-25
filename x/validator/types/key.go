@@ -395,10 +395,20 @@ func GetValidatorQueueKey(timestamp time.Time, height int64) []byte {
 	return bz
 }
 
+// GetAllRedelegationsTimeKey creates the prefix for undelegations.
+func GetAllRedelegationsTimeKey() []byte {
+	return keyPrefixRedelegationQueue
+}
+
 // GetRedelegationsTimeKey returns a key prefix for indexing redelegations based on a completion time.
 func GetRedelegationsTimeKey(timestamp time.Time) []byte {
 	bz := sdk.FormatTimeBytes(timestamp)
 	return append(keyPrefixRedelegationQueue, bz...)
+}
+
+// GetAllUndelegationsTimeKey creates the prefix for undelegations.
+func GetAllUndelegationsTimeKey() []byte {
+	return keyPrefixUndelegationQueue
 }
 
 // GetUndelegationsTimeKey creates the prefix for undelegations based on a completion time.

@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -8,6 +9,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
@@ -43,46 +45,34 @@ func BeginBlocker(ctx sdk.Context, k Keeper, req abci.RequestBeginBlock) {
 
 // Called every block, update validator set
 func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.ValidatorUpdate {
+	start := time.Now()
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
 
 	height := ctx.BlockHeight()
 
-	/*
-			validatorUpdates, err := k.ApplyAndReturnValidatorSetUpdates(ctx)
-			if err != nil {
-				panic(err)
-			}
-			return []abci.ValidatorUpdate{} // k.BlockValidatorUpdates(ctx)
+	updates := k.BlockValidatorUpdates(ctx)
 
+	k.PayValidators(ctx)
 
-
-		// Unbond all mature validators from the unbonding queue.
-		k.UnbondAllMatureValidatorQueue(ctx)
-
-		//Remove all mature unbonding delegations from the ubd queue.
-		matureUnbonds := k.DequeueAllMatureUBDQueue(ctx, ctx.BlockHeader().Time)
-		for _, dvPair := range matureUnbonds {
-			delAddr := sdk.MustAccAddressFromBech32(dvPair.DelegatorAddress)
-			valAddr, err := sdk.ValAddressFromBech32(dvPair.ValidatorAddress)
-			if err != nil {
-				panic(err)
-			}
-
-			_, found := k.GetUndelegation(ctx, delAddr, valAddr)
-			if !found {
-				continue
-			}
-
-			err = k.CompleteUnbonding(ctx, dvPair.DelegatorAddress, dvPair.ValidatorAddress)
-			if err != nil {
-				continue
-			}
-
-			//ctxTime := ctx.BlockHeader().Time
-
-			//ctx.EventManager().EmitEvents(delegation.GetEvents(ctxTime))
+	if height%120 == 0 {
+		ctx.Logger().Debug(
+			fmt.Sprintf("Duration 120 block (%s)", helpers.DurationToString(time.Since(start))),
+		)
+		err := k.PayRewards(ctx)
+		if err != nil {
+			panic(err)
 		}
-	*/
+	} else {
+		ctx.Logger().Debug(
+			fmt.Sprintf("Duration simple block (%s)", helpers.DurationToString(time.Since(start))),
+		)
+	}
+	return updates
+}
+
+func (k Keeper) PayValidators(ctx sdk.Context) {
+	height := ctx.BlockHeight()
+
 	// calculate emmission
 	rewards := types.GetRewardForBlock(uint64(height))
 
@@ -112,16 +102,6 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 		panic(err)
 	}
 
-	// create coins for delegators
-	err = k.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(baseDenom, rewards)))
-	if err != nil {
-		panic(err)
-	}
-	err = k.coinKeeper.UpdateCoinVR(ctx, baseDenom, baseCoin.Reserve, baseCoin.Volume.Add(rewards))
-	if err != nil {
-		panic(err)
-	}
-
 	// pay rewards to validators
 	remainder := sdk.NewIntFromBigInt(rewards.BigInt())
 
@@ -142,16 +122,21 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 		}
 	}
 
+	// create coins for delegators
+	// remainder to FeeCollector
 	err = k.bankKeeper.MintCoins(ctx, authtypes.FeeCollectorName, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), remainder)))
+	// distributed to validator module for delegators
+	distributed := rewards.Sub(remainder)
+	err = k.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(baseDenom, distributed)))
+	if err != nil {
+		panic(err)
+	}
+	err = k.coinKeeper.UpdateCoinVR(ctx, baseDenom, baseCoin.Volume.Add(distributed), baseCoin.Reserve)
 	if err != nil {
 		panic(err)
 	}
 
-	if height%120 == 0 {
-		err = k.PayRewards(ctx)
-		if err != nil {
-			panic(err)
-		}
+	if err != nil {
+		panic(err)
 	}
-	return []abci.ValidatorUpdate{}
 }

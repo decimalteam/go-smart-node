@@ -17,7 +17,7 @@ import (
 	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
-var defaultCoins = sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(1000))))
+var defaultCoins = sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10000000000000))))
 
 // func newMonikerValidator(t testing.TB, operator sdk.ValAddress, pubKey cryptotypes.PubKey, moniker string) types.Validator {
 // 	v, err := types.NewValidator(operator, pubKey, types.Description{Moniker: moniker})

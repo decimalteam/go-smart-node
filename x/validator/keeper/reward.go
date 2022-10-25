@@ -21,7 +21,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 	validators := k.GetAllValidators(ctx)
 	delByValidator := k.GetAllDelegationsByValidator(ctx)
 	customCoinStaked := k.GetAllCustomCoinsStaked(ctx)
-	customCoinPrices := k.calculateCustomCoinPrices(ctx, customCoinStaked)
+	customCoinPrices := k.CalculateCustomCoinPrices(ctx, customCoinStaked)
 	ctx.Logger().Debug("custom coin staked", "is", customCoinStaked)
 	ctx.Logger().Debug("custom prices", "is", customCoinPrices)
 
@@ -43,24 +43,20 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 		//}
 		daoWallet := sdk.MustAccAddressFromBech32(daoAccount)
 		developWallet := sdk.MustAccAddressFromBech32(developAccount)
-
 		// dao commission
 		daoVal := sdk.NewDecFromInt(rewards).Mul(DAOCommission).TruncateInt()
 		err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, daoWallet, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), daoVal)))
 		if err != nil {
 			return err
 		}
-
 		// develop commission
 		developVal := sdk.NewDecFromInt(rewards).Mul(DevelopCommission).TruncateInt()
 		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, developWallet, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), developVal)))
 		if err != nil {
 			return err
 		}
-
 		rewards = rewards.Sub(daoVal)
 		rewards = rewards.Sub(developVal)
-
 		// validator commission
 		valComission := sdk.NewDecFromInt(rewards).Mul(val.Commission).TruncateInt()
 		valRewardAddress := sdk.MustAccAddressFromBech32(val.RewardAddress)
@@ -81,7 +77,11 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 			Delegators:  nil,
 		}
 
-		totalStake := TokensFromConsensusPower(val.Stake)
+		totalStake, err := k.CalculateTotalPowerWithDelegationsAndPrices(ctx, val, delByValidator[validator.String()], customCoinPrices)
+		if err != nil {
+			return err
+		}
+
 		remainder := rewards
 		for _, del := range delByValidator[validator.String()] {
 			reward := sdk.NewIntFromBigInt(rewards.BigInt())
@@ -90,26 +90,25 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 			if del.Stake.SubTokenIDs != nil && len(del.Stake.SubTokenIDs) != 0 {
 				delStake = k.getSumSubTokensReserve(ctx, del.GetStake().GetID(), del.GetStake().GetSubTokenIDs())
 			}
-
-			defAmount := delStake.Amount
+			baseAmount := delStake.Amount
 			if delStake.Denom != k.BaseDenom(ctx) {
 				delCoinPrice, ok := customCoinPrices[delStake.Denom]
 				if !ok {
 					return fmt.Errorf("not found price for custom coin %s, base denom is %s, validator is %s, delegator is %s", delStake.Denom, k.BaseDenom(ctx), validator.String(), del.Delegator)
 				}
-				defAmount = delCoinPrice.Mul(delStake.Amount)
+				baseAmount = sdk.NewDecFromInt(delStake.Amount).Mul(delCoinPrice).TruncateInt()
 			}
-			reward = reward.Mul(defAmount).Quo(totalStake)
+			reward = reward.Mul(baseAmount).Quo(totalStake)
 			if reward.LT(sdk.NewInt(1)) {
 				continue
 			}
-
 			// pay reward
+
 			err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, del.GetDelegator(), sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), reward)))
 			if err != nil {
 				continue
 			}
-			remainder.Sub(reward)
+			remainder = remainder.Sub(reward)
 			// event
 			delEvent := types.DelegatorReward{
 				Delegator: del.Delegator,
@@ -129,6 +128,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 			return err
 		}
 		valRewards.Rewards = sdk.ZeroInt()
+		valRewards.Stake = TokensToConsensusPower(totalStake)
 		k.SetValidatorRS(ctx, validator, valRewards)
 
 		events.Validators = append(events.Validators, valEvent)
@@ -138,7 +138,6 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -233,17 +232,41 @@ func (k Keeper) getDevelop(ctx sdk.Context) (sdk.AccAddress, error) {
 	return address, nil
 }
 
-func (k Keeper) calculateCustomCoinPrices(ctx sdk.Context, ccs map[string]sdkmath.Int) map[string]sdkmath.Int {
+func (k Keeper) CalculateCustomCoinPrices(ctx sdk.Context, ccs map[string]sdkmath.Int) map[string]sdk.Dec {
 	ctx.Logger().Debug("custom coins staked", "is", ccs)
-	prices := make(map[string]sdkmath.Int)
+	prices := make(map[string]sdk.Dec)
 	for denom, staked := range ccs {
 		coin, err := k.coinKeeper.GetCoin(ctx, denom)
 		if err != nil {
 			panic(err)
 		}
 
-		prices[denom] = formulas.CalculateSaleReturn(coin.Volume, coin.Reserve, uint(coin.CRR), staked)
+		allPrice := formulas.CalculateSaleReturn(coin.Volume, coin.Reserve, uint(coin.CRR), staked)
+		prices[denom] = sdk.NewDecFromInt(allPrice).Quo(sdk.NewDecFromInt(staked))
 	}
 
 	return prices
+}
+
+func (k Keeper) CalculateTotalPowerWithDelegationsAndPrices(ctx sdk.Context, validator types.Validator, delegations types.Delegations, ccs map[string]sdk.Dec) (sdkmath.Int, error) {
+	stakeInBaseCoin := sdk.ZeroInt()
+	for _, del := range delegations {
+		delStake := del.GetStake().GetStake()
+		if del.Stake.SubTokenIDs != nil && len(del.Stake.SubTokenIDs) != 0 {
+			delStake = k.getSumSubTokensReserve(ctx, del.GetStake().GetID(), del.GetStake().GetSubTokenIDs())
+		}
+
+		baseAmount := delStake.Amount
+		if delStake.Denom != k.BaseDenom(ctx) {
+			delCoinPrice, ok := ccs[delStake.Denom]
+			if !ok {
+				return stakeInBaseCoin, fmt.Errorf("not found price for custom coin %s, base denom is %s, validator is %s, delegator is %s", delStake.Denom, k.BaseDenom(ctx), validator.String(), del.Delegator)
+			}
+			baseAmount = sdk.NewDecFromInt(delStake.Amount).Mul(delCoinPrice).TruncateInt()
+		}
+
+		stakeInBaseCoin = stakeInBaseCoin.Add(baseAmount)
+	}
+
+	return stakeInBaseCoin, nil
 }
