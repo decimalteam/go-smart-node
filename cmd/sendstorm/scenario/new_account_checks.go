@@ -13,7 +13,6 @@ import (
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	dscWallet "bitbucket.org/decimalteam/go-smart-node/sdk/wallet"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 )
 
 type RedeemChecksScenario struct {
@@ -69,7 +68,7 @@ func (rcs *RedeemChecksScenario) MakeCheck() {
 		return
 	}
 
-	tx, err := dscTx.BuildTransaction(acc, []sdk.Msg{msg}, "", "del", sdk.ZeroDec(), feetypes.DefaultParams())
+	tx, err := dscTx.BuildTransaction(acc, []sdk.Msg{msg}, "", "del", rcs.api.GetFeeCalculationOptions())
 	if err != nil {
 		fmt.Printf("MakeCheck-BuildTransaction: %s\n", err.Error())
 		return

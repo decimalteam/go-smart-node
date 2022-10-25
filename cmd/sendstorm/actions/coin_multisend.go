@@ -95,6 +95,7 @@ func (as *MultiSendCoinAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig
 	}
 
 	msg := dscTx.NewMsgMultiSendCoin(sender, as.sends)
+
 	return feeConfig.MakeTransaction(sa, msg)
 }
 

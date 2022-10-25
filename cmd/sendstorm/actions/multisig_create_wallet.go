@@ -87,6 +87,7 @@ func (aa *CreateMultisigWalletAction) GenerateTx(sa *stormTypes.StormAccount, fe
 		aa.weights,
 		aa.threshold,
 	)
+
 	return feeConfig.MakeTransaction(sa, msg)
 }
 

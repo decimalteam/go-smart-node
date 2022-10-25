@@ -112,6 +112,7 @@ func (ab *BuyCoinAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stor
 		ab.coinToBuy,
 		ab.maxCoinToSell,
 	)
+
 	return feeConfig.MakeTransaction(sa, msg)
 }
 

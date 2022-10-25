@@ -402,6 +402,7 @@ func (k Keeper) IterateUndelegations(ctx sdk.Context, fn func(index int64, ubd t
 // GetDelegatorUnbonding returns the total amount a delegator has unbonding.
 func (k Keeper) GetDelegatorUnbonding(ctx sdk.Context, delegator sdk.AccAddress) sdkmath.Int {
 	unbonding := sdk.ZeroInt()
+
 	k.IterateDelegatorUndelegations(ctx, delegator, func(ubd types.Undelegation) bool {
 		for _, entry := range ubd.Entries {
 			unbonding = unbonding.Add(entry.Stake.Stake.Amount)

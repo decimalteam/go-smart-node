@@ -1,6 +1,9 @@
 package tx
 
 import (
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
@@ -10,6 +13,12 @@ import (
 type (
 	FeeParams = feetypes.Params
 )
+
+type FeeCalculationOptions struct {
+	DelPrice  sdk.Dec
+	FeeParams feetypes.Params
+	AppCodec  codec.BinaryCodec
+}
 
 type (
 	MsgCreateCoin    = cointypes.MsgCreateCoin

@@ -119,6 +119,7 @@ func (aa *UpdateReserveNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeCon
 		aa.subIds,
 		aa.newReserve,
 	)
+
 	return feeConfig.MakeTransaction(sa, msg)
 }
 

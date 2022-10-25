@@ -3,7 +3,6 @@ package types
 import (
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tendermint/tendermint/libs/strings"
 )
 
 // NewGenesisState creates a new genesis state.
@@ -78,6 +77,7 @@ func (gs *GenesisState) Validate() error {
 		if !seenWallets[tx.Wallet] {
 			return errors.UnknownWalletInTx
 		}
+		/* TODO
 		// validate signers
 		if len(tx.Signers) != len(walletOwners[tx.Wallet]) {
 			return errors.TxSignersNotEqualToWalletOwners
@@ -90,6 +90,7 @@ func (gs *GenesisState) Validate() error {
 				return errors.UnknownSignerInTx
 			}
 		}
+		*/
 	}
 	return nil
 }

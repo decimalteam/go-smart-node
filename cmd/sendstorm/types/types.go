@@ -141,7 +141,7 @@ func (fc *FeeConfiguration) Update(api *dscApi.API) error {
 
 func (fc *FeeConfiguration) MakeTransaction(sa *StormAccount, msg sdk.Msg) ([]byte, error) {
 	if !fc.UseCustomCoinsForFee || len(fc.KnownCoins) < 2 {
-		tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", fc.BaseDenom, fc.DelPrice, fc.Params)
+		tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", fc.BaseDenom, sa.api.GetFeeCalculationOptions())
 		if err != nil {
 			return nil, err
 		}
@@ -153,7 +153,7 @@ func (fc *FeeConfiguration) MakeTransaction(sa *StormAccount, msg sdk.Msg) ([]by
 		return tx.BytesToSend()
 	} else {
 		// preparation
-		tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", fc.BaseDenom, sdk.ZeroDec(), fc.Params)
+		tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", fc.BaseDenom, sa.api.GetFeeCalculationOptions())
 		if err != nil {
 			return nil, err
 		}
@@ -172,8 +172,7 @@ func (fc *FeeConfiguration) MakeTransaction(sa *StormAccount, msg sdk.Msg) ([]by
 			}
 		}
 		// + 50 bytes for denom length, amount length
-		comms, err := calculateCommission(msg, int64(len(bz)+50), fc.DelPrice, fc.Params,
-			fc.BaseDenom, fc.KnownCoins, denoms)
+		comms, err := calculateCommission(msg, int64(len(bz)+50), fc.BaseDenom, fc.KnownCoins, denoms, sa.api.GetFeeCalculationOptions())
 		if err != nil {
 			return nil, err
 		}
@@ -188,7 +187,7 @@ func (fc *FeeConfiguration) MakeTransaction(sa *StormAccount, msg sdk.Msg) ([]by
 		}
 		fee := commCandidates[rand.Intn(len(commCandidates))]
 		// final build
-		tx, err = dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", fc.BaseDenom, sdk.ZeroDec(), fc.Params)
+		tx, err = dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", fc.BaseDenom, sa.api.GetFeeCalculationOptions())
 		if err != nil {
 			return nil, err
 		}
@@ -201,9 +200,9 @@ func (fc *FeeConfiguration) MakeTransaction(sa *StormAccount, msg sdk.Msg) ([]by
 	}
 }
 
-func calculateCommission(msg sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params feetypes.Params,
-	baseDenom string, fullCoins []dscApi.Coin, denoms []string) (sdk.Coins, error) {
-	commmissionInBase, err := appAnte.CalculateFee([]sdk.Msg{msg}, txBytesLen, delPrice, params)
+func calculateCommission(msg sdk.Msg, txBytesLen int64, baseDenom string, fullCoins []dscApi.Coin,
+	denoms []string, opts *dscTx.FeeCalculationOptions) (sdk.Coins, error) {
+	commmissionInBase, err := appAnte.CalculateFee(opts.AppCodec, []sdk.Msg{msg}, txBytesLen, opts.DelPrice, opts.FeeParams)
 	if err != nil {
 		return sdk.NewCoins(), err
 	}

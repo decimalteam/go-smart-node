@@ -14,7 +14,7 @@ import (
 
 type SignMultisigTransactionGenerator struct {
 	knownWallets      []dscApi.MultisigWallet
-	knownTransactions []dscApi.MultisigTransaction
+	knownTransactions []dscApi.MultisigTransactionInfo
 	rnd               *rand.Rand
 }
 
@@ -34,20 +34,14 @@ func (gg *SignMultisigTransactionGenerator) Update(ui UpdateInfo) {
 	gg.knownTransactions = ui.MultisigTransactions
 }
 
-func isExecuted(wallet dscApi.MultisigWallet, tx dscApi.MultisigTransaction) bool {
-	var signedWeight uint32
-	for i := range wallet.Owners {
-		if tx.Signers[i] != "" {
-			signedWeight += wallet.Weights[i]
-		}
-	}
-	return signedWeight >= wallet.Threshold
+func isExecuted(tx dscApi.MultisigTransactionInfo) bool {
+	return tx.Completed
 }
 
-func extractPossibleSigners(wallet dscApi.MultisigWallet, tx dscApi.MultisigTransaction) []string {
+func extractPossibleSigners(wallet dscApi.MultisigWallet, tx dscApi.MultisigTransactionInfo) []string {
 	var result []string
 	for i := range wallet.Owners {
-		if tx.Signers[i] == "" {
+		if !strings.StringInSlice(wallet.Owners[i], tx.Signers) {
 			result = append(result, wallet.Owners[i])
 		}
 	}
@@ -67,18 +61,18 @@ func (gg *SignMultisigTransactionGenerator) Generate() Action {
 		tx := gg.knownTransactions[i]
 		wallet := dscApi.MultisigWallet{}
 		for _, w := range gg.knownWallets {
-			if w.Address == tx.Wallet {
+			if w.Address == tx.Transaction.Wallet {
 				wallet = w
 				break
 			}
 		}
-		if !isExecuted(wallet, tx) {
+		if !isExecuted(tx) {
 			signers := extractPossibleSigners(wallet, tx)
 			if len(signers) == 0 {
 				return &EmptyAction{}
 			}
 			return &SignMultisigTransactionAction{
-				txID:            tx.Id,
+				txID:            tx.Transaction.Id,
 				possibleSigners: signers,
 			}
 		}
@@ -107,6 +101,7 @@ func (aa *SignMultisigTransactionAction) GenerateTx(sa *stormTypes.StormAccount,
 	}
 
 	msg := dscTx.NewMsgSignTransaction(sender, aa.txID)
+
 	return feeConfig.MakeTransaction(sa, msg)
 }
 

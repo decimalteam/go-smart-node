@@ -111,6 +111,7 @@ func (ac *CreateCoinAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *s
 		ac.limitVolume,
 		ac.identity,
 	)
+
 	return feeConfig.MakeTransaction(sa, msg)
 }
 
