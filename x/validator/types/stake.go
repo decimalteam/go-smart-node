@@ -74,7 +74,7 @@ func (s Stake) AddSubTokens(newSubTokens []uint32) ([]uint32, error) {
 }
 
 func (s Stake) IsEmpty() bool {
-	return s.Stake.IsNil() || s.Stake.IsZero() || s.Type == StakeType_Coin && len(s.SubTokenIDs) == 0
+	return s.Stake.IsNil() || s.Stake.IsZero() || (s.Type == StakeType_NFT && len(s.SubTokenIDs) == 0)
 }
 
 func (s Stake) Add(a Stake) (Stake, error) {
