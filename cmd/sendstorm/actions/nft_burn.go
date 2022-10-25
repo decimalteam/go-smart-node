@@ -87,6 +87,7 @@ func (aa *BurnNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *stor
 		aa.id,
 		aa.subIds,
 	)
+
 	return feeConfig.MakeTransaction(sa, msg)
 }
 

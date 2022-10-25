@@ -68,4 +68,9 @@ message QueryTransactionsResponse {
 message QueryTransactionRequest { string id = 1; }
 
 // QueryTransactionResponse is response type for the Query/Transaction RPC method.
-message QueryTransactionResponse { Transaction transaction = 1 [ (gogoproto.nullable) = false ]; }
+message QueryTransactionResponse {
+  Transaction transaction = 1 [ (gogoproto.nullable) = false ];
+  repeated string signers = 2;
+  bool completed = 3;
+}
+

@@ -1,7 +1,10 @@
 package types
 
 import (
+	"encoding/binary"
+
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/errors"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"golang.org/x/crypto/sha3"
@@ -28,31 +31,32 @@ func NewWallet(owners []string, weights []uint32, threshold uint32, salt []byte)
 }
 
 // NewTransaction returns a new Transaction.
-func NewTransaction(wallet, receiver string, coins sdk.Coins, signersCount int, height int64, salt []byte) (*Transaction, error) {
+func NewTransaction(unpacker codectypes.AnyUnpacker, wallet string, txContent codectypes.Any, signersCount int, height int64, salt []byte) (*Transaction, error) {
 
-	// temporary transaction struct to create TxID
-	t := Transaction{
-		Id:        sdk.AccAddress(salt).String(),
-		Wallet:    wallet,
-		Receiver:  receiver,
-		Coins:     coins,
-		Signers:   make([]string, signersCount),
-		CreatedAt: height,
-	}
+	h := make([]byte, 8)
+	binary.BigEndian.PutUint64(h, uint64(height))
+	idSource := []byte{}
+	idSource = append(idSource, salt...)
+	idSource = append(idSource, []byte(wallet)...)
+	idSource = append(idSource, txContent.GetValue()...)
+	idSource = append(idSource, h...)
 
-	bz := sha3.Sum256(sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&t)))
+	bz := sha3.Sum256(idSource)
 	id, err := bech32.ConvertAndEncode(MultisigTransactionIDPrefix, bz[12:])
 	if err != nil {
 		return nil, errors.UnableToCreateTransaction
 	}
 
+	var msg sdk.Msg
+	err = unpacker.UnpackAny(&txContent, &msg)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Transaction{
-		Id:       id,
-		Wallet:   wallet,
-		Receiver: receiver,
-		Coins:    coins,
-		// create transaction withlist of empty strings; filled string mean 'signed by owner'
-		Signers:   make([]string, signersCount),
+		Id:        id,
+		Wallet:    wallet,
+		Message:   txContent,
 		CreatedAt: height,
 	}, nil
 }

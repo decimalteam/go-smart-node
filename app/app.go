@@ -459,6 +459,7 @@ func NewDSC(
 		app.GetSubspace(multisigtypes.ModuleName),
 		app.AccountKeeper,
 		app.BankKeeper,
+		app.MsgServiceRouter(),
 	)
 	app.ValidatorKeeper = validatorkeeper.NewKeeper(
 		appCodec,

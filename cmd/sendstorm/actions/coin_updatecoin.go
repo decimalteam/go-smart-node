@@ -102,6 +102,7 @@ func (au *UpdateCoinAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *s
 		return nil, err
 	}
 	msg := dscTx.NewMsgUpdateCoin(sender, au.symbol, au.newLimitVolume, au.newIdentity)
+
 	return feeConfig.MakeTransaction(sa, msg)
 }
 
