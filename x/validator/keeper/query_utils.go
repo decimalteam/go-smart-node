@@ -45,6 +45,9 @@ func (k Keeper) GetDelegatorValidator(ctx sdk.Context, delegator sdk.AccAddress,
 		found = true
 		break
 	}
+	if !found {
+		return types.Validator{}, errors.ValidatorNotFound
+	}
 
 	v, found = k.GetValidator(ctx, validator)
 	if !found {
