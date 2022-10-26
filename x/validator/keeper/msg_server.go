@@ -180,6 +180,13 @@ func (k msgServer) SetOnline(goCtx context.Context, msg *types.MsgSetOnline) (*t
 	// TODO: optimize
 	k.SetValidator(ctx, validator)
 
+	// StartHeight need for correct calculation of missing blocks
+	consAdr, err := validator.GetConsAddr()
+	if err != nil {
+		return nil, err
+	}
+	k.SetStartHeight(ctx, consAdr, ctx.BlockHeight())
+
 	err = events.EmitTypedEvent(ctx, &types.EventSetOnline{
 		Sender:    sdk.AccAddress(valAddr).String(),
 		Validator: valAddr.String(),
@@ -212,6 +219,11 @@ func (k msgServer) SetOffline(goCtx context.Context, msg *types.MsgSetOffline) (
 	// TODO: optimize
 	k.SetValidator(ctx, validator)
 	k.DeleteValidatorByPowerIndex(ctx, validator)
+	consAdr, err := validator.GetConsAddr()
+	if err != nil {
+		return nil, err
+	}
+	k.DeleteStartHeight(ctx, consAdr)
 
 	err = events.EmitTypedEvent(ctx, &types.EventSetOffline{
 		Sender:    sdk.AccAddress(valAddr).String(),
