@@ -524,7 +524,7 @@ func (k msgServer) _cancelUndelegation(ctx sdk.Context, msgDelegator string, msg
 	)
 
 	for i, entry := range ubd.Entries {
-		if entry.CreationHeight == msgCreationHeight {
+		if entry.CreationHeight == msgCreationHeight && entry.Stake.ID == stake.ID {
 			unbondEntry = entry
 			unbondEntryIndex = int64(i)
 			break
@@ -554,6 +554,8 @@ func (k msgServer) _cancelUndelegation(ctx sdk.Context, msgDelegator string, msg
 			return err
 		}
 	}
+	k.SetDelegation(ctx, delegation)
+
 	err = k.TransferStakeBetweenPools(ctx, types.BondStatus_Unbonded, validator.GetStatus(), stake)
 	if err != nil {
 		return err
@@ -659,7 +661,7 @@ func (k msgServer) _cancelRedelegation(ctx sdk.Context, msgDelegator, msgValidat
 	)
 
 	for i, entry := range red.Entries {
-		if entry.CreationHeight == msgCreationHeight {
+		if entry.CreationHeight == msgCreationHeight && entry.Stake.ID == stake.ID {
 			redEntry = entry
 			redEntryIndex = int64(i)
 			break
@@ -689,6 +691,8 @@ func (k msgServer) _cancelRedelegation(ctx sdk.Context, msgDelegator, msgValidat
 			return err
 		}
 	}
+	k.SetDelegation(ctx, delegation)
+
 	err = k.TransferStakeBetweenPools(ctx, validatorDst.GetStatus(), validatorSrc.GetStatus(), stake)
 	if err != nil {
 		return err
