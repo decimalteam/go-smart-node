@@ -314,7 +314,7 @@ func TestPayValidators(t *testing.T) {
 	acc3TotalBalance := sdk.NewCoins()
 	acc4TotalBalance := sdk.NewCoins()
 	{
-		totalStake, err := valK.CalculateTotalPowerWithDelegationsAndPrices(ctx, val2, delByValidator[val2.GetOperator().String()], customCoinPrices)
+		totalStake, err := valK.CalculateTotalPowerWithDelegationsAndPrices(ctx, val2.GetOperator(), delByValidator[val2.GetOperator().String()], customCoinPrices)
 		require.NoError(t, err)
 		comission := sdk.NewDecFromInt(val2.Rewards).Mul(totalComission.Add(val2.Commission)).TruncateInt()
 		rewards := val2.Rewards.Sub(comission)
@@ -323,7 +323,7 @@ func TestPayValidators(t *testing.T) {
 		acc4TotalBalance = acc4TotalBalance.Add(sdk.NewCoin(cmdcfg.BaseDenom, rewards.Mul(acc4Stake).Quo(totalStake)))
 	}
 	{
-		totalStake, err := valK.CalculateTotalPowerWithDelegationsAndPrices(ctx, val3, delByValidator[val3.GetOperator().String()], customCoinPrices)
+		totalStake, err := valK.CalculateTotalPowerWithDelegationsAndPrices(ctx, val3.GetOperator(), delByValidator[val3.GetOperator().String()], customCoinPrices)
 		require.NoError(t, err)
 		comission := sdk.NewDecFromInt(val3.Rewards).Mul(totalComission.Add(val3.Commission)).TruncateInt()
 		rewards := val3.Rewards.Sub(comission)

@@ -9,6 +9,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
@@ -94,8 +95,18 @@ func (k Keeper) PayValidators(ctx sdk.Context) {
 	feesCollectedCoins := k.bankKeeper.GetAllBalances(ctx, feeCollector.GetAddress())
 
 	for _, fee := range feesCollectedCoins {
-		feeInBaseCoin := k.ToBaseCoin(ctx, fee)
-		rewards = rewards.Add(feeInBaseCoin.Amount)
+		if fee.Denom == baseDenom {
+			rewards = rewards.Add(fee.Amount)
+			continue
+		}
+
+		coin, err := k.coinKeeper.GetCoin(ctx, fee.Denom)
+		if err != nil {
+			panic(err)
+		}
+
+		baseAmount := formulas.CalculateSaleReturn(coin.Volume, coin.Reserve, uint(coin.CRR), fee.Amount)
+		rewards = rewards.Add(baseAmount)
 	}
 	err = k.coinKeeper.BurnPoolCoins(ctx, authtypes.FeeCollectorName, feesCollectedCoins)
 	if err != nil {

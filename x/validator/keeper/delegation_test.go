@@ -63,9 +63,14 @@ func TestDelegation(t *testing.T) {
 	// ----------------------------
 
 	defaultStake := types.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, keeper.TokensFromConsensusPower(2)))
-	defaultNftStake := types.NewStakeNFT(nftDenom, []uint32{1, 2, 3}, subTokenReserve)
+	reserveForStake := subTokenReserve
+	reserveForStake.Amount = reserveForStake.Amount.Mul(sdk.NewInt(3))
+	defaultNftStake := types.NewStakeNFT(nftDenom, []uint32{1, 2, 3}, reserveForStake)
+
 	ccStake := types.NewStakeCoin(sdk.NewCoin(ccDenom, keeper.TokensFromConsensusPower(400000000)))
-	ccNftStake := types.NewStakeNFT(nftCCDenom, []uint32{1, 2, 3}, subTokenCCReserve)
+	reserveForStake = subTokenCCReserve
+	reserveForStake.Amount = reserveForStake.Amount.Mul(sdk.NewInt(3))
+	ccNftStake := types.NewStakeNFT(nftCCDenom, []uint32{1, 2, 3}, reserveForStake)
 
 	// construct the validators
 	amts := []sdkmath.Int{sdk.NewInt(9), sdk.NewInt(8), sdk.NewInt(7)}
@@ -210,6 +215,7 @@ func TestDelegation(t *testing.T) {
 	{
 		stake := defaultNftStake
 		stake.SubTokenIDs = []uint32{4, 5}
+		stake.Stake.Amount = subTokenReserve.Amount.Mul(sdk.NewInt(2))
 		val, _ := valK.GetValidator(ctx, valAddr)
 		del := addrDels[0]
 		oldDelegation, found := valK.GetDelegation(ctx, del, val.GetOperator(), stake.ID)
@@ -238,6 +244,7 @@ func TestDelegation(t *testing.T) {
 		coin, _ := dsc.CoinKeeper.GetCoin(ctx, ccDenom)
 		stake := ccNftStake
 		stake.SubTokenIDs = []uint32{4, 5}
+		stake.Stake.Amount = subTokenCCReserve.Amount.Mul(sdk.NewInt(2))
 		val, _ := valK.GetValidator(ctx, valAddr)
 		del := addrDels[0]
 		ccs := valK.GetCustomCoinStaked(ctx, ccDenom)
@@ -443,9 +450,14 @@ func TestUndelegation(t *testing.T) {
 	// ----------------------------
 
 	defaultStake := types.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, keeper.TokensFromConsensusPower(2)))
-	defaultNftStake := types.NewStakeNFT(nftDenom, []uint32{1, 2, 3}, subTokenReserve)
+	reserveForStake := subTokenReserve
+	reserveForStake.Amount = reserveForStake.Amount.Mul(sdk.NewInt(3))
+	defaultNftStake := types.NewStakeNFT(nftDenom, []uint32{1, 2, 3}, reserveForStake)
+
 	ccStake := types.NewStakeCoin(sdk.NewCoin(ccDenom, keeper.TokensFromConsensusPower(400000000)))
-	ccNftStake := types.NewStakeNFT(nftCCDenom, []uint32{1, 2, 3}, subTokenCCReserve)
+	reserveForStake = subTokenCCReserve
+	reserveForStake.Amount = subTokenCCReserve.Amount.Mul(sdk.NewInt(3))
+	ccNftStake := types.NewStakeNFT(nftCCDenom, []uint32{1, 2, 3}, reserveForStake)
 
 	// construct the validators
 	amts := []sdkmath.Int{sdk.NewInt(9), sdk.NewInt(8), sdk.NewInt(7)}
@@ -533,6 +545,7 @@ func TestUndelegation(t *testing.T) {
 		val, _ := valK.GetValidator(ctx, valAddr)
 		unStake := defaultNftStake
 		unStake.SubTokenIDs = []uint32{3}
+		unStake.Stake.Amount = subTokenReserve.Amount.Mul(sdk.NewInt(1))
 		remainStake, err := valK.CalculateRemainStake(ctx, defaultNftStake, unStake)
 		require.NoError(t, err)
 		reserveTotalStake := subTokenReserve.Amount.Mul(sdk.NewInt(1))
@@ -563,6 +576,7 @@ func TestUndelegation(t *testing.T) {
 		val, _ := valK.GetValidator(ctx, valAddr)
 		unStake := ccNftStake
 		unStake.SubTokenIDs = []uint32{2, 3}
+		unStake.Stake.Amount = subTokenCCReserve.Amount.Mul(sdk.NewInt(2))
 		ccs := valK.GetCustomCoinStaked(ctx, ccDenom)
 		remainStake, err := valK.CalculateRemainStake(ctx, ccNftStake, unStake)
 		require.NoError(t, err)
@@ -648,6 +662,7 @@ func TestUndelegation(t *testing.T) {
 		val, _ := valK.GetValidator(ctx, valAddr)
 		unStake := defaultNftStake
 		unStake.SubTokenIDs = []uint32{2}
+		unStake.Stake.Amount = subTokenReserve.Amount.Mul(sdk.NewInt(1))
 		remainStake, err := valK.CalculateRemainStake(ctx, defaultNftStake, unStake)
 		require.NoError(t, err)
 		reserveTotalStake := subTokenReserve.Amount.Mul(sdk.NewInt(1))
@@ -739,9 +754,14 @@ func TestRedelegation(t *testing.T) {
 	// ----------------------------
 
 	defaultStake := types.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, keeper.TokensFromConsensusPower(2)))
-	defaultNftStake := types.NewStakeNFT(nftDenom, []uint32{1, 2, 3}, subTokenReserve)
+	reserveForStake := subTokenReserve
+	reserveForStake.Amount = reserveForStake.Amount.Mul(sdk.NewInt(3))
+	defaultNftStake := types.NewStakeNFT(nftDenom, []uint32{1, 2, 3}, reserveForStake)
+
 	ccStake := types.NewStakeCoin(sdk.NewCoin(ccDenom, keeper.TokensFromConsensusPower(400000000)))
-	ccNftStake := types.NewStakeNFT(nftCCDenom, []uint32{1, 2, 3}, subTokenCCReserve)
+	reserveForStake = subTokenCCReserve
+	reserveForStake.Amount = reserveForStake.Amount.Mul(sdk.NewInt(3))
+	ccNftStake := types.NewStakeNFT(nftCCDenom, []uint32{1, 2, 3}, reserveForStake)
 
 	// construct the validators
 	amts := []sdkmath.Int{sdk.NewInt(9), sdk.NewInt(8), sdk.NewInt(7)}
@@ -838,6 +858,7 @@ func TestRedelegation(t *testing.T) {
 		valSrc, _ := valK.GetValidator(ctx, valSrcAddr)
 		unStake := defaultNftStake
 		unStake.SubTokenIDs = []uint32{3}
+		unStake.Stake.Amount = subTokenReserve.Amount.Mul(sdk.NewInt(1))
 		remainStake, err := valK.CalculateRemainStake(ctx, defaultNftStake, unStake)
 		require.NoError(t, err)
 		reserveTotalStake := subTokenReserve.Amount.Mul(sdk.NewInt(1))
@@ -869,6 +890,7 @@ func TestRedelegation(t *testing.T) {
 		valSrc, _ := valK.GetValidator(ctx, valSrcAddr)
 		unStake := ccNftStake
 		unStake.SubTokenIDs = []uint32{2, 3}
+		unStake.Stake.Amount = subTokenCCReserve.Amount.Mul(sdk.NewInt(2))
 		ccs := valK.GetCustomCoinStaked(ctx, ccDenom)
 		remainStake, err := valK.CalculateRemainStake(ctx, ccNftStake, unStake)
 		require.NoError(t, err)
@@ -962,6 +984,7 @@ func TestRedelegation(t *testing.T) {
 		val, _ := valK.GetValidator(ctx, valSrcAddr)
 		unStake := defaultNftStake
 		unStake.SubTokenIDs = []uint32{2}
+		unStake.Stake.Amount = subTokenReserve.Amount.Mul(sdk.NewInt(1))
 		remainStake, err := valK.CalculateRemainStake(ctx, defaultNftStake, unStake)
 		require.NoError(t, err)
 		reserveTotalStake := subTokenReserve.Amount.Mul(sdk.NewInt(1))
