@@ -9,6 +9,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coin "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	fee "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
+	legacy "bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	multisig "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	nft "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	swap "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
@@ -90,6 +91,8 @@ func CalculateFee(cdc codec.BinaryCodec, msgs []sdk.Msg, txBytesLen int64, delPr
 		case *fee.MsgUpdateCoinPrices:
 		case *upgradetypes.MsgSoftwareUpgrade:
 		case *upgradetypes.MsgCancelUpgrade:
+		// legacy
+		case *legacy.MsgReturnLegacy:
 		default:
 			return sdkmath.ZeroInt(), UnknownTransaction
 		}
