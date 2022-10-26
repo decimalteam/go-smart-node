@@ -215,6 +215,13 @@ message Params {
     (gogoproto.nullable) = false
   ];
 
+  // commission burn factor
+  string commission_burn_factor = 70 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+
   // evm tx commissions
   string evm_gas_price = 61 [
     (cosmos_proto.scalar) = "cosmos.Dec",
