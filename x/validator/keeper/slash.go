@@ -169,18 +169,32 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 
 // jail a validator
 func (k Keeper) Jail(ctx sdk.Context, consAddr sdk.ConsAddress) {
-	//validator := k.mustGetValidatorByConsAddr(ctx, consAddr)
-	//k.jailValidator(ctx, validator)
-	logger := k.Logger(ctx)
-	logger.Info("validator jailed", "validator", consAddr)
+	validator := k.mustGetValidatorByConsAddr(ctx, consAddr)
+	if validator.Jailed {
+		panic(fmt.Sprintf("cannot jail already jailed validator, validator: %v\n", validator))
+	}
+
+	validator.Jailed = true
+	validator.Online = false
+	k.SetValidator(ctx, validator)
+	k.DeleteValidatorByPowerIndex(ctx, validator)
+	// Deleting of start height reset MissedBlockCounter
+	// We need to reset the counter & array so that the validator won't be immediately slashed for downtime upon rebonding.
+	k.DeleteStartHeight(ctx, consAddr)
+
+	k.Logger(ctx).Info("validator jailed", "validator", consAddr)
 }
 
 // unjail a validator
 func (k Keeper) Unjail(ctx sdk.Context, consAddr sdk.ConsAddress) {
-	//validator := k.mustGetValidatorByConsAddr(ctx, consAddr)
-	//k.unjailValidator(ctx, validator)
-	logger := k.Logger(ctx)
-	logger.Info("validator un-jailed", "validator", consAddr)
+	validator := k.mustGetValidatorByConsAddr(ctx, consAddr)
+	if !validator.Jailed {
+		panic(fmt.Sprintf("cannot unjail already unjailed validator, validator: %v\n", validator))
+	}
+	validator.Jailed = false
+	k.SetValidator(ctx, validator)
+	k.SetValidatorByPowerIndex(ctx, validator)
+	k.Logger(ctx).Info("validator un-jailed", "validator", consAddr)
 }
 
 // structure accumulates changes during slash process

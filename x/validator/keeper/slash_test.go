@@ -3,11 +3,13 @@ package keeper_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/stretchr/testify/require"
+	abci "github.com/tendermint/tendermint/abci/types"
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
@@ -433,4 +435,34 @@ func TestFactorCalculation(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestJailUnjail(t *testing.T) {
+	_, dsc, ctx := createTestInput(t)
+	msgsrv := keeper.NewMsgServerImpl(dsc.ValidatorKeeper)
+
+	balance := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(100000)))
+	accs, vals := generateAddresses(dsc, ctx, 10, sdk.NewCoins(balance))
+	consAdr := sdk.GetConsAddress(PKs[0])
+
+	creatorStake := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(100)))
+	msgCreate, err := types.NewMsgCreateValidator(vals[0], accs[0], PKs[0], types.Description{Moniker: "monik"},
+		sdk.ZeroDec(), creatorStake)
+	require.NoError(t, err)
+
+	//
+	goCtx := sdk.WrapSDKContext(ctx)
+	_, err = msgsrv.CreateValidator(goCtx, msgCreate)
+	require.NoError(t, err)
+
+	keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
+
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1).WithBlockTime(ctx.BlockTime().Add(time.Second * 5))
+
+	powerVals, _, _ := dsc.ValidatorKeeper.GetAllValidatorsByPowerIndex(ctx)
+	require.Len(t, powerVals, 2) // genesisn validator + 1 created
+
+	dsc.ValidatorKeeper.Jail(ctx, consAdr)
+	powerVals, _, _ = dsc.ValidatorKeeper.GetAllValidatorsByPowerIndex(ctx)
+	require.Len(t, powerVals, 1)
 }
