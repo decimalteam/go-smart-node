@@ -1137,7 +1137,7 @@ func (k Keeper) getBeginInfo(ctx sdk.Context, validatorSrc sdk.ValAddress) (comp
 	switch {
 	case !found || validator.IsBonded():
 		// the longest wait - just unbonding period from now
-		completionTime = ctx.BlockHeader().Time.Add(k.UndelegationTime(ctx))
+		completionTime = ctx.BlockHeader().Time.Add(k.RedelegationTime(ctx))
 		height = ctx.BlockHeight()
 
 		return completionTime, height, false

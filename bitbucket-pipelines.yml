@@ -129,6 +129,8 @@ definitions:
               - COSMOS_BUILD_OPTIONS=goleveldb make install
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ol/8.5/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ol/8.5/
+              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ol/8.6/
+              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ol/8.6/
             artifacts:
               - build/**
 
