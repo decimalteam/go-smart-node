@@ -68,12 +68,12 @@ func convertAccounts(accsOld []AccountOld, addrTable *AddressTable) ([]interface
 	return res, nil
 }
 
-// convert tDEL to DEL
+// remove unexisting coins
 func filterCoins(coins sdk.Coins, coinSymbols map[string]bool) sdk.Coins {
 	var result = sdk.NewCoins()
 	for _, coin := range coins {
-		if coin.Denom == "tdel" {
-			result = result.Add(sdk.NewCoin("tdel", coin.Amount))
+		if coin.Denom == "tdel" || coin.Denom == "del" {
+			result = result.Add(sdk.NewCoin(globalBaseDenom, coin.Amount))
 		} else {
 			if !coinSymbols[coin.Denom] {
 				continue
@@ -177,7 +177,7 @@ func validCoinParams(coin FullCoinOld) bool {
 func convertCoins(coinsOld []FullCoinOld, addrTable *AddressTable) ([]FullCoinNew, error) {
 	var res []FullCoinNew
 	for _, coin := range coinsOld {
-		if coin.Symbol != "tdel" && !validCoinParams(coin) {
+		if coin.Symbol != "tdel" && coin.Symbol != "del" && !validCoinParams(coin) {
 			continue
 		}
 		res = append(res, FullCoinO2N(coin, addrTable))
@@ -238,7 +238,8 @@ func convertMultisigTransactions(transactionsOld []TransactionOld, addrTable *Ad
 }
 
 func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
-	addrTable *AddressTable, legacyRecords *LegacyRecords, fixNFTData []NFTOwnerFixRecord) ([]CollectionNew, error) {
+	addrTable *AddressTable, legacyRecords *LegacyRecords, fixNFTData []NFTOwnerFixRecord,
+	delegationCache *DelegationCache) ([]CollectionNew, error) {
 	// prepare subtokens
 	type subRecord struct {
 		id      string
@@ -297,7 +298,7 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 				subtokens = append(subtokens, SubTokenNew{
 					ID:      uint32(id),
 					Owner:   "",
-					Reserve: sdk.NewCoin("tdel", sub.reserve),
+					Reserve: sdk.NewCoin(globalBaseDenom, sub.reserve),
 				})
 			}
 			// 3. owners for subtokens
@@ -306,6 +307,9 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 					continue
 				}
 				ownerAddress := addrTable.GetAddress(ownerOld.Address)
+				if addrTable.IsMultisig(ownerOld.Address) {
+					ownerAddress = ownerOld.Address
+				}
 				if ownerAddress == "" {
 					legacyRecords.AddNFT(ownerOld.Address, colOld.Denom, nftOld.ID)
 					ownerAddress = ownerOld.Address
@@ -335,13 +339,19 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 					}
 				}
 			}
-			// 3.9 TODO: empty owners for subtokens in testnet. Workaround with logging
+			// 3.9 TODO: There still may be empty owners for subtokens. Workaround with logging
 			// NOTE: bech32 address for []byte{0} = "dx1qqjrdrw8",
 			for i := range subtokens {
 				if subtokens[i].Owner == "" {
-					fmt.Printf("empty owner for collection '%s', creator '%s', nft '%s', sub token id '%d'\n",
-						collNew.Denom, collNew.Creator, nftOld.ID, subtokens[i].ID)
-					subtokens[i].Owner = "dx1qqjrdrw8"
+					// try to find in delegation pool
+					pool := delegationCache.GetPool(nftOld.ID, subtokens[i].ID)
+					if pool == "" {
+						fmt.Printf("empty owner for collection '%s', creator '%s', nft '%s', sub token id '%d'\n",
+							collNew.Denom, collNew.Creator, nftOld.ID, subtokens[i].ID)
+						subtokens[i].Owner = "dx1qqjrdrw8"
+					} else {
+						subtokens[i].Owner = pool
+					}
 				}
 			}
 			// 4. build nft and add to collection
@@ -354,7 +364,7 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 				Denom:     colOld.Denom,
 				ID:        nftOld.ID,
 				URI:       nftOld.TokenURI,
-				Reserve:   sdk.NewCoin("tdel", initialReserve),
+				Reserve:   sdk.NewCoin(globalBaseDenom, initialReserve),
 				AllowMint: nftOld.AllowMint,
 				Minted:    uint32(len(subtokens)),
 				Burnt:     0,
@@ -448,5 +458,55 @@ func convertLastValidatorPowers(pwrsOld []LastValidatorPowerOld) ([]LastValidato
 			result = append(result, pwrNew)
 		}
 	}
+	return result, nil
+}
+
+func createNFTDelegationCache(
+	delegationsNFT []DelegationNFTOld,
+	undelegationsNFT []UnbondingNFTRecordOld,
+	valsOld []ValidatorOld,
+	addrTable *AddressTable) (*DelegationCache, error) {
+	var valPool = make(map[string]string)
+	for _, valOld := range valsOld {
+		/*
+			Unbonded  BondStatus = 0x00 -- BOND_STATUS_UNBONDED
+			Unbonding BondStatus = 0x01 -- BOND_STATUS_UNBONDING
+			Bonded    BondStatus = 0x02 -- BOND_STATUS_BONDED
+		*/
+		switch valOld.Status {
+		case 0:
+			valPool[valOld.ValAddress] = addrTable.GetModule("not_bonded_tokens_pool").address
+		case 1:
+			valPool[valOld.ValAddress] = addrTable.GetModule("not_bonded_tokens_pool").address
+		case 2:
+			valPool[valOld.ValAddress] = addrTable.GetModule("bonded_tokens_pool").address
+		default:
+			return nil, fmt.Errorf("unknown status code: %d", valOld.Status)
+		}
+	}
+	nbPool := addrTable.GetModule("not_bonded_tokens_pool").address
+
+	var result = NewDelegationCache()
+	for _, del := range delegationsNFT {
+		for _, oldID := range del.SubTokenIds {
+			newID, err := strconv.ParseUint(oldID, 10, 32)
+			if err != nil {
+				return nil, err
+			}
+			result.AddPool(del.TokenID, uint32(newID), valPool[del.Validator])
+		}
+	}
+	for _, undel := range undelegationsNFT {
+		for _, entry := range undel.Entries {
+			for _, oldID := range entry.SubTokenIds {
+				newID, err := strconv.ParseUint(oldID, 10, 32)
+				if err != nil {
+					return nil, err
+				}
+				result.AddPool(entry.TokenID, uint32(newID), nbPool)
+			}
+		}
+	}
+
 	return result, nil
 }

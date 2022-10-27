@@ -173,8 +173,8 @@ type FullCoinNew struct {
 
 func FullCoinO2N(coin FullCoinOld, addrTable *AddressTable) FullCoinNew {
 	symbol := coin.Symbol
-	if symbol == "tdel" {
-		symbol = "tdel"
+	if symbol == "tdel" || symbol == "del" {
+		symbol = globalBaseDenom
 	}
 	crr, _ := strconv.ParseInt(coin.CRR, 10, 64)
 	return FullCoinNew{
@@ -259,6 +259,9 @@ func WalletO2N(wallet WalletOld, addrTable *AddressTable, legacyRecords *LegacyR
 	result.Threshold = wallet.Threshold
 	for i := range wallet.Owners {
 		newAddress := addrTable.GetAddress(wallet.Owners[i])
+		if addrTable.IsMultisig(wallet.Owners[i]) {
+			newAddress = wallet.Owners[i]
+		}
 		if newAddress == "" {
 			result.Owners[i] = wallet.Owners[i]
 			legacyRecords.AddWallet(wallet.Owners[i], wallet.Address)
@@ -474,8 +477,8 @@ func DelegationO2NNFT(delOld DelegationNFTOld, addrTable *AddressTable) (Delegat
 	delNew.Stake.ID = delOld.TokenID
 	delNew.Stake.Stake = delOld.Coin
 	// fix for testnet
-	if delNew.Stake.Stake.Denom == "tdel" {
-		delNew.Stake.Stake.Denom = "tdel"
+	if delNew.Stake.Stake.Denom == "tdel" || delNew.Stake.Stake.Denom == "del" {
+		delNew.Stake.Stake.Denom = globalBaseDenom
 	}
 	for _, s := range delOld.SubTokenIds {
 		id, err := strconv.ParseInt(s, 10, 32)
@@ -542,7 +545,7 @@ func UnbondingO2NNFT(ubdOld UnbondingNFTRecordOld, addrTable *AddressTable) (Und
 			return UndelegationNew{}, fmt.Errorf("delegator '%s' creation_height error: %s", ubdOld.DelegatorAddress, err.Error())
 		}
 		entryNew.Stake.ID = entryOld.TokenID
-		entryNew.Stake.Stake = sdk.NewCoin("tdel", entryOld.Balance.Amount)
+		entryNew.Stake.Stake = sdk.NewCoin(globalBaseDenom, entryOld.Balance.Amount)
 		entryNew.Stake.Type = "STAKE_TYPE_NFT"
 		for _, s := range entryOld.SubTokenIds {
 			id, err := strconv.ParseInt(s, 10, 32)

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -18,23 +19,47 @@ import (
 	dscTypes "bitbucket.org/decimalteam/go-smart-node/types"
 )
 
+var globalBaseDenom string
+
+func usage() {
+	fmt.Println("usage: ./genesis_converter -basedenom <del|tdel> -decimal <decimal_genesis_file> -source <dsc_params_source_genesis> -nftfix <nft_owners_fix_file> -result <dsc_result_genesis_file> -injectlegacy <true|false>")
+}
+
 func main() {
 	initConfig()
-	if len(os.Args) < 4 {
-		fmt.Println("usage: ./genesis_converter <decimal_genesis_file> <dsc_params_source_genesis> <nft_owners_fix_file> <dsc_genesis_file>")
+
+	var pathGenesisOld, pathGenesisSource, pathGenesisResult, pathNFTfix string
+	var injectLegacy bool
+
+	flag.StringVar(&globalBaseDenom, "basedenom", "del", "base denom for blockchain (del, tdel)")
+	flag.StringVar(&pathGenesisOld, "decimal", "", "path to exported genesis from Decimal")
+	flag.StringVar(&pathGenesisSource, "source", "", "path to source genesis from DSC to copy parameters and validators")
+	flag.StringVar(&pathGenesisResult, "result", "", "path to result genesis for DSC")
+	flag.StringVar(&pathNFTfix, "nftfix", "", "path to json with nftfix (may be empty)")
+	flag.BoolVar(&injectLegacy, "injectlegacy", false, "generate legacy records")
+
+	flag.Parse()
+
+	fmt.Printf("baseDenom=%s\n", globalBaseDenom)
+	fmt.Printf("pathGenesisOld=%s\n", pathGenesisOld)
+	fmt.Printf("pathGenesisResult=%s\n", pathGenesisResult)
+	fmt.Printf("pathGenesisSource=%s\n", pathGenesisSource)
+	if globalBaseDenom == "" || pathGenesisOld == "" || pathGenesisResult == "" || pathGenesisSource == "" {
+		usage()
 		os.Exit(1)
 	}
-	gsOld := readGenesisOld(os.Args[1])
-	gsSource := readGenesisNew(os.Args[2])
-	fixNFTData := readNFTFix(os.Args[3])
-	gsNew, _, err := convertGenesis(gsOld, fixNFTData)
+
+	gsOld := readGenesisOld(pathGenesisOld)
+	gsSource := readGenesisNew(pathGenesisSource)
+	fixNFTData := readNFTFix(pathNFTfix)
+	gsNew, _, err := convertGenesis(gsOld, fixNFTData, injectLegacy)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 	copyParams(&gsNew, gsSource)
 	fixAfterCopy(&gsNew)
-	writeGenesisNew(os.Args[4], &gsNew)
+	writeGenesisNew(pathGenesisResult, &gsNew)
 }
 
 // Init global cosmos sdk config
@@ -123,7 +148,7 @@ type Statistic struct {
 	countRegularAccountsNoPublicKey uint64
 }
 
-func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord) (GenesisNew, Statistic, error) {
+func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord, injectLegacy bool) (GenesisNew, Statistic, error) {
 	var gsNew GenesisNew
 	var err error
 
@@ -159,21 +184,28 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord) (GenesisN
 	if err != nil {
 		return GenesisNew{}, Statistic{}, err
 	}
+	// TODO: convert for new transaction type
 	// transactions
-	gsNew.AppState.Multisig.Transactions, err =
-		convertMultisigTransactions(gsOld.AppState.Multisig.Transactions, addrTable, gsOld.AppState.Multisig.Wallets, gsNew.AppState.Coin.Coins)
+	// gsNew.AppState.Multisig.Transactions, err =
+	// 	convertMultisigTransactions(gsOld.AppState.Multisig.Transactions, addrTable, gsOld.AppState.Multisig.Wallets, gsNew.AppState.Coin.Coins)
+	// if err != nil {
+	// 	return GenesisNew{}, Statistic{}, err
+	// }
+
+	// nft
+	delegationCache, err := createNFTDelegationCache(gsOld.AppState.Validator.DelegationsNFT, gsOld.AppState.Validator.UndondingsNFT,
+		gsOld.AppState.Validator.Validators, addrTable)
 	if err != nil {
 		return GenesisNew{}, Statistic{}, err
 	}
-	// nft
 	gsNew.AppState.NFT.Collections, err =
-		convertNFT(gsOld.AppState.NFT.Collections, gsOld.AppState.NFT.SubTokens, addrTable, legacyRecords, fixNFTData)
+		convertNFT(gsOld.AppState.NFT.Collections, gsOld.AppState.NFT.SubTokens, addrTable, legacyRecords, fixNFTData, delegationCache)
 	if err != nil {
 		return GenesisNew{}, Statistic{}, err
 	}
 	// inject to legacy records
 	// TODO: parametrize output?
-	if true {
+	if injectLegacy {
 		fmt.Printf("!!! LEGACY RECORDS INJECTING !!! REMOVE FROM PRODUCTION\n")
 		_, err := os.Stat("legacy_test_mnemonics.txt")
 		if errors.Is(err, os.ErrNotExist) {
@@ -194,7 +226,7 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord) (GenesisN
 		if err != nil {
 			return GenesisNew{}, Statistic{}, err
 		}
-		coins := sdk.NewCoins(sdk.NewCoin("tdel", sdkmath.NewInt(3_141_592_653_589_793_238)))
+		coins := sdk.NewCoins(sdk.NewCoin(globalBaseDenom, sdkmath.NewInt(3_141_592_653_589_793_238)))
 		allCoins := sdk.NewCoins()
 		fileScanner := bufio.NewScanner(inp)
 		fileScanner.Split(bufio.ScanLines)
@@ -249,11 +281,13 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord) (GenesisN
 	}
 	//////////////////////////////////////////
 	// validate NFT subtokens
-	invalidSubtokens := verifySubtokens(gsOld.AppState.NFT.SubTokens, gsOld.AppState.NFT.Collections,
-		gsOld.AppState.Validator.DelegationsNFT, gsOld.AppState.Validator.UndondingsNFT)
-	for key, cnt := range invalidSubtokens {
-		fmt.Printf("invalid subtoken nft: %#v == %#v\n", key, *cnt)
-	}
+	/*
+		invalidSubtokens := verifySubtokens(gsOld.AppState.NFT.SubTokens, gsOld.AppState.NFT.Collections,
+			gsOld.AppState.Validator.DelegationsNFT, gsOld.AppState.Validator.UndondingsNFT)
+		for key, cnt := range invalidSubtokens {
+			fmt.Printf("invalid subtoken nft: %#v == %#v\n", key, *cnt)
+		}
+	*/
 	// validate coins
 	coinDiffs := verifyCoinsVolume(gsOld.AppState.Coin.Coins, gsOld.AppState.Auth.Accounts,
 		gsOld.AppState.Validator.Delegations, gsOld.AppState.Validator.Unbondings)
