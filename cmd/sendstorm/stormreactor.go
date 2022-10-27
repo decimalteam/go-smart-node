@@ -242,6 +242,23 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 		ui.MultisigBalances[wallet.Address] = balance
 	}
 
+	// validators
+	ui.Validators, err = reactor.api.Validators()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// delegations
+	for _, val := range ui.Validators {
+		dels, err := reactor.api.ValidatorDelegations(val.OperatorAddress)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		ui.Delegations = append(ui.Delegations, dels...)
+	}
+
 	reactor.actionReactor.Update(ui)
 }
 

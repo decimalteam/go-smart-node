@@ -11,7 +11,7 @@ import (
 
 type RedelegateNFTGenerator struct {
 	knownNFTStakes  []NFTStake
-	knownValidators []string
+	knownValidators []dscApi.Validator
 	rnd             *rand.Rand
 }
 
@@ -43,7 +43,7 @@ func (gg *RedelegateNFTGenerator) Generate() Action {
 	stake := RandomChoice(gg.rnd, gg.knownNFTStakes)
 	toValidator := ""
 	for i := 0; i < 10; i++ {
-		toValidator = RandomChoice(gg.rnd, gg.knownValidators)
+		toValidator = RandomChoice(gg.rnd, gg.knownValidators).OperatorAddress
 		if toValidator != stake.Validator {
 			break
 		}

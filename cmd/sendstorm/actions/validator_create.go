@@ -4,19 +4,26 @@ import (
 	"math/rand"
 	"time"
 
-	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
+	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
 type CreateValidatorGenerator struct {
 	initialStackBottom int64 // in 10^18
 	initialStackUp     int64 // in 10^18
+	knownCoins         []string
 	rnd                *rand.Rand
 }
 
 type CreateValidatorAction struct {
-	pubKey []byte
-	rate   int64
+	pubKey       cryptotypes.PubKey
+	rate         int64
+	initialStake sdk.Coin
 	//
 	moniker         string
 	details         string
@@ -35,13 +42,19 @@ func NewCreateValidatorGenerator(
 }
 
 func (gg *CreateValidatorGenerator) Update(ui UpdateInfo) {
+	gg.knownCoins = ui.Coins
 }
 
 func (gg *CreateValidatorGenerator) Generate() Action {
+	if len(gg.knownCoins) == 0 {
+		return &EmptyAction{}
+	}
+	amount := helpers.EtherToWei(sdk.NewInt(RandomRange(gg.rnd, gg.initialStackBottom, gg.initialStackUp)))
+	stake := sdk.NewCoin(RandomChoice(gg.rnd, gg.knownCoins), amount)
 	return &CreateValidatorAction{
-		// TODO: save or generate from mnemonic private key
-		pubKey: []byte(RandomString(gg.rnd, 10, charsAll)),
-		rate:   RandomRange(gg.rnd, 10, 100+1),
+		pubKey:       ed25519.GenPrivKey().PubKey(),
+		rate:         RandomRange(gg.rnd, 10, 100+1),
+		initialStake: stake,
 		//
 		moniker:         RandomString(gg.rnd, 10, charsAll),
 		details:         RandomString(gg.rnd, 10, charsAll),
@@ -57,7 +70,10 @@ func (ac *CreateValidatorAction) ChooseAccounts(saList []*stormTypes.StormAccoun
 		if saList[i].IsDirty() {
 			continue
 		}
-		// TODO: future checks
+		if saList[i].BalanceForCoin(ac.initialStake.Denom).LT(ac.initialStake.Amount) {
+			continue
+		}
+		// TODO: check validator exists
 		res = append(res, saList[i])
 	}
 	return res
@@ -68,22 +84,25 @@ func (ac *CreateValidatorAction) GenerateTx(sa *stormTypes.StormAccount, feeConf
 	if err != nil {
 		return nil, err
 	}
-	// TODO
-	/*
-		msg := dscTx.NewMsgCreateCoin(
-			sender,
-			ac.symbol,
-			ac.title,
-			ac.crr,
-			ac.initVolume,
-			ac.initReserve,
-			ac.limitVolume,
-			ac.identity,
-		)
-		tx, err := dscTx.BuildTransaction(sa.Account(), []sdk.Msg{msg}, "", sa.FeeDenom(), feeConfig.DelPrice, feeConfig.Params)
-	*/
+	msg, err := dscTx.NewMsgCreateValidator(
+		sdk.ValAddress(sa.Account().SdkAddress()),
+		sa.Account().SdkAddress(),
+		ac.pubKey,
+		dscTx.Description{
+			Moniker:         ac.moniker,
+			Identity:        ac.identity,
+			Website:         ac.website,
+			SecurityContact: ac.securityContact,
+			Details:         ac.details,
+		},
+		sdk.MustNewDecFromStr("0.1"),
+		ac.initialStake,
+	)
+	if err != nil {
+		return nil, err
+	}
 
-	return feeConfig.MakeTransaction(sa, nil)
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (ac *CreateValidatorAction) String() string {

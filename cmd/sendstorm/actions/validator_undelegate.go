@@ -5,12 +5,13 @@ import (
 	"time"
 
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
+	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type UndelegateGenerator struct {
-	knownStakes []GenericStake
-	rnd         *rand.Rand
+	knownDelegations []dscApi.Delegation
+	rnd              *rand.Rand
 }
 
 type UndelegateAction struct {
@@ -26,16 +27,15 @@ func NewUndelegateGenerator() *UndelegateGenerator {
 }
 
 func (gg *UndelegateGenerator) Update(ui UpdateInfo) {
-	gg.knownStakes = ui.Stakes
+	gg.knownDelegations = ui.Delegations
 }
 
 func (gg *UndelegateGenerator) Generate() Action {
-	if len(gg.knownStakes) == 0 {
+	if len(gg.knownDelegations) == 0 {
 		return &EmptyAction{}
 	}
-	stake := RandomChoice(gg.rnd, gg.knownStakes)
+	stake := RandomChoice(gg.rnd, gg.knownDelegations)
 	return &UndelegateAction{
-		coin:             stake.Coin,
 		delegatorAddress: stake.Delegator,
 		validatorAddress: stake.Validator,
 	}

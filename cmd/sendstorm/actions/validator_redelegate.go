@@ -5,13 +5,14 @@ import (
 	"time"
 
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
+	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type RedelegateGenerator struct {
-	knownStakes     []GenericStake
-	knownValidators []string
-	rnd             *rand.Rand
+	knownDelegations []dscApi.Delegation
+	knownValidators  []dscApi.Validator
+	rnd              *rand.Rand
 }
 
 type RedelegateAction struct {
@@ -28,7 +29,7 @@ func NewRedelegateGenerator() *RedelegateGenerator {
 }
 
 func (gg *RedelegateGenerator) Update(ui UpdateInfo) {
-	gg.knownStakes = ui.Stakes
+	gg.knownDelegations = ui.Delegations
 	gg.knownValidators = ui.Validators
 }
 
@@ -36,13 +37,13 @@ func (gg *RedelegateGenerator) Generate() Action {
 	if len(gg.knownValidators) < 2 {
 		return &EmptyAction{}
 	}
-	if len(gg.knownStakes) == 0 {
+	if len(gg.knownDelegations) == 0 {
 		return &EmptyAction{}
 	}
-	stake := RandomChoice(gg.rnd, gg.knownStakes)
+	stake := RandomChoice(gg.rnd, gg.knownDelegations)
 	toValidator := ""
 	for i := 0; i < 10; i++ {
-		toValidator = RandomChoice(gg.rnd, gg.knownValidators)
+		toValidator = RandomChoice(gg.rnd, gg.knownValidators).OperatorAddress
 		if toValidator != stake.Validator {
 			break
 		}
@@ -55,7 +56,6 @@ func (gg *RedelegateGenerator) Generate() Action {
 		delegatorAddress:     stake.Delegator,
 		fromValidatorAddress: stake.Validator,
 		toValidatorAddress:   toValidator,
-		coin:                 stake.Coin,
 	}
 }
 

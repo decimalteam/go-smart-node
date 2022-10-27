@@ -2,6 +2,7 @@ package actions
 
 import (
 	"fmt"
+	"math/rand"
 	"time"
 
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
@@ -50,16 +51,11 @@ type UpdateInfo struct {
 	MultisigWallets      []dscApi.MultisigWallet
 	MultisigTransactions []dscApi.MultisigTransactionInfo
 	MultisigBalances     map[string]sdk.Coins
-	Validators           []string
-	Stakes               []GenericStake
+	Validators           []dscApi.Validator
+	Delegations          []dscApi.Delegation
 	NFTStakes            []NFTStake
 }
 
-type GenericStake struct {
-	Delegator string
-	Validator string
-	sdk.Coin
-}
 type NFTStake struct {
 	Delegator string
 	Validator string
@@ -100,4 +96,9 @@ func (t *TPSLimiter) CanMake() bool {
 
 func (t *TPSLimiter) Limit() int64 {
 	return t.limit
+}
+
+// extract part of stake for un/redelegation
+func ExtractPartStake(rnd *rand.Rand, s dscApi.Stake) dscApi.Stake {
+	return dscApi.Stake{}
 }

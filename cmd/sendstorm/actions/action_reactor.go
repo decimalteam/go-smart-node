@@ -58,9 +58,13 @@ func (ar *ActionReactor) Add(generatorName string, weight int64) error {
 		wag.AG = NewSignMultisigTransactionGenerator()
 	// validator
 	case "CreateValidator":
-		wag.AG = NewCreateValidatorGenerator(100, 1000)
+		wag.AG = NewCreateValidatorGenerator(1, 10)
 	case "EditValidator":
 		wag.AG = NewEditValidatorGenerator()
+	case "SetOnlineValidator":
+		wag.AG = NewSetOnlineValidatorGenerator()
+	case "SetOfflineValidator":
+		wag.AG = NewSetOfflineValidatorGenerator()
 	case "Delegate":
 		wag.AG = NewDelegateGenerator(1, 100)
 	case "DelegateNFT":

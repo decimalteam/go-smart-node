@@ -87,11 +87,11 @@ func (msg *MsgCreateValidator) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required.
 func (msg *MsgCreateValidator) GetSigners() []sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(msg.OperatorAddress)
+	addr, err := sdk.ValAddressFromBech32(msg.OperatorAddress)
 	if err != nil {
 		return nil
 	}
-	return []sdk.AccAddress{addr}
+	return []sdk.AccAddress{sdk.AccAddress(addr)}
 }
 
 // ValidateBasic runs stateless checks on the message.
@@ -158,11 +158,11 @@ func (msg *MsgEditValidator) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required.
 func (msg *MsgEditValidator) GetSigners() []sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(msg.OperatorAddress)
+	addr, err := sdk.ValAddressFromBech32(msg.OperatorAddress)
 	if err != nil {
 		return nil
 	}
-	return []sdk.AccAddress{addr}
+	return []sdk.AccAddress{sdk.AccAddress(addr)}
 }
 
 // ValidateBasic runs stateless checks on the message.
@@ -203,11 +203,11 @@ func (msg *MsgSetOnline) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required.
 func (msg *MsgSetOnline) GetSigners() []sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(msg.Validator)
+	addr, err := sdk.ValAddressFromBech32(msg.Validator)
 	if err != nil {
 		return nil
 	}
-	return []sdk.AccAddress{addr}
+	return []sdk.AccAddress{sdk.AccAddress(addr)}
 }
 
 // ValidateBasic runs stateless checks on the message.
@@ -242,11 +242,11 @@ func (msg *MsgSetOffline) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required.
 func (msg *MsgSetOffline) GetSigners() []sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(msg.Validator)
+	addr, err := sdk.ValAddressFromBech32(msg.Validator)
 	if err != nil {
 		return nil
 	}
-	return []sdk.AccAddress{addr}
+	return []sdk.AccAddress{sdk.AccAddress(addr)}
 }
 
 // ValidateBasic runs stateless checks on the message.
