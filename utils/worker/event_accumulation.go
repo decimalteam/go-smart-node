@@ -144,6 +144,10 @@ var eventProcessors = map[string]processFunc{
 	"decimal.swap.v1.EventDeactivateChain": processEventDeactivateChain,
 	"decimal.swap.v1.EventInitializeSwap":  processEventSwapInitialize,
 	"decimal.swap.v1.EventRedeemSwap":      processEventSwapRedeem,
+	// validator
+	"decimal.validator.v1.EventDelegate":           processEventDelegate,
+	"decimal.validator.v1.EventUndelegateComplete": processEventUndelegateComplete,
+	"decimal.validator.v1.EventRedelegateComplete": processEventRedelegateComplete,
 
 	banktypes.EventTypeTransfer: processEventTransfer,
 }

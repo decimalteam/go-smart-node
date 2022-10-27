@@ -1012,22 +1012,22 @@ func (k Keeper) CompleteRedelegation(
 				}
 			}
 
-			err = ctx.EventManager().EmitTypedEvent(&types.EventRedelegateComplete{
-				Delegator:    delegator.String(),
-				ValidatorSrc: validatorSrc.String(),
-				ValidatorDst: validatorDst.String(),
-				Stake:        stake,
-			})
-			if err != nil {
-				return err
-			}
-
 			// delegate
 			validator, found := k.GetValidator(ctx, validatorDst)
 			if !found {
 				return fmt.Errorf("not found validator %s", validatorDst)
 			}
 			err := k.Delegate(ctx, delegator, validator, entry.Stake)
+			if err != nil {
+				return err
+			}
+
+			err = ctx.EventManager().EmitTypedEvent(&types.EventRedelegateComplete{
+				Delegator:    delegator.String(),
+				ValidatorSrc: validatorSrc.String(),
+				ValidatorDst: validatorDst.String(),
+				Stake:        stake,
+			})
 			if err != nil {
 				return err
 			}
