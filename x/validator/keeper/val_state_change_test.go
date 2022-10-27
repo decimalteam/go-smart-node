@@ -97,6 +97,8 @@ func TestStateOnlineOffline(t *testing.T) {
 	require.NoError(t, err)
 	// last validators must be changes after ApplyAndReturnValidatorSetUpdates in EndBlocker
 	require.Len(t, dsc.ValidatorKeeper.GetLastValidators(ctx), 1)
+	// check start height
+	require.Equal(t, ctx.BlockHeight(), dsc.ValidatorKeeper.GetStartHeight(ctx, sdk.GetConsAddress(PKs[0])))
 
 	updates = keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
 
@@ -128,6 +130,7 @@ func TestStateOnlineOffline(t *testing.T) {
 	require.NoError(t, err)
 	// last validator must be changes after ApplyAndReturnValidatorSetUpdates in EndBlocker
 	require.Len(t, dsc.ValidatorKeeper.GetLastValidators(ctx), 2)
+	require.Equal(t, int64(-1), dsc.ValidatorKeeper.GetStartHeight(ctx, sdk.GetConsAddress(PKs[0])))
 
 	updates = keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
 
