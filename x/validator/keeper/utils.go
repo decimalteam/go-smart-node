@@ -4,7 +4,6 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
-	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -20,42 +19,28 @@ func (k *Keeper) AddAccumRewards(ctx sdk.Context, valAddr sdk.ValAddress, r sdkm
 
 	return nil
 }
-
 func (k *Keeper) ToBaseCoin(ctx sdk.Context, c sdk.Coin) sdk.Coin {
 	baseDenom := k.BaseDenom(ctx)
-	if baseDenom == c.Denom {
+	if c.Denom == baseDenom {
 		return c
 	}
 
-	customCoin, err := k.coinKeeper.GetCoin(ctx, c.Denom)
-	if err != nil {
-		panic(err)
-	}
-	amountInBaseCoin := formulas.CalculateSaleReturn(customCoin.Volume, customCoin.Reserve, uint(customCoin.CRR), c.Amount)
-
-	return sdk.NewCoin(baseDenom, amountInBaseCoin)
-}
-
-func (k Keeper) TotalStakeInBaseCoin(ctx sdk.Context, valAddress sdk.ValAddress) (sdkmath.Int, error) {
-	delegations := k.GetValidatorDelegations(ctx, valAddress)
-
-	return k.delegationsTotalStake(ctx, delegations)
-}
-
-func (k Keeper) delegationsTotalStake(ctx sdk.Context, delegations []types.Delegation) (sdkmath.Int, error) {
-	totalStakeInBaseCoin := sdk.ZeroInt()
-	for _, del := range delegations {
-		delStake := del.Stake.Stake
-
-		if del.Stake.SubTokenIDs != nil && len(del.Stake.SubTokenIDs) != 0 {
-			delStake = k.getSumSubTokensReserve(ctx, del.GetStake().GetID(), del.GetStake().GetSubTokenIDs())
+	customCoinStaked := k.GetCustomCoinStaked(ctx, c.Denom)
+	if customCoinStaked.Equal(sdk.ZeroInt()) {
+		customCoin, err := k.coinKeeper.GetCoin(ctx, c.Denom)
+		if err != nil {
+			panic(err)
 		}
+		amountInBaseCoin := formulas.CalculateSaleReturn(customCoin.Volume, customCoin.Reserve, uint(customCoin.CRR), c.Amount)
 
-		baseCoin := k.ToBaseCoin(ctx, delStake)
-		totalStakeInBaseCoin.Add(baseCoin.Amount)
+		return sdk.NewCoin(baseDenom, amountInBaseCoin)
 	}
 
-	return totalStakeInBaseCoin, nil
+	customCoinPrice := k.calculateCustomCoinPrice(ctx, c.Denom, customCoinStaked)
+
+	baseAmount := sdk.NewDecFromInt(c.Amount).Mul(customCoinPrice).TruncateInt()
+
+	return sdk.NewCoin(baseDenom, baseAmount)
 }
 
 func (k Keeper) getSumSubTokensReserve(ctx sdk.Context, id string, subToken []uint32) sdk.Coin {
