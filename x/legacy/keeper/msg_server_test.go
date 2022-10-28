@@ -3,13 +3,15 @@ package keeper_test
 import (
 	"testing"
 
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
+
 	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/evmos/ethermint/crypto/ethsecp256k1"
+	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
 var (
@@ -46,6 +48,19 @@ var (
 		Address: "wallet",
 		Owners:  []string{actualAddress, invalidActualAddress.String()},
 	}
+
+	defaultOperatorAddressSdk = sdk.ValAddress([]byte{1, 2, 3})
+	defaultOperatorAddress    = "dxvaloper1aaa"
+
+	defaultValidatorBefore = validatortypes.Validator{
+		OperatorAddress: defaultOperatorAddress,
+		RewardAddress:   oldAddress,
+	}
+	defaultValidatorAfter = validatortypes.Validator{
+		OperatorAddress: defaultOperatorAddress,
+		RewardAddress:   actualAddress,
+	}
+	defaultRewards = sdk.NewCoins(sdk.NewCoin("test1", sdk.NewInt(100)))
 )
 
 func (s *KeeperTestSuite) TestMsgReturnLegacy() {

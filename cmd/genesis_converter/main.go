@@ -244,18 +244,9 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord, injectLeg
 			}
 		}
 	}
-	// legacy records
-	var records []LegacyRecordNew
-	for _, v := range legacyRecords.data {
-		if v.Coins.Len() == 0 && len(v.NFTs) == 0 && len(v.Wallets) == 0 {
-			continue
-		}
-		records = append(records, *v)
-	}
-	gsNew.AppState.Legacy.LegacyRecords = records
 	// validators
 	gsNew.AppState.Validator.Validators, err =
-		convertValidators(gsOld.AppState.Validator.Validators, addrTable)
+		convertValidators(gsOld.AppState.Validator.Validators, addrTable, legacyRecords)
 	if err != nil {
 		return GenesisNew{}, Statistic{}, err
 	}
@@ -279,6 +270,16 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord, injectLeg
 	for _, pwr := range gsNew.AppState.Validator.LastValidatorPowers {
 		gsNew.AppState.Validator.LastTotalPower += pwr.Power
 	}
+	// legacy records
+	var records []LegacyRecordNew
+	for _, v := range legacyRecords.data {
+		if v.Coins.Len() == 0 && len(v.NFTs) == 0 && len(v.Wallets) == 0 {
+			continue
+		}
+		records = append(records, *v)
+	}
+	gsNew.AppState.Legacy.LegacyRecords = records
+
 	//////////////////////////////////////////
 	// validate NFT subtokens
 	/*

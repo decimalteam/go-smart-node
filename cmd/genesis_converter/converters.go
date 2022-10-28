@@ -383,10 +383,10 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 	return collectionsNew, nil
 }
 
-func convertValidators(valsOld []ValidatorOld, addrTable *AddressTable) ([]ValidatorNew, error) {
+func convertValidators(valsOld []ValidatorOld, addrTable *AddressTable, legacyRecords *LegacyRecords) ([]ValidatorNew, error) {
 	var result []ValidatorNew
 	for _, valOld := range valsOld {
-		valNew, err := ValidatorO2N(valOld, addrTable)
+		valNew, err := ValidatorO2N(valOld, addrTable, legacyRecords)
 		if err != nil {
 			return []ValidatorNew{}, err
 		}

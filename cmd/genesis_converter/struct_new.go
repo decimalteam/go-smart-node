@@ -193,10 +193,11 @@ func FullCoinO2N(coin FullCoinOld, addrTable *AddressTable) FullCoinNew {
 // Legacy
 // /////////////////////////
 type LegacyRecordNew struct {
-	Address string    `json:"legacy_address"`
-	Coins   sdk.Coins `json:"coins"`
-	NFTs    []string  `json:"nfts"`
-	Wallets []string  `json:"wallets"`
+	Address    string    `json:"legacy_address"`
+	Coins      sdk.Coins `json:"coins"`
+	NFTs       []string  `json:"nfts"`
+	Wallets    []string  `json:"wallets"`
+	Validators []string  `json:"validators"`
 }
 
 type NFTRecord struct {
@@ -236,6 +237,15 @@ func (rs *LegacyRecords) AddWallet(address string, wallet string) {
 		rec = &LegacyRecordNew{Address: address}
 	}
 	rec.Wallets = append(rec.Wallets, wallet)
+	rs.data[address] = rec
+}
+
+func (rs *LegacyRecords) AddValidator(address string, validator string) {
+	rec, ok := rs.data[address]
+	if !ok {
+		rec = &LegacyRecordNew{Address: address}
+	}
+	rec.Validators = append(rec.Validators, validator)
 	rs.data[address] = rec
 }
 
@@ -359,10 +369,15 @@ type ValidatorNew struct {
 	UnbondingTime   string `json:"unbonding_time"`
 }
 
-func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable) (ValidatorNew, error) {
+func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable, legacyRecords *LegacyRecords) (ValidatorNew, error) {
 	var result ValidatorNew
 	result.OperatorAddress = valOld.ValAddress
 	newRewardAdr := addrTable.GetAddress(valOld.RewardAddress)
+	if newRewardAdr == "" {
+		// back to old reward address
+		legacyRecords.AddValidator(valOld.RewardAddress, valOld.ValAddress)
+		newRewardAdr = valOld.RewardAddress
+	}
 	result.RewardAddress = newRewardAdr
 	// pubkey
 	result.ConsensusPubKey.Type = "/cosmos.crypto.ed25519.PubKey"

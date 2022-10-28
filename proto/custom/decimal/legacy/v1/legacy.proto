@@ -25,4 +25,6 @@ message Record {
   repeated string wallets = 3;
   // nfts defines list of token ids to be returned
   repeated string nfts = 4 [ (gogoproto.customname) = "NFTs" ];
+  // validators defines complete list of validators with reward address = legacy address.
+  repeated string validators = 5;
 }
