@@ -18,10 +18,11 @@ func TestName(t *testing.T) {
 	msg := types.MsgSoftwareUpgrade{
 		Authority: "dx1y7sex8yvrazyd8pljjxvnvpndaavn99tjd3ppm",
 		Plan: types.Plan{
-			//Name: "https://devnet-dsc-repo.decimalchain.com/50701",
-			Name:   "http://127.0.0.1:8080/50",
-			Height: 50,
-			Info:   `{"darwin":["e277359d00df49bd9284c896f4de8826c4e298296cdc9623705bffc35186ab6b"]}`,
+			Name: "https://devnet-dsc-repo.decimalchain.com/63261",
+			//Name:   "http://127.0.0.1:8080/50",
+			Height: 63261,
+			Info:   `{"linux/centos/7":["89440dac66fcb9e590a9d7bb8752b61f006d46c21a47adc24d67711b8e09b53b"],"linux/centos/8":["9b340bbcc38571d69c9b8c1a37b296c337e2cdf69ce5429f5d4d8a700b63e0c8"],"linux/debian/10":["7292b25d82e0e938eab84a0d6d5b3415cebf87568bc73d87f99bc0c996f1b950"],"linux/debian/11":["3ff725aeee6c59c39954e8b9a391546cae2c57d35b17c10145b094f16c1dab47"],"linux/debian/9":["0755d0bbd9dfa77d7b34181e4d977bee5ea0430c07a60dee9970a403ff9cd93b"],"linux/ol/8.5":["0dca000b55988d73044a3d887f6153ac16268b4ad4863820d0bf8f4a0255c94f"],"linux/ubuntu/16.04":["7fa6659194a04416e2f0d8a644ae859453f68a8800556dc3db36ca02e98baa66"],"linux/ubuntu/18.04":["0f3c0dbc0398381ff6b12c00102967edc5c049bbdeda249f2af551a9da3c4ac4"],"linux/ubuntu/20.04":["814ee010d89f202a3d32279c1cdaf3173699f3227ef8b9d23d4ba421be4396c7"],"linux/ubuntu/22.04":["ae0f16711451fba5201e3af9a394b109ce7447d1ced2ae5be550147399267132"]}`,
+			//Info:   `{"darwin":["8f02709b53f523c413391f4970595c098bba62e04b00c5d6c86c6e25b0d1d851"]}`,
 		},
 	}
 

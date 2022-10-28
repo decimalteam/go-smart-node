@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
@@ -92,6 +93,7 @@ func (k Keeper) BeforeValidatorSlashed(ctx sdk.Context, valAddr sdk.ValAddress, 
 // Validator Module Hooks //////////////////////////////
 ////////////////////////////////////////////////////////
 
+// BeforeUpdateDelegation before update, subtruct all delegation  staked custom coins
 func (k Keeper) BeforeUpdateDelegation(ctx sdk.Context, del types.Delegation, denom string) {
 	switch del.GetStake().GetType() {
 	case types.StakeType_Coin:
@@ -103,38 +105,20 @@ func (k Keeper) BeforeUpdateDelegation(ctx sdk.Context, del types.Delegation, de
 		ccs = ccs.Sub(del.GetStake().GetStake().Amount)
 		k.SetCustomCoinStaked(ctx, denom, ccs)
 	case types.StakeType_NFT:
-		sum := k.getSumSubTokensReserve(ctx, denom, del.GetStake().GetSubTokenIDs())
-		if sum.Denom == k.BaseDenom(ctx) {
-			return
-		}
-		ccs := k.GetCustomCoinStaked(ctx, sum.Denom)
-		ccs = ccs.Sub(sum.Amount)
-		k.SetCustomCoinStaked(ctx, sum.Denom, ccs)
-	}
-}
-
-func (k Keeper) AfterUpdateDelegation(ctx sdk.Context, delegation types.Delegation) {
-	var denom string
-	var amount = sdk.ZeroInt()
-	switch delegation.GetStake().GetType() {
-	case types.StakeType_Coin:
-		stake := delegation.GetStake().GetStake()
-
-		denom = stake.Denom
-		if denom == k.BaseDenom(ctx) {
-			return
-		}
-
-		amount = stake.Amount
-		//amount = k.ToBaseCoin(ctx, stake).Amount
-	case types.StakeType_NFT:
-		reserve := k.getSumSubTokensReserve(ctx, delegation.GetStake().GetID(), delegation.GetStake().GetSubTokenIDs())
+		reserve := del.GetStake().GetStake()
 		if reserve.Denom == k.BaseDenom(ctx) {
 			return
 		}
+		ccs := k.GetCustomCoinStaked(ctx, reserve.Denom)
+		ccs = ccs.Sub(reserve.Amount)
+		k.SetCustomCoinStaked(ctx, reserve.Denom, ccs)
+	}
+}
 
-		denom = reserve.Denom
-		amount = reserve.Amount //k.ToBaseCoin(ctx, reserve).Amount
+// AfterUpdateDelegation after update sum delegation staked custom coin
+func (k Keeper) AfterUpdateDelegation(ctx sdk.Context, denom string, amount sdkmath.Int) {
+	if denom == k.BaseDenom(ctx) {
+		return
 	}
 
 	ccs := k.GetCustomCoinStaked(ctx, denom)
