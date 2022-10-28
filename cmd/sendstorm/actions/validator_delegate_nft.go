@@ -6,12 +6,13 @@ import (
 
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
+	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type DelegateNFTGenerator struct {
 	knownNFT        []*dscApi.NFTToken
-	knownValidators []string
+	knownValidators []dscApi.Validator
 	rnd             *rand.Rand
 }
 
@@ -44,7 +45,7 @@ func (gg *DelegateNFTGenerator) Generate() Action {
 	return &DelegateNFTAction{
 		token:            token,
 		subToken:         sub,
-		validatorAddress: RandomChoice(gg.rnd, gg.knownValidators),
+		validatorAddress: RandomChoice(gg.rnd, gg.knownValidators).OperatorAddress,
 	}
 }
 
@@ -68,9 +69,14 @@ func (ac *DelegateNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *
 		return nil, err
 	}
 
-	// TODO
+	valAdr, err := sdk.ValAddressFromBech32(ac.validatorAddress)
+	if err != nil {
+		return nil, err
+	}
 
-	return feeConfig.MakeTransaction(sa, nil)
+	msg := dscTx.NewMsgDelegateNFT(sa.Account().SdkAddress(), valAdr, ac.token.ID, []uint32{ac.subToken.ID})
+
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (ac *DelegateNFTAction) String() string {

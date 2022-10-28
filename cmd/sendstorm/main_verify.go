@@ -63,3 +63,42 @@ func cmdVerify() *cobra.Command {
 
 	return cmd
 }
+
+func cmdValidators() *cobra.Command {
+	var cmd = &cobra.Command{
+		Use:   "validators",
+		Short: "Show validators info",
+		Run: func(cmd *cobra.Command, args []string) {
+			//
+			err := cmd.Flags().Parse(args)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			reactor := stormReactor{}
+			// init
+			err = reactor.initApi(cmd.Flags())
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			// validators info
+			vals, err := reactor.api.Validators()
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			for _, val := range vals {
+				dels, err := reactor.api.ValidatorDelegations(val.OperatorAddress)
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+				fmt.Printf("moniker: %s, status: %d, online: %v, jailed: %v, stake: %d, rewards: %s, delegation: %d\n",
+					val.Description.Moniker, val.Status, val.Online, val.Jailed, val.Stake, val.Rewards, len(dels))
+			}
+		},
+	}
+
+	return cmd
+}

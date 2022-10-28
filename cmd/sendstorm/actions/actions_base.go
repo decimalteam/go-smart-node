@@ -2,10 +2,12 @@ package actions
 
 import (
 	"fmt"
+	"math/rand"
 	"time"
 
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -50,19 +52,10 @@ type UpdateInfo struct {
 	MultisigWallets      []dscApi.MultisigWallet
 	MultisigTransactions []dscApi.MultisigTransactionInfo
 	MultisigBalances     map[string]sdk.Coins
-	Validators           []string
-	Stakes               []GenericStake
-	NFTStakes            []NFTStake
-}
-
-type GenericStake struct {
-	Delegator string
-	Validator string
-	sdk.Coin
-}
-type NFTStake struct {
-	Delegator string
-	Validator string
+	Validators           []dscApi.Validator
+	Delegations          []dscApi.Delegation
+	Redelegations        []dscApi.Redelegation
+	Undelegations        []dscApi.Undelegation
 }
 
 type NFTSubTokenKey struct {
@@ -100,4 +93,13 @@ func (t *TPSLimiter) CanMake() bool {
 
 func (t *TPSLimiter) Limit() int64 {
 	return t.limit
+}
+
+// extract part of stake for un/redelegation
+func ExtractPartCoin(rnd *rand.Rand, coin sdk.Coin) sdk.Coin {
+	amount := helpers.WeiToFinney(coin.Amount).Int64()
+	if amount == 0 {
+		return sdk.NewCoin(coin.Denom, sdk.ZeroInt())
+	}
+	return sdk.NewCoin(coin.Denom, helpers.FinneyToWei(sdk.NewInt(RandomRange(rnd, 1, amount+1))))
 }
