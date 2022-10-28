@@ -89,8 +89,13 @@ func cmdValidators() *cobra.Command {
 				return
 			}
 			for _, val := range vals {
-				fmt.Printf("moniker: %s, status: %d, online: %v, jailed: %v, stake: %d, rewards: %s\n",
-					val.Description.Moniker, val.Status, val.Online, val.Jailed, val.Stake, val.Rewards)
+				dels, err := reactor.api.ValidatorDelegations(val.OperatorAddress)
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+				fmt.Printf("moniker: %s, status: %d, online: %v, jailed: %v, stake: %d, rewards: %s, delegation: %d\n",
+					val.Description.Moniker, val.Status, val.Online, val.Jailed, val.Stake, val.Rewards, len(dels))
 			}
 		},
 	}
