@@ -77,6 +77,10 @@ func (ar *ActionReactor) Add(generatorName string, weight int64) error {
 		wag.AG = NewRedelegateGenerator()
 	case "RedelegateNFT":
 		wag.AG = NewRedelegateNFTGenerator()
+	case "CancelUndelegation":
+		wag.AG = NewCancelUndelegationGenerator()
+	case "CancelUndelegationNFT":
+		wag.AG = NewCancelUndelegationNFTGenerator()
 	}
 	if wag.AG == nil {
 		return fmt.Errorf("%s: unknown generator name", generatorName)

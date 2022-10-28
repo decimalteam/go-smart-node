@@ -258,6 +258,15 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 		}
 		ui.Delegations = append(ui.Delegations, dels...)
 	}
+	// undelegations
+	for _, val := range ui.Validators {
+		undels, err := reactor.api.ValidatorUndelegations(val.OperatorAddress)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		ui.Undelegations = append(ui.Undelegations, undels...)
+	}
 
 	reactor.actionReactor.Update(ui)
 }

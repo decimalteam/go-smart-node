@@ -6,20 +6,22 @@ import (
 
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
+	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type RedelegateNFTGenerator struct {
-	knownNFTStakes  []NFTStake
-	knownValidators []dscApi.Validator
-	rnd             *rand.Rand
+	knownDelegations []dscApi.Delegation
+	knownValidators  []dscApi.Validator
+	rnd              *rand.Rand
 }
 
 type RedelegateNFTAction struct {
-	token                dscApi.NFTToken
 	delegatorAddress     string
 	fromValidatorAddress string
 	toValidatorAddress   string
+	tokenID              string
+	subTokenIDs          []uint32
 }
 
 func NewRedelegateNFTGenerator() *RedelegateNFTGenerator {
@@ -29,18 +31,31 @@ func NewRedelegateNFTGenerator() *RedelegateNFTGenerator {
 }
 
 func (gg *RedelegateNFTGenerator) Update(ui UpdateInfo) {
-	gg.knownNFTStakes = ui.NFTStakes
+	gg.knownDelegations = ui.Delegations
 	gg.knownValidators = ui.Validators
 }
 
 func (gg *RedelegateNFTGenerator) Generate() Action {
-	if len(gg.knownNFTStakes) == 0 {
+	if len(gg.knownDelegations) == 0 {
 		return &EmptyAction{}
 	}
 	if len(gg.knownValidators) < 2 {
 		return &EmptyAction{}
 	}
-	stake := RandomChoice(gg.rnd, gg.knownNFTStakes)
+	var nftDelegations = make([]dscApi.Delegation, 0)
+	for _, del := range gg.knownDelegations {
+		if del.Stake.Type == dscApi.StakeType_NFT {
+			nftDelegations = append(nftDelegations, del)
+		}
+	}
+	if len(nftDelegations) == 0 {
+		return &EmptyAction{}
+	}
+	stake := RandomChoice(gg.rnd, nftDelegations)
+	subs := RandomSublist(gg.rnd, stake.Stake.SubTokenIDs)
+	if len(subs) == 0 {
+		return &EmptyAction{}
+	}
 	toValidator := ""
 	for i := 0; i < 10; i++ {
 		toValidator = RandomChoice(gg.rnd, gg.knownValidators).OperatorAddress
@@ -55,6 +70,8 @@ func (gg *RedelegateNFTGenerator) Generate() Action {
 		delegatorAddress:     stake.Delegator,
 		fromValidatorAddress: stake.Validator,
 		toValidatorAddress:   toValidator,
+		tokenID:              stake.Stake.ID,
+		subTokenIDs:          subs,
 	}
 }
 
@@ -78,9 +95,18 @@ func (ac *RedelegateNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig
 		return nil, err
 	}
 
-	// TODO
+	valSrc, err := sdk.ValAddressFromBech32(ac.fromValidatorAddress)
+	if err != nil {
+		return nil, err
+	}
+	valDst, err := sdk.ValAddressFromBech32(ac.toValidatorAddress)
+	if err != nil {
+		return nil, err
+	}
 
-	return feeConfig.MakeTransaction(sa, nil)
+	msg := dscTx.NewMsgRedelegateNFT(sa.Account().SdkAddress(), valSrc, valDst, ac.tokenID, ac.subTokenIDs)
+
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (ac *RedelegateNFTAction) String() string {

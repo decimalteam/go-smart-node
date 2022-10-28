@@ -7,9 +7,21 @@ import (
 	query "github.com/cosmos/cosmos-sdk/types/query"
 )
 
-type Validator = validatortypes.Validator
-type Delegation = validatortypes.Delegation
-type Stake = validatortypes.Stake
+type (
+	Validator    = validatortypes.Validator
+	Delegation   = validatortypes.Delegation
+	Redelegation = validatortypes.Redelegation
+	Undelegation = validatortypes.Undelegation
+	Stake        = validatortypes.Stake
+	StakeType    = validatortypes.StakeType
+)
+
+const (
+	// COIN defines the type for stakes in coin.
+	StakeType_Coin StakeType = validatortypes.StakeType_Coin
+	// NFT defines the type for stakes in NFT.
+	StakeType_NFT StakeType = validatortypes.StakeType_NFT
+)
 
 func (api *API) Validators() ([]Validator, error) {
 	client := validatortypes.NewQueryClient(api.grpcClient)
@@ -59,4 +71,52 @@ func (api *API) ValidatorDelegations(validator string) ([]Delegation, error) {
 		req.Pagination.Key = res.Pagination.NextKey
 	}
 	return delegations, nil
+}
+
+func (api *API) ValidatorRedelegations(validator string) ([]Redelegation, error) {
+	client := validatortypes.NewQueryClient(api.grpcClient)
+	redelegations := make([]Redelegation, 0)
+	req := &validatortypes.QueryValidatorRedelegationsRequest{
+		Validator:  validator,
+		Pagination: &query.PageRequest{Limit: queryLimit},
+	}
+	for {
+		res, err := client.ValidatorRedelegations(
+			context.Background(),
+			req,
+		)
+		if err != nil {
+			return []Redelegation{}, err
+		}
+		redelegations = append(redelegations, res.Redelegations...)
+		if len(res.Pagination.NextKey) == 0 {
+			break
+		}
+		req.Pagination.Key = res.Pagination.NextKey
+	}
+	return redelegations, nil
+}
+
+func (api *API) ValidatorUndelegations(validator string) ([]Undelegation, error) {
+	client := validatortypes.NewQueryClient(api.grpcClient)
+	undelegations := make([]Undelegation, 0)
+	req := &validatortypes.QueryValidatorUndelegationsRequest{
+		Validator:  validator,
+		Pagination: &query.PageRequest{Limit: queryLimit},
+	}
+	for {
+		res, err := client.ValidatorUndelegations(
+			context.Background(),
+			req,
+		)
+		if err != nil {
+			return []Undelegation{}, err
+		}
+		undelegations = append(undelegations, res.Undelegations...)
+		if len(res.Pagination.NextKey) == 0 {
+			break
+		}
+		req.Pagination.Key = res.Pagination.NextKey
+	}
+	return undelegations, nil
 }
