@@ -83,7 +83,6 @@ func (k msgServer) CreateValidator(goCtx context.Context, msg *types.MsgCreateVa
 
 	k.SetValidator(ctx, validator)
 	k.SetValidatorByConsAddr(ctx, validator)
-	// TODO: calculate power
 	k.SetNewValidatorByPowerIndex(ctx, validator)
 
 	// call the after-creation hook

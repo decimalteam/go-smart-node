@@ -66,7 +66,7 @@ func (ar *ActionReactor) Add(generatorName string, weight int64) error {
 	case "SetOfflineValidator":
 		wag.AG = NewSetOfflineValidatorGenerator()
 	case "Delegate":
-		wag.AG = NewDelegateGenerator(1, 100)
+		wag.AG = NewDelegateGenerator(100, 10_000)
 	case "DelegateNFT":
 		wag.AG = NewDelegateNFTGenerator()
 	case "Undelegate":
@@ -81,6 +81,10 @@ func (ar *ActionReactor) Add(generatorName string, weight int64) error {
 		wag.AG = NewCancelUndelegationGenerator()
 	case "CancelUndelegationNFT":
 		wag.AG = NewCancelUndelegationNFTGenerator()
+	case "CancelRedelegation":
+		wag.AG = NewCancelRedelegationGenerator()
+	case "CancelRedelegationNFT":
+		wag.AG = NewCancelRedelegationNFTGenerator()
 	}
 	if wag.AG == nil {
 		return fmt.Errorf("%s: unknown generator name", generatorName)

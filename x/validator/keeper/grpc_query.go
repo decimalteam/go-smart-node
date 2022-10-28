@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	sdkmath "cosmossdk.io/math"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -41,6 +42,16 @@ func (k Querier) Validators(c context.Context, req *types.QueryValidatorsRequest
 	validators, pageRes, err := query.GenericFilteredPaginate(k.cdc, valStore, req.Pagination, func(key []byte, val *types.Validator) (*types.Validator, error) {
 		if req.Status != "" && !strings.EqualFold(val.GetStatus().String(), req.Status) {
 			return nil, nil
+		}
+		rs, err := k.GetValidatorRS(ctx, val.GetOperator())
+		if err != nil {
+			val.Rewards = sdkmath.ZeroInt()
+			val.TotalRewards = sdkmath.ZeroInt()
+			val.Stake = 0
+		} else {
+			val.Rewards = rs.Rewards
+			val.TotalRewards = rs.TotalRewards
+			val.Stake = rs.Stake
 		}
 
 		return val, nil
