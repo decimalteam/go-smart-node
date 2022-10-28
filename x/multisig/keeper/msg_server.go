@@ -179,7 +179,7 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 	}
 
 	// Append the signature to the multisig transaction
-	k.SetUniversalSign(ctx, msg.ID, msg.Sender)
+	k.SetSign(ctx, msg.ID, msg.Sender)
 
 	confirmations += senderWeight
 
