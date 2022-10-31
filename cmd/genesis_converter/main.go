@@ -63,7 +63,9 @@ func main() {
 		os.Exit(1)
 	}
 	copyParams(&gsNew, gsSource)
-	fixAfterCopy(&gsNew)
+	fixBondedNotBondedPools(&gsNew)
+	// fixNFTPool(&gsNew)
+	fixCoinVolumes(&gsNew)
 	writeGenesisNew(pathGenesisResult, &gsNew)
 	exportNFTDublicates(pathExportNFTDublicates, nftDublicatesRecords)
 }

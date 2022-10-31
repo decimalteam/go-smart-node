@@ -186,7 +186,7 @@ func verifyPools(balances []BalanceNew, validators []ValidatorNew, delegations [
 					b1 := bal.Coins.AmountOf(denom)
 					b2 := bondedCoins.AmountOf(denom)
 					if !b1.Equal(b2) {
-						fmt.Printf("different bonded pool: (%s) %s <-> %s\n", denom, b1, b2)
+						fmt.Printf("different bonded pool (module account <-> stakes): (%s) %s <-> %s\n", denom, b1, b2)
 					}
 				}
 			}
@@ -204,7 +204,7 @@ func verifyPools(balances []BalanceNew, validators []ValidatorNew, delegations [
 					b1 := bal.Coins.AmountOf(denom)
 					b2 := notBondedCoins.AmountOf(denom)
 					if !b1.Equal(b2) {
-						fmt.Printf("different not bonded pool: (%s) %s <-> %s\n", denom, b1, b2)
+						fmt.Printf("different not bonded pool (module account <-> stakes): (%s) %s <-> %s\n", denom, b1, b2)
 					}
 				}
 			}

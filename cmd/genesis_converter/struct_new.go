@@ -391,11 +391,18 @@ func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable, legacyRecords *L
 	}
 	result.ConsensusPubKey.Key = pk.Bytes()
 	// description
-	result.Description.Details = valOld.Description.Details
-	result.Description.Identity = valOld.Description.Identity
-	result.Description.Moniker = valOld.Description.Moniker
-	result.Description.SecurityContact = valOld.Description.SecurityContact
-	result.Description.Website = valOld.Description.Website
+	/*
+		MaxMonikerLength         = 70
+		MaxIdentityLength        = 3000
+		MaxWebsiteLength         = 140
+		MaxSecurityContactLength = 140
+		MaxDetailsLength         = 280
+	*/
+	result.Description.Details = cutLongString(valOld.Description.Details, 280)
+	result.Description.Identity = cutLongString(valOld.Description.Identity, 3000)
+	result.Description.Moniker = cutLongString(valOld.Description.Moniker, 70)
+	result.Description.SecurityContact = cutLongString(valOld.Description.SecurityContact, 140)
+	result.Description.Website = cutLongString(valOld.Description.Website, 140)
 	//
 	result.Commission = valOld.Commission
 	/*
@@ -420,6 +427,13 @@ func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable, legacyRecords *L
 	result.UnbondingTime = valOld.UnbondingCompletionTime
 
 	return result, nil
+}
+
+func cutLongString(s string, maxLen int) string {
+	if len(s) <= maxLen {
+		return s
+	}
+	return s[:maxLen]
 }
 
 type DelegationNew struct {

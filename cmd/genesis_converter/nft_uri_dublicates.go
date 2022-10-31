@@ -41,7 +41,7 @@ func extractNFTDublicates(colls []CollectionNew) []nftDublicatesRecord {
 
 func generateReplacements(uriPrefix string, records *[]nftDublicatesRecord) {
 	for i := range *records {
-		(*records)[i].NewURI = randomSlug()
+		(*records)[i].NewURI = uriPrefix + randomSlug()
 	}
 }
 

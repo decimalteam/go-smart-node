@@ -279,10 +279,12 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 	for _, colOld := range collectionsOld {
 		for _, nftOld := range colOld.NFT {
 			// check URI uniq
-			if tokenURIs[nftOld.TokenURI] {
-				fmt.Printf("found yet another token URI: %s\n", nftOld.TokenURI)
-				continue
-			}
+			/*
+				if tokenURIs[nftOld.TokenURI] {
+					fmt.Printf("found yet another token URI: %s\n", nftOld.TokenURI)
+					continue
+				}
+			*/
 			tokenURIs[nftOld.TokenURI] = true
 
 			creatorAddress := addrTable.GetAddress(nftOld.Creator)
