@@ -1079,7 +1079,13 @@ func (k Keeper) Unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValA
 
 	// calculate validator new stake
 	validator.Stake -= stakePower
+	if validator.Stake < 0 {
+		validator.Stake = 0
+	}
 	rs.Stake -= stakePower
+	if rs.Stake < 0 {
+		rs.Stake = 0
+	}
 
 	// write index
 	k.SetValidatorRS(ctx, valAddr, rs)
