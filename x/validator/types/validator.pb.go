@@ -169,6 +169,7 @@ func (m *Validator) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Validator proto.InternalMessageInfo
 
+// ValidatorRS defines internal object containing dynamic validator's info like rewards or stakes.
 type ValidatorRS struct {
 	// rewards defines accumulated amount of collected rewards that are not yet distributed to a delegators.
 	Rewards cosmossdk_io_math.Int `protobuf:"bytes,1,opt,name=rewards,proto3,customtype=cosmossdk.io/math.Int" json:"rewards"`

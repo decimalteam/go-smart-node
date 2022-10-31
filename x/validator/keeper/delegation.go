@@ -682,7 +682,6 @@ func (k Keeper) Delegate(
 		//k.BeforeUpdateDelegation(ctx, delegation, denom)
 		delegation = types.NewDelegation(delegator, validator.GetOperator(), stake)
 	} else {
-		k.BeforeUpdateDelegation(ctx, delegation, stake.ID)
 		delegation.Stake, err = delegation.Stake.Add(stake)
 		if err != nil {
 			return err
@@ -692,13 +691,6 @@ func (k Keeper) Delegate(
 	if err != nil {
 		return err
 	}
-	// call the appropriate hook if present
-	//if delegationFound {
-	//k.BeforeUpdateDelegation(ctx, delegation, stake.ID)
-	//} else {
-	// nothing now
-	//err = k.BeforeDelegationCreated(ctx, delegator, validator.GetOperator())
-	//}
 
 	// 3. transfer coin/nft
 	notBondedPool := k.GetNotBondedPool(ctx).GetAddress()
@@ -751,7 +743,7 @@ func (k Keeper) Delegate(
 	}
 
 	// calculate validator new stake
-	delStake := k.baseCoinFromStake(ctx, stake)
+	delStake := k.ToBaseCoin(ctx, stake.GetStake())
 	power := TokensToConsensusPower(delStake.Amount)
 	rs.Stake += power
 	validator.Stake += power
@@ -760,7 +752,7 @@ func (k Keeper) Delegate(
 	k.SetValidatorRS(ctx, valAddress, rs)
 	k.SetValidatorByPowerIndex(ctx, validator)
 
-	k.AfterUpdateDelegation(ctx, delegation)
+	k.AfterUpdateDelegation(ctx, stake.GetStake().Denom, stake.GetStake().Amount)
 	return nil
 }
 
@@ -1020,22 +1012,22 @@ func (k Keeper) CompleteRedelegation(
 				}
 			}
 
-			err = ctx.EventManager().EmitTypedEvent(&types.EventRedelegateComplete{
-				Delegator:    delegator.String(),
-				ValidatorSrc: validatorSrc.String(),
-				ValidatorDst: validatorDst.String(),
-				Stake:        stake,
-			})
-			if err != nil {
-				return err
-			}
-
 			// delegate
 			validator, found := k.GetValidator(ctx, validatorDst)
 			if !found {
 				return fmt.Errorf("not found validator %s", validatorDst)
 			}
 			err := k.Delegate(ctx, delegator, validator, entry.Stake)
+			if err != nil {
+				return err
+			}
+
+			err = ctx.EventManager().EmitTypedEvent(&types.EventRedelegateComplete{
+				Delegator:    delegator.String(),
+				ValidatorSrc: validatorSrc.String(),
+				ValidatorDst: validatorDst.String(),
+				Stake:        stake,
+			})
 			if err != nil {
 				return err
 			}
@@ -1059,7 +1051,7 @@ func (k Keeper) Unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValA
 		return types.ErrNoDelegatorForAddress
 	}
 
-	k.BeforeUpdateDelegation(ctx, delegation, stake.ID)
+	//k.BeforeUpdateDelegation(ctx, delegation, stake.ID)
 
 	// get validator
 	validator, found := k.GetValidator(ctx, valAddr)
@@ -1069,14 +1061,13 @@ func (k Keeper) Unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValA
 
 	// set delegation new stake
 	delegation.Stake = remainStake
-	if k.baseCoinFromStake(ctx, remainStake).IsZero() {
+	if k.ToBaseCoin(ctx, remainStake.GetStake()).IsZero() {
 		err = k.RemoveDelegation(ctx, delegation)
 	} else {
 		k.SetDelegation(ctx, delegation)
 	}
 
-	k.AfterUpdateDelegation(ctx, delegation)
-	stakeBaseCoin := k.baseCoinFromStake(ctx, stake)
+	stakeBaseCoin := k.ToBaseCoin(ctx, stake.GetStake())
 	stakePower := TokensToConsensusPower(stakeBaseCoin.Amount)
 
 	// clean index
@@ -1093,6 +1084,8 @@ func (k Keeper) Unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValA
 	// write index
 	k.SetValidatorRS(ctx, valAddr, rs)
 	k.SetValidatorByPowerIndex(ctx, validator)
+
+	k.AfterUpdateDelegation(ctx, stake.GetStake().Denom, stake.GetStake().Amount.Neg())
 
 	return
 }
@@ -1135,24 +1128,6 @@ func (k Keeper) CalculateRemainStake(
 	return remainStake, nil
 }
 
-// get base coin from stake struct
-func (k Keeper) baseCoinFromStake(ctx sdk.Context, stake types.Stake) sdk.Coin {
-	base := sdk.NewCoin(k.BaseDenom(ctx), sdk.ZeroInt())
-
-	switch stake.GetType() {
-	case types.StakeType_Coin:
-		base = k.ToBaseCoin(ctx, stake.GetStake())
-	case types.StakeType_NFT:
-		if stake.SubTokenIDs == nil || len(stake.SubTokenIDs) == 0 {
-			return sdk.Coin{Amount: sdk.ZeroInt()}
-		}
-		reserve := k.getSumSubTokensReserve(ctx, stake.GetID(), stake.GetSubTokenIDs())
-		base = k.ToBaseCoin(ctx, reserve)
-	}
-
-	return base
-}
-
 // getBeginInfo returns the completion time and height of a redelegation, along with
 // a boolean signaling if the redelegation is complete based on the source validator.
 func (k Keeper) getBeginInfo(ctx sdk.Context, validatorSrc sdk.ValAddress) (completionTime time.Time, height int64, completeNow bool) {
@@ -1162,7 +1137,7 @@ func (k Keeper) getBeginInfo(ctx sdk.Context, validatorSrc sdk.ValAddress) (comp
 	switch {
 	case !found || validator.IsBonded():
 		// the longest wait - just unbonding period from now
-		completionTime = ctx.BlockHeader().Time.Add(k.UndelegationTime(ctx))
+		completionTime = ctx.BlockHeader().Time.Add(k.RedelegationTime(ctx))
 		height = ctx.BlockHeight()
 
 		return completionTime, height, false

@@ -77,7 +77,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 			Delegators:  nil,
 		}
 
-		totalStake, err := k.CalculateTotalPowerWithDelegationsAndPrices(ctx, val, delByValidator[validator.String()], customCoinPrices)
+		totalStake, err := k.CalculateTotalPowerWithDelegationsAndPrices(ctx, val.GetOperator(), delByValidator[validator.String()], customCoinPrices)
 		if err != nil {
 			return err
 		}
@@ -87,9 +87,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 			reward := sdk.NewIntFromBigInt(rewards.BigInt())
 			// calculate share
 			delStake := del.GetStake().GetStake()
-			if del.Stake.SubTokenIDs != nil && len(del.Stake.SubTokenIDs) != 0 {
-				delStake = k.getSumSubTokensReserve(ctx, del.GetStake().GetID(), del.GetStake().GetSubTokenIDs())
-			}
+
 			baseAmount := delStake.Amount
 			if delStake.Denom != k.BaseDenom(ctx) {
 				delCoinPrice, ok := customCoinPrices[delStake.Denom]
@@ -98,6 +96,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 				}
 				baseAmount = sdk.NewDecFromInt(delStake.Amount).Mul(delCoinPrice).TruncateInt()
 			}
+
 			reward = reward.Mul(baseAmount).Quo(totalStake)
 			if reward.LT(sdk.NewInt(1)) {
 				continue
@@ -122,6 +121,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 			}
 			valEvent.Delegators = append(valEvent.Delegators, delEvent)
 		}
+		k.DeleteValidatorByPowerIndex(ctx, val)
 		// update validator rewards
 		valRewards, err := k.GetValidatorRS(ctx, validator)
 		if err != nil {
@@ -129,7 +129,10 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 		}
 		valRewards.Rewards = sdk.ZeroInt()
 		valRewards.Stake = TokensToConsensusPower(totalStake)
+		val.Stake = TokensToConsensusPower(totalStake)
 		k.SetValidatorRS(ctx, validator, valRewards)
+
+		k.SetValidatorByPowerIndex(ctx, val)
 
 		events.Validators = append(events.Validators, valEvent)
 	}
@@ -248,17 +251,24 @@ func (k Keeper) CalculateCustomCoinPrices(ctx sdk.Context, ccs map[string]sdkmat
 	return prices
 }
 
-func (k Keeper) CalculateTotalPowerWithDelegationsAndPrices(ctx sdk.Context, validator types.Validator, delegations types.Delegations, ccs map[string]sdk.Dec) (sdkmath.Int, error) {
+func (k Keeper) calculateCustomCoinPrice(ctx sdk.Context, denom string, staked sdkmath.Int) sdk.Dec {
+	coin, err := k.coinKeeper.GetCoin(ctx, denom)
+	if err != nil {
+		panic(err)
+	}
+
+	allPrice := formulas.CalculateSaleReturn(coin.Volume, coin.Reserve, uint(coin.CRR), staked)
+	return sdk.NewDecFromInt(allPrice).Quo(sdk.NewDecFromInt(staked))
+}
+
+func (k Keeper) CalculateTotalPowerWithDelegationsAndPrices(ctx sdk.Context, validator sdk.ValAddress, delegations types.Delegations, ccp map[string]sdk.Dec) (sdkmath.Int, error) {
 	stakeInBaseCoin := sdk.ZeroInt()
 	for _, del := range delegations {
 		delStake := del.GetStake().GetStake()
-		if del.Stake.SubTokenIDs != nil && len(del.Stake.SubTokenIDs) != 0 {
-			delStake = k.getSumSubTokensReserve(ctx, del.GetStake().GetID(), del.GetStake().GetSubTokenIDs())
-		}
 
 		baseAmount := delStake.Amount
 		if delStake.Denom != k.BaseDenom(ctx) {
-			delCoinPrice, ok := ccs[delStake.Denom]
+			delCoinPrice, ok := ccp[delStake.Denom]
 			if !ok {
 				return stakeInBaseCoin, fmt.Errorf("not found price for custom coin %s, base denom is %s, validator is %s, delegator is %s", delStake.Denom, k.BaseDenom(ctx), validator.String(), del.Delegator)
 			}

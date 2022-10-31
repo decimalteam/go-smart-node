@@ -35,9 +35,12 @@ func (k Keeper) HandleValidatorSignature(ctx sdk.Context, addr cryptotypes.Addre
 	}
 
 	// fetch signing info
-	signInfo, found := k.GetValidatorSigningInfo(ctx, consAddr, height-params.SignedBlocksWindow, height-1)
-	if !found {
-		panic(fmt.Sprintf("Expected signing info for validator %s but not found", consAddr))
+	signInfo := k.GetValidatorSigningInfo(ctx, consAddr, height-params.SignedBlocksWindow, height-1)
+	if signInfo.StartHeight == -1 {
+		logger.Debug("Expected signing info for validator but not found",
+			"validator", consAddr.String(),
+		)
+		return
 	}
 
 	// TODO: grace period
@@ -76,14 +79,10 @@ func (k Keeper) HandleValidatorSignature(ctx sdk.Context, addr cryptotypes.Addre
 			// That's fine since this is just used to filter unbonding delegations & redelegations.
 			distributionHeight := height - sdk.ValidatorUpdateDelay - 1
 
-			// TODO: emit EventSlash
 			k.Slash(ctx, consAddr, distributionHeight, power, params.SlashFractionDowntime)
 			k.Jail(ctx, consAddr)
 
 			//signInfo.JailedUntil = ctx.BlockHeader().Time.Add(k.DowntimeJailDuration(ctx))
-
-			// We need to reset the counter & array so that the validator won't be immediately slashed for downtime upon rebonding.
-			k.DeleteStartHeight(ctx, consAddr)
 
 			logger.Info(
 				"slashing and jailing validator due to liveness fault",
@@ -115,12 +114,12 @@ func (k Keeper) HandleDoubleSign(ctx sdk.Context, addr crypto.Address, infractio
 
 	// fetch the validator public key
 	consAddr := sdk.ConsAddress(addr)
-	validator, found := k.GetValidatorByConsAddr(ctx, consAddr)
+	validator, found := k.GetValidatorByConsAddrDecimal(ctx, consAddr)
 	if !found {
 		panic(fmt.Sprintf("Validator %s not found", consAddr))
 	}
 
-	if validator.IsUnbonded() {
+	if !validator.Online {
 		// Defensive.
 		// Simulation doesn't take unbonding periods into account, and
 		// Tendermint might break this assumption at some point.
@@ -128,9 +127,12 @@ func (k Keeper) HandleDoubleSign(ctx sdk.Context, addr crypto.Address, infractio
 	}
 
 	// fetch the validator signing info
-	signInfo, found := k.GetValidatorSigningInfo(ctx, consAddr, ctx.BlockHeight()-params.SignedBlocksWindow-1, ctx.BlockHeight()-1)
-	if !found {
-		panic(fmt.Sprintf("Expected signing info for validator %s but not found", consAddr))
+	signInfo := k.GetValidatorSigningInfo(ctx, consAddr, ctx.BlockHeight()-params.SignedBlocksWindow-1, ctx.BlockHeight()-1)
+	if signInfo.StartHeight == -1 {
+		logger.Debug("Expected signing info for validator but not found",
+			"validator", consAddr.String(),
+		)
+		return
 	}
 
 	// validator is already tombstoned
@@ -163,7 +165,7 @@ func (k Keeper) HandleDoubleSign(ctx sdk.Context, addr crypto.Address, infractio
 }
 
 // fromHeight must bee less toHeight [fromHeight, toHeight]
-func (k Keeper) GetValidatorSigningInfo(ctx sdk.Context, addr sdk.ConsAddress, fromHeight, toHeight int64) (types.ValidatorSigningInfo, bool) {
+func (k Keeper) GetValidatorSigningInfo(ctx sdk.Context, addr sdk.ConsAddress, fromHeight, toHeight int64) types.ValidatorSigningInfo {
 	store := ctx.KVStore(k.storeKey)
 	var result types.ValidatorSigningInfo
 	// get ValidatorSigningInfo
@@ -190,7 +192,7 @@ func (k Keeper) GetValidatorSigningInfo(ctx sdk.Context, addr sdk.ConsAddress, f
 	}
 
 	result.MissedBlocksCounter = missedBlocksCounter
-	return result, true
+	return result
 }
 
 func (k Keeper) AddMissedBlock(ctx sdk.Context, addr sdk.ConsAddress, height int64) {
