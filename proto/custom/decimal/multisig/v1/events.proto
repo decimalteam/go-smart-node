@@ -1,9 +1,7 @@
 syntax = "proto3";
 package decimal.multisig.v1;
 
-import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
-import "cosmos/base/v1beta1/coin.proto";
 
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/multisig/types";
 
@@ -16,12 +14,14 @@ message EventCreateWallet {
   uint32 threshold = 5;
 }
 
+// EventCreateTransaction defines event emitted when new multisig transaction is created.
 message EventCreateTransaction {
   string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   string wallet = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   string transaction = 4;
 }
 
+// EventSignTransaction defines event emitted when existing multisig transaction is signed by another owner.
 message EventSignTransaction {
   string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   string wallet = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];

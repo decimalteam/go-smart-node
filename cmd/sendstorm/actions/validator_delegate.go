@@ -8,6 +8,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	stormTypes "bitbucket.org/decimalteam/go-smart-node/cmd/sendstorm/types"
+	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
+	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
@@ -15,7 +17,7 @@ type DelegateGenerator struct {
 	stackBottom     int64 // in 10^15
 	stackUp         int64 // in 10^15
 	knownCoins      []string
-	knownValidators []string
+	knownValidators []dscApi.Validator
 	rnd             *rand.Rand
 }
 
@@ -24,8 +26,7 @@ type DelegateAction struct {
 	validatorAddress string
 }
 
-func NewDelegateGenerator(
-	stackBottom, stackUp int64) *DelegateGenerator {
+func NewDelegateGenerator(stackBottom, stackUp int64) *DelegateGenerator {
 	return &DelegateGenerator{
 		stackBottom: stackBottom,
 		stackUp:     stackUp,
@@ -50,7 +51,7 @@ func (gg *DelegateGenerator) Generate() Action {
 	amount := RandomRange(gg.rnd, gg.stackBottom, gg.stackUp)
 	return &DelegateAction{
 		coin:             sdk.NewCoin(denom, helpers.FinneyToWei(sdkmath.NewInt(amount))),
-		validatorAddress: validator,
+		validatorAddress: validator.OperatorAddress,
 	}
 }
 
@@ -74,9 +75,14 @@ func (ac *DelegateAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *sto
 		return nil, err
 	}
 
-	// TODO
+	valAdr, err := sdk.ValAddressFromBech32(ac.validatorAddress)
+	if err != nil {
+		return nil, err
+	}
 
-	return feeConfig.MakeTransaction(sa, nil)
+	msg := dscTx.NewMsgDelegate(sa.Account().SdkAddress(), valAdr, ac.coin)
+
+	return feeConfig.MakeTransaction(sa, msg)
 }
 
 func (ac *DelegateAction) String() string {

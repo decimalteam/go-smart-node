@@ -6,6 +6,7 @@ import (
 	"runtime/debug"
 	"sort"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/evmos/ethermint/types"
 	gogotypes "github.com/gogo/protobuf/types"
@@ -415,9 +416,14 @@ func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator, del
 		return
 	}
 
+	baseAmounts := make(map[int]sdkmath.Int)
+	for i := range delegations {
+		baseAmounts[i] = k.ToBaseCoin(ctx, delegations[i].Stake.GetStake()).Amount
+	}
+
 	sort.SliceStable(delegations, func(i, j int) bool {
-		amountI := k.baseCoinFromStake(ctx, delegations[i].Stake).Amount
-		amountJ := k.baseCoinFromStake(ctx, delegations[j].Stake).Amount
+		amountI := baseAmounts[i]
+		amountJ := baseAmounts[j]
 		return amountI.GT(amountJ)
 	})
 

@@ -8,6 +8,7 @@ import (
 	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
 type (
@@ -41,6 +42,23 @@ type (
 	MsgCreateWallet      = multisigtypes.MsgCreateWallet
 	MsgCreateTransaction = multisigtypes.MsgCreateTransaction
 	MsgSignTransaction   = multisigtypes.MsgSignTransaction
+
+	MsgCreateValidator       = validatortypes.MsgCreateValidator
+	MsgEditValidator         = validatortypes.MsgEditValidator
+	MsgSetOnline             = validatortypes.MsgSetOnline
+	MsgSetOffline            = validatortypes.MsgSetOffline
+	MsgDelegate              = validatortypes.MsgDelegate
+	MsgDelegateNFT           = validatortypes.MsgDelegateNFT
+	MsgUndelegate            = validatortypes.MsgUndelegate
+	MsgUndelegateNFT         = validatortypes.MsgUndelegateNFT
+	MsgRedelegate            = validatortypes.MsgRedelegate
+	MsgRedelegateNFT         = validatortypes.MsgRedelegateNFT
+	MsgCancelUndelegation    = validatortypes.MsgCancelUndelegation
+	MsgCancelUndelegationNFT = validatortypes.MsgCancelUndelegationNFT
+	MsgCancelRedelegation    = validatortypes.MsgCancelRedelegation
+	MsgCancelRedelegationNFT = validatortypes.MsgCancelRedelegationNFT
+
+	Description = validatortypes.Description
 )
 
 var (
@@ -63,4 +81,19 @@ var (
 	NewMsgCreateWallet      = multisigtypes.NewMsgCreateWallet
 	NewMsgCreateTransaction = multisigtypes.NewMsgCreateTransaction
 	NewMsgSignTransaction   = multisigtypes.NewMsgSignTransaction
+
+	NewMsgCreateValidator       = validatortypes.NewMsgCreateValidator
+	NewMsgEditValidator         = validatortypes.NewMsgEditValidator
+	NewMsgSetOnline             = validatortypes.NewMsgSetOnline
+	NewMsgSetOffline            = validatortypes.NewMsgSetOffline
+	NewMsgDelegate              = validatortypes.NewMsgDelegate
+	NewMsgDelegateNFT           = validatortypes.NewMsgDelegateNFT
+	NewMsgUndelegate            = validatortypes.NewMsgUndelegate
+	NewMsgUndelegateNFT         = validatortypes.NewMsgUndelegateNFT
+	NewMsgRedelegate            = validatortypes.NewMsgRedelegate
+	NewMsgRedelegateNFT         = validatortypes.NewMsgRedelegateNFT
+	NewMsgCancelUndelegation    = validatortypes.NewMsgCancelUndelegation
+	NewMsgCancelUndelegationNFT = validatortypes.NewMsgCancelUndelegationNFT
+	NewMsgCancelRedelegation    = validatortypes.NewMsgCancelRedelegation
+	NewMsgCancelRedelegationNFT = validatortypes.NewMsgCancelRedelegationNFT
 )
