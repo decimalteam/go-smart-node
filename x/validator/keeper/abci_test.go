@@ -136,6 +136,7 @@ func TestPayValidators(t *testing.T) {
 
 		// check correct rewards distribute
 		totalPower := dsc.ValidatorKeeper.GetLastTotalPower(ctx)
+		rewards = rewards.QuoRaw(2) // default 50% burn
 		remainder := rewards
 		{
 			beforeRewards := valRs1.Rewards
@@ -213,6 +214,7 @@ func TestPayValidators(t *testing.T) {
 
 		// check correct rewards distribute
 		totalPower := dsc.ValidatorKeeper.GetLastTotalPower(ctx)
+		rewards = rewards.QuoRaw(2)
 		remainder := rewards
 		{
 			beforeRewards := valRs1.Rewards

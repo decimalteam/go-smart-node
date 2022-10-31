@@ -38,6 +38,7 @@ func createTestInput(t *testing.T) (*codec.LegacyAmino, *app.DSC, sdk.Context) {
 		&dsc.NFTKeeper,
 		&dsc.CoinKeeper,
 		&dsc.MultisigKeeper,
+		&dsc.FeeKeeper,
 	)
 	return dsc.LegacyAmino(), dsc, ctx
 }

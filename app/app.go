@@ -461,6 +461,13 @@ func NewDSC(
 		app.BankKeeper,
 		app.MsgServiceRouter(),
 	)
+	app.FeeKeeper = *feekeeper.NewKeeper(
+		appCodec,
+		keys[feetypes.StoreKey],
+		app.GetSubspace(feetypes.ModuleName),
+		app.BankKeeper,
+		cmdcfg.BaseDenom,
+	)
 	app.ValidatorKeeper = validatorkeeper.NewKeeper(
 		appCodec,
 		keys[validatortypes.StoreKey],
@@ -470,16 +477,11 @@ func NewDSC(
 		&app.NFTKeeper,
 		&app.CoinKeeper,
 		&app.MultisigKeeper,
+		&app.FeeKeeper,
 	)
 
 	// Create Ethermint keepers
-	app.FeeKeeper = *feekeeper.NewKeeper(
-		appCodec,
-		keys[feetypes.StoreKey],
-		app.GetSubspace(feetypes.ModuleName),
-		app.BankKeeper,
-		cmdcfg.BaseDenom,
-	)
+
 	app.EvmKeeper = evmkeeper.NewKeeper(
 		appCodec,
 		keys[evmtypes.StoreKey],
