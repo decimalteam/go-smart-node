@@ -5,6 +5,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
+
+	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 )
 
 func cmdVerify() *cobra.Command {
@@ -97,6 +99,83 @@ func cmdValidators() *cobra.Command {
 				fmt.Printf("moniker: %s, status: %d, online: %v, jailed: %v, stake: %d, rewards: %s, delegation: %d\n",
 					val.Description.Moniker, val.Status, val.Online, val.Jailed, val.Stake, val.Rewards, len(dels))
 			}
+		},
+	}
+
+	return cmd
+}
+
+func cmdVerifyPools() *cobra.Command {
+	var cmd = &cobra.Command{
+		Use:   "verify-pools",
+		Short: "Verify (un/re)delegations and validator pools",
+		Run: func(cmd *cobra.Command, args []string) {
+			//
+			err := cmd.Flags().Parse(args)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			reactor := stormReactor{}
+			// init
+			err = reactor.initApi(cmd.Flags())
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			// validators info
+			vals, err := reactor.api.Validators()
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			expectBondedPool := sdk.NewCoins()
+			expectNotBondedPool := sdk.NewCoins()
+			for _, val := range vals {
+				// delegations
+				dels, err := reactor.api.ValidatorDelegations(val.OperatorAddress)
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+				for _, del := range dels {
+					if del.Stake.Type == dscApi.StakeType_Coin {
+						switch val.Status {
+						case dscApi.BondStatus_Bonded:
+							expectBondedPool = expectBondedPool.Add(del.Stake.Stake)
+						case dscApi.BondStatus_Unbonded, dscApi.BondStatus_Unbonding:
+							expectNotBondedPool = expectNotBondedPool.Add(del.Stake.Stake)
+						}
+					}
+				}
+				// redelegations
+				reds, err := reactor.api.ValidatorRedelegations(val.OperatorAddress)
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+				for _, red := range reds {
+					for _, ent := range red.Entries {
+						if ent.Stake.Type == dscApi.StakeType_Coin {
+							expectNotBondedPool = expectNotBondedPool.Add(ent.Stake.Stake)
+						}
+					}
+				}
+				// undelegations
+				ubds, err := reactor.api.ValidatorUndelegations(val.OperatorAddress)
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+				for _, ubd := range ubds {
+					for _, ent := range ubd.Entries {
+						if ent.Stake.Type == dscApi.StakeType_Coin {
+							expectNotBondedPool = expectNotBondedPool.Add(ent.Stake.Stake)
+						}
+					}
+				}
+			}
+			// TODO: check pool
 		},
 	}
 
