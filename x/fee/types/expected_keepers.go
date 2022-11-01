@@ -7,13 +7,10 @@ package types
 import (
 	"math/big"
 
-	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
-
-	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
 
 type FeeKeeper interface {
@@ -32,22 +29,9 @@ type FeeMarketKeeper interface {
 }
 
 type CoinKeeper interface {
-	GetCoin(ctx sdk.Context, denom string) (coin cointypes.Coin, err error)
-	GetCoins(ctx sdk.Context) (coins []cointypes.Coin)
-	GetBaseDenom(ctx sdk.Context) string
-	GetDecreasingFactor(ctx sdk.Context, coin sdk.Coin) (sdk.Dec, error)
 	BurnPoolCoins(ctx sdk.Context, poolName string, coins sdk.Coins) error
-	UpdateCoinVR(ctx sdk.Context, denom string, volume sdkmath.Int, reserve sdkmath.Int) error
-	IsCoinExists(ctx sdk.Context, denom string) bool
 }
 
 type AccountKeeper interface {
-	IterateAccounts(ctx sdk.Context, process func(authtypes.AccountI) (stop bool))
-	GetAccount(ctx sdk.Context, addr sdk.AccAddress) authtypes.AccountI // only used for simulation
-
-	GetModuleAddress(name string) sdk.AccAddress
 	GetModuleAccount(ctx sdk.Context, moduleName string) authtypes.ModuleAccountI
-
-	// TODO remove with genesis 2-phases refactor https://github.com/cosmos/cosmos-sdk/issues/2862
-	SetModuleAccount(sdk.Context, authtypes.ModuleAccountI)
 }
