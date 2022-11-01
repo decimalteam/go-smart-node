@@ -1,12 +1,15 @@
 package keeper
 
 import (
+	"fmt"
+
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	multisig "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
-	sdkmath "cosmossdk.io/math"
-	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var daoAccount = "dx1mglzvd5vvfn0sntkcmsfwx768kwmaehs2txchf"
@@ -16,7 +19,7 @@ var DAOCommission = sdk.NewDec(5).QuoInt64(100)
 var DevelopCommission = sdk.NewDec(5).QuoInt64(100)
 
 func (k Keeper) PayRewards(ctx sdk.Context) error {
-	events := types.EventPayRewards{}
+	e := types.EventPayRewards{}
 
 	validators := k.GetAllValidators(ctx)
 	delByValidator := k.GetAllDelegationsByValidator(ctx)
@@ -134,10 +137,10 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 
 		k.SetValidatorByPowerIndex(ctx, val)
 
-		events.Validators = append(events.Validators, valEvent)
+		e.Validators = append(e.Validators, valEvent)
 	}
 
-	err := ctx.EventManager().EmitTypedEvents(&events)
+	err := events.EmitTypedEvent(ctx, &e)
 	if err != nil {
 		return err
 	}

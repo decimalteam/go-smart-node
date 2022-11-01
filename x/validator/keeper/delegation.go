@@ -9,6 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
@@ -894,7 +895,7 @@ func (k Keeper) CompleteUnbonding(ctx sdk.Context, delegator sdk.AccAddress, val
 				}
 			}
 
-			err = ctx.EventManager().EmitTypedEvent(&types.EventUndelegateComplete{
+			err = events.EmitTypedEvent(ctx, &types.EventUndelegateComplete{
 				Delegator: delegator.String(),
 				Validator: validator.String(),
 				Stake:     stake,
@@ -1022,7 +1023,7 @@ func (k Keeper) CompleteRedelegation(
 				return err
 			}
 
-			err = ctx.EventManager().EmitTypedEvent(&types.EventRedelegateComplete{
+			err = events.EmitTypedEvent(ctx, &types.EventRedelegateComplete{
 				Delegator:    delegator.String(),
 				ValidatorSrc: validatorSrc.String(),
 				ValidatorDst: validatorDst.String(),
