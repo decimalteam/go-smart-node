@@ -992,7 +992,6 @@ func createValidators(t *testing.T, ctx sdk.Context, dsc *app.DSC, powers []int6
 		&dsc.NFTKeeper,
 		&dsc.CoinKeeper,
 		&dsc.MultisigKeeper,
-		&dsc.FeeKeeper,
 	)
 
 	val1 := testvalidator.NewValidator(t, valAddrs[0], pks[0])

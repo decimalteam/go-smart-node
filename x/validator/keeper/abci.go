@@ -73,8 +73,6 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 func (k Keeper) PayValidators(ctx sdk.Context) {
 	height := ctx.BlockHeight()
 
-	feeParams := k.feeKeeper.GetModuleParams(ctx)
-
 	// calculate emmission
 	rewards := types.GetRewardForBlock(uint64(height))
 
@@ -113,10 +111,6 @@ func (k Keeper) PayValidators(ctx sdk.Context) {
 	if err != nil {
 		panic(err)
 	}
-
-	// burn fees
-	amountToBurn := sdk.NewDecFromInt(rewards).Mul(feeParams.CommissionBurnFactor).RoundInt()
-	rewards = rewards.Sub(amountToBurn)
 
 	// pay rewards to validators
 	remainder := sdk.NewIntFromBigInt(rewards.BigInt())

@@ -202,6 +202,7 @@ var (
 		nfttypes.ReservedPool:            {authtypes.Minter, authtypes.Burner},
 		legacytypes.LegacyCoinPool:       nil, // special account to hold legacy balances
 		swaptypes.SwapPool:               nil, // special account to hold locked coins in swap process
+		feetypes.BurningPool:             {authtypes.Burner},
 	}
 
 	// Module accounts that are allowed to receive tokens
@@ -466,6 +467,8 @@ func NewDSC(
 		keys[feetypes.StoreKey],
 		app.GetSubspace(feetypes.ModuleName),
 		app.BankKeeper,
+		&app.CoinKeeper,
+		app.AccountKeeper,
 		cmdcfg.BaseDenom,
 	)
 	app.ValidatorKeeper = validatorkeeper.NewKeeper(
@@ -477,7 +480,6 @@ func NewDSC(
 		&app.NFTKeeper,
 		&app.CoinKeeper,
 		&app.MultisigKeeper,
-		&app.FeeKeeper,
 	)
 
 	// Create Ethermint keepers

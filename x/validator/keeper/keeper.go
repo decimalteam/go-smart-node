@@ -26,7 +26,6 @@ type Keeper struct {
 	nftKeeper      types.NFTKeeper
 	coinKeeper     types.CoinKeeper
 	multisigKeeper types.MultisigKeeper
-	feeKeeper      types.FeeKeeper
 	hooks          types.StakingHooks
 	paramstore     paramtypes.Subspace
 }
@@ -41,7 +40,6 @@ func NewKeeper(
 	nk types.NFTKeeper,
 	ck types.CoinKeeper,
 	mk types.MultisigKeeper,
-	fk types.FeeKeeper,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -65,7 +63,6 @@ func NewKeeper(
 		nftKeeper:      nk,
 		coinKeeper:     ck,
 		multisigKeeper: mk,
-		feeKeeper:      fk,
 		paramstore:     ps,
 		hooks:          nil,
 	}
