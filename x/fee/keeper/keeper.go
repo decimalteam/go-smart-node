@@ -48,6 +48,7 @@ func NewKeeper(
 		ps:         ps,
 		bankKeeper: bankKeeper,
 		coinKeeper: coinKeeper,
+		authKeeper: authKeeper,
 		baseDenom:  &baseDenom,
 	}
 }
