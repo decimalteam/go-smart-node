@@ -89,6 +89,16 @@ service Query {
     option (google.api.http).get = "/decimal/validator/v1/pool";
   }
 
+  // CustomCoinPrice queries the custom coin price for delegation.
+  rpc CustomCoinPrice(QueryCustomCoinPriceRequest) returns (QueryCustomCoinPriceResponse) {
+    option (google.api.http).get = "/decimal/validator/v1/custom_coin_price/{denom}";
+  }
+
+  // TotalCustomCoin queries the total amount bonded custom coins.
+  rpc TotalCustomCoin(QueryTotalCustomCoinRequest) returns (QueryTotalCustomCoinResponse) {
+    option (google.api.http).get = "/decimal/validator/v1/total_custom_coin/{denom}";
+  }
+
   // Params queries the module params.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/decimal/validator/v1/params";
@@ -358,4 +368,28 @@ message QueryParamsRequest {}
 message QueryParamsResponse {
   // params holds all the parameters of this module.
   Params params = 1 [ (gogoproto.nullable) = false ];
+}
+
+message QueryCustomCoinPriceRequest {
+  string denom = 1;
+}
+
+message QueryCustomCoinPriceResponse {
+  string price = 1 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message QueryTotalCustomCoinRequest {
+  string denom = 1;
+}
+
+message QueryTotalCustomCoinResponse {
+  string total_amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
 }
