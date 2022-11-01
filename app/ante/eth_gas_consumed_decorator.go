@@ -6,31 +6,43 @@ import (
 
 	ethereumCommon "github.com/ethereum/go-ethereum/common"
 
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	"bitbucket.org/decimalteam/go-smart-node/utils/events"
-	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	ethante "github.com/evmos/ethermint/app/ante"
 	ethermint "github.com/evmos/ethermint/types"
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
+
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
+	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 )
 
 // EthGasConsumeDecorator validates enough intrinsic gas for the transaction and
 // gas consumption.
 type EthGasConsumeDecorator struct {
 	evmKeeper    ethante.EVMKeeper
+	bankKeeper   BankKeeper
+	feeKeeper    feetypes.FeeKeeper
 	maxGasWanted uint64
+}
+
+type BankKeeper interface {
+	SendCoinsFromModuleToModule(ctx sdk.Context, senderModule, recipientModule string, amt sdk.Coins) error
 }
 
 // NewEthGasConsumeDecorator creates a new EthGasConsumeDecorator
 func NewEthGasConsumeDecorator(
 	evmKeeper ethante.EVMKeeper,
+	bankKeeper BankKeeper,
+	feeKeeper feetypes.FeeKeeper,
 	maxGasWanted uint64,
 ) EthGasConsumeDecorator {
 	return EthGasConsumeDecorator{
 		evmKeeper,
+		bankKeeper,
+		feeKeeper,
 		maxGasWanted,
 	}
 }
@@ -99,6 +111,20 @@ func (egcd EthGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 			return ctx, sdkerrors.Wrapf(err, "failed to deduct transaction costs from user balance")
 		}
 
+		// Send part of fee to burning pool
+		// NOTE: DeductTxCostsFromUserBalance (from above) sends fee coins to fee_collector
+		// Because it's too hard to inject into EVMKeeper, we send burning amount here from module to module
+		feeParams := egcd.feeKeeper.GetModuleParams(ctx)
+		feeToBurn := sdk.NewCoins()
+		for _, coin := range fees {
+			amountToBurn := sdk.NewDecFromInt(coin.Amount).Mul(feeParams.CommissionBurnFactor).RoundInt()
+			feeToBurn = feeToBurn.Add(sdk.NewCoin(coin.Denom, amountToBurn))
+		}
+		err = egcd.bankKeeper.SendCoinsFromModuleToModule(ctx, sdkAuthTypes.FeeCollectorName, feetypes.BurningPool, feeToBurn)
+		if err != nil {
+			return ctx, sdkerrors.Wrapf(err, "failed to send burning coins from fee_collector to burning_pool")
+		}
+
 		// Decimal decorator differs from ethermint, in the events it adds to the result
 		// if you want to update this code to the latest version, then don't touch the event emitter
 		adr := ethereumCommon.HexToAddress(msgEthTx.From)
@@ -108,8 +134,9 @@ func (egcd EthGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 		}
 
 		err = events.EmitTypedEvent(ctx, &feetypes.EventPayCommission{
-			Payer: dxAdr,
-			Coins: fees,
+			Payer:       dxAdr,
+			Coins:       fees,
+			BurnedCoins: feeToBurn,
 		})
 		if err != nil {
 			return ctx, sdkerrors.Wrapf(err, "failed to emit commission event")

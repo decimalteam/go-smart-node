@@ -10,6 +10,8 @@ import (
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+
 	ibcante "github.com/cosmos/ibc-go/v5/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v5/modules/core/keeper"
 
@@ -24,7 +26,7 @@ import (
 // HandlerOptions defines the list of module keepers required to run the Decimal AnteHandler decorators.
 type HandlerOptions struct {
 	AccountKeeper          evmtypes.AccountKeeper
-	BankKeeper             evmtypes.BankKeeper
+	BankKeeper             bankkeeper.Keeper
 	IBCKeeper              *ibckeeper.Keeper
 	FeeMarketKeeper        evmtypes.FeeMarketKeeper
 	EvmKeeper              ethante.EVMKeeper
@@ -80,7 +82,7 @@ func newEthAnteHandler(options HandlerOptions) sdk.AnteHandler {
 		ethante.NewEthSigVerificationDecorator(options.EvmKeeper),
 		ethante.NewEthAccountVerificationDecorator(options.AccountKeeper, options.EvmKeeper),
 		ethante.NewCanTransferDecorator(options.EvmKeeper),
-		NewEthGasConsumeDecorator(options.EvmKeeper, options.MaxTxGasWanted),
+		NewEthGasConsumeDecorator(options.EvmKeeper, options.BankKeeper, options.FeeKeeper, options.MaxTxGasWanted),
 		ethante.NewEthIncrementSenderSequenceDecorator(options.AccountKeeper), // innermost AnteDecorator.
 		ethante.NewGasWantedDecorator(options.EvmKeeper, options.FeeMarketKeeper),
 		ethante.NewEthEmitEventDecorator(options.EvmKeeper), // emit eth tx hash and index at the very last ante handler.
