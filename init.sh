@@ -87,7 +87,7 @@ fi
 
 # Allocate genesis accounts (cosmos formatted addresses)
 dscd add-genesis-account $KEY 100000000000000000000000000del --keyring-backend $KEYRING
-dscd add-genesis-account $FAUCET_KEY 100000000000000000000000000del --keyring-backend $KEYRING
+dscd add-genesis-account $FAUCET_KEY 1000000000000000000000000000000000000del --keyring-backend $KEYRING
 
 dscd selfdelegation 100000000000000000000000del --keyring-backend $KEYRING --from $KEY
 

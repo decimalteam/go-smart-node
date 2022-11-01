@@ -68,13 +68,12 @@ func (ac *DelegateNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *
 	if err != nil {
 		return nil, err
 	}
-
-	valAdr, err := sdk.ValAddressFromBech32(ac.validatorAddress)
+	valAddr, err := sdk.ValAddressFromBech32(ac.validatorAddress)
 	if err != nil {
 		return nil, err
 	}
 
-	msg := dscTx.NewMsgDelegateNFT(sa.Account().SdkAddress(), valAdr, ac.token.ID, []uint32{ac.subToken.ID})
+	msg := dscTx.NewMsgDelegateNFT(sa.Account().SdkAddress(), valAddr, ac.token.ID, []uint32{ac.subToken.ID})
 
 	return feeConfig.MakeTransaction(sa, msg)
 }

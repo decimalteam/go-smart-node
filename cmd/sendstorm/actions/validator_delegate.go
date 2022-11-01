@@ -75,12 +75,12 @@ func (ac *DelegateAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *sto
 		return nil, err
 	}
 
-	valAdr, err := sdk.ValAddressFromBech32(ac.validatorAddress)
+	valAddr, err := sdk.ValAddressFromBech32(ac.validatorAddress)
 	if err != nil {
 		return nil, err
 	}
 
-	msg := dscTx.NewMsgDelegate(sa.Account().SdkAddress(), valAdr, ac.coin)
+	msg := dscTx.NewMsgDelegate(sa.Account().SdkAddress(), valAddr, ac.coin)
 
 	return feeConfig.MakeTransaction(sa, msg)
 }

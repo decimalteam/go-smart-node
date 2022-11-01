@@ -44,7 +44,6 @@ type (
 	MsgSignTransaction   = multisigtypes.MsgSignTransaction
 
 	MsgCreateValidator       = validatortypes.MsgCreateValidator
-	MsgEditValidator         = validatortypes.MsgEditValidator
 	MsgSetOnline             = validatortypes.MsgSetOnline
 	MsgSetOffline            = validatortypes.MsgSetOffline
 	MsgDelegate              = validatortypes.MsgDelegate
@@ -53,6 +52,7 @@ type (
 	MsgUndelegateNFT         = validatortypes.MsgUndelegateNFT
 	MsgRedelegate            = validatortypes.MsgRedelegate
 	MsgRedelegateNFT         = validatortypes.MsgRedelegateNFT
+	MsgEditValidator         = validatortypes.MsgEditValidator
 	MsgCancelUndelegation    = validatortypes.MsgCancelUndelegation
 	MsgCancelUndelegationNFT = validatortypes.MsgCancelUndelegationNFT
 	MsgCancelRedelegation    = validatortypes.MsgCancelRedelegation
@@ -83,7 +83,6 @@ var (
 	NewMsgSignTransaction   = multisigtypes.NewMsgSignTransaction
 
 	NewMsgCreateValidator       = validatortypes.NewMsgCreateValidator
-	NewMsgEditValidator         = validatortypes.NewMsgEditValidator
 	NewMsgSetOnline             = validatortypes.NewMsgSetOnline
 	NewMsgSetOffline            = validatortypes.NewMsgSetOffline
 	NewMsgDelegate              = validatortypes.NewMsgDelegate
@@ -92,6 +91,7 @@ var (
 	NewMsgUndelegateNFT         = validatortypes.NewMsgUndelegateNFT
 	NewMsgRedelegate            = validatortypes.NewMsgRedelegate
 	NewMsgRedelegateNFT         = validatortypes.NewMsgRedelegateNFT
+	NewMsgEditValidator         = validatortypes.NewMsgEditValidator
 	NewMsgCancelUndelegation    = validatortypes.NewMsgCancelUndelegation
 	NewMsgCancelUndelegationNFT = validatortypes.NewMsgCancelUndelegationNFT
 	NewMsgCancelRedelegation    = validatortypes.NewMsgCancelRedelegation

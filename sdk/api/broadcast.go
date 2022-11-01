@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-
 	cosmostx "github.com/cosmos/cosmos-sdk/types/tx"
 	tmtypes "github.com/tendermint/tendermint/abci/types"
 )
@@ -24,17 +23,24 @@ type TxSimulateResponse struct {
 }
 
 func (api *API) BroadcastTxSync(data []byte) (*TxSyncResponse, error) {
-	return api.grpcBroadcastTx(data, false)
+	return api.grpcBroadcastTx(data, false, false)
 }
 
 func (api *API) BroadcastTxCommit(data []byte) (*TxSyncResponse, error) {
-	return api.grpcBroadcastTx(data, true)
+	return api.grpcBroadcastTx(data, true, false)
 }
 
-func (api *API) grpcBroadcastTx(data []byte, commitMode bool) (*TxSyncResponse, error) {
+func (api *API) BroadcastTxAsync(data []byte) (*TxSyncResponse, error) {
+	return api.grpcBroadcastTx(data, true, true)
+}
+
+func (api *API) grpcBroadcastTx(data []byte, commitMode bool, asyncMode bool) (*TxSyncResponse, error) {
 	mode := cosmostx.BroadcastMode_BROADCAST_MODE_SYNC
 	if commitMode {
 		mode = cosmostx.BroadcastMode_BROADCAST_MODE_BLOCK
+	}
+	if asyncMode {
+		mode = cosmostx.BroadcastMode_BROADCAST_MODE_ASYNC
 	}
 	client := cosmostx.NewServiceClient(api.grpcClient)
 	resp, err := client.BroadcastTx(context.Background(), &cosmostx.BroadcastTxRequest{

@@ -21,7 +21,7 @@ func (api *API) Coins() ([]Coin, error) {
 			req,
 		)
 		if err != nil {
-			return []Coin{}, err
+			return nil, err
 		}
 		if len(res.Coins) == 0 {
 			break

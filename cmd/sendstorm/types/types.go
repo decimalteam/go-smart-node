@@ -30,6 +30,7 @@ func NewStormAccount(mnemonic string, api *dscApi.API) (*StormAccount, error) {
 	var result StormAccount
 	var err error
 	result.account, err = dscWallet.NewAccountFromMnemonicWords(mnemonic, "")
+	result.account = result.account.WithChainID(api.ChainID())
 	if err != nil {
 		return nil, err
 	}

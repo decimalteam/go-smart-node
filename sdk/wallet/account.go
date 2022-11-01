@@ -1,15 +1,17 @@
 package wallet
 
 import (
-	"github.com/cosmos/cosmos-sdk/types/bech32"
-
-	config "bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	decimalTypes "bitbucket.org/decimalteam/go-smart-node/types"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	cryptoTypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
+
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 	ethermintHd "github.com/evmos/ethermint/crypto/hd"
 	ethermint "github.com/evmos/ethermint/types"
+
+	config "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	decimalTypes "bitbucket.org/decimalteam/go-smart-node/types"
 )
 
 // Account contains private key of the account that allows to sign transactions to broadcast to the blockchain.
@@ -19,6 +21,7 @@ type Account struct {
 	address       string
 	legacyAddress string
 
+	valPK *ed25519.PubKey
 	// These fields are used only for signing transactions:
 	chainID       string
 	accountNumber uint64
@@ -43,6 +46,7 @@ func NewAccountFromMnemonicWords(words string, password string) (*Account, error
 	}
 	result.privateKeyTM = &ethsecp256k1.PrivKey{Key: bz}
 	result.publicKeyTM = result.privateKeyTM.PubKey().(*ethsecp256k1.PubKey)
+	result.valPK = ed25519.GenPrivKey().PubKey().(*ed25519.PubKey)
 	result.address, err = bech32.ConvertAndEncode(config.Bech32Prefix, result.publicKeyTM.Address())
 	if err != nil {
 		return nil, err
@@ -115,4 +119,8 @@ func (acc *Account) PubKey() cryptoTypes.PubKey {
 // Sign data by private key and returns signature
 func (acc *Account) Sign(bytesToSign []byte) ([]byte, error) {
 	return acc.privateKeyTM.Sign(bytesToSign)
+}
+
+func (acc *Account) ValPubKey() cryptoTypes.PubKey {
+	return acc.valPK
 }
