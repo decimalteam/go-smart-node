@@ -7,7 +7,6 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	nftypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
@@ -65,10 +64,6 @@ type CoinKeeper interface {
 type MultisigKeeper interface {
 	GetWallet(ctx sdk.Context, address string) (wallet types.Wallet, err error)
 	SetWallet(ctx sdk.Context, wallet types.Wallet)
-}
-
-type FeeKeeper interface {
-	GetModuleParams(sdk.Context) feetypes.Params
 }
 
 // ValidatorSet expected properties for the set of all validators (noalias)ю
