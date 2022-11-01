@@ -3,11 +3,11 @@ package keeper
 import (
 	"context"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/errors"
-
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (k Keeper) CreateWallet(goCtx context.Context, msg *types.MsgCreateWallet) (*types.MsgCreateWalletResponse, error) {
@@ -179,7 +179,7 @@ func (k Keeper) SignTransaction(goCtx context.Context, msg *types.MsgSignTransac
 	}
 
 	// Append the signature to the multisig transaction
-	k.SetUniversalSign(ctx, msg.ID, msg.Sender)
+	k.SetSign(ctx, msg.ID, msg.Sender)
 
 	confirmations += senderWeight
 
