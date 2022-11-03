@@ -20,9 +20,10 @@ type Keeper struct {
 	cdc      codec.BinaryCodec
 	storeKey store.StoreKey
 
-	bankKeeper     types.BankKeeper
-	nftKeeper      types.NftKeeper
-	multisigKeeper types.MultisigKeeper
+	bankKeeper      types.BankKeeper
+	nftKeeper       types.NftKeeper
+	multisigKeeper  types.MultisigKeeper
+	validatorKeeper types.ValidatorKeeper
 }
 
 // NewKeeper creates new Keeper instance.
@@ -32,13 +33,15 @@ func NewKeeper(
 	bankKeeper types.BankKeeper,
 	nftKeeper types.NftKeeper,
 	multisigKeeper types.MultisigKeeper,
+	validatorKeeper types.ValidatorKeeper,
 ) *Keeper {
 	keeper := &Keeper{
-		cdc:            cdc,
-		storeKey:       storeKey,
-		bankKeeper:     bankKeeper,
-		nftKeeper:      nftKeeper,
-		multisigKeeper: multisigKeeper,
+		cdc:             cdc,
+		storeKey:        storeKey,
+		bankKeeper:      bankKeeper,
+		nftKeeper:       nftKeeper,
+		multisigKeeper:  multisigKeeper,
+		validatorKeeper: validatorKeeper,
 	}
 	return keeper
 }
@@ -100,6 +103,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	if !k.IsLegacyAddress(ctx, legacyAddress) {
 		return nil
 	}
+	legacySdkAddress := sdk.MustAccAddressFromBech32(legacyAddress)
 	actualSdkAddress := sdk.AccAddress(ethsecp256k1.PubKey{Key: pubKeyBytes}.Address())
 	actualAddress, err := bech32.ConvertAndEncode(config.Bech32Prefix, actualSdkAddress)
 	if err != nil {
@@ -187,6 +191,31 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 		}
 	}
 
+	// 4. update validators
+	for _, validatorAddress := range record.Validators {
+		valAdr, err := sdk.ValAddressFromBech32(validatorAddress)
+		if err != nil {
+			continue
+		}
+		validator, found := k.validatorKeeper.GetValidator(ctx, valAdr)
+		if !found {
+			continue
+		}
+		if legacyAddress != validator.RewardAddress {
+			continue
+		}
+
+		validator.RewardAddress = actualAddress
+		k.validatorKeeper.SetValidator(ctx, validator)
+		// transfer rewards from old address
+		rewards := k.bankKeeper.GetAllBalances(ctx, legacySdkAddress)
+		if !rewards.IsZero() {
+			err := k.bankKeeper.SendCoins(ctx, legacySdkAddress, actualSdkAddress, rewards)
+			if err != nil {
+				return errors.Internal.Wrapf("err: %s", err.Error())
+			}
+		}
+	}
 	// all complete, delete
 	k.DeleteLegacyRecord(ctx, legacyAddress)
 

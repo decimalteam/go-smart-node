@@ -86,7 +86,7 @@ func extractAddress(acc interface{}) string {
 }
 
 // fix bonded pool balance from staking
-func fixAfterCopy(gs *GenesisNew) {
+func fixBondedNotBondedPools(gs *GenesisNew) {
 	// staking -> delegations[]: "delegator_address", "shares",
 	bondings := sdk.NewCoins()
 	notbondings := sdk.NewCoins()
@@ -124,5 +124,37 @@ func fixAfterCopy(gs *GenesisNew) {
 		if gs.AppState.Bank.Balances[i].Address == "dx1tygms3xhhs3yv487phx3dw4a95jn7t7l8zevak" {
 			gs.AppState.Bank.Balances[i].Coins = notbondings
 		}
+	}
+}
+
+func fixNFTPool(gs *GenesisNew) {
+	expectedVolume := sdk.NewCoins()
+	for _, coll := range gs.AppState.NFT.Collections {
+		for _, token := range coll.Tokens {
+			for _, sub := range token.SubTokens {
+				expectedVolume = expectedVolume.Add(sub.Reserve)
+			}
+		}
+	}
+	for i := range gs.AppState.Bank.Balances {
+		// "reserved_pool"
+		if gs.AppState.Bank.Balances[i].Address == "dx17epewz8nye288vvypc549pgr6mf52hlazndk04" {
+			gs.AppState.Bank.Balances[i].Coins = expectedVolume
+		}
+	}
+}
+
+func fixCoinVolumes(gs *GenesisNew) {
+	summaryVolume := sdk.NewCoins()
+	for i := range gs.AppState.Bank.Balances {
+		summaryVolume = summaryVolume.Add(gs.AppState.Bank.Balances[i].Coins...)
+	}
+	for i, coinInfo := range gs.AppState.Coin.Coins {
+		volume := summaryVolume.AmountOf(coinInfo.Symbol)
+		if volume.IsZero() {
+			fmt.Printf("ZERO amount for coin '%s'\n", coinInfo.Symbol)
+			continue
+		}
+		gs.AppState.Coin.Coins[i].Volume = volume.String()
 	}
 }

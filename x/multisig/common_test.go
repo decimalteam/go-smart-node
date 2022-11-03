@@ -7,14 +7,19 @@ import (
 
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	"bitbucket.org/decimalteam/go-smart-node/x/multisig"
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 )
@@ -287,6 +292,48 @@ func TestUniversalTx(t *testing.T) {
 	_, err = dsc.MultisigKeeper.SignTransaction(goCtx, msgS)
 	require.Error(t, err)
 
+}
+
+func TestGenesisTransactions(t *testing.T) {
+	_, dsc, ctx := getBaseAppWithCustomKeeper(t)
+	walletAdr := sdk.AccAddress([]byte{1, 2, 3}).String()
+	adr1 := sdk.AccAddress([]byte{1, 2, 3, 1}).String()
+	adr2 := sdk.AccAddress([]byte{1, 2, 3, 2}).String()
+	adr3 := sdk.AccAddress([]byte{1, 2, 3, 3}).String()
+	txID, err := bech32.ConvertAndEncode(types.MultisigTransactionIDPrefix, []byte{0, 0, 0, 1})
+	require.NoError(t, err)
+
+	var genesis = types.GenesisState{
+		Wallets: []types.Wallet{
+			{
+				Address: walletAdr,
+				Owners: []string{
+					adr1,
+					adr2,
+					adr3,
+				},
+				Weights:   []uint32{1, 1, 1},
+				Threshold: 2,
+			},
+		},
+		Transactions: []types.GenesisTransaction{
+			{
+				Id:        txID,
+				Wallet:    walletAdr,
+				Receiver:  adr3,
+				Coins:     sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1))),
+				Signers:   []string{adr1},
+				CreatedAt: 1,
+			},
+		},
+	}
+
+	multisig.InitGenesis(ctx, dsc.MultisigKeeper, &genesis)
+
+	_, err = dsc.MultisigKeeper.GetTransaction(ctx, txID)
+	require.NoError(t, err)
+	require.True(t, dsc.MultisigKeeper.IsSigned(ctx, txID, adr1))
+	require.False(t, dsc.MultisigKeeper.IsSigned(ctx, txID, adr2))
 }
 
 // getBaseAppWithCustomKeeper Returns a simapp with custom keepers

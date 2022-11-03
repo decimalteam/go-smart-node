@@ -1,7 +1,9 @@
 package worker
 
 import (
+	sdkmath "cosmossdk.io/math"
 	"encoding/json"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
@@ -23,6 +25,11 @@ type EventRedelegateComplete struct {
 	ValidatorSrc string
 	ValidatorDst string
 	Stake        Stake
+}
+
+type EventUpdateCoinsStaked struct {
+	denom  string
+	amount sdkmath.Int
 }
 
 type Stake struct {
@@ -136,5 +143,35 @@ func processEventRedelegateComplete(ea *EventAccumulator, event abci.Event, txHa
 	//	ea.addBalanceChange(e.Delegator, e.Stake.Stake.Denom, e.Stake.Stake.Amount)
 	//}
 
+	return nil
+}
+
+func processEventUpdateCoinsStaked(ea *EventAccumulator, event abci.Event, txHash string) error {
+	/*
+	  string denom = 1;
+	  string total_amount = 2 [
+	    (cosmos_proto.scalar) = "cosmos.Int",
+	    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+	    (gogoproto.nullable) = false
+	  ];
+	*/
+
+	var (
+		e  EventUpdateCoinsStaked
+		ok bool
+	)
+	for _, attr := range event.Attributes {
+		switch string(attr.Key) {
+		case "denom":
+			e.denom = string(attr.Value)
+		case "total_amount":
+			e.amount, ok = sdk.NewIntFromString(string(attr.Value))
+			if !ok {
+				return fmt.Errorf("can't parse total_amount '%s'", string(attr.Value))
+			}
+		}
+	}
+
+	ea.addCoinsStaked(e)
 	return nil
 }
