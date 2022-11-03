@@ -273,8 +273,8 @@ func (sa *slashesAccumulator) GetNFTChanges() []nftSubtokenChanges {
 	return sa.nftChanges
 }
 
-func (sa *slashesAccumulator) GetEvent(operatorAddress string) types.ValidatorSlash {
-	var result types.ValidatorSlash
+func (sa *slashesAccumulator) GetEvent(operatorAddress string) types.EventValidatorSlash {
+	var result types.EventValidatorSlash
 	result.Validator = operatorAddress
 	for _, ev := range sa.delegationSlashEvents {
 		result.Delegators = append(result.Delegators, ev)
