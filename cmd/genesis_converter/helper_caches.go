@@ -121,3 +121,28 @@ func moduleNameToAddress(name string) string {
 	}
 	return address
 }
+
+// helper structure for correcting nft owners
+type DelegationCache struct {
+	// map (tokenID, subTokenID) -> pool address
+	cache map[nftDelegation]string
+}
+
+type nftDelegation struct {
+	tokenID    string
+	subTokenID uint32
+}
+
+func NewDelegationCache() *DelegationCache {
+	return &DelegationCache{
+		cache: make(map[nftDelegation]string),
+	}
+}
+
+func (dc *DelegationCache) AddPool(tokenID string, subTokenID uint32, pool string) {
+	dc.cache[nftDelegation{tokenID, subTokenID}] = pool
+}
+
+func (dc *DelegationCache) GetPool(tokenID string, subTokenID uint32) string {
+	return dc.cache[nftDelegation{tokenID, subTokenID}]
+}
