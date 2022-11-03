@@ -90,19 +90,19 @@ func verifyCoinsVolume(coinsOld []FullCoinOld, accsOld []AccountOld,
 	delegations []DelegationOld, unbondings []UnbondingRecordOld) []CoinDiff {
 	fullSum := sdk.NewCoins()
 	for _, acc := range accsOld {
-		if acc.Value.Name == "bonded_tokens_pool" || acc.Value.Name == "not_bonded_tokens_pool" {
-			continue
-		}
+		//if acc.Value.Name == "bonded_tokens_pool" || acc.Value.Name == "not_bonded_tokens_pool" {
+		//	continue
+		//}
 		fullSum = fullSum.Add(acc.Value.Coins...)
 	}
-	for _, del := range delegations {
-		fullSum = fullSum.Add(del.Coin)
-	}
-	for _, rec := range unbondings {
-		for _, ent := range rec.Entries {
-			fullSum = fullSum.Add(ent.Value.Balance)
-		}
-	}
+	//for _, del := range delegations {
+	//	fullSum = fullSum.Add(del.Coin)
+	//}
+	//for _, rec := range unbondings {
+	//	for _, ent := range rec.Entries {
+	//		fullSum = fullSum.Add(ent.Value.Balance)
+	//	}
+	//}
 	var result []CoinDiff
 	for _, coin := range coinsOld {
 		vol, _ := sdk.NewIntFromString(coin.Volume)
@@ -186,7 +186,7 @@ func verifyPools(balances []BalanceNew, validators []ValidatorNew, delegations [
 					b1 := bal.Coins.AmountOf(denom)
 					b2 := bondedCoins.AmountOf(denom)
 					if !b1.Equal(b2) {
-						fmt.Printf("different bonded pool: (%s) %s <-> %s\n", denom, b1, b2)
+						fmt.Printf("different bonded pool (module account <-> stakes): (%s) %s <-> %s\n", denom, b1, b2)
 					}
 				}
 			}
@@ -204,7 +204,7 @@ func verifyPools(balances []BalanceNew, validators []ValidatorNew, delegations [
 					b1 := bal.Coins.AmountOf(denom)
 					b2 := notBondedCoins.AmountOf(denom)
 					if !b1.Equal(b2) {
-						fmt.Printf("different not bonded pool: (%s) %s <-> %s\n", denom, b1, b2)
+						fmt.Printf("different not bonded pool (module account <-> stakes): (%s) %s <-> %s\n", denom, b1, b2)
 					}
 				}
 			}
