@@ -33,3 +33,10 @@ message EventReturnMultisigWallet {
   string owner = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   string wallet = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 }
+
+// EventReturnValidator defines event emitted when the validator reward address become actual.
+message EventReturnValidator {
+  string legacy_owner = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string owner = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+}

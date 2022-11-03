@@ -18,4 +18,5 @@ var (
 	WalletAddressIsNotValidBech32                  = errors.New(codespace, 109, "wallet address is not bech32 valid address")
 	InvalidPublicKeyLength                         = errors.New(codespace, 110, "invalid public key length")
 	InvalidSenderAddress                           = errors.New(codespace, 111, "invalid sender address")
+	ValidatorAddressIsNotValidBech32               = errors.New(codespace, 112, "validator address is not bech32 valid address")
 )

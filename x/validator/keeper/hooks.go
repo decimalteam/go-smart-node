@@ -4,6 +4,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
@@ -124,6 +125,13 @@ func (k Keeper) AfterUpdateDelegation(ctx sdk.Context, denom string, amount sdkm
 	ccs := k.GetCustomCoinStaked(ctx, denom)
 	ccs = ccs.Add(amount)
 	k.SetCustomCoinStaked(ctx, denom, ccs)
+	err := events.EmitTypedEvent(ctx, &types.EventUpdateCoinsStaked{
+		Denom:       denom,
+		TotalAmount: ccs,
+	})
+	if err != nil {
+		panic(err)
+	}
 
 	return
 }

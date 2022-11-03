@@ -195,8 +195,8 @@ func (k *Keeper) GetTransaction(ctx sdk.Context, txID string) (transaction types
 	return
 }
 
-// SetUniversalSign mark signature for transaction and wallet owner.
-func (k *Keeper) SetUniversalSign(ctx sdk.Context, txID, signer string) {
+// SetSign mark signature for transaction and wallet owner.
+func (k *Keeper) SetSign(ctx sdk.Context, txID, signer string) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetSignatureKey(txID, signer)
 	store.Set(key, []byte{})

@@ -158,6 +158,15 @@ message EventSlash {
   repeated DelegatorSlash delegators = 2 [ (gogoproto.nullable) = false ];
 }
 
+message EventUpdateCoinsStaked {
+  string denom = 1;
+  string total_amount = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
 // ValidatorReward contains the detailed validator rewards.
 message ValidatorReward {
   option (gogoproto.equal) = false;
