@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -172,6 +173,13 @@ func (k msgServer) SetOnline(goCtx context.Context, msg *types.MsgSetOnline) (*t
 		}
 	}
 
+	// validator without delegations can't become online
+	if !k.HasDelegations(ctx, valAddr) {
+		return nil, errors.ValidatorHasNoDelegations
+	}
+
+	k.DeleteValidatorByPowerIndex(ctx, validator)
+
 	// TODO: move Online and Jailed to store keys?
 	validator.Online = true
 	validator.Jailed = false
@@ -185,8 +193,17 @@ func (k msgServer) SetOnline(goCtx context.Context, msg *types.MsgSetOnline) (*t
 	}
 	validator.Stake = TokensToConsensusPower(totalStake)
 
+	rs, err := k.GetValidatorRS(ctx, valAddr)
+	if err != nil {
+		rs = types.ValidatorRS{
+			Rewards:      sdkmath.ZeroInt(),
+			TotalRewards: sdkmath.ZeroInt(),
+		}
+	}
+	rs.Stake = validator.Stake
 	k.SetValidator(ctx, validator)
 	k.SetValidatorByPowerIndex(ctx, validator)
+	k.SetValidatorRS(ctx, valAddr, rs)
 
 	// StartHeight need for correct calculation of missing blocks
 	consAdr, err := validator.GetConsAddr()

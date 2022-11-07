@@ -105,5 +105,10 @@ func ExtractPartCoin(rnd *rand.Rand, coin sdk.Coin) sdk.Coin {
 	if amount == 0 {
 		return sdk.NewCoin(coin.Denom, sdk.ZeroInt())
 	}
-	return sdk.NewCoin(coin.Denom, helpers.FinneyToWei(sdk.NewInt(RandomRange(rnd, 1, amount+1))))
+	// 50% - part, 50% - entire stake
+	if rnd.Intn(2) == 0 {
+		return sdk.NewCoin(coin.Denom, helpers.FinneyToWei(sdk.NewInt(RandomRange(rnd, 1, amount+1))))
+	} else {
+		return coin
+	}
 }

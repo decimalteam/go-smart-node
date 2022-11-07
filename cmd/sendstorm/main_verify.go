@@ -133,8 +133,9 @@ func cmdVerifyPools() *cobra.Command {
 				fmt.Println(err)
 				return
 			}
-			expectBondedPool := sdk.NewCoins()
-			expectNotBondedPool := sdk.NewCoins()
+			ss := newStakeSummator(reactor.api)
+			bondedAddress := moduleNameToAddress("bonded_tokens_pool")
+			notBondedAddress := moduleNameToAddress("not_bonded_tokens_pool")
 			for _, val := range vals {
 				// delegations
 				dels, err := reactor.api.ValidatorDelegations(val.OperatorAddress)
@@ -143,14 +144,7 @@ func cmdVerifyPools() *cobra.Command {
 					continue
 				}
 				for _, del := range dels {
-					if del.Stake.Type == dscApi.StakeType_Coin {
-						switch val.Status {
-						case dscApi.BondStatus_Bonded:
-							expectBondedPool = expectBondedPool.Add(del.Stake.Stake)
-						case dscApi.BondStatus_Unbonded, dscApi.BondStatus_Unbonding:
-							expectNotBondedPool = expectNotBondedPool.Add(del.Stake.Stake)
-						}
-					}
+					ss.addStake(del.Stake, val.Status)
 				}
 				// redelegations
 				reds, err := reactor.api.ValidatorRedelegations(val.OperatorAddress)
@@ -160,9 +154,7 @@ func cmdVerifyPools() *cobra.Command {
 				}
 				for _, red := range reds {
 					for _, ent := range red.Entries {
-						if ent.Stake.Type == dscApi.StakeType_Coin {
-							expectNotBondedPool = expectNotBondedPool.Add(ent.Stake.Stake)
-						}
+						ss.addStake(ent.Stake, dscApi.BondStatus_Unbonded)
 					}
 				}
 				// undelegations
@@ -173,26 +165,32 @@ func cmdVerifyPools() *cobra.Command {
 				}
 				for _, ubd := range ubds {
 					for _, ent := range ubd.Entries {
-						if ent.Stake.Type == dscApi.StakeType_Coin {
-							expectNotBondedPool = expectNotBondedPool.Add(ent.Stake.Stake)
-						}
+						ss.addStake(ent.Stake, dscApi.BondStatus_Unbonded)
 					}
 				}
 			}
 
 			// check pool
-			balanceBondedPool, err := reactor.api.AddressBalance(moduleNameToAddress("bonded_tokens_pool"))
+			balanceBondedPool, err := reactor.api.AddressBalance(bondedAddress)
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
-			balanceNotBondedPool, err := reactor.api.AddressBalance(moduleNameToAddress("not_bonded_tokens_pool"))
+			balanceNotBondedPool, err := reactor.api.AddressBalance(notBondedAddress)
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
-			compareCoins("bonded_tokens_pool", balanceBondedPool, expectBondedPool)
-			compareCoins("not_bonded_tokens_pool", balanceNotBondedPool, expectNotBondedPool)
+			compareCoins("bonded_tokens_pool", balanceBondedPool, ss.bonded)
+			compareCoins("not_bonded_tokens_pool", balanceNotBondedPool, ss.notBonded)
+			if len(ss.nftDiff) > 0 {
+				fmt.Printf("nft diffs:\n")
+				for _, v := range ss.nftDiff {
+					fmt.Printf("%s\n", v)
+				}
+			} else {
+				fmt.Printf("nft owners is correct\n")
+			}
 		},
 	}
 
@@ -205,6 +203,56 @@ func moduleNameToAddress(name string) string {
 		panic(fmt.Sprintf("moduleNameToAddress(%s) = %s", name, err.Error()))
 	}
 	return address
+}
+
+type stakeSummator struct {
+	bondedAddress    string
+	notBondedAddress string
+	bonded           sdk.Coins
+	notBonded        sdk.Coins
+	nftDiff          []string
+	api              *dscApi.API
+}
+
+func newStakeSummator(api *dscApi.API) *stakeSummator {
+	return &stakeSummator{
+		bondedAddress:    moduleNameToAddress("bonded_tokens_pool"),
+		notBondedAddress: moduleNameToAddress("not_bonded_tokens_pool"),
+		bonded:           sdk.NewCoins(),
+		notBonded:        sdk.NewCoins(),
+		nftDiff:          []string{},
+		api:              api,
+	}
+}
+
+func (ss *stakeSummator) addStake(stake dscApi.Stake, bondStatus dscApi.BondStatus) {
+	switch stake.Type {
+	case dscApi.StakeType_Coin:
+		switch bondStatus {
+		case dscApi.BondStatus_Bonded:
+			ss.bonded = ss.bonded.Add(stake.Stake)
+		case dscApi.BondStatus_Unbonded, dscApi.BondStatus_Unbonding:
+			ss.notBonded = ss.notBonded.Add(stake.Stake)
+		}
+	case dscApi.StakeType_NFT:
+		for _, subId := range stake.SubTokenIDs {
+			sub, err := ss.api.NFTSubToken(stake.ID, fmt.Sprintf("%d", subId))
+			if err != nil {
+				ss.nftDiff = append(ss.nftDiff, fmt.Sprintf("token: %s, sub id: %d, error: %s", stake.ID, subId, err.Error()))
+			}
+			switch bondStatus {
+			case dscApi.BondStatus_Bonded:
+				if sub.Owner != ss.bondedAddress {
+					ss.nftDiff = append(ss.nftDiff, fmt.Sprintf("token: %s, sub id: %d, expect 'bonded' owner", stake.ID, subId))
+				}
+			case dscApi.BondStatus_Unbonded, dscApi.BondStatus_Unbonding:
+				if sub.Owner != ss.notBondedAddress {
+					ss.nftDiff = append(ss.nftDiff, fmt.Sprintf("token: %s, sub id: %d, expect 'not bonded' owner", stake.ID, subId))
+				}
+			}
+		}
+
+	}
 }
 
 func compareCoins(name string, coins1, coins2 sdk.Coins) {

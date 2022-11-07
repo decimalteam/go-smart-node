@@ -78,7 +78,10 @@ func TestDelegation(t *testing.T) {
 	for i := range amts {
 		validators[i], err = types.NewValidator(valAddrs[i], addrDels[i], PKs[i], types.Description{}, sdk.ZeroDec())
 		require.NoError(t, err)
+		// Bonded must be Online
 		validators[i].Status = types.BondStatus_Bonded
+		validators[i].Online = true
+		validators[i].Stake = 10
 		valK.CreateValidator(ctx, validators[i])
 	}
 
@@ -86,7 +89,8 @@ func TestDelegation(t *testing.T) {
 
 	// delegate validator base coin
 	{
-		val, _ := valK.GetValidator(ctx, valAddr)
+		val, found := valK.GetValidator(ctx, valAddr)
+		require.True(t, found)
 		del := addrDels[0]
 
 		err = valK.Delegate(ctx, del, val, defaultStake)
@@ -465,7 +469,9 @@ func TestUndelegation(t *testing.T) {
 	for i := range amts {
 		validators[i], err = types.NewValidator(valAddrs[i], addrDels[i], PKs[i], types.Description{}, sdk.ZeroDec())
 		require.NoError(t, err)
+		// Bonded = Online
 		validators[i].Status = types.BondStatus_Bonded
+		validators[i].Online = true
 		valK.CreateValidator(ctx, validators[i])
 	}
 
@@ -769,7 +775,9 @@ func TestRedelegation(t *testing.T) {
 	for i := range amts {
 		validators[i], err = types.NewValidator(valAddrs[i], addrDels[i], PKs[i], types.Description{}, sdk.ZeroDec())
 		require.NoError(t, err)
+		// Bonded = Online
 		validators[i].Status = types.BondStatus_Bonded
+		validators[i].Online = true
 		valK.CreateValidator(ctx, validators[i])
 	}
 

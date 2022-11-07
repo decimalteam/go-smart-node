@@ -64,6 +64,16 @@ func (k Keeper) GetValidatorDelegations(ctx sdk.Context, validator sdk.ValAddres
 	return delegations
 }
 
+func (k Keeper) HasDelegations(ctx sdk.Context, validator sdk.ValAddress) bool { //nolint:interfacer
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.GetValidatorDelegationsKey(validator))
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		return true
+	}
+	return false
+}
+
 // GetDelegatorDelegations returns a given amount of all the delegations from a delegator.
 func (k Keeper) GetDelegatorDelegations(ctx sdk.Context, delegator sdk.AccAddress, maxRetrieve uint16) (delegations []types.Delegation) {
 	delegations = make([]types.Delegation, 0, maxRetrieve)
@@ -608,6 +618,11 @@ func (k Keeper) DequeueAllMatureUBDQueue(ctx sdk.Context, currTime time.Time) (m
 func (k Keeper) SetCustomCoinStaked(ctx sdk.Context, denom string, amount sdkmath.Int) {
 	store := ctx.KVStore(k.storeKey)
 
+	if amount.IsZero() {
+		store.Delete(types.GetCustomCoinStaked(denom))
+		return
+	}
+
 	bz, err := amount.Marshal()
 	if err != nil {
 		panic(err)
@@ -744,11 +759,18 @@ func (k Keeper) Delegate(
 	}
 
 	// calculate validator new stake
-	delStake := k.ToBaseCoin(ctx, stake.GetStake())
-	power := TokensToConsensusPower(delStake.Amount)
-	rs.Stake += power
-	validator.Stake += power
-
+	// change stake/validator power only if validator is online
+	if validator.Online {
+		delStake := k.ToBaseCoin(ctx, stake.GetStake())
+		power := TokensToConsensusPower(delStake.Amount)
+		rs.Stake += power
+		validator.Stake += power
+	} else {
+		if rs.Stake > 0 {
+			rs.Stake = 0
+			validator.Stake = 0
+		}
+	}
 	// write index
 	k.SetValidatorRS(ctx, valAddress, rs)
 	k.SetValidatorByPowerIndex(ctx, validator)
@@ -1079,15 +1101,21 @@ func (k Keeper) Unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValA
 	}
 
 	// calculate validator new stake
-	validator.Stake -= stakePower
-	if validator.Stake < 0 {
-		validator.Stake = 0
+	if validator.Online {
+		validator.Stake -= stakePower
+		if validator.Stake < 0 {
+			validator.Stake = 0
+		}
+		rs.Stake -= stakePower
+		if rs.Stake < 0 {
+			rs.Stake = 0
+		}
+	} else {
+		if rs.Stake > 0 {
+			rs.Stake = 0
+			validator.Stake = 0
+		}
 	}
-	rs.Stake -= stakePower
-	if rs.Stake < 0 {
-		rs.Stake = 0
-	}
-
 	// write index
 	k.SetValidatorRS(ctx, valAddr, rs)
 	k.SetValidatorByPowerIndex(ctx, validator)

@@ -44,4 +44,5 @@ var (
 	REDAlreadyProcessed             = errors.New(codespace, 137, "redelegation is already processed")
 	CoinDoesNotExist                = errors.New(codespace, 138, "coin does not exist")
 	RewardsNotFound                 = errors.New(codespace, 139, "not found rewards for validator")
+	ValidatorHasNoDelegations       = errors.New(codespace, 140, "validator has no delegations")
 )

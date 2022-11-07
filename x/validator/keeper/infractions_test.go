@@ -73,12 +73,12 @@ func TestMissingSignature(t *testing.T) {
 
 	balance := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(100000)))
 	accs, vals := generateAddresses(dsc, ctx, 10, sdk.NewCoins(balance))
-	consAdr := sdk.GetConsAddress(PKs[0])
+	consAdr := sdk.GetConsAddress(PKs[1])
 
 	params := dsc.ValidatorKeeper.GetParams(ctx)
 
 	creatorStake := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(100)))
-	msgCreate, err := types.NewMsgCreateValidator(vals[0], accs[0], PKs[0], types.Description{Moniker: "monik"},
+	msgCreate, err := types.NewMsgCreateValidator(vals[1], accs[1], PKs[1], types.Description{Moniker: "monik"},
 		sdk.ZeroDec(), creatorStake)
 	require.NoError(t, err)
 
@@ -91,7 +91,7 @@ func TestMissingSignature(t *testing.T) {
 
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1).WithBlockTime(ctx.BlockTime().Add(time.Second * 5))
 	goCtx = sdk.WrapSDKContext(ctx)
-	msgOnline := types.NewMsgSetOnline(vals[0])
+	msgOnline := types.NewMsgSetOnline(vals[1])
 	_, err = msgsrv.SetOnline(goCtx, msgOnline)
 	require.NoError(t, err)
 
@@ -99,12 +99,16 @@ func TestMissingSignature(t *testing.T) {
 		keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
 		ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1).WithBlockTime(ctx.BlockTime().Add(time.Second * 5))
 		dsc.ValidatorKeeper.HandleValidatorSignature(ctx, consAdr.Bytes(), 0, false, params)
+		val, found := dsc.ValidatorKeeper.GetValidatorByConsAddrDecimal(ctx, consAdr)
+		require.True(t, found)
+		require.Equal(t, types.BondStatus_Bonded, val.Status, "fail at step=%d", i)
 	}
 	// check min height not passed
 	val, found := dsc.ValidatorKeeper.GetValidatorByConsAddrDecimal(ctx, consAdr)
 	require.True(t, found)
 	require.True(t, val.Online)
 	require.False(t, val.Jailed)
+	require.Equal(t, types.BondStatus_Bonded, val.Status)
 
 	// min height passed, must be jailed and slashed
 	keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
@@ -116,7 +120,7 @@ func TestMissingSignature(t *testing.T) {
 	require.False(t, val.Online)
 	require.True(t, val.Jailed)
 	// 1% slash
-	del, found := dsc.ValidatorKeeper.GetDelegation(ctx, accs[0], vals[0], cmdcfg.BaseDenom)
+	del, found := dsc.ValidatorKeeper.GetDelegation(ctx, accs[1], vals[1], cmdcfg.BaseDenom)
 	require.True(t, found)
 	require.True(t, del.Stake.Stake.Equal(
 		sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(99))),

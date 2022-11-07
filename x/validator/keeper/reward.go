@@ -124,7 +124,6 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 			}
 			valEvent.Delegators = append(valEvent.Delegators, delEvent)
 		}
-		k.DeleteValidatorByPowerIndex(ctx, val)
 		// update validator rewards
 		valRewards, err := k.GetValidatorRS(ctx, validator)
 		if err != nil {
@@ -132,10 +131,16 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 		}
 		valRewards.Rewards = sdk.ZeroInt()
 		valRewards.Stake = TokensToConsensusPower(totalStake)
-		val.Stake = TokensToConsensusPower(totalStake)
+		if val.Status != types.BondStatus_Bonded {
+			valRewards.Stake = 0
+		}
 		k.SetValidatorRS(ctx, validator, valRewards)
 
-		k.SetValidatorByPowerIndex(ctx, val)
+		if val.Status == types.BondStatus_Bonded {
+			k.DeleteValidatorByPowerIndex(ctx, val)
+			val.Stake = TokensToConsensusPower(totalStake)
+			k.SetValidatorByPowerIndex(ctx, val)
+		}
 
 		e.Validators = append(e.Validators, valEvent)
 	}

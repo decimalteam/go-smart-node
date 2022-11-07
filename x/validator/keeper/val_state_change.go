@@ -131,10 +131,24 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 			return nil, fmt.Errorf("ApplyAndReturnValidatorSetUpdates: should never retrieve a jailed validator from the power store")
 		}
 
+		// Unbonding case: no delegations, but status != Unbonding
+		// stake and consensus power = 0
+		if len(delegations[valAddr]) == 0 && validator.Status != types.BondStatus_Unbonding {
+			// force to set offline
+			validator.Online = false
+			validator, err = k.beginUnbondingValidator(ctx, validator)
+			if err != nil {
+				return nil, err
+			}
+			// continue to add validator to noLongerBonded, and remove from power index
+			continue
+		}
+
 		// if we get to a zero-power validator (which we don't bond),
 		// there are no more possible bonded validators
 		if validator.PotentialConsensusPower() == 0 {
-			break
+			// continue for potential unbonding validators
+			continue
 		}
 
 		// apply the appropriate state change if necessary
@@ -211,9 +225,13 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 
 		// update the validator set if power has changed
 		if !found || !bytes.Equal(oldPowerBytes, newPowerBytes) {
-			updates = append(updates, validator.ABCIValidatorUpdate(ethtypes.PowerReduction))
-
-			k.SetLastValidatorPower(ctx, validator.GetOperator(), newPower)
+			if newPower > 0 {
+				k.SetLastValidatorPower(ctx, validator.GetOperator(), newPower)
+				updates = append(updates, validator.ABCIValidatorUpdate(ethtypes.PowerReduction))
+			} else {
+				k.DeleteLastValidatorPower(ctx, validator.GetOperator())
+				updates = append(updates, validator.ABCIValidatorUpdateZero())
+			}
 		}
 
 		delete(last, valAddr)
@@ -229,23 +247,6 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 
 	for _, valAddrBytes := range noLongerBonded {
 		validator := k.mustGetValidator(ctx, sdk.ValAddress(valAddrBytes))
-		validator, err = k.bondedToUnbonding(ctx, validator)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, delegation := range delegations[validator.GetOperator().String()] {
-			switch delegation.Stake.Type {
-			case types.StakeType_Coin:
-				amtFromBondedToNotBonded = amtFromBondedToNotBonded.Add(delegation.GetStake().GetStake())
-			case types.StakeType_NFT:
-				nftsFromBondedToNotBonded = append(nftsFromBondedToNotBonded, nftTransferRecord{
-					tokenID:     delegation.GetStake().GetID(),
-					subTokenIDs: delegation.GetStake().GetSubTokenIDs(),
-				})
-			}
-		}
-
 		k.DeleteLastValidatorPower(ctx, validator.GetOperator())
 		updates = append(updates, validator.ABCIValidatorUpdateZero())
 	}
@@ -347,12 +348,18 @@ func (k Keeper) unbondValidator(ctx sdk.Context, validator types.Validator) (typ
 	// delete the validator by power index, as the key will change
 	k.DeleteValidatorByPowerIndex(ctx, validator)
 
+	valAdr := validator.GetOperator()
 	validator = validator.UpdateStatus(types.BondStatus_Unbonded)
 	validator.Stake = 0
+	rs, err := k.GetValidatorRS(ctx, valAdr)
+	if err != nil {
+		return types.Validator{}, err
+	}
+	rs.Stake = 0
+	k.SetValidatorRS(ctx, valAdr, rs)
 
 	// save the now bonded validator record to the two referenced stores
 	k.SetValidator(ctx, validator)
-	//k.SetValidatorByPowerIndex(ctx, validator)
 
 	// delete from unbonding queue if present
 	k.DeleteValidatorQueue(ctx, validator)
@@ -368,12 +375,15 @@ func (k Keeper) beginUnbondingValidator(ctx sdk.Context, validator types.Validat
 	// delete the validator by power index, as the key will change
 	k.DeleteValidatorByPowerIndex(ctx, validator)
 
-	// sanity check
-	if validator.Status != types.BondStatus_Bonded {
-		panic(fmt.Sprintf("should not already be unbonded or unbonding, validator: %v\n", validator))
-	}
-
 	validator = validator.UpdateStatus(types.BondStatus_Unbonding)
+	valAdr := validator.GetOperator()
+	validator.Stake = 0
+	rs, err := k.GetValidatorRS(ctx, valAdr)
+	if err != nil {
+		return types.Validator{}, err
+	}
+	rs.Stake = 0
+	k.SetValidatorRS(ctx, valAdr, rs)
 
 	// set the unbonding completion time and completion height appropriately
 	validator.UnbondingTime = ctx.BlockHeader().Time.Add(params.UndelegationTime)
@@ -381,7 +391,7 @@ func (k Keeper) beginUnbondingValidator(ctx sdk.Context, validator types.Validat
 
 	// save the now unbonded validator record and power index
 	k.SetValidator(ctx, validator)
-	k.SetValidatorByPowerIndex(ctx, validator)
+	//k.SetValidatorByPowerIndex(ctx, validator)
 
 	// Adds to unbonding validator queue
 	k.InsertUnbondingValidatorQueue(ctx, validator)
