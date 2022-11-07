@@ -13,6 +13,7 @@ const (
 	turnOnDebug   = "debug"
 	commitFlag    = "commit"
 	customFee     = "customfee"
+	stepsCount    = "steps"
 )
 
 func main() {
@@ -29,6 +30,7 @@ func main() {
 	rootCmd.PersistentFlags().Bool(turnOnDebug, false, "write api requests/responses to sendstorm.log")
 	rootCmd.PersistentFlags().Bool(commitFlag, false, "use broadcast_tx_commit (wait for block completion) for transaction sending (very slow)")
 	rootCmd.PersistentFlags().Bool(customFee, false, "use custom coins for fee")
+	rootCmd.PersistentFlags().Int(stepsCount, 0, "step to run (0 or empty - infinite)")
 
 	rootCmd.AddCommand(
 		cmdGenerate(),
@@ -38,6 +40,7 @@ func main() {
 		cmdVerify(),
 		cmdScenario(),
 		cmdValidators(),
+		cmdVerifyPools(),
 	)
 
 	if err := rootCmd.Execute(); err != nil {

@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -111,5 +112,5 @@ func (ac *CancelRedelegationAction) GenerateTx(sa *stormTypes.StormAccount, feeC
 }
 
 func (ac *CancelRedelegationAction) String() string {
-	return "CancelRedelegationAction"
+	return fmt.Sprintf("CancelRedelegationAction(%s->%s, h=%d, id=%s)", ac.fromValidatorAddress, ac.toValidatorAddress, ac.creationHeight, ac.coin.Denom)
 }

@@ -2,16 +2,20 @@ package main
 
 import (
 	"fmt"
+	"sort"
+
+	"github.com/spf13/cobra"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/spf13/cobra"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
+	cosmosAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 )
 
 func cmdVerify() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "verify",
+		Use:   "verify-coins",
 		Short: "Verify custom coins volume",
 		Run: func(cmd *cobra.Command, args []string) {
 			//
@@ -48,9 +52,9 @@ func cmdVerify() *cobra.Command {
 				balances = balances.Add(coins...)
 			}
 			for _, coinInfo := range coinsInfo {
-				if coinInfo.Denom == reactor.api.BaseCoin() {
-					continue
-				}
+				//if coinInfo.Denom == reactor.api.BaseCoin() {
+				//	continue
+				//}
 				diff := "none"
 				bal := balances.AmountOf(coinInfo.Denom)
 				if !bal.Equal(coinInfo.Volume) {
@@ -96,8 +100,8 @@ func cmdValidators() *cobra.Command {
 					fmt.Println(err)
 					continue
 				}
-				fmt.Printf("moniker: %s, status: %d, online: %v, jailed: %v, stake: %d, rewards: %s, delegation: %d\n",
-					val.Description.Moniker, val.Status, val.Online, val.Jailed, val.Stake, val.Rewards, len(dels))
+				fmt.Printf("moniker: %s, address: %s, status: %d, online: %v, jailed: %v, stake: %d, rewards: %s, delegation: %d\n",
+					val.Description.Moniker, val.OperatorAddress, val.Status, val.Online, val.Jailed, val.Stake, val.Rewards, len(dels))
 			}
 		},
 	}
@@ -175,9 +179,48 @@ func cmdVerifyPools() *cobra.Command {
 					}
 				}
 			}
-			// TODO: check pool
+
+			// check pool
+			balanceBondedPool, err := reactor.api.AddressBalance(moduleNameToAddress("bonded_tokens_pool"))
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			balanceNotBondedPool, err := reactor.api.AddressBalance(moduleNameToAddress("not_bonded_tokens_pool"))
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			compareCoins("bonded_tokens_pool", balanceBondedPool, expectBondedPool)
+			compareCoins("not_bonded_tokens_pool", balanceNotBondedPool, expectNotBondedPool)
 		},
 	}
 
 	return cmd
+}
+
+func moduleNameToAddress(name string) string {
+	address, err := bech32.ConvertAndEncode("dx", cosmosAuthTypes.NewModuleAddress(name))
+	if err != nil {
+		panic(fmt.Sprintf("moduleNameToAddress(%s) = %s", name, err.Error()))
+	}
+	return address
+}
+
+func compareCoins(name string, coins1, coins2 sdk.Coins) {
+	if coins1.IsEqual(coins2) {
+		fmt.Printf("pool '%s' is correct\n", name)
+	} else {
+		fmt.Printf("pool '%s' differs:\n", name)
+		denoms := make([]string, 0)
+		for _, coin := range coins1.Add(coins2...) {
+			denoms = append(denoms, coin.Denom)
+		}
+		sort.Strings(denoms)
+		for _, denom := range denoms {
+			if !coins1.AmountOf(denom).Equal(coins2.AmountOf(denom)) {
+				fmt.Printf("denom '%s' %s != %s\n", denom, coins1.AmountOf(denom), coins2.AmountOf(denom))
+			}
+		}
+	}
 }

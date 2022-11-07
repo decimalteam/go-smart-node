@@ -304,3 +304,30 @@ func loadMnemonics(fname string) ([]string, error) {
 	}
 	return result, nil
 }
+
+type stepsCounter struct {
+	limit   int
+	counter int
+}
+
+func NewStepsCounter(flags *pflag.FlagSet) *stepsCounter {
+	limit, err := flags.GetInt(stepsCount)
+	if err != nil || limit < 0 {
+		limit = 0
+	}
+	return &stepsCounter{
+		limit:   limit,
+		counter: 0,
+	}
+}
+
+func (sc *stepsCounter) increment() bool {
+	if sc.limit == 0 {
+		return true
+	}
+	sc.counter++
+	if sc.counter > sc.limit {
+		return false
+	}
+	return true
+}
