@@ -1,7 +1,9 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"context"
+	"fmt"
 	"strings"
 
 	sdkmath "cosmossdk.io/math"
@@ -550,6 +552,60 @@ func (k Querier) Pool(c context.Context, _ *types.QueryPoolRequest) (*types.Quer
 	)
 
 	return &types.QueryPoolResponse{Pool: pool}, nil
+}
+
+// CustomCoinPrice queries the total amount bonded custom coins.
+func (k Querier) CustomCoinPrice(c context.Context, req *types.QueryCustomCoinPriceRequest) (*types.QueryCustomCoinPriceResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+
+	ctx := sdk.UnwrapSDKContext(c)
+
+	baseDenom := k.BaseDenom(ctx)
+	if req.Denom == baseDenom {
+		return nil, fmt.Errorf("is not custom coin")
+	}
+
+	customCoinStaked := k.GetCustomCoinStaked(ctx, req.Denom)
+	if customCoinStaked.Equal(sdk.ZeroInt()) {
+		customCoin, err := k.coinKeeper.GetCoin(ctx, req.Denom)
+		if err != nil {
+			panic(err)
+		}
+		amountInBaseCoin := formulas.CalculateSaleReturn(customCoin.Volume, customCoin.Reserve, uint(customCoin.CRR), customCoinStaked)
+
+		return &types.QueryCustomCoinPriceResponse{
+			Price: sdk.NewDecFromInt(amountInBaseCoin),
+		}, nil
+	}
+
+	customCoinPrice := k.calculateCustomCoinPrice(ctx, req.Denom, customCoinStaked)
+
+	baseAmount := sdk.NewDecFromInt(sdk.NewInt(1)).Mul(customCoinPrice)
+
+	return &types.QueryCustomCoinPriceResponse{
+		Price: baseAmount,
+	}, nil
+}
+
+// TotalCustomCoin queries the total amount bonded custom coins.
+func (k Querier) TotalCustomCoin(c context.Context, req *types.QueryTotalCustomCoinRequest) (*types.QueryTotalCustomCoinResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+
+	ctx := sdk.UnwrapSDKContext(c)
+
+	if req.Denom == k.BaseDenom(ctx) {
+		return nil, fmt.Errorf("is not custom coin")
+	}
+
+	customCoinStaked := k.GetCustomCoinStaked(ctx, req.Denom)
+
+	return &types.QueryTotalCustomCoinResponse{
+		TotalAmount: customCoinStaked,
+	}, nil
 }
 
 // Params queries the module params.

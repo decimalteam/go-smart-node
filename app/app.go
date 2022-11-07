@@ -548,6 +548,7 @@ func NewDSC(
 		app.BankKeeper,
 		&app.NFTKeeper,
 		&app.MultisigKeeper,
+		app.ValidatorKeeper,
 	)
 	app.SwapKeeper = *swapkeeper.NewKeeper(
 		appCodec,

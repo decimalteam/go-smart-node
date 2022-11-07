@@ -152,10 +152,13 @@ message EventLiveness {
   uint32 missed_blocks = 3;
 }
 
-// EventSlash defines event emitted when a validator is slashed.
-message EventSlash {
-  string validator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-  repeated DelegatorSlash delegators = 2 [ (gogoproto.nullable) = false ];
+message EventUpdateCoinsStaked {
+  string denom = 1;
+  string total_amount = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
 }
 
 // ValidatorReward contains the detailed validator rewards.
@@ -227,7 +230,7 @@ message StakeReward {
 }
 
 // ValidatorSlash contains the detailed validator slash.
-message ValidatorSlash {
+message EventValidatorSlash {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
   option (gogoproto.goproto_stringer) = true;
