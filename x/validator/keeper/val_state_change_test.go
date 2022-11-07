@@ -56,14 +56,14 @@ func TestStateOnlineOffline(t *testing.T) {
 	////////////////////////////////////////////////
 	// 1. create second validator
 	creatorStake := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(100)))
-	msgCreate, err := types.NewMsgCreateValidator(vals[0], accs[0], PKs[0], types.Description{Moniker: "monik"},
+	msgCreate, err := types.NewMsgCreateValidator(vals[1], accs[1], PKs[1], types.Description{Moniker: "monik"},
 		sdk.ZeroDec(), creatorStake)
 	require.NoError(t, err)
 
 	_, err = msgsrv.CreateValidator(goCtx, msgCreate)
 	require.NoError(t, err)
 	// delegate NFT
-	_, err = msgsrv.DelegateNFT(goCtx, types.NewMsgDelegateNFT(accs[1], vals[0], tokenID, []uint32{1}))
+	_, err = msgsrv.DelegateNFT(goCtx, types.NewMsgDelegateNFT(accs[1], vals[1], tokenID, []uint32{1}))
 	require.NoError(t, err)
 	subtoken, found := dsc.NFTKeeper.GetSubToken(ctx, tokenID, 1)
 	require.True(t, found)
@@ -71,7 +71,7 @@ func TestStateOnlineOffline(t *testing.T) {
 
 	updates := keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
 	// new validator is not online, there is not changes in tendermint validators and powers
-	require.Len(t, updates, 0)
+	require.Len(t, updates, 0, "power=%d", updates[0].Power)
 	require.Equal(t, genesisVal.ConsensusPower(), dsc.ValidatorKeeper.GetLastTotalPower(ctx).Int64())
 	require.Len(t, dsc.ValidatorKeeper.GetLastValidators(ctx), 1)
 
@@ -631,4 +631,96 @@ func TestCheckDelegations(t *testing.T) {
 		require.Equal(t, val.Stake-minus, updatedRS.Stake)
 	}
 
+}
+
+func TestPoolBreakingByCancelRedelegation(t *testing.T) {
+	_, dsc, ctx := createTestInput(t)
+
+	msgsrv := keeper.NewMsgServerImpl(dsc.ValidatorKeeper)
+
+	startBondedBalance := dsc.BankKeeper.GetBalance(ctx, dsc.ValidatorKeeper.GetBondedPool(ctx).GetAddress(), cmdcfg.BaseDenom)
+
+	// 0. genesis
+	balance := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10000000)))
+	accs, vals := generateAddresses(dsc, ctx, 10, sdk.NewCoins(balance))
+
+	stake := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(1000)))
+	halfstake := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(500)))
+	cancelstake := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(100)))
+
+	// 1. create validators
+	goCtx := sdk.WrapSDKContext(ctx)
+
+	msgCreate, err := types.NewMsgCreateValidator(
+		vals[1],
+		accs[1],
+		PKs[0],
+		types.Description{Moniker: "monik1"},
+		sdk.ZeroDec(),
+		stake,
+	)
+	require.NoError(t, err)
+	_, err = msgsrv.CreateValidator(goCtx, msgCreate)
+	require.NoError(t, err)
+
+	msgCreate, err = types.NewMsgCreateValidator(
+		vals[2],
+		accs[2],
+		PKs[1],
+		types.Description{Moniker: "monik2"},
+		sdk.ZeroDec(),
+		stake,
+	)
+	require.NoError(t, err)
+	_, err = msgsrv.CreateValidator(goCtx, msgCreate)
+	require.NoError(t, err)
+
+	// 2. set online
+	_, err = msgsrv.SetOnline(goCtx, types.NewMsgSetOnline(vals[1]))
+	require.NoError(t, err)
+	_, err = msgsrv.SetOnline(goCtx, types.NewMsgSetOnline(vals[2]))
+	require.NoError(t, err)
+
+	keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
+
+	// 3. add redelegation
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
+	goCtx = sdk.WrapSDKContext(ctx)
+
+	_, err = msgsrv.Redelegate(goCtx, types.NewMsgRedelegate(
+		accs[1],
+		vals[1],
+		vals[2],
+		halfstake,
+	))
+	require.NoError(t, err)
+
+	height := ctx.BlockHeight()
+	keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
+
+	// 4. set one validator offline + cancel redelegation
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
+	goCtx = sdk.WrapSDKContext(ctx)
+	_, err = msgsrv.SetOffline(goCtx, types.NewMsgSetOffline(vals[1]))
+	require.NoError(t, err)
+
+	_, err = msgsrv.CancelRedelegation(goCtx, types.NewMsgCancelRedelegation(
+		accs[1],
+		vals[1],
+		vals[2],
+		height,
+		cancelstake,
+	))
+	require.NoError(t, err)
+	keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
+
+	// check pool balances
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
+	bondedBalance := dsc.BankKeeper.GetBalance(ctx, dsc.ValidatorKeeper.GetBondedPool(ctx).GetAddress(), cmdcfg.BaseDenom)
+	notBondedBalance := dsc.BankKeeper.GetBalance(ctx, dsc.ValidatorKeeper.GetNotBondedPool(ctx).GetAddress(), cmdcfg.BaseDenom)
+
+	// stake of vals[1] (1000) (online)
+	require.True(t, bondedBalance.IsEqual(startBondedBalance.Add(stake)), "bonded: %s, expect: %s", bondedBalance, stake)
+	// stake of vals[0] (500+100 cancel) + 400 in redelegation
+	require.True(t, notBondedBalance.IsEqual(stake), "not bonded: %s, expect: %s", notBondedBalance, stake)
 }

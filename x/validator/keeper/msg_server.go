@@ -176,8 +176,17 @@ func (k msgServer) SetOnline(goCtx context.Context, msg *types.MsgSetOnline) (*t
 	validator.Online = true
 	validator.Jailed = false
 
-	// TODO: optimize
+	delByValidator := k.GetAllDelegationsByValidator(ctx)
+	customCoinStaked := k.GetAllCustomCoinsStaked(ctx)
+	customCoinPrices := k.CalculateCustomCoinPrices(ctx, customCoinStaked)
+	totalStake, err := k.CalculateTotalPowerWithDelegationsAndPrices(ctx, validator.GetOperator(), delByValidator[validator.OperatorAddress], customCoinPrices)
+	if err != nil {
+		return nil, err
+	}
+	validator.Stake = TokensToConsensusPower(totalStake)
+
 	k.SetValidator(ctx, validator)
+	k.SetValidatorByPowerIndex(ctx, validator)
 
 	// StartHeight need for correct calculation of missing blocks
 	consAdr, err := validator.GetConsAddr()
@@ -217,7 +226,7 @@ func (k msgServer) SetOffline(goCtx context.Context, msg *types.MsgSetOffline) (
 	validator.Online = false
 	// TODO: optimize
 	k.SetValidator(ctx, validator)
-	k.DeleteValidatorByPowerIndex(ctx, validator)
+	//k.DeleteValidatorByPowerIndex(ctx, validator)
 	consAdr, err := validator.GetConsAddr()
 	if err != nil {
 		return nil, err
@@ -652,7 +661,7 @@ func (k msgServer) _cancelRedelegation(ctx sdk.Context, msgDelegator, msgValidat
 	if !found {
 		return errors.ValidatorNotFound
 	}
-	validatorDst, found := k.GetValidator(ctx, valDstAddr)
+	_, found = k.GetValidator(ctx, valDstAddr)
 	if !found {
 		return errors.ValidatorNotFound
 	}
@@ -704,7 +713,7 @@ func (k msgServer) _cancelRedelegation(ctx sdk.Context, msgDelegator, msgValidat
 	}
 	k.SetDelegation(ctx, delegation)
 
-	err = k.TransferStakeBetweenPools(ctx, validatorDst.GetStatus(), validatorSrc.GetStatus(), stake)
+	err = k.TransferStakeBetweenPools(ctx, types.BondStatus_Unbonded, validatorSrc.GetStatus(), stake)
 	if err != nil {
 		return err
 	}
