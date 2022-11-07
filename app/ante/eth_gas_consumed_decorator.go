@@ -134,9 +134,9 @@ func (egcd EthGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 		}
 
 		err = events.EmitTypedEvent(ctx, &feetypes.EventPayCommission{
-			Payer:       dxAdr,
-			Coins:       fees,
-			BurnedCoins: feeToBurn,
+			Payer: dxAdr,
+			Coins: fees,
+			Burnt: feeToBurn,
 		})
 		if err != nil {
 			return ctx, sdkerrors.Wrapf(err, "failed to emit commission event")

@@ -50,15 +50,21 @@ func TestBurningPool(t *testing.T) {
 
 	err = dsc.BankKeeper.SendCoinsFromAccountToModule(ctx, accs[0], types.BurningPool, coinsToBurn)
 	require.NoError(t, err)
+	// burn coins in EndBlocker
 	keeper.EndBlocker(ctx, dsc.FeeKeeper, abci.RequestEndBlock{})
 
+	// check coins
 	coinInfoBaseAfter, err := dsc.CoinKeeper.GetCoin(ctx, cmdcfg.BaseDenom)
 	require.NoError(t, err)
 	coinInfoTestAfter, err := dsc.CoinKeeper.GetCoin(ctx, "testdenom")
 	require.NoError(t, err)
-
 	require.True(t, coinInfoBaseBefore.Volume.Sub(coinInfoBaseAfter.Volume).Equal(coinsToBurn.AmountOf(cmdcfg.BaseDenom)))
 	require.True(t, coinInfoTestBefore.Volume.Sub(coinInfoTestAfter.Volume).Equal(coinsToBurn.AmountOf("testdenom")))
+
+	// check pool
+	bpAddr := dsc.AccountKeeper.GetModuleAddress(types.BurningPool)
+	burnPoolBalance := dsc.BankKeeper.GetAllBalances(ctx, bpAddr)
+	require.True(t, burnPoolBalance.Empty())
 }
 
 func createTestInput(t *testing.T) (*codec.LegacyAmino, *app.DSC, sdk.Context) {

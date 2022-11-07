@@ -193,9 +193,9 @@ func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper coin
 	// Emit fee deduction event
 	// need for correct balance calculation for external services
 	err := events.EmitTypedEvent(ctx, &feetypes.EventPayCommission{
-		Payer:       feePayerAddress.String(),
-		Coins:       sdk.NewCoins(fee),
-		BurnedCoins: sdk.NewCoins(sdk.NewCoin(fee.Denom, amountToBurn)),
+		Payer: feePayerAddress.String(),
+		Coins: sdk.NewCoins(fee),
+		Burnt: sdk.NewCoins(sdk.NewCoin(fee.Denom, amountToBurn)),
 	})
 	if err != nil {
 		return feeerrors.Internal.Wrapf("err: %s", err.Error())
