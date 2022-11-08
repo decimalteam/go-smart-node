@@ -107,6 +107,9 @@ func (msg *MsgCreateValidator) ValidateBasic() error {
 	if msg.ConsensusPubkey == nil {
 		return ErrEmptyValidatorPubKey
 	}
+	if len(msg.ConsensusPubkey.Value) == 0 {
+		return ErrEmptyValidatorPubKey
+	}
 	if msg.Description == (Description{}) {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "empty description")
 	}
