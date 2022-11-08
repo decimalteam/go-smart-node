@@ -159,7 +159,7 @@ func main() {
 }
 
 func universalMultiSig() {
-	const faucetMnemonic = "erase knee humble birth museum cricket hello quote throw rug example soccer fame situate steel book wall friend owner bulb trick maze hire zebra"
+	const faucetMnemonic = "load green feature bachelor interest glue amount typical define ankle blade enroll draft tiger lonely volcano slab brush arm lottery defy mountain exhaust always"
 	const acc1mnemonic = "affair coral purse lounge fancy orbit region shine wagon fever frozen market equal coil mixed lottery will stand oil they pepper utility season fruit"
 	const acc2mnemonic = "hard delay bag address subject dog flock cactus athlete legal arrange skull own elephant twelve switch sustain desert angle shop supply solid river aspect"
 	const acc3mnemonic = "differ enter exhaust copy position gravity fun guide clump brisk confirm swarm salt stamp tape purpose country slam simple tourist fog load toddler warrior"
@@ -230,6 +230,9 @@ func universalMultiSig() {
 		}
 		tx.SignTransaction(acc1)
 		bz, _ := tx.BytesToSend()
+		resp, err := api.SimulateTx(bz)
+		fmt.Printf("simulate: %#v, error: %v", resp, err)
+		return
 		res, _ := api.BroadcastTxCommit(bz)
 		fmt.Printf("create tx result: %#v\n\n", res)
 	}

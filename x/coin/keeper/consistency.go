@@ -80,7 +80,7 @@ func (k *Keeper) CheckFutureVolumeChanges(ctx sdk.Context, coinInfo types.Coin, 
 	return nil
 }
 
-// Special burn for slashing in validator module
+// Special burn mainly for slashing in validator module
 // It decrease both volume and reserve
 // pool must be exists and must have burning right
 func (k *Keeper) BurnPoolCoins(ctx sdk.Context, poolName string, coins sdk.Coins) error {

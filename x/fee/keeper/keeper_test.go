@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"testing"
+
 	"bitbucket.org/decimalteam/go-smart-node/testutil"
 	feekeeper "bitbucket.org/decimalteam/go-smart-node/x/fee/keeper"
 	feetestutil "bitbucket.org/decimalteam/go-smart-node/x/fee/testutil"
@@ -17,7 +19,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
-	"testing"
 )
 
 var (
@@ -69,6 +70,8 @@ func (s *KeeperTestSuite) SetupTest() {
 	// -- create mock controller
 	ctrl := gomock.NewController(s.T())
 	bankKeeper := feetestutil.NewMockKeeper(ctrl)
+	coinKeeper := feetestutil.NewMockCoinKeeper(ctrl)
+	authKeeper := feetestutil.NewMockAccountKeeper(ctrl)
 	// --
 
 	// -- create nft keeper
@@ -79,6 +82,8 @@ func (s *KeeperTestSuite) SetupTest() {
 		key,
 		space,
 		bankKeeper,
+		coinKeeper,
+		authKeeper,
 		baseDenom,
 	)
 	dp := types.DefaultParams()
