@@ -191,6 +191,33 @@ func cmdVerifyPools() *cobra.Command {
 			} else {
 				fmt.Printf("nft owners is correct\n")
 			}
+			// check all nft
+			nfts := make([]*dscApi.NFTToken, 0)
+			colls, err := reactor.api.NFTCollections()
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			for _, coll := range colls {
+				collWithTokens, err := reactor.api.NFTCollection(coll.Creator, coll.Denom)
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+				nfts = append(nfts, collWithTokens.Tokens...)
+			}
+			for _, nft := range nfts {
+				tok, err := reactor.api.NFTToken(nft.ID)
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+				for _, sub := range tok.SubTokens {
+					if !ss.nftDelegated[nftKey{nft.ID, sub.ID}] && (sub.Owner == bondedAddress || sub.Owner == notBondedAddress) {
+						fmt.Printf("pool is owner of non-delegated token: %s, sub: %d\n", nft.ID, sub.ID)
+					}
+				}
+			}
 		},
 	}
 
@@ -211,7 +238,14 @@ type stakeSummator struct {
 	bonded           sdk.Coins
 	notBonded        sdk.Coins
 	nftDiff          []string
+	nftOwners        map[nftKey]string
+	nftDelegated     map[nftKey]bool
 	api              *dscApi.API
+}
+
+type nftKey struct {
+	tokenID string
+	subId   uint32
 }
 
 func newStakeSummator(api *dscApi.API) *stakeSummator {
@@ -221,8 +255,14 @@ func newStakeSummator(api *dscApi.API) *stakeSummator {
 		bonded:           sdk.NewCoins(),
 		notBonded:        sdk.NewCoins(),
 		nftDiff:          []string{},
+		nftOwners:        make(map[nftKey]string),
+		nftDelegated:     make(map[nftKey]bool),
 		api:              api,
 	}
+}
+
+func (ss *stakeSummator) addNFT(tokenID string, subID uint32, owner string) {
+	ss.nftOwners[nftKey{tokenID, subID}] = owner
 }
 
 func (ss *stakeSummator) addStake(stake dscApi.Stake, bondStatus dscApi.BondStatus) {
@@ -236,6 +276,7 @@ func (ss *stakeSummator) addStake(stake dscApi.Stake, bondStatus dscApi.BondStat
 		}
 	case dscApi.StakeType_NFT:
 		for _, subId := range stake.SubTokenIDs {
+			ss.nftDelegated[nftKey{stake.ID, subId}] = true
 			sub, err := ss.api.NFTSubToken(stake.ID, fmt.Sprintf("%d", subId))
 			if err != nil {
 				ss.nftDiff = append(ss.nftDiff, fmt.Sprintf("token: %s, sub id: %d, error: %s", stake.ID, subId, err.Error()))
