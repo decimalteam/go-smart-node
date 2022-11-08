@@ -30,6 +30,7 @@ var (
 
 	emptyAddr   sdk.ValAddress
 	emptyPubkey cryptotypes.PubKey
+	pkNil       = ed25519.PubKey{Key: nil}
 )
 
 func init() {

@@ -100,7 +100,7 @@ func runOpSequence(t *testing.T, app *appMain.DSC, ctx sdk.Context, seq []coinOp
 		fooCoin := sdk.NewCoin("foo", op.amount)
 		switch op.opType {
 		case "fee":
-			appAnte.DeductFees(ctx, app.BankKeeper, &app.CoinKeeper, op.adr, fooCoin)
+			appAnte.DeductFees(ctx, app.BankKeeper, &app.CoinKeeper, op.adr, fooCoin, sdk.ZeroDec())
 		case "validator":
 			// fee burn (like validator module)
 			coinInCollector := app.BankKeeper.GetBalance(ctx, sdkAuthTypes.NewModuleAddress(sdkAuthTypes.FeeCollectorName), "foo")

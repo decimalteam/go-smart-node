@@ -51,6 +51,8 @@ var (
 	PSKeyValidatorUndelegateNFT   = []byte("ValidatorUndelegateNFT")
 	PSKeyValidatorSetOnline       = []byte("ValidatorSetOnline")
 	PSKeyValidatorSetOffline      = []byte("ValidatorSetOffline")
+	// commission burn factor
+	PSKeyCommissionBurnFactor = []byte("CommissionBurnFactor")
 	// oracle key
 	PSKeyOracle = []byte("Oracle")
 	// evm tx keys
@@ -110,6 +112,8 @@ func DefaultParams() Params {
 		ValidatorUndelegateNFT:   sdk.MustNewDecFromStr("0.08"),
 		ValidatorSetOnline:       sdk.MustNewDecFromStr("0.04"),
 		ValidatorSetOffline:      sdk.MustNewDecFromStr("0.04"),
+		//
+		CommissionBurnFactor: sdk.MustNewDecFromStr("0.5"),
 		// oracle
 		// NOTE: default address is []byte{0}
 		Oracle: "dx1gczphl4h9aqrzy237jfm97elu66dam2w05xrrc",
@@ -163,6 +167,8 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(PSKeyValidatorUndelegateNFT, &p.ValidatorUndelegateNFT, validateDec),
 		paramtypes.NewParamSetPair(PSKeyValidatorSetOnline, &p.ValidatorSetOnline, validateDec),
 		paramtypes.NewParamSetPair(PSKeyValidatorSetOffline, &p.ValidatorSetOffline, validateDec),
+		// burn factor
+		paramtypes.NewParamSetPair(PSKeyCommissionBurnFactor, &p.CommissionBurnFactor, validateLimitDec),
 		// oracle
 		paramtypes.NewParamSetPair(PSKeyOracle, &p.Oracle, validateAddress),
 		// evm
@@ -198,6 +204,20 @@ func validateDec(i interface{}) error {
 	}
 	if v.IsNegative() {
 		return fmt.Errorf("negative fee: %s", v.String())
+	}
+	return nil
+}
+
+func validateLimitDec(i interface{}) error {
+	v, ok := i.(sdk.Dec)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	if v.IsNegative() {
+		return fmt.Errorf("negative value: %s", v.String())
+	}
+	if v.GT(sdk.OneDec()) {
+		return fmt.Errorf("value over 1.0: %s", v.String())
 	}
 	return nil
 }
