@@ -64,6 +64,20 @@ func NewCreateValidatorCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create-validator",
 		Short: "create new validator initialized with a self-delegation to it",
+		Long: fmt.Sprintf(`
+Create new validator command example:
+
+%s tx %s create-validator 
+--moniker validator
+--details='Hey, I am a new validator. Please delegate!'
+--identity=AFAF00C4
+--website=https://newvalidator.io
+--security-contact=contact@newvalidator.io
+--amount 100000del
+--from mykey
+--pubkey '{"@type":"/cosmos.crypto.ed25519.PubKey","key":"cdafs02U0NcdgX1PigeBmxMNleH+kUCr+eEdnZnNSag="}' 
+--commission-rate="0.10"
+`, cmdcfg.AppBinName, types.ModuleName),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
