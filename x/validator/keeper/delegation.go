@@ -74,6 +74,31 @@ func (k Keeper) HasDelegations(ctx sdk.Context, validator sdk.ValAddress) bool {
 	return false
 }
 
+func (k Keeper) HasUndelegations(ctx sdk.Context, validator sdk.ValAddress) bool { //nolint:interfacer
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.GetUBDsByValIndexKey(validator))
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		return true
+	}
+	return false
+}
+
+func (k Keeper) HasRedelegations(ctx sdk.Context, validator sdk.ValAddress) bool { //nolint:interfacer
+	store := ctx.KVStore(k.storeKey)
+	iteratorSrc := sdk.KVStorePrefixIterator(store, types.GetREDsFromValSrcIndexKey(validator))
+	defer iteratorSrc.Close()
+	for ; iteratorSrc.Valid(); iteratorSrc.Next() {
+		return true
+	}
+	iteratorDst := sdk.KVStorePrefixIterator(store, types.GetREDsToValDstIndexKey(validator))
+	defer iteratorDst.Close()
+	for ; iteratorDst.Valid(); iteratorDst.Next() {
+		return true
+	}
+	return false
+}
+
 // GetDelegatorDelegations returns a given amount of all the delegations from a delegator.
 func (k Keeper) GetDelegatorDelegations(ctx sdk.Context, delegator sdk.AccAddress, maxRetrieve uint16) (delegations []types.Delegation) {
 	delegations = make([]types.Delegation, 0, maxRetrieve)

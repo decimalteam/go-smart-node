@@ -65,7 +65,7 @@ func cmdRun() *cobra.Command {
 			steps := NewStepsCounter(cmd.Flags())
 			// infinite loop
 			n := int64(0)
-			for steps.increment() {
+			for {
 				action := reactor.actionReactor.Generate()
 				accs := action.ChooseAccounts(reactor.accounts)
 				if len(accs) == 0 {
@@ -74,6 +74,9 @@ func cmdRun() *cobra.Command {
 				acc := accs[rand.Intn(len(accs))]
 				if !reactor.limiter.CanMake() {
 					continue
+				}
+				if !steps.increment() {
+					break
 				}
 				n++
 				if n >= reactor.limiter.Limit()*5 {

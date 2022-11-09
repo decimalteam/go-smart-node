@@ -191,7 +191,13 @@ func (k msgServer) SetOnline(goCtx context.Context, msg *types.MsgSetOnline) (*t
 	if err != nil {
 		return nil, err
 	}
-	validator.Stake = TokensToConsensusPower(totalStake)
+
+	stake := TokensToConsensusPower(totalStake)
+	if stake == 0 {
+		return nil, errors.ValidatorStakeTooSmall
+	}
+
+	validator.Stake = stake
 
 	rs, err := k.GetValidatorRS(ctx, valAddr)
 	if err != nil {
@@ -200,7 +206,7 @@ func (k msgServer) SetOnline(goCtx context.Context, msg *types.MsgSetOnline) (*t
 			TotalRewards: sdkmath.ZeroInt(),
 		}
 	}
-	rs.Stake = validator.Stake
+	rs.Stake = stake
 	k.SetValidator(ctx, validator)
 	k.SetValidatorByPowerIndex(ctx, validator)
 	k.SetValidatorRS(ctx, valAddr, rs)
@@ -243,7 +249,7 @@ func (k msgServer) SetOffline(goCtx context.Context, msg *types.MsgSetOffline) (
 	validator.Online = false
 	// TODO: optimize
 	k.SetValidator(ctx, validator)
-	//k.DeleteValidatorByPowerIndex(ctx, validator)
+
 	consAdr, err := validator.GetConsAddr()
 	if err != nil {
 		return nil, err

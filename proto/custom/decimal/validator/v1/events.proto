@@ -26,6 +26,11 @@ message EventCreateValidator {
   cosmos.base.v1beta1.Coin stake = 7 [ (gogoproto.nullable) = false ];
 }
 
+// EventRemoveValidator defines event emitted when validator is removed.
+message EventRemoveValidator {
+  string validator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+}
+
 // EventEditValidator defines event emitted when existing validator is editted.
 message EventEditValidator {
   string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
