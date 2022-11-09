@@ -155,7 +155,14 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 	}
 
 	//////////////////////////////////////////////////
-	// 5. emit event
+	// 5. change stakes of custom coins
+	stakeDecreasing := accum.GetCoinsToBurnBonded().Add(accum.GetCoinsToBurnUnbonded()...).Add(accum.GetCoinsToBurnNFT()...)
+	for _, coin := range stakeDecreasing {
+		k.AfterUpdateDelegation(ctx, coin.Denom, coin.Amount.Neg())
+	}
+
+	//////////////////////////////////////////////////
+	// 6. emit event
 	ev := accum.GetEvent(validator.OperatorAddress)
 	events.EmitTypedEvent(ctx, &ev)
 
@@ -177,7 +184,8 @@ func (k Keeper) Jail(ctx sdk.Context, consAddr sdk.ConsAddress) {
 	validator.Jailed = true
 	validator.Online = false
 	k.SetValidator(ctx, validator)
-	k.DeleteValidatorByPowerIndex(ctx, validator)
+	// Jailed validator will be processe in ApplyAndReturnValidatorSetUpdates
+	//k.DeleteValidatorByPowerIndex(ctx, validator)
 	// Deleting of start height reset MissedBlockCounter
 	// We need to reset the counter & array so that the validator won't be immediately slashed for downtime upon rebonding.
 	k.DeleteStartHeight(ctx, consAddr)

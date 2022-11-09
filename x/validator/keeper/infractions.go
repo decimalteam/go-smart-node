@@ -82,8 +82,6 @@ func (k Keeper) HandleValidatorSignature(ctx sdk.Context, addr cryptotypes.Addre
 			k.Slash(ctx, consAddr, distributionHeight, power, params.SlashFractionDowntime)
 			k.Jail(ctx, consAddr)
 
-			//signInfo.JailedUntil = ctx.BlockHeader().Time.Add(k.DowntimeJailDuration(ctx))
-
 			logger.Info(
 				"slashing and jailing validator due to liveness fault",
 				"height", height,

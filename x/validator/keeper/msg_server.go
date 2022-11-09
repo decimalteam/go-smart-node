@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -172,12 +173,43 @@ func (k msgServer) SetOnline(goCtx context.Context, msg *types.MsgSetOnline) (*t
 		}
 	}
 
+	// validator without delegations can't become online
+	if !k.HasDelegations(ctx, valAddr) {
+		return nil, errors.ValidatorHasNoDelegations
+	}
+
+	k.DeleteValidatorByPowerIndex(ctx, validator)
+
 	// TODO: move Online and Jailed to store keys?
 	validator.Online = true
 	validator.Jailed = false
 
-	// TODO: optimize
+	delByValidator := k.GetAllDelegationsByValidator(ctx)
+	customCoinStaked := k.GetAllCustomCoinsStaked(ctx)
+	customCoinPrices := k.CalculateCustomCoinPrices(ctx, customCoinStaked)
+	totalStake, err := k.CalculateTotalPowerWithDelegationsAndPrices(ctx, validator.GetOperator(), delByValidator[validator.OperatorAddress], customCoinPrices)
+	if err != nil {
+		return nil, err
+	}
+
+	stake := TokensToConsensusPower(totalStake)
+	if stake == 0 {
+		return nil, errors.ValidatorStakeTooSmall
+	}
+
+	validator.Stake = stake
+
+	rs, err := k.GetValidatorRS(ctx, valAddr)
+	if err != nil {
+		rs = types.ValidatorRS{
+			Rewards:      sdkmath.ZeroInt(),
+			TotalRewards: sdkmath.ZeroInt(),
+		}
+	}
+	rs.Stake = stake
 	k.SetValidator(ctx, validator)
+	k.SetValidatorByPowerIndex(ctx, validator)
+	k.SetValidatorRS(ctx, valAddr, rs)
 
 	// StartHeight need for correct calculation of missing blocks
 	consAdr, err := validator.GetConsAddr()
@@ -217,7 +249,7 @@ func (k msgServer) SetOffline(goCtx context.Context, msg *types.MsgSetOffline) (
 	validator.Online = false
 	// TODO: optimize
 	k.SetValidator(ctx, validator)
-	k.DeleteValidatorByPowerIndex(ctx, validator)
+
 	consAdr, err := validator.GetConsAddr()
 	if err != nil {
 		return nil, err
@@ -652,7 +684,7 @@ func (k msgServer) _cancelRedelegation(ctx sdk.Context, msgDelegator, msgValidat
 	if !found {
 		return errors.ValidatorNotFound
 	}
-	validatorDst, found := k.GetValidator(ctx, valDstAddr)
+	_, found = k.GetValidator(ctx, valDstAddr)
 	if !found {
 		return errors.ValidatorNotFound
 	}
@@ -704,7 +736,7 @@ func (k msgServer) _cancelRedelegation(ctx sdk.Context, msgDelegator, msgValidat
 	}
 	k.SetDelegation(ctx, delegation)
 
-	err = k.TransferStakeBetweenPools(ctx, validatorDst.GetStatus(), validatorSrc.GetStatus(), stake)
+	err = k.TransferStakeBetweenPools(ctx, types.BondStatus_Unbonded, validatorSrc.GetStatus(), stake)
 	if err != nil {
 		return err
 	}

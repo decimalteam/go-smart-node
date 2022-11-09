@@ -140,7 +140,7 @@ func (k Keeper) SetValidatorByConsAddr(ctx sdk.Context, validator types.Validato
 func (k Keeper) SetValidatorByPowerIndex(ctx sdk.Context, validator types.Validator) {
 	// jailed validators are not kept in the power index
 	if validator.Jailed {
-		return
+		validator.Stake = 0
 	}
 
 	store := ctx.KVStore(k.storeKey)
@@ -157,6 +157,12 @@ func (k Keeper) SetNewValidatorByPowerIndex(ctx sdk.Context, validator types.Val
 func (k Keeper) DeleteValidatorByPowerIndex(ctx sdk.Context, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(k.GetValidatorByPowerIndexKey(validator))
+}
+
+// TODO: remove
+func (k Keeper) HasValidatorByPowerIndex(ctx sdk.Context, validator types.Validator) bool {
+	store := ctx.KVStore(k.storeKey)
+	return store.Has(k.GetValidatorByPowerIndexKey(validator))
 }
 
 func (k Keeper) GetAllValidatorsByPowerIndex(ctx sdk.Context) (types.Validators, []int64, sdkmath.Int) {
@@ -269,13 +275,13 @@ func (k Keeper) RemoveValidator(ctx sdk.Context, address sdk.ValAddress) {
 		return
 	}
 
-	if !validator.IsUnbonded() {
-		panic("cannot call RemoveValidator on bonded or unbonding validators")
-	}
+	// if !validator.IsUnbonded() {
+	// 	panic("cannot call RemoveValidator on bonded or unbonding validators")
+	// }
 
-	if validator.TotalRewards.IsPositive() {
-		panic("attempting to remove a validator which still contains tokens")
-	}
+	// if validator.TotalRewards.IsPositive() {
+	// 	panic("attempting to remove a validator which still contains tokens")
+	// }
 
 	valConsAddr, err := validator.GetConsAddr()
 	if err != nil {
@@ -287,7 +293,7 @@ func (k Keeper) RemoveValidator(ctx sdk.Context, address sdk.ValAddress) {
 	store.Delete(types.GetValidatorKey(address))
 	store.Delete(types.GetValidatorByConsAddrIndexKey(valConsAddr))
 	store.Delete(types.GetValidatorRewards(address))
-	//store.Delete(k.GetValidatorsByPowerIndexKey(ctx, validator))
+	store.Delete(types.GetLastValidatorPowerKey(address))
 
 	// call hooks
 	k.AfterValidatorRemoved(ctx, valConsAddr, validator.GetOperator())

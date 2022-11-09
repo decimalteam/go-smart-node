@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -86,5 +87,5 @@ func (ac *SetOfflineValidatorAction) GenerateTx(sa *stormTypes.StormAccount, fee
 }
 
 func (ac *SetOfflineValidatorAction) String() string {
-	return "SetOfflineValidatorAction"
+	return fmt.Sprintf("SetOfflineValidatorAction(%s)", ac.validatorAddress)
 }

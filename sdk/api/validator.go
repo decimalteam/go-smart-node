@@ -14,6 +14,7 @@ type (
 	Undelegation = validatortypes.Undelegation
 	Stake        = validatortypes.Stake
 	StakeType    = validatortypes.StakeType
+	BondStatus   = validatortypes.BondStatus
 )
 
 const (
@@ -21,6 +22,15 @@ const (
 	StakeType_Coin StakeType = validatortypes.StakeType_Coin
 	// NFT defines the type for stakes in NFT.
 	StakeType_NFT StakeType = validatortypes.StakeType_NFT
+
+	// UNSPECIFIED defines an invalid validator status.
+	BondStatus_Unspecified BondStatus = validatortypes.BondStatus_Unspecified
+	// UNBONDED defines a validator that is not bonded.
+	BondStatus_Unbonded BondStatus = validatortypes.BondStatus_Unbonded
+	// UNBONDING defines a validator that is unbonding.
+	BondStatus_Unbonding BondStatus = validatortypes.BondStatus_Unbonding
+	// BONDED defines a validator that is bonded.
+	BondStatus_Bonded BondStatus = validatortypes.BondStatus_Bonded
 )
 
 func (api *API) Validators() ([]Validator, error) {

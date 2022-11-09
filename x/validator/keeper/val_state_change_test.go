@@ -56,21 +56,21 @@ func TestStateOnlineOffline(t *testing.T) {
 	////////////////////////////////////////////////
 	// 1. create second validator
 	creatorStake := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(100)))
-	msgCreate, err := types.NewMsgCreateValidator(vals[0], accs[0], PKs[0], types.Description{Moniker: "monik"},
+	msgCreate, err := types.NewMsgCreateValidator(vals[1], accs[1], PKs[1], types.Description{Moniker: "monik"},
 		sdk.ZeroDec(), creatorStake)
 	require.NoError(t, err)
 
 	_, err = msgsrv.CreateValidator(goCtx, msgCreate)
 	require.NoError(t, err)
 	// delegate NFT
-	_, err = msgsrv.DelegateNFT(goCtx, types.NewMsgDelegateNFT(accs[1], vals[0], tokenID, []uint32{1}))
+	_, err = msgsrv.DelegateNFT(goCtx, types.NewMsgDelegateNFT(accs[1], vals[1], tokenID, []uint32{1}))
 	require.NoError(t, err)
 	subtoken, found := dsc.NFTKeeper.GetSubToken(ctx, tokenID, 1)
 	require.True(t, found)
 	require.Equal(t, subtoken.Owner, nbPool.String())
 
 	updates := keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
-	// new validator is not online, there is not changes in tendermint validators and powers
+	// new validator is not online, there is no changes in tendermint validators and powers
 	require.Len(t, updates, 0)
 	require.Equal(t, genesisVal.ConsensusPower(), dsc.ValidatorKeeper.GetLastTotalPower(ctx).Int64())
 	require.Len(t, dsc.ValidatorKeeper.GetLastValidators(ctx), 1)
@@ -91,21 +91,21 @@ func TestStateOnlineOffline(t *testing.T) {
 
 	////////////////////////////////////////////////
 	// 3. set second validator online
-	msgOnline := types.NewMsgSetOnline(vals[0])
+	msgOnline := types.NewMsgSetOnline(vals[1])
 	goCtx = sdk.WrapSDKContext(ctx)
 	_, err = msgsrv.SetOnline(goCtx, msgOnline)
 	require.NoError(t, err)
 	// last validators must be changes after ApplyAndReturnValidatorSetUpdates in EndBlocker
 	require.Len(t, dsc.ValidatorKeeper.GetLastValidators(ctx), 1)
 	// check start height
-	require.Equal(t, ctx.BlockHeight(), dsc.ValidatorKeeper.GetStartHeight(ctx, sdk.GetConsAddress(PKs[0])))
+	require.Equal(t, ctx.BlockHeight(), dsc.ValidatorKeeper.GetStartHeight(ctx, sdk.GetConsAddress(PKs[1])))
 
 	updates = keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
 
 	require.Len(t, updates, 1)
 	require.Equal(t, updates[0].Power, int64(100+100)) // see MsgCreateValidator stake+NFT stake (MintToken)
 	require.Len(t, dsc.ValidatorKeeper.GetLastValidators(ctx), 2)
-	newValidator, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[0])
+	newValidator, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[1])
 	require.True(t, found)
 	require.Equal(t, newValidator.ConsensusPower()+genesisVal.ConsensusPower(), dsc.ValidatorKeeper.GetLastTotalPower(ctx).Int64())
 	// check pool
@@ -124,19 +124,19 @@ func TestStateOnlineOffline(t *testing.T) {
 
 	////////////////////////////////////////////////
 	// 5. set second validator offline
-	msgOffline := types.NewMsgSetOffline(vals[0])
+	msgOffline := types.NewMsgSetOffline(vals[1])
 	goCtx = sdk.WrapSDKContext(ctx)
 	_, err = msgsrv.SetOffline(goCtx, msgOffline)
 	require.NoError(t, err)
 	// last validator must be changes after ApplyAndReturnValidatorSetUpdates in EndBlocker
 	require.Len(t, dsc.ValidatorKeeper.GetLastValidators(ctx), 2)
-	require.Equal(t, int64(-1), dsc.ValidatorKeeper.GetStartHeight(ctx, sdk.GetConsAddress(PKs[0])))
+	require.Equal(t, int64(-1), dsc.ValidatorKeeper.GetStartHeight(ctx, sdk.GetConsAddress(PKs[1])))
 
 	updates = keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
 
 	require.Len(t, updates, 1)
-	require.Equal(t, updates[0].Power, int64(0)) // 0 mean 'remove from validators'
-	require.Len(t, dsc.ValidatorKeeper.GetLastValidators(ctx), 1)
+	require.Equal(t, updates[0].Power, int64(0))                  // 0 mean 'remove from validators'
+	require.Len(t, dsc.ValidatorKeeper.GetLastValidators(ctx), 1) // genesis + new
 	require.Equal(t, genesisVal.ConsensusPower(), dsc.ValidatorKeeper.GetLastTotalPower(ctx).Int64())
 	// check pool
 	balanceNB = dsc.BankKeeper.GetAllBalances(ctx, nbPool)
@@ -159,6 +159,10 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 	msgsrv := keeper.NewMsgServerImpl(dsc.ValidatorKeeper)
 	nbPool := dsc.ValidatorKeeper.GetNotBondedPool(ctx).GetAddress()
 	bPool := dsc.ValidatorKeeper.GetBondedPool(ctx).GetAddress()
+
+	params := dsc.ValidatorKeeper.GetParams(ctx)
+	params.RedelegationTime = time.Hour
+	dsc.ValidatorKeeper.SetParams(ctx, params)
 
 	// 0. genesis
 	balance := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10000000)))
@@ -227,8 +231,17 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 		_, err = msgsrv.DelegateNFT(goCtx, types.NewMsgDelegateNFT(accs[0], vals[1], tokenID, []uint32{6}))
 		require.NoError(t, err)
 	}
+	// third: validator need to receive redelegation
+	{
+		msgCreate, err := types.NewMsgCreateValidator(vals[2], accs[2], PKs[2], types.Description{Moniker: "monik2"},
+			sdk.ZeroDec(), creatorStake)
+		require.NoError(t, err)
+
+		_, err = msgsrv.CreateValidator(goCtx, msgCreate)
+		require.NoError(t, err)
+	}
 	updates := keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
-	// new validator is not online, there is not changes in tendermint validators and powers
+	// new validator is not online, there is a changes in tendermint validators and powers with 0 powers
 	require.Len(t, updates, 0)
 	require.Equal(t, genesisVal.ConsensusPower(), dsc.ValidatorKeeper.GetLastTotalPower(ctx).Int64())
 	require.Len(t, dsc.ValidatorKeeper.GetLastValidators(ctx), 1)
@@ -236,7 +249,7 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 	// check balance
 	{
 		balanceNB = dsc.BankKeeper.GetAllBalances(ctx, nbPool)
-		require.True(t, balanceNB.IsEqual(sdk.NewCoins(creatorStake).Add(creatorStake)))
+		require.True(t, balanceNB.IsEqual(sdk.NewCoins(creatorStake).Add(creatorStake).Add(creatorStake)))
 		balanceB = dsc.BankKeeper.GetAllBalances(ctx, bPool)
 		require.True(t, balanceB.IsEqual(startBalanceB))
 	}
@@ -272,6 +285,11 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 		msgOnline = types.NewMsgSetOnline(vals[1])
 		_, err = msgsrv.SetOnline(goCtx, msgOnline)
 		require.NoError(t, err)
+
+		// third val
+		msgOnline = types.NewMsgSetOnline(vals[2])
+		_, err = msgsrv.SetOnline(goCtx, msgOnline)
+		require.NoError(t, err)
 	}
 
 	// last validators must be changes after ApplyAndReturnValidatorSetUpdates in EndBlocker
@@ -281,10 +299,11 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 
 	// check updates
 	{
-		require.Len(t, updates, 2)
+		require.Len(t, updates, 3)
 		require.Equal(t, updates[0].Power, int64(100+200)) // see MsgCreateValidator stake+NFT stake (MintToken)
 		require.Equal(t, updates[1].Power, int64(100+100)) // see MsgCreateValidator stake+NFT stake (MintToken)
-		require.Len(t, dsc.ValidatorKeeper.GetLastValidators(ctx), 3)
+		require.Equal(t, updates[2].Power, int64(100))     // see MsgCreateValidator stake
+		require.Len(t, dsc.ValidatorKeeper.GetLastValidators(ctx), 4)
 
 		newValidator1, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[0])
 		require.True(t, found)
@@ -292,8 +311,11 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 		newValidator2, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[1])
 		require.True(t, found)
 		require.Equal(t, types.BondStatus_Bonded, newValidator2.Status)
+		newValidator3, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[2])
+		require.True(t, found)
+		require.Equal(t, types.BondStatus_Bonded, newValidator2.Status)
 
-		totalPower := newValidator1.ConsensusPower() + newValidator2.ConsensusPower() + genesisVal.ConsensusPower()
+		totalPower := newValidator1.ConsensusPower() + newValidator2.ConsensusPower() + newValidator3.ConsensusPower() + genesisVal.ConsensusPower()
 		require.Equal(t, dsc.ValidatorKeeper.GetLastTotalPower(ctx).Int64(), totalPower)
 	}
 
@@ -303,7 +325,7 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 		balanceNB = dsc.BankKeeper.GetAllBalances(ctx, nbPool)
 		require.True(t, balanceNB.IsEqual(sdk.NewCoins()))
 		balanceB = dsc.BankKeeper.GetAllBalances(ctx, bPool)
-		require.True(t, balanceB.IsEqual(startBalanceB.Add(creatorStake).Add(creatorStake)))
+		require.True(t, balanceB.IsEqual(startBalanceB.Add(creatorStake).Add(creatorStake).Add(creatorStake)))
 
 		// check nft
 		subtoken, found := dsc.NFTKeeper.GetSubToken(ctx, tokenID, 1)
@@ -328,26 +350,30 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 
 	{
 		// first val
-		msgOnline := types.NewMsgSetOffline(vals[0])
-		_, err = msgsrv.SetOffline(goCtx, msgOnline)
+		msgOffline := types.NewMsgSetOffline(vals[0])
+		_, err = msgsrv.SetOffline(goCtx, msgOffline)
 		require.NoError(t, err)
 	}
 
 	updates = keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
+
 	// check updates
 	{
 		require.Len(t, updates, 1)
 		require.Equal(t, updates[0].Power, int64(0))
-		require.Len(t, dsc.ValidatorKeeper.GetLastValidators(ctx), 2)
+		require.Len(t, dsc.ValidatorKeeper.GetLastValidators(ctx), 3)
 
 		validator1, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[0])
 		require.True(t, found)
-		require.Equal(t, types.BondStatus_Unbonding, validator1.Status)
+		require.Equal(t, types.BondStatus_Unbonded, validator1.Status)
 		validator2, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[1])
 		require.True(t, found)
 		require.Equal(t, types.BondStatus_Bonded, validator2.Status)
+		validator3, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[2])
+		require.True(t, found)
+		require.Equal(t, types.BondStatus_Bonded, validator3.Status)
 
-		totalPower := validator2.ConsensusPower() + genesisVal.ConsensusPower()
+		totalPower := validator2.ConsensusPower() + validator3.ConsensusPower() + genesisVal.ConsensusPower()
 		require.Equal(t, dsc.ValidatorKeeper.GetLastTotalPower(ctx).Int64(), totalPower)
 	}
 	// check pool
@@ -356,7 +382,7 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 		balanceNB = dsc.BankKeeper.GetAllBalances(ctx, nbPool)
 		require.True(t, balanceNB.IsEqual(sdk.NewCoins(creatorStake)))
 		balanceB = dsc.BankKeeper.GetAllBalances(ctx, bPool)
-		require.True(t, balanceB.IsEqual(startBalanceB.Add(creatorStake)))
+		require.True(t, balanceB.IsEqual(startBalanceB.Add(creatorStake).Add(creatorStake)))
 
 		// check nft
 		subtoken, found := dsc.NFTKeeper.GetSubToken(ctx, tokenID, 1)
@@ -395,16 +421,19 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 	{
 		require.Len(t, updates, 1)
 		require.Equal(t, updates[0].Power, int64(0))
-		require.Len(t, dsc.ValidatorKeeper.GetLastValidators(ctx), 1)
+		require.Len(t, dsc.ValidatorKeeper.GetLastValidators(ctx), 2)
 
 		validator1, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[0])
 		require.True(t, found)
-		require.Equal(t, types.BondStatus_Unbonding, validator1.Status)
+		require.Equal(t, types.BondStatus_Unbonded, validator1.Status)
 		validator2, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[1])
 		require.True(t, found)
 		require.Equal(t, types.BondStatus_Unbonding, validator2.Status)
+		validator3, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[2])
+		require.True(t, found)
+		require.Equal(t, types.BondStatus_Bonded, validator3.Status)
 
-		totalPower := genesisVal.ConsensusPower()
+		totalPower := validator3.ConsensusPower() + genesisVal.ConsensusPower()
 		require.Equal(t, dsc.ValidatorKeeper.GetLastTotalPower(ctx).Int64(), totalPower)
 	}
 	// check pool
@@ -413,7 +442,7 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 		balanceNB = dsc.BankKeeper.GetAllBalances(ctx, nbPool)
 		require.True(t, balanceNB.IsEqual(sdk.NewCoins(creatorStake).Add(creatorStake)))
 		balanceB = dsc.BankKeeper.GetAllBalances(ctx, bPool)
-		require.True(t, balanceB.IsEqual(startBalanceB))
+		require.True(t, balanceB.IsEqual(startBalanceB.Add(creatorStake)))
 
 		// check nft
 		subtoken, found := dsc.NFTKeeper.GetSubToken(ctx, tokenID, 1)
@@ -440,7 +469,7 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 	require.Len(t, updates, 0)
 	// check validators
 	{
-		require.Len(t, dsc.ValidatorKeeper.GetLastValidators(ctx), 1)
+		require.Len(t, dsc.ValidatorKeeper.GetLastValidators(ctx), 2)
 
 		validator1, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[0])
 		require.True(t, found)
@@ -448,8 +477,11 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 		validator2, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[1])
 		require.True(t, found)
 		require.Equal(t, types.BondStatus_Unbonded, validator2.Status)
+		validator3, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[2])
+		require.True(t, found)
+		require.Equal(t, types.BondStatus_Bonded, validator3.Status)
 
-		totalPower := genesisVal.ConsensusPower()
+		totalPower := validator3.ConsensusPower() + genesisVal.ConsensusPower()
 		require.Equal(t, dsc.ValidatorKeeper.GetLastTotalPower(ctx).Int64(), totalPower)
 	}
 	// check pool
@@ -458,7 +490,7 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 		balanceNB = dsc.BankKeeper.GetAllBalances(ctx, nbPool)
 		require.True(t, balanceNB.IsEqual(sdk.NewCoins(creatorStake)))
 		balanceB = dsc.BankKeeper.GetAllBalances(ctx, bPool)
-		require.True(t, balanceB.IsEqual(startBalanceB))
+		require.True(t, balanceB.IsEqual(startBalanceB.Add(creatorStake)))
 
 		// check nft
 		subtoken, found := dsc.NFTKeeper.GetSubToken(ctx, tokenID, 1)
@@ -483,11 +515,11 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 	// redelegate first -> second
 	{
 		// first val
-		red := types.NewMsgRedelegate(accs[0], vals[0], vals[1], creatorStake)
+		red := types.NewMsgRedelegate(accs[0], vals[0], vals[2], creatorStake)
 		_, err = msgsrv.Redelegate(goCtx, red)
 		require.NoError(t, err)
 
-		redNft := types.NewMsgRedelegateNFT(accs[1], vals[0], vals[1], tokenID, []uint32{1, 2})
+		redNft := types.NewMsgRedelegateNFT(accs[1], vals[0], vals[2], tokenID, []uint32{1, 2})
 		_, err := msgsrv.RedelegateNFT(goCtx, redNft)
 		require.NoError(t, err)
 	}
@@ -508,12 +540,15 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 
 		validator1, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[0])
 		require.True(t, found)
-		require.Equal(t, types.BondStatus_Unbonded, validator1.Status)
+		require.Equal(t, types.BondStatus_Unbonding, validator1.Status)
 		validator2, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[1])
 		require.True(t, found)
-		require.Equal(t, types.BondStatus_Bonded, validator2.Status)
+		require.Equal(t, types.BondStatus_Unbonded, validator2.Status)
+		validator3, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[2])
+		require.True(t, found)
+		require.Equal(t, types.BondStatus_Bonded, validator3.Status)
 
-		totalPower := validator2.ConsensusPower() + genesisVal.ConsensusPower()
+		totalPower := validator2.ConsensusPower() + validator3.ConsensusPower() + genesisVal.ConsensusPower()
 		require.Equal(t, dsc.ValidatorKeeper.GetLastTotalPower(ctx).Int64(), totalPower)
 	}
 	// check pool
@@ -522,7 +557,8 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 		balanceNB = dsc.BankKeeper.GetAllBalances(ctx, nbPool)
 		require.True(t, balanceNB.IsEqual(sdk.NewCoins()))
 		balanceB = dsc.BankKeeper.GetAllBalances(ctx, bPool)
-		require.True(t, balanceB.IsEqual(startBalanceB.Add(creatorStake)))
+		// validator 3 stake + completed redelegation
+		require.True(t, balanceB.IsEqual(startBalanceB.Add(creatorStake).Add(creatorStake)))
 
 		// check nft
 		subtoken, found := dsc.NFTKeeper.GetSubToken(ctx, tokenID, 1)
@@ -631,4 +667,96 @@ func TestCheckDelegations(t *testing.T) {
 		require.Equal(t, val.Stake-minus, updatedRS.Stake)
 	}
 
+}
+
+func TestPoolBreakingByCancelRedelegation(t *testing.T) {
+	_, dsc, ctx := createTestInput(t)
+
+	msgsrv := keeper.NewMsgServerImpl(dsc.ValidatorKeeper)
+
+	startBondedBalance := dsc.BankKeeper.GetBalance(ctx, dsc.ValidatorKeeper.GetBondedPool(ctx).GetAddress(), cmdcfg.BaseDenom)
+
+	// 0. genesis
+	balance := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10000000)))
+	accs, vals := generateAddresses(dsc, ctx, 10, sdk.NewCoins(balance))
+
+	stake := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(1000)))
+	halfstake := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(500)))
+	cancelstake := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(100)))
+
+	// 1. create validators
+	goCtx := sdk.WrapSDKContext(ctx)
+
+	msgCreate, err := types.NewMsgCreateValidator(
+		vals[1],
+		accs[1],
+		PKs[0],
+		types.Description{Moniker: "monik1"},
+		sdk.ZeroDec(),
+		stake,
+	)
+	require.NoError(t, err)
+	_, err = msgsrv.CreateValidator(goCtx, msgCreate)
+	require.NoError(t, err)
+
+	msgCreate, err = types.NewMsgCreateValidator(
+		vals[2],
+		accs[2],
+		PKs[1],
+		types.Description{Moniker: "monik2"},
+		sdk.ZeroDec(),
+		stake,
+	)
+	require.NoError(t, err)
+	_, err = msgsrv.CreateValidator(goCtx, msgCreate)
+	require.NoError(t, err)
+
+	// 2. set online
+	_, err = msgsrv.SetOnline(goCtx, types.NewMsgSetOnline(vals[1]))
+	require.NoError(t, err)
+	_, err = msgsrv.SetOnline(goCtx, types.NewMsgSetOnline(vals[2]))
+	require.NoError(t, err)
+
+	keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
+
+	// 3. add redelegation
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
+	goCtx = sdk.WrapSDKContext(ctx)
+
+	_, err = msgsrv.Redelegate(goCtx, types.NewMsgRedelegate(
+		accs[1],
+		vals[1],
+		vals[2],
+		halfstake,
+	))
+	require.NoError(t, err)
+
+	height := ctx.BlockHeight()
+	keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
+
+	// 4. set one validator offline + cancel redelegation
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
+	goCtx = sdk.WrapSDKContext(ctx)
+	_, err = msgsrv.SetOffline(goCtx, types.NewMsgSetOffline(vals[1]))
+	require.NoError(t, err)
+
+	_, err = msgsrv.CancelRedelegation(goCtx, types.NewMsgCancelRedelegation(
+		accs[1],
+		vals[1],
+		vals[2],
+		height,
+		cancelstake,
+	))
+	require.NoError(t, err)
+	keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
+
+	// check pool balances
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
+	bondedBalance := dsc.BankKeeper.GetBalance(ctx, dsc.ValidatorKeeper.GetBondedPool(ctx).GetAddress(), cmdcfg.BaseDenom)
+	notBondedBalance := dsc.BankKeeper.GetBalance(ctx, dsc.ValidatorKeeper.GetNotBondedPool(ctx).GetAddress(), cmdcfg.BaseDenom)
+
+	// stake of vals[1] (1000) (online)
+	require.True(t, bondedBalance.IsEqual(startBondedBalance.Add(stake)), "bonded: %s, expect: %s", bondedBalance, stake)
+	// stake of vals[0] (500+100 cancel) + 400 in redelegation
+	require.True(t, notBondedBalance.IsEqual(stake), "not bonded: %s, expect: %s", notBondedBalance, stake)
 }

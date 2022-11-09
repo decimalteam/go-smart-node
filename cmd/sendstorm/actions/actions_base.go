@@ -97,9 +97,18 @@ func (t *TPSLimiter) Limit() int64 {
 
 // extract part of stake for un/redelegation
 func ExtractPartCoin(rnd *rand.Rand, coin sdk.Coin) sdk.Coin {
-	amount := helpers.WeiToFinney(coin.Amount).Int64()
+	fin := helpers.WeiToFinney(coin.Amount)
+	if !fin.IsInt64() {
+		return sdk.NewCoin(coin.Denom, sdk.ZeroInt())
+	}
+	amount := fin.Int64()
 	if amount == 0 {
 		return sdk.NewCoin(coin.Denom, sdk.ZeroInt())
 	}
-	return sdk.NewCoin(coin.Denom, helpers.FinneyToWei(sdk.NewInt(RandomRange(rnd, 1, amount+1))))
+	// 50% - part, 50% - entire stake
+	if rnd.Intn(2) == 0 {
+		return sdk.NewCoin(coin.Denom, helpers.FinneyToWei(sdk.NewInt(RandomRange(rnd, 1, amount+1))))
+	} else {
+		return coin
+	}
 }

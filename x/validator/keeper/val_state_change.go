@@ -12,8 +12,46 @@ import (
 	gogotypes "github.com/gogo/protobuf/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
+
+/*
+	Validators state transition.
+
+	Possible validator states:
+	1. Unbonded
+	- Status = BondStatus_Unbonded
+	- Online = fase
+	- Validator has delegations
+	- Validator must be out of power index
+	- value of 'Stake' (GetValidator, GetValidatorRS) must be 0
+
+	2. Unbonding
+	- Status = BondStatus_Unbonding
+	- Online = false
+	- Validator has no delegations (but must have redelegation or undelegations)
+	- Validator must be out of power index
+	- value of 'Stake' (GetValidator, GetValidatorRS) must be 0
+
+	3. Bonded
+	- Status = BondStatus_Unbonding
+	- Online = true
+	- Validator has delegations
+	- Consensus power > 0
+	- value of 'Stake' (GetValidator, GetValidatorRS) must be > 0
+
+	Possible state transitions:
+	Unbonded -> Unbonding (after Undelegate*, Redelegate* validator has no delegations)
+	Unbonded -> Bonded (only after SetOnline; validator consensus power must be > 0)
+	Unbonding -> Unbonded (after Delegate*, CancelUndelegation*, CancelRedelegation*)
+	Bonded -> Unbonded (after SetOffline; or after Undelegate*, Redelegate*, coin price recalculation consensus power become 0)
+	Bonded -> Unbonding (after Undelegate*, Redelegate* validator has no delegations)
+
+	ALL state transitions must be performed in ApplyAndReturnValidatorSetUpdates.
+
+	If validator has no delegations, undelegations, redelegations, it must bee deleted.
+*/
 
 // BlockValidatorUpdates calculates the ValidatorUpdates for the current block
 // Called in each EndBlock
@@ -110,13 +148,21 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		return nil, err
 	}
 
-	validators := k.GetAllValidatorsByPowerIndexReversed(ctx)
+	validators := k.GetAllValidators(ctx)
 	delegations := k.GetAllDelegationsByValidator(ctx)
 	for _, validator := range validators {
-		if validator.Jailed {
+		if !k.HasDelegations(ctx, validator.GetOperator()) && !k.HasUndelegations(ctx, validator.GetOperator()) &&
+			!k.HasRedelegations(ctx, validator.GetOperator()) && validator.Rewards.IsZero() {
+			k.RemoveValidator(ctx, validator.GetOperator())
+			err = events.EmitTypedEvent(ctx, &types.EventRemoveValidator{
+				Validator: validator.OperatorAddress,
+			})
+			if err != nil {
+				return nil, err
+			}
 			continue
 		}
-		k.CheckDelegations(ctx, validator, delegations[validator.GetOperator().String()])
+		k.CheckDelegations(ctx, validator, delegations[validator.OperatorAddress])
 	}
 
 	// Iterate over validators, highest power to lowest.
@@ -127,23 +173,33 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		// part of the bonded validator set
 		valAddr := sdk.ValAddress(iterator.Value()).String()
 		validator := k.mustGetValidator(ctx, sdk.ValAddress(iterator.Value()))
-		if validator.Jailed {
-			return nil, fmt.Errorf("ApplyAndReturnValidatorSetUpdates: should never retrieve a jailed validator from the power store")
-		}
 
-		// if we get to a zero-power validator (which we don't bond),
-		// there are no more possible bonded validators
-		if validator.PotentialConsensusPower() == 0 {
-			break
-		}
-
-		// apply the appropriate state change if necessary
+		// state transitions
 		switch {
-		case validator.IsUnbonded():
-			if !validator.Online {
-				continue
+		// Bonded/Unbonded -> Unbonding
+		case !validator.IsUnbonding() && len(delegations[valAddr]) == 0:
+			if validator.Online {
+				validator.Online = false
+				err := events.EmitTypedEvent(ctx, &types.EventSetOffline{
+					Sender:    sdk.AccAddress(validator.GetOperator()).String(),
+					Validator: validator.OperatorAddress,
+				})
+				if err != nil {
+					return nil, err
+				}
 			}
-
+			validator, err = k.beginUnbondingValidator(ctx, validator)
+			if err != nil {
+				return nil, err
+			}
+		// Unbonding -> Unbonded
+		case validator.IsUnbonding() && len(delegations[valAddr]) > 0:
+			validator, err = k.unbondingToUnbonded(ctx, validator)
+			if err != nil {
+				return
+			}
+		// Unbonded -> Bonded
+		case validator.IsUnbonded() && validator.Online && validator.Stake > 0:
 			validator, err = k.unbondedToBonded(ctx, validator)
 			if err != nil {
 				return
@@ -159,30 +215,33 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 					})
 				}
 			}
-		case validator.IsUnbonding():
-			if !validator.Online {
-				continue
+		// Bonded -> Unbonded
+		case validator.IsBonded() && (!validator.Online || validator.Stake == 0):
+			if validator.Online {
+				// validator will be saved in bondedToUnbonded
+				validator.Online = false
 			}
-
-			validator, err = k.unbondingToBonded(ctx, validator)
+			validator, err = k.bondedToUnbonded(ctx, validator)
 			if err != nil {
 				return
 			}
+
 			for _, delegation := range delegations[valAddr] {
 				switch delegation.Stake.Type {
 				case types.StakeType_Coin:
-					amtFromNotBondedToBonded = amtFromNotBondedToBonded.Add(delegation.GetStake().GetStake())
+					amtFromBondedToNotBonded = amtFromBondedToNotBonded.Add(delegation.GetStake().GetStake())
 				case types.StakeType_NFT:
-					nftsFromNotBondedToBonded = append(nftsFromNotBondedToBonded, nftTransferRecord{
+					nftsFromBondedToNotBonded = append(nftsFromBondedToNotBonded, nftTransferRecord{
 						tokenID:     delegation.GetStake().GetID(),
 						subTokenIDs: delegation.GetStake().GetSubTokenIDs(),
 					})
 				}
 			}
-		case validator.IsBonded():
-			// no state change
+		// nothing to do
+		case validator.IsBonded() && validator.Online && validator.Stake > 0:
+		case validator.IsUnbonded() && !validator.Online && validator.Stake == 0:
 		default:
-			panic("unexpected validator status")
+			panic(fmt.Sprintf("unexpected validator status %s: online=%v, status=%d, stake=%d", validator.OperatorAddress, validator.Online, validator.Status, validator.Stake))
 		}
 
 		// fetch the old power bytes
@@ -193,9 +252,16 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 
 		// update the validator set if power has changed
 		if !found || !bytes.Equal(oldPowerBytes, newPowerBytes) {
-			updates = append(updates, validator.ABCIValidatorUpdate(ethtypes.PowerReduction))
-
-			k.SetLastValidatorPower(ctx, validator.GetOperator(), newPower)
+			if newPower > 0 {
+				k.SetLastValidatorPower(ctx, validator.GetOperator(), newPower)
+				updates = append(updates, validator.ABCIValidatorUpdate(ethtypes.PowerReduction))
+			} else {
+				k.DeleteLastValidatorPower(ctx, validator.GetOperator())
+				// 'validator not found in last powers' mean 'validator already deleted from tendermint validators'
+				if found {
+					updates = append(updates, validator.ABCIValidatorUpdateZero())
+				}
+			}
 		}
 
 		delete(last, valAddr)
@@ -211,23 +277,6 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 
 	for _, valAddrBytes := range noLongerBonded {
 		validator := k.mustGetValidator(ctx, sdk.ValAddress(valAddrBytes))
-		validator, err = k.bondedToUnbonding(ctx, validator)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, delegation := range delegations[validator.GetOperator().String()] {
-			switch delegation.Stake.Type {
-			case types.StakeType_Coin:
-				amtFromBondedToNotBonded = amtFromBondedToNotBonded.Add(delegation.GetStake().GetStake())
-			case types.StakeType_NFT:
-				nftsFromBondedToNotBonded = append(nftsFromBondedToNotBonded, nftTransferRecord{
-					tokenID:     delegation.GetStake().GetID(),
-					subTokenIDs: delegation.GetStake().GetSubTokenIDs(),
-				})
-			}
-		}
-
 		k.DeleteLastValidatorPower(ctx, validator.GetOperator())
 		updates = append(updates, validator.ABCIValidatorUpdateZero())
 	}
@@ -237,6 +286,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 	// to the Bonded pool.
 	// - The tokens from the bonded validators that are being kicked out from the validator set
 	// need to be transferred to the NotBonded pool.
+
 	err = k.transferBetweenPools(ctx, types.BondStatus_Bonded, types.BondStatus_Unbonded, amtFromBondedToNotBonded, nftsFromBondedToNotBonded)
 	if err != nil {
 		return nil, err
@@ -264,12 +314,22 @@ func (k Keeper) bondedToUnbonding(ctx sdk.Context, validator types.Validator) (t
 	return k.beginUnbondingValidator(ctx, validator)
 }
 
+/*
 func (k Keeper) unbondingToBonded(ctx sdk.Context, validator types.Validator) (types.Validator, error) {
 	if !validator.IsUnbonding() {
 		panic(fmt.Sprintf("bad state transition unbondingToBonded, validator: %v\n", validator))
 	}
 
 	return k.bondValidator(ctx, validator)
+}
+*/
+
+func (k Keeper) unbondingToUnbonded(ctx sdk.Context, validator types.Validator) (types.Validator, error) {
+	if !validator.IsUnbonding() {
+		panic(fmt.Sprintf("bad state transition unbondingToUnbonded, validator: %v\n", validator))
+	}
+
+	return k.unbondValidator(ctx, validator)
 }
 
 func (k Keeper) unbondedToBonded(ctx sdk.Context, validator types.Validator) (types.Validator, error) {
@@ -278,6 +338,14 @@ func (k Keeper) unbondedToBonded(ctx sdk.Context, validator types.Validator) (ty
 	}
 
 	return k.bondValidator(ctx, validator)
+}
+
+func (k Keeper) bondedToUnbonded(ctx sdk.Context, validator types.Validator) (types.Validator, error) {
+	if !validator.IsBonded() {
+		panic(fmt.Sprintf("bad state transition bondedToUnbonded, validator: %v\n", validator))
+	}
+
+	return k.unbondValidator(ctx, validator)
 }
 
 // UnbondingToUnbonded switches a validator from unbonding state to unbonded state
@@ -315,6 +383,30 @@ func (k Keeper) bondValidator(ctx sdk.Context, validator types.Validator) (types
 	return validator, nil
 }
 
+// force unbond status when validator become offline
+func (k Keeper) unbondValidator(ctx sdk.Context, validator types.Validator) (types.Validator, error) {
+	// delete the validator by power index, as the key will change
+	k.DeleteValidatorByPowerIndex(ctx, validator)
+
+	valAdr := validator.GetOperator()
+	validator = validator.UpdateStatus(types.BondStatus_Unbonded)
+	validator.Stake = 0
+	rs, err := k.GetValidatorRS(ctx, valAdr)
+	if err != nil {
+		return types.Validator{}, err
+	}
+	rs.Stake = 0
+	k.SetValidatorRS(ctx, valAdr, rs)
+
+	// save the now bonded validator record to the two referenced stores
+	k.SetValidator(ctx, validator)
+
+	// delete from unbonding queue if present
+	k.DeleteValidatorQueue(ctx, validator)
+
+	return validator, nil
+}
+
 // perform all the store operations for when a validator begins unbonding
 
 func (k Keeper) beginUnbondingValidator(ctx sdk.Context, validator types.Validator) (types.Validator, error) {
@@ -323,12 +415,15 @@ func (k Keeper) beginUnbondingValidator(ctx sdk.Context, validator types.Validat
 	// delete the validator by power index, as the key will change
 	k.DeleteValidatorByPowerIndex(ctx, validator)
 
-	// sanity check
-	if validator.Status != types.BondStatus_Bonded {
-		panic(fmt.Sprintf("should not already be unbonded or unbonding, validator: %v\n", validator))
-	}
-
 	validator = validator.UpdateStatus(types.BondStatus_Unbonding)
+	valAdr := validator.GetOperator()
+	validator.Stake = 0
+	rs, err := k.GetValidatorRS(ctx, valAdr)
+	if err != nil {
+		return types.Validator{}, err
+	}
+	rs.Stake = 0
+	k.SetValidatorRS(ctx, valAdr, rs)
 
 	// set the unbonding completion time and completion height appropriately
 	validator.UnbondingTime = ctx.BlockHeader().Time.Add(params.UndelegationTime)
@@ -336,7 +431,7 @@ func (k Keeper) beginUnbondingValidator(ctx sdk.Context, validator types.Validat
 
 	// save the now unbonded validator record and power index
 	k.SetValidator(ctx, validator)
-	k.SetValidatorByPowerIndex(ctx, validator)
+	//k.SetValidatorByPowerIndex(ctx, validator)
 
 	// Adds to unbonding validator queue
 	k.InsertUnbondingValidatorQueue(ctx, validator)

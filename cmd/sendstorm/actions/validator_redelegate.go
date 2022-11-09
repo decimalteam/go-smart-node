@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -110,5 +111,5 @@ func (ac *RedelegateAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *s
 }
 
 func (ac *RedelegateAction) String() string {
-	return "RedelegateAction"
+	return fmt.Sprintf("RedelegateAction(%s->%s)", ac.fromValidatorAddress, ac.toValidatorAddress)
 }

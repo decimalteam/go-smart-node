@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -88,5 +89,5 @@ func (ac *UndelegateAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *s
 }
 
 func (ac *UndelegateAction) String() string {
-	return "UndelegateAction"
+	return fmt.Sprintf("UndelegateAction(val:%s,del:%s)", ac.validatorAddress, ac.delegatorAddress)
 }

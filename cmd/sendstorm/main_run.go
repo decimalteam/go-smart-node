@@ -48,8 +48,8 @@ func cmdRun() *cobra.Command {
 				fmt.Println(err)
 				return
 			}
-			for i, acc := range reactor.accounts {
-				fmt.Printf("load balances(%d): %s\n", i, acc.Address())
+			for _, acc := range reactor.accounts {
+				//fmt.Printf("load balances(%d): %s\n", i, acc.Address())
 				err = acc.UpdateNumberSequence()
 				if err != nil {
 					fmt.Println(err)
@@ -62,6 +62,7 @@ func cmdRun() *cobra.Command {
 				}
 			}
 			reactor.updateGeneratorsInfo()
+			steps := NewStepsCounter(cmd.Flags())
 			// infinite loop
 			n := int64(0)
 			for {
@@ -73,6 +74,9 @@ func cmdRun() *cobra.Command {
 				acc := accs[rand.Intn(len(accs))]
 				if !reactor.limiter.CanMake() {
 					continue
+				}
+				if !steps.increment() {
+					break
 				}
 				n++
 				if n >= reactor.limiter.Limit()*5 {
@@ -126,6 +130,7 @@ func cmdRun() *cobra.Command {
 					fmt.Printf("\n\n\n")
 				}
 				acc.IncrementSequence()
+				fmt.Printf("debug account: %s, action: %s\n", acc.Address(), action)
 				go acc.UpdateBalance()
 			}
 		},
