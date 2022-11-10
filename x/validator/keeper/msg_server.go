@@ -590,6 +590,7 @@ func (k msgServer) _cancelUndelegation(ctx sdk.Context, msgDelegator string, msg
 	if !found {
 		// k.BeforeUpdateDelegation(ctx, delegation, denom)
 		delegation = types.NewDelegation(delegatorAddress, valAddr, stake)
+		k.IncrementDelegationsCount(ctx, valAddr)
 	} else {
 		// k.BeforeDelegationCreated(ctx, delegator, validator.GetOperator())
 		delegation.Stake, err = delegation.Stake.Add(stake)
@@ -727,6 +728,7 @@ func (k msgServer) _cancelRedelegation(ctx sdk.Context, msgDelegator, msgValidat
 	if !found {
 		// k.BeforeUpdateDelegation(ctx, delegation, denom)
 		delegation = types.NewDelegation(delegatorAddress, valSrcAddr, stake)
+		k.IncrementDelegationsCount(ctx, valSrcAddr)
 	} else {
 		// k.BeforeDelegationCreated(ctx, delegator, validator.GetOperator())
 		delegation.Stake, err = delegation.Stake.Add(stake)

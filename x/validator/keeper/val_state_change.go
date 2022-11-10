@@ -51,6 +51,9 @@ import (
 	ALL state transitions must be performed in ApplyAndReturnValidatorSetUpdates.
 
 	If validator has no delegations, undelegations, redelegations, it must bee deleted.
+
+	'[Active] Candidates' - bonded online validators with small stake.
+	They are out of top X validators, they are out of tendermint validators.
 */
 
 // BlockValidatorUpdates calculates the ValidatorUpdates for the current block
@@ -128,8 +131,7 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 // at the previous block height or were removed from the validator set entirely
 // are returned to Tendermint.
 func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []abci.ValidatorUpdate, err error) {
-	params := k.GetParams(ctx)
-	maxValidators := params.MaxValidators
+	maxValidators := k.getValidatorsCountForBlock(ctx, ctx.BlockHeight())
 	totalPower := sdk.ZeroInt()
 	amtFromBondedToNotBonded, amtFromNotBondedToBonded := sdk.NewCoins(), sdk.NewCoins()
 	nftsFromBondedToNotBonded, nftsFromNotBondedToBonded := []nftTransferRecord{}, []nftTransferRecord{}
@@ -148,8 +150,11 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		return nil, err
 	}
 
+	// check max delegations
 	validators := k.GetAllValidators(ctx)
-	delegations := k.GetAllDelegationsByValidator(ctx)
+	maxDelegations := k.MaxDelegations(ctx)
+	delegationsCount := k.GetAllDelegationsCount(ctx)
+	//delegations := k.GetAllDelegationsByValidator(ctx)
 	for _, validator := range validators {
 		if !k.HasDelegations(ctx, validator.GetOperator()) && !k.HasUndelegations(ctx, validator.GetOperator()) &&
 			!k.HasRedelegations(ctx, validator.GetOperator()) && validator.Rewards.IsZero() {
@@ -162,22 +167,26 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 			}
 			continue
 		}
-		k.CheckDelegations(ctx, validator, delegations[validator.OperatorAddress])
+		if delegationsCount[validator.OperatorAddress] > maxDelegations {
+			k.CheckDelegations(ctx, validator)
+		}
 	}
 
 	// Iterate over validators, highest power to lowest.
 	iterator := k.ValidatorsPowerStoreIterator(ctx)
 	defer iterator.Close()
-	for count := 0; iterator.Valid() && count < int(maxValidators); iterator.Next() {
+	var count uint32
+	for ; iterator.Valid(); iterator.Next() {
 		// everything that is iterated in this loop is becoming or already a
 		// part of the bonded validator set
+		valAddrSdk := sdk.ValAddress(iterator.Value())
 		valAddr := sdk.ValAddress(iterator.Value()).String()
 		validator := k.mustGetValidator(ctx, sdk.ValAddress(iterator.Value()))
 
 		// state transitions
 		switch {
 		// Bonded/Unbonded -> Unbonding
-		case !validator.IsUnbonding() && len(delegations[valAddr]) == 0:
+		case !validator.IsUnbonding() && delegationsCount[valAddr] == 0:
 			if validator.Online {
 				validator.Online = false
 				err := events.EmitTypedEvent(ctx, &types.EventSetOffline{
@@ -193,7 +202,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 				return nil, err
 			}
 		// Unbonding -> Unbonded
-		case validator.IsUnbonding() && len(delegations[valAddr]) > 0:
+		case validator.IsUnbonding() && delegationsCount[valAddr] > 0:
 			validator, err = k.unbondingToUnbonded(ctx, validator)
 			if err != nil {
 				return
@@ -204,7 +213,8 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 			if err != nil {
 				return
 			}
-			for _, delegation := range delegations[valAddr] {
+			delegations := k.GetValidatorDelegations(ctx, valAddrSdk)
+			for _, delegation := range delegations {
 				switch delegation.Stake.Type {
 				case types.StakeType_Coin:
 					amtFromNotBondedToBonded = amtFromNotBondedToBonded.Add(delegation.GetStake().GetStake())
@@ -225,8 +235,8 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 			if err != nil {
 				return
 			}
-
-			for _, delegation := range delegations[valAddr] {
+			delegations := k.GetValidatorDelegations(ctx, valAddrSdk)
+			for _, delegation := range delegations {
 				switch delegation.Stake.Type {
 				case types.StakeType_Coin:
 					amtFromBondedToNotBonded = amtFromBondedToNotBonded.Add(delegation.GetStake().GetStake())
@@ -244,30 +254,35 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 			panic(fmt.Sprintf("unexpected validator status %s: online=%v, status=%d, stake=%d", validator.OperatorAddress, validator.Online, validator.Status, validator.Stake))
 		}
 
-		// fetch the old power bytes
-		oldPowerBytes, found := last[valAddr]
+		// make updates in tendermint only if validator in top
+		if count < maxValidators {
+			// fetch the old power bytes
+			oldPowerBytes, found := last[valAddr]
 
-		newPower := validator.ConsensusPower()
-		newPowerBytes := k.cdc.MustMarshal(&gogotypes.Int64Value{Value: newPower})
+			newPower := validator.ConsensusPower()
+			newPowerBytes := k.cdc.MustMarshal(&gogotypes.Int64Value{Value: newPower})
 
-		// update the validator set if power has changed
-		if !found || !bytes.Equal(oldPowerBytes, newPowerBytes) {
-			if newPower > 0 {
-				k.SetLastValidatorPower(ctx, validator.GetOperator(), newPower)
-				updates = append(updates, validator.ABCIValidatorUpdate(ethtypes.PowerReduction))
-			} else {
-				k.DeleteLastValidatorPower(ctx, validator.GetOperator())
-				// 'validator not found in last powers' mean 'validator already deleted from tendermint validators'
-				if found {
-					updates = append(updates, validator.ABCIValidatorUpdateZero())
+			// update the validator set if power has changed
+			if !found || !bytes.Equal(oldPowerBytes, newPowerBytes) {
+				if newPower > 0 {
+					k.SetLastValidatorPower(ctx, validator.GetOperator(), newPower)
+					updates = append(updates, validator.ABCIValidatorUpdate(ethtypes.PowerReduction))
+					ctx.Logger().Error(fmt.Sprintf("new power %s: %d", validator.OperatorAddress, validator.Stake))
+				} else {
+					k.DeleteLastValidatorPower(ctx, validator.GetOperator())
+					// 'validator not found in last powers' mean 'validator already deleted from tendermint validators'
+					if found {
+						updates = append(updates, validator.ABCIValidatorUpdateZero())
+						ctx.Logger().Error(fmt.Sprintf("zero power %s: %d", validator.OperatorAddress, validator.Stake))
+					}
 				}
 			}
+
+			delete(last, valAddr)
+
+			totalPower = totalPower.Add(sdk.NewInt(newPower))
 		}
-
-		delete(last, valAddr)
 		count++
-
-		totalPower = totalPower.Add(sdk.NewInt(newPower))
 	}
 
 	noLongerBonded, err := sortNoLongerBonded(last)
@@ -277,6 +292,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 
 	for _, valAddrBytes := range noLongerBonded {
 		validator := k.mustGetValidator(ctx, sdk.ValAddress(valAddrBytes))
+		ctx.Logger().Error(fmt.Sprintf("no longer bonded %s: %d", validator.OperatorAddress, validator.Stake))
 		k.DeleteLastValidatorPower(ctx, validator.GetOperator())
 		updates = append(updates, validator.ABCIValidatorUpdateZero())
 	}
@@ -506,7 +522,9 @@ func sortNoLongerBonded(last validatorsByAddr) ([][]byte, error) {
 	return noLongerBonded, nil
 }
 
-func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator, delegations []types.Delegation) {
+func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator) {
+	delegations := k.GetValidatorDelegations(ctx, validator.GetOperator())
+
 	if len(delegations) <= int(k.MaxDelegations(ctx)) {
 		return
 	}
@@ -570,4 +588,14 @@ func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator, del
 			panic(err)
 		}
 	}
+}
+
+func (k Keeper) getValidatorsCountForBlock(ctx sdk.Context, block int64) uint32 {
+	count := uint32(16 + (block/432000)*4)
+	maxValidators := k.MaxValidators(ctx)
+	if count > maxValidators {
+		return maxValidators
+	}
+
+	return count
 }

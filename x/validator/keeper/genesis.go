@@ -98,6 +98,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 		}
 
 		k.SetDelegation(ctx, delegation)
+		k.IncrementDelegationsCount(ctx, delegation.GetValidator())
 
 		// Call the after-modification hook if not exported
 		if !data.Exported {
