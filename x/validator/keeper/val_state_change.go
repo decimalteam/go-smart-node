@@ -154,7 +154,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 	validators := k.GetAllValidators(ctx)
 	maxDelegations := k.MaxDelegations(ctx)
 	delegationsCount := k.GetAllDelegationsCount(ctx)
-	//delegations := k.GetAllDelegationsByValidator(ctx)
+
 	for _, validator := range validators {
 		if !k.HasDelegations(ctx, validator.GetOperator()) && !k.HasUndelegations(ctx, validator.GetOperator()) &&
 			!k.HasRedelegations(ctx, validator.GetOperator()) && validator.Rewards.IsZero() {
@@ -267,13 +267,11 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 				if newPower > 0 {
 					k.SetLastValidatorPower(ctx, validator.GetOperator(), newPower)
 					updates = append(updates, validator.ABCIValidatorUpdate(ethtypes.PowerReduction))
-					ctx.Logger().Error(fmt.Sprintf("new power %s: %d", validator.OperatorAddress, validator.Stake))
 				} else {
 					k.DeleteLastValidatorPower(ctx, validator.GetOperator())
 					// 'validator not found in last powers' mean 'validator already deleted from tendermint validators'
 					if found {
 						updates = append(updates, validator.ABCIValidatorUpdateZero())
-						ctx.Logger().Error(fmt.Sprintf("zero power %s: %d", validator.OperatorAddress, validator.Stake))
 					}
 				}
 			}
@@ -292,7 +290,6 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 
 	for _, valAddrBytes := range noLongerBonded {
 		validator := k.mustGetValidator(ctx, sdk.ValAddress(valAddrBytes))
-		ctx.Logger().Error(fmt.Sprintf("no longer bonded %s: %d", validator.OperatorAddress, validator.Stake))
 		k.DeleteLastValidatorPower(ctx, validator.GetOperator())
 		updates = append(updates, validator.ABCIValidatorUpdateZero())
 	}
