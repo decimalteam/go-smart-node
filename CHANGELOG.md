@@ -2,7 +2,40 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
-### [Unreleased](https://bitbucket.org/decimalteam/go-smart-node/compare/HEAD..v0.0.7) - 2022-11-01
+### [Unreleased](https://bitbucket.org/decimalteam/go-smart-node/compare/HEAD..v0.0.8) - 2022-11-15
+
+#### Features
+
+-  feature/39929 feat: burn fee by fee module  [`b6ce824`](https://bitbucket.org/decimalteam/go-smart-node/commits/b6ce824aee60e3d30cf5d73e4af3f4e91675d2c1)
+-  feature/39771 feat: legacy info for validator reward addresses  [`4221750`](https://bitbucket.org/decimalteam/go-smart-node/commits/4221750bd9552397f094cd11830f7db5fa17ffef)
+-  feature/39929 feat: parameter for commission burning  [`ca00dcd`](https://bitbucket.org/decimalteam/go-smart-node/commits/ca00dcddd7c90e9d3cc697eb20b60c8b2e46cedc)
+-  feature/37535 feat: (genesis_converter) replacement for NFT URI doublicates  [`33d786c`](https://bitbucket.org/decimalteam/go-smart-node/commits/33d786ceb0ad04b931cbd19c83a98637a7c59ed4)
+-  feature/39771 feat: (sendstorm) add validator pools verification; add execution limit  [`d298dba`](https://bitbucket.org/decimalteam/go-smart-node/commits/d298dbac202fdc17c9ff60424363d0745a01e82a)
+-  feature/39771 feat: (sendstorm) add validator pools verification  [`be98bb3`](https://bitbucket.org/decimalteam/go-smart-node/commits/be98bb31fa4f751080c2895a9e7064eae503d63e)
+-  feature/37535 feat: multisig genesis tests  [`a4689f3`](https://bitbucket.org/decimalteam/go-smart-node/commits/a4689f3faaf3731bf56087c8e2947c5267130e7c)
+-  feature/39929 feat: add burning for evm  [`5be8fa2`](https://bitbucket.org/decimalteam/go-smart-node/commits/5be8fa2c2797e5018c6507903ecb8c873f7463cd)
+-  feature/39929 feat: burn 50% of rewards (i.e. burn 50% commission)  [`a8baa56`](https://bitbucket.org/decimalteam/go-smart-node/commits/a8baa56e6c36ae9b75f2614f9c80b9da08f4421e)
+-  feature/37535 feat: smaple script for genesis conversion  [`b71fa88`](https://bitbucket.org/decimalteam/go-smart-node/commits/b71fa88e14f99afa45f471cc0af3909b40176f79)
+-  feature/39929 feat: add commission_burn_factor to devnet genesis  [`5dbe00c`](https://bitbucket.org/decimalteam/go-smart-node/commits/5dbe00c76732a3e8c38470baa77c4aa22ad84420)
+
+#### Fixes
+
+-  feature/39771 fix: validator state transitions  [`642bc54`](https://bitbucket.org/decimalteam/go-smart-node/commits/642bc541be0e1f1f60907b292fc28c917bc89c73)
+-  feature/39771 fix: validator state changes  [`1608215`](https://bitbucket.org/decimalteam/go-smart-node/commits/16082150dfc9676a63b81c518ef57dc54bb86819)
+-  feature/39929 fix: proto names, numbeers  [`0dd9222`](https://bitbucket.org/decimalteam/go-smart-node/commits/0dd92221b353c55c949472005def28022fd3d75d)
+-  feature/375353 fix: genesis_converter  [`2dc8043`](https://bitbucket.org/decimalteam/go-smart-node/commits/2dc80435f629c18de8831526766bc88ef1979d48)
+-  feature/39771 fix: invalid pools state in case when SetOffline/SetOnline + CancelRedelegation occur in one block  [`ffb2cf9`](https://bitbucket.org/decimalteam/go-smart-node/commits/ffb2cf96bdb766f29526024fdce5eba15555c3c0)
+-  feature/39771 fix: validator set changes  [`9eead98`](https://bitbucket.org/decimalteam/go-smart-node/commits/9eead980b6fc4e12b94d4cdc710b92e4b58c2ccc)
+-  feature/39929 fix: test for EndBlocker  [`7420206`](https://bitbucket.org/decimalteam/go-smart-node/commits/7420206d057aeac9fe3cb21cd43455279614458e)
+-  feature/37535 fix: NFT dublicates, coin volumes, validator description limits  [`54455c8`](https://bitbucket.org/decimalteam/go-smart-node/commits/54455c8895817c6352568228feb2449a2ff3769c)
+-  feature/37535 fix: remove unused files  [`b9b06f0`](https://bitbucket.org/decimalteam/go-smart-node/commits/b9b06f08e10a86eba84c1789a130bc9822969c25)
+-  feature/39771 fix: remove unused test  [`ad53a47`](https://bitbucket.org/decimalteam/go-smart-node/commits/ad53a47856635cc80a3cc2e44550a29ac5e93ba1)
+-  feature/39929 fix: cleanup interfaces  [`1e96e99`](https://bitbucket.org/decimalteam/go-smart-node/commits/1e96e999bb906abedaeaf9af52f2e236a22b9160)
+-  hotfix: case of empty public key  [`1755fe3`](https://bitbucket.org/decimalteam/go-smart-node/commits/1755fe319838a805964401ae9abb9d8e31a1846f)
+-  feature/39929 fix: remove unused interfaces from validator module  [`99dd1c9`](https://bitbucket.org/decimalteam/go-smart-node/commits/99dd1c9b311c80fc3670015505252d385698b248)
+-  hotfix: genesis params for testnet  [`b7fc94e`](https://bitbucket.org/decimalteam/go-smart-node/commits/b7fc94edaf1c9ae381df249be3bc7879d9f8989a)
+
+### [v0.0.8](https://bitbucket.org/decimalteam/go-smart-node/compare/v0.0.8..v0.0.7) - 2022-11-01
 
 #### Features
 
