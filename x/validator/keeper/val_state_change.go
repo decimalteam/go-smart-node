@@ -13,6 +13,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
@@ -511,20 +512,25 @@ func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator, del
 		return
 	}
 
-	baseAmounts := make(map[int]sdkmath.Int)
+	baseAmounts := make([]struct {
+		Delegation types.Delegation
+		BaseAmount sdkmath.Int
+	}, 0)
 	for i := range delegations {
-		baseAmounts[i] = k.ToBaseCoin(ctx, delegations[i].Stake.GetStake()).Amount
+		baseAmounts = append(baseAmounts, struct {
+			Delegation types.Delegation
+			BaseAmount sdkmath.Int
+		}{Delegation: delegations[i], BaseAmount: k.ToBaseCoin(ctx, delegations[i].Stake.GetStake()).Amount})
 	}
 
-	sort.SliceStable(delegations, func(i, j int) bool {
-		amountI := baseAmounts[i]
-		amountJ := baseAmounts[j]
-		return amountI.GT(amountJ)
+	sort.SliceStable(baseAmounts, func(i, j int) bool {
+		return baseAmounts[i].BaseAmount.GT(baseAmounts[j].BaseAmount)
 	})
 
-	for i := int(k.MaxDelegations(ctx)); i < len(delegations); i++ {
-		stake := delegations[i].Stake
-		delegator := delegations[i].GetDelegator()
+	for i := int(k.MaxDelegations(ctx)); i < len(baseAmounts); i++ {
+		delegation := baseAmounts[i].Delegation
+		stake := delegation.Stake
+		delegator := delegation.GetDelegator()
 		switch validator.Status {
 		case types.BondStatus_Bonded:
 			switch stake.Type {
@@ -560,14 +566,24 @@ func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator, del
 			}
 		}
 
-		remainStake, err := k.CalculateRemainStake(ctx, delegations[i].Stake, delegations[i].Stake)
+		remainStake, err := k.CalculateRemainStake(ctx, delegation.Stake, delegation.Stake)
 		if err != nil {
 			panic(err)
 		}
 
-		err = k.Unbond(ctx, delegator, validator.GetOperator(), delegations[i].Stake, remainStake)
+		err = k.Unbond(ctx, delegator, validator.GetOperator(), delegation.Stake, remainStake)
 		if err != nil {
 			panic(err)
 		}
+
+		err = events.EmitTypedEvent(ctx, &types.EventUndelegateComplete{
+			Delegator: delegation.Delegator,
+			Validator: delegation.Validator,
+			Stake:     stake,
+		})
+		if err != nil {
+			panic(errors.Internal.Wrapf("err: %s", err.Error()))
+		}
+
 	}
 }

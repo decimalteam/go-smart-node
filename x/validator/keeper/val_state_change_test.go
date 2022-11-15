@@ -577,7 +577,7 @@ func TestCheckDelegations(t *testing.T) {
 	_, dsc, ctx := createTestInput(t)
 
 	defaultParams := dsc.ValidatorKeeper.GetParams(ctx)
-	defaultParams.MaxDelegations = 3
+	defaultParams.MaxDelegations = 4
 	dsc.ValidatorKeeper.SetParams(ctx, defaultParams)
 
 	msgsrv := keeper.NewMsgServerImpl(dsc.ValidatorKeeper)
@@ -606,14 +606,22 @@ func TestCheckDelegations(t *testing.T) {
 	// create custom coin
 	ccDenom2 := "custom2"
 
-	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[1], ccDenom2, "da", crr, initVolume, initReserve, limitVolume, ""))
+	initVolume2 := keeper.TokensFromConsensusPower(1000000)
+	initReserve2 := keeper.TokensFromConsensusPower(1000)
+	limitVolume2 := keeper.TokensFromConsensusPower(100000000000000000)
+
+	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[1], ccDenom2, "da", crr, initVolume2, initReserve2, limitVolume2, ""))
 	require.NoError(t, err)
 	// ----------------------------
 
 	// create custom coin
 	ccDenom3 := "custom3"
 
-	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[2], ccDenom3, "d", crr, initVolume, initReserve, limitVolume, ""))
+	initVolume3 := keeper.TokensFromConsensusPower(100000000)
+	initReserve3 := keeper.TokensFromConsensusPower(1000)
+	limitVolume3 := keeper.TokensFromConsensusPower(100000000000000000)
+
+	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[2], ccDenom3, "d", crr, initVolume3, initReserve3, limitVolume3, ""))
 	require.NoError(t, err)
 	// ----------------------------
 
@@ -636,6 +644,8 @@ func TestCheckDelegations(t *testing.T) {
 	stake1 := types.NewStakeCoin(sdk.NewCoin(ccDenom, helpers.EtherToWei(sdkmath.NewInt(1000))))
 	stake2 := types.NewStakeCoin(sdk.NewCoin(ccDenom2, helpers.EtherToWei(sdkmath.NewInt(1200))))
 	stake3 := types.NewStakeCoin(sdk.NewCoin(ccDenom3, helpers.EtherToWei(sdkmath.NewInt(1400))))
+	stake4 := types.NewStakeCoin(creatorStake)
+	stake5 := types.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(1000000))))
 	{
 		val, _ := valK.GetValidator(ctx, vals[0])
 
@@ -646,6 +656,10 @@ func TestCheckDelegations(t *testing.T) {
 			require.NoError(t, err)
 			err = valK.Delegate(ctx, accs[2], val, stake3)
 			require.NoError(t, err)
+			err = valK.Delegate(ctx, accs[2], val, stake4)
+			require.NoError(t, err)
+			err = valK.Delegate(ctx, accs[1], val, stake5)
+			require.NoError(t, err)
 		}
 	}
 
@@ -653,17 +667,18 @@ func TestCheckDelegations(t *testing.T) {
 		val, _ := valK.GetValidator(ctx, vals[0])
 
 		dels := valK.GetAllDelegationsByValidator(ctx)
-		require.Len(t, dels[val.GetOperator().String()], 4)
+		require.Len(t, dels[val.GetOperator().String()], 6)
 
 		valK.CheckDelegations(ctx, val, dels[val.GetOperator().String()])
 
 		dels = valK.GetAllDelegationsByValidator(ctx)
-		require.Len(t, dels[val.GetOperator().String()], 3)
+		require.Len(t, dels[val.GetOperator().String()], 4)
 
 		updatedRS, err := valK.GetValidatorRS(ctx, val.GetOperator())
 		require.NoError(t, err)
 
 		minus := keeper.TokensToConsensusPower(valK.ToBaseCoin(ctx, stake1.Stake).Amount)
+		minus += keeper.TokensToConsensusPower(valK.ToBaseCoin(ctx, stake3.Stake).Amount)
 		require.Equal(t, val.Stake-minus, updatedRS.Stake)
 	}
 
