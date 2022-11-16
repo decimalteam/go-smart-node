@@ -294,6 +294,8 @@ func (k Keeper) RemoveValidator(ctx sdk.Context, address sdk.ValAddress) {
 	store.Delete(types.GetValidatorByConsAddrIndexKey(valConsAddr))
 	store.Delete(types.GetValidatorRewards(address))
 	store.Delete(types.GetLastValidatorPowerKey(address))
+	store.Delete(types.GetValidatorDelegationsCount(address))
+	k.DeleteValidatorQueue(ctx, validator)
 
 	// call hooks
 	k.AfterValidatorRemoved(ctx, valConsAddr, validator.GetOperator())

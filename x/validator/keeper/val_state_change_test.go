@@ -655,7 +655,7 @@ func TestCheckDelegations(t *testing.T) {
 		dels := valK.GetAllDelegationsByValidator(ctx)
 		require.Len(t, dels[val.GetOperator().String()], 4)
 
-		valK.CheckDelegations(ctx, val, dels[val.GetOperator().String()])
+		valK.CheckDelegations(ctx, val)
 
 		dels = valK.GetAllDelegationsByValidator(ctx)
 		require.Len(t, dels[val.GetOperator().String()], 3)
@@ -759,4 +759,100 @@ func TestPoolBreakingByCancelRedelegation(t *testing.T) {
 	require.True(t, bondedBalance.IsEqual(startBondedBalance.Add(stake)), "bonded: %s, expect: %s", bondedBalance, stake)
 	// stake of vals[0] (500+100 cancel) + 400 in redelegation
 	require.True(t, notBondedBalance.IsEqual(stake), "not bonded: %s, expect: %s", notBondedBalance, stake)
+}
+
+func TestValidatorsCandidates(t *testing.T) {
+	// candidates - bonded online validators with small stake
+	// they are out of top X validators, they are out of tendermint validators
+
+	const maxValidators = 10
+
+	powerByPos := func(i int) int64 {
+		return int64(maxValidators*2 + 1 - i)
+	}
+
+	_, dsc, ctx := createTestInput(t)
+	genesisValidators := dsc.ValidatorKeeper.GetAllValidators(ctx)
+
+	params := dsc.ValidatorKeeper.GetParams(ctx)
+	params.MaxValidators = maxValidators
+	dsc.ValidatorKeeper.SetParams(ctx, params)
+
+	msgsrv := keeper.NewMsgServerImpl(dsc.ValidatorKeeper)
+
+	///////////////////////////////
+	// 0. start: validator count is maxValidators * 2
+	balance := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10000000)))
+	accs, vals := generateAddresses(dsc, ctx, maxValidators*2, sdk.NewCoins(balance))
+
+	goCtx := sdk.WrapSDKContext(ctx)
+	for i := 0; i < maxValidators*2; i++ {
+		msgCreate, err := types.NewMsgCreateValidator(
+			vals[i],
+			accs[i],
+			PKs[i],
+			types.Description{Moniker: "monik"},
+			sdk.ZeroDec(),
+			sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(powerByPos(i)))),
+		)
+		require.NoError(t, err)
+		_, err = msgsrv.CreateValidator(goCtx, msgCreate)
+		require.NoError(t, err)
+		_, err = msgsrv.SetOnline(goCtx, types.NewMsgSetOnline(vals[i]))
+		require.NoError(t, err)
+	}
+	updates := keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
+	require.Len(t, updates, maxValidators-len(genesisValidators))
+
+	// check powers and statuses
+	expectTotalPower := int64(0)
+	for _, gv := range genesisValidators {
+		expectTotalPower += gv.Stake
+	}
+	for i := 0; i < maxValidators-len(genesisValidators); i++ {
+		expectTotalPower += powerByPos(i)
+	}
+	totalPower := dsc.ValidatorKeeper.GetLastTotalPower(ctx)
+	require.Equal(t, expectTotalPower, totalPower.Int64())
+
+	for i := 0; i < maxValidators*2; i++ {
+		val, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[i])
+		require.True(t, found)
+		require.True(t, val.Online)
+		require.True(t, val.IsBonded())
+		require.True(t, val.Stake > 0)
+	}
+
+	///////////////////////////////
+	// 1. turn off top validator
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1).WithBlockTime(ctx.BlockTime().Add(time.Second * 5))
+	goCtx = sdk.WrapSDKContext(ctx)
+	_, err := msgsrv.SetOffline(goCtx, types.NewMsgSetOffline(vals[0]))
+	require.NoError(t, err)
+
+	// 1 validator out
+	updates = keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
+	require.Len(t, updates, 1)
+
+	// 1 validator from candidates in
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1).WithBlockTime(ctx.BlockTime().Add(time.Second * 5))
+	updates = keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
+	require.Len(t, updates, 1)
+
+	// check powers and statuses
+	expectTotalPower = int64(0)
+	for _, gv := range genesisValidators {
+		expectTotalPower += gv.Stake
+	}
+	for i := 0; i < maxValidators-len(genesisValidators); i++ {
+		expectTotalPower += powerByPos(i + 1)
+	}
+	totalPower = dsc.ValidatorKeeper.GetLastTotalPower(ctx)
+	require.Equal(t, expectTotalPower, totalPower.Int64())
+
+	val, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[0])
+	require.True(t, found)
+	require.False(t, val.Online)
+	require.True(t, val.IsUnbonded())
+	require.True(t, val.Stake == 0)
 }

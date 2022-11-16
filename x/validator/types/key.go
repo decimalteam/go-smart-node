@@ -58,6 +58,7 @@ const (
 //   - RedelegationsByValDst:   0x34<val_dst><delegator><val_src>             : []byte{}
 //   - Undelegations:           0x35<delegator><validator><stake_id>          : <Undelegation>
 //   - UndelegationsByValSrc:   0x36<validator><delegator><stake_id>          : []byte{}
+//   - DelegationsCount:        0x37<validator>                               : <int32>
 
 // Queues related records:
 // TODO: Instead of storing array we need to store records separately and iterate over it when needed.
@@ -87,6 +88,7 @@ var (
 	keyPrefixRedelegationsByValDstIndex = []byte{0x34} // prefix for each key for a redelegation index (by destination validator address)
 	keyPrefixUndelegations              = []byte{0x35} // prefix for each key for an undelegation
 	keyPrefixUndelegationsByValIndex    = []byte{0x36} // prefix for each key for an undelegation index (by validator address)
+	keyPrefixDelegationsCount           = []byte{0x37} // prefix for delegations count index (by validator address)
 	keyPrefixValidatorQueue             = []byte{0x41} // prefix for the timestamps in validator queue
 	keyPrefixRedelegationQueue          = []byte{0x42} // prefix for the timestamps in redelegations queue
 	keyPrefixUndelegationQueue          = []byte{0x43} // prefix for the timestamps in unbonding queue
@@ -364,6 +366,23 @@ func GetUBDKeyFromValIndexKey(indexKey []byte) []byte {
 	delegator := addrs[valAddrLen+2:]
 
 	return GetUBDKey(delegator, valAddr)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Delegations count ///////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// GetAllDelegationsCount returns the prefix key for all counts of delegations.
+func GetAllDelegationsCount() []byte {
+	return keyPrefixDelegationsCount
+}
+
+func GetValidatorDelegationsCount(valAddr sdk.ValAddress) []byte {
+	return append(GetAllDelegationsCount(), valAddr...)
+}
+
+func ParseValidatorDelegationsCountKey(key []byte) sdk.ValAddress {
+	return key[1:]
 }
 
 ////////////////////////////////////////////////////////////////////////////////

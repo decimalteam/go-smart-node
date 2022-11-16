@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"bytes"
+	"encoding/binary"
 	"fmt"
 	"time"
 
@@ -722,6 +723,7 @@ func (k Keeper) Delegate(
 	if !delegationFound {
 		//k.BeforeUpdateDelegation(ctx, delegation, denom)
 		delegation = types.NewDelegation(delegator, validator.GetOperator(), stake)
+		k.IncrementDelegationsCount(ctx, validator.GetOperator())
 	} else {
 		delegation.Stake, err = delegation.Stake.Add(stake)
 		if err != nil {
@@ -1111,6 +1113,7 @@ func (k Keeper) Unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValA
 	delegation.Stake = remainStake
 	if k.ToBaseCoin(ctx, remainStake.GetStake()).IsZero() {
 		err = k.RemoveDelegation(ctx, delegation)
+		k.DecrementDelegationsCount(ctx, validator.GetOperator())
 	} else {
 		k.SetDelegation(ctx, delegation)
 	}
@@ -1211,4 +1214,59 @@ func (k Keeper) getBeginInfo(ctx sdk.Context, validatorSrc sdk.ValAddress) (comp
 	default:
 		panic(fmt.Sprintf("unknown validator status: %s", validator.Status))
 	}
+}
+
+func (k Keeper) IncrementDelegationsCount(ctx sdk.Context, valAddr sdk.ValAddress) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetValidatorDelegationsCount(valAddr)
+	counter := uint32(0)
+	value := store.Get(key)
+	if len(value) > 0 {
+		counter = binary.BigEndian.Uint32(value)
+	}
+	counter++
+	bz := make([]byte, 4)
+	binary.BigEndian.PutUint32(bz, counter)
+	store.Set(key, bz)
+}
+
+func (k Keeper) DecrementDelegationsCount(ctx sdk.Context, valAddr sdk.ValAddress) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetValidatorDelegationsCount(valAddr)
+	counter := uint32(0)
+	value := store.Get(key)
+	if len(value) > 0 {
+		counter = binary.BigEndian.Uint32(value)
+	}
+	counter--
+	bz := make([]byte, 4)
+	binary.BigEndian.PutUint32(bz, counter)
+	store.Set(key, bz)
+}
+
+func (k Keeper) GetDelegationsCount(ctx sdk.Context, valAddr sdk.ValAddress) uint32 {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetValidatorDelegationsCount(valAddr)
+	counter := uint32(0)
+	value := store.Get(key)
+	if len(value) > 0 {
+		counter = binary.BigEndian.Uint32(value)
+	}
+	return counter
+}
+
+func (k Keeper) GetAllDelegationsCount(ctx sdk.Context) map[string]uint32 {
+	result := make(map[string]uint32)
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.GetAllDelegationsCount())
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		counter := uint32(0)
+		if len(iterator.Value()) > 0 {
+			counter = binary.BigEndian.Uint32(iterator.Value())
+		}
+		valAddr := types.ParseValidatorDelegationsCountKey(iterator.Key())
+		result[valAddr.String()] = counter
+	}
+	return result
 }
