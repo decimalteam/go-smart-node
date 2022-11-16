@@ -41,6 +41,7 @@ func main() {
 		cmdScenario(),
 		cmdValidators(),
 		cmdVerifyPools(),
+		cmdVerifyCoinsByBank(),
 	)
 
 	if err := rootCmd.Execute(); err != nil {

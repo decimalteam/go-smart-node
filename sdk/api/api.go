@@ -10,6 +10,7 @@ import (
 	tmservice "github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	bankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/evmos/ethermint/encoding"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
@@ -138,6 +139,18 @@ func (api *API) GetLastHeight() int64 {
 		return 0
 	}
 	return resp.SdkBlock.Header.Height
+}
+
+func (api *API) GetSupply(denom string) (sdk.Int, error) {
+	bankClient := bankTypes.NewQueryClient(api.grpcClient)
+	req := &bankTypes.QuerySupplyOfRequest{
+		Denom: denom,
+	}
+	res, err := bankClient.SupplyOf(context.Background(), req)
+	if err != nil {
+		return sdk.ZeroInt(), err
+	}
+	return res.Amount.Amount, nil
 }
 
 // Init global cosmos sdk config
