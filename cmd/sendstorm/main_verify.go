@@ -70,6 +70,65 @@ func cmdVerify() *cobra.Command {
 	return cmd
 }
 
+func cmdVerifyCoinsByBank() *cobra.Command {
+	var cmd = &cobra.Command{
+		Use:   "verify-coins-by-bank",
+		Short: "Verify custom coins volume",
+		Run: func(cmd *cobra.Command, args []string) {
+			//
+			err := cmd.Flags().Parse(args)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			reactor := stormReactor{}
+			// init
+			err = reactor.initApi(cmd.Flags())
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			addresses, err := reactor.api.AllAccounts()
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			// coins info from coin keeper
+			coinsInfo, err := reactor.coins()
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			balances := sdk.NewCoins()
+			for _, adr := range addresses {
+				coins, err := reactor.api.AddressBalance(adr)
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+				balances = balances.Add(coins...)
+			}
+			for _, coinInfo := range coinsInfo {
+				volume, err := reactor.api.GetSupply(coinInfo.Denom)
+				if err != nil {
+					fmt.Printf("GetSupply(%s) fail: %s\n", coinInfo.Denom, err.Error())
+					continue
+				}
+				diff := "none"
+				bal := balances.AmountOf(coinInfo.Denom)
+				if !bal.Equal(volume) {
+					diff = fmt.Sprintf("volume=%s, balances=%s",
+						volume.String(), bal.String())
+				}
+				fmt.Printf("coin: (symbol: %s, bank volume: %s), difference: %s\n",
+					coinInfo.Denom, volume, diff)
+			}
+		},
+	}
+
+	return cmd
+}
+
 func cmdValidators() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "validators",
