@@ -24,6 +24,7 @@ type Keeper struct {
 	bankKeeper keeper.Keeper
 	coinKeeper types.CoinKeeper
 	authKeeper types.AccountKeeper
+	calcFunc   types.CalculateCommissionFunc
 
 	baseDenom *string
 }
@@ -37,6 +38,7 @@ func NewKeeper(
 	coinKeeper types.CoinKeeper,
 	authKeeper types.AccountKeeper,
 	baseDenom string,
+	calcFunc types.CalculateCommissionFunc,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -50,6 +52,7 @@ func NewKeeper(
 		coinKeeper: coinKeeper,
 		authKeeper: authKeeper,
 		baseDenom:  &baseDenom,
+		calcFunc:   calcFunc,
 	}
 }
 

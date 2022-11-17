@@ -13,6 +13,7 @@ import (
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
+	"bitbucket.org/decimalteam/go-smart-node/app/ante"
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -79,6 +80,7 @@ func createTestInput(t *testing.T) (*codec.LegacyAmino, *app.DSC, sdk.Context) {
 		&dsc.CoinKeeper,
 		dsc.AccountKeeper,
 		cmdcfg.BaseDenom,
+		ante.CalculateFee,
 	)
 	return dsc.LegacyAmino(), dsc, ctx
 }

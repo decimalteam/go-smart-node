@@ -470,6 +470,7 @@ func NewDSC(
 		&app.CoinKeeper,
 		app.AccountKeeper,
 		cmdcfg.BaseDenom,
+		ante.CalculateFee,
 	)
 	app.ValidatorKeeper = validatorkeeper.NewKeeper(
 		appCodec,

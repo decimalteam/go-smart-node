@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	ante "bitbucket.org/decimalteam/go-smart-node/app/ante"
 	"bitbucket.org/decimalteam/go-smart-node/testutil"
 	feekeeper "bitbucket.org/decimalteam/go-smart-node/x/fee/keeper"
 	feetestutil "bitbucket.org/decimalteam/go-smart-node/x/fee/testutil"
@@ -85,6 +86,7 @@ func (s *KeeperTestSuite) SetupTest() {
 		coinKeeper,
 		authKeeper,
 		baseDenom,
+		ante.CalculateFee,
 	)
 	dp := types.DefaultParams()
 	dp.Oracle = oracle

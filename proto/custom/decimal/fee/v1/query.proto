@@ -4,6 +4,8 @@ package decimal.fee.v1;
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 
+import "cosmos_proto/cosmos.proto";
+
 import "decimal/fee/v1/fee.proto";
 import "decimal/fee/v1/params.proto";
 
@@ -25,6 +27,11 @@ service Query {
   rpc ModuleParams(QueryModuleParamsRequest) returns (QueryModuleParamsResponse) {
     option (google.api.http).get = "/decimal/fee/v1/params";
   }
+
+  // Calculate transaction commission by tx bytes
+  rpc CalculateCommission(QueryCalculateCommissionRequest) returns (QueryCalculateCommissionResponse) {
+    option (google.api.http).get = "/decimal/fee/v1/calculate_commission";
+  }  
 }
 
 // QueryCoinPricesRequest is request type for the Query/CoinPrices RPC method.
@@ -49,3 +56,19 @@ message QueryModuleParamsRequest {}
 
 // QueryModuleParamsResponse is response type for the Query/ModuleParams RPC method.
 message QueryModuleParamsResponse { Params params = 1 [ (gogoproto.nullable) = false ]; }
+
+// QueryCalculateCommissionRequest is request type for the Query/CalculateCommission RPC method.
+message QueryCalculateCommissionRequest {
+  // Transaction bytes encoded in hex presentation
+  string tx_bytes = 1;
+  // Coin denomination to calculate
+  string denom = 2;
+}
+
+message QueryCalculateCommissionResponse {
+  string commission = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
