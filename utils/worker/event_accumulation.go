@@ -20,6 +20,7 @@ import (
 	legacytypes "bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	swaptypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
+	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
 /*
@@ -56,6 +57,7 @@ var pool = map[string]bool{
 	mustConvertAndEncode(authtypes.NewModuleAddress(nfttypes.ReservedPool)):          false,
 	mustConvertAndEncode(authtypes.NewModuleAddress(legacytypes.LegacyCoinPool)):     false,
 	mustConvertAndEncode(authtypes.NewModuleAddress(swaptypes.SwapPool)):             false,
+	mustConvertAndEncode(authtypes.NewModuleAddress(validatortypes.ModuleName)):      false,
 }
 
 type EventAccumulator struct {
