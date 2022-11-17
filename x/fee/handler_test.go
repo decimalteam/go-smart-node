@@ -94,10 +94,10 @@ func TestCommissionCalculation(t *testing.T) {
 			Denom:       "testcoin",
 			Title:       "testcoin",
 			Creator:     accs[0].String(),
-			CRR:         20,
+			CRR:         100,
 			LimitVolume: helpers.EtherToWei(sdkmath.NewInt(10000)),
 			Volume:      helpers.EtherToWei(sdkmath.NewInt(1000)),
-			Reserve:     helpers.EtherToWei(sdkmath.NewInt(1000)),
+			Reserve:     helpers.EtherToWei(sdkmath.NewInt(2000)),
 		},
 	)
 
@@ -138,6 +138,7 @@ func TestCommissionCalculation(t *testing.T) {
 	require.NoError(t, err)
 	require.False(t, resp.Commission.IsNil())
 	require.False(t, resp.Commission.IsZero())
+	require.True(t, resp.Commission.Equal(comm.QuoRaw(2)))
 
 	// valid tx, coin isn't exist
 	resp, err = dsc.FeeKeeper.CalculateCommission(goCtx, &types.QueryCalculateCommissionRequest{
