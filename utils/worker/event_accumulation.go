@@ -151,6 +151,7 @@ var eventProcessors = map[string]processFunc{
 	// validator
 	"decimal.validator.v1.EventDelegate":           processEventDelegate,
 	"decimal.validator.v1.EventUndelegateComplete": processEventUndelegateComplete,
+	"decimal.validator.v1.EventForceUndelegate":    processEventUndelegateComplete,
 	"decimal.validator.v1.EventRedelegateComplete": processEventRedelegateComplete,
 	"decimal.validator.v1.EventUpdateCoinsStaked":  processEventUpdateCoinsStaked,
 

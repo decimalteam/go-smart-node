@@ -105,6 +105,13 @@ message EventUndelegateComplete {
   Stake stake = 3 [ (gogoproto.nullable) = false ];
 }
 
+// EventForceUndelegate defines event emitted when a delegation is undelegated by force (max delegation count is reached).
+message EventForceUndelegate {
+  string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  Stake stake = 3 [ (gogoproto.nullable) = false ];
+}
+
 // EventCancelRedelegation defines event emitted when a redelegated from a validator to another one is cancelled.
 message EventCancelRedelegation {
   string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
