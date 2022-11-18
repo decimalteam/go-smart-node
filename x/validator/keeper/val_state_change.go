@@ -591,7 +591,7 @@ func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator) {
 			panic(err)
 		}
 
-		err = events.EmitTypedEvent(ctx, &types.EventUndelegateComplete{
+		err = events.EmitTypedEvent(ctx, &types.EventForceUndelegate{
 			Delegator: delegation.Delegator,
 			Validator: delegation.Validator,
 			Stake:     stake,
