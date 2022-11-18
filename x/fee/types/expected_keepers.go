@@ -7,9 +7,12 @@ package types
 import (
 	"math/big"
 
+	sdkmath "cosmossdk.io/math"
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 )
 
@@ -29,9 +32,12 @@ type FeeMarketKeeper interface {
 }
 
 type CoinKeeper interface {
+	GetCoin(ctx sdk.Context, denom string) (coin cointypes.Coin, err error)
 	BurnPoolCoins(ctx sdk.Context, poolName string, coins sdk.Coins) error
 }
 
 type AccountKeeper interface {
 	GetModuleAccount(ctx sdk.Context, moduleName string) authtypes.ModuleAccountI
 }
+
+type CalculateCommissionFunc func(cdc codec.BinaryCodec, msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params Params) (sdkmath.Int, error)

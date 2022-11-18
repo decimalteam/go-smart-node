@@ -13,4 +13,5 @@ var (
 	SavingError        = errors.New(codespace, 104, "price saving error")
 	DuplicateCoinPrice = errors.New(codespace, 105, "duplicate coin price by denom and quote")
 	PriceNotFound      = errors.New(codespace, 106, "price is not found in the key-value store")
+	MustBeOneMessage   = errors.New(codespace, 107, "transaction must contain one message")
 )

@@ -8,6 +8,7 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
+	"bitbucket.org/decimalteam/go-smart-node/app/ante"
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/keeper"
@@ -28,6 +29,7 @@ func TestDefaultGenesis(t *testing.T) {
 		&dsc.CoinKeeper,
 		dsc.AccountKeeper,
 		config.BaseDenom,
+		ante.CalculateFee,
 	)
 
 	fee.InitGenesis(ctx, dsc.FeeKeeper, types.DefaultGenesisState())
@@ -56,6 +58,7 @@ func TestGenesisInit(t *testing.T) {
 		&dsc.CoinKeeper,
 		dsc.AccountKeeper,
 		config.BaseDenom,
+		ante.CalculateFee,
 	)
 
 	gs := types.DefaultGenesisState()
