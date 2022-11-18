@@ -13,6 +13,7 @@ import (
 type EventPayCommission struct {
 	Payer  string    `json:"payer"`
 	Coins  sdk.Coins `json:"coins"`
+	Burnt  sdk.Coins `json:"burnt"`
 	TxHash string    `json:"txHash"`
 }
 
@@ -47,6 +48,7 @@ func processEventPayCommission(ea *EventAccumulator, event abci.Event, txHash st
 	var (
 		err   error
 		coins sdk.Coins
+		burnt sdk.Coins
 		e     EventPayCommission
 	)
 	for _, attr := range event.Attributes {
@@ -58,11 +60,17 @@ func processEventPayCommission(ea *EventAccumulator, event abci.Event, txHash st
 			if err != nil {
 				return fmt.Errorf("can't unmarshal coins: %s, value: '%s'", err.Error(), string(attr.Value))
 			}
+		case "burnt":
+			err = json.Unmarshal(attr.Value, &burnt)
+			if err != nil {
+				return fmt.Errorf("can't unmarshal burnt coins: %s, value: '%s'", err.Error(), string(attr.Value))
+			}
 		}
 	}
 
 	e.Coins = coins
 	e.TxHash = txHash
+	e.Burnt = burnt
 	ea.PayCommission = append(ea.PayCommission, e)
 	return nil
 
