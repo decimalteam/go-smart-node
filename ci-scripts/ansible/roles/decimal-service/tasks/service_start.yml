@@ -16,5 +16,5 @@
     name: '{{ service_name_worker }}'
     state: started
     enabled: true
-  when: ansible_hostname.find('dev-explorer-worker') != -1
+  when: ansible_hostname.find('explorer-worker') != -1
   become: true
