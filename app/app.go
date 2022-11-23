@@ -92,6 +92,7 @@ import (
 	evm "github.com/evmos/ethermint/x/evm"
 	evmkeeper "github.com/evmos/ethermint/x/evm/keeper"
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
+	evmgeth "github.com/evmos/ethermint/x/evm/vm/geth"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 
 	// Unnamed import of statik for swagger UI support
@@ -494,6 +495,8 @@ func NewDSC(
 		app.BankKeeper,
 		&app.ValidatorKeeper,
 		app.FeeKeeper,
+		nil,
+		evmgeth.NewEVM,
 		cast.ToString(appOpts.Get(ethsrvflags.EVMTracer)),
 	)
 	app.EvmKeeper = app.EvmKeeper.SetHooks(

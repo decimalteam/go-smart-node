@@ -25,6 +25,7 @@ type FeeKeeper interface {
 // interface from ethermint evm module
 type FeeMarketKeeper interface {
 	GetBaseFee(ctx sdk.Context) *big.Int
+	GetBaseFeeEnabled(ctx sdk.Context) bool
 	GetParams(ctx sdk.Context) feemarkettypes.Params
 	GetModuleParams(ctx sdk.Context) Params
 	GetPrice(ctx sdk.Context, denom string, quote string) (CoinPrice, error)

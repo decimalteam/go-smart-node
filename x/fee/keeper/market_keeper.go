@@ -22,6 +22,10 @@ func (k Keeper) GetBaseFee(ctx sdk.Context) *big.Int {
 	return baseFee.BigInt()
 }
 
+func (k Keeper) GetBaseFeeEnabled(ctx sdk.Context) bool {
+	return true
+}
+
 func (k Keeper) GetParams(ctx sdk.Context) feemarkettypes.Params {
 	minGasPrice := k.GetMinGasPrice(ctx)
 
