@@ -12,7 +12,7 @@ func (rec *Record) Validate() error {
 		return errors.InvalidLegacyBech32Address
 	}
 	// record must be not empty
-	if len(rec.Coins) == 0 && len(rec.NFTs) == 0 && len(rec.Wallets) == 0 {
+	if len(rec.Coins) == 0 && len(rec.NFTs) == 0 && len(rec.Wallets) == 0 && len(rec.Validators) == 0 {
 		return errors.NoInfoForLegacyAddress
 	}
 

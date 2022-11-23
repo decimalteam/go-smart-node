@@ -423,6 +423,18 @@ func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable, legacyRecords *L
 
 	result.Online = valOld.Online
 	result.Jailed = valOld.Jailed
+	// sync Online+Jailed+Status
+	if result.Jailed {
+		result.Online = false
+	}
+	/*
+		if result.Online && result.Status != "BOND_STATUS_BONDED" {
+			result.Status = "BOND_STATUS_BONDED"
+		}
+		if !result.Online && result.Status == "BOND_STATUS_BONDED" {
+			result.Status = "BOND_STATUS_UNBONDED"
+		}
+	*/
 	result.UnbondingHeight = valOld.UnbondingHeight
 	result.UnbondingTime = valOld.UnbondingCompletionTime
 

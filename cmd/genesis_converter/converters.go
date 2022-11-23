@@ -449,16 +449,30 @@ func convertUnbondings(undelegations []UnbondingRecordOld, undelegationsNFT []Un
 	return result, nil
 }
 
-func convertLastValidatorPowers(pwrsOld []LastValidatorPowerOld) ([]LastValidatorPowerNew, error) {
+func convertLastValidatorPowers(pwrsOld []LastValidatorPowerOld, validators []ValidatorNew) ([]LastValidatorPowerNew, error) {
 	var result []LastValidatorPowerNew
+	var powerCache = make(map[string]int64)
 	for _, pwrOld := range pwrsOld {
 		pwrNew, err := LastValidatorPowerO2N(pwrOld)
 		if err != nil {
 			return []LastValidatorPowerNew{}, err
 		}
 		if pwrNew.Power > 0 {
-			result = append(result, pwrNew)
+			powerCache[pwrNew.Address] = pwrNew.Power
 		}
+	}
+	/*
+		for _, val := range validators {
+			if !val.Online && powerCache[val.OperatorAddress] > 0 {
+				delete(powerCache, val.OperatorAddress)
+			}
+		}
+	*/
+	for k, v := range powerCache {
+		result = append(result, LastValidatorPowerNew{
+			Address: k,
+			Power:   v,
+		})
 	}
 	return result, nil
 }

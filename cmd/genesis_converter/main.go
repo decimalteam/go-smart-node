@@ -271,7 +271,7 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord, injectLeg
 		return GenesisNew{}, []nftDublicatesRecord{}, err
 	}
 	gsNew.AppState.Validator.LastValidatorPowers, err =
-		convertLastValidatorPowers(gsOld.AppState.Validator.LastValidatorPowers)
+		convertLastValidatorPowers(gsOld.AppState.Validator.LastValidatorPowers, gsNew.AppState.Validator.Validators)
 	if err != nil {
 		return GenesisNew{}, []nftDublicatesRecord{}, err
 	}
@@ -281,7 +281,7 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord, injectLeg
 	// legacy records
 	var records []LegacyRecordNew
 	for _, v := range legacyRecords.data {
-		if v.Coins.Len() == 0 && len(v.NFTs) == 0 && len(v.Wallets) == 0 {
+		if v.Coins.Len() == 0 && len(v.NFTs) == 0 && len(v.Wallets) == 0 && len(v.Validators) == 0 {
 			continue
 		}
 		records = append(records, *v)
