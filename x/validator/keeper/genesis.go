@@ -60,6 +60,14 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 			Stake:        validator.Stake,
 		})
 
+		if validator.Online {
+			consAddr, err := validator.GetConsAddr()
+			if err != nil {
+				panic(err)
+			}
+			k.SetStartHeight(ctx, consAddr, 0)
+		}
+
 		// Call the creation hook if not exported
 		if !data.Exported {
 			if err := k.AfterValidatorCreated(ctx, validator.GetOperator()); err != nil {
