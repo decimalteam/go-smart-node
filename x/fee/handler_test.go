@@ -45,12 +45,12 @@ func TestSavePrice(t *testing.T) {
 
 	prices := []types.CoinPrice{
 		{
-			Denom: "del",
+			Denom: config.BaseDenom,
 			Quote: "usd",
 			Price: sdk.NewDec(2),
 		},
 		{
-			Denom: "del",
+			Denom: config.BaseDenom,
 			Quote: "rub",
 			Price: sdk.NewDec(2),
 		},
@@ -111,7 +111,7 @@ func TestCommissionCalculation(t *testing.T) {
 		[]sdk.Msg{cointypes.NewMsgSendCoin(
 			sdk.MustAccAddressFromBech32("dx1tlykyxn3zddwm7w89raurwuvwa5apv4w32th0f"),
 			sdk.MustAccAddressFromBech32("dx10dtaveph2q03x3244duvmd92gkwgyll5rlulmn"),
-			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1))),
+			sdk.NewCoin(config.BaseDenom, helpers.EtherToWei(sdk.NewInt(1))),
 		)},
 		int64(len(txHexBytes1)/2),
 		delPrice.Price,

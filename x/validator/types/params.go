@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	coinconfig "bitbucket.org/decimalteam/go-smart-node/x/coin/config"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	coinconfig "bitbucket.org/decimalteam/go-smart-node/x/coin/config"
 )
 
 // Validator params default values.
@@ -35,7 +35,7 @@ const (
 	// DefaultSignedBlocksWindow 24 * ~5 sec = ~120 sec window
 	DefaultSignedBlocksWindow int64 = 24
 
-	DefaultBaseDenom = "del"
+	DefaultBaseDenom = cmdcfg.BaseDenom
 )
 
 var (

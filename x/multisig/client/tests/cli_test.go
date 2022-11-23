@@ -3,11 +3,11 @@ package tests
 import (
 	"testing"
 
-	"bitbucket.org/decimalteam/go-smart-node/x/multisig/client/cli"
-	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/multisig/client/cli"
+	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 )
 
 func TestCliCreateWallet(t *testing.T) {
@@ -47,9 +47,9 @@ func TestCliCreateTransaction(t *testing.T) {
 	cmd := cli.NewCreateTransactionCmd()
 	ctx := setUpCmd(t, cmd, clientCtx, adr0.String())
 
-	coins := sdk.NewCoins(sdk.NewCoin("del", sdk.NewInt(10)), sdk.NewCoin("btc", sdk.NewInt(100)))
+	coins := sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, sdk.NewInt(10)), sdk.NewCoin("btc", sdk.NewInt(100)))
 	// wallet receiver coins
-	cmd.SetArgs([]string{adr0.String(), adr1.String(), "10del,100btc"})
+	cmd.SetArgs([]string{adr0.String(), adr1.String(), "10" + cmdcfg.BaseDenom + ",100btc"})
 	err = cmd.ExecuteContext(ctx)
 	require.NoError(t, err)
 

@@ -30,7 +30,7 @@ func TestDoubleWallet(t *testing.T) {
 	_, dsc, ctx := getBaseAppWithCustomKeeper(t)
 	addrs, _ := generateAddresses(dsc, ctx, addrCount,
 		sdk.NewCoins(
-			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
+			sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(1000))),
 		),
 	)
 
@@ -59,7 +59,7 @@ func TestAccountWithSameAddress(t *testing.T) {
 	_, dsc, ctx := getBaseAppWithCustomKeeper(t)
 	addrs, _ := generateAddresses(dsc, ctx, addrCount,
 		sdk.NewCoins(
-			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
+			sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(1000))),
 		),
 	)
 
@@ -94,7 +94,7 @@ func TestSignTransaction(t *testing.T) {
 	_, dsc, ctx := getBaseAppWithCustomKeeper(t)
 	addrs, _ := generateAddresses(dsc, ctx, addrCount,
 		sdk.NewCoins(
-			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
+			sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(1000))),
 		),
 	)
 
@@ -116,7 +116,7 @@ func TestSignTransaction(t *testing.T) {
 	// send 10 coins to wallet
 	wAdr, err := sdk.AccAddressFromBech32(walletResponse.Wallet)
 	require.NoError(t, err)
-	err = dsc.BankKeeper.SendCoins(ctx, sender, wAdr, sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(10)))))
+	err = dsc.BankKeeper.SendCoins(ctx, sender, wAdr, sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(10)))))
 	require.NoError(t, err)
 
 	// create 'send 1 coin' to receiver
@@ -124,7 +124,7 @@ func TestSignTransaction(t *testing.T) {
 		cointypes.NewMsgSendCoin(
 			sdk.MustAccAddressFromBech32(walletResponse.Wallet),
 			receiver,
-			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1))),
+			sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(1))),
 		),
 	)
 	err = msgTx.ValidateBasic()
@@ -143,10 +143,10 @@ func TestSignTransaction(t *testing.T) {
 
 	// check balance
 	// 9 coins
-	walletBalance := dsc.BankKeeper.GetBalance(ctx, wAdr, "del")
+	walletBalance := dsc.BankKeeper.GetBalance(ctx, wAdr, cmdcfg.BaseDenom)
 	require.True(t, walletBalance.Amount.Equal(helpers.EtherToWei(sdk.NewInt(9))), "wallet balance")
 	// 1001 coins
-	receiverBalance := dsc.BankKeeper.GetBalance(ctx, receiver, "del")
+	receiverBalance := dsc.BankKeeper.GetBalance(ctx, receiver, cmdcfg.BaseDenom)
 	require.True(t, receiverBalance.Amount.Equal(helpers.EtherToWei(sdk.NewInt(1001))), "receiver balance")
 }
 
@@ -156,7 +156,7 @@ func TestTryOverspend(t *testing.T) {
 	_, dsc, ctx := getBaseAppWithCustomKeeper(t)
 	addrs, _ := generateAddresses(dsc, ctx, addrCount,
 		sdk.NewCoins(
-			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
+			sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(1000))),
 		),
 	)
 
@@ -178,7 +178,7 @@ func TestTryOverspend(t *testing.T) {
 	// send 10 coins to wallet
 	wAdr, err := sdk.AccAddressFromBech32(walletResponse.Wallet)
 	require.NoError(t, err)
-	err = dsc.BankKeeper.SendCoins(ctx, sender, wAdr, sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(10)))))
+	err = dsc.BankKeeper.SendCoins(ctx, sender, wAdr, sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(10)))))
 	require.NoError(t, err)
 
 	// create 'send 10 coin' to receiver twice
@@ -189,7 +189,7 @@ func TestTryOverspend(t *testing.T) {
 			cointypes.NewMsgSendCoin(
 				sdk.MustAccAddressFromBech32(walletResponse.Wallet),
 				receiver,
-				sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(10))),
+				sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(10))),
 			),
 		)
 		require.NoError(t, err)
@@ -212,7 +212,7 @@ func TestTryOverspend(t *testing.T) {
 	_, err = dsc.MultisigKeeper.SignTransaction(goCtx, msgSign)
 	require.NoError(t, err)
 	// 0 coins
-	walletBalance := dsc.BankKeeper.GetBalance(ctx, wAdr, "del")
+	walletBalance := dsc.BankKeeper.GetBalance(ctx, wAdr, cmdcfg.BaseDenom)
 	require.True(t, walletBalance.Amount.Equal(helpers.EtherToWei(sdk.NewInt(0))), "wallet balance")
 
 	// second
@@ -231,7 +231,7 @@ func TestUniversalTx(t *testing.T) {
 	_, dsc, ctx := getBaseAppWithCustomKeeper(t)
 	addrs, _ := generateAddresses(dsc, ctx, addrCount,
 		sdk.NewCoins(
-			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
+			sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(1000))),
 		),
 	)
 
@@ -253,13 +253,13 @@ func TestUniversalTx(t *testing.T) {
 	// send 10 coins to wallet
 	wAdr, err := sdk.AccAddressFromBech32(walletResponse.Wallet)
 	require.NoError(t, err)
-	err = dsc.BankKeeper.SendCoins(ctx, sender, wAdr, sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(10)))))
+	err = dsc.BankKeeper.SendCoins(ctx, sender, wAdr, sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(10)))))
 	require.NoError(t, err)
 
 	// create universal tx
 	msgU, err := types.NewMsgCreateTransaction(
 		addrs[1], walletResponse.Wallet,
-		cointypes.NewMsgSendCoin(wAdr, receiver, sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(10)))),
+		cointypes.NewMsgSendCoin(wAdr, receiver, sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(10)))),
 	)
 	require.NoError(t, err)
 
@@ -281,9 +281,9 @@ func TestUniversalTx(t *testing.T) {
 	require.NoError(t, err)
 
 	// check internal tx result
-	walletBalance := dsc.BankKeeper.GetBalance(ctx, wAdr, "del")
+	walletBalance := dsc.BankKeeper.GetBalance(ctx, wAdr, cmdcfg.BaseDenom)
 	require.True(t, walletBalance.Amount.Equal(helpers.EtherToWei(sdk.NewInt(0))), "wallet balance")
-	receiverBalance := dsc.BankKeeper.GetBalance(ctx, receiver, "del")
+	receiverBalance := dsc.BankKeeper.GetBalance(ctx, receiver, cmdcfg.BaseDenom)
 	require.True(t, receiverBalance.Amount.Equal(helpers.EtherToWei(sdk.NewInt(1010))), "receiver balance", receiverBalance.String())
 	require.True(t, dsc.MultisigKeeper.IsCompleted(ctx, txres.ID))
 

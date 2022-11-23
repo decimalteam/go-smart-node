@@ -1,10 +1,12 @@
 package keeper_test
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
 func (s *KeeperTestSuite) TestInitGenesis() {
@@ -15,7 +17,7 @@ func (s *KeeperTestSuite) TestInitGenesis() {
 	pk := ed25519.GenPrivKey().PubKey()
 	owner := sdk.AccAddress(pk.Address())
 	tokenID := "token-1"
-	reserve := sdk.NewCoin("del", sdk.NewInt(100000))
+	reserve := sdk.NewCoin(cmdcfg.BaseDenom, sdk.NewInt(100000))
 
 	dgs.Collections = []types.Collection{
 		{

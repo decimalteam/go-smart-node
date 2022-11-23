@@ -21,6 +21,7 @@ import (
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
@@ -41,7 +42,7 @@ func bootstrapHandlerTest(t *testing.T, numAddrs int, accCoins sdk.Coins) (*app.
 }
 
 var (
-	baseDenom  = "del"
+	baseDenom  = cmdcfg.BaseDenom
 	baseAmount = helpers.EtherToWei(sdkmath.NewInt(1000000000000))
 
 	// valid test coin params
@@ -377,7 +378,7 @@ func TestRedeemHandler(t *testing.T) {
 
 	var ()
 
-	check1, priv, proof := createNewCheck(t, ctx.ChainID(), "1000del", "9", "", 10)
+	check1, priv, proof := createNewCheck(t, ctx.ChainID(), "1000"+cmdcfg.BaseDenom, "9", "", 10)
 	addCoinToAddr(t, ctx, dsc, sdk.AccAddress(priv.PubKey().Address()), sdk.Coins{validCoin(baseDenom, 1000000000000)})
 	customCoin := tscoin.CreateCoin(addr1, title, denom, crr, helpers.EtherToWei(sdkmath.NewInt(10000000)), initReserve, limitVolume, "", true)
 

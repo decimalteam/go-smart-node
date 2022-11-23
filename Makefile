@@ -27,6 +27,7 @@ DOCKER_TAG := $(COMMIT_HASH)
 
 export GO111MODULE = on
 
+
 # Default target executed when no arguments are given to make.
 default_target: all
 

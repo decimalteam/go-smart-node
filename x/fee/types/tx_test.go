@@ -23,7 +23,7 @@ func TestMsgSavePriceValidation(t *testing.T) {
 			"dx1qql8ag4cluz6r4dz28p3w00dnc9w8ueue3x6fd",
 			[]CoinPrice{
 				{
-					Denom: "del",
+					Denom: cmdcfg.BaseDenom,
 					Quote: "usd",
 					Price: sdk.NewDec(1),
 				},
@@ -40,7 +40,7 @@ func TestMsgSavePriceValidation(t *testing.T) {
 			"dx1qql8ag4cluz6r4dz28p3w00dnc9w8ueue3x6fd1",
 			[]CoinPrice{
 				{
-					Denom: "del",
+					Denom: cmdcfg.BaseDenom,
 					Quote: "usd",
 					Price: sdk.NewDec(1),
 				},
@@ -52,7 +52,7 @@ func TestMsgSavePriceValidation(t *testing.T) {
 			"dx1qql8ag4cluz6r4dz28p3w00dnc9w8ueue3x6fd",
 			[]CoinPrice{
 				{
-					Denom: "del",
+					Denom: cmdcfg.BaseDenom,
 					Quote: "usd",
 					Price: sdk.NewDec(-1),
 				},
@@ -64,7 +64,7 @@ func TestMsgSavePriceValidation(t *testing.T) {
 			"dx1qql8ag4cluz6r4dz28p3w00dnc9w8ueue3x6fd",
 			[]CoinPrice{
 				{
-					Denom: "del",
+					Denom: cmdcfg.BaseDenom,
 					Quote: "usd",
 					Price: sdk.NewDec(0),
 				},
@@ -82,12 +82,12 @@ func TestMsgSavePriceValidation(t *testing.T) {
 			"dx1qql8ag4cluz6r4dz28p3w00dnc9w8ueue3x6fd",
 			[]CoinPrice{
 				{
-					Denom: "del",
+					Denom: cmdcfg.BaseDenom,
 					Quote: "usd",
 					Price: sdk.NewDec(1),
 				},
 				{
-					Denom: "del",
+					Denom: cmdcfg.BaseDenom,
 					Quote: "usd",
 					Price: sdk.NewDec(2),
 				},

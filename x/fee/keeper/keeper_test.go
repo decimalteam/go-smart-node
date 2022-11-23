@@ -7,6 +7,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/testutil"
 	feekeeper "bitbucket.org/decimalteam/go-smart-node/x/fee/keeper"
 	feetestutil "bitbucket.org/decimalteam/go-smart-node/x/fee/testutil"
+
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
@@ -20,10 +21,12 @@ import (
 	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
 
 var (
-	baseDenom = "del"
+	baseDenom = cmdcfg.BaseDenom
 	pk        = ed25519.GenPrivKey().PubKey()
 	oracle    = sdk.AccAddress(pk.Address()).String()
 )

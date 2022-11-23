@@ -174,29 +174,29 @@ func initConsistencyApp(t *testing.T, reserve, volume, limitVolume sdkmath.Int, 
 		Balances: []cosmosBankTypes.Balance{
 			{
 				Address: adr1,
-				Coins: sdk.Coins{
-					{
-						Denom:  params.BaseDenom,
-						Amount: helpers.EtherToWei(sdkmath.NewInt(1000000)),
-					},
-					{
-						Denom:  "foo",
-						Amount: helpers.EtherToWei(volume),
-					},
-				},
+				Coins: sdk.NewCoins(
+					sdk.NewCoin(
+						params.BaseDenom,
+						helpers.EtherToWei(sdkmath.NewInt(1000000)),
+					),
+					sdk.NewCoin(
+						"foo",
+						helpers.EtherToWei(volume),
+					),
+				),
 			},
 			{
 				Address: adr2,
-				Coins: sdk.Coins{
-					{
-						Denom:  params.BaseDenom,
-						Amount: helpers.EtherToWei(sdkmath.NewInt(1000000)),
-					},
-					{
-						Denom:  "foo",
-						Amount: helpers.EtherToWei(volume),
-					},
-				},
+				Coins: sdk.NewCoins(
+					sdk.NewCoin(
+						params.BaseDenom,
+						helpers.EtherToWei(sdkmath.NewInt(1000000)),
+					),
+					sdk.NewCoin(
+						"foo",
+						helpers.EtherToWei(volume),
+					),
+				),
 			},
 		},
 	}

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/swap"
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/keeper"
@@ -19,7 +20,7 @@ func TestChainOperations(t *testing.T) {
 	dsc, ctx := getBaseAppWithCustomKeeper(t)
 	addrs, _ := generateAddresses(dsc, ctx, 10,
 		sdk.NewCoins(
-			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1000))),
+			sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(1000))),
 		),
 	)
 

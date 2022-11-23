@@ -10,6 +10,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	"bitbucket.org/decimalteam/go-smart-node/app/ante"
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
@@ -35,7 +36,7 @@ func TestDefaultGenesis(t *testing.T) {
 	fee.InitGenesis(ctx, dsc.FeeKeeper, types.DefaultGenesisState())
 
 	params := dsc.FeeKeeper.GetModuleParams(ctx)
-	price, err := dsc.FeeKeeper.GetPrice(ctx, "del", "usd")
+	price, err := dsc.FeeKeeper.GetPrice(ctx, cmdcfg.BaseDenom, "usd")
 	require.NoError(t, err)
 
 	gs := types.DefaultGenesisState()
@@ -67,7 +68,7 @@ func TestGenesisInit(t *testing.T) {
 	fee.InitGenesis(ctx, dsc.FeeKeeper, gs)
 
 	params := dsc.FeeKeeper.GetModuleParams(ctx)
-	price, err := dsc.FeeKeeper.GetPrice(ctx, "del", "usd")
+	price, err := dsc.FeeKeeper.GetPrice(ctx, cmdcfg.BaseDenom, "usd")
 	require.NoError(t, err)
 
 	// check proper genesis initialization

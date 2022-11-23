@@ -3,14 +3,6 @@ package keeper_test
 import (
 	"testing"
 
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	"bitbucket.org/decimalteam/go-smart-node/testutil"
-	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
-	legacykeeper "bitbucket.org/decimalteam/go-smart-node/x/legacy/keeper"
-	legacytestutil "bitbucket.org/decimalteam/go-smart-node/x/legacy/testutil"
-	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
-	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -20,10 +12,20 @@ import (
 	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
+
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/testutil"
+	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
+	legacykeeper "bitbucket.org/decimalteam/go-smart-node/x/legacy/keeper"
+	legacytestutil "bitbucket.org/decimalteam/go-smart-node/x/legacy/testutil"
+	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
+	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
 
 var (
-	baseDenom = "del"
+	baseDenom = config.BaseDenom
 	publicKey = []byte{0x3, 0x44, 0x8e, 0x6b, 0x3d, 0x50, 0xd6, 0xa3, 0x9c, 0xab, 0x3b, 0xab, 0xaa,
 		0x4a, 0xa2, 0xb0, 0x88, 0x5f, 0x55, 0x6f, 0xe0, 0x5d, 0x71, 0x49, 0x88, 0x5a, 0x5, 0xa0, 0xe7, 0x94, 0xa, 0x7e, 0x4f}
 	pk               = ethsecp256k1.PubKey{Key: publicKey}

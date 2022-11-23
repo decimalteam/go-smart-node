@@ -1,12 +1,15 @@
 package keeper_test
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	"testing"
+
 	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"testing"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
 func (s *KeeperTestSuite) TestMsgMintToken() {
@@ -59,7 +62,7 @@ func (s *KeeperTestSuite) TestMsgMintToken() {
 		},
 		{
 			"New token reserve is less than min",
-			types.NewMsgMintToken(addr, denom, ID3, ID3, true, addr, 1, sdk.NewCoin("del", sdk.NewInt(1000))),
+			types.NewMsgMintToken(addr, denom, ID3, ID3, true, addr, 1, sdk.NewCoin(cmdcfg.BaseDenom, sdk.NewInt(1000))),
 			true,
 		},
 	}
@@ -348,17 +351,17 @@ func (s *KeeperTestSuite) TestMsgUpdateReserve() {
 	}{
 		{
 			"valid request",
-			types.NewMsgUpdateReserve(addr, ID, []uint32{1, 2}, sdk.NewCoin("del", helpers.EtherToWei(sdkmath.NewInt(2)))),
+			types.NewMsgUpdateReserve(addr, ID, []uint32{1, 2}, sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(2)))),
 			false,
 		},
 		{
 			"not exists token",
-			types.NewMsgUpdateReserve(addr, "not exists", []uint32{1, 2}, sdk.NewCoin("del", helpers.EtherToWei(sdkmath.NewInt(2)))),
+			types.NewMsgUpdateReserve(addr, "not exists", []uint32{1, 2}, sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(2)))),
 			true,
 		},
 		{
 			"not owned token",
-			types.NewMsgUpdateReserve(invalidOwner, ID, []uint32{1, 2}, sdk.NewCoin("del", helpers.EtherToWei(sdkmath.NewInt(2)))),
+			types.NewMsgUpdateReserve(invalidOwner, ID, []uint32{1, 2}, sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(2)))),
 			true,
 		},
 		{
@@ -368,17 +371,17 @@ func (s *KeeperTestSuite) TestMsgUpdateReserve() {
 		},
 		{
 			"not exists subtoken",
-			types.NewMsgUpdateReserve(addr, ID, []uint32{133}, sdk.NewCoin("del", helpers.EtherToWei(sdkmath.NewInt(2)))),
+			types.NewMsgUpdateReserve(addr, ID, []uint32{133}, sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(2)))),
 			true,
 		},
 		{
 			"owned token, but now owned subtoken",
-			types.NewMsgUpdateReserve(addr, ID, []uint32{11}, sdk.NewCoin("del", helpers.EtherToWei(sdkmath.NewInt(2)))),
+			types.NewMsgUpdateReserve(addr, ID, []uint32{11}, sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(2)))),
 			true,
 		},
 		{
 			"new reserve less than actual",
-			types.NewMsgUpdateReserve(addr, ID, []uint32{8}, sdk.NewCoin("del", helpers.EtherToWei(sdkmath.NewInt(1)))),
+			types.NewMsgUpdateReserve(addr, ID, []uint32{8}, sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(1)))),
 			true,
 		},
 	}

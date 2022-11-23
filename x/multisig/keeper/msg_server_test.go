@@ -5,11 +5,12 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 )
 
 var (
-	defaultDenom = "del"
+	defaultDenom = cmdcfg.BaseDenom
 	defaultCoins = sdk.NewCoins(sdk.NewCoin(defaultDenom, sdk.NewInt(1)))
 )
 

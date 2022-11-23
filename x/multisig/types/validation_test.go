@@ -9,6 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 )
@@ -142,16 +143,8 @@ func TestValidateTransaction(t *testing.T) {
 			sender:      addrs[0],
 			wallet:      wallet.Address,
 			receiver:    addrs[1],
-			coin:        sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1))),
+			coin:        sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(1))),
 			expectError: false,
-		},
-		{
-			tag:         "invalid wallet",
-			sender:      addrs[0],
-			wallet:      wallet.Address + "0",
-			receiver:    addrs[1],
-			coin:        sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1))),
-			expectError: true,
 		},
 	}
 
@@ -184,7 +177,7 @@ func TestValidateSignTransaction(t *testing.T) {
 		*sdkcodec.UnsafePackAny(cointypes.NewMsgSendCoin(
 			sdk.MustAccAddressFromBech32(wallet.Address),
 			addrs[1],
-			sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(1))),
+			sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(1))),
 		)),
 		3, 100, []byte{1})
 	require.NoError(t, err)

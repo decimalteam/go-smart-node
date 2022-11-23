@@ -1,16 +1,12 @@
 package keeper_test
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/testutil"
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	nftkeeper "bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
-	nfttestutil "bitbucket.org/decimalteam/go-smart-node/x/nft/testutil"
-	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	"testing"
+
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
-	//simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
@@ -19,13 +15,19 @@ import (
 	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
-	"testing"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/testutil"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	nftkeeper "bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
+	nfttestutil "bitbucket.org/decimalteam/go-smart-node/x/nft/testutil"
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
 var (
 	pk          = ed25519.GenPrivKey().PubKey()
 	addr        = sdk.AccAddress(pk.Address())
-	defaultCoin = sdk.NewCoin("del", types.DefaultMinReserveAmount)
+	defaultCoin = sdk.NewCoin(cmdcfg.BaseDenom, types.DefaultMinReserveAmount)
 )
 
 type KeeperTestSuite struct {
@@ -71,7 +73,7 @@ func (s *KeeperTestSuite) SetupTest() {
 	ctrl := gomock.NewController(s.T())
 	bankKeeper := nfttestutil.NewMockKeeper(ctrl)
 	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, addr, types.ReservedPool, sdk.NewCoins(defaultCoin)).AnyTimes().Return(nil)
-	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, addr, types.ReservedPool, sdk.NewCoins(sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(2))))).AnyTimes().Return(nil)
+	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, addr, types.ReservedPool, sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(2))))).AnyTimes().Return(nil)
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(ctx, types.ReservedPool, addr, sdk.NewCoins(defaultCoin)).AnyTimes().Return(nil)
 	// --
 
