@@ -58,9 +58,9 @@ definitions:
             else echo 0; fi
 
           # run reset playbook for EXPLORER HOSTS
-          - if [[ $MESSAGE == *\[reset\]* ]]; then
-            ansible-playbook -i hosts -l "$EXPLORER_HOST" -e "ansible_user=$USERNAME" decimal-explorer-init.yml;
-            else echo 0; fi
+          #- if [[ $MESSAGE == *\[reset\]* ]]; then
+          #  ansible-playbook -i hosts -l "$EXPLORER_HOST" -e "ansible_user=$USERNAME" decimal-explorer-init.yml;
+          #  else echo 0; fi
 
           # run reset playbook for SLAVE HOSTS
           - if [[ $MESSAGE == *\[reset\]* ]]; then
