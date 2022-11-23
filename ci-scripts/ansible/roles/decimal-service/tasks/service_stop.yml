@@ -1,7 +1,7 @@
 ---
 - name: Check if explorer worker service exists
   stat: path={{ systemd_path }}/{{ service_name_worker }}
-  when: ansible_hostname.find('dev-explorer-worker') != -1  
+  when: ansible_hostname.find('explorer-worker') != -1  
 
 - name: Check if dscd service exists
   stat: path={{ systemd_path }}/{{ service_name_dscd }}
@@ -11,7 +11,7 @@
   service:
     name: '{{ service_name_worker }}'
     state: stopped
-  when: ansible_hostname.find('dev-explorer-worker') != -1
+  when: ansible_hostname.find('explorer-worker') != -1
   become: true
   notify: run service explorer worker
 
