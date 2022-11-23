@@ -493,7 +493,7 @@ pipelines:
             - pip3 install ansible==2.10.7
             - chmod 700 ci-scripts/ansible
             - cd ci-scripts/ansible
-            - ansible-playbook -i hosts -l "$WORKER_HOST" -e "ansible_user=$USERNAME artifacts=$BITBUCKET_CLONE_DIR/build INDEXER_URL_WORKER=$INDEXER_URL_WORKER RPC_URL_WORKER=$RPC_URL_WORKER WEB3_URL_WORKER=$WEB3_URL_WORKER" decimal-worker-build.yml
+            - ansible-playbook -i hosts -l "$WORKER_HOST" -e "ansible_user=$USERNAME artifacts=$BITBUCKET_CLONE_DIR/build INDEXER_URL_WORKER=$INDEXER_URL_WORKER RPC_URL_WORKER=$RPC_URL_WORKER WEB3_URL_WORKER=$WEB3_URL_WORKER decimal_bin_worker=$DECIMAL_BIN_WORKER" decimal-worker-build.yml
 
 
     build-and-deploy-binary-files-to-repo-DEVnet:
