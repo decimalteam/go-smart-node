@@ -385,10 +385,10 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 	return collectionsNew, nil
 }
 
-func convertValidators(valsOld []ValidatorOld, addrTable *AddressTable, legacyRecords *LegacyRecords) ([]ValidatorNew, error) {
+func convertValidators(valsOld []ValidatorOld, addrTable *AddressTable, legacyRecords *LegacyRecords, setOnline []string) ([]ValidatorNew, error) {
 	var result []ValidatorNew
 	for _, valOld := range valsOld {
-		valNew, err := ValidatorO2N(valOld, addrTable, legacyRecords)
+		valNew, err := ValidatorO2N(valOld, addrTable, legacyRecords, setOnline)
 		if err != nil {
 			return []ValidatorNew{}, err
 		}
@@ -449,11 +449,11 @@ func convertUnbondings(undelegations []UnbondingRecordOld, undelegationsNFT []Un
 	return result, nil
 }
 
-func convertLastValidatorPowers(pwrsOld []LastValidatorPowerOld, validators []ValidatorNew) ([]LastValidatorPowerNew, error) {
+func convertLastValidatorPowers(pwrsOld []LastValidatorPowerOld, validators []ValidatorNew, addrTable *AddressTable) ([]LastValidatorPowerNew, error) {
 	var result []LastValidatorPowerNew
 	var powerCache = make(map[string]int64)
 	for _, pwrOld := range pwrsOld {
-		pwrNew, err := LastValidatorPowerO2N(pwrOld)
+		pwrNew, err := LastValidatorPowerO2N(pwrOld, addrTable)
 		if err != nil {
 			return []LastValidatorPowerNew{}, err
 		}
@@ -461,13 +461,12 @@ func convertLastValidatorPowers(pwrsOld []LastValidatorPowerOld, validators []Va
 			powerCache[pwrNew.Address] = pwrNew.Power
 		}
 	}
-	/*
-		for _, val := range validators {
-			if !val.Online && powerCache[val.OperatorAddress] > 0 {
-				delete(powerCache, val.OperatorAddress)
-			}
+	for _, val := range validators {
+		if !val.Online && powerCache[val.OperatorAddress] > 0 {
+			delete(powerCache, val.OperatorAddress)
 		}
-	*/
+	}
+
 	for k, v := range powerCache {
 		result = append(result, LastValidatorPowerNew{
 			Address: k,

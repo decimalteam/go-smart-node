@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	cosmosAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
@@ -10,8 +11,9 @@ import (
 
 // helper structure for old to new address conversion
 type AddressTable struct {
-	data      map[string]string
-	multisigs map[string]bool
+	data       map[string]string
+	validators map[string]string
+	multisigs  map[string]bool
 	// name_of_module -> new address
 	modules map[string]moduleInfo
 }
@@ -22,7 +24,7 @@ type moduleInfo struct {
 }
 
 func NewAddressTable() AddressTable {
-	return AddressTable{make(map[string]string), make(map[string]bool), make(map[string]moduleInfo)}
+	return AddressTable{make(map[string]string), make(map[string]string), make(map[string]bool), make(map[string]moduleInfo)}
 }
 
 func (at *AddressTable) AddAddress(oldAddress string, pubKey []byte) error {
@@ -34,8 +36,20 @@ func (at *AddressTable) AddAddress(oldAddress string, pubKey []byte) error {
 		if err != nil {
 			return err
 		}
+		// possible validators table
+		newValidator, err := bech32.ConvertAndEncode("dxvaloper", newPubKey.Address())
+		if err != nil {
+			return err
+		}
+		oldPubKey := secp256k1.PubKey{Key: pubKey}
+		oldValidator, err := bech32.ConvertAndEncode("dxvaloper", oldPubKey.Address())
+		if err != nil {
+			return err
+		}
+		at.validators[oldValidator] = newValidator
 	}
 	at.data[oldAddress] = newAddress
+
 	return nil
 }
 
@@ -45,6 +59,10 @@ func (at *AddressTable) AddMultisig(oldAddress string) {
 
 func (at *AddressTable) GetAddress(oldAddress string) string {
 	return at.data[oldAddress]
+}
+
+func (at *AddressTable) GetValidatorAddress(oldValidator string) string {
+	return at.validators[oldValidator]
 }
 
 func (at *AddressTable) IsMultisig(oldAddress string) bool {

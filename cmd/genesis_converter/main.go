@@ -33,6 +33,8 @@ func main() {
 	var pathGenesisOld, pathGenesisSource, pathGenesisResult, pathNFTfix, pathExportNFTDublicates string
 	var nftUriPrefix string
 	var injectLegacy bool
+	var setValidatorsOnline string
+	var setOnline []string
 
 	flag.StringVar(&globalBaseDenom, "basedenom", "del", "base denom for blockchain (del, tdel)")
 	flag.StringVar(&pathGenesisOld, "decimal", "", "path to exported genesis from Decimal")
@@ -42,6 +44,7 @@ func main() {
 	flag.StringVar(&pathExportNFTDublicates, "nftdublicates", "", "path to json to export dublicates info (may be empty)")
 	flag.StringVar(&nftUriPrefix, "nfturiprefix", "", "url prefix to fix URI dublicates (https://wherebuynft.com/api/nfts/ | https://devnet-nft.decimalchain.com/api/nfts/ | https://testnet-nft.decimalchain.com/api/nfts/)")
 	flag.BoolVar(&injectLegacy, "injectlegacy", false, "generate legacy records")
+	flag.StringVar(&setValidatorsOnline, "setonline", "", "comma separated list of validators to set online, all others will be offline")
 
 	flag.Parse()
 
@@ -54,10 +57,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	if len(setValidatorsOnline) > 0 {
+		setOnline = strings.Split(setValidatorsOnline, ",")
+	}
+
 	gsOld := readGenesisOld(pathGenesisOld)
 	gsSource := readGenesisNew(pathGenesisSource)
 	fixNFTData := readNFTFix(pathNFTfix)
-	gsNew, nftDublicatesRecords, err := convertGenesis(gsOld, fixNFTData, injectLegacy, nftUriPrefix)
+	gsNew, nftDublicatesRecords, err := convertGenesis(gsOld, fixNFTData, injectLegacy, nftUriPrefix, setOnline)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -151,7 +158,7 @@ func readNFTFix(fpath string) []NFTOwnerFixRecord {
 	return res
 }
 
-func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord, injectLegacy bool, nftUriPrefix string) (GenesisNew, []nftDublicatesRecord, error) {
+func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord, injectLegacy bool, nftUriPrefix string, setOnline []string) (GenesisNew, []nftDublicatesRecord, error) {
 	var gsNew GenesisNew
 	var err error
 
@@ -254,7 +261,7 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord, injectLeg
 	}
 	// validators
 	gsNew.AppState.Validator.Validators, err =
-		convertValidators(gsOld.AppState.Validator.Validators, addrTable, legacyRecords)
+		convertValidators(gsOld.AppState.Validator.Validators, addrTable, legacyRecords, setOnline)
 	if err != nil {
 		return GenesisNew{}, []nftDublicatesRecord{}, err
 	}
@@ -271,7 +278,7 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord, injectLeg
 		return GenesisNew{}, []nftDublicatesRecord{}, err
 	}
 	gsNew.AppState.Validator.LastValidatorPowers, err =
-		convertLastValidatorPowers(gsOld.AppState.Validator.LastValidatorPowers, gsNew.AppState.Validator.Validators)
+		convertLastValidatorPowers(gsOld.AppState.Validator.LastValidatorPowers, gsNew.AppState.Validator.Validators, addrTable)
 	if err != nil {
 		return GenesisNew{}, []nftDublicatesRecord{}, err
 	}

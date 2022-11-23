@@ -369,9 +369,9 @@ type ValidatorNew struct {
 	UnbondingTime   string `json:"unbonding_time"`
 }
 
-func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable, legacyRecords *LegacyRecords) (ValidatorNew, error) {
+func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable, legacyRecords *LegacyRecords, setOnline []string) (ValidatorNew, error) {
 	var result ValidatorNew
-	result.OperatorAddress = valOld.ValAddress
+	result.OperatorAddress = addrTable.GetValidatorAddress(valOld.ValAddress)
 	newRewardAdr := addrTable.GetAddress(valOld.RewardAddress)
 	if newRewardAdr == "" {
 		// back to old reward address
@@ -427,16 +427,29 @@ func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable, legacyRecords *L
 	if result.Jailed {
 		result.Online = false
 	}
-	/*
-		if result.Online && result.Status != "BOND_STATUS_BONDED" {
-			result.Status = "BOND_STATUS_BONDED"
-		}
-		if !result.Online && result.Status == "BOND_STATUS_BONDED" {
-			result.Status = "BOND_STATUS_UNBONDED"
-		}
-	*/
 	result.UnbondingHeight = valOld.UnbondingHeight
 	result.UnbondingTime = valOld.UnbondingCompletionTime
+
+	// special case:
+	if len(setOnline) > 0 {
+		setMeOnline := false
+		for _, s := range setOnline {
+			if s == result.OperatorAddress {
+				setMeOnline = true
+			}
+		}
+		if setMeOnline {
+			result.Online = true
+			result.Jailed = false
+			result.Status = "BOND_STATUS_BONDED"
+		} else {
+			result.Online = false
+			result.Jailed = false
+			result.Status = "BOND_STATUS_UNBONDED"
+		}
+		result.UnbondingHeight = "0"
+		result.UnbondingTime = "1970-01-01T00:00:00Z"
+	}
 
 	return result, nil
 }
@@ -493,7 +506,7 @@ func DelegationO2NCoin(delOld DelegationOld, coinSymbols map[string]bool, addrTa
 		return DelegationNew{}, nil
 	}
 	coin := coins[0]
-	delNew.Validator = delOld.Validator
+	delNew.Validator = addrTable.GetValidatorAddress(delOld.Validator)
 	newAdr := addrTable.GetAddress(delOld.DelegatorAddress)
 	if newAdr == "" {
 		return DelegationNew{}, fmt.Errorf("delegator '%s' has no new address", delOld.DelegatorAddress)
@@ -509,7 +522,7 @@ func DelegationO2NCoin(delOld DelegationOld, coinSymbols map[string]bool, addrTa
 func DelegationO2NNFT(delOld DelegationNFTOld, addrTable *AddressTable) (DelegationNew, error) {
 	var delNew DelegationNew
 
-	delNew.Validator = delOld.Validator
+	delNew.Validator = addrTable.GetValidatorAddress(delOld.Validator)
 	newAdr := addrTable.GetAddress(delOld.DelegatorAddress)
 	if newAdr == "" {
 		return DelegationNew{}, fmt.Errorf("delegator '%s' has no new address", delOld.DelegatorAddress)
@@ -542,7 +555,7 @@ func UnbondingO2NCoin(ubdOld UnbondingRecordOld, coinSymbols map[string]bool, ad
 		return UndelegationNew{}, fmt.Errorf("delegator '%s' has no new address", ubdOld.DelegatorAddress)
 	}
 	ubdNew.Delegator = newAdr
-	ubdNew.Validator = ubdOld.Validator
+	ubdNew.Validator = addrTable.GetValidatorAddress(ubdOld.Validator)
 
 	for _, entryOld := range ubdOld.Entries {
 		coins := filterCoins(sdk.NewCoins(entryOld.Value.Balance), coinSymbols)
@@ -576,7 +589,7 @@ func UnbondingO2NNFT(ubdOld UnbondingNFTRecordOld, addrTable *AddressTable) (Und
 		return UndelegationNew{}, fmt.Errorf("delegator '%s' has no new address", ubdOld.DelegatorAddress)
 	}
 	ubdNew.Delegator = newAdr
-	ubdNew.Validator = ubdOld.Validator
+	ubdNew.Validator = addrTable.GetValidatorAddress(ubdOld.Validator)
 
 	for _, entryOld := range ubdOld.Entries {
 		var entryNew UndelegationEntryNew
@@ -600,10 +613,10 @@ func UnbondingO2NNFT(ubdOld UnbondingNFTRecordOld, addrTable *AddressTable) (Und
 	return ubdNew, nil
 }
 
-func LastValidatorPowerO2N(pwrOld LastValidatorPowerOld) (LastValidatorPowerNew, error) {
+func LastValidatorPowerO2N(pwrOld LastValidatorPowerOld, addrTable *AddressTable) (LastValidatorPowerNew, error) {
 	var err error
 	var pwrNew LastValidatorPowerNew
-	pwrNew.Address = pwrOld.Address
+	pwrNew.Address = addrTable.GetValidatorAddress(pwrOld.Address)
 	pwrNew.Power, err = strconv.ParseInt(pwrOld.Power, 10, 64)
 	if err != nil {
 		return LastValidatorPowerNew{}, fmt.Errorf("validator power '%s' error: %s", pwrOld.Address, err.Error())
