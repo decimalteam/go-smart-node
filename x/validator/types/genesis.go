@@ -8,17 +8,18 @@ import (
 )
 
 // NewGenesisState creates a new genesis state.
-func NewGenesisState(params Params, validators []Validator, delegations []Delegation) *GenesisState {
+func NewGenesisState(params Params, validators []Validator, delegations []Delegation, powers []LastValidatorPower) *GenesisState {
 	return &GenesisState{
-		Params:      params,
-		Validators:  validators,
-		Delegations: delegations,
+		Params:              params,
+		Validators:          validators,
+		Delegations:         delegations,
+		LastValidatorPowers: powers,
 	}
 }
 
 // DefaultGenesisState gets the raw genesis raw message for testing
 func DefaultGenesisState() *GenesisState {
-	return NewGenesisState(DefaultParams(), []Validator{}, []Delegation{})
+	return NewGenesisState(DefaultParams(), []Validator{}, []Delegation{}, []LastValidatorPower{})
 }
 
 // GetGenesisStateFromAppState returns x/validator GenesisState given raw application genesis state.

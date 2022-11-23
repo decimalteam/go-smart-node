@@ -66,6 +66,7 @@ func (reactor *stormReactor) initApi(flags *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -215,13 +216,21 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 		}
 	}
 	// multisig transactions
+	// TODO: rework
 	for _, wallet := range ui.MultisigWallets {
 		txs, err := reactor.api.MultisigTransactionsByWallet(wallet.Address)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		ui.MultisigTransactions = append(ui.MultisigTransactions, txs...)
+		for _, tx := range txs {
+			txInfo, err := reactor.api.MultisigTransactionsByID(tx.Id)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			ui.MultisigTransactions = append(ui.MultisigTransactions, txInfo)
+		}
 	}
 	// multisig balances
 	for _, wallet := range ui.MultisigWallets {
@@ -231,6 +240,41 @@ func (reactor *stormReactor) updateGeneratorsInfo() {
 			return
 		}
 		ui.MultisigBalances[wallet.Address] = balance
+	}
+
+	// validators
+	ui.Validators, err = reactor.api.Validators()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// delegations
+	for _, val := range ui.Validators {
+		dels, err := reactor.api.ValidatorDelegations(val.OperatorAddress)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		ui.Delegations = append(ui.Delegations, dels...)
+	}
+	// undelegations
+	for _, val := range ui.Validators {
+		undels, err := reactor.api.ValidatorUndelegations(val.OperatorAddress)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		ui.Undelegations = append(ui.Undelegations, undels...)
+	}
+	// redelegations
+	for _, val := range ui.Validators {
+		redels, err := reactor.api.ValidatorRedelegations(val.OperatorAddress)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		ui.Redelegations = append(ui.Redelegations, redels...)
 	}
 
 	reactor.actionReactor.Update(ui)
@@ -259,4 +303,31 @@ func loadMnemonics(fname string) ([]string, error) {
 		result = append(result, mn)
 	}
 	return result, nil
+}
+
+type stepsCounter struct {
+	limit   int
+	counter int
+}
+
+func NewStepsCounter(flags *pflag.FlagSet) *stepsCounter {
+	limit, err := flags.GetInt(stepsCount)
+	if err != nil || limit < 0 {
+		limit = 0
+	}
+	return &stepsCounter{
+		limit:   limit,
+		counter: 0,
+	}
+}
+
+func (sc *stepsCounter) increment() bool {
+	if sc.limit == 0 {
+		return true
+	}
+	sc.counter++
+	if sc.counter > sc.limit {
+		return false
+	}
+	return true
 }

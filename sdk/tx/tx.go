@@ -25,19 +25,22 @@ type TxConstructor struct {
 // BuildTransaction creates transaction builder with automatic fee calculation
 // if delPrice is zero, fee amount will be set to zero - this mean that
 // DSC node will calculate fee during transaction execution
-func BuildTransaction(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom string, delPrice sdk.Dec, params FeeParams) (*TxConstructor, error) {
+func BuildTransaction(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom string, opts *FeeCalculationOptions) (*TxConstructor, error) {
+	if opts == nil {
+		return nil, fmt.Errorf("nil opts")
+	}
 	txc, err := newTxConstructor(msgs, memo)
 	if err != nil {
 		return nil, err
 	}
 	oldFee := sdk.ZeroInt()
 	newFee := sdk.OneInt()
-	if delPrice.IsZero() {
+	if opts.DelPrice.IsZero() {
 		newFee = sdk.ZeroInt()
 	} else {
 		for !oldFee.Equal(newFee) {
 			oldFee = sdk.ZeroInt().Add(newFee) // = copy, sdkmath.Int is reference type
-			newFee, err = calculateFee(acc, msgs, memo, feeDenom, oldFee, delPrice, params)
+			newFee, err = calculateFee(acc, msgs, memo, feeDenom, oldFee, opts)
 			if err != nil {
 				return nil, err
 			}
@@ -50,7 +53,7 @@ func BuildTransaction(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom
 	return txc, nil
 }
 
-func calculateFee(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom string, fee sdkmath.Int, delPrice sdk.Dec, params FeeParams) (sdkmath.Int, error) {
+func calculateFee(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom string, fee sdkmath.Int, opts *FeeCalculationOptions) (sdkmath.Int, error) {
 	txc, err := newTxConstructor(msgs, memo)
 	if err != nil {
 		// with zero fee, decimal node will calculate correct fee itself
@@ -68,7 +71,7 @@ func calculateFee(acc *wallet.Account, msgs []sdk.Msg, memo string, feeDenom str
 		return sdk.ZeroInt(), err
 	}
 	// TODO: in future need to get feetypes.Param by api query
-	newFee, err := appAnte.CalculateFee(msgs, int64(len(bz)), delPrice, params)
+	newFee, err := appAnte.CalculateFee(opts.AppCodec, msgs, int64(len(bz)), opts.DelPrice, opts.FeeParams)
 	if err != nil {
 		// with zero fee, decimal node will calculate correct fee itself
 		return sdk.ZeroInt(), err

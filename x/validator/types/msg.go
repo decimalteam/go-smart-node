@@ -5,6 +5,8 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
 )
 
 var (
@@ -85,11 +87,11 @@ func (msg *MsgCreateValidator) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required.
 func (msg *MsgCreateValidator) GetSigners() []sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(msg.OperatorAddress)
+	addr, err := sdk.ValAddressFromBech32(msg.OperatorAddress)
 	if err != nil {
 		return nil
 	}
-	return []sdk.AccAddress{addr}
+	return []sdk.AccAddress{sdk.AccAddress(addr)}
 }
 
 // ValidateBasic runs stateless checks on the message.
@@ -105,11 +107,17 @@ func (msg *MsgCreateValidator) ValidateBasic() error {
 	if msg.ConsensusPubkey == nil {
 		return ErrEmptyValidatorPubKey
 	}
+	if len(msg.ConsensusPubkey.Value) == 0 {
+		return ErrEmptyValidatorPubKey
+	}
 	if msg.Description == (Description{}) {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "empty description")
 	}
 	if msg.Commission.IsNil() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "empty commission")
+	}
+	if msg.Commission.IsNegative() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "negative commission")
 	}
 	if !msg.Stake.IsValid() || !msg.Stake.Amount.IsPositive() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid initial delegation")
@@ -153,16 +161,19 @@ func (msg *MsgEditValidator) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required.
 func (msg *MsgEditValidator) GetSigners() []sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(msg.OperatorAddress)
+	addr, err := sdk.ValAddressFromBech32(msg.OperatorAddress)
 	if err != nil {
 		return nil
 	}
-	return []sdk.AccAddress{addr}
+	return []sdk.AccAddress{sdk.AccAddress(addr)}
 }
 
 // ValidateBasic runs stateless checks on the message.
 func (msg *MsgEditValidator) ValidateBasic() error {
 	if _, err := sdk.ValAddressFromBech32(msg.OperatorAddress); err != nil {
+		return sdkerrors.ErrInvalidAddress.Wrapf("invalid operator address: %s", err)
+	}
+	if _, err := sdk.AccAddressFromBech32(msg.RewardAddress); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid operator address: %s", err)
 	}
 	if msg.Description == (Description{}) {
@@ -176,8 +187,10 @@ func (msg *MsgEditValidator) ValidateBasic() error {
 ////////////////////////////////////////////////////////////////
 
 // NewMsgSetOnline creates a new instance of MsgSetOnline.
-func NewMsgSetOnline() *MsgSetOnline {
-	return &MsgSetOnline{}
+func NewMsgSetOnline(operatorAddr sdk.ValAddress) *MsgSetOnline {
+	return &MsgSetOnline{
+		Validator: operatorAddr.String(),
+	}
 }
 
 // Route should return the name of the module.
@@ -193,11 +206,11 @@ func (msg *MsgSetOnline) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required.
 func (msg *MsgSetOnline) GetSigners() []sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(msg.Validator)
+	addr, err := sdk.ValAddressFromBech32(msg.Validator)
 	if err != nil {
 		return nil
 	}
-	return []sdk.AccAddress{addr}
+	return []sdk.AccAddress{sdk.AccAddress(addr)}
 }
 
 // ValidateBasic runs stateless checks on the message.
@@ -213,8 +226,10 @@ func (msg *MsgSetOnline) ValidateBasic() error {
 ////////////////////////////////////////////////////////////////
 
 // NewMsgSetOffline creates a new instance of MsgSetOffline.
-func NewMsgSetOffline() *MsgSetOffline {
-	return &MsgSetOffline{}
+func NewMsgSetOffline(operatorAddr sdk.ValAddress) *MsgSetOffline {
+	return &MsgSetOffline{
+		Validator: operatorAddr.String(),
+	}
 }
 
 // Route should return the name of the module.
@@ -230,11 +245,11 @@ func (msg *MsgSetOffline) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required.
 func (msg *MsgSetOffline) GetSigners() []sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(msg.Validator)
+	addr, err := sdk.ValAddressFromBech32(msg.Validator)
 	if err != nil {
 		return nil
 	}
-	return []sdk.AccAddress{addr}
+	return []sdk.AccAddress{sdk.AccAddress(addr)}
 }
 
 // ValidateBasic runs stateless checks on the message.
@@ -301,7 +316,7 @@ func NewMsgDelegateNFT(
 	delegatorAddr sdk.AccAddress,
 	validatorAddr sdk.ValAddress,
 	tokenID string,
-	subTokenIDs []int64,
+	subTokenIDs []uint32,
 ) *MsgDelegateNFT {
 	return &MsgDelegateNFT{
 		Delegator:   delegatorAddr.String(),
@@ -344,6 +359,9 @@ func (msg *MsgDelegateNFT) ValidateBasic() error {
 	}
 	if len(msg.SubTokenIDs) == 0 {
 		return sdkerrors.ErrInvalidRequest.Wrapf("empty sub-token IDs")
+	}
+	if !isUnique(msg.SubTokenIDs) {
+		return errors.SubTokenIDsDublicates
 	}
 	return nil
 }
@@ -398,6 +416,9 @@ func (msg *MsgRedelegate) ValidateBasic() error {
 	if _, err := sdk.ValAddressFromBech32(msg.ValidatorDst); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid destination validator address: %s", err)
 	}
+	if msg.ValidatorSrc == msg.ValidatorDst {
+		return errors.SelfRedelegation
+	}
 	if !msg.Coin.IsValid() || !msg.Coin.Amount.IsPositive() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid shares amount")
 	}
@@ -414,7 +435,7 @@ func NewMsgRedelegateNFT(
 	validatorSrcAddr sdk.ValAddress,
 	validatorDstAddr sdk.ValAddress,
 	tokenID string,
-	subTokenIDs []int64,
+	subTokenIDs []uint32,
 ) *MsgRedelegateNFT {
 	return &MsgRedelegateNFT{
 		Delegator:    delegatorAddr.String(),
@@ -456,11 +477,17 @@ func (msg *MsgRedelegateNFT) ValidateBasic() error {
 	if _, err := sdk.ValAddressFromBech32(msg.ValidatorDst); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid destination validator address: %s", err)
 	}
+	if msg.ValidatorSrc == msg.ValidatorDst {
+		return errors.SelfRedelegation
+	}
 	if len(msg.TokenID) == 0 {
 		return sdkerrors.ErrInvalidRequest.Wrapf("empty token ID")
 	}
 	if len(msg.SubTokenIDs) == 0 {
 		return sdkerrors.ErrInvalidRequest.Wrapf("empty sub-token IDs")
+	}
+	if !isUnique(msg.SubTokenIDs) {
+		return errors.SubTokenIDsDublicates
 	}
 	return nil
 }
@@ -525,7 +552,7 @@ func NewMsgUndelegateNFT(
 	delegatorAddr sdk.AccAddress,
 	validatorAddr sdk.ValAddress,
 	tokenID string,
-	subTokenIDs []int64,
+	subTokenIDs []uint32,
 ) *MsgUndelegateNFT {
 	return &MsgUndelegateNFT{
 		Delegator:   delegatorAddr.String(),
@@ -568,6 +595,9 @@ func (msg *MsgUndelegateNFT) ValidateBasic() error {
 	}
 	if len(msg.SubTokenIDs) == 0 {
 		return sdkerrors.ErrInvalidRequest.Wrapf("empty sub-token IDs")
+	}
+	if !isUnique(msg.SubTokenIDs) {
+		return errors.SubTokenIDsDublicates
 	}
 	return nil
 }
@@ -644,7 +674,7 @@ func NewMsgCancelRedelegationNFT(
 	validatorDstAddr sdk.ValAddress,
 	creationHeight int64,
 	tokenID string,
-	subTokenIDs []int64,
+	subTokenIDs []uint32,
 ) *MsgCancelRedelegationNFT {
 	return &MsgCancelRedelegationNFT{
 		Delegator:      delegatorAddr.String(),
@@ -695,6 +725,9 @@ func (msg *MsgCancelRedelegationNFT) ValidateBasic() error {
 	}
 	if len(msg.SubTokenIDs) == 0 {
 		return sdkerrors.ErrInvalidRequest.Wrapf("empty sub-token IDs")
+	}
+	if !isUnique(msg.SubTokenIDs) {
+		return errors.SubTokenIDsDublicates
 	}
 	return nil
 }
@@ -765,7 +798,7 @@ func NewMsgCancelUndelegationNFT(
 	validatorAddr sdk.ValAddress,
 	creationHeight int64,
 	tokenID string,
-	subTokenIDs []int64,
+	subTokenIDs []uint32,
 ) *MsgCancelUndelegationNFT {
 	return &MsgCancelUndelegationNFT{
 		Delegator:      delegatorAddr.String(),
@@ -813,5 +846,20 @@ func (msg *MsgCancelUndelegationNFT) ValidateBasic() error {
 	if len(msg.SubTokenIDs) == 0 {
 		return sdkerrors.ErrInvalidRequest.Wrapf("empty sub-token IDs")
 	}
+	if !isUnique(msg.SubTokenIDs) {
+		return errors.SubTokenIDsDublicates
+	}
 	return nil
+}
+
+// returns true if all list elements apperas only one time
+func isUnique(list []uint32) bool {
+	var looked = make(map[uint32]bool)
+	for _, id := range list {
+		if looked[id] {
+			return false
+		}
+		looked[id] = true
+	}
+	return true
 }

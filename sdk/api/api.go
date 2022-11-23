@@ -4,13 +4,20 @@ import (
 	"context"
 	"fmt"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	tmservice "github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	bankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/evmos/ethermint/encoding"
+
+	"bitbucket.org/decimalteam/go-smart-node/app"
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	"bitbucket.org/decimalteam/go-smart-node/sdk/tx"
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 )
 
 // this is default limit for queries with pagination
@@ -24,6 +31,11 @@ type API struct {
 	// network parameters from genesis
 	chainID  string
 	baseCoin string
+
+	// codec for fee calculation
+	appCodec  codec.BinaryCodec
+	delPrice  sdk.Dec
+	feeParams feetypes.Params
 }
 
 type ConnectionOptions struct {
@@ -54,6 +66,9 @@ func NewAPI(opts ConnectionOptions) (*API, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	encodingConfig := encoding.MakeConfig(app.ModuleBasics)
+	api.appCodec = encodingConfig.Codec
 
 	return api, nil
 }
@@ -96,7 +111,24 @@ func (api *API) grpcGetParameters() error {
 		}
 		api.baseCoin = resp.Params.BaseDenom
 	}
+	// price and fee params
+	{
+		var err error
+		// TODO: parametrize quote
+		api.delPrice, api.feeParams, err = api.GetFeeParams(api.baseCoin, "usd")
+		if err != nil {
+			return err
+		}
+	}
 	return nil
+}
+
+func (api *API) GetFeeCalculationOptions() *tx.FeeCalculationOptions {
+	return &tx.FeeCalculationOptions{
+		DelPrice:  api.delPrice,
+		FeeParams: api.feeParams,
+		AppCodec:  api.appCodec,
+	}
 }
 
 // GetParameters() get blockchain parameters
@@ -107,6 +139,18 @@ func (api *API) GetLastHeight() int64 {
 		return 0
 	}
 	return resp.SdkBlock.Header.Height
+}
+
+func (api *API) GetSupply(denom string) (sdk.Int, error) {
+	bankClient := bankTypes.NewQueryClient(api.grpcClient)
+	req := &bankTypes.QuerySupplyOfRequest{
+		Denom: denom,
+	}
+	res, err := bankClient.SupplyOf(context.Background(), req)
+	if err != nil {
+		return sdk.ZeroInt(), err
+	}
+	return res.Amount.Amount, nil
 }
 
 // Init global cosmos sdk config

@@ -77,6 +77,7 @@ func (as *SendCoinAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *sto
 	}
 
 	msg := dscTx.NewMsgSendCoin(sender, recipient, as.coin)
+
 	return feeConfig.MakeTransaction(sa, msg)
 }
 

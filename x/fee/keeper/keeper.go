@@ -3,16 +3,16 @@ package keeper
 import (
 	"fmt"
 
-	"bitbucket.org/decimalteam/go-smart-node/x/fee/errors"
-	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
-	"github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
-
 	sdkstore "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/fee/errors"
+	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 )
 
 // Keeper maintains the link to data storage and exposes getter/setter methods for the various parts of the state machine.
@@ -22,6 +22,9 @@ type Keeper struct {
 	ps       paramtypes.Subspace
 
 	bankKeeper keeper.Keeper
+	coinKeeper types.CoinKeeper
+	authKeeper types.AccountKeeper
+	calcFunc   types.CalculateCommissionFunc
 
 	baseDenom *string
 }
@@ -32,7 +35,10 @@ func NewKeeper(
 	storeKey sdkstore.StoreKey,
 	ps paramtypes.Subspace,
 	bankKeeper keeper.Keeper,
+	coinKeeper types.CoinKeeper,
+	authKeeper types.AccountKeeper,
 	baseDenom string,
+	calcFunc types.CalculateCommissionFunc,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -43,7 +49,10 @@ func NewKeeper(
 		storeKey:   storeKey,
 		ps:         ps,
 		bankKeeper: bankKeeper,
+		coinKeeper: coinKeeper,
+		authKeeper: authKeeper,
 		baseDenom:  &baseDenom,
+		calcFunc:   calcFunc,
 	}
 }
 

@@ -49,9 +49,9 @@ service Query {
     option (google.api.http).get = "/decimal/validator/v1/validators/{validator}/delegations/{delegator}/redelegations";
   }
 
-  // Undelegations queries undelegations info for given validator delegator pair.
-  rpc Undelegations(QueryUndelegationsRequest) returns (QueryUndelegationsResponse) {
-    option (google.api.http).get = "/decimal/validator/v1/validators/{validator}/delegations/{delegator}/undelegations";
+  // Undelegation queries undelegation info for given validator delegator pair.
+  rpc Undelegation(QueryUndelegationRequest) returns (QueryUndelegationResponse) {
+    option (google.api.http).get = "/decimal/validator/v1/validators/{validator}/delegations/{delegator}/undelegation";
   }
 
   // DelegatorDelegations queries all delegations of a given delegator address.
@@ -87,6 +87,16 @@ service Query {
   // Pool queries the pool info.
   rpc Pool(QueryPoolRequest) returns (QueryPoolResponse) {
     option (google.api.http).get = "/decimal/validator/v1/pool";
+  }
+
+  // CustomCoinPrice queries the custom coin price for delegation.
+  rpc CustomCoinPrice(QueryCustomCoinPriceRequest) returns (QueryCustomCoinPriceResponse) {
+    option (google.api.http).get = "/decimal/validator/v1/custom_coin_price/{denom}";
+  }
+
+  // TotalCustomCoin queries the total amount bonded custom coins.
+  rpc TotalCustomCoin(QueryTotalCustomCoinRequest) returns (QueryTotalCustomCoinResponse) {
+    option (google.api.http).get = "/decimal/validator/v1/total_custom_coin/{denom}";
   }
 
   // Params queries the module params.
@@ -191,7 +201,7 @@ message QueryDelegationsRequest {
 // QueryDelegationsResponse is response type for the Query/Delegations RPC method.
 message QueryDelegationsResponse {
   // delegations defines the delegations list.
-  repeated Delegation delegations = 1;
+  repeated Delegation delegations = 1 [ (gogoproto.nullable) = false ];
 }
 
 // QueryRedelegationsRequest is request type for the Query/Redelegations RPC method.
@@ -212,8 +222,8 @@ message QueryRedelegationsResponse {
   repeated Redelegation redelegations = 1 [ (gogoproto.nullable) = false ];
 }
 
-// QueryUndelegationsRequest is request type for the Query/Undelegations RPC method.
-message QueryUndelegationsRequest {
+// QueryUndelegationRequest is request type for the Query/Undelegation RPC method.
+message QueryUndelegationRequest {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
@@ -225,9 +235,9 @@ message QueryUndelegationsRequest {
 }
 
 // QueryDelegationsResponse is response type for the Query/Undelegations RPC method.
-message QueryUndelegationsResponse {
-  // undelegations defines the undelegations list for given delegator validator pair.
-  repeated Undelegation undelegations = 1 [ (gogoproto.nullable) = false ];
+message QueryUndelegationResponse {
+  // undelegations defines the undelegation for given delegator validator pair.
+  Undelegation undelegation = 1 [ (gogoproto.nullable) = false ];
 }
 
 // QueryDelegatorDelegationsRequest is request type for the Query/DelegatorDelegations RPC method.
@@ -358,4 +368,28 @@ message QueryParamsRequest {}
 message QueryParamsResponse {
   // params holds all the parameters of this module.
   Params params = 1 [ (gogoproto.nullable) = false ];
+}
+
+message QueryCustomCoinPriceRequest {
+  string denom = 1;
+}
+
+message QueryCustomCoinPriceResponse {
+  string price = 1 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message QueryTotalCustomCoinRequest {
+  string denom = 1;
+}
+
+message QueryTotalCustomCoinResponse {
+  string total_amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
 }

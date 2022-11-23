@@ -12,7 +12,7 @@ func (rec *Record) Validate() error {
 		return errors.InvalidLegacyBech32Address
 	}
 	// record must be not empty
-	if len(rec.Coins) == 0 && len(rec.NFTs) == 0 && len(rec.Wallets) == 0 {
+	if len(rec.Coins) == 0 && len(rec.NFTs) == 0 && len(rec.Wallets) == 0 && len(rec.Validators) == 0 {
 		return errors.NoInfoForLegacyAddress
 	}
 
@@ -26,6 +26,13 @@ func (rec *Record) Validate() error {
 		_, err := sdk.GetFromBech32(w, DecimalPrefix)
 		if err != nil {
 			return errors.WalletAddressIsNotValidBech32
+		}
+	}
+	// validators addresses must be valid bech32
+	for _, v := range rec.Validators {
+		_, err := sdk.GetFromBech32(v, DecimalValidatorPrefix)
+		if err != nil {
+			return errors.ValidatorAddressIsNotValidBech32
 		}
 	}
 	return nil

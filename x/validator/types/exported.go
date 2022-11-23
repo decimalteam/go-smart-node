@@ -20,7 +20,7 @@ type ValidatorI interface {
 	IsUnbonding() bool                                 // check if has status unbonding
 	ConsPubKey() (cryptotypes.PubKey, error)           // validation consensus pubkey (cryptotypes.PubKey)
 	TmConsPublicKey() (tmprotocrypto.PublicKey, error) // validation consensus pubkey (Tendermint)
-	//GetConsensusPower(sdkmath.Int) int64               // validation power in tendermint
+	ConsensusPower() int64                             // validation power in tendermint
 }
 
 // DelegationI defines interface for a delegation bonded to a validator.

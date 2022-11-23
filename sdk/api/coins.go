@@ -34,3 +34,18 @@ func (api *API) Coins() ([]Coin, error) {
 	}
 	return coins, nil
 }
+
+func (api *API) Coin(denom string) (Coin, error) {
+	client := cointypes.NewQueryClient(api.grpcClient)
+	req := &cointypes.QueryCoinRequest{
+		Denom: denom,
+	}
+	res, err := client.Coin(
+		context.Background(),
+		req,
+	)
+	if err != nil {
+		return Coin{}, err
+	}
+	return res.Coin, nil
+}

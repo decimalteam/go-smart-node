@@ -4,6 +4,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
+	sdktx "github.com/cosmos/cosmos-sdk/types/tx"
 )
 
 var (
@@ -103,15 +104,17 @@ func (msg MsgCreateWallet) ValidateBasic() error {
 func NewMsgCreateTransaction(
 	sender sdk.AccAddress,
 	wallet string,
-	receiver string,
-	coins sdk.Coins,
-) *MsgCreateTransaction {
-	return &MsgCreateTransaction{
-		Sender:   sender.String(),
-		Wallet:   wallet,
-		Receiver: receiver,
-		Coins:    coins,
+	content sdk.Msg,
+) (*MsgCreateTransaction, error) {
+	anys, err := sdktx.SetMsgs([]sdk.Msg{content})
+	if err != nil {
+		return nil, err
 	}
+	return &MsgCreateTransaction{
+		Sender:  sender.String(),
+		Wallet:  wallet,
+		Content: anys[0],
+	}, nil
 }
 
 // Route returns name of the route for the message.
@@ -142,19 +145,7 @@ func (msg *MsgCreateTransaction) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Wallet); err != nil {
 		return errors.InvalidWallet
 	}
-	if _, err := sdk.AccAddressFromBech32(msg.Receiver); err != nil {
-		return errors.InvalidReceiver
-	}
-	if len(msg.Coins) == 0 {
-		return errors.NoCoinsToSend
-	}
-	// Check to amount should be positive, but sdk.Coin cannot be negative
-	// and sdk.Coins cannot cointain coins zero amount
-	for _, coin := range msg.Coins {
-		if coin.Amount.LTE(sdk.ZeroInt()) {
-			return errors.InvalidAmount
-		}
-	}
+
 	return nil
 }
 

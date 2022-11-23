@@ -2,20 +2,24 @@ package ante
 
 import (
 	sdkmath "cosmossdk.io/math"
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coin "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	fee "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
+	legacy "bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	multisig "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	nft "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	swap "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
+	validator "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
 // CalculateFee calculates fee in base coin
-func CalculateFee(msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee.Params) (sdkmath.Int, error) {
 
+func CalculateFee(cdc codec.BinaryCodec, msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee.Params) (sdkmath.Int, error) {
+	params = fee.DefaultParams()
 	// Do not place commission for tx bytes to end because of RedeemCheck case
 	commission := helpers.DecToDecWithE18(params.TxByteFee.MulInt64(txBytesLen))
 
@@ -51,6 +55,17 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.MultisigCreateWallet))
 		case *multisig.MsgCreateTransaction:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.MultisigCreateTransaction))
+			var internal sdk.Msg
+			err := cdc.UnpackAny(m.Content, &internal)
+			if err != nil {
+				return sdkmath.ZeroInt(), err
+			}
+			// calculate fee of internal transaction exxcluding fee for bytes
+			internalFee, err := CalculateFee(cdc, []sdk.Msg{internal}, 0, delPrice, params)
+			if err != nil {
+				return sdkmath.ZeroInt(), err
+			}
+			msgsFee = msgsFee.Add(sdk.NewDecFromInt(internalFee))
 		case *multisig.MsgSignTransaction:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.MultisigSignTransaction))
 		// swap
@@ -73,10 +88,41 @@ func CalculateFee(msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.NftSendToken))
 		case *nft.MsgBurnToken:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.NftBurnToken))
+		// validator
+		case *validator.MsgCreateValidator:
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorCreateValidator))
+		case *validator.MsgEditValidator:
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorEditValidator))
+		case *validator.MsgSetOnline:
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorSetOnline))
+		case *validator.MsgSetOffline:
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorSetOffline))
+		case *validator.MsgDelegate:
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorDelegate))
+		case *validator.MsgDelegateNFT:
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorDelegateNFT))
+		case *validator.MsgUndelegate:
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorUndelegate))
+		case *validator.MsgUndelegateNFT:
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorUndelegateNFT))
+		case *validator.MsgRedelegate:
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorRedelegate))
+		case *validator.MsgRedelegateNFT:
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorRedelegateNFT))
+		case *validator.MsgCancelUndelegation:
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorUndelegate))
+		case *validator.MsgCancelUndelegationNFT:
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorUndelegateNFT))
+		case *validator.MsgCancelRedelegation:
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorRedelegate))
+		case *validator.MsgCancelRedelegationNFT:
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorRedelegateNFT))
 		// fee
 		case *fee.MsgUpdateCoinPrices:
 		case *upgradetypes.MsgSoftwareUpgrade:
 		case *upgradetypes.MsgCancelUpgrade:
+		// legacy
+		case *legacy.MsgReturnLegacy:
 		default:
 			return sdkmath.ZeroInt(), UnknownTransaction
 		}

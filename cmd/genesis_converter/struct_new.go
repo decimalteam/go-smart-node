@@ -173,8 +173,8 @@ type FullCoinNew struct {
 
 func FullCoinO2N(coin FullCoinOld, addrTable *AddressTable) FullCoinNew {
 	symbol := coin.Symbol
-	if symbol == "tdel" {
-		symbol = "tdel"
+	if symbol == "tdel" || symbol == "del" {
+		symbol = globalBaseDenom
 	}
 	crr, _ := strconv.ParseInt(coin.CRR, 10, 64)
 	return FullCoinNew{
@@ -193,10 +193,11 @@ func FullCoinO2N(coin FullCoinOld, addrTable *AddressTable) FullCoinNew {
 // Legacy
 // /////////////////////////
 type LegacyRecordNew struct {
-	Address string    `json:"legacy_address"`
-	Coins   sdk.Coins `json:"coins"`
-	NFTs    []string  `json:"nfts"`
-	Wallets []string  `json:"wallets"`
+	Address    string    `json:"legacy_address"`
+	Coins      sdk.Coins `json:"coins"`
+	NFTs       []string  `json:"nfts"`
+	Wallets    []string  `json:"wallets"`
+	Validators []string  `json:"validators"`
 }
 
 type NFTRecord struct {
@@ -239,6 +240,15 @@ func (rs *LegacyRecords) AddWallet(address string, wallet string) {
 	rs.data[address] = rec
 }
 
+func (rs *LegacyRecords) AddValidator(address string, validator string) {
+	rec, ok := rs.data[address]
+	if !ok {
+		rec = &LegacyRecordNew{Address: address}
+	}
+	rec.Validators = append(rec.Validators, validator)
+	rs.data[address] = rec
+}
+
 ///////////////////////////
 // Multisig
 ///////////////////////////
@@ -259,6 +269,9 @@ func WalletO2N(wallet WalletOld, addrTable *AddressTable, legacyRecords *LegacyR
 	result.Threshold = wallet.Threshold
 	for i := range wallet.Owners {
 		newAddress := addrTable.GetAddress(wallet.Owners[i])
+		if addrTable.IsMultisig(wallet.Owners[i]) {
+			newAddress = wallet.Owners[i]
+		}
 		if newAddress == "" {
 			result.Owners[i] = wallet.Owners[i]
 			legacyRecords.AddWallet(wallet.Owners[i], wallet.Address)
@@ -356,10 +369,15 @@ type ValidatorNew struct {
 	UnbondingTime   string `json:"unbonding_time"`
 }
 
-func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable) (ValidatorNew, error) {
+func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable, legacyRecords *LegacyRecords, setOnline []string) (ValidatorNew, error) {
 	var result ValidatorNew
-	result.OperatorAddress = valOld.ValAddress
+	result.OperatorAddress = addrTable.GetValidatorAddress(valOld.ValAddress)
 	newRewardAdr := addrTable.GetAddress(valOld.RewardAddress)
+	if newRewardAdr == "" {
+		// back to old reward address
+		legacyRecords.AddValidator(valOld.RewardAddress, valOld.ValAddress)
+		newRewardAdr = valOld.RewardAddress
+	}
 	result.RewardAddress = newRewardAdr
 	// pubkey
 	result.ConsensusPubKey.Type = "/cosmos.crypto.ed25519.PubKey"
@@ -373,11 +391,18 @@ func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable) (ValidatorNew, e
 	}
 	result.ConsensusPubKey.Key = pk.Bytes()
 	// description
-	result.Description.Details = valOld.Description.Details
-	result.Description.Identity = valOld.Description.Identity
-	result.Description.Moniker = valOld.Description.Moniker
-	result.Description.SecurityContact = valOld.Description.SecurityContact
-	result.Description.Website = valOld.Description.Website
+	/*
+		MaxMonikerLength         = 70
+		MaxIdentityLength        = 3000
+		MaxWebsiteLength         = 140
+		MaxSecurityContactLength = 140
+		MaxDetailsLength         = 280
+	*/
+	result.Description.Details = cutLongString(valOld.Description.Details, 280)
+	result.Description.Identity = cutLongString(valOld.Description.Identity, 3000)
+	result.Description.Moniker = cutLongString(valOld.Description.Moniker, 70)
+	result.Description.SecurityContact = cutLongString(valOld.Description.SecurityContact, 140)
+	result.Description.Website = cutLongString(valOld.Description.Website, 140)
 	//
 	result.Commission = valOld.Commission
 	/*
@@ -398,10 +423,42 @@ func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable) (ValidatorNew, e
 
 	result.Online = valOld.Online
 	result.Jailed = valOld.Jailed
+	// sync Online+Jailed+Status
+	if result.Jailed {
+		result.Online = false
+	}
 	result.UnbondingHeight = valOld.UnbondingHeight
 	result.UnbondingTime = valOld.UnbondingCompletionTime
 
+	// special case:
+	if len(setOnline) > 0 {
+		setMeOnline := false
+		for _, s := range setOnline {
+			if s == result.OperatorAddress {
+				setMeOnline = true
+			}
+		}
+		if setMeOnline {
+			result.Online = true
+			result.Jailed = false
+			result.Status = "BOND_STATUS_BONDED"
+		} else {
+			result.Online = false
+			result.Jailed = false
+			result.Status = "BOND_STATUS_UNBONDED"
+		}
+		result.UnbondingHeight = "0"
+		result.UnbondingTime = "1970-01-01T00:00:00Z"
+	}
+
 	return result, nil
+}
+
+func cutLongString(s string, maxLen int) string {
+	if len(s) <= maxLen {
+		return s
+	}
+	return s[:maxLen]
 }
 
 type DelegationNew struct {
@@ -449,7 +506,7 @@ func DelegationO2NCoin(delOld DelegationOld, coinSymbols map[string]bool, addrTa
 		return DelegationNew{}, nil
 	}
 	coin := coins[0]
-	delNew.Validator = delOld.Validator
+	delNew.Validator = addrTable.GetValidatorAddress(delOld.Validator)
 	newAdr := addrTable.GetAddress(delOld.DelegatorAddress)
 	if newAdr == "" {
 		return DelegationNew{}, fmt.Errorf("delegator '%s' has no new address", delOld.DelegatorAddress)
@@ -465,7 +522,7 @@ func DelegationO2NCoin(delOld DelegationOld, coinSymbols map[string]bool, addrTa
 func DelegationO2NNFT(delOld DelegationNFTOld, addrTable *AddressTable) (DelegationNew, error) {
 	var delNew DelegationNew
 
-	delNew.Validator = delOld.Validator
+	delNew.Validator = addrTable.GetValidatorAddress(delOld.Validator)
 	newAdr := addrTable.GetAddress(delOld.DelegatorAddress)
 	if newAdr == "" {
 		return DelegationNew{}, fmt.Errorf("delegator '%s' has no new address", delOld.DelegatorAddress)
@@ -474,8 +531,8 @@ func DelegationO2NNFT(delOld DelegationNFTOld, addrTable *AddressTable) (Delegat
 	delNew.Stake.ID = delOld.TokenID
 	delNew.Stake.Stake = delOld.Coin
 	// fix for testnet
-	if delNew.Stake.Stake.Denom == "tdel" {
-		delNew.Stake.Stake.Denom = "tdel"
+	if delNew.Stake.Stake.Denom == "tdel" || delNew.Stake.Stake.Denom == "del" {
+		delNew.Stake.Stake.Denom = globalBaseDenom
 	}
 	for _, s := range delOld.SubTokenIds {
 		id, err := strconv.ParseInt(s, 10, 32)
@@ -498,7 +555,7 @@ func UnbondingO2NCoin(ubdOld UnbondingRecordOld, coinSymbols map[string]bool, ad
 		return UndelegationNew{}, fmt.Errorf("delegator '%s' has no new address", ubdOld.DelegatorAddress)
 	}
 	ubdNew.Delegator = newAdr
-	ubdNew.Validator = ubdOld.Validator
+	ubdNew.Validator = addrTable.GetValidatorAddress(ubdOld.Validator)
 
 	for _, entryOld := range ubdOld.Entries {
 		coins := filterCoins(sdk.NewCoins(entryOld.Value.Balance), coinSymbols)
@@ -532,7 +589,7 @@ func UnbondingO2NNFT(ubdOld UnbondingNFTRecordOld, addrTable *AddressTable) (Und
 		return UndelegationNew{}, fmt.Errorf("delegator '%s' has no new address", ubdOld.DelegatorAddress)
 	}
 	ubdNew.Delegator = newAdr
-	ubdNew.Validator = ubdOld.Validator
+	ubdNew.Validator = addrTable.GetValidatorAddress(ubdOld.Validator)
 
 	for _, entryOld := range ubdOld.Entries {
 		var entryNew UndelegationEntryNew
@@ -542,7 +599,7 @@ func UnbondingO2NNFT(ubdOld UnbondingNFTRecordOld, addrTable *AddressTable) (Und
 			return UndelegationNew{}, fmt.Errorf("delegator '%s' creation_height error: %s", ubdOld.DelegatorAddress, err.Error())
 		}
 		entryNew.Stake.ID = entryOld.TokenID
-		entryNew.Stake.Stake = sdk.NewCoin("tdel", entryOld.Balance.Amount)
+		entryNew.Stake.Stake = sdk.NewCoin(globalBaseDenom, entryOld.Balance.Amount)
 		entryNew.Stake.Type = "STAKE_TYPE_NFT"
 		for _, s := range entryOld.SubTokenIds {
 			id, err := strconv.ParseInt(s, 10, 32)
@@ -556,10 +613,10 @@ func UnbondingO2NNFT(ubdOld UnbondingNFTRecordOld, addrTable *AddressTable) (Und
 	return ubdNew, nil
 }
 
-func LastValidatorPowerO2N(pwrOld LastValidatorPowerOld) (LastValidatorPowerNew, error) {
+func LastValidatorPowerO2N(pwrOld LastValidatorPowerOld, addrTable *AddressTable) (LastValidatorPowerNew, error) {
 	var err error
 	var pwrNew LastValidatorPowerNew
-	pwrNew.Address = pwrOld.Address
+	pwrNew.Address = addrTable.GetValidatorAddress(pwrOld.Address)
 	pwrNew.Power, err = strconv.ParseInt(pwrOld.Power, 10, 64)
 	if err != nil {
 		return LastValidatorPowerNew{}, fmt.Errorf("validator power '%s' error: %s", pwrOld.Address, err.Error())

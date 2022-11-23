@@ -102,6 +102,7 @@ func (aa *TransferNFTAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *
 		aa.id,
 		aa.subIds,
 	)
+
 	return feeConfig.MakeTransaction(sa, msg)
 }
 

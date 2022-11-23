@@ -92,6 +92,7 @@ import (
 	evm "github.com/evmos/ethermint/x/evm"
 	evmkeeper "github.com/evmos/ethermint/x/evm/keeper"
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
+	evmgeth "github.com/evmos/ethermint/x/evm/vm/geth"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 
 	// Unnamed import of statik for swagger UI support
@@ -202,6 +203,7 @@ var (
 		nfttypes.ReservedPool:            {authtypes.Minter, authtypes.Burner},
 		legacytypes.LegacyCoinPool:       nil, // special account to hold legacy balances
 		swaptypes.SwapPool:               nil, // special account to hold locked coins in swap process
+		feetypes.BurningPool:             {authtypes.Burner},
 	}
 
 	// Module accounts that are allowed to receive tokens
@@ -459,6 +461,17 @@ func NewDSC(
 		app.GetSubspace(multisigtypes.ModuleName),
 		app.AccountKeeper,
 		app.BankKeeper,
+		app.MsgServiceRouter(),
+	)
+	app.FeeKeeper = *feekeeper.NewKeeper(
+		appCodec,
+		keys[feetypes.StoreKey],
+		app.GetSubspace(feetypes.ModuleName),
+		app.BankKeeper,
+		&app.CoinKeeper,
+		app.AccountKeeper,
+		cmdcfg.BaseDenom,
+		ante.CalculateFee,
 	)
 	app.ValidatorKeeper = validatorkeeper.NewKeeper(
 		appCodec,
@@ -472,13 +485,7 @@ func NewDSC(
 	)
 
 	// Create Ethermint keepers
-	app.FeeKeeper = *feekeeper.NewKeeper(
-		appCodec,
-		keys[feetypes.StoreKey],
-		app.GetSubspace(feetypes.ModuleName),
-		app.BankKeeper,
-		cmdcfg.BaseDenom,
-	)
+
 	app.EvmKeeper = evmkeeper.NewKeeper(
 		appCodec,
 		keys[evmtypes.StoreKey],
@@ -488,6 +495,8 @@ func NewDSC(
 		app.BankKeeper,
 		&app.ValidatorKeeper,
 		app.FeeKeeper,
+		nil,
+		evmgeth.NewEVM,
 		cast.ToString(appOpts.Get(ethsrvflags.EVMTracer)),
 	)
 	app.EvmKeeper = app.EvmKeeper.SetHooks(
@@ -543,6 +552,7 @@ func NewDSC(
 		app.BankKeeper,
 		&app.NFTKeeper,
 		&app.MultisigKeeper,
+		app.ValidatorKeeper,
 	)
 	app.SwapKeeper = *swapkeeper.NewKeeper(
 		appCodec,

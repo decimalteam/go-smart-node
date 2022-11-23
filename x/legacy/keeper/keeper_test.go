@@ -20,6 +20,8 @@ import (
 	legacytestutil "bitbucket.org/decimalteam/go-smart-node/x/legacy/testutil"
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
 
 var (
@@ -31,6 +33,14 @@ var (
 	newAddress       = sdk.AccAddress(pk.Address())
 	actualAddress, _ = bech32.ConvertAndEncode(config.Bech32Prefix, newAddress)
 )
+
+// Init global cosmos sdk cmdcfg
+func initConfig() {
+	cfg := sdk.GetConfig()
+	cfg.SetBech32PrefixForAccount(cmdcfg.Bech32PrefixAccAddr, cmdcfg.Bech32PrefixAccPub)
+	cfg.SetBech32PrefixForValidator(cmdcfg.Bech32PrefixValAddr, cmdcfg.Bech32PrefixValPub)
+	cfg.SetBech32PrefixForConsensusNode(cmdcfg.Bech32PrefixConsAddr, cmdcfg.Bech32PrefixConsPub)
+}
 
 type KeeperTestSuite struct {
 	suite.Suite
@@ -47,6 +57,8 @@ type KeeperTestSuite struct {
 }
 
 func (s *KeeperTestSuite) SetupTest() {
+	initConfig()
+
 	key := sdk.NewKVStoreKey(types.StoreKey)
 	keys := []storetypes.StoreKey{
 		key,
@@ -65,6 +77,8 @@ func (s *KeeperTestSuite) SetupTest() {
 	ctrl := gomock.NewController(s.T())
 	bankKeeper := legacytestutil.NewMockBankKeeper(ctrl)
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(ctx, types.LegacyCoinPool, newAddress, defaultRecord.Coins).AnyTimes().Return(nil)
+	bankKeeper.EXPECT().GetAllBalances(ctx, oldAddress).AnyTimes().Return(defaultRewards)
+	bankKeeper.EXPECT().SendCoins(ctx, oldAddress, newAddress, defaultRewards).AnyTimes().Return(nil)
 	nftKeeper := legacytestutil.NewMockNftKeeper(ctrl)
 	nftKeeper.EXPECT().GetToken(ctx, defaultTokenID).AnyTimes().Return(nfttypes.Token{Denom: defaultTokenID}, true)
 	nftKeeper.EXPECT().GetSubTokens(ctx, defaultTokenID).AnyTimes().Return(defaultSubTokensBefore)
@@ -72,6 +86,10 @@ func (s *KeeperTestSuite) SetupTest() {
 	multisigKeeper := legacytestutil.NewMockMultisigKeeper(ctrl)
 	multisigKeeper.EXPECT().GetWallet(ctx, defaultMultisigWalletBefore.Address).AnyTimes().Return(defaultMultisigWalletBefore, nil)
 	multisigKeeper.EXPECT().SetWallet(ctx, defaultMultisigWalletAfter).AnyTimes()
+	validatorKeeper := legacytestutil.NewMockValidatorKeeper(ctrl)
+	validatorKeeper.EXPECT().GetValidator(ctx, defaultOperatorAddressSdk).AnyTimes().Return(defaultValidatorBefore, true)
+	validatorKeeper.EXPECT().SetValidator(ctx, defaultValidatorAfter).AnyTimes()
+
 	// --
 
 	// -- create nft keeper
@@ -81,6 +99,7 @@ func (s *KeeperTestSuite) SetupTest() {
 		bankKeeper,
 		nftKeeper,
 		multisigKeeper,
+		validatorKeeper,
 	)
 	// --
 

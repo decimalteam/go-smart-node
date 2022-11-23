@@ -4,8 +4,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	ethtypes "github.com/evmos/ethermint/types"
-
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
@@ -16,10 +14,33 @@ func (k Keeper) GetHistoricalInfo(ctx sdk.Context, height int64) (stakingtypes.H
 	if !found {
 		return stakingtypes.HistoricalInfo{}, false
 	}
-	// TODO: make conversion Validator->stakingtypes.Validator
+
+	stakingVals := make([]stakingtypes.Validator, len(hi.Valset))
+	for i, v := range hi.Valset {
+		var status stakingtypes.BondStatus
+		switch v.Status {
+		case types.BondStatus_Bonded:
+			status = stakingtypes.Bonded
+		case types.BondStatus_Unbonded:
+			status = stakingtypes.Unbonded
+		case types.BondStatus_Unbonding:
+			status = stakingtypes.Unbonding
+		case types.BondStatus_Unspecified:
+			status = stakingtypes.Unspecified
+		}
+		// this enought for conversion to tendermint validator
+		stakingVals[i] = stakingtypes.Validator{
+			OperatorAddress: v.OperatorAddress,
+			ConsensusPubkey: v.ConsensusPubkey,
+			Jailed:          v.Jailed,
+			Status:          status,
+			Tokens:          TokensFromConsensusPower(v.ConsensusPower()),
+		}
+	}
+
 	return stakingtypes.HistoricalInfo{
 		Header: hi.Header,
-		Valset: []stakingtypes.Validator{},
+		Valset: stakingVals,
 	}, true
 }
 
@@ -100,7 +121,7 @@ func (k Keeper) TrackHistoricalInfo(ctx sdk.Context) {
 
 	// Create HistoricalInfo struct
 	lastVals := k.GetLastValidators(ctx)
-	historicalEntry := types.NewHistoricalInfo(ctx.BlockHeader(), lastVals, ethtypes.PowerReduction)
+	historicalEntry := types.NewHistoricalInfo(ctx.BlockHeader(), lastVals)
 
 	// Set latest HistoricalInfo at current height
 	k.SetHistoricalInfo(ctx, ctx.BlockHeight(), &historicalEntry)

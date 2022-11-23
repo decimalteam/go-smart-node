@@ -21,8 +21,16 @@ var (
 	valAddr2 = sdk.ValAddress(pk2.Address())
 	valAddr3 = sdk.ValAddress(pk3.Address())
 
+	pkrew1      = ed25519.GenPrivKey().PubKey()
+	pkrew2      = ed25519.GenPrivKey().PubKey()
+	pkrew3      = ed25519.GenPrivKey().PubKey()
+	rewardAddr1 = sdk.AccAddress(pkrew1.Address().Bytes())
+	rewardAddr2 = sdk.AccAddress(pkrew2.Address().Bytes())
+	rewardAddr3 = sdk.AccAddress(pkrew3.Address().Bytes())
+
 	emptyAddr   sdk.ValAddress
 	emptyPubkey cryptotypes.PubKey
+	pkNil       = ed25519.PubKey{Key: nil}
 )
 
 func init() {

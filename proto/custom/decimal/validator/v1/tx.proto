@@ -155,7 +155,7 @@ message MsgDelegateNFT {
   // token_id defines the NFT token ID.
   string token_id = 3 [ (gogoproto.customname) = "TokenID" ];
   // sub_token_ids defines list of NFT sub-token IDs.
-  repeated int64 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
+  repeated uint32 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
 }
 
 // MsgDelegateNFTResponse defines the Msg/DelegateNFT response type.
@@ -201,7 +201,7 @@ message MsgRedelegateNFT {
   // token_id defines the NFT token ID.
   string token_id = 4 [ (gogoproto.customname) = "TokenID" ];
   // sub_token_ids defines list of NFT sub-token IDs.
-  repeated int64 sub_token_ids = 5 [ (gogoproto.customname) = "SubTokenIDs" ];
+  repeated uint32 sub_token_ids = 5 [ (gogoproto.customname) = "SubTokenIDs" ];
 }
 
 // MsgRedelegateNFTResponse defines the Msg/RedelegateNFT response type.
@@ -245,7 +245,7 @@ message MsgUndelegateNFT {
   // token_id defines the NFT token ID.
   string token_id = 3 [ (gogoproto.customname) = "TokenID" ];
   // sub_token_ids defines list of NFT sub-token IDs.
-  repeated int64 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
+  repeated uint32 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
 }
 
 // MsgUndelegateNFTResponse defines the Msg/UndelegateNFT response type.
@@ -293,7 +293,7 @@ message MsgCancelRedelegationNFT {
   // token_id defines the NFT token ID.
   string token_id = 5 [ (gogoproto.customname) = "TokenID" ];
   // sub_token_ids defines list of NFT sub-token IDs.
-  repeated int64 sub_token_ids = 6 [ (gogoproto.customname) = "SubTokenIDs" ];
+  repeated uint32 sub_token_ids = 6 [ (gogoproto.customname) = "SubTokenIDs" ];
 }
 
 // MsgCancelRedelegationNFTResponse
@@ -334,7 +334,7 @@ message MsgCancelUndelegationNFT {
   // token_id defines the NFT token ID.
   string token_id = 4 [ (gogoproto.customname) = "TokenID" ];
   // sub_token_ids defines list of NFT sub-token IDs.
-  repeated int64 sub_token_ids = 5 [ (gogoproto.customname) = "SubTokenIDs" ];
+  repeated uint32 sub_token_ids = 5 [ (gogoproto.customname) = "SubTokenIDs" ];
 }
 
 // MsgCancelUndelegationNFTResponse

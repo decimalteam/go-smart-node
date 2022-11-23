@@ -3,6 +3,11 @@ package keeper_test
 import (
 	"testing"
 
+	ante "bitbucket.org/decimalteam/go-smart-node/app/ante"
+	"bitbucket.org/decimalteam/go-smart-node/testutil"
+	feekeeper "bitbucket.org/decimalteam/go-smart-node/x/fee/keeper"
+	feetestutil "bitbucket.org/decimalteam/go-smart-node/x/fee/testutil"
+
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
@@ -18,9 +23,6 @@ import (
 	tmtime "github.com/tendermint/tendermint/types/time"
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	"bitbucket.org/decimalteam/go-smart-node/testutil"
-	feekeeper "bitbucket.org/decimalteam/go-smart-node/x/fee/keeper"
-	feetestutil "bitbucket.org/decimalteam/go-smart-node/x/fee/testutil"
 )
 
 var (
@@ -72,6 +74,8 @@ func (s *KeeperTestSuite) SetupTest() {
 	// -- create mock controller
 	ctrl := gomock.NewController(s.T())
 	bankKeeper := feetestutil.NewMockKeeper(ctrl)
+	coinKeeper := feetestutil.NewMockCoinKeeper(ctrl)
+	authKeeper := feetestutil.NewMockAccountKeeper(ctrl)
 	// --
 
 	// -- create nft keeper
@@ -82,7 +86,10 @@ func (s *KeeperTestSuite) SetupTest() {
 		key,
 		space,
 		bankKeeper,
+		coinKeeper,
+		authKeeper,
 		baseDenom,
+		ante.CalculateFee,
 	)
 	dp := types.DefaultParams()
 	dp.Oracle = oracle

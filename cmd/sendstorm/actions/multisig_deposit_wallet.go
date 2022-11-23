@@ -82,6 +82,7 @@ func (aa *DepositMultisigWalletAction) GenerateTx(sa *stormTypes.StormAccount, f
 	}
 
 	msg := dscTx.NewMsgSendCoin(sender, recipient, aa.coin)
+
 	return feeConfig.MakeTransaction(sa, msg)
 }
 

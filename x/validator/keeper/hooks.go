@@ -4,6 +4,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
@@ -93,6 +94,7 @@ func (k Keeper) BeforeValidatorSlashed(ctx sdk.Context, valAddr sdk.ValAddress, 
 // Validator Module Hooks //////////////////////////////
 ////////////////////////////////////////////////////////
 
+// BeforeUpdateDelegation before update, subtruct all delegation  staked custom coins
 func (k Keeper) BeforeUpdateDelegation(ctx sdk.Context, del types.Delegation, denom string) {
 	switch del.GetStake().GetType() {
 	case types.StakeType_Coin:
@@ -104,25 +106,32 @@ func (k Keeper) BeforeUpdateDelegation(ctx sdk.Context, del types.Delegation, de
 		ccs = ccs.Sub(del.GetStake().GetStake().Amount)
 		k.SetCustomCoinStaked(ctx, denom, ccs)
 	case types.StakeType_NFT:
-		sum := k.getSumSubTokensReserve(ctx, denom, del.GetStake().GetSubTokenIDs())
-		if sum.Denom == k.BaseDenom(ctx) {
+		reserve := del.GetStake().GetStake()
+		if reserve.Denom == k.BaseDenom(ctx) {
 			return
 		}
-
-		ccs := k.GetCustomCoinStaked(ctx, sum.Denom)
-		ccs = ccs.Sub(sum.Amount)
-		k.SetCustomCoinStaked(ctx, denom, ccs)
+		ccs := k.GetCustomCoinStaked(ctx, reserve.Denom)
+		ccs = ccs.Sub(reserve.Amount)
+		k.SetCustomCoinStaked(ctx, reserve.Denom, ccs)
 	}
 }
 
-func (k Keeper) AfterUpdateDelegation(ctx sdk.Context, denom string, amount sdkmath.Int) error {
+// AfterUpdateDelegation after update sum delegation staked custom coin
+func (k Keeper) AfterUpdateDelegation(ctx sdk.Context, denom string, amount sdkmath.Int) {
 	if denom == k.BaseDenom(ctx) {
-		return nil
+		return
 	}
 
-	amountInStore := k.GetCustomCoinStaked(ctx, denom)
-	amountInStore.Add(amount)
-	k.SetCustomCoinStaked(ctx, denom, amountInStore)
+	ccs := k.GetCustomCoinStaked(ctx, denom)
+	ccs = ccs.Add(amount)
+	k.SetCustomCoinStaked(ctx, denom, ccs)
+	err := events.EmitTypedEvent(ctx, &types.EventUpdateCoinsStaked{
+		Denom:       denom,
+		TotalAmount: ccs,
+	})
+	if err != nil {
+		panic(err)
+	}
 
-	return nil
+	return
 }

@@ -3,6 +3,7 @@ package ante
 import (
 	"fmt"
 
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	sdkAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -25,15 +26,17 @@ type FeeDecorator struct {
 	bankKeeper    evmTypes.BankKeeper
 	accountKeeper evmTypes.AccountKeeper
 	feeKeeper     feetypes.FeeKeeper
+	cdc           codec.BinaryCodec
 }
 
 // NewFeeDecorator creates new FeeDecorator to deduct fee
-func NewFeeDecorator(ck cointypes.CoinKeeper, bk evmTypes.BankKeeper, ak evmTypes.AccountKeeper, fk feetypes.FeeKeeper) FeeDecorator {
+func NewFeeDecorator(ck cointypes.CoinKeeper, bk evmTypes.BankKeeper, ak evmTypes.AccountKeeper, fk feetypes.FeeKeeper, cdc codec.BinaryCodec) FeeDecorator {
 	return FeeDecorator{
 		coinKeeper:    ck,
 		bankKeeper:    bk,
 		accountKeeper: ak,
 		feeKeeper:     fk,
+		cdc:           cdc,
 	}
 }
 
@@ -54,11 +57,14 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 		panic(fmt.Sprintf("%s module account has not been set", sdkAuthTypes.FeeCollectorName))
 	}
 
+	params := fd.feeKeeper.GetModuleParams(ctx)
+
 	delPrice, err := fd.feeKeeper.GetPrice(ctx, config.BaseDenom, feeconfig.DefaultQuote)
 	if err != nil {
 		return ctx, err
 	}
-	commissionInBaseCoin, err := CalculateFee(tx.GetMsgs(), int64(len(ctx.TxBytes())), delPrice.Price, fd.feeKeeper.GetModuleParams(ctx))
+
+	commissionInBaseCoin, err := CalculateFee(fd.cdc, tx.GetMsgs(), int64(len(ctx.TxBytes())), delPrice.Price, params)
 	if err != nil {
 		return ctx, err
 	}
@@ -81,7 +87,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 			return next(ctx, tx, simulate)
 		}
 		// deduct the fees
-		err = DeductFees(ctx, fd.bankKeeper, fd.coinKeeper, feeTx.FeePayer(), sdk.NewCoin(baseDenom, commissionInBaseCoin))
+		err = DeductFees(ctx, fd.bankKeeper, fd.coinKeeper, feeTx.FeePayer(), sdk.NewCoin(baseDenom, commissionInBaseCoin), params.CommissionBurnFactor)
 		if err != nil {
 			return ctx, err
 		}
@@ -121,7 +127,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 	}
 
 	// deduct the fees
-	err = DeductFees(ctx, fd.bankKeeper, fd.coinKeeper, feeTx.FeePayer(), feeFromTx[0])
+	err = DeductFees(ctx, fd.bankKeeper, fd.coinKeeper, feeTx.FeePayer(), feeFromTx[0], params.CommissionBurnFactor)
 	if err != nil {
 		return ctx, err
 	}
@@ -137,7 +143,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 
 // DeductFees deducts fees from the given account.
 func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper cointypes.CoinKeeper,
-	feePayerAddress sdk.AccAddress, fee sdk.Coin) error {
+	feePayerAddress sdk.AccAddress, fee sdk.Coin, burningFactor sdk.Dec) error {
 
 	if !fee.IsValid() {
 		return InvalidFeeAmount
@@ -162,16 +168,34 @@ func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper coin
 		}
 	}
 
-	err := bankKeeper.SendCoinsFromAccountToModule(ctx, feePayerAddress, sdkAuthTypes.FeeCollectorName, sdk.NewCoins(fee))
-	if err != nil {
-		return FailedToSendCoins
+	// split to burning and collected part
+	amountToBurn := sdk.NewDecFromInt(fee.Amount).Mul(burningFactor).RoundInt()
+	amountToCollect := fee.Amount.Sub(amountToBurn)
+
+	// send to burn
+	if amountToBurn.IsPositive() {
+		err := bankKeeper.SendCoinsFromAccountToModule(ctx, feePayerAddress, feetypes.BurningPool,
+			sdk.NewCoins(sdk.NewCoin(fee.Denom, amountToBurn)))
+		if err != nil {
+			return FailedToSendCoins
+		}
+	}
+
+	// send to collect
+	if amountToCollect.IsPositive() {
+		err := bankKeeper.SendCoinsFromAccountToModule(ctx, feePayerAddress, sdkAuthTypes.FeeCollectorName,
+			sdk.NewCoins(sdk.NewCoin(fee.Denom, amountToCollect)))
+		if err != nil {
+			return FailedToSendCoins
+		}
 	}
 
 	// Emit fee deduction event
 	// need for correct balance calculation for external services
-	err = events.EmitTypedEvent(ctx, &feetypes.EventPayCommission{
+	err := events.EmitTypedEvent(ctx, &feetypes.EventPayCommission{
 		Payer: feePayerAddress.String(),
 		Coins: sdk.NewCoins(fee),
+		Burnt: sdk.NewCoins(sdk.NewCoin(fee.Denom, amountToBurn)),
 	})
 	if err != nil {
 		return feeerrors.Internal.Wrapf("err: %s", err.Error())

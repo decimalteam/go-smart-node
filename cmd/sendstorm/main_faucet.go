@@ -60,9 +60,12 @@ func cmdFaucet() *cobra.Command {
 					acc.Account().SdkAddress(),
 					sdk.NewCoin(reactor.api.BaseCoin(), helpers.EtherToWei(sdkmath.NewInt(amountToSend))),
 				)
-				tx, err := dscTx.BuildTransaction(reactor.faucetAccount, []sdk.Msg{msg}, "", reactor.api.BaseCoin(),
-					reactor.feeConfig.DelPrice,
-					reactor.feeConfig.Params,
+				tx, err := dscTx.BuildTransaction(
+					reactor.faucetAccount,
+					[]sdk.Msg{msg},
+					"",
+					reactor.api.BaseCoin(),
+					reactor.api.GetFeeCalculationOptions(),
 				)
 				if err != nil {
 					fmt.Println(err)
@@ -130,7 +133,7 @@ func cmdFaucetExt() *cobra.Command {
 			}
 
 			// do action
-			client := resty.New().SetHostURL("https://devnet-dec2.console.decimalchain.com/api/faucet")
+			client := resty.New().SetHostURL("https://devnet-gate.decimalchain.com/api/faucet")
 			for i, mnemonic := range mnemonics {
 				acc, err := dscWallet.NewAccountFromMnemonicWords(mnemonic, "")
 				if err != nil {
@@ -138,7 +141,7 @@ func cmdFaucetExt() *cobra.Command {
 					continue
 				}
 				fmt.Printf("account (%d) %s query\n", i, acc.Address())
-				resp, err := client.R().SetBody(map[string]string{"address": acc.Address()}).Post("https://devnet-dec2.console.decimalchain.com/api/faucet")
+				resp, err := client.R().SetBody(map[string]string{"address": acc.Address()}).Post("https://devnet-gate.decimalchain.com/api/faucet")
 				if err != nil {
 					fmt.Println(err)
 					continue

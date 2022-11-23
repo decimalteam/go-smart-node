@@ -19,6 +19,7 @@ import (
 
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/client/cli"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
@@ -85,14 +86,12 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(c client.Context, serveMux *runt
 
 // GetTxCmd returns the module's root tx command.
 func (AppModuleBasic) GetTxCmd() *cobra.Command {
-	//return cli.GetTxCmd()
-	return nil
+	return cli.GetTxCmd()
 }
 
 // GetQueryCmd returns the module's root query command.
 func (AppModuleBasic) GetQueryCmd() *cobra.Command {
-	//return cli.GetQueryCmd()
-	return nil
+	return cli.GetQueryCmd()
 }
 
 ////////////////////////////////////////////////////////////////

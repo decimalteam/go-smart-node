@@ -9,6 +9,7 @@ import (
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 	dscTx "bitbucket.org/decimalteam/go-smart-node/sdk/tx"
 	dscWallet "bitbucket.org/decimalteam/go-smart-node/sdk/wallet"
+
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )
 
@@ -23,9 +24,9 @@ func formatAsJSON(obj interface{}) string {
 
 // TODO: split and document
 func main() {
-	makeCheck()
-
+	universalMultiSig()
 	return
+
 	api, err := dscApi.NewAPI(dscApi.ConnectionOptions{EndpointHost: "127.0.0.1", Timeout: 40})
 	if err != nil {
 		fmt.Printf("connect error: %v\n", err)
@@ -157,11 +158,109 @@ func main() {
 	}
 }
 
-func makeCheck() {
-	const mnemonic = "flip hamster timber rent then remember cargo choose bubble glue damage ball hazard knee soldier wet oxygen define view device group across tank craft"
-	acc, _ := dscWallet.NewAccountFromMnemonicWords(mnemonic, "")
-	acc.WithChainID("decimal_2020-22093001")
-	check, err := dscTx.IssueCheck(acc, "del", helpers.EtherToWei(sdk.NewInt(100)), sdk.NewInt(10), 100000, "123")
-	fmt.Printf("err: %v\n", err)
-	fmt.Printf("check: %s\n", check)
+func universalMultiSig() {
+	const faucetMnemonic = "load green feature bachelor interest glue amount typical define ankle blade enroll draft tiger lonely volcano slab brush arm lottery defy mountain exhaust always"
+	const acc1mnemonic = "affair coral purse lounge fancy orbit region shine wagon fever frozen market equal coil mixed lottery will stand oil they pepper utility season fruit"
+	const acc2mnemonic = "hard delay bag address subject dog flock cactus athlete legal arrange skull own elephant twelve switch sustain desert angle shop supply solid river aspect"
+	const acc3mnemonic = "differ enter exhaust copy position gravity fun guide clump brisk confirm swarm salt stamp tape purpose country slam simple tourist fog load toddler warrior"
+	const acc4mnemonic = "rural pause vacant couch dwarf soup isolate doll long market casino evolve employ reward barely laptop dilemma solar lesson pyramid oven trust organ mandate"
+
+	api, err := dscApi.NewAPI(dscApi.ConnectionOptions{EndpointHost: "127.0.0.1", Timeout: 40})
+	if err != nil {
+		fmt.Printf("connect error: %v\n", err)
+		return
+	}
+	err = api.GetParameters()
+	if err != nil {
+		fmt.Printf("GetParameters error: %v\n", err)
+		return
+	}
+
+	faucet, _ := dscWallet.NewAccountFromMnemonicWords(faucetMnemonic, "")
+	acc1, _ := dscWallet.NewAccountFromMnemonicWords(acc1mnemonic, "")
+	acc2, _ := dscWallet.NewAccountFromMnemonicWords(acc2mnemonic, "")
+	acc3, _ := dscWallet.NewAccountFromMnemonicWords(acc3mnemonic, "")
+	acc4, _ := dscWallet.NewAccountFromMnemonicWords(acc4mnemonic, "")
+
+	for _, acc := range []*dscWallet.Account{acc1, acc2, acc3} {
+		bindAcc(api, faucet)
+		msg := dscTx.NewMsgSendCoin(faucet.SdkAddress(), acc.SdkAddress(), sdk.NewCoin(api.BaseCoin(), helpers.EtherToWei(sdk.NewInt(100))))
+		tx, _ := dscTx.BuildTransaction(faucet, []sdk.Msg{msg}, "", api.BaseCoin(), api.GetFeeCalculationOptions())
+		tx.SignTransaction(faucet)
+		bz, _ := tx.BytesToSend()
+		res, _ := api.BroadcastTxCommit(bz)
+		fmt.Printf("fill result: %#v\n\n", res)
+	}
+
+	{
+		bindAcc(api, acc1)
+		msg := dscTx.NewMsgCreateWallet(acc1.SdkAddress(), []string{acc1.Address(), acc2.Address(), acc3.Address()}, []uint32{1, 1, 1}, 3)
+		tx, _ := dscTx.BuildTransaction(acc1, []sdk.Msg{msg}, "", api.BaseCoin(), api.GetFeeCalculationOptions())
+		tx.SignTransaction(acc1)
+		bz, _ := tx.BytesToSend()
+		res, _ := api.BroadcastTxCommit(bz)
+		fmt.Printf("create wallet result: %#v\n", res)
+	}
+
+	wallets, _ := api.MultisigWalletsByOwner(acc1.Address())
+	if len(wallets) == 0 {
+		fmt.Printf("no wallets\n\n")
+		return
+	}
+	wal := wallets[0]
+	fmt.Printf("wallet: %#v\n\n", wal)
+	wAdr, _ := sdk.AccAddressFromBech32(wal.Address)
+	{
+		bindAcc(api, faucet)
+		msg := dscTx.NewMsgSendCoin(faucet.SdkAddress(), wAdr, sdk.NewCoin(api.BaseCoin(), helpers.EtherToWei(sdk.NewInt(100))))
+		tx, _ := dscTx.BuildTransaction(faucet, []sdk.Msg{msg}, "", api.BaseCoin(), api.GetFeeCalculationOptions())
+		tx.SignTransaction(faucet)
+		bz, _ := tx.BytesToSend()
+		res, _ := api.BroadcastTxCommit(bz)
+		fmt.Printf("fill wallet result: %#v\n\n", res)
+	}
+	{
+		bindAcc(api, acc1)
+		msg, _ := dscTx.NewMsgCreateTransaction(acc1.SdkAddress(), wal.Address,
+			dscTx.NewMsgSendCoin(wAdr, acc4.SdkAddress(), sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(10)))),
+		)
+		tx, err := dscTx.BuildTransaction(acc1, []sdk.Msg{msg}, "", api.BaseCoin(), api.GetFeeCalculationOptions())
+		if err != nil {
+			fmt.Printf("NewMsgCreateUniversalTransaction: %v\n", err)
+		}
+		tx.SignTransaction(acc1)
+		bz, _ := tx.BytesToSend()
+		resp, err := api.SimulateTx(bz)
+		fmt.Printf("simulate: %#v, error: %v", resp, err)
+		return
+		res, _ := api.BroadcastTxCommit(bz)
+		fmt.Printf("create tx result: %#v\n\n", res)
+	}
+
+	mtxs, _ := api.MultisigTransactionsByWallet(wal.Address)
+	for _, mtx := range mtxs {
+		fmt.Printf("signing tx: %s\n\n", mtx.Id)
+		fmt.Printf("signing tx: %#v\n\n", mtx)
+		for _, acc := range []*dscWallet.Account{acc2, acc3} {
+			bindAcc(api, acc)
+			msg := dscTx.NewMsgSignTransaction(acc.SdkAddress(), mtx.Id)
+			tx, _ := dscTx.BuildTransaction(acc, []sdk.Msg{msg}, "", api.BaseCoin(), api.GetFeeCalculationOptions())
+			tx.SignTransaction(acc)
+			bz, _ := tx.BytesToSend()
+			res, _ := api.BroadcastTxCommit(bz)
+			fmt.Printf("sign result: %#v\n\n", res)
+		}
+	}
+
+	coins, _ := api.AddressBalance(acc4.Address())
+	fmt.Printf("result balance: %s\n", coins.String())
+}
+
+func bindAcc(api *dscApi.API, acc *dscWallet.Account) error {
+	an, as, err := api.AccountNumberAndSequence(acc.Address())
+	if err != nil {
+		return fmt.Errorf("%w: AccountNumberAndSequence", err)
+	}
+	acc.WithAccountNumber(an).WithSequence(as).WithChainID(api.ChainID())
+	return nil
 }

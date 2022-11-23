@@ -20,6 +20,7 @@ import (
 	legacytypes "bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	swaptypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
+	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
 /*
@@ -56,6 +57,7 @@ var pool = map[string]bool{
 	mustConvertAndEncode(authtypes.NewModuleAddress(nfttypes.ReservedPool)):          false,
 	mustConvertAndEncode(authtypes.NewModuleAddress(legacytypes.LegacyCoinPool)):     false,
 	mustConvertAndEncode(authtypes.NewModuleAddress(swaptypes.SwapPool)):             false,
+	mustConvertAndEncode(authtypes.NewModuleAddress(validatortypes.ModuleName)):      false,
 }
 
 type EventAccumulator struct {
@@ -64,6 +66,7 @@ type EventAccumulator struct {
 	// [denom]vr struct
 	CoinsVR       map[string]UpdateCoinVR `json:"coins_vr"`
 	PayCommission []EventPayCommission    `json:"pay_commission"`
+	CoinsStaked   map[string]sdkmath.Int  `json:"coin_staked"`
 	// [coin_symbol]
 	CoinsCreates []EventCreateCoin          `json:"-"`
 	CoinUpdates  map[string]EventUpdateCoin `json:"-"`
@@ -95,6 +98,7 @@ func NewEventAccumulator() *EventAccumulator {
 		BalancesChanges: make(map[string]map[string]sdkmath.Int),
 		CoinUpdates:     make(map[string]EventUpdateCoin),
 		CoinsVR:         make(map[string]UpdateCoinVR),
+		CoinsStaked:     make(map[string]sdkmath.Int),
 		LegacyReown:     make(map[string]string),
 	}
 }
@@ -144,6 +148,12 @@ var eventProcessors = map[string]processFunc{
 	"decimal.swap.v1.EventDeactivateChain": processEventDeactivateChain,
 	"decimal.swap.v1.EventInitializeSwap":  processEventSwapInitialize,
 	"decimal.swap.v1.EventRedeemSwap":      processEventSwapRedeem,
+	// validator
+	"decimal.validator.v1.EventDelegate":           processEventDelegate,
+	"decimal.validator.v1.EventUndelegateComplete": processEventUndelegateComplete,
+	"decimal.validator.v1.EventForceUndelegate":    processEventUndelegateComplete,
+	"decimal.validator.v1.EventRedelegateComplete": processEventRedelegateComplete,
+	"decimal.validator.v1.EventUpdateCoinsStaked":  processEventUpdateCoinsStaked,
 
 	banktypes.EventTypeTransfer: processEventTransfer,
 }
@@ -213,6 +223,10 @@ func (ea *EventAccumulator) addMintSubTokens(e EventMintToken) {
 
 func (ea *EventAccumulator) addBurnSubTokens(e EventBurnToken) {
 	ea.BurnSubTokens = append(ea.BurnSubTokens, e)
+}
+
+func (ea *EventAccumulator) addCoinsStaked(e EventUpdateCoinsStaked) {
+	ea.CoinsStaked[e.denom] = e.amount
 }
 
 func mustConvertAndEncode(address sdk.AccAddress) string {
