@@ -1,11 +1,7 @@
 ---
 - name: Check if explorer worker service exists
   stat: path={{ systemd_path }}/{{ service_name_worker }}
-  when: ansible_hostname.find('explorer-node') != -1  
-
-- name: Check if dscd-rest service exists
-  stat: path={{ systemd_path }}/{{ service_name_dscd_rest }}
-  register: service_status_dscd_rest
+  when: ansible_hostname.find('explorer-worker') != -1  
 
 - name: Check if dscd service exists
   stat: path={{ systemd_path }}/{{ service_name_dscd }}
@@ -15,16 +11,9 @@
   service:
     name: '{{ service_name_worker }}'
     state: stopped
-  when: ansible_hostname.find('explorer-node') != -1
+  when: ansible_hostname.find('explorer-worker') != -1
   become: true
   notify: run service explorer worker
-
-- name: Stop service dscd-rest, if started
-  service:
-    name: '{{ service_name_dscd_rest }}'
-    state: stopped
-  when: service_status_dscd_rest.stat.exists
-  become: true
 
 - name: Stop service dscd, if started
   service:
@@ -37,10 +26,4 @@
   template:
     src: ./{{ service_name_dscd }}.j2
     dest: '{{ systemd_path }}/{{ service_name_dscd }}'
-  become: true
-
-- name: Register/update dscd-rest service
-  template:
-    src: ./{{ service_name_dscd_rest }}.j2
-    dest: '{{ systemd_path }}/{{ service_name_dscd_rest }}'
   become: true

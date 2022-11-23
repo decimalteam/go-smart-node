@@ -11,17 +11,10 @@
     enabled: true
   become: true
 
-- name: Run service dscd-rest
-  service:
-    name: '{{ service_name_dscd_rest }}'
-    state: started
-    enabled: true
-  become: true
-
 - name: Run service explorer worker
   service:
     name: '{{ service_name_worker }}'
     state: started
     enabled: true
-  when: ansible_hostname.find('explorer-node') != -1
+  when: ansible_hostname.find('explorer-worker') != -1
   become: true
