@@ -1198,21 +1198,14 @@ func (k Keeper) getBeginInfo(ctx sdk.Context, validatorSrc sdk.ValAddress) (comp
 
 	// TODO: When would the validator not be found?
 	switch {
-	case !found || validator.IsBonded():
+	case !found || validator.IsBonded() || validator.IsUnbonded():
 		// the longest wait - just unbonding period from now
 		completionTime = ctx.BlockHeader().Time.Add(k.RedelegationTime(ctx))
 		height = ctx.BlockHeight()
-
 		return completionTime, height, false
 
-	case validator.IsUnbonded():
-		return ctx.BlockHeader().Time, height, true
-
-	case validator.IsUnbonding():
-		return validator.UnbondingTime, validator.UnbondingHeight, false
-
 	default:
-		panic(fmt.Sprintf("unknown validator status: %s", validator.Status))
+		panic(fmt.Sprintf("unknown validator status for redelegation: %s", validator.Status))
 	}
 }
 
