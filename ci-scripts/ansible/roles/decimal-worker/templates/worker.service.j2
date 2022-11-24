@@ -5,8 +5,8 @@ Documentation=https://help.decimalchain.com
 [Service]
 Type=idle
 User=centos
-WorkingDirectory=/home/centos/worker/develop
-ExecStart={{ decimal_bin_worker }}worker start
+WorkingDirectory={{ decimal_bin_worker }}
+ExecStart={{ decimal_bin_worker }}/worker start
 Restart=always
 RestartSec=30s
 StandardOutput=journal
