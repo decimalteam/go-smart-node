@@ -512,7 +512,7 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 	////////////////////////////////////////////////
 	// 11. redelegate
 
-	// redelegate first -> second
+	// redelegate first -> third
 	{
 		// first val
 		red := types.NewMsgRedelegate(accs[0], vals[0], vals[2], creatorStake)
@@ -529,7 +529,13 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 
 	////////////////////////////////////////////////
 	// 11. after redelegate
-	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1).WithBlockTime(completionTime.Add(time.Hour * 2))
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1).WithBlockTime(completionTime.Add(time.Hour * 10))
+	goCtx = sdk.WrapSDKContext(ctx)
+
+	updates = keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
+	require.Len(t, updates, 0)
+
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1).WithBlockTime(completionTime.Add(time.Hour * 11))
 	goCtx = sdk.WrapSDKContext(ctx)
 
 	updates = keeper.EndBlocker(ctx, dsc.ValidatorKeeper, abci.RequestEndBlock{})
