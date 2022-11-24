@@ -73,6 +73,7 @@ func main() {
 	fixBondedNotBondedPools(&gsNew)
 	// fixNFTPool(&gsNew)
 	fixCoinVolumes(&gsNew)
+	fixAccountNumbers(&gsNew)
 	writeGenesisNew(pathGenesisResult, &gsNew)
 	exportNFTDublicates(pathExportNFTDublicates, nftDublicatesRecords)
 }
@@ -318,6 +319,13 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord, injectLeg
 
 	verifyPools(gsNew.AppState.Bank.Balances, gsNew.AppState.Validator.Validators, gsNew.AppState.Validator.Delegations,
 		gsNew.AppState.Validator.Undelegations, addrTable)
+
+	// DUMP OLD-NEW VALIDATORS
+	fmt.Printf("DUMP OLD-NEW VALIDATORS\n")
+	for _, oldVal := range gsOld.AppState.Validator.Validators {
+		newAddress := addrTable.GetValidatorAddress(oldVal.ValAddress)
+		fmt.Printf("%s\t%s\n", oldVal.ValAddress, newAddress)
+	}
 
 	return gsNew, nftDublicatesRecords, nil
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -157,4 +158,21 @@ func fixCoinVolumes(gs *GenesisNew) {
 		}
 		gs.AppState.Coin.Coins[i].Volume = volume.String()
 	}
+}
+
+func fixAccountNumbers(gs *GenesisNew) {
+	for i, acc := range gs.AppState.Auth.Accounts {
+		switch a := acc.(type) {
+		case AccountNew:
+			a.BaseAccount.AccountNumber = strconv.FormatInt(int64(i)+1, 10)
+			gs.AppState.Auth.Accounts[i] = a
+		case ModuleAccountNew:
+			a.BaseAccount.AccountNumber = strconv.FormatInt(int64(i)+1, 10)
+			gs.AppState.Auth.Accounts[i] = a
+		case map[string]interface{}:
+			a["base_account"].(map[string]interface{})["account_number"] = strconv.FormatInt(int64(i)+1, 10)
+			gs.AppState.Auth.Accounts[i] = a
+		}
+	}
+
 }
