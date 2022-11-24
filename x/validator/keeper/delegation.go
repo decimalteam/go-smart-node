@@ -1206,7 +1206,7 @@ func (k Keeper) getBeginInfo(ctx sdk.Context, validatorSrc sdk.ValAddress) (comp
 		return completionTime, height, false
 
 	case validator.IsUnbonded():
-		return completionTime, height, true
+		return time.Now(), height, true
 
 	case validator.IsUnbonding():
 		return validator.UnbondingTime, validator.UnbondingHeight, false
