@@ -100,5 +100,13 @@ func (rcs *RedeemChecksScenario) MakeCheck() {
 	} else {
 		fmt.Printf("result: %#v\n", resp)
 	}
+	fmt.Printf("Events:\n")
+	for _, ev := range resp.Events {
+		fmt.Printf("%s:\n", ev.Type)
+		for _, kv := range ev.Attributes {
+			fmt.Printf("\t%s = %s\n", string(kv.Key), string(kv.Value))
+		}
+	}
+	fmt.Printf("\n\n\n")
 
 }

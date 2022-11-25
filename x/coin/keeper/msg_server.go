@@ -439,6 +439,9 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 		feeAmount = formulas.CalculateSaleAmount(coin.Volume, coin.Reserve, uint(coin.CRR), feeAmountBase)
 	}
 	feeCoin := sdk.NewCoin(coinDenom, feeAmount)
+	// split to burning and collected part
+	amountToBurn := sdk.NewDecFromInt(feeAmount).Mul(params.CommissionBurnFactor).RoundInt()
+	amountToCollect := feeAmount.Sub(amountToBurn)
 
 	// check case when fee pay will break reserve/volume limits
 	err = k.CheckFutureChanges(ctx, coin, feeCoin.Amount.Neg())
@@ -512,15 +515,29 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 	k.SetCheck(ctx, check)
 
 	// Send fee from issuer to the fee_collector
-	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, issuer, sdkAuthTypes.FeeCollectorName, sdk.NewCoins(feeCoin))
-	if err != nil {
-		return nil, err
-
+	// send to burn
+	if amountToBurn.IsPositive() {
+		err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, issuer, feetypes.BurningPool,
+			sdk.NewCoins(sdk.NewCoin(coinDenom, amountToBurn)))
+		if err != nil {
+			return nil, err
+		}
 	}
+
+	// send to collect
+	if amountToCollect.IsPositive() {
+		err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, issuer, sdkAuthTypes.FeeCollectorName,
+			sdk.NewCoins(sdk.NewCoin(coinDenom, amountToCollect)))
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	// Emit transaction events
 	err = events.EmitTypedEvent(ctx, &feetypes.EventPayCommission{
 		Payer: issuer.String(),
 		Coins: sdk.NewCoins(feeCoin),
+		Burnt: sdk.NewCoins(sdk.NewCoin(coinDenom, amountToBurn)),
 	})
 	if err != nil {
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())
