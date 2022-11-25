@@ -172,6 +172,7 @@ func DeductFees(ctx sdk.Context, bankKeeper evmTypes.BankKeeper, coinKeeper coin
 	amountToBurn := sdk.NewDecFromInt(fee.Amount).Mul(burningFactor).RoundInt()
 	amountToCollect := fee.Amount.Sub(amountToBurn)
 
+	// NOTE: this functionality is dublicated in x/coin/keeper/msg_server.go:RedeemCheck
 	// send to burn
 	if amountToBurn.IsPositive() {
 		err := bankKeeper.SendCoinsFromAccountToModule(ctx, feePayerAddress, feetypes.BurningPool,
