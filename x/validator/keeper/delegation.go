@@ -1009,11 +1009,7 @@ func (k Keeper) BeginRedelegation(
 	}
 
 	// create the unbonding delegation
-	completionTime, height, _ := k.getBeginInfo(ctx, validatorSrc)
-
-	//if completeNow { // no need to create the redelegation object
-	//	return completionTime, nil
-	//}
+	completionTime, height := k.getBeginInfo(ctx, validatorSrc)
 
 	red := k.SetRedelegationEntry(
 		ctx, delegator, validatorSrc, validatorDst,
@@ -1193,7 +1189,7 @@ func (k Keeper) CalculateRemainStake(
 
 // getBeginInfo returns the completion time and height of a redelegation, along with
 // a boolean signaling if the redelegation is complete based on the source validator.
-func (k Keeper) getBeginInfo(ctx sdk.Context, validatorSrc sdk.ValAddress) (completionTime time.Time, height int64, completeNow bool) {
+func (k Keeper) getBeginInfo(ctx sdk.Context, validatorSrc sdk.ValAddress) (completionTime time.Time, height int64) {
 	validator, found := k.GetValidator(ctx, validatorSrc)
 
 	// TODO: When would the validator not be found?
@@ -1202,7 +1198,7 @@ func (k Keeper) getBeginInfo(ctx sdk.Context, validatorSrc sdk.ValAddress) (comp
 		// the longest wait - just unbonding period from now
 		completionTime = ctx.BlockHeader().Time.Add(k.RedelegationTime(ctx))
 		height = ctx.BlockHeight()
-		return completionTime, height, false
+		return completionTime, height
 
 	default:
 		panic(fmt.Sprintf("unknown validator status for redelegation: %s", validator.Status))
