@@ -1201,7 +1201,7 @@ func (k Keeper) getBeginInfo(ctx sdk.Context, validatorSrc sdk.ValAddress) (comp
 		return completionTime, height
 
 	default:
-		panic(fmt.Sprintf("unknown validator status: %s", validator.Status))
+		panic(fmt.Sprintf("unknown validator status for redelegation: %s", validator.Status))
 	}
 }
 
