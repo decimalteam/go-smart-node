@@ -423,12 +423,7 @@ func (sa *slashesAccumulator) AddRedelegation(redelegation types.Redelegation, i
 		switch entry.Stake.Type {
 
 		case types.StakeType_Coin:
-			switch validatorStatuses[newRedelegation.ValidatorDst] {
-			case types.BondStatus_Bonded:
-				sa.coinsToBurnBonded = sa.coinsToBurnBonded.Add(slashCoin.Slash)
-			case types.BondStatus_Unbonded, types.BondStatus_Unbonding:
-				sa.coinsToBurnUnbonded = sa.coinsToBurnUnbonded.Add(slashCoin.Slash)
-			}
+			sa.coinsToBurnUnbonded = sa.coinsToBurnUnbonded.Add(slashCoin.Slash)
 
 		case types.StakeType_NFT:
 			for _, sub := range slashNFT.SubTokens {
