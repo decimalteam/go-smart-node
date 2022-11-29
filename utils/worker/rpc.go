@@ -98,14 +98,12 @@ func (w *Worker) fetchBlockResults(height int64, block ctypes.ResultBlock, ea *E
 
 		results = append(results, result)
 
-		// process events for successful transactions
-		if txr.Code == 0 {
-			for _, event := range txr.Events {
-				err := ea.AddEvent(event, hexutils.BytesToHex(tx.Hash()))
-				if err != nil {
-					fmt.Printf("error in event %v\n", event.Type)
-					w.panicError(err)
-				}
+		// process events for transactions
+		for _, event := range txr.Events {
+			err := ea.AddEvent(event, hexutils.BytesToHex(tx.Hash()))
+			if err != nil {
+				fmt.Printf("error in event %v\n", event.Type)
+				w.panicError(err)
 			}
 		}
 	}
