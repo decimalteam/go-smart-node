@@ -16,7 +16,7 @@ type WeightedAG struct {
 }
 
 // TODO: parameters for generator
-func (ar *ActionReactor) Add(generatorName string, weight int64) error {
+func (ar *ActionReactor) Add(generatorName string, weight int64, baseDenom string) error {
 	var wag *WeightedAG = &WeightedAG{Weight: weight}
 	switch generatorName {
 	// coin
@@ -25,13 +25,13 @@ func (ar *ActionReactor) Add(generatorName string, weight int64) error {
 	case "SendCoin":
 		wag.AG = NewSendCoinGenerator(500, 20000)
 	case "BuyCoin":
-		wag.AG = NewBuyCoinGenerator(500, 20000, "del")
+		wag.AG = NewBuyCoinGenerator(500, 20000, baseDenom)
 	case "SellCoin":
-		wag.AG = NewSellCoinGenerator(500, 20000, "del")
+		wag.AG = NewSellCoinGenerator(500, 20000, baseDenom)
 	case "MultiSendCoin":
 		wag.AG = NewMultiSendCoinGenerator(500, 20000, 1, 10)
 	case "UpdateCoin":
-		wag.AG = NewUpdateCoinGenerator(1, 100, "del")
+		wag.AG = NewUpdateCoinGenerator(1, 100, baseDenom)
 	case "BurnCoin":
 		wag.AG = NewBurnCoinGenerator(1, 1000)
 	case "RedeemCheck":

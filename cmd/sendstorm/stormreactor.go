@@ -125,7 +125,7 @@ func (reactor *stormReactor) initActionReactor(flags *pflag.FlagSet) error {
 		if err != nil {
 			return fmt.Errorf("'%s' weight must be integer, go error '%s'", act, err.Error())
 		}
-		err = reactor.actionReactor.Add(generatorName, weight)
+		err = reactor.actionReactor.Add(generatorName, weight, reactor.api.BaseCoin())
 		if err != nil {
 			return fmt.Errorf("'%s': %s", act, err.Error())
 		}
