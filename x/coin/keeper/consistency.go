@@ -9,6 +9,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 )
 
 // Check than buy/sell/fee deduct operations will not violate coin constants:
@@ -34,7 +35,8 @@ func (k *Keeper) CheckFutureChanges(ctx sdk.Context, coinInfo types.Coin, amount
 	// because this balance will be burned
 	if amount.IsNegative() {
 		coinInCollector := k.bankKeeper.GetBalance(ctx, sdkAuthTypes.NewModuleAddress(sdkAuthTypes.FeeCollectorName), coinInfo.Denom)
-		futureAmountToBurn := coinInCollector.Amount.Add(amount.Neg())
+		coinToBurn := k.bankKeeper.GetBalance(ctx, sdkAuthTypes.NewModuleAddress(feetypes.BurningPool), coinInfo.Denom)
+		futureAmountToBurn := coinInCollector.Amount.Add(coinToBurn.Amount).Add(amount.Neg())
 		// check for minimal volume
 		newVolume = coinInfo.Volume.Sub(futureAmountToBurn)
 		if newVolume.LT(config.MinCoinSupply) {
@@ -44,7 +46,7 @@ func (k *Keeper) CheckFutureChanges(ctx sdk.Context, coinInfo types.Coin, amount
 		futureReserveToDecrease := formulas.CalculateSaleReturn(coinInfo.Volume, coinInfo.Reserve,
 			uint(coinInfo.CRR), futureAmountToBurn)
 		if coinInfo.Reserve.Sub(futureReserveToDecrease).LT(config.MinCoinReserve) {
-			return errors.TxBreaksVolumeLimit
+			return errors.TxBreaksMinReserveRule
 		}
 	}
 	return nil
@@ -70,7 +72,8 @@ func (k *Keeper) CheckFutureVolumeChanges(ctx sdk.Context, coinInfo types.Coin, 
 	// because this balance will be burned
 	if amount.IsNegative() {
 		coinInCollector := k.bankKeeper.GetBalance(ctx, sdkAuthTypes.NewModuleAddress(sdkAuthTypes.FeeCollectorName), coinInfo.Denom)
-		futureAmountToBurn := coinInCollector.Amount.Add(amount.Neg())
+		coinToBurn := k.bankKeeper.GetBalance(ctx, sdkAuthTypes.NewModuleAddress(feetypes.BurningPool), coinInfo.Denom)
+		futureAmountToBurn := coinInCollector.Amount.Add(coinToBurn.Amount).Add(amount.Neg())
 		// check for minimal volume
 		newVolume = coinInfo.Volume.Sub(futureAmountToBurn)
 		if newVolume.LT(config.MinCoinSupply) {
@@ -93,10 +96,15 @@ func (k *Keeper) BurnPoolCoins(ctx sdk.Context, poolName string, coins sdk.Coins
 			err = k.UpdateCoinVR(ctx, coin.Denom, coinInfo.Volume.Sub(coin.Amount), coinInfo.Reserve)
 			continue
 		}
-		err = k.CheckFutureChanges(ctx, coinInfo, coin.Amount)
-		if err != nil {
-			return err
-		}
+		// because BurnPoolCoins is used in EndBlocker, error in CheckFutureChanges will cause panic
+		// this is the reason to disable check and allow break limits for coin in some case
+		// but check for transactions still work
+		/*
+			err = k.CheckFutureChanges(ctx, coinInfo, coin.Amount.Neg())
+			if err != nil && !goerrors.Is(err, errors.TxBreaksMinReserveRule) {
+				return err
+			}
+		*/
 		futureReserveToDecrease := formulas.CalculateSaleReturn(coinInfo.Volume, coinInfo.Reserve,
 			uint(coinInfo.CRR), coin.Amount)
 		coinInfo.Volume = coinInfo.Volume.Sub(coin.Amount)
