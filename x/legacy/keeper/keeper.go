@@ -216,6 +216,16 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 				return errors.Internal.Wrapf("err: %s", err.Error())
 			}
 		}
+
+		// Emit event
+		err = events.EmitTypedEvent(ctx, &types.EventReturnValidator{
+			LegacyOwner: legacyAddress,
+			Owner:       actualAddress,
+			Validator:   validatorAddress,
+		})
+		if err != nil {
+			return errors.Internal.Wrapf("err: %s", err.Error())
+		}
 	}
 	// all complete, delete
 	k.DeleteLegacyRecord(ctx, legacyAddress)
