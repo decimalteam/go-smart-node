@@ -375,7 +375,7 @@ func ValidatorO2N(valOld ValidatorOld, addrTable *AddressTable, legacyRecords *L
 	newRewardAdr := addrTable.GetAddress(valOld.RewardAddress)
 	if newRewardAdr == "" {
 		// back to old reward address
-		legacyRecords.AddValidator(valOld.RewardAddress, valOld.ValAddress)
+		legacyRecords.AddValidator(valOld.RewardAddress, result.OperatorAddress)
 		newRewardAdr = valOld.RewardAddress
 	}
 	result.RewardAddress = newRewardAdr
