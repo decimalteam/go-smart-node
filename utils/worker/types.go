@@ -70,6 +70,7 @@ type Tx struct {
 	Hash      string        `json:"hash"`
 	Log       []interface{} `json:"log"`
 	Code      uint32        `json:"code"`
+	Codespace string        `json:"codespace"`
 	Data      interface{}   `json:"data"`
 	GasUsed   int64         `json:"gas_used"`
 	GasWanted int64         `json:"gas_wanted"`
