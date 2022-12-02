@@ -1,16 +1,17 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
-	"bitbucket.org/decimalteam/go-smart-node/utils/events"
-	"bitbucket.org/decimalteam/go-smart-node/x/legacy/errors"
-	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
+
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
+	"bitbucket.org/decimalteam/go-smart-node/x/legacy/errors"
+	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 )
 
 var _ types.MsgServer = &Keeper{}
@@ -214,6 +215,16 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 			if err != nil {
 				return errors.Internal.Wrapf("err: %s", err.Error())
 			}
+		}
+
+		// Emit event
+		err = events.EmitTypedEvent(ctx, &types.EventReturnValidator{
+			LegacyOwner: legacyAddress,
+			Owner:       actualAddress,
+			Validator:   validatorAddress,
+		})
+		if err != nil {
+			return errors.Internal.Wrapf("err: %s", err.Error())
 		}
 	}
 	// all complete, delete
