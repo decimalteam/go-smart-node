@@ -18,7 +18,7 @@ var (
 	InvalidCoinTitle              = errors.New(codespace, 105, fmt.Sprintf("invalid coin title. Allowed up to %d bytes", config.MaxCoinTitleLength))
 	InvalidCoinInitialVolume      = errors.New(codespace, 106, fmt.Sprintf("coin initial volume should be between %s and %s.", config.MinCoinSupply, config.MaxCoinSupply))
 	InvalidCoinInitialReserve     = errors.New(codespace, 107, fmt.Sprintf("coin initial reserve should be greater than or equal to reserve %s", config.MinCoinReserve))
-	NewLimitVolumeLess            = errors.New(codespace, 108, "new limit volume should be grater than old limit volume")
+	NewLimitVolumeLess            = errors.New(codespace, 108, "new limit volume should be grater than volume")
 	UpdateOnlyForCreator          = errors.New(codespace, 109, "updating allowed only for creator of coin")
 	InvalidLimitVolume            = errors.New(codespace, 110, fmt.Sprintf("volume limit should be greater than initial volume and less or equal than %s", config.MaxCoinSupply))
 	InvalidAmount                 = errors.New(codespace, 111, "amount should be greater than 0")

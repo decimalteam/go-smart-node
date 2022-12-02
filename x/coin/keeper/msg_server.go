@@ -165,7 +165,7 @@ func (k Keeper) UpdateCoin(goCtx context.Context, msg *types.MsgUpdateCoin) (*ty
 	}
 
 	// Ensure new limit volume is big enough
-	if coin.LimitVolume.GT(msg.LimitVolume) {
+	if coin.Volume.GT(msg.LimitVolume) {
 		return nil, errors.NewLimitVolumeLess
 	}
 
