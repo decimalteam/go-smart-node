@@ -17,6 +17,7 @@ import (
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
 
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	legacytypes "bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	swaptypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
@@ -58,6 +59,7 @@ var pool = map[string]bool{
 	mustConvertAndEncode(authtypes.NewModuleAddress(legacytypes.LegacyCoinPool)):     false,
 	mustConvertAndEncode(authtypes.NewModuleAddress(swaptypes.SwapPool)):             false,
 	mustConvertAndEncode(authtypes.NewModuleAddress(validatortypes.ModuleName)):      false,
+	mustConvertAndEncode(authtypes.NewModuleAddress(feetypes.BurningPool)):           false,
 }
 
 type EventAccumulator struct {
