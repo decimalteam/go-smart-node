@@ -1,22 +1,23 @@
 package upgrade_test
 
 import (
+	"fmt"
+	"testing"
+
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	"bitbucket.org/decimalteam/go-smart-node/testutil"
 	"bitbucket.org/decimalteam/go-smart-node/x/upgrade"
-	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestName(t *testing.T) {
 	msg := types.MsgSoftwareUpgrade{
-		Authority: "dx1y7sex8yvrazyd8pljjxvnvpndaavn99tjd3ppm",
+		Authority: "d01y7sex8yvrazyd8pljjxvnvpndaavn99tk2j52y",
 		Plan: types.Plan{
 			Name: "https://devnet-dsc-repo.decimalchain.com/63261",
 			//Name:   "http://127.0.0.1:8080/50",

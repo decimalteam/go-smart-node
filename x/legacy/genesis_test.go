@@ -32,11 +32,11 @@ func TestInitGenesisForLegacy(t *testing.T) {
 		0x4a, 0xa2, 0xb0, 0x88, 0x5f, 0x55, 0x6f, 0xe0, 0x5d, 0x71, 0x49, 0x88, 0x5a, 0x5, 0xa0, 0xe7, 0x94, 0xa, 0x7e, 0x4f}
 	oldAddress, err := commonTypes.GetLegacyAddressFromPubKey(publicKey)
 	require.NoError(t, err)
-	newAddress := "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn"
+	newAddress := "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv"
 
-	otherAddress := "dx1m3eg7v6pu0dga2knj9zm4683dk9c8800j9nfw0"
+	otherAddress := "dx1mglzvd5vvfn0sntkcmsfwx768kwmaehs2txchf"
 
-	wallet1, wallet2 := "dx108c4p0j7wqsawejfuuv43hj7nhyp36gt0296rs", "dx10fx59x9ytvf249axryvw0uh3eunwvgyfpm9jrp"
+	wallet1, wallet2 := "d0108c4p0j7wqsawejfuuv43hj7nhyp36gttdx0g0", "d010fx59x9ytvf249axryvw0uh3eunwvgyf9ux8g7"
 
 	legacyCoinPoolAddress, err := sdk.Bech32ifyAddressBytes(config.Bech32Prefix,
 		cosmosAuthTypes.NewModuleAddress(types.LegacyCoinPool))
@@ -189,6 +189,9 @@ func TestInitGenesisForLegacy(t *testing.T) {
 }
 
 func getBaseApp(t *testing.T) (*app.DSC, sdk.Context) {
+	_config := sdk.GetConfig()
+	_config.SetBech32PrefixForAccount(config.Bech32PrefixAccAddr, config.Bech32PrefixAccPub)
+
 	dsc := app.Setup(t, false, feemarkettypes.DefaultGenesisState())
 	ctx := dsc.BaseApp.NewContext(false, tmproto.Header{})
 

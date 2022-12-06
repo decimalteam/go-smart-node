@@ -13,6 +13,8 @@ import (
 )
 
 func TestEcrecover(t *testing.T) {
+	const checkingAddress = "f52fa9e7440a374cd1688326250b99f33370f818"
+
 	_config := sdk.GetConfig()
 	_config.SetCoinType(60)
 	_config.SetFullFundraiserPath("44'/60'/0'/0/0")
@@ -32,10 +34,10 @@ func TestEcrecover(t *testing.T) {
 	var s Hash
 	copy(s[:], _s)
 
-	sender, err := sdk.AccAddressFromBech32("dx1lx4lvt8sjuxj8vw5dcf6knnq0pacre4w6hdh2v")
+	sender, err := sdk.AccAddressFromBech32("d01lx4lvt8sjuxj8vw5dcf6knnq0pacre4w7swzpn")
 	require.NoError(t, err)
 
-	recipient, err := sdk.AccAddressFromBech32("dx1tlhpwr6t9nnq95xjet3ap2lc9zlxyw9dhr9y0z")
+	recipient, err := sdk.AccAddressFromBech32("d01tlhpwr6t9nnq95xjet3ap2lc9zlxyw9dnyx3ya")
 	require.NoError(t, err)
 
 	amount, ok := sdk.NewIntFromString("100000000000000000000")
@@ -60,7 +62,7 @@ func TestEcrecover(t *testing.T) {
 	hash, err := GetHash(transactionNumber, msg.TokenSymbol, msg.Amount, msg.Recipient, msg.FromChain, msg.DestChain)
 	require.NoError(t, err)
 
-	require.Equal(t, "b3d218b80efdaaac18e3df1647786f1200fb330cf90bfef72baa0073f6bf872b", hex.EncodeToString(hash[:]))
+	require.Equal(t, "333085510d89cfc4e298fc1406f9e4e4995e9233ab057135be24e3a87ea66d9b", hex.EncodeToString(hash[:]))
 
 	R := big.NewInt(0)
 	R.SetBytes(_r[:])
@@ -88,7 +90,7 @@ func TestEcrecover(t *testing.T) {
 				S:       S,
 				Vb:      sdk.NewInt(int64(msg.V)).BigInt(),
 			},
-			ethcmn.HexToAddress(DefaultCheckingAddress),
+			ethcmn.HexToAddress(checkingAddress),
 			false,
 		},
 	}
@@ -100,8 +102,8 @@ func TestEcrecover(t *testing.T) {
 				t.Errorf("Ecrecover() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if hex.EncodeToString(got.Bytes()) != DefaultCheckingAddress {
-				t.Errorf("Ecrecover() got = %v, want %v", hex.EncodeToString(got.Bytes()), DefaultCheckingAddress)
+			if hex.EncodeToString(got.Bytes()) != checkingAddress {
+				t.Errorf("Ecrecover() got = %v, want %v", hex.EncodeToString(got.Bytes()), checkingAddress)
 			}
 		})
 	}

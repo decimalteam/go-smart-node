@@ -87,7 +87,7 @@ func (s *KeeperTestSuite) SetupTest() {
 	nftKeeper := legacytestutil.NewMockNftKeeper(ctrl)
 	nftKeeper.EXPECT().GetToken(ctx, defaultTokenID).AnyTimes().Return(nfttypes.Token{Denom: defaultTokenID}, true)
 	nftKeeper.EXPECT().GetSubTokens(ctx, defaultTokenID).AnyTimes().Return(defaultSubTokensBefore)
-	nftKeeper.EXPECT().SetSubToken(ctx, defaultTokenID, defaultSubTokensAfter[0]).AnyTimes()
+	nftKeeper.EXPECT().ReplaceSubTokenOwner(ctx, defaultTokenID, defaultSubTokensAfter[0].ID, actualAddress).AnyTimes().Return(nil)
 	multisigKeeper := legacytestutil.NewMockMultisigKeeper(ctrl)
 	multisigKeeper.EXPECT().GetWallet(ctx, defaultMultisigWalletBefore.Address).AnyTimes().Return(defaultMultisigWalletBefore, nil)
 	multisigKeeper.EXPECT().SetWallet(ctx, defaultMultisigWalletAfter).AnyTimes()

@@ -68,9 +68,17 @@ func InitGenesis(ctx sdk.Context, k Keeper, gs *types.GenesisState) {
 						panic(errors.InvalidReserve)
 					}
 				*/
-				owner, err := sdk.AccAddressFromBech32(subToken.Owner)
-				if err != nil {
+				owner1, err1 := sdk.AccAddressFromBech32(subToken.Owner)
+				owner2, err2 := sdk.GetFromBech32(subToken.Owner, "dx") // may be legacy address
+				if err1 != nil && err2 != nil {
 					panic(err)
+				}
+				var owner sdk.AccAddress
+				if err1 == nil {
+					owner = owner1
+				}
+				if err2 == nil {
+					owner = sdk.AccAddress(owner2)
 				}
 				// write sub-token record
 				k.SetSubToken(ctx, token.ID, *subToken)

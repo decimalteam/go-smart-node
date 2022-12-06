@@ -14,9 +14,9 @@ func TestSwapRedeem(t *testing.T) {
 	cmdcfg.SetBech32Prefixes(cfg)
 	cmdcfg.SetBip44CoinType(cfg)
 
-	const validRecipient = "dx1tlhpwr6t9nnq95xjet3ap2lc9zlxyw9dhr9y0z"
+	const validRecipient = "d01tlhpwr6t9nnq95xjet3ap2lc9zlxyw9dnyx3ya"
 
-	sender, err := sdk.AccAddressFromBech32("dx1lx4lvt8sjuxj8vw5dcf6knnq0pacre4w6hdh2v")
+	sender, err := sdk.AccAddressFromBech32("d01lx4lvt8sjuxj8vw5dcf6knnq0pacre4w7swzpn")
 	require.NoError(t, err)
 
 	var testCases = []struct {

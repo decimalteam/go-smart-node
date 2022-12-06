@@ -1,7 +1,7 @@
 package types
 
 // MultisigTransactionIDPrefix is prefix for multisig transaction ID.
-const MultisigTransactionIDPrefix = "dxmstx"
+const MultisigTransactionIDPrefix = "d0mstx"
 
 // Multisignature wallet limitations.
 const (

@@ -342,7 +342,7 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 				}
 			}
 			// 3.9 TODO: There still may be empty owners for subtokens. Workaround with logging
-			// NOTE: bech32 address for []byte{0} = "dx1qqjrdrw8",
+			// NOTE: bech32 address for []byte{0} = "d01qq7tle99",
 			for i := range subtokens {
 				if subtokens[i].Owner == "" {
 					// try to find in delegation pool
@@ -350,7 +350,7 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 					if pool == "" {
 						fmt.Printf("empty owner for collection '%s', creator '%s', nft '%s', sub token id '%d'\n",
 							collNew.Denom, collNew.Creator, nftOld.ID, subtokens[i].ID)
-						subtokens[i].Owner = "dx1qqjrdrw8"
+						subtokens[i].Owner = "d01qq7tle99"
 					} else {
 						subtokens[i].Owner = pool
 					}

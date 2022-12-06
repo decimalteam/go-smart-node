@@ -50,7 +50,7 @@ var (
 	}
 
 	defaultOperatorAddressSdk = sdk.ValAddress([]byte{1, 2, 3})
-	defaultOperatorAddress    = "dxvaloper1aaa"
+	defaultOperatorAddress    = "d0valoper1aaa"
 
 	defaultValidatorBefore = validatortypes.Validator{
 		OperatorAddress: defaultOperatorAddress,

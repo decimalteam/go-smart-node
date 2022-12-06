@@ -8,7 +8,6 @@ import (
 	reflect "reflect"
 
 	types "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-	math "cosmossdk.io/math"
 	types0 "github.com/cosmos/cosmos-sdk/types"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -50,20 +49,6 @@ func (mr *MockCoinKeeperMockRecorder) BurnPoolCoins(arg0, arg1, arg2 interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BurnPoolCoins", reflect.TypeOf((*MockCoinKeeper)(nil).BurnPoolCoins), arg0, arg1, arg2)
 }
 
-// GetBaseDenom mocks base method.
-func (m *MockCoinKeeper) GetBaseDenom(arg0 types0.Context) string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBaseDenom", arg0)
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// GetBaseDenom indicates an expected call of GetBaseDenom.
-func (mr *MockCoinKeeperMockRecorder) GetBaseDenom(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBaseDenom", reflect.TypeOf((*MockCoinKeeper)(nil).GetBaseDenom), arg0)
-}
-
 // GetCoin mocks base method.
 func (m *MockCoinKeeper) GetCoin(arg0 types0.Context, arg1 string) (types.Coin, error) {
 	m.ctrl.T.Helper()
@@ -77,61 +62,4 @@ func (m *MockCoinKeeper) GetCoin(arg0 types0.Context, arg1 string) (types.Coin, 
 func (mr *MockCoinKeeperMockRecorder) GetCoin(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCoin", reflect.TypeOf((*MockCoinKeeper)(nil).GetCoin), arg0, arg1)
-}
-
-// GetCoins mocks base method.
-func (m *MockCoinKeeper) GetCoins(arg0 types0.Context) []types.Coin {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCoins", arg0)
-	ret0, _ := ret[0].([]types.Coin)
-	return ret0
-}
-
-// GetCoins indicates an expected call of GetCoins.
-func (mr *MockCoinKeeperMockRecorder) GetCoins(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCoins", reflect.TypeOf((*MockCoinKeeper)(nil).GetCoins), arg0)
-}
-
-// GetDecreasingFactor mocks base method.
-func (m *MockCoinKeeper) GetDecreasingFactor(arg0 types0.Context, arg1 types0.Coin) (types0.Dec, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDecreasingFactor", arg0, arg1)
-	ret0, _ := ret[0].(types0.Dec)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetDecreasingFactor indicates an expected call of GetDecreasingFactor.
-func (mr *MockCoinKeeperMockRecorder) GetDecreasingFactor(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDecreasingFactor", reflect.TypeOf((*MockCoinKeeper)(nil).GetDecreasingFactor), arg0, arg1)
-}
-
-// IsCoinExists mocks base method.
-func (m *MockCoinKeeper) IsCoinExists(arg0 types0.Context, arg1 string) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsCoinExists", arg0, arg1)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// IsCoinExists indicates an expected call of IsCoinExists.
-func (mr *MockCoinKeeperMockRecorder) IsCoinExists(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsCoinExists", reflect.TypeOf((*MockCoinKeeper)(nil).IsCoinExists), arg0, arg1)
-}
-
-// UpdateCoinVR mocks base method.
-func (m *MockCoinKeeper) UpdateCoinVR(arg0 types0.Context, arg1 string, arg2, arg3 math.Int) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateCoinVR", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateCoinVR indicates an expected call of UpdateCoinVR.
-func (mr *MockCoinKeeperMockRecorder) UpdateCoinVR(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCoinVR", reflect.TypeOf((*MockCoinKeeper)(nil).UpdateCoinVR), arg0, arg1, arg2, arg3)
 }

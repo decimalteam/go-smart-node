@@ -104,7 +104,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	if !k.IsLegacyAddress(ctx, legacyAddress) {
 		return nil
 	}
-	legacySdkAddress := sdk.MustAccAddressFromBech32(legacyAddress)
+	legacySdkAddress, _ := sdk.GetFromBech32(legacyAddress, "dx") // nolint : legacyAddress already valid
 	actualSdkAddress := sdk.AccAddress(ethsecp256k1.PubKey{Key: pubKeyBytes}.Address())
 	actualAddress, err := bech32.ConvertAndEncode(config.Bech32Prefix, actualSdkAddress)
 	if err != nil {
@@ -148,8 +148,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 		returnedSubTokens := make([]uint32, 0)
 		for i := range subTokens {
 			if subTokens[i].Owner == legacyAddress {
-				subTokens[i].Owner = actualAddress
-				k.nftKeeper.SetSubToken(ctx, tokenId, subTokens[i])
+				k.nftKeeper.ReplaceSubTokenOwner(ctx, tokenId, subTokens[i].ID, actualAddress)
 				returnedSubTokens = append(returnedSubTokens, subTokens[i].ID)
 			}
 		}

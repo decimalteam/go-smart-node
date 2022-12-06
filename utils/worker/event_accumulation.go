@@ -22,6 +22,8 @@ import (
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	swaptypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
 	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
 
 /*
@@ -232,7 +234,7 @@ func (ea *EventAccumulator) addCoinsStaked(e EventUpdateCoinsStaked) {
 }
 
 func mustConvertAndEncode(address sdk.AccAddress) string {
-	res, err := bech32.ConvertAndEncode("dx", address)
+	res, err := bech32.ConvertAndEncode(cmdcfg.Bech32PrefixAccAddr, address)
 	if err != nil {
 		panic(err)
 	}
