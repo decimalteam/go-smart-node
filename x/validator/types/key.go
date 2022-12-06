@@ -52,13 +52,13 @@ const (
 
 // Staking related records:
 //   - Delegations:             0x31<delegator><validator><stake_id>          : <Stake>
-//   - DelegationsByVal:        0x37<validator><delegator><stake_id>		  : []byte{}
 //   - Redelegations:           0x32<delegator><val_src><val_dst>   		  : <Redelegation>
 //   - RedelegationsByValSrc:   0x33<val_src><delegator><val_dst>             : []byte{}
 //   - RedelegationsByValDst:   0x34<val_dst><delegator><val_src>             : []byte{}
 //   - Undelegations:           0x35<delegator><validator><stake_id>          : <Undelegation>
 //   - UndelegationsByValSrc:   0x36<validator><delegator><stake_id>          : []byte{}
-//   - DelegationsCount:        0x37<validator>                               : <int32>
+//   - DelegationsByVal:        0x37<validator><delegator><stake_id>		  : []byte{}
+//   - DelegationsCount:        0x38<validator>                               : <int32>
 
 // Queues related records:
 // TODO: Instead of storing array we need to store records separately and iterate over it when needed.
@@ -88,14 +88,14 @@ var (
 	keyPrefixRedelegationsByValDstIndex = []byte{0x34} // prefix for each key for a redelegation index (by destination validator address)
 	keyPrefixUndelegations              = []byte{0x35} // prefix for each key for an undelegation
 	keyPrefixUndelegationsByValIndex    = []byte{0x36} // prefix for each key for an undelegation index (by validator address)
-	keyPrefixDelegationsCount           = []byte{0x37} // prefix for delegations count index (by validator address)
+	keyPrefixDelegationByValIndex       = []byte{0x37} // prefix for each key for a delegation key (by validator address)
+	keyPrefixDelegationsCount           = []byte{0x38} // prefix for delegations count index (by validator address)
 	keyPrefixValidatorQueue             = []byte{0x41} // prefix for the timestamps in validator queue
 	keyPrefixRedelegationQueue          = []byte{0x42} // prefix for the timestamps in redelegations queue
 	keyPrefixUndelegationQueue          = []byte{0x43} // prefix for the timestamps in unbonding queue
 	keyPrefixHistoricalInfo             = []byte{0x51} // prefix for the historical info
 	keyPrefixMissedBlock                = []byte{0x61} // prefix for missed blocks
 	keyPrefixStartHeight                = []byte{0x62} // prefix for starting block
-	keyPrefixDelegationByValIndex       = []byte{0x37} // prefix for each key for a delegation key (by validator address)
 	keyPrefixCustomCoinStaked           = []byte{0x71} // prefix for custom coin total staked in delegations
 )
 

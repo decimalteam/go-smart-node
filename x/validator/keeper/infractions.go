@@ -54,10 +54,11 @@ func (k Keeper) HandleValidatorSignature(ctx sdk.Context, addr cryptotypes.Addre
 			MissedBlocks:    uint32(signInfo.MissedBlocksCounter),
 		})
 
-		logger.Debug(
-			"absent validator",
+		logger.Info(
+			"validator skipped block",
 			"height", height,
-			"validator", consAddr.String(),
+			"validator", validator.OperatorAddress,
+			"validator_cons", consAddr.String(),
 			"missed", signInfo.MissedBlocksCounter,
 			"threshold", params.MinSignedPerWindow,
 		)

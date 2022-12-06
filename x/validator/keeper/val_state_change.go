@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"bytes"
+	goerrors "errors"
 	"fmt"
 	"runtime/debug"
 	"sort"
@@ -87,8 +88,8 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 		delegatorAddress := sdk.MustAccAddressFromBech32(dvPair.DelegatorAddress)
 
 		err = k.CompleteUnbonding(ctx, delegatorAddress, addr)
-		if err != nil {
-			continue
+		if err != nil && !goerrors.Is(err, types.ErrNoUndelegation) {
+			panic(err)
 		}
 	}
 
@@ -590,6 +591,8 @@ func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator) {
 		if err != nil {
 			panic(err)
 		}
+
+		k.SubCustomCoinStaked(ctx, delegation.Stake.GetStake())
 
 		err = events.EmitTypedEvent(ctx, &types.EventForceUndelegate{
 			Delegator: delegation.Delegator,

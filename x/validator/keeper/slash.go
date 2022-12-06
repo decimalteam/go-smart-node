@@ -158,7 +158,7 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 	// 5. change stakes of custom coins
 	stakeDecreasing := accum.GetCoinsToBurnBonded().Add(accum.GetCoinsToBurnUnbonded()...).Add(accum.GetCoinsToBurnNFT()...)
 	for _, coin := range stakeDecreasing {
-		k.AfterUpdateDelegation(ctx, coin.Denom, coin.Amount.Neg())
+		k.SubCustomCoinStaked(ctx, coin)
 	}
 
 	//////////////////////////////////////////////////

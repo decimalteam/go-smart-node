@@ -1,5 +1,100 @@
 package keeper
 
+import (
+	"fmt"
+	"strings"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
+)
+
+func RegisterInvariants(registry sdk.InvariantRegistry, k Keeper) {
+	registry.RegisterRoute(types.ModuleName, "staked-custom-coins", StakedCustomCoinInvariant(k))
+	registry.RegisterRoute(types.ModuleName, "delegations-counter", DelegationsCounterInvariant(k))
+}
+
+// StakedCustomCoinInvariant checks that helper amounts of custom coins is equal
+// to sum of delegation/undelegations/redelegations
+func StakedCustomCoinInvariant(k Keeper) sdk.Invariant {
+	return func(ctx sdk.Context) (string, bool) {
+
+		allCoins := sdk.NewCoins()
+		k.IterateAllDelegations(ctx, func(delegation types.Delegation) bool {
+			if delegation.Stake.Stake.Denom == k.BaseDenom(ctx) {
+				return false
+			}
+			allCoins = allCoins.Add(delegation.Stake.GetStake())
+			return false
+		})
+		k.IterateUndelegations(ctx, func(index int64, ubd types.Undelegation) bool {
+			for _, entry := range ubd.Entries {
+				if entry.Stake.Stake.Denom == k.BaseDenom(ctx) {
+					continue
+				}
+				allCoins = allCoins.Add(entry.Stake.Stake)
+			}
+			return false
+		})
+		k.IterateRedelegations(ctx, func(index int64, red types.Redelegation) bool {
+			for _, entry := range red.Entries {
+				if entry.Stake.Stake.Denom == k.BaseDenom(ctx) {
+					continue
+				}
+				allCoins = allCoins.Add(entry.Stake.Stake)
+			}
+			return false
+		})
+		broken := false
+		diff := []string{}
+		for denom, amount := range k.GetAllCustomCoinsStaked(ctx) {
+			if !allCoins.AmountOf(denom).Equal(amount) {
+				diff = append(diff, fmt.Sprintf("coin: %s, (re/un)delegations: %s, staked: %s",
+					denom, allCoins.AmountOf(denom), amount))
+				broken = true
+			}
+		}
+		ccs := k.GetAllCustomCoinsStaked(ctx)
+		for _, coin := range allCoins {
+			_, ok := ccs[coin.Denom]
+			if !ok {
+				diff = append(diff, fmt.Sprintf("coin '%s' is not found in staked custom coin", coin.Denom))
+				broken = true
+			}
+		}
+
+		description := strings.Join(diff, "\n")
+
+		// Bonded tokens should equal sum of tokens with bonded validators
+		// Not-bonded tokens should equal unbonding delegations	plus tokens on unbonded validators
+		return sdk.FormatInvariant(types.ModuleName, "staked custom coins", "\tDifferences:\n"+description), broken
+	}
+}
+
+func DelegationsCounterInvariant(k Keeper) sdk.Invariant {
+	return func(ctx sdk.Context) (string, bool) {
+		counter1 := k.GetAllDelegationsCount(ctx)
+		counter2 := make(map[string]uint32)
+		k.IterateAllDelegations(ctx, func(delegation types.Delegation) bool {
+			counter2[delegation.Validator] = counter2[delegation.Validator] + 1
+			return false
+		})
+		vals := k.GetAllValidators(ctx)
+		diff := []string{}
+		broken := false
+		for _, val := range vals {
+			if counter2[val.OperatorAddress] != counter1[val.OperatorAddress] {
+				broken = true
+				diff = append(diff, fmt.Sprintf("validator: %s, stored count: %d, calculated count: %d",
+					val.OperatorAddress, counter1[val.OperatorAddress], counter2[val.OperatorAddress],
+				))
+			}
+		}
+		description := strings.Join(diff, "\n")
+		return sdk.FormatInvariant(types.ModuleName, "delegations counter", "\tDifferences:\n"+description), broken
+	}
+}
+
 //
 //// RegisterInvariants registers all the module's invariants.
 //func RegisterInvariants(registry sdk.InvariantRegistry, k Keeper) {

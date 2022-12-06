@@ -707,6 +707,43 @@ func (k Keeper) IterateAllCustomCoinStaked(ctx sdk.Context, cb func(denom string
 	}
 }
 
+func (k Keeper) AddCustomCoinStaked(ctx sdk.Context, coin sdk.Coin) {
+	if coin.Denom == k.BaseDenom(ctx) {
+		return
+	}
+	amount := k.GetCustomCoinStaked(ctx, coin.Denom)
+	amount = amount.Add(coin.Amount)
+	// emit event
+	k.SetCustomCoinStaked(ctx, coin.Denom, amount)
+	err := events.EmitTypedEvent(ctx, &types.EventUpdateCoinsStaked{
+		Denom:       coin.Denom,
+		TotalAmount: amount,
+	})
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (k Keeper) SubCustomCoinStaked(ctx sdk.Context, coin sdk.Coin) {
+	if coin.Denom == k.BaseDenom(ctx) {
+		return
+	}
+	amount := k.GetCustomCoinStaked(ctx, coin.Denom)
+	amount = amount.Sub(coin.Amount)
+	if amount.IsNegative() {
+		panic(fmt.Errorf("amount of staked custom coin '%s' become negative", coin.Denom))
+	}
+	k.SetCustomCoinStaked(ctx, coin.Denom, amount)
+	// emit event
+	err := events.EmitTypedEvent(ctx, &types.EventUpdateCoinsStaked{
+		Denom:       coin.Denom,
+		TotalAmount: amount,
+	})
+	if err != nil {
+		panic(err)
+	}
+}
+
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
@@ -721,7 +758,6 @@ func (k Keeper) Delegate(
 	// 1. Get or create the delegation object
 	delegation, delegationFound := k.GetDelegation(ctx, delegator, validator.GetOperator(), stake.ID)
 	if !delegationFound {
-		//k.BeforeUpdateDelegation(ctx, delegation, denom)
 		delegation = types.NewDelegation(delegator, validator.GetOperator(), stake)
 		k.IncrementDelegationsCount(ctx, validator.GetOperator())
 	} else {
@@ -802,7 +838,7 @@ func (k Keeper) Delegate(
 	k.SetValidatorRS(ctx, valAddress, rs)
 	k.SetValidatorByPowerIndex(ctx, validator)
 
-	k.AfterUpdateDelegation(ctx, stake.GetStake().Denom, stake.GetStake().Amount)
+	k.AddCustomCoinStaked(ctx, stake.GetStake())
 	return nil
 }
 
@@ -943,6 +979,7 @@ func (k Keeper) CompleteUnbonding(ctx sdk.Context, delegator sdk.AccAddress, val
 					return err
 				}
 			}
+			k.SubCustomCoinStaked(ctx, entry.Stake.Stake)
 
 			err = events.EmitTypedEvent(ctx, &types.EventUndelegateComplete{
 				Delegator: delegator.String(),
@@ -985,11 +1022,6 @@ func (k Keeper) BeginRedelegation(
 	if !found {
 		return time.Time{}, errors.BadRedelegationSrc
 	}
-
-	//// check if this is a transitive redelegation
-	//if k.HasReceivingRedelegation(ctx, delegator, validatorSrc) {
-	//	return time.Time{}, errors.TransitiveRedelegation
-	//}
 
 	if k.HasMaxRedelegationEntries(ctx, delegator, validatorSrc, validatorDst) {
 		return time.Time{}, errors.MaxRedelegationEntries
@@ -1057,6 +1089,7 @@ func (k Keeper) CompleteRedelegation(
 					return err
 				}
 			}
+			k.SubCustomCoinStaked(ctx, stake.Stake)
 
 			// delegate
 			validator, found := k.GetValidator(ctx, validatorDst)
@@ -1096,8 +1129,6 @@ func (k Keeper) Unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValA
 	if !found {
 		return types.ErrNoDelegatorForAddress
 	}
-
-	//k.BeforeUpdateDelegation(ctx, delegation, stake.ID)
 
 	// get validator
 	validator, found := k.GetValidator(ctx, valAddr)
@@ -1143,8 +1174,6 @@ func (k Keeper) Unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValA
 	// write index
 	k.SetValidatorRS(ctx, valAddr, rs)
 	k.SetValidatorByPowerIndex(ctx, validator)
-
-	k.AfterUpdateDelegation(ctx, stake.GetStake().Denom, stake.GetStake().Amount.Neg())
 
 	return
 }
