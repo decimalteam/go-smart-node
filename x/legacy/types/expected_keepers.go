@@ -18,7 +18,7 @@ type BankKeeper interface {
 
 type NftKeeper interface {
 	GetSubTokens(ctx sdk.Context, id string) (subTokens []nfttypes.SubToken)
-	SetSubToken(ctx sdk.Context, id string, subToken nfttypes.SubToken)
+	ReplaceSubTokenOwner(ctx sdk.Context, id string, index uint32, newOwner string) error
 	GetToken(ctx sdk.Context, id string) (token nfttypes.Token, found bool)
 }
 

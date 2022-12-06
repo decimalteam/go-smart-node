@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	cosmosAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"
 )
 
@@ -284,7 +285,7 @@ func cmdVerifyPools() *cobra.Command {
 }
 
 func moduleNameToAddress(name string) string {
-	address, err := bech32.ConvertAndEncode("dx", cosmosAuthTypes.NewModuleAddress(name))
+	address, err := bech32.ConvertAndEncode(cmdcfg.Bech32Prefix, cosmosAuthTypes.NewModuleAddress(name))
 	if err != nil {
 		panic(fmt.Sprintf("moduleNameToAddress(%s) = %s", name, err.Error()))
 	}

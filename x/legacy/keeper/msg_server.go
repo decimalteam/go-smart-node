@@ -19,8 +19,8 @@ func (k Keeper) ReturnLegacy(goCtx context.Context, msg *types.MsgReturnLegacy) 
 		return nil, err
 	}
 	// all errors already checked in ActualizeLegacy
-	legacyAddress, _ := commonTypes.GetLegacyAddressFromPubKey(msg.PublicKey)
-	legacySdkAddress := sdk.MustAccAddressFromBech32(legacyAddress)
+	legacyAddress, _ := commonTypes.GetLegacyAddressFromPubKey(msg.PublicKey) // nolint : errors already checked
+	legacySdkAddress, _ := sdk.GetFromBech32(legacyAddress, "dx")             // nolint : legacyAddress already valid
 	actualSdkAddress := sdk.AccAddress(ethsecp256k1.PubKey{Key: msg.PublicKey}.Address())
 
 	// send coins to new address if we have some balance on old address

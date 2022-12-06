@@ -23,14 +23,14 @@ func (rec *Record) Validate() error {
 	}
 	// wallets addresses must be valid bech32 addresses
 	for _, w := range rec.Wallets {
-		_, err := sdk.GetFromBech32(w, DecimalPrefix)
+		_, err := sdk.AccAddressFromBech32(w)
 		if err != nil {
 			return errors.WalletAddressIsNotValidBech32
 		}
 	}
 	// validators addresses must be valid bech32
 	for _, v := range rec.Validators {
-		_, err := sdk.GetFromBech32(v, DecimalValidatorPrefix)
+		_, err := sdk.ValAddressFromBech32(v)
 		if err != nil {
 			return errors.ValidatorAddressIsNotValidBech32
 		}

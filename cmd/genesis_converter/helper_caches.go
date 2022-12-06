@@ -7,6 +7,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	cosmosAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
 
 // helper structure for old to new address conversion
@@ -32,17 +34,17 @@ func (at *AddressTable) AddAddress(oldAddress string, pubKey []byte) error {
 	var err error
 	if len(pubKey) > 0 {
 		newPubKey := ethsecp256k1.PubKey{Key: pubKey}
-		newAddress, err = bech32.ConvertAndEncode("dx", newPubKey.Address())
+		newAddress, err = bech32.ConvertAndEncode(cmdcfg.Bech32Prefix, newPubKey.Address())
 		if err != nil {
 			return err
 		}
 		// possible validators table
-		newValidator, err := bech32.ConvertAndEncode("dxvaloper", newPubKey.Address())
+		newValidator, err := bech32.ConvertAndEncode(cmdcfg.Bech32PrefixValAddr, newPubKey.Address())
 		if err != nil {
 			return err
 		}
 		oldPubKey := secp256k1.PubKey{Key: pubKey}
-		oldValidator, err := bech32.ConvertAndEncode("dxvaloper", oldPubKey.Address())
+		oldValidator, err := bech32.ConvertAndEncode(cmdcfg.Bech32PrefixValAddr, oldPubKey.Address())
 		if err != nil {
 			return err
 		}
@@ -133,7 +135,7 @@ func (at *AddressTable) GetModule(name string) moduleInfo {
 }
 
 func moduleNameToAddress(name string) string {
-	address, err := bech32.ConvertAndEncode("dx", cosmosAuthTypes.NewModuleAddress(name))
+	address, err := bech32.ConvertAndEncode(cmdcfg.Bech32Prefix, cosmosAuthTypes.NewModuleAddress(name))
 	if err != nil {
 		panic(fmt.Sprintf("moduleNameToAddress(%s) = %s", name, err.Error()))
 	}

@@ -130,7 +130,7 @@ import (
 
 // TODO: Move to some other place and use address with known private key!
 const (
-	UpgraderAddress = "dx1y7sex8yvrazyd8pljjxvnvpndaavn99tjd3ppm"
+	UpgraderAddress = "d01y7sex8yvrazyd8pljjxvnvpndaavn99tk2j52y"
 )
 
 var (

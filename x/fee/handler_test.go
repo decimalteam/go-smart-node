@@ -109,8 +109,8 @@ func TestCommissionCalculation(t *testing.T) {
 	comm, err := ante.CalculateFee(
 		dsc.AppCodec(),
 		[]sdk.Msg{cointypes.NewMsgSendCoin(
-			sdk.MustAccAddressFromBech32("dx1tlykyxn3zddwm7w89raurwuvwa5apv4w32th0f"),
-			sdk.MustAccAddressFromBech32("dx10dtaveph2q03x3244duvmd92gkwgyll5rlulmn"),
+			sdk.MustAccAddressFromBech32("d01tlykyxn3zddwm7w89raurwuvwa5apv4w4dgzyk"),
+			sdk.MustAccAddressFromBech32("d010dtaveph2q03x3244duvmd92gkwgyll58cl2sv"),
 			sdk.NewCoin(config.BaseDenom, helpers.EtherToWei(sdk.NewInt(1))),
 		)},
 		int64(len(txHexBytes1)/2),

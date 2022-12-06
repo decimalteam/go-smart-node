@@ -20,7 +20,7 @@ func TestMsgSavePriceValidation(t *testing.T) {
 	}{
 		{
 			"valid",
-			"dx1qql8ag4cluz6r4dz28p3w00dnc9w8ueue3x6fd",
+			"d01qql8ag4cluz6r4dz28p3w00dnc9w8ueuak90zj",
 			[]CoinPrice{
 				{
 					Denom: cmdcfg.BaseDenom,
@@ -37,7 +37,7 @@ func TestMsgSavePriceValidation(t *testing.T) {
 		},
 		{
 			"invalid sender",
-			"dx1qql8ag4cluz6r4dz28p3w00dnc9w8ueue3x6fd1",
+			"d01qql8ag4cluz6r4dz28p3w00dnc9w8ueuak90zj1",
 			[]CoinPrice{
 				{
 					Denom: cmdcfg.BaseDenom,
@@ -49,7 +49,7 @@ func TestMsgSavePriceValidation(t *testing.T) {
 		},
 		{
 			"invalid price 1",
-			"dx1qql8ag4cluz6r4dz28p3w00dnc9w8ueue3x6fd",
+			"d01qql8ag4cluz6r4dz28p3w00dnc9w8ueuak90zj",
 			[]CoinPrice{
 				{
 					Denom: cmdcfg.BaseDenom,
@@ -61,7 +61,7 @@ func TestMsgSavePriceValidation(t *testing.T) {
 		},
 		{
 			"invalid price 2",
-			"dx1qql8ag4cluz6r4dz28p3w00dnc9w8ueue3x6fd",
+			"d01qql8ag4cluz6r4dz28p3w00dnc9w8ueuak90zj",
 			[]CoinPrice{
 				{
 					Denom: cmdcfg.BaseDenom,
@@ -73,13 +73,13 @@ func TestMsgSavePriceValidation(t *testing.T) {
 		},
 		{
 			"invalid price 3",
-			"dx1qql8ag4cluz6r4dz28p3w00dnc9w8ueue3x6fd",
+			"d01qql8ag4cluz6r4dz28p3w00dnc9w8ueuak90zj",
 			[]CoinPrice{},
 			true,
 		},
 		{
 			"invalid price 4",
-			"dx1qql8ag4cluz6r4dz28p3w00dnc9w8ueue3x6fd",
+			"d01qql8ag4cluz6r4dz28p3w00dnc9w8ueuak90zj",
 			[]CoinPrice{
 				{
 					Denom: cmdcfg.BaseDenom,
