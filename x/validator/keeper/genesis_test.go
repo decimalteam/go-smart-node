@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -17,6 +18,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/testvalidator"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
@@ -270,4 +272,292 @@ func TestInitGenesisLargeValidatorSet(t *testing.T) {
 	// remove genesis validator
 	vals = vals[:100]
 	require.Equal(t, abcivals, vals)
+}
+
+// test helper indexes after init of genesis
+func TestDelegationsAfterGenesis(t *testing.T) {
+	var completionTime1 = time.Now().Add(time.Second)
+	var completionTime2 = time.Now().Add(time.Second * 2)
+
+	dsc, ctx, addrs := bootstrapGenesisTest(t, 200)
+
+	genesisVal := dsc.ValidatorKeeper.GetValidators(ctx, 10)[0]
+
+	dsc.CoinKeeper.SetCoin(ctx, cointypes.Coin{
+		Denom:       "custom1",
+		Title:       "custom1",
+		Creator:     addrs[0].String(),
+		CRR:         10,
+		LimitVolume: helpers.EtherToWei(sdkmath.NewInt(1_000_000)),
+		Identity:    "",
+		Volume:      helpers.EtherToWei(sdkmath.NewInt(2_000)),
+		Reserve:     helpers.EtherToWei(sdkmath.NewInt(1_000)),
+	})
+
+	dsc.CoinKeeper.SetCoin(ctx, cointypes.Coin{
+		Denom:       "custom2",
+		Title:       "custom2",
+		Creator:     addrs[1].String(),
+		CRR:         20,
+		LimitVolume: helpers.EtherToWei(sdkmath.NewInt(1_000_000)),
+		Identity:    "",
+		Volume:      helpers.EtherToWei(sdkmath.NewInt(3_000)),
+		Reserve:     helpers.EtherToWei(sdkmath.NewInt(1_000)),
+	})
+
+	pk0, err := codectypes.NewAnyWithValue(PKs[0])
+	require.NoError(t, err)
+	pk1, err := codectypes.NewAnyWithValue(PKs[1])
+	require.NoError(t, err)
+
+	// validator 0 bonded, validator 1 unbonded
+	genesisState := &types.GenesisState{
+		Params: types.DefaultParams(),
+		Validators: []types.Validator{
+			{
+				OperatorAddress: sdk.ValAddress(addrs[0]).String(),
+				RewardAddress:   addrs[0].String(),
+				ConsensusPubkey: pk0,
+				Description:     types.NewDescription("#0", "", "", "", ""),
+				Commission:      sdk.ZeroDec(),
+				Status:          types.BondStatus_Bonded,
+				Online:          true,
+				Stake:           1000,
+			},
+			{
+				OperatorAddress: sdk.ValAddress(addrs[1]).String(),
+				RewardAddress:   addrs[1].String(),
+				ConsensusPubkey: pk1,
+				Description:     types.NewDescription("#1", "", "", "", ""),
+				Commission:      sdk.ZeroDec(),
+				Status:          types.BondStatus_Unbonded,
+				Online:          false,
+				Stake:           0,
+			},
+		},
+		Delegations: []types.Delegation{
+			// validator 0, delegator 0
+			{
+				Delegator: addrs[0].String(),
+				Validator: sdk.ValAddress(addrs[0]).String(),
+				Stake:     types.NewStakeCoin(sdk.NewCoin("custom1", helpers.EtherToWei(sdkmath.NewInt(10)))), // 10custom1
+			},
+			{
+				Delegator: addrs[0].String(),
+				Validator: sdk.ValAddress(addrs[0]).String(),
+				Stake:     types.NewStakeCoin(sdk.NewCoin("custom2", helpers.EtherToWei(sdkmath.NewInt(100)))), // 100custom2
+			},
+			// validator 0, delegator 1
+			{
+				Delegator: addrs[1].String(),
+				Validator: sdk.ValAddress(addrs[0]).String(),
+				Stake:     types.NewStakeCoin(sdk.NewCoin("custom1", helpers.EtherToWei(sdkmath.NewInt(20)))), // 20custom1
+			},
+			{
+				Delegator: addrs[1].String(),
+				Validator: sdk.ValAddress(addrs[0]).String(),
+				Stake:     types.NewStakeCoin(sdk.NewCoin("custom2", helpers.EtherToWei(sdkmath.NewInt(200)))), // 200custom2
+			},
+			// validator 1, delegator 0
+			{
+				Delegator: addrs[0].String(),
+				Validator: sdk.ValAddress(addrs[1]).String(),
+				Stake:     types.NewStakeCoin(sdk.NewCoin("custom1", helpers.EtherToWei(sdkmath.NewInt(11)))), // 11custom1
+			},
+			{
+				Delegator: addrs[0].String(),
+				Validator: sdk.ValAddress(addrs[1]).String(),
+				Stake:     types.NewStakeCoin(sdk.NewCoin("custom2", helpers.EtherToWei(sdkmath.NewInt(111)))), // 111custom2
+			},
+			// validator 1, delegator 1
+			{
+				Delegator: addrs[1].String(),
+				Validator: sdk.ValAddress(addrs[1]).String(),
+				Stake:     types.NewStakeCoin(sdk.NewCoin("custom1", helpers.EtherToWei(sdkmath.NewInt(22)))), // 22custom1
+			},
+			{
+				Delegator: addrs[1].String(),
+				Validator: sdk.ValAddress(addrs[1]).String(),
+				Stake:     types.NewStakeCoin(sdk.NewCoin("custom2", helpers.EtherToWei(sdkmath.NewInt(222)))), // 222custom2
+			},
+		},
+		Undelegations: []types.Undelegation{
+			{
+				Delegator: addrs[0].String(),
+				Validator: sdk.ValAddress(addrs[0]).String(),
+				Entries: []types.UndelegationEntry{
+					{
+						CreationHeight: 0,
+						CompletionTime: completionTime1,
+						Stake:          types.NewStakeCoin(sdk.NewCoin("custom1", helpers.EtherToWei(sdkmath.NewInt(30)))),
+					},
+					{
+						CreationHeight: 0,
+						CompletionTime: completionTime2,
+						Stake:          types.NewStakeCoin(sdk.NewCoin("custom2", helpers.EtherToWei(sdkmath.NewInt(300)))),
+					},
+				},
+			},
+			{
+				Delegator: addrs[0].String(),
+				Validator: sdk.ValAddress(addrs[1]).String(),
+				Entries: []types.UndelegationEntry{
+					{
+						CreationHeight: 0,
+						CompletionTime: completionTime1,
+						Stake:          types.NewStakeCoin(sdk.NewCoin("custom1", helpers.EtherToWei(sdkmath.NewInt(31)))),
+					},
+					{
+						CreationHeight: 0,
+						CompletionTime: completionTime2,
+						Stake:          types.NewStakeCoin(sdk.NewCoin("custom2", helpers.EtherToWei(sdkmath.NewInt(311)))),
+					},
+				},
+			},
+			{
+				Delegator: addrs[1].String(),
+				Validator: sdk.ValAddress(addrs[0]).String(),
+				Entries: []types.UndelegationEntry{
+					{
+						CreationHeight: 0,
+						CompletionTime: completionTime1,
+						Stake:          types.NewStakeCoin(sdk.NewCoin("custom1", helpers.EtherToWei(sdkmath.NewInt(33)))),
+					},
+					{
+						CreationHeight: 0,
+						CompletionTime: completionTime2,
+						Stake:          types.NewStakeCoin(sdk.NewCoin("custom2", helpers.EtherToWei(sdkmath.NewInt(333)))),
+					},
+				},
+			},
+		},
+		Redelegations: []types.Redelegation{
+			{
+				Delegator:    addrs[0].String(),
+				ValidatorSrc: sdk.ValAddress(addrs[0]).String(),
+				ValidatorDst: sdk.ValAddress(addrs[1]).String(),
+				Entries: []types.RedelegationEntry{
+					{
+						CreationHeight: 0,
+						CompletionTime: completionTime1,
+						Stake:          types.NewStakeCoin(sdk.NewCoin("custom1", helpers.EtherToWei(sdkmath.NewInt(40)))),
+					},
+					{
+						CreationHeight: 0,
+						CompletionTime: completionTime2,
+						Stake:          types.NewStakeCoin(sdk.NewCoin("custom2", helpers.EtherToWei(sdkmath.NewInt(400)))),
+					},
+				},
+			},
+			{
+				Delegator:    addrs[0].String(),
+				ValidatorSrc: sdk.ValAddress(addrs[1]).String(),
+				ValidatorDst: sdk.ValAddress(addrs[0]).String(),
+				Entries: []types.RedelegationEntry{
+					{
+						CreationHeight: 0,
+						CompletionTime: completionTime1,
+						Stake:          types.NewStakeCoin(sdk.NewCoin("custom1", helpers.EtherToWei(sdkmath.NewInt(41)))),
+					},
+					{
+						CreationHeight: 0,
+						CompletionTime: completionTime2,
+						Stake:          types.NewStakeCoin(sdk.NewCoin("custom2", helpers.EtherToWei(sdkmath.NewInt(411)))),
+					},
+				},
+			},
+			{
+				Delegator:    addrs[1].String(),
+				ValidatorSrc: sdk.ValAddress(addrs[0]).String(),
+				ValidatorDst: sdk.ValAddress(addrs[1]).String(),
+				Entries: []types.RedelegationEntry{
+					{
+						CreationHeight: 0,
+						CompletionTime: completionTime1,
+						Stake:          types.NewStakeCoin(sdk.NewCoin("custom1", helpers.EtherToWei(sdkmath.NewInt(44)))),
+					},
+					{
+						CreationHeight: 0,
+						CompletionTime: completionTime2,
+						Stake:          types.NewStakeCoin(sdk.NewCoin("custom2", helpers.EtherToWei(sdkmath.NewInt(444)))),
+					},
+				},
+			},
+		},
+	}
+
+	genesisState.Delegations = append(genesisState.Delegations, dsc.ValidatorKeeper.GetAllDelegations(ctx)...)
+	genesisState.Validators = append(genesisState.Validators, dsc.ValidatorKeeper.GetAllValidators(ctx)...)
+
+	bondedPool := sdk.NewCoins(
+		sdk.NewCoin("custom1", helpers.EtherToWei(sdkmath.NewInt(10+20))),
+		sdk.NewCoin("custom2", helpers.EtherToWei(sdkmath.NewInt(100+200))),
+	)
+
+	notBondedPool := sdk.NewCoins(
+		sdk.NewCoin("custom1", helpers.EtherToWei(sdkmath.NewInt(11+22+30+31+33+40+41+44))),
+		sdk.NewCoin("custom2", helpers.EtherToWei(sdkmath.NewInt(111+222+300+311+333+400+411+444))),
+	)
+
+	testvalidator.FundModuleAccount(
+		dsc.BankKeeper,
+		ctx,
+		types.BondedPoolName,
+		bondedPool,
+	)
+	testvalidator.FundModuleAccount(
+		dsc.BankKeeper,
+		ctx,
+		types.NotBondedPoolName,
+		notBondedPool,
+	)
+
+	dsc.ValidatorKeeper.InitGenesis(ctx, genesisState)
+
+	// check custom coin pool
+	ccs := dsc.ValidatorKeeper.GetAllCustomCoinsStaked(ctx)
+	for denom, amount := range ccs {
+		switch denom {
+		case "custom1":
+			require.True(t, amount.Equal(helpers.EtherToWei(sdkmath.NewInt(10+20+11+22+30+31+33+40+41+44))))
+		case "custom2":
+			require.True(t, amount.Equal(helpers.EtherToWei(sdkmath.NewInt(100+200+111+222+300+311+333+400+411+444))))
+		}
+	}
+
+	// check delegations
+	require.Len(t, dsc.ValidatorKeeper.GetAllDelegations(ctx), 9)
+
+	// check delegations counts
+	counts := dsc.ValidatorKeeper.GetAllDelegationsCount(ctx)
+	for val, count := range counts {
+		switch val {
+		case sdk.ValAddress(addrs[0]).String():
+			require.Equal(t, uint32(4), count)
+		case sdk.ValAddress(addrs[1]).String():
+			require.Equal(t, uint32(4), count)
+		}
+	}
+
+	// check delegations indexes
+	// GetValidatorDelegations uses 'DelegationsByVal:        0x37<validator><delegator><stake_id>'
+	require.Len(t, dsc.ValidatorKeeper.GetValidatorDelegations(ctx, genesisVal.GetOperator()), 1)
+	require.Len(t, dsc.ValidatorKeeper.GetValidatorDelegations(ctx, sdk.ValAddress(addrs[0])), 4)
+	require.Len(t, dsc.ValidatorKeeper.GetValidatorDelegations(ctx, sdk.ValAddress(addrs[1])), 4)
+
+	// check undelegation indexes
+	require.Len(t, dsc.ValidatorKeeper.GetAllUndelegations(ctx, addrs[0]), 2)
+	require.Len(t, dsc.ValidatorKeeper.GetAllUndelegations(ctx, addrs[1]), 1)
+	require.Len(t, dsc.ValidatorKeeper.GetUndelegationsFromValidator(ctx, sdk.ValAddress(addrs[0])), 2)
+	require.Len(t, dsc.ValidatorKeeper.GetUndelegationsFromValidator(ctx, sdk.ValAddress(addrs[1])), 1)
+	require.Len(t, dsc.ValidatorKeeper.GetUBDQueueTimeSlice(ctx, completionTime1), 3)
+	require.Len(t, dsc.ValidatorKeeper.GetUBDQueueTimeSlice(ctx, completionTime2), 3)
+
+	// check redelegation indexes
+	require.Len(t, dsc.ValidatorKeeper.GetRedelegations(ctx, addrs[0], 100), 2)
+	require.Len(t, dsc.ValidatorKeeper.GetRedelegations(ctx, addrs[1], 100), 1)
+	require.Len(t, dsc.ValidatorKeeper.GetRedelegationsFromSrcValidator(ctx, sdk.ValAddress(addrs[0])), 2)
+	require.Len(t, dsc.ValidatorKeeper.GetRedelegationsFromSrcValidator(ctx, sdk.ValAddress(addrs[1])), 1)
+	require.Len(t, dsc.ValidatorKeeper.GetRedelegationQueueTimeSlice(ctx, completionTime1), 3)
+	require.Len(t, dsc.ValidatorKeeper.GetRedelegationQueueTimeSlice(ctx, completionTime2), 3)
 }
