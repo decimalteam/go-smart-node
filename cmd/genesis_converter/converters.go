@@ -102,7 +102,7 @@ func convertBalances(accsOld []AccountOld, addrTable *AddressTable, legacyRecord
 		}
 		newAddress := addrTable.GetAddress(acc.Value.Address)
 		if addrTable.IsMultisig(acc.Value.Address) {
-			newAddress = acc.Value.Address
+			newAddress = addrTable.GetMultisigAddress(acc.Value.Address)
 		}
 		if acc.Typ == accountTypeModule {
 			newAddress = addrTable.GetModule(acc.Value.Name).address
@@ -112,13 +112,6 @@ func convertBalances(accsOld []AccountOld, addrTable *AddressTable, legacyRecord
 		}
 
 		coins := filterCoins(acc.Value.Coins, coinSymbols)
-		// TODO: return when correct staking starts work
-		/*
-			if acc.Value.Name == "not_bonded_tokens_pool" || acc.Value.Name == "bonded_tokens_pool" {
-				fmt.Printf("set '%s' module account balance to zero\n", acc.Value.Name)
-				coins = sdk.NewCoins()
-			}
-		*/
 		if newAddress > "" {
 			res = append(res, BalanceNew{Address: newAddress, Coins: coins})
 		} else {
@@ -444,7 +437,17 @@ func convertUnbondings(undelegations []UnbondingRecordOld, undelegationsNFT []Un
 		if err != nil {
 			return []UndelegationNew{}, err
 		}
-		result = append(result, ubdNew)
+		doAdd := true
+		for i := range result {
+			if result[i].Delegator == ubdNew.Delegator && result[i].Validator == ubdNew.Validator {
+				doAdd = false
+				result[i].Entries = append(result[i].Entries, ubdNew.Entries...)
+				break
+			}
+		}
+		if doAdd {
+			result = append(result, ubdNew)
+		}
 	}
 	return result, nil
 }

@@ -18,7 +18,6 @@ func RegisterInvariants(registry sdk.InvariantRegistry, k Keeper) {
 // to sum of delegation/undelegations/redelegations
 func StakedCustomCoinInvariant(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
-
 		allCoins := sdk.NewCoins()
 		k.IterateAllDelegations(ctx, func(delegation types.Delegation) bool {
 			if delegation.Stake.Stake.Denom == k.BaseDenom(ctx) {
@@ -32,7 +31,7 @@ func StakedCustomCoinInvariant(k Keeper) sdk.Invariant {
 				if entry.Stake.Stake.Denom == k.BaseDenom(ctx) {
 					continue
 				}
-				allCoins = allCoins.Add(entry.Stake.Stake)
+				allCoins = allCoins.Add(entry.Stake.GetStake())
 			}
 			return false
 		})
@@ -41,7 +40,7 @@ func StakedCustomCoinInvariant(k Keeper) sdk.Invariant {
 				if entry.Stake.Stake.Denom == k.BaseDenom(ctx) {
 					continue
 				}
-				allCoins = allCoins.Add(entry.Stake.Stake)
+				allCoins = allCoins.Add(entry.Stake.GetStake())
 			}
 			return false
 		})

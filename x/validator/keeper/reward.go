@@ -6,6 +6,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	multisig "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
@@ -62,7 +63,17 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 		rewards = rewards.Sub(developVal)
 		// validator commission
 		valComission := sdk.NewDecFromInt(rewards).Mul(val.Commission).TruncateInt()
-		valRewardAddress := sdk.MustAccAddressFromBech32(val.RewardAddress)
+		var valRewardAddress sdk.AccAddress
+
+		// RewardAddress may be legacy address with 'dx' prefix
+		valRewardAddress, err = sdk.GetFromBech32(val.RewardAddress, config.Bech32PrefixAccAddr)
+		if err != nil {
+			valRewardAddress, err = sdk.GetFromBech32(val.RewardAddress, "dx")
+			if err != nil {
+				return err
+			}
+		}
+
 		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, valRewardAddress, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), valComission)))
 		if err != nil {
 			return err

@@ -30,48 +30,7 @@
         "sig_verify_cost_ed25519": "590",
         "sig_verify_cost_secp256k1": "1000"
       },
-      "accounts": [
-        {
-          "@type": "/ethermint.types.v1.EthAccount",
-          "base_account": {
-            "address": "dx14elhyzmq95f98wrkvujtsr5cyudffp6q2hfkhs",
-            "pub_key": null,
-            "account_number": "0",
-            "sequence": "0"
-          },
-          "code_hash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
-        },
-        {
-          "@type": "/ethermint.types.v1.EthAccount",
-          "base_account": {
-            "address": "dx1yvgq6uh35a395hexhxcde2zfpwwafzpa67mvwn",
-            "pub_key": null,
-            "account_number": "0",
-            "sequence": "0"
-          },
-          "code_hash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
-        },
-        {
-          "@type": "/ethermint.types.v1.EthAccount",
-          "base_account": {
-            "address": "dx1wyhcct0rqvwwwg37a95ujdfhyu6swlq4gw2z7r",
-            "pub_key": null,
-            "account_number": "0",
-            "sequence": "0"
-          },
-          "code_hash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
-        },
-        {
-          "@type": "/ethermint.types.v1.EthAccount",
-          "base_account": {
-            "address": "dx184qe86tyhurv5fxlxgvcwa6znfg3ugk8ajn4r3",
-            "pub_key": null,
-            "account_number": "0",
-            "sequence": "0"
-          },
-          "code_hash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
-        }
-      ]
+      "accounts": []
     },
     "authz": {
       "authorization": []
@@ -81,44 +40,7 @@
         "send_enabled": [],
         "default_send_enabled": true
       },
-      "balances": [
-        {
-          "address": "dx1yvgq6uh35a395hexhxcde2zfpwwafzpa67mvwn",
-          "coins": [
-            {
-              "denom": "tdel",
-              "amount": "40000000000000000000000000"
-            }
-          ]
-        },
-        {
-          "address": "dx184qe86tyhurv5fxlxgvcwa6znfg3ugk8ajn4r3",
-          "coins": [
-            {
-              "denom": "tdel",
-              "amount": "8000000000000000000000000000"
-            }
-          ]
-        },
-        {
-          "address": "dx1wyhcct0rqvwwwg37a95ujdfhyu6swlq4gw2z7r",
-          "coins": [
-            {
-              "denom": "tdel",
-              "amount": "40000000000000000000000000"
-            }
-          ]
-        },
-        {
-          "address": "dx14elhyzmq95f98wrkvujtsr5cyudffp6q2hfkhs",
-          "coins": [
-            {
-              "denom": "tdel",
-              "amount": "40000000000000000000000000"
-            }
-          ]
-        }
-      ],
+      "balances": [],
       "denom_metadata": []
     },
     "capability": {
@@ -179,7 +101,7 @@
         "validator_set_online": "0.04",
         "validator_set_offline": "0.04",
         "commission_burn_factor": "0.5",
-        "oracle": "dx1gczphl4h9aqrzy237jfm97elu66dam2w05xrrc",
+        "oracle": "d01gczphl4h9aqrzy237jfm97elu66dam2wtn9kg8",
         "evm_gas_price": "0.00000190476"
       },
       "prices": [
@@ -348,7 +270,7 @@
       "params": {
         "locked_time_out": "86400s",
         "locked_time_in": "43200s",
-        "service_address": "dx1rra8rl70wdk4asxsdu3npgemf7z6d45lzjn52m",
+        "service_address": "d01rra8rl70wdk4asxsdu3npgemf7z6d45lx4sppy",
         "checking_address": "18fa71ffcf736d5ec0d06f2330a33b4f85a6d69f"
       }
     },
@@ -366,8 +288,8 @@
         "max_delegations": 1000,
         "max_entries": 7,
         "historical_entries": 10000,
-        "redelegation_time": "604800s",
-        "undelegation_time": "2419200s",
+        "redelegation_time": "600s",
+        "undelegation_time": "1200s",
         "base_denom": "tdel",
         "signed_blocks_window": "24",
         "min_signed_per_window": "0.500000000000000000",

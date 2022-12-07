@@ -262,7 +262,7 @@ type WalletNew struct {
 
 func WalletO2N(wallet WalletOld, addrTable *AddressTable, legacyRecords *LegacyRecords) WalletNew {
 	var result = WalletNew{
-		Address: wallet.Address,
+		Address: addrTable.GetMultisigAddress(wallet.Address),
 	}
 	result.Owners = make([]string, len(wallet.Owners))
 	result.Weights = wallet.Weights
@@ -270,11 +270,11 @@ func WalletO2N(wallet WalletOld, addrTable *AddressTable, legacyRecords *LegacyR
 	for i := range wallet.Owners {
 		newAddress := addrTable.GetAddress(wallet.Owners[i])
 		if addrTable.IsMultisig(wallet.Owners[i]) {
-			newAddress = wallet.Owners[i]
+			newAddress = addrTable.GetMultisigAddress(wallet.Owners[i])
 		}
 		if newAddress == "" {
 			result.Owners[i] = wallet.Owners[i]
-			legacyRecords.AddWallet(wallet.Owners[i], wallet.Address)
+			legacyRecords.AddWallet(wallet.Owners[i], addrTable.GetMultisigAddress(wallet.Address))
 		} else {
 			result.Owners[i] = newAddress
 		}
@@ -292,12 +292,24 @@ type TransactionNew struct {
 }
 
 func TransactionO2N(tx TransactionOld, addrTable *AddressTable, coinSymbols map[string]bool) TransactionNew {
+	dxmstx_to_d0mstx := func(inp string) string {
+		_, bz, err := bech32.DecodeAndConvert(inp)
+		if err != nil {
+			panic(err)
+		}
+		res, err := bech32.ConvertAndEncode("d0mstx", bz)
+		if err != nil {
+			panic(err)
+		}
+		return res
+	}
+
 	var result = TransactionNew{
 		Coins:     filterCoins(tx.Coins, coinSymbols),
-		ID:        tx.ID,
+		ID:        dxmstx_to_d0mstx(tx.ID),
 		Receiver:  addrTable.GetAddress(tx.Receiver),
 		CreatedAt: "0", // field looking unused
-		Wallet:    tx.Wallet,
+		Wallet:    addrTable.GetMultisigAddress(tx.Wallet),
 	}
 	result.Signers = make([]string, len(tx.Signers))
 	for i, s := range tx.Signers {

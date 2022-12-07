@@ -15,7 +15,7 @@ import (
 type AddressTable struct {
 	data       map[string]string
 	validators map[string]string
-	multisigs  map[string]bool
+	multisigs  map[string]string
 	// name_of_module -> new address
 	modules map[string]moduleInfo
 }
@@ -26,7 +26,7 @@ type moduleInfo struct {
 }
 
 func NewAddressTable() AddressTable {
-	return AddressTable{make(map[string]string), make(map[string]string), make(map[string]bool), make(map[string]moduleInfo)}
+	return AddressTable{make(map[string]string), make(map[string]string), make(map[string]string), make(map[string]moduleInfo)}
 }
 
 func (at *AddressTable) AddAddress(oldAddress string, pubKey []byte) error {
@@ -44,7 +44,7 @@ func (at *AddressTable) AddAddress(oldAddress string, pubKey []byte) error {
 			return err
 		}
 		oldPubKey := secp256k1.PubKey{Key: pubKey}
-		oldValidator, err := bech32.ConvertAndEncode(cmdcfg.Bech32PrefixValAddr, oldPubKey.Address())
+		oldValidator, err := bech32.ConvertAndEncode("dxvaloper", oldPubKey.Address())
 		if err != nil {
 			return err
 		}
@@ -56,7 +56,16 @@ func (at *AddressTable) AddAddress(oldAddress string, pubKey []byte) error {
 }
 
 func (at *AddressTable) AddMultisig(oldAddress string) {
-	at.multisigs[oldAddress] = true
+	_, bz, err := bech32.DecodeAndConvert(oldAddress)
+	if err != nil {
+		panic(err)
+	}
+	newAddress, err := bech32.ConvertAndEncode("d0", bz)
+	if err != nil {
+		panic(err)
+	}
+
+	at.multisigs[oldAddress] = newAddress
 }
 
 func (at *AddressTable) GetAddress(oldAddress string) string {
@@ -68,6 +77,11 @@ func (at *AddressTable) GetValidatorAddress(oldValidator string) string {
 }
 
 func (at *AddressTable) IsMultisig(oldAddress string) bool {
+	_, ok := at.multisigs[oldAddress]
+	return ok
+}
+
+func (at *AddressTable) GetMultisigAddress(oldAddress string) string {
 	return at.multisigs[oldAddress]
 }
 
