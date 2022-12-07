@@ -48,7 +48,7 @@ func TestCreateCoin(t *testing.T) {
 	}{
 		{
 			tag:            "valid coin",
-			sender:         "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:         "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			denom:          cmdcfg.BaseDenom,
 			title:          "some coin",
 			crr:            20,
@@ -60,7 +60,7 @@ func TestCreateCoin(t *testing.T) {
 		},
 		{
 			tag:            "invalid sender",
-			sender:         "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn0",
+			sender:         "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv0",
 			denom:          cmdcfg.BaseDenom,
 			title:          "some coin",
 			crr:            20,
@@ -72,7 +72,7 @@ func TestCreateCoin(t *testing.T) {
 		},
 		{
 			tag:            "invalid title",
-			sender:         "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:         "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			denom:          cmdcfg.BaseDenom,
 			title:          RandomString(65),
 			crr:            20,
@@ -84,7 +84,7 @@ func TestCreateCoin(t *testing.T) {
 		},
 		{
 			tag:            "invalid denom 1",
-			sender:         "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:         "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			denom:          "de",
 			title:          "some coin",
 			crr:            20,
@@ -96,7 +96,7 @@ func TestCreateCoin(t *testing.T) {
 		},
 		{
 			tag:            "invalid denom 2",
-			sender:         "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:         "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			denom:          "del45678901",
 			title:          "some coin",
 			crr:            20,
@@ -108,7 +108,7 @@ func TestCreateCoin(t *testing.T) {
 		},
 		{
 			tag:            "low crr",
-			sender:         "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:         "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			denom:          cmdcfg.BaseDenom,
 			title:          "some coin",
 			crr:            9,
@@ -120,7 +120,7 @@ func TestCreateCoin(t *testing.T) {
 		},
 		{
 			tag:            "high crr",
-			sender:         "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:         "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			denom:          cmdcfg.BaseDenom,
 			title:          "some coin",
 			crr:            101,
@@ -132,7 +132,7 @@ func TestCreateCoin(t *testing.T) {
 		},
 		{
 			tag:            "low volume",
-			sender:         "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:         "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			denom:          cmdcfg.BaseDenom,
 			title:          "some coin",
 			crr:            20,
@@ -144,7 +144,7 @@ func TestCreateCoin(t *testing.T) {
 		},
 		{
 			tag:            "high volume",
-			sender:         "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:         "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			denom:          cmdcfg.BaseDenom,
 			title:          "some coin",
 			crr:            20,
@@ -156,7 +156,7 @@ func TestCreateCoin(t *testing.T) {
 		},
 		{
 			tag:            "invalid reserve",
-			sender:         "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:         "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			denom:          cmdcfg.BaseDenom,
 			title:          "some coin",
 			crr:            20,
@@ -168,7 +168,7 @@ func TestCreateCoin(t *testing.T) {
 		},
 		{
 			tag:            "initial > limit",
-			sender:         "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:         "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			denom:          cmdcfg.BaseDenom,
 			title:          "some coin",
 			crr:            20,
@@ -180,7 +180,7 @@ func TestCreateCoin(t *testing.T) {
 		},
 		{
 			tag:            "invalid limit volume",
-			sender:         "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:         "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			denom:          cmdcfg.BaseDenom,
 			title:          "some coin",
 			crr:            20,
@@ -225,7 +225,7 @@ func TestUpdateCoin(t *testing.T) {
 	}{
 		{
 			tag:         "valid coin update",
-			sender:      "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:      "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			denom:       cmdcfg.BaseDenom,
 			limitVolume: helpers.EtherToWei(sdkmath.NewInt(100000)),
 			identity:    "some coin",
@@ -233,7 +233,7 @@ func TestUpdateCoin(t *testing.T) {
 		},
 		{
 			tag:         "invalid sender",
-			sender:      "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn0",
+			sender:      "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv0",
 			denom:       cmdcfg.BaseDenom,
 			limitVolume: helpers.EtherToWei(sdkmath.NewInt(100000)),
 			identity:    "some coin",
@@ -241,7 +241,7 @@ func TestUpdateCoin(t *testing.T) {
 		},
 		{
 			tag:         "invalid denom 1",
-			sender:      "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:      "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			denom:       "de",
 			limitVolume: helpers.EtherToWei(sdkmath.NewInt(100000)),
 			identity:    "some coin",
@@ -249,7 +249,7 @@ func TestUpdateCoin(t *testing.T) {
 		},
 		{
 			tag:         "invalid denom 2",
-			sender:      "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:      "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			denom:       "del45678901",
 			limitVolume: helpers.EtherToWei(sdkmath.NewInt(100000)),
 			identity:    "some coin",
@@ -257,7 +257,7 @@ func TestUpdateCoin(t *testing.T) {
 		},
 		{
 			tag:         "invalid limit",
-			sender:      "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:      "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			denom:       cmdcfg.BaseDenom,
 			limitVolume: coinconfig.MaxCoinSupply.Add(sdkmath.NewInt(1)),
 			identity:    "some coin",
@@ -294,36 +294,36 @@ func TestSendCoin(t *testing.T) {
 	}{
 		{
 			tag:         "valid send",
-			sender:      "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
-			recipient:   "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy",
+			sender:      "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
+			recipient:   "d01w98j4vk6dkpyndjnv5dn2eemesq6a2c2kzwv2m",
 			coin:        sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1)),
 			expectError: false,
 		},
 		{
 			tag:         "invalid sender",
-			sender:      "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn0",
-			recipient:   "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy",
+			sender:      "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv0",
+			recipient:   "d01w98j4vk6dkpyndjnv5dn2eemesq6a2c2kzwv2m",
 			coin:        sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1)),
 			expectError: true,
 		},
 		{
 			tag:         "invalid recipient",
-			sender:      "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
-			recipient:   "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy0",
+			sender:      "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
+			recipient:   "d01w98j4vk6dkpyndjnv5dn2eemesq6a2c2kzwv2m0",
 			coin:        sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1)),
 			expectError: true,
 		},
 		{
 			tag:         "invalid recipient (=sender)",
-			sender:      "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
-			recipient:   "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:      "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
+			recipient:   "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			coin:        sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1)),
 			expectError: true,
 		},
 		{
 			tag:         "invalid amount",
-			sender:      "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
-			recipient:   "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy",
+			sender:      "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
+			recipient:   "d01w98j4vk6dkpyndjnv5dn2eemesq6a2c2kzwv2m",
 			coin:        sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(0)),
 			expectError: true,
 		},
@@ -356,52 +356,52 @@ func TestMultiSendCoin(t *testing.T) {
 	}{
 		{
 			tag:    "valid send",
-			sender: "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender: "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			sends: []MultiSendEntry{
-				{Recipient: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy", Coin: sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1))},
-				{Recipient: "dx18c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg3pv33f", Coin: sdk.NewCoin("btc", sdkmath.NewInt(2))},
+				{Recipient: "d01w98j4vk6dkpyndjnv5dn2eemesq6a2c2kzwv2m", Coin: sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1))},
+				{Recipient: "d018c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg4x0y6k", Coin: sdk.NewCoin("btc", sdkmath.NewInt(2))},
 			},
 			expectError: false,
 		},
 		{
 			tag:    "invalid sender",
-			sender: "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn0",
+			sender: "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv0",
 			sends: []MultiSendEntry{
-				{Recipient: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy", Coin: sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1))},
-				{Recipient: "dx18c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg3pv33f", Coin: sdk.NewCoin("btc", sdkmath.NewInt(2))},
+				{Recipient: "d01w98j4vk6dkpyndjnv5dn2eemesq6a2c2kzwv2m", Coin: sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1))},
+				{Recipient: "d018c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg4x0y6k", Coin: sdk.NewCoin("btc", sdkmath.NewInt(2))},
 			},
 			expectError: true,
 		},
 		{
 			tag:    "invalid recipient",
-			sender: "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender: "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			sends: []MultiSendEntry{
-				{Recipient: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy", Coin: sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1))},
-				{Recipient: "dx18c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg3pv33f0", Coin: sdk.NewCoin("btc", sdkmath.NewInt(2))},
+				{Recipient: "d01w98j4vk6dkpyndjnv5dn2eemesq6a2c2kzwv2m", Coin: sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1))},
+				{Recipient: "d018c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg4x0y6k0", Coin: sdk.NewCoin("btc", sdkmath.NewInt(2))},
 			},
 			expectError: true,
 		},
 		{
 			tag:    "invalid recipient=sender",
-			sender: "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender: "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			sends: []MultiSendEntry{
-				{Recipient: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy", Coin: sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1))},
-				{Recipient: "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn", Coin: sdk.NewCoin("btc", sdkmath.NewInt(2))},
+				{Recipient: "d01w98j4vk6dkpyndjnv5dn2eemesq6a2c2kzwv2m", Coin: sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1))},
+				{Recipient: "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv", Coin: sdk.NewCoin("btc", sdkmath.NewInt(2))},
 			},
 			expectError: true,
 		},
 		{
 			tag:    "invalid amount",
-			sender: "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender: "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			sends: []MultiSendEntry{
-				{Recipient: "dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy", Coin: sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1))},
-				{Recipient: "dx18c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg3pv33f", Coin: sdk.NewCoin("btc", sdkmath.NewInt(0))},
+				{Recipient: "d01w98j4vk6dkpyndjnv5dn2eemesq6a2c2kzwv2m", Coin: sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1))},
+				{Recipient: "d018c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg4x0y6k", Coin: sdk.NewCoin("btc", sdkmath.NewInt(0))},
 			},
 			expectError: true,
 		},
 		{
 			tag:         "no sends",
-			sender:      "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:      "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			sends:       []MultiSendEntry{},
 			expectError: true,
 		},
@@ -434,35 +434,35 @@ func TestBuyCoin(t *testing.T) {
 	}{
 		{
 			tag:           "valid buy",
-			sender:        "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:        "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			coinToBuy:     sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1)),
 			maxCoinToSell: sdk.NewCoin("btc", sdkmath.NewInt(1)),
 			expectError:   false,
 		},
 		{
 			tag:           "invalid sender",
-			sender:        "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn0",
+			sender:        "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv0",
 			coinToBuy:     sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1)),
 			maxCoinToSell: sdk.NewCoin("btc", sdkmath.NewInt(1)),
 			expectError:   true,
 		},
 		{
 			tag:           "invalid buy amount",
-			sender:        "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:        "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			coinToBuy:     sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(0)),
 			maxCoinToSell: sdk.NewCoin("btc", sdkmath.NewInt(1)),
 			expectError:   true,
 		},
 		{
 			tag:           "invalid sell amount",
-			sender:        "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:        "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			coinToBuy:     sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1)),
 			maxCoinToSell: sdk.NewCoin("btc", sdkmath.NewInt(0)),
 			expectError:   true,
 		},
 		{
 			tag:           "same coin",
-			sender:        "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:        "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			coinToBuy:     sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1)),
 			maxCoinToSell: sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1)),
 			expectError:   true,
@@ -496,28 +496,28 @@ func TestSellCoin(t *testing.T) {
 	}{
 		{
 			tag:          "valid sell",
-			sender:       "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:       "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			coinToSell:   sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1)),
 			minCoinToBuy: sdk.NewCoin("btc", sdkmath.NewInt(1)),
 			expectError:  false,
 		},
 		{
 			tag:          "invalid sender",
-			sender:       "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn0",
+			sender:       "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv0",
 			coinToSell:   sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1)),
 			minCoinToBuy: sdk.NewCoin("btc", sdkmath.NewInt(1)),
 			expectError:  true,
 		},
 		{
 			tag:          "invalid sell amount",
-			sender:       "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:       "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			coinToSell:   sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(0)),
 			minCoinToBuy: sdk.NewCoin("btc", sdkmath.NewInt(1)),
 			expectError:  true,
 		},
 		{
 			tag:          "same coin",
-			sender:       "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:       "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			coinToSell:   sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1)),
 			minCoinToBuy: sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1)),
 			expectError:  true,
@@ -551,28 +551,28 @@ func TestSellAllCoin(t *testing.T) {
 	}{
 		{
 			tag:             "valid sell",
-			sender:          "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:          "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			coinDenomToSell: cmdcfg.BaseDenom,
 			minCoinToBuy:    sdk.NewCoin("btc", sdkmath.NewInt(1)),
 			expectError:     false,
 		},
 		{
 			tag:             "invalid sender",
-			sender:          "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn0",
+			sender:          "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv0",
 			coinDenomToSell: cmdcfg.BaseDenom,
 			minCoinToBuy:    sdk.NewCoin("btc", sdkmath.NewInt(1)),
 			expectError:     true,
 		},
 		{
 			tag:             "invalid buy amount",
-			sender:          "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:          "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			coinDenomToSell: cmdcfg.BaseDenom,
 			minCoinToBuy:    sdk.NewCoin("btc", sdkmath.NewInt(0)),
 			expectError:     true,
 		},
 		{
 			tag:             "same coin",
-			sender:          "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:          "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			coinDenomToSell: cmdcfg.BaseDenom,
 			minCoinToBuy:    sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1)),
 			expectError:     true,
@@ -605,19 +605,19 @@ func TestBurnCoin(t *testing.T) {
 	}{
 		{
 			tag:         "valid burn",
-			sender:      "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:      "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			coin:        sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1)),
 			expectError: false,
 		},
 		{
 			tag:         "invalid sender",
-			sender:      "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn0",
+			sender:      "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv0",
 			coin:        sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(1)),
 			expectError: true,
 		},
 		{
 			tag:         "invalid burn amount",
-			sender:      "dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			sender:      "d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 			coin:        sdk.NewCoin(cmdcfg.BaseDenom, sdkmath.NewInt(0)),
 			expectError: true,
 		},

@@ -807,7 +807,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryDelegatorRedelegations() {
 			"request redelegations with invalid address delegator",
 			func() {
 				req = &types.QueryDelegatorRedelegationsRequest{
-					Delegator: "dx1asasadasd",
+					Delegator: "d01asasadasd",
 				}
 			},
 			0,
@@ -888,7 +888,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidatorRedelegations() {
 			"request redelegations with invalid address delegator",
 			func() {
 				req = &types.QueryValidatorRedelegationsRequest{
-					Validator: "dx1asasadasd",
+					Validator: "d01asasadasd",
 				}
 			},
 			0,

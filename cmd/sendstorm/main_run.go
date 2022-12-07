@@ -130,7 +130,6 @@ func cmdRun() *cobra.Command {
 					fmt.Printf("\n\n\n")
 				}
 				acc.IncrementSequence()
-				fmt.Printf("debug account: %s, action: %s\n", acc.Address(), action)
 				go acc.UpdateBalance()
 			}
 		},

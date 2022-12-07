@@ -93,6 +93,7 @@ func (w *Worker) fetchBlockResults(height int64, block ctypes.ResultBlock, ea *E
 		result.Data = txr.Data
 		result.Hash = hexutils.BytesToHex(tx.Hash())
 		result.Code = txr.Code
+		result.Codespace = txr.Codespace
 		result.GasUsed = txr.GasUsed
 		result.GasWanted = txr.GasWanted
 

@@ -112,8 +112,9 @@ func cmdFaucet() *cobra.Command {
 // use external devnet/testnet faucet
 func cmdFaucetExt() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "faucet-ext",
-		Short: "Send some base coins to accounts",
+		Use:   "faucet-ext [net]",
+		Short: "Send some base coins to accounts; 'net' may be 'dev' or 'test'",
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			//
 			err := cmd.Flags().Parse(args)
@@ -131,9 +132,16 @@ func cmdFaucetExt() *cobra.Command {
 				fmt.Println(err)
 				return
 			}
+			var faucetUrl string
+			switch args[0] {
+			case "dev":
+				faucetUrl = "https://devnet-gate.decimalchain.com/api/faucet"
+			case "test":
+				faucetUrl = "https://testnet-gate.decimalchain.com/api/faucet"
+			}
 
 			// do action
-			client := resty.New().SetHostURL("https://devnet-gate.decimalchain.com/api/faucet")
+			client := resty.New()
 			for i, mnemonic := range mnemonics {
 				acc, err := dscWallet.NewAccountFromMnemonicWords(mnemonic, "")
 				if err != nil {
@@ -141,7 +149,7 @@ func cmdFaucetExt() *cobra.Command {
 					continue
 				}
 				fmt.Printf("account (%d) %s query\n", i, acc.Address())
-				resp, err := client.R().SetBody(map[string]string{"address": acc.Address()}).Post("https://devnet-gate.decimalchain.com/api/faucet")
+				resp, err := client.R().SetBody(map[string]string{"address": acc.Address()}).Post(faucetUrl)
 				if err != nil {
 					fmt.Println(err)
 					continue

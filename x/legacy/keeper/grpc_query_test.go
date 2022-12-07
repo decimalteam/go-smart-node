@@ -1,9 +1,10 @@
 package keeper_test
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	gocontext "context"
 	"fmt"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 )
@@ -15,7 +16,7 @@ func (s *KeeperTestSuite) TestGRPCQueryCoinRecords() {
 	hits := make(map[string]types.Record)
 	records := []types.Record{
 		defaultRecord,
-		types.Record{
+		{
 			LegacyAddress: "dx1m3eg7v6pu0dga2knj9zm4683dk9c8800j9nfw0",
 			Coins:         sdk.Coins{},
 			Wallets:       []string{},

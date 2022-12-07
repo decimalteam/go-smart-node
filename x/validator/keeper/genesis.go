@@ -115,21 +115,20 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 			}
 		}
 
+		// calculate bonded/not bonded coins
 		if delegation.Stake.Type == types.StakeType_Coin {
 			switch valStatus[delegation.Validator] {
 			case types.BondStatus_Bonded:
 				bondedCoins = bondedCoins.Add(delegation.Stake.Stake)
-				if delegation.Stake.Stake.Denom != data.Params.BaseDenom {
-					ccs := k.GetCustomCoinStaked(ctx, delegation.Stake.Stake.Denom)
-					ccs = ccs.Add(delegation.Stake.Stake.Amount)
-					k.SetCustomCoinStaked(ctx, delegation.Stake.Stake.Denom, ccs)
-				}
 			case types.BondStatus_Unbonding, types.BondStatus_Unbonded:
 				notBondedCoins = notBondedCoins.Add(delegation.Stake.Stake)
 			default:
 				panic(fmt.Errorf("invalid validator %s status", delegation.Validator))
 			}
 		}
+
+		// update helper index 'staked custom coin', NFT too
+		k.AddCustomCoinStaked(ctx, delegation.Stake.Stake)
 	}
 
 	for _, ubd := range data.Undelegations {
@@ -145,6 +144,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 			if entry.Stake.Type == types.StakeType_Coin {
 				notBondedCoins = notBondedCoins.Add(entry.Stake.Stake)
 			}
+			k.AddCustomCoinStaked(ctx, entry.Stake.Stake)
 		}
 	}
 
@@ -158,6 +158,10 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 
 		for _, entry := range red.Entries {
 			k.InsertRedelegationQueue(ctx, red, entry.CompletionTime)
+			if entry.Stake.Type == types.StakeType_Coin {
+				notBondedCoins = notBondedCoins.Add(entry.Stake.Stake)
+			}
+			k.AddCustomCoinStaked(ctx, entry.Stake.Stake)
 		}
 	}
 

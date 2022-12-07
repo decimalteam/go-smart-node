@@ -130,6 +130,10 @@ func TestUpdateCoinHandler(t *testing.T) {
 
 	// update with less limit volume
 	lessLimitVolume := newLimitVolume.Sub(helpers.EtherToWei(sdkmath.NewInt(10000)))
+	tscoin.UpdateCoin(addr1, denom, lessLimitVolume, "", true)
+
+	// update with limit volume less that current volume
+	lessLimitVolume = initVolume.Sub(helpers.EtherToWei(sdkmath.NewInt(10)))
 	tscoin.UpdateCoin(addr1, denom, lessLimitVolume, "", false)
 }
 

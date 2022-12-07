@@ -4,11 +4,13 @@ import (
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 	"github.com/golang/mock/gomock"
+
 	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
@@ -29,7 +31,9 @@ var (
 	publicKey = []byte{0x3, 0x44, 0x8e, 0x6b, 0x3d, 0x50, 0xd6, 0xa3, 0x9c, 0xab, 0x3b, 0xab, 0xaa,
 		0x4a, 0xa2, 0xb0, 0x88, 0x5f, 0x55, 0x6f, 0xe0, 0x5d, 0x71, 0x49, 0x88, 0x5a, 0x5, 0xa0, 0xe7, 0x94, 0xa, 0x7e, 0x4f}
 	pk               = ethsecp256k1.PubKey{Key: publicKey}
+	pkOld            = secp256k1.PubKey{Key: publicKey}
 	oldAddress, _    = commonTypes.GetLegacyAddressFromPubKey(publicKey)
+	oldSdkAddress    = pkOld.Address()
 	newAddress       = sdk.AccAddress(pk.Address())
 	actualAddress, _ = bech32.ConvertAndEncode(config.Bech32Prefix, newAddress)
 )
@@ -77,12 +81,13 @@ func (s *KeeperTestSuite) SetupTest() {
 	ctrl := gomock.NewController(s.T())
 	bankKeeper := legacytestutil.NewMockBankKeeper(ctrl)
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(ctx, types.LegacyCoinPool, newAddress, defaultRecord.Coins).AnyTimes().Return(nil)
-	bankKeeper.EXPECT().GetAllBalances(ctx, oldAddress).AnyTimes().Return(defaultRewards)
-	bankKeeper.EXPECT().SendCoins(ctx, oldAddress, newAddress, defaultRewards).AnyTimes().Return(nil)
+	bankKeeper.EXPECT().GetAllBalances(ctx, sdk.AccAddress(oldSdkAddress)).AnyTimes().Return(defaultRewards)
+	bankKeeper.EXPECT().SendCoins(ctx, sdk.AccAddress(oldSdkAddress), newAddress, defaultRewards).AnyTimes().Return(nil)
+	bankKeeper.EXPECT().GetAllBalances(ctx, gomock.Any()).AnyTimes().Return(sdk.NewCoins())
 	nftKeeper := legacytestutil.NewMockNftKeeper(ctrl)
 	nftKeeper.EXPECT().GetToken(ctx, defaultTokenID).AnyTimes().Return(nfttypes.Token{Denom: defaultTokenID}, true)
 	nftKeeper.EXPECT().GetSubTokens(ctx, defaultTokenID).AnyTimes().Return(defaultSubTokensBefore)
-	nftKeeper.EXPECT().SetSubToken(ctx, defaultTokenID, defaultSubTokensAfter[0]).AnyTimes()
+	nftKeeper.EXPECT().ReplaceSubTokenOwner(ctx, defaultTokenID, defaultSubTokensAfter[0].ID, actualAddress).AnyTimes().Return(nil)
 	multisigKeeper := legacytestutil.NewMockMultisigKeeper(ctrl)
 	multisigKeeper.EXPECT().GetWallet(ctx, defaultMultisigWalletBefore.Address).AnyTimes().Return(defaultMultisigWalletBefore, nil)
 	multisigKeeper.EXPECT().SetWallet(ctx, defaultMultisigWalletAfter).AnyTimes()

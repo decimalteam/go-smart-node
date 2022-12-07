@@ -13,11 +13,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	ethereumCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
 
 func init() {
 	cfg := sdk.GetConfig()
-	cfg.SetBech32PrefixForAccount("dx", "dxpub")
+	cfg.SetBech32PrefixForAccount(cmdcfg.Bech32PrefixAccAddr, cmdcfg.Bech32PrefixAccPub)
 }
 
 func TestIsSupportedKeys(t *testing.T) {
@@ -88,32 +90,32 @@ func TestGetDecimalAddressFromBech32(t *testing.T) {
 		},
 		{
 			"invalid bech32 address",
-			"dx",
+			"d0",
 			"",
 			true,
 		},
 		{
 			"invalid address bytes",
-			"dx1123",
+			"d01123",
 			"",
 			true,
 		},
 		{
 			"decimal address",
-			"dx1qql8ag4cluz6r4dz28p3w00dnc9w8ueue3x6fd",
-			"dx1qql8ag4cluz6r4dz28p3w00dnc9w8ueue3x6fd",
+			"d01qql8ag4cluz6r4dz28p3w00dnc9w8ueuak90zj",
+			"d01qql8ag4cluz6r4dz28p3w00dnc9w8ueuak90zj",
 			false,
 		},
 		{
 			"cosmos address",
 			"cosmos1qql8ag4cluz6r4dz28p3w00dnc9w8ueulg2gmc",
-			"dx1qql8ag4cluz6r4dz28p3w00dnc9w8ueue3x6fd",
+			"d01qql8ag4cluz6r4dz28p3w00dnc9w8ueuak90zj",
 			false,
 		},
 		{
 			"osmosis address",
 			"osmo1qql8ag4cluz6r4dz28p3w00dnc9w8ueuhnecd2",
-			"dx1qql8ag4cluz6r4dz28p3w00dnc9w8ueue3x6fd",
+			"d01qql8ag4cluz6r4dz28p3w00dnc9w8ueuak90zj",
 			false,
 		},
 	}
@@ -148,25 +150,25 @@ func TestOldNewAddresForPubKey(t *testing.T) {
 			// gasp history river forget aware wide dance velvet weather rain rail dry cliff assault coach jelly choose spirit shoulder isolate kidney outer trust message
 			[]byte{0x3, 0x44, 0x8e, 0x6b, 0x3d, 0x50, 0xd6, 0xa3, 0x9c, 0xab, 0x3b, 0xab, 0xaa, 0x4a, 0xa2, 0xb0, 0x88, 0x5f, 0x55, 0x6f, 0xe0, 0x5d, 0x71, 0x49, 0x88, 0x5a, 0x5, 0xa0, 0xe7, 0x94, 0xa, 0x7e, 0x4f},
 			"dx1w98j4vk6dkpyndjnv5dn2eemesq6a2c2j9depy",
-			"dx1xp6aqad49te7vsfga6str8hrdeh24r9jnxuadn",
+			"d01xp6aqad49te7vsfga6str8hrdeh24r9jhplgxv",
 		},
 		{
 			// section jeans evoke hockey result spell dish zero merge actress pink resource loan afford fitness install purity duck cannon ugly session stereo pattern spawn
 			[]byte{0x3, 0x16, 0x18, 0x96, 0x7d, 0x77, 0xf1, 0xe4, 0x90, 0xd4, 0x1f, 0xc0, 0xe0, 0xc0, 0xc8, 0xb4, 0xb0, 0x47, 0x99, 0xe1, 0x16, 0x82, 0x4b, 0xea, 0x8, 0x47, 0x33, 0xe4, 0x63, 0x43, 0x20, 0xca, 0x3},
 			"dx1m3eg7v6pu0dga2knj9zm4683dk9c8800j9nfw0",
-			"dx18c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg3pv33f",
+			"d018c8mer8lq2y8yw8cq8f4c6fdqfa8xcjg4x0y6k",
 		},
 		{
 			// citizen marine borrow just apology mistake trumpet border sauce drip smile current excuse sing shove puppy dial ticket margin fabric afraid identify rookie elite
 			[]byte{0x3, 0x9a, 0x1, 0x12, 0x1d, 0x8f, 0xc3, 0xc5, 0x9e, 0xe7, 0xcb, 0x7, 0xbe, 0x27, 0x68, 0x8d, 0x75, 0x23, 0xd4, 0xb2, 0xb0, 0xbc, 0xf2, 0x4e, 0x83, 0x14, 0xbb, 0x27, 0xc8, 0xe7, 0xa8, 0x6f, 0x96},
 			"dx1lw2q66zph22x3hzmc527em25kd4zfydnx7arw7",
-			"dx164ea54aqgsmp7dp6wzs0y8n6vjehudnkgcn4fe",
+			"d0164ea54aqgsmp7dp6wzs0y8n6vjehudnkvlsqzx",
 		},
 	}
 	for _, tc := range testData {
 		newPubKey := ethsecp256k1.PubKey{Key: tc.pubKeyBytes}
 		oldPubKey := secp256k1.PubKey{Key: tc.pubKeyBytes}
-		newAddress, err := bech32.ConvertAndEncode("dx", newPubKey.Address())
+		newAddress, err := bech32.ConvertAndEncode(cmdcfg.Bech32PrefixAccAddr, newPubKey.Address())
 		require.NoError(t, err)
 		require.Equal(t, tc.newAddress, newAddress)
 		oldAddress, err := GetLegacyAddressFromPubKey(oldPubKey.Key)

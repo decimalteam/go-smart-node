@@ -49,8 +49,9 @@ func (t *Token) Validate() error {
 }
 
 func (st *SubToken) Validate() error {
-	_, err := sdk.AccAddressFromBech32(st.Owner)
-	if err != nil {
+	_, err1 := sdk.AccAddressFromBech32(st.Owner)
+	_, err2 := sdk.GetFromBech32(st.Owner, "dx") // legacy owners
+	if err1 != nil && err2 != nil {
 		return errors.InvalidSender
 	}
 	if !st.Reserve.IsPositive() {

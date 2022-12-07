@@ -118,11 +118,11 @@ func fixBondedNotBondedPools(gs *GenesisNew) {
 
 	for i := range gs.AppState.Bank.Balances {
 		// "bonded_tokens_pool"
-		if gs.AppState.Bank.Balances[i].Address == "dx1fl48vsnmsdzcv85q5d2q4z5ajdha8yu3nz9atz" {
+		if gs.AppState.Bank.Balances[i].Address == "d01fl48vsnmsdzcv85q5d2q4z5ajdha8yu3h9xgqa" {
 			gs.AppState.Bank.Balances[i].Coins = bondings
 		}
 		// "not_bonded_tokens_pool"
-		if gs.AppState.Bank.Balances[i].Address == "dx1tygms3xhhs3yv487phx3dw4a95jn7t7l8zevak" {
+		if gs.AppState.Bank.Balances[i].Address == "d01tygms3xhhs3yv487phx3dw4a95jn7t7lr96ekf" {
 			gs.AppState.Bank.Balances[i].Coins = notbondings
 		}
 	}
@@ -139,7 +139,7 @@ func fixNFTPool(gs *GenesisNew) {
 	}
 	for i := range gs.AppState.Bank.Balances {
 		// "reserved_pool"
-		if gs.AppState.Bank.Balances[i].Address == "dx17epewz8nye288vvypc549pgr6mf52hlazndk04" {
+		if gs.AppState.Bank.Balances[i].Address == "d017epewz8nye288vvypc549pgr6mf52hlax5wry2" {
 			gs.AppState.Bank.Balances[i].Coins = expectedVolume
 		}
 	}

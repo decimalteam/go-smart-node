@@ -29,7 +29,7 @@ var (
 		Creator:     "uatom",
 		CRR:         50,
 		LimitVolume: sdkmath.NewInt(1_000_000_000_000_000),
-		Identity:    "dx1hs2wdrm87c92rzhq0vgmgrxr6u57xpr2lcygc2",
+		Identity:    "d01hs2wdrm87c92rzhq0vgmgrxr6u57xpr2ml8an4",
 		Reserve:     sdkmath.NewInt(1_000_000_000),
 		Volume:      helpers.EtherToWei(sdkmath.NewInt(1000000000000)),
 	}
@@ -39,7 +39,7 @@ var (
 		Creator:     "uatom",
 		CRR:         100,
 		LimitVolume: sdkmath.NewInt(1_000_000_000_000_000_000),
-		Identity:    "dx1hs2wdrm87c92rzhq0vgmgrxr6u57xpr2lcygc2",
+		Identity:    "d01hs2wdrm87c92rzhq0vgmgrxr6u57xpr2ml8an4",
 		Reserve:     sdkmath.NewInt(1_000_000_000),
 		Volume:      sdkmath.NewInt(1_000_000_000_0),
 	}

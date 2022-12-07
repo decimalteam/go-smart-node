@@ -19,7 +19,9 @@ import (
 // CalculateFee calculates fee in base coin
 
 func CalculateFee(cdc codec.BinaryCodec, msgs []sdk.Msg, txBytesLen int64, delPrice sdk.Dec, params fee.Params) (sdkmath.Int, error) {
-	params = fee.DefaultParams()
+
+	internalFee := sdkmath.ZeroInt()
+
 	// Do not place commission for tx bytes to end because of RedeemCheck case
 	commission := helpers.DecToDecWithE18(params.TxByteFee.MulInt64(txBytesLen))
 
@@ -60,12 +62,11 @@ func CalculateFee(cdc codec.BinaryCodec, msgs []sdk.Msg, txBytesLen int64, delPr
 			if err != nil {
 				return sdkmath.ZeroInt(), err
 			}
-			// calculate fee of internal transaction exxcluding fee for bytes
-			internalFee, err := CalculateFee(cdc, []sdk.Msg{internal}, 0, delPrice, params)
+			// calculate fee of internal transaction excluding fee for bytes
+			internalFee, err = CalculateFee(cdc, []sdk.Msg{internal}, 0, delPrice, params)
 			if err != nil {
 				return sdkmath.ZeroInt(), err
 			}
-			msgsFee = msgsFee.Add(sdk.NewDecFromInt(internalFee))
 		case *multisig.MsgSignTransaction:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.MultisigSignTransaction))
 		// swap
@@ -132,6 +133,7 @@ func CalculateFee(cdc codec.BinaryCodec, msgs []sdk.Msg, txBytesLen int64, delPr
 
 	// change commission according to DEL price
 	commissionInBaseCoin := commission.Quo(delPrice).RoundInt()
+	commissionInBaseCoin = commissionInBaseCoin.Add(internalFee)
 
 	return commissionInBaseCoin, nil
 }

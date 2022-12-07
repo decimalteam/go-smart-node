@@ -17,10 +17,13 @@ import (
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
 
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	legacytypes "bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	swaptypes "bitbucket.org/decimalteam/go-smart-node/x/swap/types"
 	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
 
 /*
@@ -58,6 +61,7 @@ var pool = map[string]bool{
 	mustConvertAndEncode(authtypes.NewModuleAddress(legacytypes.LegacyCoinPool)):     false,
 	mustConvertAndEncode(authtypes.NewModuleAddress(swaptypes.SwapPool)):             false,
 	mustConvertAndEncode(authtypes.NewModuleAddress(validatortypes.ModuleName)):      false,
+	mustConvertAndEncode(authtypes.NewModuleAddress(feetypes.BurningPool)):           false,
 }
 
 type EventAccumulator struct {
@@ -230,7 +234,7 @@ func (ea *EventAccumulator) addCoinsStaked(e EventUpdateCoinsStaked) {
 }
 
 func mustConvertAndEncode(address sdk.AccAddress) string {
-	res, err := bech32.ConvertAndEncode("dx", address)
+	res, err := bech32.ConvertAndEncode(cmdcfg.Bech32PrefixAccAddr, address)
 	if err != nil {
 		panic(err)
 	}

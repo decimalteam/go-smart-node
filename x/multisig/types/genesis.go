@@ -46,7 +46,9 @@ func (gs *GenesisState) Validate() error {
 		seenOwners := make(map[string]bool, len(wallet.Owners))
 		for i := 0; i < len(wallet.Owners); i++ {
 			owner := wallet.Owners[i]
-			if _, err := sdk.AccAddressFromBech32(owner); err != nil {
+			_, err1 := sdk.GetFromBech32(owner, "d0")
+			_, err2 := sdk.GetFromBech32(owner, "dx")
+			if err1 != nil && err2 != nil {
 				return errors.InvalidOwner
 			}
 			if seenOwners[owner] {

@@ -3,6 +3,7 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"bitbucket.org/decimalteam/go-smart-node/x/nft/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 )
 
@@ -38,6 +39,28 @@ func (k *Keeper) SetSubToken(ctx sdk.Context, id string, subToken types.SubToken
 
 	bz := k.cdc.MustMarshalLengthPrefixed(&subToken)
 	store.Set(key, bz)
+}
+
+// ReplaceSubTokenOwner replaces sub token owner and make changes in indexes.
+// need for legacy module, for common reason there is TransferSubTokens transaction
+// newOwner must be valid bech32 address, subtoken.Owner MUST BE legacy address with prefix 'dx'
+func (k *Keeper) ReplaceSubTokenOwner(ctx sdk.Context, id string, index uint32, newOwner string) error {
+	subtoken, found := k.GetSubToken(ctx, id, index)
+	if !found {
+		return errors.SubTokenDoesNotExists
+	}
+	newOwnerSdk, err := sdk.AccAddressFromBech32(newOwner)
+	if err != nil {
+		return err
+	}
+	oldOwnerSdk, err := sdk.GetFromBech32(subtoken.Owner, "dx")
+	if err != nil {
+		return err
+	}
+	subtoken.Owner = newOwner
+	k.SetSubToken(ctx, id, subtoken)
+	k.transferSubToken(ctx, oldOwnerSdk, newOwnerSdk, id, index)
+	return nil
 }
 
 // removeSubToken deletes the NFT sub-token from the KVStore.

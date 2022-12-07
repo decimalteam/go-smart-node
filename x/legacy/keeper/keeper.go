@@ -1,16 +1,17 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
-	"bitbucket.org/decimalteam/go-smart-node/utils/events"
-	"bitbucket.org/decimalteam/go-smart-node/x/legacy/errors"
-	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
+
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
+	"bitbucket.org/decimalteam/go-smart-node/x/legacy/errors"
+	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 )
 
 var _ types.MsgServer = &Keeper{}
@@ -103,7 +104,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 	if !k.IsLegacyAddress(ctx, legacyAddress) {
 		return nil
 	}
-	legacySdkAddress := sdk.MustAccAddressFromBech32(legacyAddress)
+	legacySdkAddress, _ := sdk.GetFromBech32(legacyAddress, "dx") // nolint : legacyAddress already valid
 	actualSdkAddress := sdk.AccAddress(ethsecp256k1.PubKey{Key: pubKeyBytes}.Address())
 	actualAddress, err := bech32.ConvertAndEncode(config.Bech32Prefix, actualSdkAddress)
 	if err != nil {
@@ -147,8 +148,7 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 		returnedSubTokens := make([]uint32, 0)
 		for i := range subTokens {
 			if subTokens[i].Owner == legacyAddress {
-				subTokens[i].Owner = actualAddress
-				k.nftKeeper.SetSubToken(ctx, tokenId, subTokens[i])
+				k.nftKeeper.ReplaceSubTokenOwner(ctx, tokenId, subTokens[i].ID, actualAddress)
 				returnedSubTokens = append(returnedSubTokens, subTokens[i].ID)
 			}
 		}
@@ -214,6 +214,16 @@ func (k *Keeper) ActualizeLegacy(ctx sdk.Context, pubKeyBytes []byte) error {
 			if err != nil {
 				return errors.Internal.Wrapf("err: %s", err.Error())
 			}
+		}
+
+		// Emit event
+		err = events.EmitTypedEvent(ctx, &types.EventReturnValidator{
+			LegacyOwner: legacyAddress,
+			Owner:       actualAddress,
+			Validator:   validatorAddress,
+		})
+		if err != nil {
+			return errors.Internal.Wrapf("err: %s", err.Error())
 		}
 	}
 	// all complete, delete

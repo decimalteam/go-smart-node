@@ -1,10 +1,8 @@
 package keeper
 
 import (
-	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
@@ -88,50 +86,4 @@ func (k Keeper) BeforeValidatorSlashed(ctx sdk.Context, valAddr sdk.ValAddress, 
 		return k.hooks.BeforeValidatorSlashed(ctx, valAddr, fraction)
 	}
 	return nil
-}
-
-////////////////////////////////////////////////////////
-// Validator Module Hooks //////////////////////////////
-////////////////////////////////////////////////////////
-
-// BeforeUpdateDelegation before update, subtruct all delegation  staked custom coins
-func (k Keeper) BeforeUpdateDelegation(ctx sdk.Context, del types.Delegation, denom string) {
-	switch del.GetStake().GetType() {
-	case types.StakeType_Coin:
-		if denom == k.BaseDenom(ctx) {
-			return
-		}
-
-		ccs := k.GetCustomCoinStaked(ctx, denom)
-		ccs = ccs.Sub(del.GetStake().GetStake().Amount)
-		k.SetCustomCoinStaked(ctx, denom, ccs)
-	case types.StakeType_NFT:
-		reserve := del.GetStake().GetStake()
-		if reserve.Denom == k.BaseDenom(ctx) {
-			return
-		}
-		ccs := k.GetCustomCoinStaked(ctx, reserve.Denom)
-		ccs = ccs.Sub(reserve.Amount)
-		k.SetCustomCoinStaked(ctx, reserve.Denom, ccs)
-	}
-}
-
-// AfterUpdateDelegation after update sum delegation staked custom coin
-func (k Keeper) AfterUpdateDelegation(ctx sdk.Context, denom string, amount sdkmath.Int) {
-	if denom == k.BaseDenom(ctx) {
-		return
-	}
-
-	ccs := k.GetCustomCoinStaked(ctx, denom)
-	ccs = ccs.Add(amount)
-	k.SetCustomCoinStaked(ctx, denom, ccs)
-	err := events.EmitTypedEvent(ctx, &types.EventUpdateCoinsStaked{
-		Denom:       denom,
-		TotalAmount: ccs,
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	return
 }

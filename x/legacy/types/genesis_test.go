@@ -5,11 +5,15 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 )
 
 func TestGenesisState_Validate(t *testing.T) {
+	_config := sdkTypes.GetConfig()
+	_config.SetBech32PrefixForAccount(config.Bech32PrefixAccAddr, config.Bech32PrefixAccPub)
+
 	for _, tc := range []struct {
 		description  string
 		genesisState *types.GenesisState
@@ -33,7 +37,7 @@ func TestGenesisState_Validate(t *testing.T) {
 							},
 						},
 						NFTs:    []string{"a1", "a2"},
-						Wallets: []string{"dx108c4p0j7wqsawejfuuv43hj7nhyp36gt0296rs", "dx10fx59x9ytvf249axryvw0uh3eunwvgyfpm9jrp"},
+						Wallets: []string{"d0108c4p0j7wqsawejfuuv43hj7nhyp36gttdx0g0", "d010fx59x9ytvf249axryvw0uh3eunwvgyf9ux8g7"},
 					},
 				},
 			},
@@ -52,7 +56,7 @@ func TestGenesisState_Validate(t *testing.T) {
 							},
 						},
 						NFTs:    []string{"a1", "a2"},
-						Wallets: []string{"dx108c4p0j7wqsawejfuuv43hj7nhyp36gt0296rs", "dx10fx59x9ytvf249axryvw0uh3eunwvgyfpm9jrp"},
+						Wallets: []string{"d0108c4p0j7wqsawejfuuv43hj7nhyp36gttdx0g0", "d010fx59x9ytvf249axryvw0uh3eunwvgyf9ux8g7"},
 					},
 				},
 			},
@@ -71,7 +75,7 @@ func TestGenesisState_Validate(t *testing.T) {
 							},
 						},
 						NFTs:    []string{"a1", "a2"},
-						Wallets: []string{"dx108c4p0j7wqsawejfuuv43hj7nhyp36gt0296rs", "dx10fx59x9ytvf249axryvw0uh3eunwvgyfpm9jrp"},
+						Wallets: []string{"d0108c4p0j7wqsawejfuuv43hj7nhyp36gttdx0g0", "d010fx59x9ytvf249axryvw0uh3eunwvgyf9ux8g7"},
 					},
 				},
 			},
@@ -90,7 +94,7 @@ func TestGenesisState_Validate(t *testing.T) {
 							},
 						},
 						NFTs:    []string{"a1", "a2"},
-						Wallets: []string{"dx108c4p0j7wqsawejfuuv43hj7nhyp36gt0296r0"},
+						Wallets: []string{"d0108c4p0j7wqsawejfuuv43hj7nhyp36gt0296r0"},
 					},
 				},
 			},

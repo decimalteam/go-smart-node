@@ -435,6 +435,44 @@ func TestFactorCalculation(t *testing.T) {
 			}
 		}
 	}
+
+	// check staked custom coin
+	// sum stakes
+	allCoins := sdk.NewCoins()
+	dsc.ValidatorKeeper.IterateAllDelegations(ctx, func(delegation types.Delegation) bool {
+		if delegation.Stake.Stake.Denom == dsc.ValidatorKeeper.BaseDenom(ctx) {
+			return false
+		}
+		allCoins = allCoins.Add(delegation.Stake.GetStake())
+		return false
+	})
+	dsc.ValidatorKeeper.IterateUndelegations(ctx, func(index int64, ubd types.Undelegation) bool {
+		for _, entry := range ubd.Entries {
+			if entry.Stake.Stake.Denom == dsc.ValidatorKeeper.BaseDenom(ctx) {
+				continue
+			}
+			allCoins = allCoins.Add(entry.Stake.Stake)
+		}
+		return false
+	})
+	dsc.ValidatorKeeper.IterateRedelegations(ctx, func(index int64, red types.Redelegation) bool {
+		for _, entry := range red.Entries {
+			if entry.Stake.Stake.Denom == dsc.ValidatorKeeper.BaseDenom(ctx) {
+				continue
+			}
+			allCoins = allCoins.Add(entry.Stake.Stake)
+		}
+		return false
+	})
+	for denom, amount := range dsc.ValidatorKeeper.GetAllCustomCoinsStaked(ctx) {
+		require.True(t, allCoins.AmountOf(denom).Equal(amount), "wrong amount for %s", denom)
+	}
+	ccs := dsc.ValidatorKeeper.GetAllCustomCoinsStaked(ctx)
+	for _, coin := range allCoins {
+		amount, ok := ccs[coin.Denom]
+		require.True(t, ok, "coin '%s' is not found in staked custom coin", coin.Denom)
+		require.True(t, coin.Amount.Equal(amount), "wrong amount for %s", coin.Denom)
+	}
 }
 
 func TestJailUnjail(t *testing.T) {

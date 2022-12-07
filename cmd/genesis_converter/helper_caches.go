@@ -7,13 +7,15 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	cosmosAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
+
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
 
 // helper structure for old to new address conversion
 type AddressTable struct {
 	data       map[string]string
 	validators map[string]string
-	multisigs  map[string]bool
+	multisigs  map[string]string
 	// name_of_module -> new address
 	modules map[string]moduleInfo
 }
@@ -24,7 +26,7 @@ type moduleInfo struct {
 }
 
 func NewAddressTable() AddressTable {
-	return AddressTable{make(map[string]string), make(map[string]string), make(map[string]bool), make(map[string]moduleInfo)}
+	return AddressTable{make(map[string]string), make(map[string]string), make(map[string]string), make(map[string]moduleInfo)}
 }
 
 func (at *AddressTable) AddAddress(oldAddress string, pubKey []byte) error {
@@ -32,12 +34,12 @@ func (at *AddressTable) AddAddress(oldAddress string, pubKey []byte) error {
 	var err error
 	if len(pubKey) > 0 {
 		newPubKey := ethsecp256k1.PubKey{Key: pubKey}
-		newAddress, err = bech32.ConvertAndEncode("dx", newPubKey.Address())
+		newAddress, err = bech32.ConvertAndEncode(cmdcfg.Bech32Prefix, newPubKey.Address())
 		if err != nil {
 			return err
 		}
 		// possible validators table
-		newValidator, err := bech32.ConvertAndEncode("dxvaloper", newPubKey.Address())
+		newValidator, err := bech32.ConvertAndEncode(cmdcfg.Bech32PrefixValAddr, newPubKey.Address())
 		if err != nil {
 			return err
 		}
@@ -54,7 +56,16 @@ func (at *AddressTable) AddAddress(oldAddress string, pubKey []byte) error {
 }
 
 func (at *AddressTable) AddMultisig(oldAddress string) {
-	at.multisigs[oldAddress] = true
+	_, bz, err := bech32.DecodeAndConvert(oldAddress)
+	if err != nil {
+		panic(err)
+	}
+	newAddress, err := bech32.ConvertAndEncode("d0", bz)
+	if err != nil {
+		panic(err)
+	}
+
+	at.multisigs[oldAddress] = newAddress
 }
 
 func (at *AddressTable) GetAddress(oldAddress string) string {
@@ -66,6 +77,11 @@ func (at *AddressTable) GetValidatorAddress(oldValidator string) string {
 }
 
 func (at *AddressTable) IsMultisig(oldAddress string) bool {
+	_, ok := at.multisigs[oldAddress]
+	return ok
+}
+
+func (at *AddressTable) GetMultisigAddress(oldAddress string) string {
 	return at.multisigs[oldAddress]
 }
 
@@ -133,7 +149,7 @@ func (at *AddressTable) GetModule(name string) moduleInfo {
 }
 
 func moduleNameToAddress(name string) string {
-	address, err := bech32.ConvertAndEncode("dx", cosmosAuthTypes.NewModuleAddress(name))
+	address, err := bech32.ConvertAndEncode(cmdcfg.Bech32Prefix, cosmosAuthTypes.NewModuleAddress(name))
 	if err != nil {
 		panic(fmt.Sprintf("moduleNameToAddress(%s) = %s", name, err.Error()))
 	}

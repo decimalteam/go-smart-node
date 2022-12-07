@@ -35,6 +35,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	validatorkeeper "bitbucket.org/decimalteam/go-smart-node/x/validator/keeper"
 	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
@@ -259,7 +260,7 @@ $ %s selfdelegation 100000000del --home=/path/to/home/dir --from keyname
 			vgs.LastTotalPower += power.Power
 			genesisState["validator"] = cdc.MustMarshalJSON(&vgs)
 			// insert into bond pool
-			poolAddress, _ := bech32.ConvertAndEncode("dx", authtypes.NewModuleAddress("bonded_tokens_pool"))
+			poolAddress, _ := bech32.ConvertAndEncode(cmdcfg.Bech32Prefix, authtypes.NewModuleAddress("bonded_tokens_pool"))
 			var bgs banktypes.GenesisState
 			cdc.MustUnmarshalJSON(genesisState["bank"], &bgs)
 			var added = false

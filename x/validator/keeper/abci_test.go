@@ -18,6 +18,8 @@ import (
 )
 
 func TestPayValidators(t *testing.T) {
+	const legacyRewardAddress = "dx14elhyzmq95f98wrkvujtsr5cyudffp6q2hfkhs"
+
 	_, dsc, ctx := createTestInput(t)
 	msgsrv := keeper.NewMsgServerImpl(dsc.ValidatorKeeper)
 	nbPool := dsc.ValidatorKeeper.GetNotBondedPool(ctx).GetAddress()
@@ -87,7 +89,14 @@ func TestPayValidators(t *testing.T) {
 		msgOnline := types.NewMsgSetOnline(vals[1])
 		_, err = msgsrv.SetOnline(goCtx, msgOnline)
 		require.NoError(t, err)
+
+		//set legacy address for second validator
+		v, found := valK.GetValidator(ctx, vals[1])
+		require.True(t, found)
+		v.RewardAddress = legacyRewardAddress
+		valK.SetValidator(ctx, v)
 	}
+
 	// check validators created and online
 	{
 		updates := valK.BlockValidatorUpdates(ctx)

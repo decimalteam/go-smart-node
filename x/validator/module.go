@@ -153,7 +153,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 
 // RegisterInvariants registers the module's invariants.
 func (am AppModule) RegisterInvariants(registry sdk.InvariantRegistry) {
-	//keeper.RegisterInvariants(registry, am.keeper)
+	keeper.RegisterInvariants(registry, am.keeper)
 }
 
 // InitGenesis performs the module's genesis initialization.

@@ -131,16 +131,18 @@ func (mr *MockNftKeeperMockRecorder) GetToken(arg0, arg1 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetToken", reflect.TypeOf((*MockNftKeeper)(nil).GetToken), arg0, arg1)
 }
 
-// SetSubToken mocks base method.
-func (m *MockNftKeeper) SetSubToken(arg0 types2.Context, arg1 string, arg2 types0.SubToken) {
+// ReplaceSubTokenOwner mocks base method.
+func (m *MockNftKeeper) ReplaceSubTokenOwner(arg0 types2.Context, arg1 string, arg2 uint32, arg3 string) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetSubToken", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ReplaceSubTokenOwner", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
-// SetSubToken indicates an expected call of SetSubToken.
-func (mr *MockNftKeeperMockRecorder) SetSubToken(arg0, arg1, arg2 interface{}) *gomock.Call {
+// ReplaceSubTokenOwner indicates an expected call of ReplaceSubTokenOwner.
+func (mr *MockNftKeeperMockRecorder) ReplaceSubTokenOwner(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSubToken", reflect.TypeOf((*MockNftKeeper)(nil).SetSubToken), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReplaceSubTokenOwner", reflect.TypeOf((*MockNftKeeper)(nil).ReplaceSubTokenOwner), arg0, arg1, arg2, arg3)
 }
 
 // MockMultisigKeeper is a mock of MultisigKeeper interface.

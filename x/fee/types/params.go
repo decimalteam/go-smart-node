@@ -116,7 +116,7 @@ func DefaultParams() Params {
 		CommissionBurnFactor: sdk.MustNewDecFromStr("0.5"),
 		// oracle
 		// NOTE: default address is []byte{0}
-		Oracle: "dx1gczphl4h9aqrzy237jfm97elu66dam2w05xrrc",
+		Oracle: "d01gczphl4h9aqrzy237jfm97elu66dam2wtn9kg8",
 		// evm min gas price in usd*10^-18
 		EvmGasPrice: sdk.MustNewDecFromStr("0.00000190476"),
 	}

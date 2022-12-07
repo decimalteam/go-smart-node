@@ -102,7 +102,7 @@ func convertBalances(accsOld []AccountOld, addrTable *AddressTable, legacyRecord
 		}
 		newAddress := addrTable.GetAddress(acc.Value.Address)
 		if addrTable.IsMultisig(acc.Value.Address) {
-			newAddress = acc.Value.Address
+			newAddress = addrTable.GetMultisigAddress(acc.Value.Address)
 		}
 		if acc.Typ == accountTypeModule {
 			newAddress = addrTable.GetModule(acc.Value.Name).address
@@ -112,13 +112,6 @@ func convertBalances(accsOld []AccountOld, addrTable *AddressTable, legacyRecord
 		}
 
 		coins := filterCoins(acc.Value.Coins, coinSymbols)
-		// TODO: return when correct staking starts work
-		/*
-			if acc.Value.Name == "not_bonded_tokens_pool" || acc.Value.Name == "bonded_tokens_pool" {
-				fmt.Printf("set '%s' module account balance to zero\n", acc.Value.Name)
-				coins = sdk.NewCoins()
-			}
-		*/
 		if newAddress > "" {
 			res = append(res, BalanceNew{Address: newAddress, Coins: coins})
 		} else {
@@ -342,7 +335,7 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 				}
 			}
 			// 3.9 TODO: There still may be empty owners for subtokens. Workaround with logging
-			// NOTE: bech32 address for []byte{0} = "dx1qqjrdrw8",
+			// NOTE: bech32 address for []byte{0} = "d01qq7tle99",
 			for i := range subtokens {
 				if subtokens[i].Owner == "" {
 					// try to find in delegation pool
@@ -350,7 +343,7 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 					if pool == "" {
 						fmt.Printf("empty owner for collection '%s', creator '%s', nft '%s', sub token id '%d'\n",
 							collNew.Denom, collNew.Creator, nftOld.ID, subtokens[i].ID)
-						subtokens[i].Owner = "dx1qqjrdrw8"
+						subtokens[i].Owner = "d01qq7tle99"
 					} else {
 						subtokens[i].Owner = pool
 					}
@@ -444,7 +437,17 @@ func convertUnbondings(undelegations []UnbondingRecordOld, undelegationsNFT []Un
 		if err != nil {
 			return []UndelegationNew{}, err
 		}
-		result = append(result, ubdNew)
+		doAdd := true
+		for i := range result {
+			if result[i].Delegator == ubdNew.Delegator && result[i].Validator == ubdNew.Validator {
+				doAdd = false
+				result[i].Entries = append(result[i].Entries, ubdNew.Entries...)
+				break
+			}
+		}
+		if doAdd {
+			result = append(result, ubdNew)
+		}
 	}
 	return result, nil
 }
