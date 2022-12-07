@@ -124,7 +124,7 @@ func (fc *FeeConfiguration) Update(api *dscApi.API) error {
 	}
 	fc.BaseDenom = api.BaseCoin()
 
-	delPrice, params, err := api.GetFeeParams("del", "usd")
+	delPrice, params, err := api.GetFeeParams(fc.BaseDenom, "usd")
 	if err != nil {
 		return err
 	}
