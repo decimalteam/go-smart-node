@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
@@ -299,6 +300,19 @@ func NewDSC(
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *DSC {
+	// load update info
+	// It's legacy method to load
+	cmdcfg.UpdatesInfo = cmdcfg.NewUpdatesInfo(filepath.Join(homePath, "data", cmdcfg.UpdatesName))
+	err := cmdcfg.UpdatesInfo.Load()
+	if err != nil {
+		panic(fmt.Sprintf("error: read permissions '%s'", err.Error()))
+	}
+	cmdcfg.UpdatesInfo.PushNewPlanHeight(cmdcfg.UpdatesInfo.LastBlock)
+	err = cmdcfg.UpdatesInfo.Save()
+	if err != nil {
+		panic(fmt.Sprintf("error: write permissions '%s'", err.Error()))
+	}
+
 	appCodec := encodingConfig.Codec
 	cdc := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
