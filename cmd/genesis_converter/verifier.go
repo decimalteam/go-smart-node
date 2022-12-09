@@ -211,3 +211,68 @@ func verifyPools(balances []BalanceNew, validators []ValidatorNew, delegations [
 		}
 	}
 }
+
+// all NFT delegations/undelegations/redelegations must have record in NFT genesis
+// and must have proper owner
+func verifyNFTDelegations(gs *GenesisNew, addrTable *AddressTable) {
+	type nftKey struct {
+		tokenID  string
+		subtoken uint32
+	}
+	bpool := addrTable.GetModule("bonded_tokens_pool").address
+	nbpool := addrTable.GetModule("not_bonded_tokens_pool").address
+
+	nftRecords := make(map[nftKey]string)
+	delegationRecords := make(map[nftKey]string)
+	delegationCounts := make(map[nftKey]int)
+	for _, coll := range gs.AppState.NFT.Collections {
+		for _, token := range coll.Tokens {
+			for _, sub := range token.SubTokens {
+				nftRecords[nftKey{token.ID, sub.ID}] = sub.Owner
+			}
+		}
+	}
+	validatorsStatus := make(map[string]bool) // true - online
+	for _, val := range gs.AppState.Validator.Validators {
+		validatorsStatus[val.OperatorAddress] = val.Online
+	}
+
+	for _, del := range gs.AppState.Validator.Delegations {
+		if del.Stake.Type == "STAKE_TYPE_NFT" {
+			owner := nbpool
+			if validatorsStatus[del.Validator] {
+				owner = bpool
+			}
+			for _, subID := range del.Stake.SubTokenIDs {
+				delegationRecords[nftKey{del.Stake.ID, uint32(subID)}] = owner
+				delegationCounts[nftKey{del.Stake.ID, uint32(subID)}] = delegationCounts[nftKey{del.Stake.ID, uint32(subID)}] + 1
+			}
+		}
+	}
+	for _, undel := range gs.AppState.Validator.Undelegations {
+		for _, entry := range undel.Entries {
+			if entry.Stake.Type == "STAKE_TYPE_NFT" {
+				owner := nbpool
+				for _, subID := range entry.Stake.SubTokenIDs {
+					delegationRecords[nftKey{entry.Stake.ID, uint32(subID)}] = owner
+					delegationCounts[nftKey{entry.Stake.ID, uint32(subID)}] = delegationCounts[nftKey{entry.Stake.ID, uint32(subID)}] + 1
+				}
+			}
+		}
+	}
+	for k, v := range delegationCounts {
+		if v > 1 {
+			fmt.Printf("NFT DELEGATIONS: too much delegations (%s, %d) = %d\n", k.tokenID, k.subtoken, v)
+		}
+	}
+	for k, owner := range delegationRecords {
+		nftowner, ok := nftRecords[k]
+		if !ok {
+			fmt.Printf("(un)delegation (%s, %03d) not found\n", k.tokenID, k.subtoken)
+			continue
+		}
+		if owner != nftowner {
+			fmt.Printf("(un)delegation (%s, %03d) owner (nft) %s != (del) %s\n", k.tokenID, k.subtoken, nftowner, owner)
+		}
+	}
+}

@@ -176,3 +176,53 @@ func fixAccountNumbers(gs *GenesisNew) {
 	}
 
 }
+
+func fixDelegatedNFT(gs *GenesisNew, addrTable *AddressTable) {
+	type nftKey struct {
+		tokenID  string
+		subtoken uint32
+	}
+	bpool := addrTable.GetModule("bonded_tokens_pool").address
+	nbpool := addrTable.GetModule("not_bonded_tokens_pool").address
+	delegationRecords := make(map[nftKey]string)
+	validatorsStatus := make(map[string]bool) // true - online
+	for _, val := range gs.AppState.Validator.Validators {
+		validatorsStatus[val.OperatorAddress] = val.Online
+	}
+
+	for _, del := range gs.AppState.Validator.Delegations {
+		if del.Stake.Type == "STAKE_TYPE_NFT" {
+			owner := nbpool
+			if validatorsStatus[del.Validator] {
+				owner = bpool
+			}
+			for _, subID := range del.Stake.SubTokenIDs {
+				delegationRecords[nftKey{del.Stake.ID, uint32(subID)}] = owner
+			}
+		}
+	}
+	for _, undel := range gs.AppState.Validator.Undelegations {
+		for _, entry := range undel.Entries {
+			if entry.Stake.Type == "STAKE_TYPE_NFT" {
+				owner := nbpool
+				for _, subID := range entry.Stake.SubTokenIDs {
+					delegationRecords[nftKey{entry.Stake.ID, uint32(subID)}] = owner
+				}
+			}
+		}
+	}
+
+	// fix
+	for i, coll := range gs.AppState.NFT.Collections {
+		for j, token := range coll.Tokens {
+			for k, sub := range token.SubTokens {
+				key := nftKey{token.ID, sub.ID}
+				owner, ok := delegationRecords[key]
+				if !ok {
+					continue
+				}
+				gs.AppState.NFT.Collections[i].Tokens[j].SubTokens[k].Owner = owner
+			}
+		}
+	}
+}

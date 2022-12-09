@@ -40,8 +40,10 @@ func extractNFTDublicates(colls []CollectionNew) []nftDublicatesRecord {
 }
 
 func generateReplacements(uriPrefix string, records *[]nftDublicatesRecord) {
+	// fixed source for stable generation
+	rnd := rand.New(rand.NewSource(1))
 	for i := range *records {
-		(*records)[i].NewURI = uriPrefix + randomSlug()
+		(*records)[i].NewURI = uriPrefix + randomSlug(rnd)
 	}
 }
 
@@ -78,11 +80,11 @@ func exportNFTDublicates(fname string, records []nftDublicatesRecord) error {
 	return nil
 }
 
-func randomSlug() string {
+func randomSlug(rnd *rand.Rand) string {
 	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 	s := make([]rune, 32)
 	for i := range s {
-		s[i] = letters[rand.Intn(len(letters))]
+		s[i] = letters[rnd.Intn(len(letters))]
 	}
 	return string(s)
 }
