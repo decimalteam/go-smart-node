@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -52,9 +51,12 @@ const (
 )
 
 var (
-	DataPath    = fmt.Sprintf("%s/.decimal/daemon/data", os.Getenv("HOME"))
-	UpdatesInfo = NewUpdatesInfo(filepath.Join(DataPath, UpdatesName))
+	DataPath = fmt.Sprintf("%s/.decimal/daemon/data", os.Getenv("HOME"))
+	// NOTE: THIS IS GLOBAL OBJECT TO STORE UPDATES HEIGHTS TO CALCULATE GRACE PERIODS
+	// PATH TO FILE WILL BE REDEFINED IN app/app.go:NewDSC
+	UpdatesInfo = &UpdatesInfoStruct{} // NewUpdatesInfo(filepath.Join(DataPath, UpdatesName))
 	UpdatesName = "updates.json"
+	GracePeriod = int64(600 * 24 * 1) // 600 - average blocks per hour, grace period to use inside inGracePeriod
 )
 
 // SetBech32Prefixes sets the global prefixes to be used when serializing addresses and public keys to Bech32 strings.
