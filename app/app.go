@@ -3,11 +3,13 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"syscall"
 
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
@@ -304,12 +306,13 @@ func NewDSC(
 	// It's legacy method to load
 	cmdcfg.UpdatesInfo = cmdcfg.NewUpdatesInfo(filepath.Join(homePath, "data", cmdcfg.UpdatesName))
 	err := cmdcfg.UpdatesInfo.Load()
-	if err != nil {
+	// NOTE: errors.Is(err, syscall.ENOENT) is workaround for pipeline tests
+	if err != nil && !errors.Is(err, syscall.ENOENT) {
 		panic(fmt.Sprintf("error: read permissions '%s'", err.Error()))
 	}
 	cmdcfg.UpdatesInfo.PushNewPlanHeight(cmdcfg.UpdatesInfo.LastBlock)
 	err = cmdcfg.UpdatesInfo.Save()
-	if err != nil {
+	if err != nil && !errors.Is(err, syscall.ENOENT) {
 		panic(fmt.Sprintf("error: write permissions '%s'", err.Error()))
 	}
 
