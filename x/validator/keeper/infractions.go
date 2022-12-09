@@ -8,6 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/crypto"
 
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
@@ -43,6 +44,8 @@ func (k Keeper) HandleValidatorSignature(ctx sdk.Context, addr cryptotypes.Addre
 		return
 	}
 
+	inGrace := inGracePeriod(ctx, cmdcfg.UpdatesInfo)
+
 	// TODO: grace period
 	if !signed {
 		k.AddMissedBlock(ctx, consAddr, height)
@@ -53,9 +56,13 @@ func (k Keeper) HandleValidatorSignature(ctx sdk.Context, addr cryptotypes.Addre
 			ConsensusPubkey: consAddr.String(),
 			MissedBlocks:    uint32(signInfo.MissedBlocksCounter),
 		})
+		msg := "validator skipped block in slash period"
+		if inGrace {
+			msg = "validator skipped block in grace period"
+		}
 
 		logger.Info(
-			"validator skipped block",
+			msg,
 			"height", height,
 			"validator", validator.OperatorAddress,
 			"validator_cons", consAddr.String(),
@@ -70,8 +77,8 @@ func (k Keeper) HandleValidatorSignature(ctx sdk.Context, addr cryptotypes.Addre
 
 	// if we are past the minimum height and the validator has missed too many blocks, punish them
 	if height > minHeight && signInfo.MissedBlocksCounter > maxMissed {
-		validator := k.ValidatorByConsAddr(ctx, consAddr)
-		if validator != nil && !validator.IsJailed() {
+		validator, found := k.GetValidatorByConsAddrDecimal(ctx, consAddr)
+		if found && !validator.IsJailed() {
 			// Downtime confirmed: slash and jail the validator
 			// We need to retrieve the stake distribution which signed the block, so we subtract ValidatorUpdateDelay from the evidence height,
 			// and subtract an additional 1 since this is the LastCommit.
@@ -80,13 +87,18 @@ func (k Keeper) HandleValidatorSignature(ctx sdk.Context, addr cryptotypes.Addre
 			// That's fine since this is just used to filter unbonding delegations & redelegations.
 			distributionHeight := height - sdk.ValidatorUpdateDelay - 1
 
-			k.Slash(ctx, consAddr, distributionHeight, power, params.SlashFractionDowntime)
+			msg := "jailing validator due to liveness fault in grace period"
+			if !inGrace {
+				k.Slash(ctx, consAddr, distributionHeight, power, params.SlashFractionDowntime)
+				msg = "slashing and jailing validator due to liveness fault in slash period"
+			}
 			k.Jail(ctx, consAddr)
 
 			logger.Info(
-				"slashing and jailing validator due to liveness fault",
+				msg,
 				"height", height,
-				"validator", consAddr.String(),
+				"validator", validator.OperatorAddress,
+				"validator_cons", consAddr.String(),
 				"min_height", minHeight,
 				"threshold", params.MinSignedPerWindow,
 				"slashed", params.SlashFractionDowntime.String(),
@@ -216,4 +228,20 @@ func (k Keeper) GetStartHeight(ctx sdk.Context, addr sdk.ConsAddress) int64 {
 func (k Keeper) DeleteStartHeight(ctx sdk.Context, addr sdk.ConsAddress) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.GetStartHeightKey(addr))
+}
+
+func inGracePeriod(ctx sdk.Context, updatesInfo *cmdcfg.UpdatesInfoStruct) bool {
+	currentHeight := ctx.BlockHeight()
+	gracePeriodStart := updatesInfo.LastBlock
+	gracePeriodEnd := gracePeriodStart + cmdcfg.GracePeriod
+	if (currentHeight >= gracePeriodStart) && (currentHeight <= gracePeriodEnd) {
+		return true
+	}
+	for _, gracePeriodStart = range updatesInfo.AllBlocks {
+		gracePeriodEnd = gracePeriodStart + cmdcfg.GracePeriod
+		if (currentHeight >= gracePeriodStart) && (currentHeight <= gracePeriodEnd) {
+			return true
+		}
+	}
+	return false
 }
