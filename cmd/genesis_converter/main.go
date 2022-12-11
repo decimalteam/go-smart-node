@@ -328,7 +328,7 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord, injectLeg
 	fmt.Printf("DUMP OLD-NEW VALIDATORS\n")
 	for _, oldVal := range gsOld.AppState.Validator.Validators {
 		newAddress := addrTable.GetValidatorAddress(oldVal.ValAddress)
-		fmt.Printf("%s\t%s\n", oldVal.ValAddress, newAddress)
+		fmt.Printf("%s\t%s\t%s\n", oldVal.ValAddress, newAddress, oldVal.Description.Moniker)
 	}
 
 	return gsNew, nftDublicatesRecords, nil
