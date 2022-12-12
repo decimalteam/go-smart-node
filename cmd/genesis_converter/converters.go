@@ -304,7 +304,7 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 				}
 				ownerAddress := addrTable.GetAddress(ownerOld.Address)
 				if addrTable.IsMultisig(ownerOld.Address) {
-					ownerAddress = ownerOld.Address
+					ownerAddress = addrTable.GetMultisigAddress(ownerOld.Address)
 				}
 				if ownerAddress == "" {
 					legacyRecords.AddNFT(ownerOld.Address, colOld.Denom, nftOld.ID)
