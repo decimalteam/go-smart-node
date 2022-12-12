@@ -286,6 +286,8 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord, injectLeg
 	for _, pwr := range gsNew.AppState.Validator.LastValidatorPowers {
 		gsNew.AppState.Validator.LastTotalPower += pwr.Power
 	}
+	fixDelegatedNFT(&gsNew, addrTable)
+
 	// legacy records
 	var records []LegacyRecordNew
 	for _, v := range legacyRecords.data {
@@ -320,11 +322,13 @@ func convertGenesis(gsOld *GenesisOld, fixNFTData []NFTOwnerFixRecord, injectLeg
 	verifyPools(gsNew.AppState.Bank.Balances, gsNew.AppState.Validator.Validators, gsNew.AppState.Validator.Delegations,
 		gsNew.AppState.Validator.Undelegations, addrTable)
 
+	verifyNFTDelegations(&gsNew, addrTable)
+
 	// DUMP OLD-NEW VALIDATORS
 	fmt.Printf("DUMP OLD-NEW VALIDATORS\n")
 	for _, oldVal := range gsOld.AppState.Validator.Validators {
 		newAddress := addrTable.GetValidatorAddress(oldVal.ValAddress)
-		fmt.Printf("%s\t%s\n", oldVal.ValAddress, newAddress)
+		fmt.Printf("%s\t%s\t%s\n", oldVal.ValAddress, newAddress, oldVal.Description.Moniker)
 	}
 
 	return gsNew, nftDublicatesRecords, nil

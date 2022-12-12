@@ -12,6 +12,7 @@ import (
 
 	ethante "github.com/evmos/ethermint/app/ante"
 	ethermint "github.com/evmos/ethermint/types"
+	evmkeeper "github.com/evmos/ethermint/x/evm/keeper"
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
@@ -69,9 +70,9 @@ func (egcd EthGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 	blockHeight := big.NewInt(ctx.BlockHeight())
 	homestead := ethCfg.IsHomestead(blockHeight)
 	istanbul := ethCfg.IsIstanbul(blockHeight)
-	london := ethCfg.IsLondon(blockHeight)
 	evmDenom := params.EvmDenom
 	gasWanted := uint64(0)
+	baseFee := egcd.evmKeeper.GetBaseFee(ctx, ethCfg)
 
 	// Use the lowest priority of all the messages as the final one.
 	minPriority := int64(math.MaxInt64)
@@ -98,15 +99,12 @@ func (egcd EthGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 			gasWanted += txData.GetGas()
 		}
 
-		fees, priority, err := egcd.evmKeeper.DeductTxCostsFromUserBalance(
-			ctx,
-			*msgEthTx,
-			txData,
-			evmDenom,
-			homestead,
-			istanbul,
-			london,
-		)
+		fees, err := evmkeeper.VerifyFee(txData, evmDenom, baseFee, homestead, istanbul, ctx.IsCheckTx())
+		if err != nil {
+			return ctx, sdkerrors.Wrapf(err, "failed to verify the fees")
+		}
+
+		err = egcd.evmKeeper.DeductTxCostsFromUserBalance(ctx, fees, ethereumCommon.HexToAddress(msgEthTx.From))
 		if err != nil {
 			return ctx, sdkerrors.Wrapf(err, "failed to deduct transaction costs from user balance")
 		}
@@ -141,6 +139,8 @@ func (egcd EthGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 		if err != nil {
 			return ctx, sdkerrors.Wrapf(err, "failed to emit commission event")
 		}
+
+		priority := evmtypes.GetTxPriority(txData, baseFee)
 
 		if priority < minPriority {
 			minPriority = priority

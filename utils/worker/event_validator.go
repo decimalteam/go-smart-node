@@ -1,9 +1,10 @@
 package worker
 
 import (
-	sdkmath "cosmossdk.io/math"
 	"encoding/json"
 	"fmt"
+
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
@@ -33,7 +34,8 @@ type EventUpdateCoinsStaked struct {
 }
 
 type Stake struct {
-	Stake sdk.Coin
+	Stake sdk.Coin `json:"stake"`
+	Type  string   `json:"type"`
 }
 
 func processEventDelegate(ea *EventAccumulator, event abci.Event, txHash string) error {
@@ -69,7 +71,9 @@ func processEventDelegate(ea *EventAccumulator, event abci.Event, txHash string)
 	}
 
 	if _, ok := pool[e.Delegator]; !ok {
-		ea.addBalanceChange(e.Delegator, e.Stake.Stake.Denom, e.Stake.Stake.Amount.Neg())
+		if e.Stake.Type == "STAKE_TYPE_COIN" {
+			ea.addBalanceChange(e.Delegator, e.Stake.Stake.Denom, e.Stake.Stake.Amount.Neg())
+		}
 	}
 
 	return nil
@@ -103,7 +107,9 @@ func processEventUndelegateComplete(ea *EventAccumulator, event abci.Event, txHa
 	}
 
 	if _, ok := pool[e.Delegator]; !ok {
-		ea.addBalanceChange(e.Delegator, e.Stake.Stake.Denom, e.Stake.Stake.Amount)
+		if e.Stake.Type == "STAKE_TYPE_COIN" {
+			ea.addBalanceChange(e.Delegator, e.Stake.Stake.Denom, e.Stake.Stake.Amount)
+		}
 	}
 
 	return nil

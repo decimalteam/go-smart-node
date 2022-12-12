@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 
 	"cosmossdk.io/math"
@@ -303,7 +304,7 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 				}
 				ownerAddress := addrTable.GetAddress(ownerOld.Address)
 				if addrTable.IsMultisig(ownerOld.Address) {
-					ownerAddress = ownerOld.Address
+					ownerAddress = addrTable.GetMultisigAddress(ownerOld.Address)
 				}
 				if ownerAddress == "" {
 					legacyRecords.AddNFT(ownerOld.Address, colOld.Denom, nftOld.ID)
@@ -371,9 +372,20 @@ func convertNFT(collectionsOld map[string]CollectionOld, subsOld []SubTokenOld,
 			preparedColls[key] = collNew
 		}
 	}
+	// make stable sort for determenistic replacement of URI duplicates
 	var collectionsNew []CollectionNew
-	for _, collNew := range preparedColls {
-		collectionsNew = append(collectionsNew, *collNew)
+	preparedKeys := []collectionKey{}
+	for k := range preparedColls {
+		preparedKeys = append(preparedKeys, k)
+	}
+	sort.SliceStable(preparedKeys, func(i int, j int) bool {
+		return preparedKeys[i].denom < preparedKeys[j].denom ||
+			preparedKeys[i].denom == preparedKeys[j].denom &&
+				preparedKeys[i].creator < preparedKeys[j].creator
+	})
+
+	for _, k := range preparedKeys {
+		collectionsNew = append(collectionsNew, *preparedColls[k])
 	}
 	return collectionsNew, nil
 }
