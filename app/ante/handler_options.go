@@ -139,7 +139,7 @@ func newCosmosAnteHandlerEip712(options HandlerOptions) sdk.AnteHandler {
 		authante.NewValidateSigCountDecorator(options.AccountKeeper),
 		authante.NewSigGasConsumeDecorator(options.AccountKeeper, options.SigGasConsumer),
 		// Note: signature verification uses EIP instead of the cosmos signature validator
-		ethante.NewEip712SigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
+		ethante.NewLegacyEip712SigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		NewPostCreateAccountDecorator(options.AccountKeeper), // should be after SigVerificationDecorator
 		NewLegacyActualizerDecorator(options.LegacyKeeper),
 		authante.NewIncrementSequenceDecorator(options.AccountKeeper),
