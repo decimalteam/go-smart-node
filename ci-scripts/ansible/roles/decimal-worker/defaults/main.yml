@@ -1,0 +1,5 @@
+---
+artifacts: build
+decimal_bin: '/home/centos/go-smart-node/'
+decimal_bin_mode: '0750'
+systemd_path: '/etc/systemd/system/'
