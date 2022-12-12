@@ -1,4 +1,3 @@
----
 - name: Create and build worker services (systemd)
   hosts: all
   gather_facts: False
