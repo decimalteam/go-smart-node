@@ -41,6 +41,9 @@ func (gg *DelegateNFTGenerator) Generate() Action {
 		return &EmptyAction{}
 	}
 	token := RandomChoice(gg.rnd, gg.knownNFT)
+	if len(token.SubTokens) == 0 {
+		return &EmptyAction{}
+	}
 	sub := RandomChoice(gg.rnd, token.SubTokens)
 	return &DelegateNFTAction{
 		token:            token,
