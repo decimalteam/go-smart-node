@@ -113,6 +113,18 @@ func (k msgServer) CreateValidator(goCtx context.Context, msg *types.MsgCreateVa
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())
 	}
 
+	baseCoin := k.Keeper.ToBaseCoin(ctx, msg.Stake)
+
+	err = events.EmitTypedEvent(ctx, &types.EventDelegate{
+		Delegator:  sdk.AccAddress(valAddr).String(),
+		Validator:  valAddr.String(),
+		Stake:      stake,
+		AmountBase: baseCoin.Amount,
+	})
+	if err != nil {
+		return nil, errors.Internal.Wrapf("err: %s", err.Error())
+	}
+
 	return &types.MsgCreateValidatorResponse{}, nil
 }
 
