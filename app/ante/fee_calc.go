@@ -110,14 +110,16 @@ func CalculateFee(cdc codec.BinaryCodec, msgs []sdk.Msg, txBytesLen int64, delPr
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorRedelegate))
 		case *validator.MsgRedelegateNFT:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorRedelegateNFT))
-		case *validator.MsgCancelUndelegation:
-			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorUndelegate))
-		case *validator.MsgCancelUndelegationNFT:
-			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorUndelegateNFT))
-		case *validator.MsgCancelRedelegation:
-			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorRedelegate))
-		case *validator.MsgCancelRedelegationNFT:
-			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorRedelegateNFT))
+		/*
+			case *validator.MsgCancelUndelegation:
+				msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorUndelegate))
+			case *validator.MsgCancelUndelegationNFT:
+				msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorUndelegateNFT))
+			case *validator.MsgCancelRedelegation:
+				msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorRedelegate))
+			case *validator.MsgCancelRedelegationNFT:
+				msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorRedelegateNFT))
+		*/
 		// fee
 		case *fee.MsgUpdateCoinPrices:
 		case *upgradetypes.MsgSoftwareUpgrade:
