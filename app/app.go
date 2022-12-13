@@ -516,9 +516,12 @@ func NewDSC(
 		evmgeth.NewEVM,
 		cast.ToString(appOpts.Get(ethsrvflags.EVMTracer)),
 	)
-	app.EvmKeeper = app.EvmKeeper.SetHooks(
-		evmkeeper.NewMultiEvmHooks(),
-	)
+
+	// WARNING: Setting up dummy hooks is disabled because it causes doubling ABCI events in EVM transactions.
+	// NOTE: Since we do not actually use any EVM hooks lets them will be unset.
+	// app.EvmKeeper = app.EvmKeeper.SetHooks(
+	// 	evmkeeper.NewMultiEvmHooks(),
+	// )
 
 	// Create upgrade keeper
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(
