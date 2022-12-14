@@ -3,43 +3,36 @@ package types
 import (
 	"strings"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
+
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 )
 
-// IsSupportedKey returns true if the pubkey type is supported by the chain
-// (i.e eth_secp256k1, amino multisig, ed25519).
-// NOTE: Nested multisigs are not supported.
-func IsSupportedKey(pubkey cryptotypes.PubKey) bool {
-	switch pubkey := pubkey.(type) {
-	case *ed25519.PubKey:
-		return true
-	case *secp256k1.PubKey:
-		// TODO: Is it needed to support?
-		return false
-	case *ethsecp256k1.PubKey:
+// IsSupportedKey returns true if the pubkey type is supported by the chain.
+func IsSupportedKey(pk cryptotypes.PubKey) bool {
+	switch pk := pk.(type) {
+	case *ed25519.PubKey, *ethsecp256k1.PubKey:
 		return true
 	case multisig.PubKey:
-		if len(pubkey.GetPubKeys()) == 0 {
+		if len(pk.GetPubKeys()) == 0 {
 			return false
 		}
-
-		for _, pk := range pubkey.GetPubKeys() {
+		for _, pk := range pk.GetPubKeys() {
 			switch pk.(type) {
-			case *ethsecp256k1.PubKey, *ed25519.PubKey:
+			case *ed25519.PubKey, *ethsecp256k1.PubKey:
 				continue
 			default:
-				// Nested multisigs are unsupported
 				return false
 			}
 		}
-
 		return true
 	default:
 		return false
@@ -52,12 +45,12 @@ func IsSupportedKey(pubkey cryptotypes.PubKey) bool {
 func GetDecimalAddressFromBech32(address string) (sdk.AccAddress, error) {
 	bech32Prefix := strings.SplitN(address, "1", 2)[0]
 	if bech32Prefix == address {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid bech32 address: %s", address)
+		return nil, sdkerrors.ErrInvalidAddress
 	}
 
 	addressBz, err := sdk.GetFromBech32(address, bech32Prefix)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid address %s, %s", address, err.Error())
+		return nil, sdkerrors.ErrInvalidAddress
 	}
 
 	// safety check: shouldn't happen
@@ -66,4 +59,26 @@ func GetDecimalAddressFromBech32(address string) (sdk.AccAddress, error) {
 	}
 
 	return sdk.AccAddress(addressBz), nil
+}
+
+// GetDecimalAddressFromHex returns the sdk.Account address of given address.
+// The function fails if the provided hex address is invalid or does not start with 0x.
+func GetDecimalAddressFromHex(address string) (sdk.AccAddress, error) {
+	addressBz, err := hexutil.Decode(address)
+	if err != nil {
+		return nil, sdkerrors.ErrInvalidAddress
+	}
+
+	// safety check: shouldn't happen
+	if err := sdk.VerifyAddressFormat(addressBz); err != nil {
+		return nil, err
+	}
+
+	return sdk.AccAddress(addressBz), nil
+}
+
+// GetLegacyAddressFromPubKey returns wallets address in old blockchain for given public key bytes
+func GetLegacyAddressFromPubKey(pubKeyBytes []byte) (string, error) {
+	oldPubKey := secp256k1.PubKey{Key: pubKeyBytes}
+	return bech32.ConvertAndEncode("dx", oldPubKey.Address())
 }

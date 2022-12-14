@@ -1,10 +1,11 @@
 package ibctesting
 
+/*
 import (
 	"testing"
 	"time"
 
-	ibctesting "github.com/cosmos/ibc-go/v3/testing"
+	ibctesting "github.com/cosmos/ibc-go/v5/testing"
 )
 
 var globalStartTime = time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC)
@@ -37,3 +38,4 @@ func NewCoordinator(t *testing.T, nEVMChains, mCosmosChains int) *ibctesting.Coo
 
 	return coord
 }
+*/

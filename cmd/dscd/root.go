@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
+	tmcfg "github.com/tendermint/tendermint/config"
+
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 
@@ -23,6 +25,7 @@ import (
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/simapp/params"
 	"github.com/cosmos/cosmos-sdk/snapshots"
+	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
@@ -31,12 +34,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
-	ethermintclient "github.com/tharsis/ethermint/client"
-	"github.com/tharsis/ethermint/client/debug"
-	"github.com/tharsis/ethermint/encoding"
-	ethermintserver "github.com/tharsis/ethermint/server"
-	servercfg "github.com/tharsis/ethermint/server/config"
-	srvflags "github.com/tharsis/ethermint/server/flags"
+	ethermintclient "github.com/evmos/ethermint/client"
+	"github.com/evmos/ethermint/client/debug"
+	"github.com/evmos/ethermint/encoding"
+	ethermintserver "github.com/evmos/ethermint/server"
+	servercfg "github.com/evmos/ethermint/server/config"
+	srvflags "github.com/evmos/ethermint/server/flags"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
@@ -53,7 +56,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	// Initialize client context
 	encodingConfig := encoding.MakeConfig(app.ModuleBasics)
 	initClientCtx := client.Context{}.
-		WithCodec(encodingConfig.Marshaler).
+		WithCodec(encodingConfig.Codec).
 		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
 		WithTxConfig(encodingConfig.TxConfig).
 		WithLegacyAmino(encodingConfig.Amino).
@@ -75,10 +78,10 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			cmd.SetErr(cmd.ErrOrStderr())
 
 			// Disable ledger temporarily
-			useLedger, _ := cmd.Flags().GetBool(flags.FlagUseLedger)
-			if useLedger {
-				return fmt.Errorf("--%s flag passed: Ledger device is currently not supported", flags.FlagUseLedger)
-			}
+			//useLedger, _ := cmd.Flags().GetBool(flags.FlagUseLedger)
+			//if useLedger {
+			//	return fmt.Errorf("--%s flag passed: Ledger device is currently not supported", flags.FlagUseLedger)
+			//}
 
 			initClientCtx, err := client.ReadPersistentCommandFlags(initClientCtx, cmd.Flags())
 			if err != nil {
@@ -97,7 +100,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			// TODO: define our own token
 			customAppTemplate, customAppConfig := initAppConfig()
 
-			return sdkserver.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig)
+			return sdkserver.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig, tmcfg.DefaultConfig())
 		},
 	}
 
@@ -111,6 +114,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		ethermintclient.ValidateChainID(
 			InitCmd(app.ModuleBasics, app.DefaultNodeHome),
 		),
+		SelfDelegationCmd(app.ModuleBasics, encodingConfig.TxConfig, app.DefaultNodeHome),
 		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
 		genutilcli.GenTxCmd(app.ModuleBasics, encodingConfig.TxConfig, banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
 		genutilcli.ValidateGenesisCmd(app.ModuleBasics),
@@ -137,7 +141,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	}
 
 	// Add rosetta
-	rootCmd.AddCommand(sdkserver.RosettaCommand(encodingConfig.InterfaceRegistry, encodingConfig.Marshaler))
+	rootCmd.AddCommand(sdkserver.RosettaCommand(encodingConfig.InterfaceRegistry, encodingConfig.Codec))
 
 	return rootCmd, encodingConfig
 }
@@ -265,9 +269,10 @@ func (a appCreator) newApp(logger log.Logger, db dbm.DB, traceStore io.Writer, a
 		baseapp.SetInterBlockCache(cache),
 		baseapp.SetTrace(cast.ToBool(appOpts.Get(sdkserver.FlagTrace))),
 		baseapp.SetIndexEvents(cast.ToStringSlice(appOpts.Get(sdkserver.FlagIndexEvents))),
-		baseapp.SetSnapshotStore(snapshotStore),
-		baseapp.SetSnapshotInterval(cast.ToUint64(appOpts.Get(sdkserver.FlagStateSyncSnapshotInterval))),
-		baseapp.SetSnapshotKeepRecent(cast.ToUint32(appOpts.Get(sdkserver.FlagStateSyncSnapshotKeepRecent))),
+		baseapp.SetSnapshot(snapshotStore, snapshottypes.SnapshotOptions{
+			Interval:   cast.ToUint64(appOpts.Get(sdkserver.FlagStateSyncSnapshotInterval)),
+			KeepRecent: cast.ToUint32(appOpts.Get(sdkserver.FlagStateSyncSnapshotKeepRecent)),
+		}),
 	)
 
 	return dscApp

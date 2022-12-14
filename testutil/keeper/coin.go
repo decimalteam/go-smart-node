@@ -1,63 +1,43 @@
 package keeper
 
-// import (
-// 	"testing"
+import (
+	"testing"
 
-// 	"github.com/stretchr/testify/require"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
-// 	"github.com/tendermint/tendermint/libs/log"
-// 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-// 	tmdb "github.com/tendermint/tm-db"
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
-// 	"github.com/cosmos/cosmos-sdk/codec"
-// 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-// 	"github.com/cosmos/cosmos-sdk/store"
-// 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
-// 	sdk "github.com/cosmos/cosmos-sdk/types"
+	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 
-// 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-// 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-// 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
+	"bitbucket.org/decimalteam/go-smart-node/app"
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+)
 
-// 	"bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
-// 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-// )
+func GetTestAppWithCoinKeeper(t *testing.T) (*codec.LegacyAmino, *app.DSC, sdk.Context) {
+	dsc := app.Setup(t, false, feemarkettypes.DefaultGenesisState())
+	ctx := dsc.BaseApp.NewContext(false, tmproto.Header{})
 
-// func CoinKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
-// 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
-// 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
-// 	accountStoreKey := sdk.NewKVStoreKey(authtypes.StoreKey)
-// 	bankStoreKey := sdk.NewKVStoreKey(banktypes.StoreKey)
+	appCodec := dsc.AppCodec()
 
-// 	db := tmdb.NewMemDB()
-// 	stateStore := store.NewCommitMultiStore(db)
-// 	stateStore.MountStoreWithDB(storeKey, sdk.StoreTypeIAVL, db)
-// 	stateStore.MountStoreWithDB(memStoreKey, sdk.StoreTypeMemory, nil)
-// 	stateStore.MountStoreWithDB(accountStoreKey, sdk.StoreTypeIAVL, db)
-// 	stateStore.MountStoreWithDB(bankStoreKey, sdk.StoreTypeIAVL, db)
+	dsc.CoinKeeper = *keeper.NewKeeper(
+		appCodec,
+		dsc.GetKey(types.StoreKey),
+		dsc.GetSubspace(types.ModuleName),
+		dsc.AccountKeeper,
+		&dsc.FeeKeeper,
+		dsc.BankKeeper,
+	)
+	dsc.CoinKeeper.SetParams(ctx, types.DefaultParams())
 
-// 	require.NoError(t, stateStore.LoadLatestVersion())
+	return codec.NewLegacyAmino(), dsc, ctx
+}
 
-// 	registry := codectypes.NewInterfaceRegistry()
-// 	cdc := codec.NewProtoCodec(registry)
+// GenerateAddresses generates numAddrs of normal AccAddrs and ValAddrs
+func GenerateAddresses(dsc *app.DSC, ctx sdk.Context, numAddrs int, accCoins sdk.Coins) ([]sdk.AccAddress, []sdk.ValAddress) {
+	addrDels := app.AddTestAddrsIncremental(dsc, ctx, numAddrs, accCoins)
+	addrVals := app.ConvertAddrsToValAddrs(addrDels)
 
-// 	paramsSubspace := typesparams.NewSubspace(cdc,
-// 		types.Amino,
-// 		storeKey,
-// 		memStoreKey,
-// 		"coin-params",
-// 	)
-
-// 	k := keeper.NewKeeper(
-// 		cdc,
-// 		storeKey,
-// 		paramsSubspace,
-// 	)
-
-// 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
-
-// 	// Initialize params
-// 	k.SetParams(ctx, types.DefaultParams())
-
-// 	return k, ctx
-// }
+	return addrDels, addrVals
+}

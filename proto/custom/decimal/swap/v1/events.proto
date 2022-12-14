@@ -1,0 +1,48 @@
+syntax = "proto3";
+package decimal.swap.v1;
+
+import "gogoproto/gogo.proto";
+
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/swap/types";
+
+// EventActivateChain defines event emitted when chain is activated for swaps.
+message EventActivateChain {
+    string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+    uint32 id = 2 [ (gogoproto.customname) = "ID" ];
+    string name = 3;
+}
+
+// EventDeactivateChain defines event emitted when chain is deactivated for swaps.
+message EventDeactivateChain {
+    string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+    uint32 id = 2 [ (gogoproto.customname) = "ID" ];
+}
+
+// EventInitializeSwap defines event emitted when cross-chain swap is initialized.
+message EventInitializeSwap {
+    string sender = 1;
+    string recipient = 5;
+    string amount = 6;
+    string token_symbol = 8;
+    string transaction_number = 7;
+    uint32 from_chain = 3;
+    uint32 dest_chain = 4;
+}
+
+// EventRedeemSwap defines event emitted when cross-chain swap is redeemed.
+message EventRedeemSwap {
+    string sender = 1;
+    string from = 2;
+    string recipient =3;
+    string amount = 4;
+    string token_symbol = 5;
+    string transaction_number = 6;
+    uint32 from_chain = 7;
+    uint32 dest_chain = 8;
+    string hash_redeem = 9;
+    string v = 10;
+    string r = 11;
+    string s = 12;
+}

@@ -4,22 +4,20 @@
 package types
 
 import (
+	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
-	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
-	types "github.com/cosmos/cosmos-sdk/types"
+	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
-	time "time"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-var _ = time.Kitchen
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -27,22 +25,93 @@ var _ = time.Kitchen
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// Chain defines a chain.
+type Chain struct {
+	// id defines the chain number ID.
+	Id uint32 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// name defines the chain name.
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// active defines status of the chain.
+	Active bool `protobuf:"varint,3,opt,name=active,proto3" json:"active,omitempty"`
+}
+
+func (m *Chain) Reset()         { *m = Chain{} }
+func (m *Chain) String() string { return proto.CompactTextString(m) }
+func (*Chain) ProtoMessage()    {}
+func (*Chain) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ebf2fe93e1809485, []int{0}
+}
+func (m *Chain) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Chain) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Chain.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Chain) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Chain.Merge(m, src)
+}
+func (m *Chain) XXX_Size() int {
+	return m.Size()
+}
+func (m *Chain) XXX_DiscardUnknown() {
+	xxx_messageInfo_Chain.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Chain proto.InternalMessageInfo
+
+func (m *Chain) GetId() uint32 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+func (m *Chain) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *Chain) GetActive() bool {
+	if m != nil {
+		return m.Active
+	}
+	return false
+}
+
+// Swap defines a cross-chain swap.
 type Swap struct {
-	TransferType TransferType                             `protobuf:"varint,1,opt,name=transfer_type,json=transferType,proto3,enum=decimal.swap.v1.TransferType" json:"transfer_type"`
-	HashedSecret *Hash                                    `protobuf:"bytes,2,opt,name=hashed_secret,json=hashedSecret,proto3,customtype=Hash" json:"hashed_secret,omitempty"`
-	From         string                                   `protobuf:"bytes,3,opt,name=from,proto3" json:"from,omitempty"`
-	Recipient    string                                   `protobuf:"bytes,4,opt,name=recipient,proto3" json:"recipient"`
-	Amount       github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,5,rep,name=amount,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"amount"`
-	Timestamp    uint64                                   `protobuf:"varint,6,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	Redeemed     bool                                     `protobuf:"varint,7,opt,name=redeemed,proto3" json:"redeemed,omitempty"`
-	Refunded     bool                                     `protobuf:"varint,8,opt,name=refunded,proto3" json:"refunded,omitempty"`
+	// hashed_secret defines the hash of secret used during cross-chain swap.
+	HashedSecret *Hash `protobuf:"bytes,1,opt,name=hashed_secret,json=hashedSecret,proto3,customtype=Hash" json:"hashed_secret,omitempty"`
+	// from defines address used to initialize swap.
+	From string `protobuf:"bytes,2,opt,name=from,proto3" json:"from,omitempty"`
+	// recipient defines address of the recipient swapped coins.
+	Recipient string `protobuf:"bytes,3,opt,name=recipient,proto3" json:"recipient,omitempty"`
+	// amount defines amount of coins the swap initialized.
+	Amount cosmossdk_io_math.Int `protobuf:"bytes,4,opt,name=amount,proto3,customtype=cosmossdk.io/math.Int" json:"amount"`
+	// timestamp defines time moment when the swap was initialized.
+	Timestamp uint64 `protobuf:"varint,5,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	// redeemed defines if the swap was redeemed.
+	Redeemed bool `protobuf:"varint,6,opt,name=redeemed,proto3" json:"redeemed,omitempty"`
+	// refunded defines if the swap was refunded.
+	Refunded bool `protobuf:"varint,7,opt,name=refunded,proto3" json:"refunded,omitempty"`
 }
 
 func (m *Swap) Reset()         { *m = Swap{} }
 func (m *Swap) String() string { return proto.CompactTextString(m) }
 func (*Swap) ProtoMessage()    {}
 func (*Swap) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ebf2fe93e1809485, []int{0}
+	return fileDescriptor_ebf2fe93e1809485, []int{1}
 }
 func (m *Swap) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -71,13 +140,6 @@ func (m *Swap) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Swap proto.InternalMessageInfo
 
-func (m *Swap) GetTransferType() TransferType {
-	if m != nil {
-		return m.TransferType
-	}
-	return TransferType_TransferTypeOut
-}
-
 func (m *Swap) GetFrom() string {
 	if m != nil {
 		return m.From
@@ -90,13 +152,6 @@ func (m *Swap) GetRecipient() string {
 		return m.Recipient
 	}
 	return ""
-}
-
-func (m *Swap) GetAmount() github_com_cosmos_cosmos_sdk_types.Coins {
-	if m != nil {
-		return m.Amount
-	}
-	return nil
 }
 
 func (m *Swap) GetTimestamp() uint64 {
@@ -120,98 +175,85 @@ func (m *Swap) GetRefunded() bool {
 	return false
 }
 
-type Params struct {
-	LockedTimeOut time.Duration `protobuf:"varint,1,opt,name=locked_time_out,json=lockedTimeOut,proto3,casttype=time.Duration" json:"locked_time_out,omitempty"`
-	LockedTimeIn  time.Duration `protobuf:"varint,2,opt,name=locked_time_in,json=lockedTimeIn,proto3,casttype=time.Duration" json:"locked_time_in,omitempty"`
-}
-
-func (m *Params) Reset()         { *m = Params{} }
-func (m *Params) String() string { return proto.CompactTextString(m) }
-func (*Params) ProtoMessage()    {}
-func (*Params) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ebf2fe93e1809485, []int{1}
-}
-func (m *Params) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *Params) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_Params.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *Params) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Params.Merge(m, src)
-}
-func (m *Params) XXX_Size() int {
-	return m.Size()
-}
-func (m *Params) XXX_DiscardUnknown() {
-	xxx_messageInfo_Params.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Params proto.InternalMessageInfo
-
-func (m *Params) GetLockedTimeOut() time.Duration {
-	if m != nil {
-		return m.LockedTimeOut
-	}
-	return 0
-}
-
-func (m *Params) GetLockedTimeIn() time.Duration {
-	if m != nil {
-		return m.LockedTimeIn
-	}
-	return 0
-}
-
 func init() {
+	proto.RegisterType((*Chain)(nil), "decimal.swap.v1.Chain")
 	proto.RegisterType((*Swap)(nil), "decimal.swap.v1.Swap")
-	proto.RegisterType((*Params)(nil), "decimal.swap.v1.Params")
 }
 
 func init() { proto.RegisterFile("decimal/swap/v1/swap.proto", fileDescriptor_ebf2fe93e1809485) }
 
 var fileDescriptor_ebf2fe93e1809485 = []byte{
-	// 495 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x52, 0xcd, 0x8e, 0xd3, 0x3c,
-	0x14, 0x6d, 0xbe, 0xf6, 0x2b, 0xad, 0x69, 0x67, 0x34, 0x16, 0x8b, 0x50, 0x41, 0x52, 0xcd, 0x2a,
-	0x12, 0xaa, 0x4d, 0x07, 0x24, 0xc4, 0xb6, 0xb0, 0x80, 0x0d, 0xa0, 0x4c, 0xd9, 0xb0, 0xa9, 0x9c,
-	0xe4, 0xb6, 0xb5, 0x3a, 0x8e, 0x23, 0xdb, 0xe9, 0xcc, 0x48, 0x3c, 0x02, 0x0b, 0x9e, 0x83, 0x27,
-	0xe9, 0x72, 0x96, 0x88, 0x45, 0x40, 0xed, 0x6e, 0x1e, 0x81, 0x15, 0x8a, 0x13, 0xe8, 0x30, 0x62,
-	0x75, 0x7f, 0xce, 0x39, 0xd7, 0xf6, 0xf1, 0x45, 0x83, 0x04, 0x62, 0x2e, 0xd8, 0x19, 0xd5, 0xe7,
-	0x2c, 0xa3, 0xeb, 0xb1, 0x8d, 0x24, 0x53, 0xd2, 0x48, 0x7c, 0x58, 0x63, 0xc4, 0xf6, 0xd6, 0xe3,
-	0xc1, 0xbd, 0x85, 0x5c, 0x48, 0x8b, 0xd1, 0x32, 0xab, 0x68, 0x03, 0x2f, 0x96, 0x5a, 0x48, 0x4d,
-	0x23, 0xa6, 0x81, 0xae, 0xc7, 0x11, 0x18, 0x36, 0xa6, 0xb1, 0xe4, 0x69, 0x8d, 0xbb, 0xb7, 0x8f,
-	0x30, 0x17, 0x15, 0x72, 0xfc, 0xa9, 0x89, 0x5a, 0xa7, 0xe7, 0x2c, 0xc3, 0xef, 0x51, 0xdf, 0x28,
-	0x96, 0xea, 0x39, 0xa8, 0x99, 0xb9, 0xcc, 0xc0, 0x75, 0x86, 0x4e, 0x70, 0x70, 0xf2, 0x90, 0xdc,
-	0xba, 0x01, 0x99, 0xd6, 0xac, 0xe9, 0x65, 0x06, 0x93, 0xa3, 0xeb, 0xc2, 0xff, 0x5b, 0x17, 0xf6,
-	0xcc, 0x0d, 0x02, 0x1e, 0xa3, 0xfe, 0x92, 0xe9, 0x25, 0x24, 0x33, 0x0d, 0xb1, 0x02, 0xe3, 0xfe,
-	0x37, 0x74, 0x82, 0xee, 0xa4, 0xb7, 0x29, 0x7c, 0xe7, 0x5b, 0xe1, 0xb7, 0x5e, 0x31, 0xbd, 0x0c,
-	0x7b, 0x15, 0xe5, 0xd4, 0x32, 0x30, 0x46, 0xad, 0xb9, 0x92, 0xc2, 0x6d, 0x96, 0xcc, 0xd0, 0xe6,
-	0xf8, 0x11, 0xea, 0x2a, 0x88, 0x79, 0xc6, 0x21, 0x35, 0x6e, 0xcb, 0x8e, 0xe8, 0x5f, 0x17, 0xfe,
-	0xbe, 0x19, 0xee, 0x53, 0x1c, 0xa3, 0x36, 0x13, 0x32, 0x4f, 0x8d, 0xfb, 0xff, 0xb0, 0x19, 0xdc,
-	0x3d, 0xb9, 0x4f, 0x2a, 0x7b, 0x48, 0x69, 0x0f, 0xa9, 0xed, 0x21, 0x2f, 0x24, 0x4f, 0x27, 0x8f,
-	0x37, 0x85, 0xdf, 0xf8, 0xf2, 0xdd, 0x0f, 0x16, 0xdc, 0x2c, 0xf3, 0x88, 0xc4, 0x52, 0xd0, 0xda,
-	0xcb, 0x2a, 0x8c, 0x74, 0xb2, 0xa2, 0xe5, 0xbb, 0xb4, 0x15, 0xe8, 0xb0, 0x1e, 0x8d, 0x1f, 0xa0,
-	0xae, 0xe1, 0x02, 0xb4, 0x61, 0x22, 0x73, 0xdb, 0x43, 0x27, 0x68, 0x85, 0xfb, 0x06, 0x1e, 0xa0,
-	0x8e, 0x82, 0x04, 0x40, 0x40, 0xe2, 0xde, 0x19, 0x3a, 0x41, 0x27, 0xfc, 0x53, 0x57, 0xd8, 0x3c,
-	0x4f, 0x13, 0x48, 0xdc, 0xce, 0x6f, 0xac, 0xaa, 0x8f, 0x3f, 0xa2, 0xf6, 0x3b, 0xa6, 0x98, 0xd0,
-	0xf8, 0x39, 0x3a, 0x3c, 0x93, 0xf1, 0x0a, 0x92, 0x59, 0x39, 0x75, 0x26, 0x73, 0x63, 0x7f, 0xa4,
-	0x39, 0x39, 0xfa, 0x59, 0x5a, 0xce, 0x05, 0x90, 0x97, 0xb9, 0x62, 0x86, 0xcb, 0x34, 0xec, 0x57,
-	0xcc, 0x29, 0x17, 0xf0, 0x36, 0x37, 0xf8, 0x19, 0x3a, 0xb8, 0x29, 0xe5, 0xa9, 0x35, 0xfd, 0x9f,
-	0xca, 0xde, 0x5e, 0xf9, 0x3a, 0x9d, 0xbc, 0xd9, 0x6c, 0x3d, 0xe7, 0x6a, 0xeb, 0x39, 0x3f, 0xb6,
-	0x9e, 0xf3, 0x79, 0xe7, 0x35, 0xae, 0x76, 0x5e, 0xe3, 0xeb, 0xce, 0x6b, 0x7c, 0x78, 0x1a, 0x71,
-	0x13, 0xe5, 0xf1, 0x0a, 0x0c, 0x91, 0x6a, 0x41, 0xeb, 0x9d, 0x30, 0xc0, 0x04, 0x5d, 0xc8, 0x91,
-	0x16, 0x4c, 0x99, 0x51, 0x2a, 0x13, 0xa0, 0x17, 0xd5, 0x8a, 0x59, 0xc7, 0xa2, 0xb6, 0xdd, 0xb1,
-	0x27, 0xbf, 0x02, 0x00, 0x00, 0xff, 0xff, 0x84, 0x2a, 0x68, 0x09, 0xe2, 0x02, 0x00, 0x00,
+	// 385 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x44, 0x91, 0xc1, 0x6e, 0xd4, 0x30,
+	0x10, 0x86, 0xe3, 0x90, 0x86, 0xc6, 0x6a, 0x41, 0xb2, 0x00, 0x85, 0x08, 0x25, 0x51, 0x4f, 0x91,
+	0xd0, 0x26, 0x5a, 0xc1, 0x13, 0x74, 0x2f, 0xf4, 0xc2, 0x21, 0xbd, 0x71, 0xa9, 0xbc, 0xf1, 0x34,
+	0xb1, 0x8a, 0xed, 0x28, 0xf6, 0x6e, 0xe1, 0x05, 0x38, 0xf3, 0x30, 0x3c, 0xc4, 0x1e, 0x2b, 0x4e,
+	0xa8, 0x87, 0x08, 0xed, 0xbe, 0x08, 0x8a, 0x9d, 0xb2, 0x27, 0xcf, 0x3f, 0xdf, 0x78, 0x7e, 0x8d,
+	0x7e, 0x9c, 0x30, 0x68, 0xb8, 0xa0, 0x5f, 0x2b, 0x7d, 0x4f, 0xfb, 0x6a, 0xbb, 0xb4, 0x6f, 0xd9,
+	0x0f, 0xca, 0x28, 0xf2, 0x72, 0x66, 0xa5, 0xed, 0x6d, 0x97, 0xc9, 0xab, 0x56, 0xb5, 0xca, 0xb2,
+	0x6a, 0xaa, 0xdc, 0x58, 0xf2, 0xb6, 0x51, 0x5a, 0x28, 0x7d, 0xe3, 0x80, 0x13, 0x0e, 0x5d, 0xac,
+	0xf0, 0xc9, 0xaa, 0xa3, 0x5c, 0x92, 0x17, 0xd8, 0xe7, 0x2c, 0x46, 0x39, 0x2a, 0xce, 0x6b, 0x9f,
+	0x33, 0x42, 0x70, 0x20, 0xa9, 0x80, 0xd8, 0xcf, 0x51, 0x11, 0xd5, 0xb6, 0x26, 0x6f, 0x70, 0x48,
+	0x1b, 0xc3, 0xb7, 0x10, 0x3f, 0xcb, 0x51, 0x71, 0x5a, 0xcf, 0xea, 0xe2, 0x87, 0x8f, 0x83, 0xeb,
+	0x7b, 0xda, 0x93, 0x25, 0x3e, 0xef, 0xa8, 0xee, 0x80, 0xdd, 0x68, 0x68, 0x06, 0x30, 0x76, 0x5f,
+	0x74, 0x79, 0xb6, 0x1b, 0x33, 0xf4, 0x38, 0x66, 0xc1, 0x27, 0xaa, 0xbb, 0xfa, 0xcc, 0x8d, 0x5c,
+	0xdb, 0x89, 0xc9, 0xe7, 0x76, 0x50, 0xe2, 0xc9, 0x67, 0xaa, 0xc9, 0x3b, 0x1c, 0x0d, 0xd0, 0xf0,
+	0x9e, 0x83, 0x34, 0xd6, 0x2a, 0xaa, 0x8f, 0x0d, 0xb2, 0xc2, 0x21, 0x15, 0x6a, 0x23, 0x4d, 0x1c,
+	0xd8, 0xed, 0xef, 0x77, 0x63, 0xe6, 0x3d, 0x8e, 0xd9, 0x6b, 0x77, 0x98, 0x66, 0x77, 0x25, 0x57,
+	0x95, 0xa0, 0xa6, 0x2b, 0xaf, 0xa4, 0xf9, 0xfd, 0x6b, 0x81, 0xe7, 0x8b, 0xaf, 0xa4, 0xa9, 0xe7,
+	0xaf, 0x93, 0x85, 0xe1, 0x02, 0xb4, 0xa1, 0xa2, 0x8f, 0x4f, 0x72, 0x54, 0x04, 0xf5, 0xb1, 0x41,
+	0x12, 0x7c, 0x3a, 0x00, 0x03, 0x10, 0xc0, 0xe2, 0xd0, 0x9e, 0xfa, 0x5f, 0x3b, 0x76, 0xbb, 0x91,
+	0x0c, 0x58, 0xfc, 0xfc, 0x89, 0x39, 0x7d, 0xf9, 0x79, 0xb7, 0x4f, 0xd1, 0xc3, 0x3e, 0x45, 0x7f,
+	0xf7, 0x29, 0xfa, 0x79, 0x48, 0xbd, 0x87, 0x43, 0xea, 0xfd, 0x39, 0xa4, 0xde, 0x97, 0x8f, 0x6b,
+	0x6e, 0xd6, 0x9b, 0xe6, 0x0e, 0x4c, 0xa9, 0x86, 0xb6, 0x9a, 0x73, 0x33, 0x40, 0x45, 0xd5, 0xaa,
+	0x85, 0x16, 0x74, 0x30, 0x0b, 0xa9, 0x18, 0x54, 0xdf, 0x5c, 0xce, 0xe6, 0x7b, 0x0f, 0x7a, 0x1d,
+	0xda, 0x90, 0x3e, 0xfc, 0x0b, 0x00, 0x00, 0xff, 0xff, 0xb7, 0xa9, 0xe8, 0x6b, 0x04, 0x02, 0x00,
+	0x00,
+}
+
+func (m *Chain) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Chain) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Chain) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Active {
+		i--
+		if m.Active {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x18
+	}
+	if len(m.Name) > 0 {
+		i -= len(m.Name)
+		copy(dAtA[i:], m.Name)
+		i = encodeVarintSwap(dAtA, i, uint64(len(m.Name)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.Id != 0 {
+		i = encodeVarintSwap(dAtA, i, uint64(m.Id))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *Swap) Marshal() (dAtA []byte, err error) {
@@ -242,7 +284,7 @@ func (m *Swap) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0
 		}
 		i--
-		dAtA[i] = 0x40
+		dAtA[i] = 0x38
 	}
 	if m.Redeemed {
 		i--
@@ -252,40 +294,36 @@ func (m *Swap) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0
 		}
 		i--
-		dAtA[i] = 0x38
+		dAtA[i] = 0x30
 	}
 	if m.Timestamp != 0 {
 		i = encodeVarintSwap(dAtA, i, uint64(m.Timestamp))
 		i--
-		dAtA[i] = 0x30
+		dAtA[i] = 0x28
 	}
-	if len(m.Amount) > 0 {
-		for iNdEx := len(m.Amount) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Amount[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintSwap(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x2a
+	{
+		size := m.Amount.Size()
+		i -= size
+		if _, err := m.Amount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
 		}
+		i = encodeVarintSwap(dAtA, i, uint64(size))
 	}
+	i--
+	dAtA[i] = 0x22
 	if len(m.Recipient) > 0 {
 		i -= len(m.Recipient)
 		copy(dAtA[i:], m.Recipient)
 		i = encodeVarintSwap(dAtA, i, uint64(len(m.Recipient)))
 		i--
-		dAtA[i] = 0x22
+		dAtA[i] = 0x1a
 	}
 	if len(m.From) > 0 {
 		i -= len(m.From)
 		copy(dAtA[i:], m.From)
 		i = encodeVarintSwap(dAtA, i, uint64(len(m.From)))
 		i--
-		dAtA[i] = 0x1a
+		dAtA[i] = 0x12
 	}
 	if m.HashedSecret != nil {
 		{
@@ -297,45 +335,7 @@ func (m *Swap) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = encodeVarintSwap(dAtA, i, uint64(size))
 		}
 		i--
-		dAtA[i] = 0x12
-	}
-	if m.TransferType != 0 {
-		i = encodeVarintSwap(dAtA, i, uint64(m.TransferType))
-		i--
-		dAtA[i] = 0x8
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *Params) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Params) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.LockedTimeIn != 0 {
-		i = encodeVarintSwap(dAtA, i, uint64(m.LockedTimeIn))
-		i--
-		dAtA[i] = 0x10
-	}
-	if m.LockedTimeOut != 0 {
-		i = encodeVarintSwap(dAtA, i, uint64(m.LockedTimeOut))
-		i--
-		dAtA[i] = 0x8
+		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -351,15 +351,31 @@ func encodeVarintSwap(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+func (m *Chain) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Id != 0 {
+		n += 1 + sovSwap(uint64(m.Id))
+	}
+	l = len(m.Name)
+	if l > 0 {
+		n += 1 + l + sovSwap(uint64(l))
+	}
+	if m.Active {
+		n += 2
+	}
+	return n
+}
+
 func (m *Swap) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.TransferType != 0 {
-		n += 1 + sovSwap(uint64(m.TransferType))
-	}
 	if m.HashedSecret != nil {
 		l = m.HashedSecret.Size()
 		n += 1 + l + sovSwap(uint64(l))
@@ -372,12 +388,8 @@ func (m *Swap) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovSwap(uint64(l))
 	}
-	if len(m.Amount) > 0 {
-		for _, e := range m.Amount {
-			l = e.Size()
-			n += 1 + l + sovSwap(uint64(l))
-		}
-	}
+	l = m.Amount.Size()
+	n += 1 + l + sovSwap(uint64(l))
 	if m.Timestamp != 0 {
 		n += 1 + sovSwap(uint64(m.Timestamp))
 	}
@@ -390,26 +402,132 @@ func (m *Swap) Size() (n int) {
 	return n
 }
 
-func (m *Params) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.LockedTimeOut != 0 {
-		n += 1 + sovSwap(uint64(m.LockedTimeOut))
-	}
-	if m.LockedTimeIn != 0 {
-		n += 1 + sovSwap(uint64(m.LockedTimeIn))
-	}
-	return n
-}
-
 func sovSwap(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
 func sozSwap(x uint64) (n int) {
 	return sovSwap(uint64((x << 1) ^ uint64((int64(x) >> 63))))
+}
+func (m *Chain) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowSwap
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Chain: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Chain: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			m.Id = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowSwap
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Id |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Name", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowSwap
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthSwap
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthSwap
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Name = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Active", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowSwap
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.Active = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipSwap(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthSwap
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
 }
 func (m *Swap) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
@@ -441,25 +559,6 @@ func (m *Swap) Unmarshal(dAtA []byte) error {
 		}
 		switch fieldNum {
 		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TransferType", wireType)
-			}
-			m.TransferType = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowSwap
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.TransferType |= TransferType(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field HashedSecret", wireType)
 			}
@@ -495,7 +594,7 @@ func (m *Swap) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 3:
+		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field From", wireType)
 			}
@@ -527,7 +626,7 @@ func (m *Swap) Unmarshal(dAtA []byte) error {
 			}
 			m.From = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 4:
+		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Recipient", wireType)
 			}
@@ -559,11 +658,11 @@ func (m *Swap) Unmarshal(dAtA []byte) error {
 			}
 			m.Recipient = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 5:
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
 			}
-			var msglen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowSwap
@@ -573,27 +672,27 @@ func (m *Swap) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthSwap
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthSwap
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Amount = append(m.Amount, types.Coin{})
-			if err := m.Amount[len(m.Amount)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
-		case 6:
+		case 5:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Timestamp", wireType)
 			}
@@ -612,7 +711,7 @@ func (m *Swap) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 7:
+		case 6:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Redeemed", wireType)
 			}
@@ -632,7 +731,7 @@ func (m *Swap) Unmarshal(dAtA []byte) error {
 				}
 			}
 			m.Redeemed = bool(v != 0)
-		case 8:
+		case 7:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Refunded", wireType)
 			}
@@ -652,94 +751,6 @@ func (m *Swap) Unmarshal(dAtA []byte) error {
 				}
 			}
 			m.Refunded = bool(v != 0)
-		default:
-			iNdEx = preIndex
-			skippy, err := skipSwap(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthSwap
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Params) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowSwap
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Params: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Params: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LockedTimeOut", wireType)
-			}
-			m.LockedTimeOut = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowSwap
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.LockedTimeOut |= time.Duration(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LockedTimeIn", wireType)
-			}
-			m.LockedTimeIn = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowSwap
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.LockedTimeIn |= time.Duration(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipSwap(dAtA[iNdEx:])

@@ -2,52 +2,50 @@ package types
 
 import (
 	"encoding/hex"
-	"fmt"
-	"regexp"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/config"
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 )
 
 // NewGenesisState creates a new genesis state.
-func NewGenesisState(params Params, coins []Coin) GenesisState {
-	return GenesisState{
+func NewGenesisState(params Params, coins []Coin, checks []Check) *GenesisState {
+	return &GenesisState{
 		Params: params,
 		Coins:  coins,
+		Checks: checks,
 	}
 }
 
-// DefaultGenesisState sets default evm genesis state with empty accounts and
-// default params and chain config values.
+// DefaultGenesisState returns a default genesis state.
 func DefaultGenesisState() *GenesisState {
-	return &GenesisState{
-		Params: DefaultParams(),
-		Coins:  []Coin{},
-	}
+	return NewGenesisState(DefaultParams(), []Coin{}, []Check{})
 }
 
 // Validate performs basic genesis state validation returning an error upon any failure.
 func (gs *GenesisState) Validate() error {
-	// Check coin title maximum length
-	if len(gs.Params.BaseTitle) > maxCoinNameBytes {
-		return ErrInvalidCoinTitle(gs.Params.BaseTitle)
+	// Check coin denom for correct regexp
+	if !config.CoinDenomValidator.MatchString(gs.Params.BaseDenom) {
+		return errors.InvalidCoinDenom
 	}
-	// Check coin symbol for correct regexp
-	if match, _ := regexp.MatchString(allowedCoinSymbols, gs.Params.BaseSymbol); !match {
-		return ErrInvalidCoinSymbol(gs.Params.BaseSymbol)
+	// Check coin title maximum length
+	if len(gs.Params.BaseTitle) > config.MaxCoinTitleLength {
+		return errors.InvalidCoinTitle
 	}
 	// Check coin initial volume to be correct
-	if gs.Params.BaseInitialVolume.LT(minCoinSupply) || gs.Params.BaseInitialVolume.GT(maxCoinSupply) {
-		return ErrInvalidCoinInitialVolume(gs.Params.BaseInitialVolume.String())
+	if gs.Params.BaseVolume.LT(config.MinCoinSupply) || gs.Params.BaseVolume.GT(config.MaxCoinSupply) {
+		return errors.InvalidCoinInitialVolume
 	}
-	// Check there are no coins with the same symbol
-	seenSymbols := make(map[string]bool)
+	// Check there are no coins with the same denom
+	seenCoins := make(map[string]bool)
 	for _, coin := range gs.Coins {
-		if seenSymbols[coin.Symbol] {
-			return fmt.Errorf("coin symbol duplicated on genesis: '%s'", coin.Symbol)
+		if seenCoins[coin.Denom] {
+			return errors.DuplicateCoinInGenesis
 		}
 		// Validate coin
 		// if err := coin.Validate(); err != nil {
 		// 	return err
 		// }
-		seenSymbols[coin.Symbol] = true
+		seenCoins[coin.Denom] = true
 	}
 	// Check there are no checks with the same hash
 	seenChecks := make(map[string]bool)
@@ -55,7 +53,7 @@ func (gs *GenesisState) Validate() error {
 		checkHash := check.HashFull()
 		checkHashStr := hex.EncodeToString(checkHash[:])
 		if seenChecks[checkHashStr] {
-			return fmt.Errorf("check hash duplicated on genesis: '%X'", checkHash[:])
+			return errors.DuplicateCheckInGenesis
 		}
 		// Validate check
 		// if err := check.Validate(); err != nil {
@@ -63,6 +61,7 @@ func (gs *GenesisState) Validate() error {
 		// }
 		seenChecks[checkHashStr] = true
 	}
+
 	// Validate params
 	return gs.Params.Validate()
 }

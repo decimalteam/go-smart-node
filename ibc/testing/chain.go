@@ -1,5 +1,6 @@
 package ibctesting
 
+/*
 import (
 	"testing"
 
@@ -14,13 +15,13 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
-	ibcgotesting "github.com/cosmos/ibc-go/v3/testing"
-	"github.com/cosmos/ibc-go/v3/testing/mock"
+	channeltypes "github.com/cosmos/ibc-go/v5/modules/core/04-channel/types"
+	ibcgotesting "github.com/cosmos/ibc-go/v5/testing"
+	"github.com/cosmos/ibc-go/v5/testing/mock"
 
-	"github.com/tharsis/ethermint/crypto/ethsecp256k1"
-	ethermint "github.com/tharsis/ethermint/types"
-	evmtypes "github.com/tharsis/ethermint/x/evm/types"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
+	ethermint "github.com/evmos/ethermint/types"
+	evmtypes "github.com/evmos/ethermint/x/evm/types"
 )
 
 // ChainIDPrefix defines the default chain ID prefix for Decimal test chains
@@ -113,3 +114,4 @@ func NewTransferPath(chainA, chainB *ibcgotesting.TestChain) *ibcgotesting.Path 
 
 	return path
 }
+*/

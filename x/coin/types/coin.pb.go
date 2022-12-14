@@ -4,8 +4,11 @@
 package types
 
 import (
+	bytes "bytes"
+	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
-	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
+	_ "github.com/cosmos/cosmos-proto"
+	types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
@@ -24,15 +27,26 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// Coin defines the coin.
 type Coin struct {
-	Title       string                                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title" yaml:"title"`
-	Symbol      string                                 `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol" yaml:"symbol"`
-	CRR         uint64                                 `protobuf:"varint,3,opt,name=crr,proto3" json:"constant_reserve_ratio" yaml:"constant_reserve_ratio"`
-	Reserve     github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,4,opt,name=reserve,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"reserve" yaml:"reserve"`
-	Volume      github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,5,opt,name=volume,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"volume" yaml:"volume"`
-	LimitVolume github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=limit_volume,json=limitVolume,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"limit_volume" yaml:"limit_volume"`
-	Creator     string                                 `protobuf:"bytes,7,opt,name=creator,proto3" json:"creator" yaml:"creator"`
-	Identity    string                                 `protobuf:"bytes,8,opt,name=identity,proto3" json:"identity" yaml:"identity"`
+	// denom defines the coin denomination.
+	Denom string `protobuf:"bytes,1,opt,name=denom,proto3" json:"denom,omitempty"`
+	// title defines the coin title.
+	Title string `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	// creator defines the address of the account created the coin.
+	Creator string `protobuf:"bytes,3,opt,name=creator,proto3" json:"creator,omitempty"`
+	// crr defines the coin constant reserve ratio determining coin tokenomics.
+	CRR uint32 `protobuf:"varint,4,opt,name=crr,proto3" json:"crr,omitempty"`
+	// limit_volume defines maximum allowed supply for the coin.
+	LimitVolume cosmossdk_io_math.Int `protobuf:"bytes,5,opt,name=limit_volume,json=limitVolume,proto3,customtype=cosmossdk.io/math.Int" json:"limit_volume"`
+	// identity is a string containing any other information related to the coin.
+	Identity string `protobuf:"bytes,6,opt,name=identity,proto3" json:"identity,omitempty"`
+	// volume defines the coin supply.
+	// NOTE: actual values are stored as CoinVR records in KVStore.
+	Volume cosmossdk_io_math.Int `protobuf:"bytes,7,opt,name=volume,proto3,customtype=cosmossdk.io/math.Int" json:"volume"`
+	// reserve defines the coin reserve in base coin.
+	// NOTE: actual values are stored as CoinVR records in KVStore.
+	Reserve cosmossdk_io_math.Int `protobuf:"bytes,8,opt,name=reserve,proto3,customtype=cosmossdk.io/math.Int" json:"reserve"`
 }
 
 func (m *Coin) Reset()         { *m = Coin{} }
@@ -68,44 +82,144 @@ func (m *Coin) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Coin proto.InternalMessageInfo
 
+// Check defines the redeemed check.
+type Check struct {
+	// chain_id defines the chain ID for which the check was issued.
+	ChainID string `protobuf:"bytes,1,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
+	// coin defines the coin attached to the check.
+	Coin types.Coin `protobuf:"bytes,2,opt,name=coin,proto3" json:"coin"`
+	// nonce defines nonce used for the check.
+	Nonce []byte `protobuf:"bytes,3,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	// due_block defines block number after which the check becomes expired.
+	DueBlock uint64 `protobuf:"varint,4,opt,name=due_block,json=dueBlock,proto3" json:"due_block,omitempty"`
+	// lock defines specific data needed to ensure the check correctness.
+	Lock []byte `protobuf:"bytes,5,opt,name=lock,proto3" json:"lock,omitempty"`
+	// v defines `v` value of the check signature.
+	V cosmossdk_io_math.Int `protobuf:"bytes,6,opt,name=v,proto3,customtype=cosmossdk.io/math.Int" json:"v"`
+	// r defines `r` value of the check signature.
+	R cosmossdk_io_math.Int `protobuf:"bytes,7,opt,name=r,proto3,customtype=cosmossdk.io/math.Int" json:"r"`
+	// s defines `s` value of the check signature.
+	S cosmossdk_io_math.Int `protobuf:"bytes,8,opt,name=s,proto3,customtype=cosmossdk.io/math.Int" json:"s"`
+}
+
+func (m *Check) Reset()      { *m = Check{} }
+func (*Check) ProtoMessage() {}
+func (*Check) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b0da51b7c52dac0b, []int{1}
+}
+func (m *Check) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Check) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Check.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Check) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Check.Merge(m, src)
+}
+func (m *Check) XXX_Size() int {
+	return m.Size()
+}
+func (m *Check) XXX_DiscardUnknown() {
+	xxx_messageInfo_Check.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Check proto.InternalMessageInfo
+
+// CoinVR defines object containing just volume and reserve of the coin.
+type CoinVR struct {
+	// volume defines the coin supply.
+	Volume cosmossdk_io_math.Int `protobuf:"bytes,1,opt,name=volume,proto3,customtype=cosmossdk.io/math.Int" json:"volume"`
+	// reserve defines the coin reserve in base coin.
+	Reserve cosmossdk_io_math.Int `protobuf:"bytes,2,opt,name=reserve,proto3,customtype=cosmossdk.io/math.Int" json:"reserve"`
+}
+
+func (m *CoinVR) Reset()         { *m = CoinVR{} }
+func (m *CoinVR) String() string { return proto.CompactTextString(m) }
+func (*CoinVR) ProtoMessage()    {}
+func (*CoinVR) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b0da51b7c52dac0b, []int{2}
+}
+func (m *CoinVR) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *CoinVR) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_CoinVR.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *CoinVR) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CoinVR.Merge(m, src)
+}
+func (m *CoinVR) XXX_Size() int {
+	return m.Size()
+}
+func (m *CoinVR) XXX_DiscardUnknown() {
+	xxx_messageInfo_CoinVR.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CoinVR proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*Coin)(nil), "decimal.coin.v1.Coin")
+	proto.RegisterType((*Check)(nil), "decimal.coin.v1.Check")
+	proto.RegisterType((*CoinVR)(nil), "decimal.coin.v1.CoinVR")
 }
 
 func init() { proto.RegisterFile("decimal/coin/v1/coin.proto", fileDescriptor_b0da51b7c52dac0b) }
 
 var fileDescriptor_b0da51b7c52dac0b = []byte{
-	// 469 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x93, 0xcf, 0x6b, 0xd4, 0x40,
-	0x14, 0xc7, 0x13, 0xf7, 0x57, 0x1d, 0x57, 0x0b, 0x51, 0x24, 0x56, 0x9a, 0x57, 0xe6, 0x20, 0xbd,
-	0x6c, 0x42, 0xa9, 0x20, 0xd4, 0xdb, 0xf6, 0x54, 0x04, 0x0f, 0x83, 0x7a, 0xf0, 0xb2, 0x24, 0xd9,
-	0x21, 0x0e, 0xcd, 0x64, 0xca, 0x64, 0x76, 0xe9, 0xfe, 0x07, 0xe2, 0xc9, 0xa3, 0xc7, 0xfd, 0x73,
-	0x7a, 0xec, 0x51, 0x3c, 0x0c, 0xb2, 0x7b, 0x91, 0x1c, 0xf3, 0x17, 0xc8, 0xce, 0xcc, 0xb6, 0x0a,
-	0xbd, 0xf4, 0x34, 0x79, 0x9f, 0x6f, 0xde, 0xfb, 0x84, 0xc7, 0x04, 0xed, 0x4d, 0x69, 0xce, 0x78,
-	0x5a, 0x26, 0xb9, 0x60, 0x55, 0x32, 0x3f, 0x32, 0x67, 0x7c, 0x21, 0x85, 0x12, 0xc1, 0xae, 0xcb,
-	0x62, 0xc3, 0xe6, 0x47, 0x7b, 0xcf, 0x0a, 0x51, 0x08, 0x93, 0x25, 0x9b, 0x27, 0xfb, 0x1a, 0xfe,
-	0xd6, 0x43, 0xdd, 0x53, 0xc1, 0xaa, 0x20, 0x41, 0x3d, 0xc5, 0x54, 0x49, 0x43, 0xff, 0xc0, 0x3f,
-	0x7c, 0x38, 0x7e, 0xd1, 0x68, 0xb0, 0xa0, 0xd5, 0x30, 0x5c, 0xa4, 0xbc, 0x3c, 0xc1, 0xa6, 0xc4,
-	0xc4, 0xe2, 0xe0, 0x18, 0xf5, 0xeb, 0x05, 0xcf, 0x44, 0x19, 0x3e, 0x30, 0x1d, 0x2f, 0x1b, 0x0d,
-	0x8e, 0xb4, 0x1a, 0x1e, 0xdb, 0x16, 0x5b, 0x63, 0xe2, 0x82, 0xe0, 0x03, 0xea, 0xe4, 0x52, 0x86,
-	0x9d, 0x03, 0xff, 0xb0, 0x3b, 0x1e, 0xaf, 0x34, 0x74, 0x4e, 0x09, 0x69, 0x34, 0x3c, 0xcf, 0x45,
-	0x55, 0xab, 0xb4, 0x52, 0x13, 0x49, 0x6b, 0x2a, 0xe7, 0x74, 0x22, 0x53, 0xc5, 0x44, 0xab, 0x61,
-	0xdf, 0x0e, 0xba, 0x3b, 0xc7, 0x64, 0x33, 0x2e, 0xa0, 0x68, 0xe0, 0x70, 0xd8, 0x35, 0xdf, 0xf2,
-	0xee, 0x4a, 0x83, 0xf7, 0x4b, 0xc3, 0xab, 0x82, 0xa9, 0x2f, 0xb3, 0x2c, 0xce, 0x05, 0x4f, 0x72,
-	0x51, 0x73, 0x51, 0xbb, 0x63, 0x54, 0x4f, 0xcf, 0x13, 0xb5, 0xb8, 0xa0, 0x75, 0x7c, 0x56, 0xa9,
-	0x46, 0xc3, 0x76, 0x40, 0xab, 0xe1, 0x89, 0x35, 0x3a, 0x80, 0xc9, 0x36, 0x0a, 0x52, 0xd4, 0x9f,
-	0x8b, 0x72, 0xc6, 0x69, 0xd8, 0x33, 0x96, 0xb3, 0x7b, 0x5b, 0x5c, 0xff, 0xed, 0x7e, 0x6c, 0x8d,
-	0x89, 0x0b, 0x82, 0x4b, 0x34, 0x2c, 0x19, 0x67, 0x6a, 0xe2, 0x44, 0x7d, 0x23, 0xfa, 0x78, 0x6f,
-	0xd1, 0x7f, 0x53, 0x5a, 0x0d, 0x4f, 0xad, 0xee, 0x5f, 0x8a, 0xc9, 0x23, 0x53, 0x7e, 0xb2, 0xe6,
-	0x37, 0x68, 0x90, 0x4b, 0x9a, 0x2a, 0x21, 0xc3, 0x81, 0x91, 0xee, 0x6f, 0xb6, 0xe2, 0xd0, 0xed,
-	0x56, 0x1c, 0xc0, 0x64, 0x1b, 0x05, 0x6f, 0xd1, 0x0e, 0x9b, 0xd2, 0x4a, 0x31, 0xb5, 0x08, 0x77,
-	0x4c, 0x27, 0x34, 0x1a, 0x6e, 0x58, 0xab, 0x61, 0xd7, 0xb6, 0x6e, 0x09, 0x26, 0x37, 0xe1, 0xc9,
-	0xf0, 0xeb, 0x12, 0xbc, 0x1f, 0x4b, 0xf0, 0xff, 0x2c, 0xc1, 0x1f, 0xbf, 0xbf, 0x5a, 0x45, 0xfe,
-	0xf5, 0x2a, 0xf2, 0x7f, 0xaf, 0x22, 0xff, 0xfb, 0x3a, 0xf2, 0xae, 0xd7, 0x91, 0xf7, 0x73, 0x1d,
-	0x79, 0x9f, 0x5f, 0x67, 0x4c, 0x65, 0xb3, 0xfc, 0x9c, 0xaa, 0x58, 0xc8, 0x22, 0x71, 0x77, 0x5b,
-	0xd1, 0x94, 0x27, 0x85, 0x18, 0xd5, 0x3c, 0x95, 0x6a, 0x54, 0x89, 0x29, 0x4d, 0x2e, 0xed, 0xbf,
-	0x60, 0x76, 0x91, 0xf5, 0xcd, 0x1d, 0x3f, 0xfe, 0x1b, 0x00, 0x00, 0xff, 0xff, 0x33, 0x46, 0xb3,
-	0xc1, 0x28, 0x03, 0x00, 0x00,
+	// 545 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x54, 0x31, 0x6b, 0x1b, 0x31,
+	0x18, 0x3d, 0xc5, 0x67, 0x9f, 0xa3, 0xb8, 0x14, 0x84, 0x0b, 0x67, 0x17, 0xee, 0x42, 0x86, 0x12,
+	0x28, 0xbe, 0xc3, 0x49, 0x97, 0x76, 0xeb, 0xb9, 0x1d, 0xbc, 0x64, 0xb8, 0x42, 0x86, 0x2e, 0xe6,
+	0xee, 0x24, 0x6c, 0x61, 0x9f, 0x14, 0x24, 0xf9, 0x68, 0x7e, 0x41, 0x3b, 0x76, 0xec, 0x68, 0xfa,
+	0x1b, 0xf2, 0x23, 0x32, 0x86, 0x4c, 0xa5, 0x83, 0x29, 0xf6, 0x52, 0xfa, 0x2b, 0x8a, 0xa4, 0x4b,
+	0xc8, 0xea, 0x90, 0xc9, 0x7a, 0xef, 0xd3, 0xf7, 0x3d, 0xf9, 0x3d, 0x9d, 0x60, 0x1f, 0x93, 0x82,
+	0x96, 0xd9, 0x22, 0x2e, 0x38, 0x65, 0x71, 0x35, 0x34, 0xbf, 0xd1, 0x85, 0xe0, 0x8a, 0xa3, 0xe7,
+	0x75, 0x2d, 0x32, 0x5c, 0x35, 0xec, 0x77, 0xa7, 0x7c, 0xca, 0x4d, 0x2d, 0xd6, 0x2b, 0xbb, 0xad,
+	0xdf, 0x2b, 0xb8, 0x2c, 0xb9, 0x9c, 0xd8, 0x82, 0x05, 0x75, 0x29, 0xb0, 0x28, 0xce, 0x33, 0x49,
+	0xe2, 0x6a, 0x98, 0x13, 0x95, 0x3d, 0x54, 0x38, 0xfa, 0xda, 0x80, 0xee, 0x88, 0x53, 0x86, 0xba,
+	0xb0, 0x89, 0x09, 0xe3, 0xa5, 0x0f, 0x0e, 0xc1, 0xf1, 0x7e, 0x6a, 0x81, 0x66, 0x15, 0x55, 0x0b,
+	0xe2, 0xef, 0x59, 0xd6, 0x00, 0x74, 0x02, 0xbd, 0x42, 0x90, 0x4c, 0x71, 0xe1, 0x37, 0x34, 0x9f,
+	0xf8, 0xb7, 0x57, 0x83, 0x6e, 0xad, 0xfb, 0x1e, 0x63, 0x41, 0xa4, 0xfc, 0xa4, 0x04, 0x65, 0xd3,
+	0xf4, 0x6e, 0x23, 0xea, 0xc1, 0x46, 0x21, 0x84, 0xef, 0x1e, 0x82, 0xe3, 0x67, 0x89, 0xb7, 0x59,
+	0x87, 0x8d, 0x51, 0x9a, 0xa6, 0x9a, 0x43, 0x67, 0xb0, 0xb3, 0xa0, 0x25, 0x55, 0x93, 0x8a, 0x2f,
+	0x96, 0x25, 0xf1, 0x9b, 0x66, 0xe6, 0xeb, 0xeb, 0x75, 0xe8, 0xfc, 0x5e, 0x87, 0x2f, 0xec, 0x5c,
+	0x89, 0xe7, 0x11, 0xe5, 0x71, 0x99, 0xa9, 0x59, 0x34, 0x66, 0xea, 0xf6, 0x6a, 0x00, 0x6b, 0xc1,
+	0x31, 0x53, 0xe9, 0x81, 0x19, 0x70, 0x6e, 0xfa, 0x51, 0x1f, 0xb6, 0x29, 0x26, 0x4c, 0x51, 0x75,
+	0xe9, 0xb7, 0xcc, 0xb9, 0xef, 0x31, 0x1a, 0xc1, 0x56, 0xad, 0xe2, 0xed, 0xae, 0x52, 0xb7, 0xa2,
+	0x8f, 0xd0, 0x13, 0x44, 0x12, 0x51, 0x11, 0xbf, 0xbd, 0xfb, 0x94, 0xbb, 0xde, 0x77, 0x9d, 0x6f,
+	0xab, 0xd0, 0xf9, 0xb1, 0x0a, 0xc1, 0xdf, 0x55, 0x08, 0x8e, 0xfe, 0xed, 0xc1, 0xe6, 0x68, 0x46,
+	0x8a, 0x39, 0x7a, 0x05, 0xdb, 0xc5, 0x2c, 0xa3, 0x6c, 0x42, 0xb1, 0x4d, 0x23, 0x39, 0xd8, 0xac,
+	0x43, 0x6f, 0xa4, 0xb9, 0xf1, 0x87, 0xd4, 0x33, 0xc5, 0x31, 0x46, 0xa7, 0xd0, 0xd5, 0x49, 0x9a,
+	0x6c, 0x0e, 0x4e, 0x7a, 0x51, 0xad, 0xa1, 0xa3, 0x8e, 0xea, 0xa8, 0x23, 0x9d, 0x6d, 0xe2, 0xea,
+	0xe3, 0xa5, 0x66, 0xb3, 0x4e, 0x94, 0x71, 0x56, 0x10, 0x93, 0x5c, 0x27, 0xb5, 0x00, 0xbd, 0x84,
+	0xfb, 0x78, 0x49, 0x26, 0xf9, 0x82, 0x17, 0x73, 0x93, 0x91, 0x9b, 0xb6, 0xf1, 0x92, 0x24, 0x1a,
+	0x23, 0x04, 0x5d, 0xc3, 0x37, 0x4d, 0x87, 0x59, 0xa3, 0xb7, 0x10, 0x54, 0xd6, 0xdc, 0xdd, 0xfe,
+	0x3c, 0xa8, 0x74, 0xab, 0x78, 0x8c, 0xfb, 0x40, 0xe8, 0x56, 0xf9, 0x18, 0xcb, 0x81, 0xbc, 0x37,
+	0xdb, 0x31, 0x66, 0xff, 0x04, 0xb0, 0xa5, 0xad, 0x39, 0x4f, 0x1f, 0xdc, 0x08, 0xf0, 0x24, 0x37,
+	0x62, 0xef, 0xa9, 0x6e, 0x44, 0x72, 0x76, 0xbd, 0x09, 0xc0, 0xcd, 0x26, 0x00, 0x7f, 0x36, 0x01,
+	0xf8, 0xbe, 0x0d, 0x9c, 0x9b, 0x6d, 0xe0, 0xfc, 0xda, 0x06, 0xce, 0xe7, 0x37, 0x39, 0x55, 0xf9,
+	0xb2, 0x98, 0x13, 0x15, 0x71, 0x31, 0x8d, 0xeb, 0x57, 0x42, 0x91, 0xac, 0x8c, 0xa7, 0x7c, 0x20,
+	0xcb, 0x4c, 0xa8, 0x01, 0xe3, 0x98, 0xc4, 0x5f, 0xec, 0xab, 0xa2, 0x2e, 0x2f, 0x88, 0xcc, 0x5b,
+	0xe6, 0x93, 0x3f, 0xfd, 0x1f, 0x00, 0x00, 0xff, 0xff, 0x27, 0x08, 0x9a, 0xc7, 0x72, 0x04, 0x00,
+	0x00,
 }
 
 func (this *Coin) Equal(that interface{}) bool {
@@ -127,28 +241,100 @@ func (this *Coin) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
+	if this.Denom != that1.Denom {
+		return false
+	}
 	if this.Title != that1.Title {
-		return false
-	}
-	if this.Symbol != that1.Symbol {
-		return false
-	}
-	if this.CRR != that1.CRR {
-		return false
-	}
-	if !this.Reserve.Equal(that1.Reserve) {
-		return false
-	}
-	if !this.Volume.Equal(that1.Volume) {
-		return false
-	}
-	if !this.LimitVolume.Equal(that1.LimitVolume) {
 		return false
 	}
 	if this.Creator != that1.Creator {
 		return false
 	}
+	if this.CRR != that1.CRR {
+		return false
+	}
+	if !this.LimitVolume.Equal(that1.LimitVolume) {
+		return false
+	}
 	if this.Identity != that1.Identity {
+		return false
+	}
+	if !this.Volume.Equal(that1.Volume) {
+		return false
+	}
+	if !this.Reserve.Equal(that1.Reserve) {
+		return false
+	}
+	return true
+}
+func (this *Check) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Check)
+	if !ok {
+		that2, ok := that.(Check)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ChainID != that1.ChainID {
+		return false
+	}
+	if !this.Coin.Equal(&that1.Coin) {
+		return false
+	}
+	if !bytes.Equal(this.Nonce, that1.Nonce) {
+		return false
+	}
+	if this.DueBlock != that1.DueBlock {
+		return false
+	}
+	if !bytes.Equal(this.Lock, that1.Lock) {
+		return false
+	}
+	if !this.V.Equal(that1.V) {
+		return false
+	}
+	if !this.R.Equal(that1.R) {
+		return false
+	}
+	if !this.S.Equal(that1.S) {
+		return false
+	}
+	return true
+}
+func (this *CoinVR) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*CoinVR)
+	if !ok {
+		that2, ok := that.(CoinVR)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Volume.Equal(that1.Volume) {
+		return false
+	}
+	if !this.Reserve.Equal(that1.Reserve) {
 		return false
 	}
 	return true
@@ -173,19 +359,32 @@ func (m *Coin) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	{
+		size := m.Reserve.Size()
+		i -= size
+		if _, err := m.Reserve.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintCoin(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x42
+	{
+		size := m.Volume.Size()
+		i -= size
+		if _, err := m.Volume.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintCoin(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x3a
 	if len(m.Identity) > 0 {
 		i -= len(m.Identity)
 		copy(dAtA[i:], m.Identity)
 		i = encodeVarintCoin(dAtA, i, uint64(len(m.Identity)))
 		i--
-		dAtA[i] = 0x42
-	}
-	if len(m.Creator) > 0 {
-		i -= len(m.Creator)
-		copy(dAtA[i:], m.Creator)
-		i = encodeVarintCoin(dAtA, i, uint64(len(m.Creator)))
-		i--
-		dAtA[i] = 0x3a
+		dAtA[i] = 0x32
 	}
 	{
 		size := m.LimitVolume.Size()
@@ -196,17 +395,145 @@ func (m *Coin) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintCoin(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x32
+	dAtA[i] = 0x2a
+	if m.CRR != 0 {
+		i = encodeVarintCoin(dAtA, i, uint64(m.CRR))
+		i--
+		dAtA[i] = 0x20
+	}
+	if len(m.Creator) > 0 {
+		i -= len(m.Creator)
+		copy(dAtA[i:], m.Creator)
+		i = encodeVarintCoin(dAtA, i, uint64(len(m.Creator)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Title) > 0 {
+		i -= len(m.Title)
+		copy(dAtA[i:], m.Title)
+		i = encodeVarintCoin(dAtA, i, uint64(len(m.Title)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Denom) > 0 {
+		i -= len(m.Denom)
+		copy(dAtA[i:], m.Denom)
+		i = encodeVarintCoin(dAtA, i, uint64(len(m.Denom)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *Check) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Check) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Check) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
 	{
-		size := m.Volume.Size()
+		size := m.S.Size()
 		i -= size
-		if _, err := m.Volume.MarshalTo(dAtA[i:]); err != nil {
+		if _, err := m.S.MarshalTo(dAtA[i:]); err != nil {
 			return 0, err
 		}
 		i = encodeVarintCoin(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x2a
+	dAtA[i] = 0x42
+	{
+		size := m.R.Size()
+		i -= size
+		if _, err := m.R.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintCoin(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x3a
+	{
+		size := m.V.Size()
+		i -= size
+		if _, err := m.V.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintCoin(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x32
+	if len(m.Lock) > 0 {
+		i -= len(m.Lock)
+		copy(dAtA[i:], m.Lock)
+		i = encodeVarintCoin(dAtA, i, uint64(len(m.Lock)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if m.DueBlock != 0 {
+		i = encodeVarintCoin(dAtA, i, uint64(m.DueBlock))
+		i--
+		dAtA[i] = 0x20
+	}
+	if len(m.Nonce) > 0 {
+		i -= len(m.Nonce)
+		copy(dAtA[i:], m.Nonce)
+		i = encodeVarintCoin(dAtA, i, uint64(len(m.Nonce)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	{
+		size, err := m.Coin.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintCoin(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	if len(m.ChainID) > 0 {
+		i -= len(m.ChainID)
+		copy(dAtA[i:], m.ChainID)
+		i = encodeVarintCoin(dAtA, i, uint64(len(m.ChainID)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *CoinVR) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *CoinVR) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *CoinVR) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
 	{
 		size := m.Reserve.Size()
 		i -= size
@@ -216,26 +543,17 @@ func (m *Coin) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintCoin(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x22
-	if m.CRR != 0 {
-		i = encodeVarintCoin(dAtA, i, uint64(m.CRR))
-		i--
-		dAtA[i] = 0x18
+	dAtA[i] = 0x12
+	{
+		size := m.Volume.Size()
+		i -= size
+		if _, err := m.Volume.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintCoin(dAtA, i, uint64(size))
 	}
-	if len(m.Symbol) > 0 {
-		i -= len(m.Symbol)
-		copy(dAtA[i:], m.Symbol)
-		i = encodeVarintCoin(dAtA, i, uint64(len(m.Symbol)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Title) > 0 {
-		i -= len(m.Title)
-		copy(dAtA[i:], m.Title)
-		i = encodeVarintCoin(dAtA, i, uint64(len(m.Title)))
-		i--
-		dAtA[i] = 0xa
-	}
+	i--
+	dAtA[i] = 0xa
 	return len(dAtA) - i, nil
 }
 
@@ -256,31 +574,76 @@ func (m *Coin) Size() (n int) {
 	}
 	var l int
 	_ = l
+	l = len(m.Denom)
+	if l > 0 {
+		n += 1 + l + sovCoin(uint64(l))
+	}
 	l = len(m.Title)
 	if l > 0 {
 		n += 1 + l + sovCoin(uint64(l))
 	}
-	l = len(m.Symbol)
+	l = len(m.Creator)
 	if l > 0 {
 		n += 1 + l + sovCoin(uint64(l))
 	}
 	if m.CRR != 0 {
 		n += 1 + sovCoin(uint64(m.CRR))
 	}
-	l = m.Reserve.Size()
-	n += 1 + l + sovCoin(uint64(l))
-	l = m.Volume.Size()
-	n += 1 + l + sovCoin(uint64(l))
 	l = m.LimitVolume.Size()
 	n += 1 + l + sovCoin(uint64(l))
-	l = len(m.Creator)
-	if l > 0 {
-		n += 1 + l + sovCoin(uint64(l))
-	}
 	l = len(m.Identity)
 	if l > 0 {
 		n += 1 + l + sovCoin(uint64(l))
 	}
+	l = m.Volume.Size()
+	n += 1 + l + sovCoin(uint64(l))
+	l = m.Reserve.Size()
+	n += 1 + l + sovCoin(uint64(l))
+	return n
+}
+
+func (m *Check) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.ChainID)
+	if l > 0 {
+		n += 1 + l + sovCoin(uint64(l))
+	}
+	l = m.Coin.Size()
+	n += 1 + l + sovCoin(uint64(l))
+	l = len(m.Nonce)
+	if l > 0 {
+		n += 1 + l + sovCoin(uint64(l))
+	}
+	if m.DueBlock != 0 {
+		n += 1 + sovCoin(uint64(m.DueBlock))
+	}
+	l = len(m.Lock)
+	if l > 0 {
+		n += 1 + l + sovCoin(uint64(l))
+	}
+	l = m.V.Size()
+	n += 1 + l + sovCoin(uint64(l))
+	l = m.R.Size()
+	n += 1 + l + sovCoin(uint64(l))
+	l = m.S.Size()
+	n += 1 + l + sovCoin(uint64(l))
+	return n
+}
+
+func (m *CoinVR) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Volume.Size()
+	n += 1 + l + sovCoin(uint64(l))
+	l = m.Reserve.Size()
+	n += 1 + l + sovCoin(uint64(l))
 	return n
 }
 
@@ -321,6 +684,38 @@ func (m *Coin) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCoin
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthCoin
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthCoin
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Denom = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Title", wireType)
 			}
 			var stringLen uint64
@@ -351,9 +746,9 @@ func (m *Coin) Unmarshal(dAtA []byte) error {
 			}
 			m.Title = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 2:
+		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Symbol", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Creator", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -381,9 +776,9 @@ func (m *Coin) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Symbol = string(dAtA[iNdEx:postIndex])
+			m.Creator = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 3:
+		case 4:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field CRR", wireType)
 			}
@@ -397,80 +792,12 @@ func (m *Coin) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.CRR |= uint64(b&0x7F) << shift
+				m.CRR |= uint32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Reserve", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowCoin
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthCoin
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthCoin
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Reserve.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
 		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Volume", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowCoin
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthCoin
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthCoin
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Volume.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 6:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field LimitVolume", wireType)
 			}
@@ -504,39 +831,7 @@ func (m *Coin) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 7:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Creator", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowCoin
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthCoin
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthCoin
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Creator = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 8:
+		case 6:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Identity", wireType)
 			}
@@ -567,6 +862,496 @@ func (m *Coin) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Identity = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Volume", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCoin
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthCoin
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthCoin
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Volume.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reserve", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCoin
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthCoin
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthCoin
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Reserve.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipCoin(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthCoin
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Check) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowCoin
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Check: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Check: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ChainID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCoin
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthCoin
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthCoin
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ChainID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Coin", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCoin
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthCoin
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthCoin
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Coin.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCoin
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthCoin
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthCoin
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Nonce = append(m.Nonce[:0], dAtA[iNdEx:postIndex]...)
+			if m.Nonce == nil {
+				m.Nonce = []byte{}
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DueBlock", wireType)
+			}
+			m.DueBlock = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCoin
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.DueBlock |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Lock", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCoin
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthCoin
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthCoin
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Lock = append(m.Lock[:0], dAtA[iNdEx:postIndex]...)
+			if m.Lock == nil {
+				m.Lock = []byte{}
+			}
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field V", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCoin
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthCoin
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthCoin
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.V.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field R", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCoin
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthCoin
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthCoin
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.R.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field S", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCoin
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthCoin
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthCoin
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.S.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipCoin(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthCoin
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *CoinVR) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowCoin
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: CoinVR: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: CoinVR: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Volume", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCoin
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthCoin
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthCoin
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Volume.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reserve", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCoin
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthCoin
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthCoin
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Reserve.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

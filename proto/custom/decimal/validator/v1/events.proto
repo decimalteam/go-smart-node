@@ -1,0 +1,332 @@
+syntax = "proto3";
+package decimal.validator.v1;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+
+import "cosmos_proto/cosmos.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+import "decimal/validator/v1/validator.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/validator/types";
+
+// EventCreateValidator defines event emitted when new validator is created.
+message EventCreateValidator {
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string reward_address = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string consensus_pubkey = 4;
+  Description description = 5 [ (gogoproto.nullable) = false ];
+  string commission = 6 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  cosmos.base.v1beta1.Coin stake = 7 [ (gogoproto.nullable) = false ];
+}
+
+// EventRemoveValidator defines event emitted when validator is removed.
+message EventRemoveValidator {
+  string validator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+}
+
+// EventEditValidator defines event emitted when existing validator is editted.
+message EventEditValidator {
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string reward_address = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  Description description = 4 [ (gogoproto.nullable) = false ];
+}
+
+// EventSetOnline defines event emitted when existing validator is turned on into the blockchain consensus.
+message EventSetOnline {
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+}
+
+// EventSetOffline defines event emitted when existing validator is turned off from the blockchain consensus.
+message EventSetOffline {
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+}
+
+// EventDelegate defines event emitted when a coin or NFT is delegated to a validator.
+message EventDelegate {
+  string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  Stake stake = 3 [ (gogoproto.nullable) = false ];
+  string amount_base = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// EventRedelegate defines event emitted when a coin or NFT is redelegated from a validator to another one.
+message EventRedelegate {
+  string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator_src = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator_dst = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  Stake stake = 4 [ (gogoproto.nullable) = false ];
+  string amount_base = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  google.protobuf.Timestamp complete_at = 6 [ (gogoproto.nullable) = false, (gogoproto.stdtime) = true ];
+}
+
+// EventRedelegateComplete defines event emitted when a redelegation is completed.
+message EventRedelegateComplete {
+  string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator_src = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator_dst = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  Stake stake = 4 [ (gogoproto.nullable) = false ];
+}
+
+// EventUndelegate defines event emitted when a coin or NFT is undelegated from a validator.
+message EventUndelegate {
+  string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  Stake stake = 3 [ (gogoproto.nullable) = false ];
+  string amount_base = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  google.protobuf.Timestamp complete_at = 5 [ (gogoproto.nullable) = false, (gogoproto.stdtime) = true ];
+}
+
+// EventUndelegateComplete defines event emitted when a undelegation is completed.
+message EventUndelegateComplete {
+  string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  Stake stake = 3 [ (gogoproto.nullable) = false ];
+}
+
+// EventForceUndelegate defines event emitted when a delegation is undelegated by force (max delegation count is reached).
+message EventForceUndelegate {
+  string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  Stake stake = 3 [ (gogoproto.nullable) = false ];
+}
+
+// EventCancelRedelegation defines event emitted when a redelegated from a validator to another one is cancelled.
+message EventCancelRedelegation {
+  string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator_src = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator_dst = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  int64 creation_height = 4;
+  Stake stake = 5 [ (gogoproto.nullable) = false ];
+}
+
+// EventCancelUndelegation defines event emitted when an undelegated from a validator is cancelled.
+message EventCancelUndelegation {
+  string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  int64 creation_height = 3;
+  Stake stake = 4 [ (gogoproto.nullable) = false ];
+}
+
+// EventUpdateValidator defines event emitted when existing validator is updated.
+message EventUpdateValidator {
+  string validator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  BondStatus status = 2;
+  bool online = 3;
+  bool jailed = 4;
+  uint64 voting_power = 5;
+}
+
+// EventDelegatedCoinsUpdate defines event emitted when total delegated amount of any coin is changed.
+message EventDelegatedCoinsUpdate {
+
+}
+
+// EventEmission defines event emitted when emission for the block is minted.
+message EventEmission {
+  string amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// EventPayRewards defines event emitted when all accumulated commissions are payed as rewards.
+message EventPayRewards {
+  repeated ValidatorReward validators = 1 [ (gogoproto.nullable) = false ];
+}
+
+// EventLiveness defines event emitted when a validator is missed a block to sign.
+message EventLiveness {
+  string validator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string consensus_pubkey = 2;
+  uint32 missed_blocks = 3;
+}
+
+message EventUpdateCoinsStaked {
+  string denom = 1;
+  string total_amount = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// ValidatorReward contains the detailed validator rewards.
+message ValidatorReward {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // validator is the bech32-encoded address of the validator.
+  string validator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // dao is the amount of the reward in base coin sent to the DAO.
+  string dao = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  // develop is the amount of the reward in base coin sent to the Develop.
+  string develop = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  // commission is the amount of the reward in base coin sent to the validator as it's commission.
+  string commission = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  // accumulated is the total amount of the reward in base coin accumulated for the validator.
+  string accumulated = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  // delegators is the complete list of delegator rewards.
+  repeated DelegatorReward delegators = 6 [ (gogoproto.nullable) = false ];
+}
+
+// DelegatorReward contains delegator address and amount of a reward in base coin.
+message DelegatorReward {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // delegator is the bech32-encoded address of the delegator.
+  string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // coins is the complete list of coin stakes rewards.
+  repeated StakeReward coins = 2 [ (gogoproto.nullable) = false ];
+  // nfts is the complete list of NFT stakes rewards.
+  repeated StakeReward nfts = 3 [ (gogoproto.customname) = "NFTs", (gogoproto.nullable) = false ];
+}
+
+// StakeReward contains delegator stake ID and amount of a reward in base coin.
+message StakeReward {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // id defines the stake ID.
+  // For stake in Coin: contains coin denom value.
+  // For stake in NFT: contains NFT token ID value.
+  string id = 1 [ (gogoproto.customname) = "ID" ];
+  // reward is the amount of the reward in base coin.
+  string reward = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// ValidatorSlash contains the detailed validator slash.
+message EventValidatorSlash {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // validator is the bech32-encoded address of the validator.
+  string validator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // delegators is the complete list of delegator rewards.
+  repeated DelegatorSlash delegators = 6 [ (gogoproto.nullable) = false ];
+  repeated UndelegateSlash undelegations = 7 [ (gogoproto.nullable) = false ];
+  repeated RedelegateSlash redelegations = 8 [ (gogoproto.nullable) = false ];
+}
+
+// DelegatorSlash contains delegator address and amount of a reward in base coin.
+message DelegatorSlash {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // delegator is the bech32-encoded address of the delegator.
+  string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // coins is the list of coin slashes.
+  repeated SlashCoin coins = 2 [ (gogoproto.nullable) = false ];
+  // nfts is the list of NFT slashes.
+  repeated SlashNFT nfts = 3 [ (gogoproto.customname) = "NFTs", (gogoproto.nullable) = false ];
+}
+
+// UndelegateSlash defines event emitted when some undelegation is slashed.
+message UndelegateSlash {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // delegator is the bech32-encoded address of the delegator.
+  string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // validator is the bech32-encoded address of the validator.
+  string validator = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // coins is the list of coin slashes.
+  repeated SlashCoin coins = 3 [ (gogoproto.nullable) = false ];
+  // nfts is the list of NFT slashes.
+  repeated SlashNFT nfts = 4 [ (gogoproto.customname) = "NFTs", (gogoproto.nullable) = false ];
+}
+
+// RedelegateSlash defines event emitted when some redelegation is slashed.
+message RedelegateSlash {
+  string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator_src = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string validator_dst = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // coins is the list of coin slashes.
+  repeated SlashCoin coins = 4 [ (gogoproto.nullable) = false ];
+  // nfts is the list of NFT slashes.
+  repeated SlashNFT nfts = 5 [ (gogoproto.customname) = "NFTs", (gogoproto.nullable) = false ];
+}
+
+
+// SlashCoin contains coin slash info.
+message SlashCoin {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // slash is the slashed coin.
+  cosmos.base.v1beta1.Coin slash = 1 [ (gogoproto.nullable) = false ];
+}
+
+// SlashNFT contains NFT slash info.
+message SlashNFT {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // id defines the slashed NFT token ID.
+  string id = 1 [ (gogoproto.customname) = "ID" ];
+  // sub_tokens defines the slashed NFT sub-tokens.
+  repeated SlashNFTSubToken sub_tokens = 2 [ (gogoproto.nullable) = false ];
+}
+
+// SlashNFTSubToken contains NFT sub-token slash info.
+message SlashNFTSubToken {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // id defines the NFT sub-token ID.
+  uint32 id = 1 [ (gogoproto.customname) = "ID" ];
+  // slash is the slashed NFT sub-token reserve.
+  cosmos.base.v1beta1.Coin slash = 2 [ (gogoproto.nullable) = false ];
+}

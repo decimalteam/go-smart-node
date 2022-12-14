@@ -1,0 +1,97 @@
+syntax = "proto3";
+package decimal.swap.v1;
+
+import "gogoproto/gogo.proto";
+
+import "cosmos_proto/cosmos.proto";
+import "cosmos/msg/v1/msg.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/swap/types";
+
+// Msg defines the module Msg service.
+service Msg {
+  // ActivateChain defines message for activating chain to enable cross-chain swaps.
+  rpc ActivateChain(MsgActivateChain) returns (MsgActivateChainResponse);
+
+  // DeactivateChain defines message for deactivating chain to disable cross-chain swaps.
+  rpc DeactivateChain(MsgDeactivateChain) returns (MsgDeactivateChainResponse);
+
+  // InitializeSwap defines message for initializing the cross-chain swap.
+  rpc InitializeSwap(MsgInitializeSwap) returns (MsgInitializeSwapResponse);
+
+  // RedeemSwap defines message for redeeming the cross-chain swap initialized before in sorce chain.
+  rpc RedeemSwap(MsgRedeemSwap) returns (MsgRedeemSwapResponse);
+}
+
+// MsgActivateChain defines a SDK message for activating chain to enable cross-chain swaps.
+message MsgActivateChain {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  uint32 id = 2 [ (gogoproto.customname) = "ID" ];
+  string name = 3;
+}
+
+// MsgActivateChainResponse defines the Msg/ActivateChain response type.
+message MsgActivateChainResponse {}
+
+// MsgMintToken defines a SDK message for deactivating chain to disable cross-chain swaps.
+message MsgDeactivateChain {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  uint32 id = 2 [ (gogoproto.customname) = "ID" ];
+}
+
+// MsgDeactivateChainResponse defines the Msg/DeactivateChain response type.
+message MsgDeactivateChainResponse {}
+
+// MsgMintToken defines a SDK message for .
+message MsgInitializeSwap {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string sender = 1;
+  string recipient = 2;
+  string amount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string token_symbol = 4;
+  string transaction_number = 5;
+  uint32 from_chain = 6;
+  uint32 dest_chain = 7;
+}
+
+// MsgInitializeSwapResponse defines the Msg/InitializeSwap response type.
+message MsgInitializeSwapResponse {}
+
+// MsgMintToken defines a SDK message for .
+message MsgRedeemSwap {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string sender = 1;
+  string from = 2;
+  string recipient = 3;
+  string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string token_symbol = 5;
+  string transaction_number = 6;
+  uint32 from_chain = 7;
+  uint32 dest_chain = 8;
+  uint32 v = 9;
+  string r = 10;
+  string s = 11;
+}
+
+// MsgRedeemSwapResponse defines the Msg/RedeemSwap response type.
+message MsgRedeemSwapResponse {}

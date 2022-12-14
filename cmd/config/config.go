@@ -1,9 +1,12 @@
 package config
 
 import (
+	"fmt"
+	"os"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	ethermint "github.com/tharsis/ethermint/types"
+	ethermint "github.com/evmos/ethermint/types"
 )
 
 const (
@@ -25,7 +28,7 @@ const (
 
 const (
 	// Bech32Prefix defines the Bech32 prefix used for EthAccounts
-	Bech32Prefix = "dx"
+	Bech32Prefix = "d0"
 
 	// Bech32PrefixAccAddr defines the Bech32 prefix of an account's address
 	Bech32PrefixAccAddr = Bech32Prefix
@@ -43,7 +46,17 @@ const (
 
 const (
 	// BaseDenom defines to the default denomination used in Decimal (staking, EVM, governance, etc.)
+	// TODO: Load it from
 	BaseDenom = "del"
+)
+
+var (
+	DataPath = fmt.Sprintf("%s/.decimal/daemon/data", os.Getenv("HOME"))
+	// NOTE: THIS IS GLOBAL OBJECT TO STORE UPDATES HEIGHTS TO CALCULATE GRACE PERIODS
+	// PATH TO FILE WILL BE REDEFINED IN app/app.go:NewDSC
+	UpdatesInfo = &UpdatesInfoStruct{} // NewUpdatesInfo(filepath.Join(DataPath, UpdatesName))
+	UpdatesName = "updates.json"
+	GracePeriod = int64(700 * 24 * 30) // 660 - average blocks per hour, grace period to use inside inGracePeriod
 )
 
 // SetBech32Prefixes sets the global prefixes to be used when serializing addresses and public keys to Bech32 strings.
@@ -55,7 +68,6 @@ func SetBech32Prefixes(config *sdk.Config) {
 
 // SetBip44CoinType sets the global coin type to be used in hierarchical deterministic wallets.
 func SetBip44CoinType(config *sdk.Config) {
-	// config.SetFullFundraiserPath(ethermint.BIP44HDPath) // nolint: staticcheck
 	config.SetPurpose(sdk.Purpose)
 	config.SetCoinType(ethermint.Bip44CoinType)
 }
