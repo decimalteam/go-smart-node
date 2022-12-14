@@ -1,0 +1,61 @@
+syntax = "proto3";
+package decimal.legacy.v1;
+
+import "google/api/annotations.proto";
+import "gogoproto/gogo.proto";
+
+import "cosmos_proto/cosmos.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+
+import "decimal/legacy/v1/legacy.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/legacy/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Records queries all legacy records that should be returned to the actual owners.
+  rpc Records(QueryRecordsRequest) returns (QueryRecordsResponse) {
+    option (google.api.http).get = "/legacy/v1/records";
+  }
+  // Record queries complete set of different values that should be returned to the actual owner.
+  rpc Record(QueryRecordRequest) returns (QueryRecordResponse) {
+    option (google.api.http).get = "/legacy/v1/record/{legacy_address}";
+  }
+  // Check queries legacy record by specifiec public key.
+  rpc Check(QueryCheckRequest) returns (QueryCheckResponse) {
+    option (google.api.http).get = "/legacy/v1/check/{pubkey}";
+  }
+}
+
+// QueryRecordsRequest is request type for the Query/Records RPC method.
+message QueryRecordsRequest { cosmos.base.query.v1beta1.PageRequest pagination = 1; }
+
+// QueryRecordsResponse is response type for the Query/Records RPC method.
+message QueryRecordsResponse { 
+  repeated Record records = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryRecordRequest is request type for the Query/Record RPC method.
+message QueryRecordRequest {
+  // legacy_address defines legacy account address to found out the legacy record.
+  string legacy_address = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+}
+
+// QueryRecordResponse is response type for the Query/Record RPC method.
+message QueryRecordResponse {
+  // record defines legacy record found by the request.
+  Record record = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryCheckRequest is request type for the Query/Check RPC method.
+message QueryCheckRequest {
+  // pubkey defines account public key as the proof of legacy address authority.
+  bytes pubkey = 1;
+}
+
+// QueryCheckResponse is response type for the Query/Check RPC method.
+message QueryCheckResponse {
+  // record defines legacy record found by the request.
+  Record record = 1 [(gogoproto.nullable) = false];
+}

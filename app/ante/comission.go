@@ -53,7 +53,7 @@ func (vcd ValidatorCommissionDecorator) validateAuthz(ctx sdk.Context, execMsg *
 		var innerMsg sdk.Msg
 		err := vcd.cdc.UnpackAny(v, &innerMsg)
 		if err != nil {
-			return sdkerrors.Wrap(err, "cannot unmarshal authz exec msgs")
+			return err
 		}
 
 		if err := vcd.validateMsg(ctx, innerMsg); err != nil {
@@ -69,14 +69,12 @@ func (vcd ValidatorCommissionDecorator) validateMsg(_ sdk.Context, msg sdk.Msg) 
 	switch msg := msg.(type) {
 	case *stakingtypes.MsgCreateValidator:
 		if msg.Commission.Rate.LT(minCommission) {
-			return sdkerrors.Wrapf(
-				sdkerrors.ErrInvalidRequest,
+			return sdkerrors.ErrInvalidRequest.Wrapf(
 				"validator commission %s be lower than minimum of %s", msg.Commission.Rate, minCommission)
 		}
 	case *stakingtypes.MsgEditValidator:
 		if msg.CommissionRate != nil && msg.CommissionRate.LT(minCommission) {
-			return sdkerrors.Wrapf(
-				sdkerrors.ErrInvalidRequest,
+			return sdkerrors.ErrInvalidRequest.Wrapf(
 				"validator commission %s be lower than minimum of %s", msg.CommissionRate, minCommission)
 		}
 	}

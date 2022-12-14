@@ -1,0 +1,19 @@
+syntax = "proto3";
+package decimal.fee.v1;
+
+import "gogoproto/gogo.proto";
+
+import "cosmos_proto/cosmos.proto";
+
+import "decimal/fee/v1/fee.proto";
+import "decimal/fee/v1/params.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/fee/types";
+
+// GenesisState defines the module's genesis state.
+message GenesisState {
+  // prices defines complete list of initial coin prices.
+  repeated CoinPrice prices = 1 [ (gogoproto.nullable) = false ];
+  // params defines all the module's parameters.
+  Params params = 2 [ (gogoproto.nullable) = false ];
+}

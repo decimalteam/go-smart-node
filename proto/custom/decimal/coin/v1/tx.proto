@@ -1,0 +1,210 @@
+syntax = "proto3";
+package decimal.coin.v1;
+
+import "gogoproto/gogo.proto";
+
+import "cosmos_proto/cosmos.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/msg/v1/msg.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/coin/types";
+
+// Msg defines the module Msg service.
+service Msg {
+  // CreateCoin defines message for creating a new coin.
+  rpc CreateCoin(MsgCreateCoin) returns (MsgCreateCoinResponse);
+
+  // UpdateCoin defines message for modifying existing coin.
+  rpc UpdateCoin(MsgUpdateCoin) returns (MsgUpdateCoinResponse);
+
+  // SendCoin defines message for transferring a coin.
+  rpc SendCoin(MsgSendCoin) returns (MsgSendCoinResponse);
+
+  // MultiSendCoin defines message for multiple transferring coins as a batch.
+  rpc MultiSendCoin(MsgMultiSendCoin) returns (MsgMultiSendCoinResponse);
+
+  // BuyCoin defines message for buying a coin.
+  rpc BuyCoin(MsgBuyCoin) returns (MsgBuyCoinResponse);
+
+  // SellCoin defines message for selling a coin.
+  rpc SellCoin(MsgSellCoin) returns (MsgSellCoinResponse);
+
+  // SellAllCoin defines message for selling a coin completely (to sell all having amount of a coin).
+  rpc SellAllCoin(MsgSellAllCoin) returns (MsgSellAllCoinResponse);
+
+  // BurnCoin defines message for burning a coin.
+  rpc BurnCoin(MsgBurnCoin) returns (MsgBurnCoinResponse);
+
+  // RedeemCheck defines message for redeeming checks.
+  rpc RedeemCheck(MsgRedeemCheck) returns (MsgRedeemCheckResponse);
+}
+
+// MsgCreateCoin defines a SDK message for creating a new coin.
+message MsgCreateCoin {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string denom = 2;
+  string title = 3;
+  uint32 crr = 4 [ (gogoproto.customname) = "CRR" ];
+  string initial_volume = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string initial_reserve = 6 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string limit_volume = 7 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string identity = 8;
+}
+
+// MsgCreateCoinResponse defines the Msg/CreateCoin response type.
+message MsgCreateCoinResponse {}
+
+// MsgUpdateCoin defines a SDK message for modifying existing coin.
+message MsgUpdateCoin {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string denom = 2;
+  string limit_volume = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string identity = 4;
+}
+
+// MsgUpdateCoinResponse defines the Msg/UpdateCoin response type.
+message MsgUpdateCoinResponse {}
+
+// MsgSendCoin defines a SDK message for transferring a coin.
+message MsgSendCoin {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string recipient = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  cosmos.base.v1beta1.Coin coin = 3 [ (gogoproto.nullable) = false ];
+}
+
+// MsgSendCoinResponse defines the Msg/SendCoin response type.
+message MsgSendCoinResponse {}
+
+// MultiSendEntry defines a single entry of MsgMultiSendCoin message.
+message MultiSendEntry {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  string recipient = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  cosmos.base.v1beta1.Coin coin = 2 [ (gogoproto.nullable) = false ];
+}
+
+// MsgMultiSendCoin defines a SDK message for multiple transferring coins as a batch.
+message MsgMultiSendCoin {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  repeated MultiSendEntry sends = 2 [ (gogoproto.nullable) = false ];
+}
+
+// MsgMultiSendCoinResponse defines the Msg/MultiSendCoin response type.
+message MsgMultiSendCoinResponse {}
+
+// MsgBuyCoin defines a SDK message for buying a coin.
+message MsgBuyCoin {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  cosmos.base.v1beta1.Coin coin_to_buy = 2 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin max_coin_to_sell = 3 [ (gogoproto.nullable) = false ];
+}
+
+// MsgBuyCoinResponse defines the Msg/BuyCoin response type.
+message MsgBuyCoinResponse {}
+
+// MsgSellCoin defines a SDK message for selling a coin.
+message MsgSellCoin {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  cosmos.base.v1beta1.Coin coin_to_sell = 2 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin min_coin_to_buy = 3 [ (gogoproto.nullable) = false ];
+}
+
+// MsgSellCoinResponse defines the Msg/SellCoin response type.
+message MsgSellCoinResponse {}
+
+// MsgSellAllCoin defines a SDK message for selling a coin completely (to sell all having amount of a coin)
+message MsgSellAllCoin {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string coin_denom_to_sell = 2;
+  cosmos.base.v1beta1.Coin min_coin_to_buy = 3 [ (gogoproto.nullable) = false ];
+}
+
+// MsgSellAllCoinResponse defines the Msg/SellAllCoin response type.
+message MsgSellAllCoinResponse {}
+
+// MsgBurnCoin defines a SDK message for burning a coin.
+message MsgBurnCoin {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  cosmos.base.v1beta1.Coin coin = 2 [ (gogoproto.nullable) = false ];
+}
+
+// MsgBurnCoinResponse defines the Msg/BurnCoin response type.
+message MsgBurnCoinResponse {}
+
+// MsgRedeemCheck defines a SDK message for redeeming a check.
+message MsgRedeemCheck {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string check = 2;
+  string proof = 3;
+}
+
+// MsgRedeemCheckResponse defines the Msg/RedeemCheck response type.
+message MsgRedeemCheckResponse {}

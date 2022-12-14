@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
-// AccountKeeper defines the expected account keeper.
+// AccountKeeper is the interface contract that x/auth's keeper implements.
 type AccountKeeper interface {
 	// Return a new account with the next account number and the specified address. Does not save the new account to the store.
 	NewAccountWithAddress(sdk.Context, sdk.AccAddress) types.AccountI
@@ -47,20 +47,4 @@ type BankKeeper interface {
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
 	BurnCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
-}
-
-// CoinKeeper defines the exported coin keeper.
-type CoinKeeper interface {
-	GetCoin(ctx sdk.Context, symbol string) (coin Coin, err error)
-	GetCoins(ctx sdk.Context) (coins []Coin)
-	SetCoin(ctx sdk.Context, coin Coin)
-	EditCoin(ctx sdk.Context, coin Coin, reserve sdk.Int, volume sdk.Int)
-
-	IsCheckRedeemed(ctx sdk.Context, check *Check) bool
-	GetCheck(ctx sdk.Context, checkHash []byte) (check *Check, err error)
-	GetChecks(ctx sdk.Context) (checks []Check)
-	SetCheck(ctx sdk.Context, check *Check)
-
-	GetParams(ctx sdk.Context) (params Params)
-	SetParams(ctx sdk.Context, params Params)
 }

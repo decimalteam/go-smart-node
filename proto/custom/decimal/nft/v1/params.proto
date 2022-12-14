@@ -1,0 +1,26 @@
+syntax = "proto3";
+package decimal.nft.v1;
+
+import "gogoproto/gogo.proto";
+
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // max_collection_size defines maximum allowed count of NFT tokens per a NFT collection.
+  uint32 max_collection_size = 1;
+  // max_token_quantity defines maximum allowed count of NFT sub-tokens per a NFT token.
+  uint32 max_token_quantity = 2;
+  // min_reserve_amount defines minimum allowed reserve for a NFT sub-token in the base coin.
+  string min_reserve_amount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}

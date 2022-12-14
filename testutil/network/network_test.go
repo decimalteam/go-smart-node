@@ -12,8 +12,8 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"github.com/tharsis/ethermint/server/config"
-	"github.com/tharsis/ethermint/testutil/network"
+	"github.com/evmos/ethermint/server/config"
+	//"github.com/evmos/ethermint/testutil/network"
 
 	dscnetwork "bitbucket.org/decimalteam/go-smart-node/testutil/network"
 )
@@ -21,7 +21,7 @@ import (
 type IntegrationTestSuite struct {
 	suite.Suite
 
-	network *network.Network
+	network *dscnetwork.Network
 }
 
 func (s *IntegrationTestSuite) SetupSuite() {
@@ -32,7 +32,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	cfg.JSONRPCAddress = config.DefaultJSONRPCAddress
 	cfg.NumValidators = 1
 
-	s.network, err = network.New(s.T(), s.T().TempDir(), cfg)
+	s.network, err = dscnetwork.New(s.T(), s.T().TempDir(), cfg)
 	s.Require().NoError(err)
 	s.Require().NotNil(s.network)
 

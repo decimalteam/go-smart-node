@@ -1,0 +1,27 @@
+syntax = "proto3";
+package decimal.swap.v1;
+
+import "gogoproto/gogo.proto";
+
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/swap/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // locked_time_out defines somewhat we are only expecting to find out... TODO
+  int64 locked_time_out = 1 [ (gogoproto.casttype) = "time.Duration" ];
+  // locked_time_in defines somewhat we are only expecting to find out... TODO
+  int64 locked_time_in = 2 [ (gogoproto.casttype) = "time.Duration" ];
+  // service_address defines somewhat we are only expecting to find out... TODO
+  string service_address = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // checking_address defines somewhat we are only expecting to find out... TODO
+  string checking_address = 4 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+
+  // TODO: Add swap service address
+  // TODO: Add something to params...
+}

@@ -6,24 +6,30 @@ package types
 import (
 	context "context"
 	fmt "fmt"
+	_ "github.com/cosmos/cosmos-proto"
 	types "github.com/cosmos/cosmos-sdk/codec/types"
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
+	types1 "github.com/cosmos/cosmos-sdk/types"
+	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
 	_ "github.com/gogo/protobuf/gogoproto"
 	grpc1 "github.com/gogo/protobuf/grpc"
 	proto "github.com/gogo/protobuf/proto"
-	_ "github.com/regen-network/cosmos-proto"
+	github_com_gogo_protobuf_types "github.com/gogo/protobuf/types"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	_ "google.golang.org/protobuf/types/known/timestamppb"
 	io "io"
 	math "math"
 	math_bits "math/bits"
+	time "time"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
+var _ = time.Kitchen
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -31,27 +37,28 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type MsgDeclareCandidate struct {
-	Commission    github_com_cosmos_cosmos_sdk_types.Dec  `protobuf:"bytes,1,opt,name=commission,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"commission" yaml:"commission"`
-	ValidatorAddr string                                  `protobuf:"bytes,2,opt,name=validator_addr,json=validatorAddr,proto3" json:"validator_addr,omitempty" yaml:"validator_addr"`
-	RewardAddr    string                                  `protobuf:"bytes,3,opt,name=reward_addr,json=rewardAddr,proto3" json:"reward_addr,omitempty" yaml:"reward_addr"`
-	Stake         github_com_cosmos_cosmos_sdk_types.Coin `protobuf:"bytes,4,opt,name=stake,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Coin" json:"stake" yaml:"stake"`
-	Description   Description                             `protobuf:"bytes,5,opt,name=description,proto3" json:"description" yaml:"description"`
-	PubKey        *types.Any                              `protobuf:"bytes,6,opt,name=pub_key,json=pubKey,proto3" json:"pub_key,omitempty" yaml:"pub_key"`
+// MsgCreateValidator defines a SDK message for creating a new validator.
+type MsgCreateValidator struct {
+	OperatorAddress string                                 `protobuf:"bytes,1,opt,name=operator_address,json=operatorAddress,proto3" json:"operator_address,omitempty"`
+	RewardAddress   string                                 `protobuf:"bytes,2,opt,name=reward_address,json=rewardAddress,proto3" json:"reward_address,omitempty"`
+	ConsensusPubkey *types.Any                             `protobuf:"bytes,3,opt,name=consensus_pubkey,json=consensusPubkey,proto3" json:"consensus_pubkey,omitempty"`
+	Description     Description                            `protobuf:"bytes,4,opt,name=description,proto3" json:"description"`
+	Commission      github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,5,opt,name=commission,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"commission"`
+	Stake           types1.Coin                            `protobuf:"bytes,6,opt,name=stake,proto3" json:"stake"`
 }
 
-func (m *MsgDeclareCandidate) Reset()         { *m = MsgDeclareCandidate{} }
-func (m *MsgDeclareCandidate) String() string { return proto.CompactTextString(m) }
-func (*MsgDeclareCandidate) ProtoMessage()    {}
-func (*MsgDeclareCandidate) Descriptor() ([]byte, []int) {
+func (m *MsgCreateValidator) Reset()         { *m = MsgCreateValidator{} }
+func (m *MsgCreateValidator) String() string { return proto.CompactTextString(m) }
+func (*MsgCreateValidator) ProtoMessage()    {}
+func (*MsgCreateValidator) Descriptor() ([]byte, []int) {
 	return fileDescriptor_edf91c3e395c558d, []int{0}
 }
-func (m *MsgDeclareCandidate) XXX_Unmarshal(b []byte) error {
+func (m *MsgCreateValidator) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgDeclareCandidate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgCreateValidator) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgDeclareCandidate.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgCreateValidator.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -61,33 +68,34 @@ func (m *MsgDeclareCandidate) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
-func (m *MsgDeclareCandidate) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgDeclareCandidate.Merge(m, src)
+func (m *MsgCreateValidator) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCreateValidator.Merge(m, src)
 }
-func (m *MsgDeclareCandidate) XXX_Size() int {
+func (m *MsgCreateValidator) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgDeclareCandidate) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgDeclareCandidate.DiscardUnknown(m)
+func (m *MsgCreateValidator) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCreateValidator.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgDeclareCandidate proto.InternalMessageInfo
+var xxx_messageInfo_MsgCreateValidator proto.InternalMessageInfo
 
-type MsgDeclareCandidateResponse struct {
+// MsgCreateValidatorResponse defines the Msg/CreateValidator response type.
+type MsgCreateValidatorResponse struct {
 }
 
-func (m *MsgDeclareCandidateResponse) Reset()         { *m = MsgDeclareCandidateResponse{} }
-func (m *MsgDeclareCandidateResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgDeclareCandidateResponse) ProtoMessage()    {}
-func (*MsgDeclareCandidateResponse) Descriptor() ([]byte, []int) {
+func (m *MsgCreateValidatorResponse) Reset()         { *m = MsgCreateValidatorResponse{} }
+func (m *MsgCreateValidatorResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgCreateValidatorResponse) ProtoMessage()    {}
+func (*MsgCreateValidatorResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_edf91c3e395c558d, []int{1}
 }
-func (m *MsgDeclareCandidateResponse) XXX_Unmarshal(b []byte) error {
+func (m *MsgCreateValidatorResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgDeclareCandidateResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgCreateValidatorResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgDeclareCandidateResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgCreateValidatorResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -97,36 +105,37 @@ func (m *MsgDeclareCandidateResponse) XXX_Marshal(b []byte, deterministic bool) 
 		return b[:n], nil
 	}
 }
-func (m *MsgDeclareCandidateResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgDeclareCandidateResponse.Merge(m, src)
+func (m *MsgCreateValidatorResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCreateValidatorResponse.Merge(m, src)
 }
-func (m *MsgDeclareCandidateResponse) XXX_Size() int {
+func (m *MsgCreateValidatorResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgDeclareCandidateResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgDeclareCandidateResponse.DiscardUnknown(m)
+func (m *MsgCreateValidatorResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCreateValidatorResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgDeclareCandidateResponse proto.InternalMessageInfo
+var xxx_messageInfo_MsgCreateValidatorResponse proto.InternalMessageInfo
 
-type MsgDelegate struct {
-	DelegatorAddress string                                  `protobuf:"bytes,1,opt,name=delegator_address,json=delegatorAddress,proto3" json:"delegator_address,omitempty" yaml:"delegator_address"`
-	ValidatorAddress string                                  `protobuf:"bytes,2,opt,name=validator_address,json=validatorAddress,proto3" json:"validator_address,omitempty" yaml:"validator_address"`
-	Coin             github_com_cosmos_cosmos_sdk_types.Coin `protobuf:"bytes,3,opt,name=coin,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Coin" json:"coin" yaml:"coin"`
+// MsgEditValidator defines a SDK message for editing an existing validator.
+type MsgEditValidator struct {
+	OperatorAddress string      `protobuf:"bytes,1,opt,name=operator_address,json=operatorAddress,proto3" json:"operator_address,omitempty"`
+	RewardAddress   string      `protobuf:"bytes,2,opt,name=reward_address,json=rewardAddress,proto3" json:"reward_address,omitempty"`
+	Description     Description `protobuf:"bytes,3,opt,name=description,proto3" json:"description"`
 }
 
-func (m *MsgDelegate) Reset()         { *m = MsgDelegate{} }
-func (m *MsgDelegate) String() string { return proto.CompactTextString(m) }
-func (*MsgDelegate) ProtoMessage()    {}
-func (*MsgDelegate) Descriptor() ([]byte, []int) {
+func (m *MsgEditValidator) Reset()         { *m = MsgEditValidator{} }
+func (m *MsgEditValidator) String() string { return proto.CompactTextString(m) }
+func (*MsgEditValidator) ProtoMessage()    {}
+func (*MsgEditValidator) Descriptor() ([]byte, []int) {
 	return fileDescriptor_edf91c3e395c558d, []int{2}
 }
-func (m *MsgDelegate) XXX_Unmarshal(b []byte) error {
+func (m *MsgEditValidator) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgDelegate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgEditValidator) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgDelegate.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgEditValidator.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -136,33 +145,34 @@ func (m *MsgDelegate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) 
 		return b[:n], nil
 	}
 }
-func (m *MsgDelegate) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgDelegate.Merge(m, src)
+func (m *MsgEditValidator) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgEditValidator.Merge(m, src)
 }
-func (m *MsgDelegate) XXX_Size() int {
+func (m *MsgEditValidator) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgDelegate) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgDelegate.DiscardUnknown(m)
+func (m *MsgEditValidator) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgEditValidator.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgDelegate proto.InternalMessageInfo
+var xxx_messageInfo_MsgEditValidator proto.InternalMessageInfo
 
-type MsgDelegateResponse struct {
+// MsgEditValidatorResponse defines the Msg/EditValidator response type.
+type MsgEditValidatorResponse struct {
 }
 
-func (m *MsgDelegateResponse) Reset()         { *m = MsgDelegateResponse{} }
-func (m *MsgDelegateResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgDelegateResponse) ProtoMessage()    {}
-func (*MsgDelegateResponse) Descriptor() ([]byte, []int) {
+func (m *MsgEditValidatorResponse) Reset()         { *m = MsgEditValidatorResponse{} }
+func (m *MsgEditValidatorResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgEditValidatorResponse) ProtoMessage()    {}
+func (*MsgEditValidatorResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_edf91c3e395c558d, []int{3}
 }
-func (m *MsgDelegateResponse) XXX_Unmarshal(b []byte) error {
+func (m *MsgEditValidatorResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgDelegateResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgEditValidatorResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgDelegateResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgEditValidatorResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -172,104 +182,29 @@ func (m *MsgDelegateResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
-func (m *MsgDelegateResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgDelegateResponse.Merge(m, src)
+func (m *MsgEditValidatorResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgEditValidatorResponse.Merge(m, src)
 }
-func (m *MsgDelegateResponse) XXX_Size() int {
+func (m *MsgEditValidatorResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgDelegateResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgDelegateResponse.DiscardUnknown(m)
+func (m *MsgEditValidatorResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgEditValidatorResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgDelegateResponse proto.InternalMessageInfo
+var xxx_messageInfo_MsgEditValidatorResponse proto.InternalMessageInfo
 
-type MsgDelegateNFT struct {
-	DelegatorAddress string                                 `protobuf:"bytes,1,opt,name=delegator_address,json=delegatorAddress,proto3" json:"delegator_address,omitempty" yaml:"delegator_address"`
-	ValidatorAddress string                                 `protobuf:"bytes,2,opt,name=validator_address,json=validatorAddress,proto3" json:"validator_address" yaml:"validator_address"`
-	TokenId          string                                 `protobuf:"bytes,3,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty" yaml:"token_id"`
-	Denom            string                                 `protobuf:"bytes,4,opt,name=denom,proto3" json:"denom,omitempty" yaml:"denom"`
-	Quantity         github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,5,opt,name=quantity,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"quantity" yaml:"quantity"`
-}
-
-func (m *MsgDelegateNFT) Reset()         { *m = MsgDelegateNFT{} }
-func (m *MsgDelegateNFT) String() string { return proto.CompactTextString(m) }
-func (*MsgDelegateNFT) ProtoMessage()    {}
-func (*MsgDelegateNFT) Descriptor() ([]byte, []int) {
-	return fileDescriptor_edf91c3e395c558d, []int{4}
-}
-func (m *MsgDelegateNFT) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgDelegateNFT) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgDelegateNFT.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgDelegateNFT) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgDelegateNFT.Merge(m, src)
-}
-func (m *MsgDelegateNFT) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgDelegateNFT) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgDelegateNFT.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgDelegateNFT proto.InternalMessageInfo
-
-type MsgDelegateNFTResponse struct {
-}
-
-func (m *MsgDelegateNFTResponse) Reset()         { *m = MsgDelegateNFTResponse{} }
-func (m *MsgDelegateNFTResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgDelegateNFTResponse) ProtoMessage()    {}
-func (*MsgDelegateNFTResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_edf91c3e395c558d, []int{5}
-}
-func (m *MsgDelegateNFTResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgDelegateNFTResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgDelegateNFTResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgDelegateNFTResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgDelegateNFTResponse.Merge(m, src)
-}
-func (m *MsgDelegateNFTResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgDelegateNFTResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgDelegateNFTResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgDelegateNFTResponse proto.InternalMessageInfo
-
+// MsgSetOnline defines a SDK message for turning on a validator into the blockchain consensus.
 type MsgSetOnline struct {
-	ValidatorAddress string `protobuf:"bytes,1,opt,name=validator_address,json=validatorAddress,proto3" json:"validator_address,omitempty" yaml:"validator_address"`
+	// validator is the bech32-encoded address of the validator.
+	Validator string `protobuf:"bytes,1,opt,name=validator,proto3" json:"validator,omitempty"`
 }
 
 func (m *MsgSetOnline) Reset()         { *m = MsgSetOnline{} }
 func (m *MsgSetOnline) String() string { return proto.CompactTextString(m) }
 func (*MsgSetOnline) ProtoMessage()    {}
 func (*MsgSetOnline) Descriptor() ([]byte, []int) {
-	return fileDescriptor_edf91c3e395c558d, []int{6}
+	return fileDescriptor_edf91c3e395c558d, []int{4}
 }
 func (m *MsgSetOnline) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -298,6 +233,7 @@ func (m *MsgSetOnline) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgSetOnline proto.InternalMessageInfo
 
+// MsgSetOnlineResponse defines the Msg/SetOnline response type.
 type MsgSetOnlineResponse struct {
 }
 
@@ -305,7 +241,7 @@ func (m *MsgSetOnlineResponse) Reset()         { *m = MsgSetOnlineResponse{} }
 func (m *MsgSetOnlineResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgSetOnlineResponse) ProtoMessage()    {}
 func (*MsgSetOnlineResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_edf91c3e395c558d, []int{7}
+	return fileDescriptor_edf91c3e395c558d, []int{5}
 }
 func (m *MsgSetOnlineResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -334,15 +270,17 @@ func (m *MsgSetOnlineResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgSetOnlineResponse proto.InternalMessageInfo
 
+// MsgSetOffline defines a SDK message for turning off a validator from the blockchain consensus.
 type MsgSetOffline struct {
-	ValidatorAddress string `protobuf:"bytes,2,opt,name=validator_address,json=validatorAddress,proto3" json:"validator_address" yaml:"validator_address"`
+	// validator is the bech32-encoded address of the validator.
+	Validator string `protobuf:"bytes,1,opt,name=validator,proto3" json:"validator,omitempty"`
 }
 
 func (m *MsgSetOffline) Reset()         { *m = MsgSetOffline{} }
 func (m *MsgSetOffline) String() string { return proto.CompactTextString(m) }
 func (*MsgSetOffline) ProtoMessage()    {}
 func (*MsgSetOffline) Descriptor() ([]byte, []int) {
-	return fileDescriptor_edf91c3e395c558d, []int{8}
+	return fileDescriptor_edf91c3e395c558d, []int{6}
 }
 func (m *MsgSetOffline) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -371,6 +309,7 @@ func (m *MsgSetOffline) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgSetOffline proto.InternalMessageInfo
 
+// MsgSetOfflineResponse defines the Msg/SetOffline response type.
 type MsgSetOfflineResponse struct {
 }
 
@@ -378,7 +317,7 @@ func (m *MsgSetOfflineResponse) Reset()         { *m = MsgSetOfflineResponse{} }
 func (m *MsgSetOfflineResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgSetOfflineResponse) ProtoMessage()    {}
 func (*MsgSetOfflineResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_edf91c3e395c558d, []int{9}
+	return fileDescriptor_edf91c3e395c558d, []int{7}
 }
 func (m *MsgSetOfflineResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -407,24 +346,110 @@ func (m *MsgSetOfflineResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgSetOfflineResponse proto.InternalMessageInfo
 
-type MsgUnbond struct {
-	ValidatorAddress string                                  `protobuf:"bytes,1,opt,name=validator_address,json=validatorAddress,proto3" json:"validator_address,omitempty" yaml:"validator_address"`
-	DelegatorAddress string                                  `protobuf:"bytes,2,opt,name=delegator_address,json=delegatorAddress,proto3" json:"delegator_address,omitempty" yaml:"delegator_address"`
-	Coin             github_com_cosmos_cosmos_sdk_types.Coin `protobuf:"bytes,3,opt,name=coin,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Coin" json:"coin" yaml:"coin"`
+// MsgDelegate defines a SDK message for performing a delegation of coins from a delegator to a validator.
+type MsgDelegate struct {
+	// delegator is the bech32-encoded address of the delegator.
+	Delegator string `protobuf:"bytes,1,opt,name=delegator,proto3" json:"delegator,omitempty"`
+	// validator is the bech32-encoded address of the validator.
+	Validator string `protobuf:"bytes,2,opt,name=validator,proto3" json:"validator,omitempty"`
+	// coin defines amount of the coin to delegate.
+	Coin types1.Coin `protobuf:"bytes,3,opt,name=coin,proto3" json:"coin"`
 }
 
-func (m *MsgUnbond) Reset()         { *m = MsgUnbond{} }
-func (m *MsgUnbond) String() string { return proto.CompactTextString(m) }
-func (*MsgUnbond) ProtoMessage()    {}
-func (*MsgUnbond) Descriptor() ([]byte, []int) {
+func (m *MsgDelegate) Reset()         { *m = MsgDelegate{} }
+func (m *MsgDelegate) String() string { return proto.CompactTextString(m) }
+func (*MsgDelegate) ProtoMessage()    {}
+func (*MsgDelegate) Descriptor() ([]byte, []int) {
+	return fileDescriptor_edf91c3e395c558d, []int{8}
+}
+func (m *MsgDelegate) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgDelegate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgDelegate.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgDelegate) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgDelegate.Merge(m, src)
+}
+func (m *MsgDelegate) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgDelegate) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgDelegate.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgDelegate proto.InternalMessageInfo
+
+// MsgDelegateResponse defines the Msg/Delegate response type.
+type MsgDelegateResponse struct {
+}
+
+func (m *MsgDelegateResponse) Reset()         { *m = MsgDelegateResponse{} }
+func (m *MsgDelegateResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgDelegateResponse) ProtoMessage()    {}
+func (*MsgDelegateResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_edf91c3e395c558d, []int{9}
+}
+func (m *MsgDelegateResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgDelegateResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgDelegateResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgDelegateResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgDelegateResponse.Merge(m, src)
+}
+func (m *MsgDelegateResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgDelegateResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgDelegateResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgDelegateResponse proto.InternalMessageInfo
+
+// MsgDelegateNFT defines a SDK message for performing a delegation of NFTs from a delegator to a validator.
+type MsgDelegateNFT struct {
+	// delegator is the bech32-encoded address of the delegator.
+	Delegator string `protobuf:"bytes,1,opt,name=delegator,proto3" json:"delegator,omitempty"`
+	// validator is the bech32-encoded address of the validator.
+	Validator string `protobuf:"bytes,2,opt,name=validator,proto3" json:"validator,omitempty"`
+	// token_id defines the NFT token ID.
+	TokenID string `protobuf:"bytes,3,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
+	// sub_token_ids defines list of NFT sub-token IDs.
+	SubTokenIDs []uint32 `protobuf:"varint,4,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
+}
+
+func (m *MsgDelegateNFT) Reset()         { *m = MsgDelegateNFT{} }
+func (m *MsgDelegateNFT) String() string { return proto.CompactTextString(m) }
+func (*MsgDelegateNFT) ProtoMessage()    {}
+func (*MsgDelegateNFT) Descriptor() ([]byte, []int) {
 	return fileDescriptor_edf91c3e395c558d, []int{10}
 }
-func (m *MsgUnbond) XXX_Unmarshal(b []byte) error {
+func (m *MsgDelegateNFT) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgUnbond) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgDelegateNFT) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgUnbond.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgDelegateNFT.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -434,33 +459,34 @@ func (m *MsgUnbond) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-func (m *MsgUnbond) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgUnbond.Merge(m, src)
+func (m *MsgDelegateNFT) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgDelegateNFT.Merge(m, src)
 }
-func (m *MsgUnbond) XXX_Size() int {
+func (m *MsgDelegateNFT) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgUnbond) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgUnbond.DiscardUnknown(m)
+func (m *MsgDelegateNFT) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgDelegateNFT.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgUnbond proto.InternalMessageInfo
+var xxx_messageInfo_MsgDelegateNFT proto.InternalMessageInfo
 
-type MsgUnbondResponse struct {
+// MsgDelegateNFTResponse defines the Msg/DelegateNFT response type.
+type MsgDelegateNFTResponse struct {
 }
 
-func (m *MsgUnbondResponse) Reset()         { *m = MsgUnbondResponse{} }
-func (m *MsgUnbondResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgUnbondResponse) ProtoMessage()    {}
-func (*MsgUnbondResponse) Descriptor() ([]byte, []int) {
+func (m *MsgDelegateNFTResponse) Reset()         { *m = MsgDelegateNFTResponse{} }
+func (m *MsgDelegateNFTResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgDelegateNFTResponse) ProtoMessage()    {}
+func (*MsgDelegateNFTResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_edf91c3e395c558d, []int{11}
 }
-func (m *MsgUnbondResponse) XXX_Unmarshal(b []byte) error {
+func (m *MsgDelegateNFTResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgUnbondResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgDelegateNFTResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgUnbondResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgDelegateNFTResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -470,38 +496,43 @@ func (m *MsgUnbondResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, e
 		return b[:n], nil
 	}
 }
-func (m *MsgUnbondResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgUnbondResponse.Merge(m, src)
+func (m *MsgDelegateNFTResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgDelegateNFTResponse.Merge(m, src)
 }
-func (m *MsgUnbondResponse) XXX_Size() int {
+func (m *MsgDelegateNFTResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgUnbondResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgUnbondResponse.DiscardUnknown(m)
+func (m *MsgDelegateNFTResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgDelegateNFTResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgUnbondResponse proto.InternalMessageInfo
+var xxx_messageInfo_MsgDelegateNFTResponse proto.InternalMessageInfo
 
-type MsgUnbondNFT struct {
-	ValidatorAddress string                                 `protobuf:"bytes,1,opt,name=validator_address,json=validatorAddress,proto3" json:"validator_address,omitempty" yaml:"validator_address"`
-	DelegatorAddress string                                 `protobuf:"bytes,2,opt,name=delegator_address,json=delegatorAddress,proto3" json:"delegator_address,omitempty" yaml:"delegator_address"`
-	TokenId          string                                 `protobuf:"bytes,3,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty" yaml:"token_id"`
-	Denom            string                                 `protobuf:"bytes,4,opt,name=denom,proto3" json:"denom,omitempty" yaml:"denom"`
-	Quantity         github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,5,opt,name=quantity,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"quantity" yaml:"quantity"`
+// MsgRedelegate defines a SDK message for performing a redelegation
+// of coins from a delegator and source validator to a destination validator.
+type MsgRedelegate struct {
+	// delegator is the bech32-encoded address of the delegator.
+	Delegator string `protobuf:"bytes,1,opt,name=delegator,proto3" json:"delegator,omitempty"`
+	// validator_src is the bech32-encoded address of the source validator.
+	ValidatorSrc string `protobuf:"bytes,2,opt,name=validator_src,json=validatorSrc,proto3" json:"validator_src,omitempty"`
+	// validator_dst is the bech32-encoded address of the destination validator.
+	ValidatorDst string `protobuf:"bytes,3,opt,name=validator_dst,json=validatorDst,proto3" json:"validator_dst,omitempty"`
+	// coin defines amount of the coin to redelegate.
+	Coin types1.Coin `protobuf:"bytes,4,opt,name=coin,proto3" json:"coin"`
 }
 
-func (m *MsgUnbondNFT) Reset()         { *m = MsgUnbondNFT{} }
-func (m *MsgUnbondNFT) String() string { return proto.CompactTextString(m) }
-func (*MsgUnbondNFT) ProtoMessage()    {}
-func (*MsgUnbondNFT) Descriptor() ([]byte, []int) {
+func (m *MsgRedelegate) Reset()         { *m = MsgRedelegate{} }
+func (m *MsgRedelegate) String() string { return proto.CompactTextString(m) }
+func (*MsgRedelegate) ProtoMessage()    {}
+func (*MsgRedelegate) Descriptor() ([]byte, []int) {
 	return fileDescriptor_edf91c3e395c558d, []int{12}
 }
-func (m *MsgUnbondNFT) XXX_Unmarshal(b []byte) error {
+func (m *MsgRedelegate) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgUnbondNFT) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgRedelegate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgUnbondNFT.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgRedelegate.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -511,33 +542,35 @@ func (m *MsgUnbondNFT) XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
 		return b[:n], nil
 	}
 }
-func (m *MsgUnbondNFT) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgUnbondNFT.Merge(m, src)
+func (m *MsgRedelegate) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgRedelegate.Merge(m, src)
 }
-func (m *MsgUnbondNFT) XXX_Size() int {
+func (m *MsgRedelegate) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgUnbondNFT) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgUnbondNFT.DiscardUnknown(m)
+func (m *MsgRedelegate) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgRedelegate.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgUnbondNFT proto.InternalMessageInfo
+var xxx_messageInfo_MsgRedelegate proto.InternalMessageInfo
 
-type MsgUnbondNFTResponse struct {
+// MsgRedelegateResponse defines the Msg/Redelegate response type.
+type MsgRedelegateResponse struct {
+	CompletionTime time.Time `protobuf:"bytes,1,opt,name=completion_time,json=completionTime,proto3,stdtime" json:"completion_time"`
 }
 
-func (m *MsgUnbondNFTResponse) Reset()         { *m = MsgUnbondNFTResponse{} }
-func (m *MsgUnbondNFTResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgUnbondNFTResponse) ProtoMessage()    {}
-func (*MsgUnbondNFTResponse) Descriptor() ([]byte, []int) {
+func (m *MsgRedelegateResponse) Reset()         { *m = MsgRedelegateResponse{} }
+func (m *MsgRedelegateResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgRedelegateResponse) ProtoMessage()    {}
+func (*MsgRedelegateResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_edf91c3e395c558d, []int{13}
 }
-func (m *MsgUnbondNFTResponse) XXX_Unmarshal(b []byte) error {
+func (m *MsgRedelegateResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgUnbondNFTResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgRedelegateResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgUnbondNFTResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgRedelegateResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -547,36 +580,52 @@ func (m *MsgUnbondNFTResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte
 		return b[:n], nil
 	}
 }
-func (m *MsgUnbondNFTResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgUnbondNFTResponse.Merge(m, src)
+func (m *MsgRedelegateResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgRedelegateResponse.Merge(m, src)
 }
-func (m *MsgUnbondNFTResponse) XXX_Size() int {
+func (m *MsgRedelegateResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgUnbondNFTResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgUnbondNFTResponse.DiscardUnknown(m)
+func (m *MsgRedelegateResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgRedelegateResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgUnbondNFTResponse proto.InternalMessageInfo
+var xxx_messageInfo_MsgRedelegateResponse proto.InternalMessageInfo
 
-type MsgEditCandidate struct {
-	ValidatorAddress string      `protobuf:"bytes,1,opt,name=validator_address,json=validatorAddress,proto3" json:"validator_address,omitempty" yaml:"validator_address"`
-	RewardAddress    string      `protobuf:"bytes,2,opt,name=reward_address,json=rewardAddress,proto3" json:"reward_address,omitempty" yaml:"reward_address"`
-	Description      Description `protobuf:"bytes,3,opt,name=description,proto3" json:"description" yaml:"description"`
+func (m *MsgRedelegateResponse) GetCompletionTime() time.Time {
+	if m != nil {
+		return m.CompletionTime
+	}
+	return time.Time{}
 }
 
-func (m *MsgEditCandidate) Reset()         { *m = MsgEditCandidate{} }
-func (m *MsgEditCandidate) String() string { return proto.CompactTextString(m) }
-func (*MsgEditCandidate) ProtoMessage()    {}
-func (*MsgEditCandidate) Descriptor() ([]byte, []int) {
+// MsgRedelegateNFT defines a SDK message for performing a redelegation
+// of NFTs from a delegator and source validator to a destination validator.
+type MsgRedelegateNFT struct {
+	// delegator is the bech32-encoded address of the delegator.
+	Delegator string `protobuf:"bytes,1,opt,name=delegator,proto3" json:"delegator,omitempty"`
+	// validator_src is the bech32-encoded address of the source validator.
+	ValidatorSrc string `protobuf:"bytes,2,opt,name=validator_src,json=validatorSrc,proto3" json:"validator_src,omitempty"`
+	// validator_dst is the bech32-encoded address of the destination validator.
+	ValidatorDst string `protobuf:"bytes,3,opt,name=validator_dst,json=validatorDst,proto3" json:"validator_dst,omitempty"`
+	// token_id defines the NFT token ID.
+	TokenID string `protobuf:"bytes,4,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
+	// sub_token_ids defines list of NFT sub-token IDs.
+	SubTokenIDs []uint32 `protobuf:"varint,5,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
+}
+
+func (m *MsgRedelegateNFT) Reset()         { *m = MsgRedelegateNFT{} }
+func (m *MsgRedelegateNFT) String() string { return proto.CompactTextString(m) }
+func (*MsgRedelegateNFT) ProtoMessage()    {}
+func (*MsgRedelegateNFT) Descriptor() ([]byte, []int) {
 	return fileDescriptor_edf91c3e395c558d, []int{14}
 }
-func (m *MsgEditCandidate) XXX_Unmarshal(b []byte) error {
+func (m *MsgRedelegateNFT) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgEditCandidate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgRedelegateNFT) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgEditCandidate.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgRedelegateNFT.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -586,54 +635,35 @@ func (m *MsgEditCandidate) XXX_Marshal(b []byte, deterministic bool) ([]byte, er
 		return b[:n], nil
 	}
 }
-func (m *MsgEditCandidate) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgEditCandidate.Merge(m, src)
+func (m *MsgRedelegateNFT) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgRedelegateNFT.Merge(m, src)
 }
-func (m *MsgEditCandidate) XXX_Size() int {
+func (m *MsgRedelegateNFT) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgEditCandidate) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgEditCandidate.DiscardUnknown(m)
+func (m *MsgRedelegateNFT) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgRedelegateNFT.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgEditCandidate proto.InternalMessageInfo
+var xxx_messageInfo_MsgRedelegateNFT proto.InternalMessageInfo
 
-func (m *MsgEditCandidate) GetValidatorAddress() string {
-	if m != nil {
-		return m.ValidatorAddress
-	}
-	return ""
+// MsgRedelegateNFTResponse defines the Msg/RedelegateNFT response type.
+type MsgRedelegateNFTResponse struct {
+	CompletionTime time.Time `protobuf:"bytes,1,opt,name=completion_time,json=completionTime,proto3,stdtime" json:"completion_time"`
 }
 
-func (m *MsgEditCandidate) GetRewardAddress() string {
-	if m != nil {
-		return m.RewardAddress
-	}
-	return ""
-}
-
-func (m *MsgEditCandidate) GetDescription() Description {
-	if m != nil {
-		return m.Description
-	}
-	return Description{}
-}
-
-type MsgEditCandidateResponse struct {
-}
-
-func (m *MsgEditCandidateResponse) Reset()         { *m = MsgEditCandidateResponse{} }
-func (m *MsgEditCandidateResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgEditCandidateResponse) ProtoMessage()    {}
-func (*MsgEditCandidateResponse) Descriptor() ([]byte, []int) {
+func (m *MsgRedelegateNFTResponse) Reset()         { *m = MsgRedelegateNFTResponse{} }
+func (m *MsgRedelegateNFTResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgRedelegateNFTResponse) ProtoMessage()    {}
+func (*MsgRedelegateNFTResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_edf91c3e395c558d, []int{15}
 }
-func (m *MsgEditCandidateResponse) XXX_Unmarshal(b []byte) error {
+func (m *MsgRedelegateNFTResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgEditCandidateResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgRedelegateNFTResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgEditCandidateResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgRedelegateNFTResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -643,104 +673,656 @@ func (m *MsgEditCandidateResponse) XXX_Marshal(b []byte, deterministic bool) ([]
 		return b[:n], nil
 	}
 }
-func (m *MsgEditCandidateResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgEditCandidateResponse.Merge(m, src)
+func (m *MsgRedelegateNFTResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgRedelegateNFTResponse.Merge(m, src)
 }
-func (m *MsgEditCandidateResponse) XXX_Size() int {
+func (m *MsgRedelegateNFTResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgEditCandidateResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgEditCandidateResponse.DiscardUnknown(m)
+func (m *MsgRedelegateNFTResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgRedelegateNFTResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgEditCandidateResponse proto.InternalMessageInfo
+var xxx_messageInfo_MsgRedelegateNFTResponse proto.InternalMessageInfo
+
+func (m *MsgRedelegateNFTResponse) GetCompletionTime() time.Time {
+	if m != nil {
+		return m.CompletionTime
+	}
+	return time.Time{}
+}
+
+// MsgUndelegate defines a SDK message for performing an undelegation from a
+// delegate and a validator.
+type MsgUndelegate struct {
+	// delegator is the bech32-encoded address of the delegator.
+	Delegator string `protobuf:"bytes,1,opt,name=delegator,proto3" json:"delegator,omitempty"`
+	// validator is the bech32-encoded address of the validator.
+	Validator string `protobuf:"bytes,2,opt,name=validator,proto3" json:"validator,omitempty"`
+	// coin defines amount of the coin to undelegate.
+	Coin types1.Coin `protobuf:"bytes,3,opt,name=coin,proto3" json:"coin"`
+}
+
+func (m *MsgUndelegate) Reset()         { *m = MsgUndelegate{} }
+func (m *MsgUndelegate) String() string { return proto.CompactTextString(m) }
+func (*MsgUndelegate) ProtoMessage()    {}
+func (*MsgUndelegate) Descriptor() ([]byte, []int) {
+	return fileDescriptor_edf91c3e395c558d, []int{16}
+}
+func (m *MsgUndelegate) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgUndelegate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgUndelegate.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgUndelegate) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUndelegate.Merge(m, src)
+}
+func (m *MsgUndelegate) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgUndelegate) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUndelegate.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgUndelegate proto.InternalMessageInfo
+
+// MsgUndelegateResponse defines the Msg/Undelegate response type.
+type MsgUndelegateResponse struct {
+	CompletionTime time.Time `protobuf:"bytes,1,opt,name=completion_time,json=completionTime,proto3,stdtime" json:"completion_time"`
+}
+
+func (m *MsgUndelegateResponse) Reset()         { *m = MsgUndelegateResponse{} }
+func (m *MsgUndelegateResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgUndelegateResponse) ProtoMessage()    {}
+func (*MsgUndelegateResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_edf91c3e395c558d, []int{17}
+}
+func (m *MsgUndelegateResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgUndelegateResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgUndelegateResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgUndelegateResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUndelegateResponse.Merge(m, src)
+}
+func (m *MsgUndelegateResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgUndelegateResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUndelegateResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgUndelegateResponse proto.InternalMessageInfo
+
+func (m *MsgUndelegateResponse) GetCompletionTime() time.Time {
+	if m != nil {
+		return m.CompletionTime
+	}
+	return time.Time{}
+}
+
+// MsgUndelegateNFT defines a SDK message for performing an undelegation from a
+// delegate and a validator.
+type MsgUndelegateNFT struct {
+	// delegator is the bech32-encoded address of the delegator.
+	Delegator string `protobuf:"bytes,1,opt,name=delegator,proto3" json:"delegator,omitempty"`
+	// validator is the bech32-encoded address of the validator.
+	Validator string `protobuf:"bytes,2,opt,name=validator,proto3" json:"validator,omitempty"`
+	// token_id defines the NFT token ID.
+	TokenID string `protobuf:"bytes,3,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
+	// sub_token_ids defines list of NFT sub-token IDs.
+	SubTokenIDs []uint32 `protobuf:"varint,4,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
+}
+
+func (m *MsgUndelegateNFT) Reset()         { *m = MsgUndelegateNFT{} }
+func (m *MsgUndelegateNFT) String() string { return proto.CompactTextString(m) }
+func (*MsgUndelegateNFT) ProtoMessage()    {}
+func (*MsgUndelegateNFT) Descriptor() ([]byte, []int) {
+	return fileDescriptor_edf91c3e395c558d, []int{18}
+}
+func (m *MsgUndelegateNFT) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgUndelegateNFT) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgUndelegateNFT.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgUndelegateNFT) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUndelegateNFT.Merge(m, src)
+}
+func (m *MsgUndelegateNFT) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgUndelegateNFT) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUndelegateNFT.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgUndelegateNFT proto.InternalMessageInfo
+
+// MsgUndelegateNFTResponse defines the Msg/UndelegateNFT response type.
+type MsgUndelegateNFTResponse struct {
+	CompletionTime time.Time `protobuf:"bytes,1,opt,name=completion_time,json=completionTime,proto3,stdtime" json:"completion_time"`
+}
+
+func (m *MsgUndelegateNFTResponse) Reset()         { *m = MsgUndelegateNFTResponse{} }
+func (m *MsgUndelegateNFTResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgUndelegateNFTResponse) ProtoMessage()    {}
+func (*MsgUndelegateNFTResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_edf91c3e395c558d, []int{19}
+}
+func (m *MsgUndelegateNFTResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgUndelegateNFTResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgUndelegateNFTResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgUndelegateNFTResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUndelegateNFTResponse.Merge(m, src)
+}
+func (m *MsgUndelegateNFTResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgUndelegateNFTResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUndelegateNFTResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgUndelegateNFTResponse proto.InternalMessageInfo
+
+func (m *MsgUndelegateNFTResponse) GetCompletionTime() time.Time {
+	if m != nil {
+		return m.CompletionTime
+	}
+	return time.Time{}
+}
+
+// MsgCancelRedelegation defines the SDK message for performing a cancel redelegation for delegator.
+type MsgCancelRedelegation struct {
+	// delegator is the bech32-encoded address of the delegator.
+	Delegator string `protobuf:"bytes,1,opt,name=delegator,proto3" json:"delegator,omitempty"`
+	// validator_src is the bech32-encoded address of the source validator.
+	ValidatorSrc string `protobuf:"bytes,2,opt,name=validator_src,json=validatorSrc,proto3" json:"validator_src,omitempty"`
+	// validator_dst is the bech32-encoded address of the destination validator.
+	ValidatorDst string `protobuf:"bytes,3,opt,name=validator_dst,json=validatorDst,proto3" json:"validator_dst,omitempty"`
+	// creation_height defines number of the block at which redelegation was beginned.
+	CreationHeight int64 `protobuf:"varint,4,opt,name=creation_height,json=creationHeight,proto3" json:"creation_height,omitempty"`
+	// coin defines amount of the coin to cancel from redelegation.
+	Coin types1.Coin `protobuf:"bytes,5,opt,name=coin,proto3" json:"coin"`
+}
+
+func (m *MsgCancelRedelegation) Reset()         { *m = MsgCancelRedelegation{} }
+func (m *MsgCancelRedelegation) String() string { return proto.CompactTextString(m) }
+func (*MsgCancelRedelegation) ProtoMessage()    {}
+func (*MsgCancelRedelegation) Descriptor() ([]byte, []int) {
+	return fileDescriptor_edf91c3e395c558d, []int{20}
+}
+func (m *MsgCancelRedelegation) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgCancelRedelegation) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgCancelRedelegation.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgCancelRedelegation) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCancelRedelegation.Merge(m, src)
+}
+func (m *MsgCancelRedelegation) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgCancelRedelegation) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCancelRedelegation.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgCancelRedelegation proto.InternalMessageInfo
+
+// MsgCancelRedelegationResponse
+type MsgCancelRedelegationResponse struct {
+}
+
+func (m *MsgCancelRedelegationResponse) Reset()         { *m = MsgCancelRedelegationResponse{} }
+func (m *MsgCancelRedelegationResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgCancelRedelegationResponse) ProtoMessage()    {}
+func (*MsgCancelRedelegationResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_edf91c3e395c558d, []int{21}
+}
+func (m *MsgCancelRedelegationResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgCancelRedelegationResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgCancelRedelegationResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgCancelRedelegationResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCancelRedelegationResponse.Merge(m, src)
+}
+func (m *MsgCancelRedelegationResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgCancelRedelegationResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCancelRedelegationResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgCancelRedelegationResponse proto.InternalMessageInfo
+
+// MsgCancelRedelegationNFT defines the SDK message for performing a cancel redelegation for delegator.
+type MsgCancelRedelegationNFT struct {
+	// delegator is the bech32-encoded address of the delegator.
+	Delegator string `protobuf:"bytes,1,opt,name=delegator,proto3" json:"delegator,omitempty"`
+	// validator_src is the bech32-encoded address of the source validator.
+	ValidatorSrc string `protobuf:"bytes,2,opt,name=validator_src,json=validatorSrc,proto3" json:"validator_src,omitempty"`
+	// validator_dst is the bech32-encoded address of the destination validator.
+	ValidatorDst string `protobuf:"bytes,3,opt,name=validator_dst,json=validatorDst,proto3" json:"validator_dst,omitempty"`
+	// creation_height defines number of the block at which redelegation was beginned.
+	CreationHeight int64 `protobuf:"varint,4,opt,name=creation_height,json=creationHeight,proto3" json:"creation_height,omitempty"`
+	// token_id defines the NFT token ID.
+	TokenID string `protobuf:"bytes,5,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
+	// sub_token_ids defines list of NFT sub-token IDs.
+	SubTokenIDs []uint32 `protobuf:"varint,6,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
+}
+
+func (m *MsgCancelRedelegationNFT) Reset()         { *m = MsgCancelRedelegationNFT{} }
+func (m *MsgCancelRedelegationNFT) String() string { return proto.CompactTextString(m) }
+func (*MsgCancelRedelegationNFT) ProtoMessage()    {}
+func (*MsgCancelRedelegationNFT) Descriptor() ([]byte, []int) {
+	return fileDescriptor_edf91c3e395c558d, []int{22}
+}
+func (m *MsgCancelRedelegationNFT) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgCancelRedelegationNFT) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgCancelRedelegationNFT.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgCancelRedelegationNFT) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCancelRedelegationNFT.Merge(m, src)
+}
+func (m *MsgCancelRedelegationNFT) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgCancelRedelegationNFT) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCancelRedelegationNFT.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgCancelRedelegationNFT proto.InternalMessageInfo
+
+// MsgCancelRedelegationNFTResponse
+type MsgCancelRedelegationNFTResponse struct {
+}
+
+func (m *MsgCancelRedelegationNFTResponse) Reset()         { *m = MsgCancelRedelegationNFTResponse{} }
+func (m *MsgCancelRedelegationNFTResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgCancelRedelegationNFTResponse) ProtoMessage()    {}
+func (*MsgCancelRedelegationNFTResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_edf91c3e395c558d, []int{23}
+}
+func (m *MsgCancelRedelegationNFTResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgCancelRedelegationNFTResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgCancelRedelegationNFTResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgCancelRedelegationNFTResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCancelRedelegationNFTResponse.Merge(m, src)
+}
+func (m *MsgCancelRedelegationNFTResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgCancelRedelegationNFTResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCancelRedelegationNFTResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgCancelRedelegationNFTResponse proto.InternalMessageInfo
+
+// MsgCancelUndelegation defines the SDK message for performing a cancel undelegation for delegator.
+type MsgCancelUndelegation struct {
+	// delegator is the bech32-encoded address of the delegator.
+	Delegator string `protobuf:"bytes,1,opt,name=delegator,proto3" json:"delegator,omitempty"`
+	// validator is the bech32-encoded address of the validator.
+	Validator string `protobuf:"bytes,2,opt,name=validator,proto3" json:"validator,omitempty"`
+	// creation_height defines number of the block at which undelegation was beginned.
+	CreationHeight int64 `protobuf:"varint,3,opt,name=creation_height,json=creationHeight,proto3" json:"creation_height,omitempty"`
+	// coin defines amount of the coin to cancel from undelegation.
+	Coin types1.Coin `protobuf:"bytes,4,opt,name=coin,proto3" json:"coin"`
+}
+
+func (m *MsgCancelUndelegation) Reset()         { *m = MsgCancelUndelegation{} }
+func (m *MsgCancelUndelegation) String() string { return proto.CompactTextString(m) }
+func (*MsgCancelUndelegation) ProtoMessage()    {}
+func (*MsgCancelUndelegation) Descriptor() ([]byte, []int) {
+	return fileDescriptor_edf91c3e395c558d, []int{24}
+}
+func (m *MsgCancelUndelegation) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgCancelUndelegation) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgCancelUndelegation.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgCancelUndelegation) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCancelUndelegation.Merge(m, src)
+}
+func (m *MsgCancelUndelegation) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgCancelUndelegation) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCancelUndelegation.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgCancelUndelegation proto.InternalMessageInfo
+
+// MsgCancelUndelegationResponse
+type MsgCancelUndelegationResponse struct {
+}
+
+func (m *MsgCancelUndelegationResponse) Reset()         { *m = MsgCancelUndelegationResponse{} }
+func (m *MsgCancelUndelegationResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgCancelUndelegationResponse) ProtoMessage()    {}
+func (*MsgCancelUndelegationResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_edf91c3e395c558d, []int{25}
+}
+func (m *MsgCancelUndelegationResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgCancelUndelegationResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgCancelUndelegationResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgCancelUndelegationResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCancelUndelegationResponse.Merge(m, src)
+}
+func (m *MsgCancelUndelegationResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgCancelUndelegationResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCancelUndelegationResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgCancelUndelegationResponse proto.InternalMessageInfo
+
+// MsgCancelUndelegationNFT defines the SDK message for performing a cancel undelegation for delegator.
+type MsgCancelUndelegationNFT struct {
+	// delegator is the bech32-encoded address of the delegator.
+	Delegator string `protobuf:"bytes,1,opt,name=delegator,proto3" json:"delegator,omitempty"`
+	// validator is the bech32-encoded address of the validator.
+	Validator string `protobuf:"bytes,2,opt,name=validator,proto3" json:"validator,omitempty"`
+	// creation_height defines number of the block at which undelegation was beginned.
+	CreationHeight int64 `protobuf:"varint,3,opt,name=creation_height,json=creationHeight,proto3" json:"creation_height,omitempty"`
+	// token_id defines the NFT token ID.
+	TokenID string `protobuf:"bytes,4,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
+	// sub_token_ids defines list of NFT sub-token IDs.
+	SubTokenIDs []uint32 `protobuf:"varint,5,rep,packed,name=sub_token_ids,json=subTokenIds,proto3" json:"sub_token_ids,omitempty"`
+}
+
+func (m *MsgCancelUndelegationNFT) Reset()         { *m = MsgCancelUndelegationNFT{} }
+func (m *MsgCancelUndelegationNFT) String() string { return proto.CompactTextString(m) }
+func (*MsgCancelUndelegationNFT) ProtoMessage()    {}
+func (*MsgCancelUndelegationNFT) Descriptor() ([]byte, []int) {
+	return fileDescriptor_edf91c3e395c558d, []int{26}
+}
+func (m *MsgCancelUndelegationNFT) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgCancelUndelegationNFT) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgCancelUndelegationNFT.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgCancelUndelegationNFT) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCancelUndelegationNFT.Merge(m, src)
+}
+func (m *MsgCancelUndelegationNFT) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgCancelUndelegationNFT) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCancelUndelegationNFT.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgCancelUndelegationNFT proto.InternalMessageInfo
+
+// MsgCancelUndelegationNFTResponse
+type MsgCancelUndelegationNFTResponse struct {
+}
+
+func (m *MsgCancelUndelegationNFTResponse) Reset()         { *m = MsgCancelUndelegationNFTResponse{} }
+func (m *MsgCancelUndelegationNFTResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgCancelUndelegationNFTResponse) ProtoMessage()    {}
+func (*MsgCancelUndelegationNFTResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_edf91c3e395c558d, []int{27}
+}
+func (m *MsgCancelUndelegationNFTResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgCancelUndelegationNFTResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgCancelUndelegationNFTResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgCancelUndelegationNFTResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCancelUndelegationNFTResponse.Merge(m, src)
+}
+func (m *MsgCancelUndelegationNFTResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgCancelUndelegationNFTResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCancelUndelegationNFTResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgCancelUndelegationNFTResponse proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*MsgDeclareCandidate)(nil), "decimal.validator.v1.MsgDeclareCandidate")
-	proto.RegisterType((*MsgDeclareCandidateResponse)(nil), "decimal.validator.v1.MsgDeclareCandidateResponse")
-	proto.RegisterType((*MsgDelegate)(nil), "decimal.validator.v1.MsgDelegate")
-	proto.RegisterType((*MsgDelegateResponse)(nil), "decimal.validator.v1.MsgDelegateResponse")
-	proto.RegisterType((*MsgDelegateNFT)(nil), "decimal.validator.v1.MsgDelegateNFT")
-	proto.RegisterType((*MsgDelegateNFTResponse)(nil), "decimal.validator.v1.MsgDelegateNFTResponse")
+	proto.RegisterType((*MsgCreateValidator)(nil), "decimal.validator.v1.MsgCreateValidator")
+	proto.RegisterType((*MsgCreateValidatorResponse)(nil), "decimal.validator.v1.MsgCreateValidatorResponse")
+	proto.RegisterType((*MsgEditValidator)(nil), "decimal.validator.v1.MsgEditValidator")
+	proto.RegisterType((*MsgEditValidatorResponse)(nil), "decimal.validator.v1.MsgEditValidatorResponse")
 	proto.RegisterType((*MsgSetOnline)(nil), "decimal.validator.v1.MsgSetOnline")
 	proto.RegisterType((*MsgSetOnlineResponse)(nil), "decimal.validator.v1.MsgSetOnlineResponse")
 	proto.RegisterType((*MsgSetOffline)(nil), "decimal.validator.v1.MsgSetOffline")
 	proto.RegisterType((*MsgSetOfflineResponse)(nil), "decimal.validator.v1.MsgSetOfflineResponse")
-	proto.RegisterType((*MsgUnbond)(nil), "decimal.validator.v1.MsgUnbond")
-	proto.RegisterType((*MsgUnbondResponse)(nil), "decimal.validator.v1.MsgUnbondResponse")
-	proto.RegisterType((*MsgUnbondNFT)(nil), "decimal.validator.v1.MsgUnbondNFT")
-	proto.RegisterType((*MsgUnbondNFTResponse)(nil), "decimal.validator.v1.MsgUnbondNFTResponse")
-	proto.RegisterType((*MsgEditCandidate)(nil), "decimal.validator.v1.MsgEditCandidate")
-	proto.RegisterType((*MsgEditCandidateResponse)(nil), "decimal.validator.v1.MsgEditCandidateResponse")
+	proto.RegisterType((*MsgDelegate)(nil), "decimal.validator.v1.MsgDelegate")
+	proto.RegisterType((*MsgDelegateResponse)(nil), "decimal.validator.v1.MsgDelegateResponse")
+	proto.RegisterType((*MsgDelegateNFT)(nil), "decimal.validator.v1.MsgDelegateNFT")
+	proto.RegisterType((*MsgDelegateNFTResponse)(nil), "decimal.validator.v1.MsgDelegateNFTResponse")
+	proto.RegisterType((*MsgRedelegate)(nil), "decimal.validator.v1.MsgRedelegate")
+	proto.RegisterType((*MsgRedelegateResponse)(nil), "decimal.validator.v1.MsgRedelegateResponse")
+	proto.RegisterType((*MsgRedelegateNFT)(nil), "decimal.validator.v1.MsgRedelegateNFT")
+	proto.RegisterType((*MsgRedelegateNFTResponse)(nil), "decimal.validator.v1.MsgRedelegateNFTResponse")
+	proto.RegisterType((*MsgUndelegate)(nil), "decimal.validator.v1.MsgUndelegate")
+	proto.RegisterType((*MsgUndelegateResponse)(nil), "decimal.validator.v1.MsgUndelegateResponse")
+	proto.RegisterType((*MsgUndelegateNFT)(nil), "decimal.validator.v1.MsgUndelegateNFT")
+	proto.RegisterType((*MsgUndelegateNFTResponse)(nil), "decimal.validator.v1.MsgUndelegateNFTResponse")
+	proto.RegisterType((*MsgCancelRedelegation)(nil), "decimal.validator.v1.MsgCancelRedelegation")
+	proto.RegisterType((*MsgCancelRedelegationResponse)(nil), "decimal.validator.v1.MsgCancelRedelegationResponse")
+	proto.RegisterType((*MsgCancelRedelegationNFT)(nil), "decimal.validator.v1.MsgCancelRedelegationNFT")
+	proto.RegisterType((*MsgCancelRedelegationNFTResponse)(nil), "decimal.validator.v1.MsgCancelRedelegationNFTResponse")
+	proto.RegisterType((*MsgCancelUndelegation)(nil), "decimal.validator.v1.MsgCancelUndelegation")
+	proto.RegisterType((*MsgCancelUndelegationResponse)(nil), "decimal.validator.v1.MsgCancelUndelegationResponse")
+	proto.RegisterType((*MsgCancelUndelegationNFT)(nil), "decimal.validator.v1.MsgCancelUndelegationNFT")
+	proto.RegisterType((*MsgCancelUndelegationNFTResponse)(nil), "decimal.validator.v1.MsgCancelUndelegationNFTResponse")
 }
 
 func init() { proto.RegisterFile("decimal/validator/v1/tx.proto", fileDescriptor_edf91c3e395c558d) }
 
 var fileDescriptor_edf91c3e395c558d = []byte{
-	// 1002 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xd4, 0x57, 0xcf, 0x6f, 0x1b, 0xc5,
-	0x17, 0xb7, 0x9d, 0xc4, 0x8d, 0x9f, 0x93, 0x7c, 0x9d, 0x8d, 0x93, 0xaf, 0xbb, 0x50, 0x6f, 0x3a,
-	0x54, 0x69, 0x1a, 0xc8, 0xae, 0x52, 0x0e, 0x88, 0x1e, 0xa0, 0x71, 0x42, 0xa5, 0x08, 0xb9, 0xa0,
-	0x6d, 0x2b, 0xf1, 0x43, 0xd4, 0x5a, 0xef, 0x4e, 0x96, 0x95, 0xed, 0x1d, 0xb3, 0x33, 0x0e, 0xf5,
-	0x0d, 0x6e, 0x48, 0x5c, 0x10, 0x7f, 0x41, 0xff, 0x08, 0xfe, 0x88, 0x8a, 0x53, 0x8f, 0x88, 0xc3,
-	0x0a, 0x25, 0x42, 0x42, 0x1c, 0x7d, 0x46, 0x02, 0xed, 0xcc, 0x7a, 0x76, 0x9d, 0x38, 0xb5, 0x53,
-	0xa5, 0x12, 0x9c, 0xbc, 0x33, 0xef, 0xf3, 0x3e, 0x6f, 0xe6, 0xf3, 0xde, 0x9b, 0x19, 0xc3, 0x35,
-	0x07, 0xdb, 0x5e, 0xc7, 0x6a, 0x1b, 0x47, 0x56, 0xdb, 0x73, 0x2c, 0x46, 0x02, 0xe3, 0x68, 0xc7,
-	0x60, 0x4f, 0xf4, 0x6e, 0x40, 0x18, 0x51, 0xca, 0xb1, 0x59, 0x97, 0x66, 0xfd, 0x68, 0x47, 0x2d,
-	0xbb, 0xc4, 0x25, 0x1c, 0x60, 0x44, 0x5f, 0x02, 0xab, 0xde, 0x18, 0x4b, 0x95, 0x38, 0x0a, 0xd4,
-	0x55, 0x97, 0x10, 0xb7, 0x8d, 0x0d, 0x3e, 0x6a, 0xf6, 0x0e, 0x0d, 0xcb, 0xef, 0x0f, 0x4d, 0x36,
-	0xa1, 0x1d, 0x42, 0x1b, 0x82, 0x59, 0x0c, 0x84, 0x09, 0xfd, 0x38, 0x0b, 0x2b, 0x75, 0xea, 0xee,
-	0x63, 0xbb, 0x6d, 0x05, 0x78, 0xcf, 0xf2, 0x9d, 0x88, 0x14, 0x2b, 0x36, 0x80, 0x4d, 0x3a, 0x1d,
-	0x8f, 0x52, 0x8f, 0xf8, 0x95, 0xec, 0x7a, 0x76, 0x73, 0xa1, 0xb6, 0xf7, 0x2c, 0xd4, 0x32, 0xbf,
-	0x86, 0xda, 0x86, 0xeb, 0xb1, 0x2f, 0x7b, 0x4d, 0xdd, 0x26, 0x9d, 0x98, 0x2c, 0xfe, 0xd9, 0xa6,
-	0x4e, 0xcb, 0x60, 0xfd, 0x2e, 0xa6, 0xfa, 0x3e, 0xb6, 0x07, 0xa1, 0xb6, 0xdc, 0xb7, 0x3a, 0xed,
-	0x3b, 0x28, 0x61, 0x42, 0x66, 0x8a, 0x56, 0xb9, 0x0b, 0x4b, 0x72, 0x17, 0x0d, 0xcb, 0x71, 0x82,
-	0x4a, 0x6e, 0x3d, 0xbb, 0x59, 0xa8, 0x5d, 0x1d, 0x84, 0xda, 0xaa, 0x70, 0x1d, 0xb5, 0x23, 0x73,
-	0x51, 0x4e, 0xec, 0x3a, 0x4e, 0xa0, 0xbc, 0x03, 0xc5, 0x00, 0x7f, 0x6d, 0x05, 0x8e, 0x70, 0x9f,
-	0xe1, 0xee, 0x6b, 0x83, 0x50, 0x53, 0x84, 0x7b, 0xca, 0x88, 0x4c, 0x10, 0x23, 0xee, 0xf8, 0x08,
-	0xe6, 0x28, 0xb3, 0x5a, 0xb8, 0x32, 0xcb, 0xb7, 0xf6, 0x7e, 0xbc, 0xb5, 0x9b, 0x53, 0x6c, 0x6d,
-	0x8f, 0x78, 0xfe, 0x20, 0xd4, 0x16, 0x44, 0x04, 0xce, 0x82, 0x4c, 0xc1, 0xa6, 0x34, 0xa0, 0xe8,
-	0x60, 0x6a, 0x07, 0x5e, 0x97, 0x45, 0xba, 0xcd, 0xad, 0x67, 0x37, 0x8b, 0xb7, 0xaf, 0xeb, 0xe3,
-	0x92, 0xad, 0xef, 0x27, 0xc0, 0x9a, 0x1a, 0xc5, 0x4f, 0x96, 0x9d, 0xe2, 0x40, 0x66, 0x9a, 0x51,
-	0xf9, 0x14, 0xae, 0x74, 0x7b, 0xcd, 0x46, 0x0b, 0xf7, 0x2b, 0x79, 0x4e, 0x5e, 0xd6, 0x45, 0xde,
-	0xf5, 0x61, 0xde, 0xf5, 0x5d, 0xbf, 0x5f, 0xdb, 0x1a, 0x84, 0xda, 0x92, 0xe0, 0x8a, 0xe1, 0xe8,
-	0xe7, 0x9f, 0xb6, 0xcb, 0x71, 0xea, 0xed, 0xa0, 0xdf, 0x65, 0x44, 0xff, 0xb8, 0xd7, 0xfc, 0x10,
-	0xf7, 0xcd, 0x7c, 0x97, 0xff, 0xde, 0x99, 0xff, 0xee, 0xa9, 0x96, 0xf9, 0xe3, 0xa9, 0x96, 0x41,
-	0xd7, 0xe0, 0xb5, 0x31, 0x35, 0x61, 0x62, 0xda, 0x25, 0x3e, 0xc5, 0xe8, 0xdb, 0x1c, 0x14, 0xb9,
-	0xbd, 0x8d, 0xdd, 0xa8, 0x56, 0x0e, 0x60, 0xd9, 0x11, 0xdf, 0x71, 0x9a, 0x30, 0xa5, 0xbc, 0x64,
-	0x0a, 0xb5, 0xd7, 0x07, 0xa1, 0x56, 0x19, 0xee, 0xe9, 0x14, 0x04, 0x99, 0x25, 0x39, 0xb7, 0x2b,
-	0xa6, 0x22, 0xaa, 0xd1, 0x8c, 0x47, 0x54, 0xb9, 0xd3, 0x54, 0x67, 0x20, 0xc8, 0x2c, 0x8d, 0xd4,
-	0x45, 0x44, 0x65, 0xc2, 0xac, 0x4d, 0x3c, 0x3f, 0xae, 0x89, 0xf7, 0x2e, 0x9e, 0xe0, 0xe2, 0xb0,
-	0x78, 0x3d, 0x1f, 0x99, 0x9c, 0x2b, 0x25, 0xd1, 0x6a, 0xdc, 0x36, 0x42, 0x02, 0x29, 0xcd, 0x5f,
-	0x39, 0x58, 0x4a, 0xcd, 0xdf, 0xbf, 0xf7, 0xf0, 0x32, 0xd5, 0x79, 0x7c, 0xbe, 0x3a, 0x3b, 0x7f,
-	0x86, 0xda, 0x59, 0xe3, 0x05, 0x25, 0xd3, 0x61, 0x9e, 0x91, 0x16, 0xf6, 0x1b, 0x9e, 0x13, 0xcb,
-	0xb6, 0x32, 0x08, 0xb5, 0xff, 0x09, 0x86, 0xa1, 0x05, 0x99, 0x57, 0xf8, 0xe7, 0x81, 0xa3, 0x6c,
-	0xc0, 0x9c, 0x83, 0x7d, 0xd2, 0xe1, 0x4d, 0x54, 0xa8, 0x95, 0x92, 0xae, 0xe0, 0xd3, 0xc8, 0x14,
-	0x66, 0xe5, 0x0b, 0x98, 0xff, 0xaa, 0x67, 0xf9, 0xcc, 0x63, 0x7d, 0xde, 0x12, 0x0b, 0xb5, 0xdd,
-	0x0b, 0x1c, 0x25, 0x07, 0x3e, 0x4b, 0x56, 0x31, 0xe4, 0x41, 0xa6, 0xa4, 0x4c, 0x65, 0xa5, 0x02,
-	0x6b, 0xa3, 0xea, 0xcb, 0xc4, 0xd8, 0xb0, 0x50, 0xa7, 0xee, 0x03, 0xcc, 0x3e, 0xf2, 0xdb, 0x9e,
-	0x8f, 0xc7, 0x17, 0x5a, 0xf6, 0x65, 0x0a, 0x2d, 0x15, 0x7e, 0x0d, 0xca, 0xe9, 0x20, 0x32, 0x78,
-	0x1f, 0x16, 0xe3, 0xf9, 0xc3, 0x43, 0x1e, 0xfd, 0x15, 0x27, 0x32, 0xb5, 0xa4, 0xff, 0xc3, 0xea,
-	0x48, 0x68, 0xb9, 0xa6, 0xbf, 0xb3, 0x50, 0xa8, 0x53, 0xf7, 0x91, 0xdf, 0x24, 0xbe, 0x73, 0x89,
-	0x72, 0x8c, 0xaf, 0xf7, 0xdc, 0x4b, 0xd5, 0xfb, 0xab, 0x6d, 0xe1, 0x15, 0x58, 0x96, 0x02, 0x48,
-	0x59, 0x7e, 0xcf, 0xf1, 0x42, 0x11, 0xb3, 0x71, 0xfb, 0xfe, 0x0b, 0x95, 0xf9, 0xcf, 0x77, 0xaa,
-	0x68, 0x15, 0x29, 0xb3, 0xd4, 0xff, 0x9b, 0x1c, 0x94, 0xea, 0xd4, 0xfd, 0xc0, 0xf1, 0x58, 0xf2,
-	0x18, 0xb9, 0xc4, 0x1c, 0xdc, 0x85, 0xa5, 0xd4, 0x9b, 0x20, 0x49, 0x40, 0xea, 0xc9, 0x31, 0x6a,
-	0x47, 0xe6, 0x62, 0xf2, 0x6c, 0x88, 0x18, 0x4e, 0x5d, 0xf1, 0x33, 0x97, 0x7d, 0xc5, 0x23, 0x15,
-	0x2a, 0xa7, 0x15, 0x18, 0xca, 0x73, 0xfb, 0xfb, 0x3c, 0xcc, 0xd4, 0xa9, 0xab, 0x74, 0xa1, 0x74,
-	0xe6, 0xc9, 0x76, 0x6b, 0xfc, 0x1a, 0xc6, 0xdc, 0xe4, 0xea, 0xce, 0xd4, 0xd0, 0x61, 0x64, 0xe5,
-	0x13, 0x98, 0x97, 0x17, 0xfe, 0xf5, 0x17, 0xb8, 0x0b, 0x88, 0x7a, 0x6b, 0x22, 0x44, 0x32, 0x5b,
-	0x50, 0x4c, 0xdf, 0x97, 0x37, 0x26, 0x7a, 0xde, 0xbf, 0xf7, 0x50, 0x7d, 0x6b, 0x1a, 0x94, 0x0c,
-	0xf1, 0x39, 0x14, 0x92, 0xa3, 0x1f, 0x9d, 0xeb, 0x2a, 0x31, 0xea, 0xd6, 0x64, 0x8c, 0x24, 0x7f,
-	0x0c, 0x90, 0x3a, 0xda, 0xdf, 0x78, 0xa1, 0xa7, 0x00, 0xa9, 0x6f, 0x4e, 0x01, 0x92, 0xfc, 0x26,
-	0xe4, 0xe3, 0x53, 0x5a, 0x3b, 0xd7, 0x4d, 0x00, 0xd4, 0x9b, 0x13, 0x00, 0x69, 0x41, 0x92, 0x23,
-	0x0e, 0x4d, 0xf0, 0x8a, 0xf4, 0xde, 0x9a, 0x8c, 0x91, 0xe4, 0x2e, 0x2c, 0x8e, 0xf6, 0xef, 0xc6,
-	0xb9, 0xce, 0x23, 0x38, 0x55, 0x9f, 0x0e, 0x37, 0x0c, 0x54, 0x7b, 0xf0, 0xec, 0xb8, 0x9a, 0x7d,
-	0x7e, 0x5c, 0xcd, 0xfe, 0x76, 0x5c, 0xcd, 0xfe, 0x70, 0x52, 0xcd, 0x3c, 0x3f, 0xa9, 0x66, 0x7e,
-	0x39, 0xa9, 0x66, 0x3e, 0x7b, 0xb7, 0xe9, 0xb1, 0x66, 0xcf, 0x6e, 0x61, 0xa6, 0x93, 0xc0, 0x35,
-	0x62, 0x5a, 0x86, 0xad, 0x8e, 0xe1, 0x92, 0x6d, 0xda, 0xb1, 0x02, 0xb6, 0xed, 0x13, 0x07, 0x1b,
-	0x4f, 0x52, 0x7f, 0xaa, 0xf8, 0x21, 0xd6, 0xcc, 0xf3, 0x87, 0xf4, 0xdb, 0xff, 0x04, 0x00, 0x00,
-	0xff, 0xff, 0xed, 0xdb, 0xf8, 0x6c, 0xc1, 0x0d, 0x00, 0x00,
+	// 1272 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe4, 0x58, 0xcf, 0x6f, 0x1b, 0x45,
+	0x14, 0xf6, 0xda, 0x4e, 0x9a, 0x8c, 0xeb, 0x38, 0x5a, 0x92, 0xd4, 0x5d, 0x11, 0x3b, 0x35, 0x55,
+	0x08, 0x85, 0xec, 0x92, 0x44, 0x54, 0xa2, 0x02, 0xa1, 0x3a, 0xa6, 0x22, 0x42, 0x2e, 0x95, 0x13,
+	0x10, 0xbf, 0x54, 0x6b, 0x7f, 0x4c, 0x36, 0xab, 0x78, 0x77, 0xac, 0x9d, 0x71, 0xa8, 0x4f, 0x48,
+	0x3d, 0x71, 0xac, 0xf8, 0x0b, 0x7a, 0xe4, 0xc8, 0xa1, 0x57, 0x4e, 0x5c, 0xaa, 0x8a, 0x43, 0xd5,
+	0x13, 0x02, 0x29, 0xa0, 0xe4, 0x00, 0x27, 0x4e, 0x20, 0x4e, 0x48, 0x68, 0x67, 0x77, 0x67, 0x77,
+	0xed, 0x75, 0xbc, 0x6e, 0x12, 0x42, 0xe1, 0x94, 0xec, 0xcc, 0xf7, 0xde, 0x9b, 0xef, 0x7b, 0x6f,
+	0xde, 0xcc, 0x18, 0xcc, 0x6b, 0x50, 0x35, 0x4c, 0xb9, 0x25, 0xed, 0xc9, 0x2d, 0x43, 0x93, 0x09,
+	0xb2, 0xa5, 0xbd, 0x15, 0x89, 0xdc, 0x11, 0xdb, 0x36, 0x22, 0x88, 0x9f, 0xf1, 0xa6, 0x45, 0x36,
+	0x2d, 0xee, 0xad, 0x08, 0x33, 0x3a, 0xd2, 0x11, 0x05, 0x48, 0xce, 0x7f, 0x2e, 0x56, 0xb8, 0xa8,
+	0x23, 0xa4, 0xb7, 0xa0, 0x44, 0xbf, 0x94, 0xce, 0xb6, 0x24, 0x5b, 0x5d, 0x6f, 0xaa, 0xdc, 0x3b,
+	0x45, 0x0c, 0x13, 0x62, 0x22, 0x9b, 0x6d, 0xdf, 0x56, 0x45, 0xd8, 0x44, 0xb8, 0xe9, 0x3a, 0x75,
+	0x3f, 0xbc, 0xa9, 0x92, 0xfb, 0x25, 0x29, 0x32, 0x86, 0xd2, 0xde, 0x8a, 0x02, 0x89, 0xbc, 0x22,
+	0xa9, 0xc8, 0xb0, 0xbc, 0xf9, 0x0b, 0xde, 0xbc, 0x89, 0x75, 0x67, 0xe9, 0x26, 0xd6, 0xbd, 0x89,
+	0xcb, 0xb1, 0xd4, 0x02, 0x22, 0x14, 0x55, 0xf9, 0x3d, 0x03, 0xf8, 0x3a, 0xd6, 0xd7, 0x6d, 0x28,
+	0x13, 0xf8, 0x81, 0x3f, 0xc9, 0xaf, 0x83, 0x69, 0xd4, 0x86, 0xb6, 0xf3, 0x7f, 0x53, 0xd6, 0x34,
+	0x1b, 0x62, 0x5c, 0xe4, 0x16, 0xb8, 0xa5, 0xc9, 0x6a, 0xf1, 0xc9, 0x83, 0xe5, 0x19, 0x6f, 0x85,
+	0xd7, 0xdd, 0x99, 0x4d, 0x62, 0x1b, 0x96, 0xde, 0x28, 0xf8, 0x16, 0xde, 0x30, 0xff, 0x16, 0x98,
+	0xb2, 0xe1, 0x67, 0xb2, 0xad, 0x31, 0x17, 0xe9, 0x21, 0x2e, 0xf2, 0x2e, 0xde, 0x77, 0xf0, 0x11,
+	0x98, 0x56, 0x91, 0x85, 0xa1, 0x85, 0x3b, 0xb8, 0xd9, 0xee, 0x28, 0xbb, 0xb0, 0x5b, 0xcc, 0x2c,
+	0x70, 0x4b, 0xb9, 0xd5, 0x19, 0xd1, 0x95, 0x54, 0xf4, 0x25, 0x15, 0xaf, 0x5b, 0xdd, 0x6a, 0xf1,
+	0x51, 0xe0, 0x58, 0xb5, 0xbb, 0x6d, 0x82, 0xc4, 0x5b, 0x1d, 0xe5, 0x5d, 0xd8, 0x6d, 0x14, 0x98,
+	0x9f, 0x5b, 0xd4, 0x0d, 0xbf, 0x01, 0x72, 0x1a, 0xc4, 0xaa, 0x6d, 0xb4, 0x89, 0x81, 0xac, 0x62,
+	0x96, 0x7a, 0xbd, 0x24, 0xc6, 0xe5, 0x5b, 0xac, 0x05, 0xc0, 0x6a, 0xf6, 0xe1, 0x7e, 0x39, 0xd5,
+	0x08, 0xdb, 0xf2, 0x9f, 0x02, 0xa0, 0x22, 0xd3, 0x34, 0x30, 0x76, 0x3c, 0x8d, 0x51, 0x8a, 0x6f,
+	0x38, 0xb0, 0x1f, 0xf6, 0xcb, 0x8b, 0xba, 0x41, 0x76, 0x3a, 0x8a, 0xa8, 0x22, 0xd3, 0x4b, 0xab,
+	0xf7, 0x67, 0x19, 0x6b, 0xbb, 0x12, 0xe9, 0xb6, 0x21, 0x16, 0x6b, 0x50, 0x7d, 0xf2, 0x60, 0x19,
+	0x78, 0xeb, 0xae, 0x41, 0xb5, 0x11, 0xf2, 0xc7, 0xbf, 0x06, 0xc6, 0x30, 0x91, 0x77, 0x61, 0x71,
+	0x9c, 0x2e, 0xf1, 0xa2, 0xe8, 0xe1, 0x9c, 0x7a, 0x10, 0xbd, 0x7a, 0x10, 0xd7, 0x91, 0xe1, 0x2f,
+	0xcd, 0x45, 0x5f, 0x9b, 0xff, 0xe2, 0x7e, 0x39, 0xf5, 0xeb, 0xfd, 0x72, 0xea, 0xee, 0x2f, 0x5f,
+	0x5f, 0xe9, 0xcb, 0x65, 0xe5, 0x79, 0x20, 0xf4, 0x67, 0xbd, 0x01, 0x71, 0xdb, 0x91, 0xa9, 0x72,
+	0x37, 0x0d, 0xa6, 0xeb, 0x58, 0x7f, 0x5b, 0x33, 0xc8, 0xbf, 0xad, 0x24, 0x7a, 0xf2, 0x96, 0x79,
+	0xfa, 0xbc, 0x0d, 0x93, 0x48, 0x00, 0xc5, 0x5e, 0x0d, 0x98, 0x40, 0xb7, 0xc1, 0xf9, 0x3a, 0xd6,
+	0x37, 0x21, 0x79, 0xcf, 0x6a, 0x19, 0x16, 0xe4, 0xaf, 0x82, 0x49, 0x16, 0x79, 0xa8, 0x28, 0x01,
+	0xf4, 0xda, 0x5c, 0x78, 0x09, 0xc1, 0x78, 0x65, 0x0e, 0xcc, 0x84, 0xfd, 0xb3, 0xb8, 0x4d, 0x90,
+	0xf7, 0xc6, 0xb7, 0xb7, 0x4f, 0x25, 0xf0, 0x05, 0x30, 0x1b, 0x09, 0xc0, 0x22, 0x3f, 0xe2, 0x40,
+	0xae, 0x8e, 0xf5, 0x1a, 0x6c, 0x41, 0x5d, 0x26, 0x34, 0xb0, 0xe6, 0xfe, 0x9f, 0x24, 0x30, 0x83,
+	0x46, 0x17, 0x9c, 0x4e, 0xbc, 0x60, 0x7e, 0x0d, 0x64, 0x9d, 0xa6, 0xe7, 0x25, 0x7c, 0xe8, 0x2e,
+	0xa0, 0xe0, 0x1e, 0x96, 0x6c, 0x11, 0x95, 0x59, 0xf0, 0x5c, 0x88, 0x0b, 0xe3, 0xf8, 0x07, 0x07,
+	0xa6, 0x42, 0xe3, 0x37, 0x6f, 0x6c, 0xfd, 0xe3, 0x34, 0x17, 0xc1, 0x04, 0x41, 0xbb, 0xd0, 0x6a,
+	0x1a, 0x1a, 0xa5, 0x3a, 0x59, 0xcd, 0x1d, 0xec, 0x97, 0xcf, 0x6d, 0x39, 0x63, 0x1b, 0xb5, 0xc6,
+	0x39, 0x3a, 0xb9, 0xa1, 0xf1, 0x6b, 0x20, 0x8f, 0x3b, 0x4a, 0xd3, 0xc7, 0xe2, 0x62, 0x76, 0x21,
+	0xb3, 0x94, 0xaf, 0x16, 0x0e, 0xf6, 0xcb, 0xb9, 0xcd, 0x8e, 0xe2, 0xe1, 0x71, 0x23, 0x87, 0xfd,
+	0x0f, 0x0d, 0x0f, 0x94, 0xa3, 0x08, 0xe6, 0xa2, 0xb4, 0x99, 0x22, 0x5f, 0xa6, 0x69, 0xc1, 0x35,
+	0xa0, 0x76, 0xdc, 0xbc, 0xbf, 0x09, 0xf2, 0x8c, 0x65, 0x13, 0xdb, 0xea, 0x50, 0x51, 0xce, 0x33,
+	0xf8, 0xa6, 0xad, 0x46, 0xcd, 0x35, 0x4c, 0x3c, 0x71, 0x92, 0x98, 0xd7, 0x30, 0x61, 0xd5, 0x93,
+	0x3d, 0x89, 0xea, 0xd9, 0xa6, 0x7b, 0x24, 0xd0, 0xc4, 0x57, 0x8b, 0xaf, 0x83, 0x82, 0x8a, 0xcc,
+	0x76, 0x0b, 0x3a, 0xed, 0xa5, 0xe9, 0x9c, 0xf1, 0x54, 0xa1, 0xdc, 0xaa, 0xd0, 0x77, 0x5a, 0x6d,
+	0xf9, 0x17, 0x80, 0xea, 0x84, 0x13, 0xf1, 0xde, 0x4f, 0x65, 0xae, 0x31, 0x15, 0x18, 0x3b, 0xd3,
+	0x95, 0x6f, 0xdc, 0x2e, 0x1c, 0x04, 0x3a, 0x4e, 0x41, 0x9e, 0xad, 0xfe, 0xe1, 0xb2, 0xce, 0x8e,
+	0x52, 0xd6, 0x63, 0xc7, 0x28, 0x6b, 0x83, 0x36, 0xf0, 0x88, 0x7c, 0xa7, 0x95, 0xaa, 0xef, 0x38,
+	0xba, 0x4f, 0xde, 0xb7, 0xb4, 0xff, 0x44, 0x7f, 0x74, 0x2b, 0x3c, 0x60, 0x73, 0x5a, 0xb2, 0xfd,
+	0xc9, 0xd1, 0x0a, 0x0f, 0x02, 0xfd, 0x6f, 0x5a, 0xae, 0x5b, 0x9b, 0x11, 0xe2, 0xa7, 0x25, 0xf2,
+	0xb7, 0x69, 0x9a, 0xcd, 0x75, 0xd9, 0x52, 0x61, 0x8b, 0xed, 0x06, 0xe7, 0x6a, 0xf9, 0x6c, 0xf6,
+	0x92, 0x17, 0x41, 0x41, 0x75, 0xee, 0xad, 0x8e, 0x38, 0x3b, 0xd0, 0xd0, 0x77, 0x08, 0x6d, 0x29,
+	0x99, 0xc6, 0x94, 0x3f, 0xfc, 0x0e, 0x1d, 0x65, 0x5b, 0x62, 0xec, 0x24, 0xb6, 0x44, 0x19, 0xcc,
+	0xc7, 0x8a, 0xc8, 0x8e, 0xca, 0xdf, 0xd2, 0x34, 0xa5, 0xfd, 0x88, 0x67, 0xb7, 0x6b, 0x27, 0x56,
+	0x3a, 0xbc, 0x85, 0xc6, 0x46, 0xd9, 0x42, 0xe3, 0xc7, 0xd8, 0x42, 0x15, 0xb0, 0x30, 0x48, 0x6f,
+	0x96, 0x94, 0xbf, 0xb8, 0x50, 0xed, 0xb3, 0xdd, 0x76, 0x9c, 0xda, 0x7f, 0xda, 0x2e, 0x13, 0xa3,
+	0x65, 0xe6, 0xc8, 0xaa, 0xcd, 0x9e, 0x74, 0xd5, 0x86, 0xe9, 0x33, 0x81, 0xbe, 0x0a, 0x57, 0x6d,
+	0x18, 0x71, 0x16, 0x9d, 0x38, 0xb1, 0x46, 0x67, 0x72, 0x9d, 0x08, 0xd7, 0x5b, 0x8f, 0x52, 0xbe,
+	0x9c, 0xab, 0x3f, 0xe6, 0x40, 0xa6, 0x8e, 0x75, 0xde, 0x04, 0x85, 0xde, 0x5f, 0x54, 0x96, 0xe2,
+	0xdf, 0xa8, 0xfd, 0xaf, 0x70, 0xe1, 0xd5, 0xa4, 0x48, 0x76, 0x62, 0xe8, 0x20, 0x1f, 0x7d, 0xab,
+	0x2f, 0x0e, 0x74, 0x11, 0xc1, 0x09, 0x62, 0x32, 0x1c, 0x0b, 0xf4, 0x09, 0x98, 0x0c, 0x1e, 0xbd,
+	0x95, 0x81, 0xc6, 0x0c, 0x23, 0x5c, 0x19, 0x8e, 0x61, 0xce, 0x6f, 0x03, 0x10, 0x7a, 0xd9, 0xbe,
+	0x70, 0xa4, 0xa5, 0x0b, 0x12, 0x5e, 0x4e, 0x00, 0x62, 0xfe, 0x3f, 0x04, 0x13, 0xec, 0xf9, 0x7a,
+	0x69, 0xa0, 0xa1, 0x0f, 0x11, 0x5e, 0x1a, 0x0a, 0x61, 0x9e, 0x65, 0x90, 0x0b, 0x3f, 0x1a, 0x2f,
+	0x0f, 0xb5, 0xbc, 0x79, 0x63, 0x4b, 0x78, 0x25, 0x09, 0x2a, 0x2c, 0x4e, 0xe8, 0x15, 0x36, 0x58,
+	0x9c, 0x00, 0x74, 0x84, 0x38, 0x31, 0x6f, 0x17, 0x1d, 0xe4, 0xa3, 0x0f, 0x8d, 0xc5, 0x04, 0xd6,
+	0x0e, 0x0d, 0x31, 0x19, 0x2e, 0x4c, 0x24, 0x74, 0x4d, 0x1e, 0x4c, 0x24, 0x00, 0x1d, 0x41, 0x24,
+	0xe6, 0x8a, 0xaa, 0x83, 0x7c, 0xf4, 0x3e, 0xb9, 0x98, 0xc0, 0xfa, 0x68, 0x22, 0xf1, 0xd7, 0xb4,
+	0x3d, 0xc0, 0xc7, 0xdc, 0xa9, 0x06, 0xaf, 0xb5, 0x1f, 0x2c, 0xac, 0x8d, 0x00, 0x66, 0x71, 0x3f,
+	0x07, 0xb3, 0xf1, 0x97, 0x0c, 0x71, 0x04, 0x6f, 0x0e, 0xe1, 0xab, 0xa3, 0xe1, 0xfb, 0x89, 0x47,
+	0x0e, 0xd4, 0x61, 0xc4, 0xc3, 0xe0, 0xa1, 0xc4, 0xe3, 0xce, 0xaa, 0x80, 0x78, 0xef, 0x39, 0x25,
+	0x8e, 0xe0, 0x2d, 0x09, 0xf1, 0x01, 0xdd, 0xbd, 0xba, 0xf9, 0xf0, 0xa0, 0xc4, 0x3d, 0x3e, 0x28,
+	0x71, 0x3f, 0x1f, 0x94, 0xb8, 0x7b, 0x87, 0xa5, 0xd4, 0xe3, 0xc3, 0x52, 0xea, 0xfb, 0xc3, 0x52,
+	0xea, 0xe3, 0xd7, 0x15, 0x83, 0x28, 0x1d, 0x75, 0x17, 0x12, 0x11, 0xd9, 0xba, 0xe4, 0xb9, 0x27,
+	0x50, 0x36, 0x25, 0x1d, 0x2d, 0x63, 0x53, 0xb6, 0xc9, 0xb2, 0x85, 0x34, 0x28, 0xdd, 0x09, 0xfd,
+	0x1a, 0x4f, 0x7f, 0xfd, 0x55, 0xc6, 0xe9, 0x65, 0x7e, 0xed, 0xef, 0x00, 0x00, 0x00, 0xff, 0xff,
+	0xdf, 0x9a, 0x7e, 0xbf, 0x8a, 0x18, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -755,14 +1337,34 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
-	DeclareCandidate(ctx context.Context, in *MsgDeclareCandidate, opts ...grpc.CallOption) (*MsgDeclareCandidateResponse, error)
-	Delegate(ctx context.Context, in *MsgDelegate, opts ...grpc.CallOption) (*MsgDelegateResponse, error)
-	DelegateNFT(ctx context.Context, in *MsgDelegateNFT, opts ...grpc.CallOption) (*MsgDelegateNFTResponse, error)
+	// CreateValidator defines a method for creating a new validator.
+	CreateValidator(ctx context.Context, in *MsgCreateValidator, opts ...grpc.CallOption) (*MsgCreateValidatorResponse, error)
+	// EditValidator defines a method for editing an existing validator.
+	EditValidator(ctx context.Context, in *MsgEditValidator, opts ...grpc.CallOption) (*MsgEditValidatorResponse, error)
+	// SetOnline defines a method for turning on a validator into the blockchain consensus.
 	SetOnline(ctx context.Context, in *MsgSetOnline, opts ...grpc.CallOption) (*MsgSetOnlineResponse, error)
+	// SetOffline defines a method for turning off a validator from the blockchain consensus.
 	SetOffline(ctx context.Context, in *MsgSetOffline, opts ...grpc.CallOption) (*MsgSetOfflineResponse, error)
-	Unbond(ctx context.Context, in *MsgUnbond, opts ...grpc.CallOption) (*MsgUnbondResponse, error)
-	UnbondNFT(ctx context.Context, in *MsgUnbondNFT, opts ...grpc.CallOption) (*MsgUnbondNFTResponse, error)
-	EditCandidate(ctx context.Context, in *MsgEditCandidate, opts ...grpc.CallOption) (*MsgEditCandidateResponse, error)
+	// Delegate defines a method for performing a delegation of coins from a delegator to a validator.
+	Delegate(ctx context.Context, in *MsgDelegate, opts ...grpc.CallOption) (*MsgDelegateResponse, error)
+	// DelegateNFT defines a method for performing a delegation of NFTs from a delegator to a validator.
+	DelegateNFT(ctx context.Context, in *MsgDelegateNFT, opts ...grpc.CallOption) (*MsgDelegateNFTResponse, error)
+	// Redelegate defines a method for performing a redelegation of coins from a source validator to destination one.
+	Redelegate(ctx context.Context, in *MsgRedelegate, opts ...grpc.CallOption) (*MsgRedelegateResponse, error)
+	// RedelegateNFT defines a method for performing a redelegation of NFTs from a source validator to destination one.
+	RedelegateNFT(ctx context.Context, in *MsgRedelegateNFT, opts ...grpc.CallOption) (*MsgRedelegateNFTResponse, error)
+	// Undelegate defines a method for performing an undelegation of coins from a validator.
+	Undelegate(ctx context.Context, in *MsgUndelegate, opts ...grpc.CallOption) (*MsgUndelegateResponse, error)
+	// UndelegateNFT defines a method for performing an undelegation of NFTs from a validator.
+	UndelegateNFT(ctx context.Context, in *MsgUndelegateNFT, opts ...grpc.CallOption) (*MsgUndelegateNFTResponse, error)
+	// CancelRedelegation defines a method for canceling the redelegation and delegate back the validator.
+	CancelRedelegation(ctx context.Context, in *MsgCancelRedelegation, opts ...grpc.CallOption) (*MsgCancelRedelegationResponse, error)
+	// CancelRedelegationNFT defines a method for canceling the redelegation and delegate back the validator.
+	CancelRedelegationNFT(ctx context.Context, in *MsgCancelRedelegationNFT, opts ...grpc.CallOption) (*MsgCancelRedelegationNFTResponse, error)
+	// CancelUndelegation defines a method for canceling the undelegation and delegate back to the validator.
+	CancelUndelegation(ctx context.Context, in *MsgCancelUndelegation, opts ...grpc.CallOption) (*MsgCancelUndelegationResponse, error)
+	// CancelUndelegationNFT defines a method for canceling the undelegation and delegate back to the validator.
+	CancelUndelegationNFT(ctx context.Context, in *MsgCancelUndelegationNFT, opts ...grpc.CallOption) (*MsgCancelUndelegationNFTResponse, error)
 }
 
 type msgClient struct {
@@ -773,27 +1375,18 @@ func NewMsgClient(cc grpc1.ClientConn) MsgClient {
 	return &msgClient{cc}
 }
 
-func (c *msgClient) DeclareCandidate(ctx context.Context, in *MsgDeclareCandidate, opts ...grpc.CallOption) (*MsgDeclareCandidateResponse, error) {
-	out := new(MsgDeclareCandidateResponse)
-	err := c.cc.Invoke(ctx, "/decimal.validator.v1.Msg/DeclareCandidate", in, out, opts...)
+func (c *msgClient) CreateValidator(ctx context.Context, in *MsgCreateValidator, opts ...grpc.CallOption) (*MsgCreateValidatorResponse, error) {
+	out := new(MsgCreateValidatorResponse)
+	err := c.cc.Invoke(ctx, "/decimal.validator.v1.Msg/CreateValidator", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) Delegate(ctx context.Context, in *MsgDelegate, opts ...grpc.CallOption) (*MsgDelegateResponse, error) {
-	out := new(MsgDelegateResponse)
-	err := c.cc.Invoke(ctx, "/decimal.validator.v1.Msg/Delegate", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) DelegateNFT(ctx context.Context, in *MsgDelegateNFT, opts ...grpc.CallOption) (*MsgDelegateNFTResponse, error) {
-	out := new(MsgDelegateNFTResponse)
-	err := c.cc.Invoke(ctx, "/decimal.validator.v1.Msg/DelegateNFT", in, out, opts...)
+func (c *msgClient) EditValidator(ctx context.Context, in *MsgEditValidator, opts ...grpc.CallOption) (*MsgEditValidatorResponse, error) {
+	out := new(MsgEditValidatorResponse)
+	err := c.cc.Invoke(ctx, "/decimal.validator.v1.Msg/EditValidator", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -818,27 +1411,90 @@ func (c *msgClient) SetOffline(ctx context.Context, in *MsgSetOffline, opts ...g
 	return out, nil
 }
 
-func (c *msgClient) Unbond(ctx context.Context, in *MsgUnbond, opts ...grpc.CallOption) (*MsgUnbondResponse, error) {
-	out := new(MsgUnbondResponse)
-	err := c.cc.Invoke(ctx, "/decimal.validator.v1.Msg/Unbond", in, out, opts...)
+func (c *msgClient) Delegate(ctx context.Context, in *MsgDelegate, opts ...grpc.CallOption) (*MsgDelegateResponse, error) {
+	out := new(MsgDelegateResponse)
+	err := c.cc.Invoke(ctx, "/decimal.validator.v1.Msg/Delegate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) UnbondNFT(ctx context.Context, in *MsgUnbondNFT, opts ...grpc.CallOption) (*MsgUnbondNFTResponse, error) {
-	out := new(MsgUnbondNFTResponse)
-	err := c.cc.Invoke(ctx, "/decimal.validator.v1.Msg/UnbondNFT", in, out, opts...)
+func (c *msgClient) DelegateNFT(ctx context.Context, in *MsgDelegateNFT, opts ...grpc.CallOption) (*MsgDelegateNFTResponse, error) {
+	out := new(MsgDelegateNFTResponse)
+	err := c.cc.Invoke(ctx, "/decimal.validator.v1.Msg/DelegateNFT", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) EditCandidate(ctx context.Context, in *MsgEditCandidate, opts ...grpc.CallOption) (*MsgEditCandidateResponse, error) {
-	out := new(MsgEditCandidateResponse)
-	err := c.cc.Invoke(ctx, "/decimal.validator.v1.Msg/EditCandidate", in, out, opts...)
+func (c *msgClient) Redelegate(ctx context.Context, in *MsgRedelegate, opts ...grpc.CallOption) (*MsgRedelegateResponse, error) {
+	out := new(MsgRedelegateResponse)
+	err := c.cc.Invoke(ctx, "/decimal.validator.v1.Msg/Redelegate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) RedelegateNFT(ctx context.Context, in *MsgRedelegateNFT, opts ...grpc.CallOption) (*MsgRedelegateNFTResponse, error) {
+	out := new(MsgRedelegateNFTResponse)
+	err := c.cc.Invoke(ctx, "/decimal.validator.v1.Msg/RedelegateNFT", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) Undelegate(ctx context.Context, in *MsgUndelegate, opts ...grpc.CallOption) (*MsgUndelegateResponse, error) {
+	out := new(MsgUndelegateResponse)
+	err := c.cc.Invoke(ctx, "/decimal.validator.v1.Msg/Undelegate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) UndelegateNFT(ctx context.Context, in *MsgUndelegateNFT, opts ...grpc.CallOption) (*MsgUndelegateNFTResponse, error) {
+	out := new(MsgUndelegateNFTResponse)
+	err := c.cc.Invoke(ctx, "/decimal.validator.v1.Msg/UndelegateNFT", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) CancelRedelegation(ctx context.Context, in *MsgCancelRedelegation, opts ...grpc.CallOption) (*MsgCancelRedelegationResponse, error) {
+	out := new(MsgCancelRedelegationResponse)
+	err := c.cc.Invoke(ctx, "/decimal.validator.v1.Msg/CancelRedelegation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) CancelRedelegationNFT(ctx context.Context, in *MsgCancelRedelegationNFT, opts ...grpc.CallOption) (*MsgCancelRedelegationNFTResponse, error) {
+	out := new(MsgCancelRedelegationNFTResponse)
+	err := c.cc.Invoke(ctx, "/decimal.validator.v1.Msg/CancelRedelegationNFT", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) CancelUndelegation(ctx context.Context, in *MsgCancelUndelegation, opts ...grpc.CallOption) (*MsgCancelUndelegationResponse, error) {
+	out := new(MsgCancelUndelegationResponse)
+	err := c.cc.Invoke(ctx, "/decimal.validator.v1.Msg/CancelUndelegation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) CancelUndelegationNFT(ctx context.Context, in *MsgCancelUndelegationNFT, opts ...grpc.CallOption) (*MsgCancelUndelegationNFTResponse, error) {
+	out := new(MsgCancelUndelegationNFTResponse)
+	err := c.cc.Invoke(ctx, "/decimal.validator.v1.Msg/CancelUndelegationNFT", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -847,28 +1503,45 @@ func (c *msgClient) EditCandidate(ctx context.Context, in *MsgEditCandidate, opt
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
-	DeclareCandidate(context.Context, *MsgDeclareCandidate) (*MsgDeclareCandidateResponse, error)
-	Delegate(context.Context, *MsgDelegate) (*MsgDelegateResponse, error)
-	DelegateNFT(context.Context, *MsgDelegateNFT) (*MsgDelegateNFTResponse, error)
+	// CreateValidator defines a method for creating a new validator.
+	CreateValidator(context.Context, *MsgCreateValidator) (*MsgCreateValidatorResponse, error)
+	// EditValidator defines a method for editing an existing validator.
+	EditValidator(context.Context, *MsgEditValidator) (*MsgEditValidatorResponse, error)
+	// SetOnline defines a method for turning on a validator into the blockchain consensus.
 	SetOnline(context.Context, *MsgSetOnline) (*MsgSetOnlineResponse, error)
+	// SetOffline defines a method for turning off a validator from the blockchain consensus.
 	SetOffline(context.Context, *MsgSetOffline) (*MsgSetOfflineResponse, error)
-	Unbond(context.Context, *MsgUnbond) (*MsgUnbondResponse, error)
-	UnbondNFT(context.Context, *MsgUnbondNFT) (*MsgUnbondNFTResponse, error)
-	EditCandidate(context.Context, *MsgEditCandidate) (*MsgEditCandidateResponse, error)
+	// Delegate defines a method for performing a delegation of coins from a delegator to a validator.
+	Delegate(context.Context, *MsgDelegate) (*MsgDelegateResponse, error)
+	// DelegateNFT defines a method for performing a delegation of NFTs from a delegator to a validator.
+	DelegateNFT(context.Context, *MsgDelegateNFT) (*MsgDelegateNFTResponse, error)
+	// Redelegate defines a method for performing a redelegation of coins from a source validator to destination one.
+	Redelegate(context.Context, *MsgRedelegate) (*MsgRedelegateResponse, error)
+	// RedelegateNFT defines a method for performing a redelegation of NFTs from a source validator to destination one.
+	RedelegateNFT(context.Context, *MsgRedelegateNFT) (*MsgRedelegateNFTResponse, error)
+	// Undelegate defines a method for performing an undelegation of coins from a validator.
+	Undelegate(context.Context, *MsgUndelegate) (*MsgUndelegateResponse, error)
+	// UndelegateNFT defines a method for performing an undelegation of NFTs from a validator.
+	UndelegateNFT(context.Context, *MsgUndelegateNFT) (*MsgUndelegateNFTResponse, error)
+	// CancelRedelegation defines a method for canceling the redelegation and delegate back the validator.
+	CancelRedelegation(context.Context, *MsgCancelRedelegation) (*MsgCancelRedelegationResponse, error)
+	// CancelRedelegationNFT defines a method for canceling the redelegation and delegate back the validator.
+	CancelRedelegationNFT(context.Context, *MsgCancelRedelegationNFT) (*MsgCancelRedelegationNFTResponse, error)
+	// CancelUndelegation defines a method for canceling the undelegation and delegate back to the validator.
+	CancelUndelegation(context.Context, *MsgCancelUndelegation) (*MsgCancelUndelegationResponse, error)
+	// CancelUndelegationNFT defines a method for canceling the undelegation and delegate back to the validator.
+	CancelUndelegationNFT(context.Context, *MsgCancelUndelegationNFT) (*MsgCancelUndelegationNFTResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
 type UnimplementedMsgServer struct {
 }
 
-func (*UnimplementedMsgServer) DeclareCandidate(ctx context.Context, req *MsgDeclareCandidate) (*MsgDeclareCandidateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeclareCandidate not implemented")
+func (*UnimplementedMsgServer) CreateValidator(ctx context.Context, req *MsgCreateValidator) (*MsgCreateValidatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateValidator not implemented")
 }
-func (*UnimplementedMsgServer) Delegate(ctx context.Context, req *MsgDelegate) (*MsgDelegateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Delegate not implemented")
-}
-func (*UnimplementedMsgServer) DelegateNFT(ctx context.Context, req *MsgDelegateNFT) (*MsgDelegateNFTResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DelegateNFT not implemented")
+func (*UnimplementedMsgServer) EditValidator(ctx context.Context, req *MsgEditValidator) (*MsgEditValidatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EditValidator not implemented")
 }
 func (*UnimplementedMsgServer) SetOnline(ctx context.Context, req *MsgSetOnline) (*MsgSetOnlineResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetOnline not implemented")
@@ -876,70 +1549,73 @@ func (*UnimplementedMsgServer) SetOnline(ctx context.Context, req *MsgSetOnline)
 func (*UnimplementedMsgServer) SetOffline(ctx context.Context, req *MsgSetOffline) (*MsgSetOfflineResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetOffline not implemented")
 }
-func (*UnimplementedMsgServer) Unbond(ctx context.Context, req *MsgUnbond) (*MsgUnbondResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Unbond not implemented")
+func (*UnimplementedMsgServer) Delegate(ctx context.Context, req *MsgDelegate) (*MsgDelegateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delegate not implemented")
 }
-func (*UnimplementedMsgServer) UnbondNFT(ctx context.Context, req *MsgUnbondNFT) (*MsgUnbondNFTResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UnbondNFT not implemented")
+func (*UnimplementedMsgServer) DelegateNFT(ctx context.Context, req *MsgDelegateNFT) (*MsgDelegateNFTResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DelegateNFT not implemented")
 }
-func (*UnimplementedMsgServer) EditCandidate(ctx context.Context, req *MsgEditCandidate) (*MsgEditCandidateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method EditCandidate not implemented")
+func (*UnimplementedMsgServer) Redelegate(ctx context.Context, req *MsgRedelegate) (*MsgRedelegateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Redelegate not implemented")
+}
+func (*UnimplementedMsgServer) RedelegateNFT(ctx context.Context, req *MsgRedelegateNFT) (*MsgRedelegateNFTResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RedelegateNFT not implemented")
+}
+func (*UnimplementedMsgServer) Undelegate(ctx context.Context, req *MsgUndelegate) (*MsgUndelegateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Undelegate not implemented")
+}
+func (*UnimplementedMsgServer) UndelegateNFT(ctx context.Context, req *MsgUndelegateNFT) (*MsgUndelegateNFTResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UndelegateNFT not implemented")
+}
+func (*UnimplementedMsgServer) CancelRedelegation(ctx context.Context, req *MsgCancelRedelegation) (*MsgCancelRedelegationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CancelRedelegation not implemented")
+}
+func (*UnimplementedMsgServer) CancelRedelegationNFT(ctx context.Context, req *MsgCancelRedelegationNFT) (*MsgCancelRedelegationNFTResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CancelRedelegationNFT not implemented")
+}
+func (*UnimplementedMsgServer) CancelUndelegation(ctx context.Context, req *MsgCancelUndelegation) (*MsgCancelUndelegationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CancelUndelegation not implemented")
+}
+func (*UnimplementedMsgServer) CancelUndelegationNFT(ctx context.Context, req *MsgCancelUndelegationNFT) (*MsgCancelUndelegationNFTResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CancelUndelegationNFT not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
 	s.RegisterService(&_Msg_serviceDesc, srv)
 }
 
-func _Msg_DeclareCandidate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgDeclareCandidate)
+func _Msg_CreateValidator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgCreateValidator)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).DeclareCandidate(ctx, in)
+		return srv.(MsgServer).CreateValidator(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/decimal.validator.v1.Msg/DeclareCandidate",
+		FullMethod: "/decimal.validator.v1.Msg/CreateValidator",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).DeclareCandidate(ctx, req.(*MsgDeclareCandidate))
+		return srv.(MsgServer).CreateValidator(ctx, req.(*MsgCreateValidator))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_Delegate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgDelegate)
+func _Msg_EditValidator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgEditValidator)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).Delegate(ctx, in)
+		return srv.(MsgServer).EditValidator(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/decimal.validator.v1.Msg/Delegate",
+		FullMethod: "/decimal.validator.v1.Msg/EditValidator",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).Delegate(ctx, req.(*MsgDelegate))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_DelegateNFT_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgDelegateNFT)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).DelegateNFT(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/decimal.validator.v1.Msg/DelegateNFT",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).DelegateNFT(ctx, req.(*MsgDelegateNFT))
+		return srv.(MsgServer).EditValidator(ctx, req.(*MsgEditValidator))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -980,56 +1656,182 @@ func _Msg_SetOffline_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_Unbond_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgUnbond)
+func _Msg_Delegate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgDelegate)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).Unbond(ctx, in)
+		return srv.(MsgServer).Delegate(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/decimal.validator.v1.Msg/Unbond",
+		FullMethod: "/decimal.validator.v1.Msg/Delegate",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).Unbond(ctx, req.(*MsgUnbond))
+		return srv.(MsgServer).Delegate(ctx, req.(*MsgDelegate))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_UnbondNFT_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgUnbondNFT)
+func _Msg_DelegateNFT_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgDelegateNFT)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).UnbondNFT(ctx, in)
+		return srv.(MsgServer).DelegateNFT(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/decimal.validator.v1.Msg/UnbondNFT",
+		FullMethod: "/decimal.validator.v1.Msg/DelegateNFT",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).UnbondNFT(ctx, req.(*MsgUnbondNFT))
+		return srv.(MsgServer).DelegateNFT(ctx, req.(*MsgDelegateNFT))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_EditCandidate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgEditCandidate)
+func _Msg_Redelegate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRedelegate)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).EditCandidate(ctx, in)
+		return srv.(MsgServer).Redelegate(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/decimal.validator.v1.Msg/EditCandidate",
+		FullMethod: "/decimal.validator.v1.Msg/Redelegate",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).EditCandidate(ctx, req.(*MsgEditCandidate))
+		return srv.(MsgServer).Redelegate(ctx, req.(*MsgRedelegate))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_RedelegateNFT_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRedelegateNFT)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RedelegateNFT(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/decimal.validator.v1.Msg/RedelegateNFT",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RedelegateNFT(ctx, req.(*MsgRedelegateNFT))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_Undelegate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgUndelegate)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).Undelegate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/decimal.validator.v1.Msg/Undelegate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).Undelegate(ctx, req.(*MsgUndelegate))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_UndelegateNFT_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgUndelegateNFT)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).UndelegateNFT(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/decimal.validator.v1.Msg/UndelegateNFT",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).UndelegateNFT(ctx, req.(*MsgUndelegateNFT))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_CancelRedelegation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgCancelRedelegation)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).CancelRedelegation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/decimal.validator.v1.Msg/CancelRedelegation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).CancelRedelegation(ctx, req.(*MsgCancelRedelegation))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_CancelRedelegationNFT_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgCancelRedelegationNFT)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).CancelRedelegationNFT(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/decimal.validator.v1.Msg/CancelRedelegationNFT",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).CancelRedelegationNFT(ctx, req.(*MsgCancelRedelegationNFT))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_CancelUndelegation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgCancelUndelegation)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).CancelUndelegation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/decimal.validator.v1.Msg/CancelUndelegation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).CancelUndelegation(ctx, req.(*MsgCancelUndelegation))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_CancelUndelegationNFT_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgCancelUndelegationNFT)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).CancelUndelegationNFT(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/decimal.validator.v1.Msg/CancelUndelegationNFT",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).CancelUndelegationNFT(ctx, req.(*MsgCancelUndelegationNFT))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1039,16 +1841,12 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*MsgServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "DeclareCandidate",
-			Handler:    _Msg_DeclareCandidate_Handler,
+			MethodName: "CreateValidator",
+			Handler:    _Msg_CreateValidator_Handler,
 		},
 		{
-			MethodName: "Delegate",
-			Handler:    _Msg_Delegate_Handler,
-		},
-		{
-			MethodName: "DelegateNFT",
-			Handler:    _Msg_DelegateNFT_Handler,
+			MethodName: "EditValidator",
+			Handler:    _Msg_EditValidator_Handler,
 		},
 		{
 			MethodName: "SetOnline",
@@ -1059,23 +1857,51 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_SetOffline_Handler,
 		},
 		{
-			MethodName: "Unbond",
-			Handler:    _Msg_Unbond_Handler,
+			MethodName: "Delegate",
+			Handler:    _Msg_Delegate_Handler,
 		},
 		{
-			MethodName: "UnbondNFT",
-			Handler:    _Msg_UnbondNFT_Handler,
+			MethodName: "DelegateNFT",
+			Handler:    _Msg_DelegateNFT_Handler,
 		},
 		{
-			MethodName: "EditCandidate",
-			Handler:    _Msg_EditCandidate_Handler,
+			MethodName: "Redelegate",
+			Handler:    _Msg_Redelegate_Handler,
+		},
+		{
+			MethodName: "RedelegateNFT",
+			Handler:    _Msg_RedelegateNFT_Handler,
+		},
+		{
+			MethodName: "Undelegate",
+			Handler:    _Msg_Undelegate_Handler,
+		},
+		{
+			MethodName: "UndelegateNFT",
+			Handler:    _Msg_UndelegateNFT_Handler,
+		},
+		{
+			MethodName: "CancelRedelegation",
+			Handler:    _Msg_CancelRedelegation_Handler,
+		},
+		{
+			MethodName: "CancelRedelegationNFT",
+			Handler:    _Msg_CancelRedelegationNFT_Handler,
+		},
+		{
+			MethodName: "CancelUndelegation",
+			Handler:    _Msg_CancelUndelegation_Handler,
+		},
+		{
+			MethodName: "CancelUndelegationNFT",
+			Handler:    _Msg_CancelUndelegationNFT_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "decimal/validator/v1/tx.proto",
 }
 
-func (m *MsgDeclareCandidate) Marshal() (dAtA []byte, err error) {
+func (m *MsgCreateValidator) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1085,30 +1911,18 @@ func (m *MsgDeclareCandidate) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgDeclareCandidate) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgCreateValidator) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgDeclareCandidate) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgCreateValidator) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.PubKey != nil {
-		{
-			size, err := m.PubKey.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintTx(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x32
-	}
 	{
-		size, err := m.Description.MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Stake.MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
 			return 0, err
 		}
@@ -1116,31 +1930,7 @@ func (m *MsgDeclareCandidate) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintTx(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x2a
-	{
-		size := m.Stake.Size()
-		i -= size
-		if _, err := m.Stake.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintTx(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x22
-	if len(m.RewardAddr) > 0 {
-		i -= len(m.RewardAddr)
-		copy(dAtA[i:], m.RewardAddr)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.RewardAddr)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.ValidatorAddr) > 0 {
-		i -= len(m.ValidatorAddr)
-		copy(dAtA[i:], m.ValidatorAddr)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ValidatorAddr)))
-		i--
-		dAtA[i] = 0x12
-	}
+	dAtA[i] = 0x32
 	{
 		size := m.Commission.Size()
 		i -= size
@@ -1150,11 +1940,47 @@ func (m *MsgDeclareCandidate) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintTx(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0xa
+	dAtA[i] = 0x2a
+	{
+		size, err := m.Description.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	if m.ConsensusPubkey != nil {
+		{
+			size, err := m.ConsensusPubkey.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTx(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.RewardAddress) > 0 {
+		i -= len(m.RewardAddress)
+		copy(dAtA[i:], m.RewardAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.RewardAddress)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.OperatorAddress) > 0 {
+		i -= len(m.OperatorAddress)
+		copy(dAtA[i:], m.OperatorAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.OperatorAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgDeclareCandidateResponse) Marshal() (dAtA []byte, err error) {
+func (m *MsgCreateValidatorResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1164,12 +1990,12 @@ func (m *MsgDeclareCandidateResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgDeclareCandidateResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgCreateValidatorResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgDeclareCandidateResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgCreateValidatorResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1177,7 +2003,7 @@ func (m *MsgDeclareCandidateResponse) MarshalToSizedBuffer(dAtA []byte) (int, er
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgDelegate) Marshal() (dAtA []byte, err error) {
+func (m *MsgEditValidator) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1187,44 +2013,44 @@ func (m *MsgDelegate) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgDelegate) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgEditValidator) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgDelegate) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgEditValidator) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
 	{
-		size := m.Coin.Size()
-		i -= size
-		if _, err := m.Coin.MarshalTo(dAtA[i:]); err != nil {
+		size, err := m.Description.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
 			return 0, err
 		}
+		i -= size
 		i = encodeVarintTx(dAtA, i, uint64(size))
 	}
 	i--
 	dAtA[i] = 0x1a
-	if len(m.ValidatorAddress) > 0 {
-		i -= len(m.ValidatorAddress)
-		copy(dAtA[i:], m.ValidatorAddress)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ValidatorAddress)))
+	if len(m.RewardAddress) > 0 {
+		i -= len(m.RewardAddress)
+		copy(dAtA[i:], m.RewardAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.RewardAddress)))
 		i--
 		dAtA[i] = 0x12
 	}
-	if len(m.DelegatorAddress) > 0 {
-		i -= len(m.DelegatorAddress)
-		copy(dAtA[i:], m.DelegatorAddress)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.DelegatorAddress)))
+	if len(m.OperatorAddress) > 0 {
+		i -= len(m.OperatorAddress)
+		copy(dAtA[i:], m.OperatorAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.OperatorAddress)))
 		i--
 		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgDelegateResponse) Marshal() (dAtA []byte, err error) {
+func (m *MsgEditValidatorResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1234,96 +2060,12 @@ func (m *MsgDelegateResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgDelegateResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgEditValidatorResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgDelegateResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgDelegateNFT) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgDelegateNFT) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgDelegateNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	{
-		size := m.Quantity.Size()
-		i -= size
-		if _, err := m.Quantity.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintTx(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x2a
-	if len(m.Denom) > 0 {
-		i -= len(m.Denom)
-		copy(dAtA[i:], m.Denom)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Denom)))
-		i--
-		dAtA[i] = 0x22
-	}
-	if len(m.TokenId) > 0 {
-		i -= len(m.TokenId)
-		copy(dAtA[i:], m.TokenId)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.TokenId)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.ValidatorAddress) > 0 {
-		i -= len(m.ValidatorAddress)
-		copy(dAtA[i:], m.ValidatorAddress)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ValidatorAddress)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.DelegatorAddress) > 0 {
-		i -= len(m.DelegatorAddress)
-		copy(dAtA[i:], m.DelegatorAddress)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.DelegatorAddress)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgDelegateNFTResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgDelegateNFTResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgDelegateNFTResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgEditValidatorResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1351,10 +2093,10 @@ func (m *MsgSetOnline) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.ValidatorAddress) > 0 {
-		i -= len(m.ValidatorAddress)
-		copy(dAtA[i:], m.ValidatorAddress)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ValidatorAddress)))
+	if len(m.Validator) > 0 {
+		i -= len(m.Validator)
+		copy(dAtA[i:], m.Validator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Validator)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -1404,12 +2146,12 @@ func (m *MsgSetOffline) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.ValidatorAddress) > 0 {
-		i -= len(m.ValidatorAddress)
-		copy(dAtA[i:], m.ValidatorAddress)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ValidatorAddress)))
+	if len(m.Validator) > 0 {
+		i -= len(m.Validator)
+		copy(dAtA[i:], m.Validator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Validator)))
 		i--
-		dAtA[i] = 0x12
+		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -1437,7 +2179,7 @@ func (m *MsgSetOfflineResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgUnbond) Marshal() (dAtA []byte, err error) {
+func (m *MsgDelegate) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1447,172 +2189,18 @@ func (m *MsgUnbond) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgUnbond) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgDelegate) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgUnbond) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgDelegate) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
 	{
-		size := m.Coin.Size()
-		i -= size
-		if _, err := m.Coin.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintTx(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x1a
-	if len(m.DelegatorAddress) > 0 {
-		i -= len(m.DelegatorAddress)
-		copy(dAtA[i:], m.DelegatorAddress)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.DelegatorAddress)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.ValidatorAddress) > 0 {
-		i -= len(m.ValidatorAddress)
-		copy(dAtA[i:], m.ValidatorAddress)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ValidatorAddress)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgUnbondResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgUnbondResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgUnbondResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgUnbondNFT) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgUnbondNFT) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgUnbondNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	{
-		size := m.Quantity.Size()
-		i -= size
-		if _, err := m.Quantity.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintTx(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x2a
-	if len(m.Denom) > 0 {
-		i -= len(m.Denom)
-		copy(dAtA[i:], m.Denom)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Denom)))
-		i--
-		dAtA[i] = 0x22
-	}
-	if len(m.TokenId) > 0 {
-		i -= len(m.TokenId)
-		copy(dAtA[i:], m.TokenId)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.TokenId)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.DelegatorAddress) > 0 {
-		i -= len(m.DelegatorAddress)
-		copy(dAtA[i:], m.DelegatorAddress)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.DelegatorAddress)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.ValidatorAddress) > 0 {
-		i -= len(m.ValidatorAddress)
-		copy(dAtA[i:], m.ValidatorAddress)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ValidatorAddress)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgUnbondNFTResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgUnbondNFTResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgUnbondNFTResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgEditCandidate) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgEditCandidate) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgEditCandidate) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	{
-		size, err := m.Description.MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Coin.MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
 			return 0, err
 		}
@@ -1621,24 +2209,24 @@ func (m *MsgEditCandidate) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	i--
 	dAtA[i] = 0x1a
-	if len(m.RewardAddress) > 0 {
-		i -= len(m.RewardAddress)
-		copy(dAtA[i:], m.RewardAddress)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.RewardAddress)))
+	if len(m.Validator) > 0 {
+		i -= len(m.Validator)
+		copy(dAtA[i:], m.Validator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Validator)))
 		i--
 		dAtA[i] = 0x12
 	}
-	if len(m.ValidatorAddress) > 0 {
-		i -= len(m.ValidatorAddress)
-		copy(dAtA[i:], m.ValidatorAddress)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ValidatorAddress)))
+	if len(m.Delegator) > 0 {
+		i -= len(m.Delegator)
+		copy(dAtA[i:], m.Delegator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Delegator)))
 		i--
 		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgEditCandidateResponse) Marshal() (dAtA []byte, err error) {
+func (m *MsgDelegateResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1648,12 +2236,797 @@ func (m *MsgEditCandidateResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgEditCandidateResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgDelegateResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgEditCandidateResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgDelegateResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgDelegateNFT) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgDelegateNFT) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgDelegateNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.SubTokenIDs) > 0 {
+		dAtA7 := make([]byte, len(m.SubTokenIDs)*10)
+		var j6 int
+		for _, num := range m.SubTokenIDs {
+			for num >= 1<<7 {
+				dAtA7[j6] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j6++
+			}
+			dAtA7[j6] = uint8(num)
+			j6++
+		}
+		i -= j6
+		copy(dAtA[i:], dAtA7[:j6])
+		i = encodeVarintTx(dAtA, i, uint64(j6))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.TokenID) > 0 {
+		i -= len(m.TokenID)
+		copy(dAtA[i:], m.TokenID)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.TokenID)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Validator) > 0 {
+		i -= len(m.Validator)
+		copy(dAtA[i:], m.Validator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Validator)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Delegator) > 0 {
+		i -= len(m.Delegator)
+		copy(dAtA[i:], m.Delegator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Delegator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgDelegateNFTResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgDelegateNFTResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgDelegateNFTResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgRedelegate) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgRedelegate) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgRedelegate) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.Coin.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	if len(m.ValidatorDst) > 0 {
+		i -= len(m.ValidatorDst)
+		copy(dAtA[i:], m.ValidatorDst)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ValidatorDst)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.ValidatorSrc) > 0 {
+		i -= len(m.ValidatorSrc)
+		copy(dAtA[i:], m.ValidatorSrc)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ValidatorSrc)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Delegator) > 0 {
+		i -= len(m.Delegator)
+		copy(dAtA[i:], m.Delegator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Delegator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgRedelegateResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgRedelegateResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgRedelegateResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	n9, err9 := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.CompletionTime, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdTime(m.CompletionTime):])
+	if err9 != nil {
+		return 0, err9
+	}
+	i -= n9
+	i = encodeVarintTx(dAtA, i, uint64(n9))
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgRedelegateNFT) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgRedelegateNFT) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgRedelegateNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.SubTokenIDs) > 0 {
+		dAtA11 := make([]byte, len(m.SubTokenIDs)*10)
+		var j10 int
+		for _, num := range m.SubTokenIDs {
+			for num >= 1<<7 {
+				dAtA11[j10] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j10++
+			}
+			dAtA11[j10] = uint8(num)
+			j10++
+		}
+		i -= j10
+		copy(dAtA[i:], dAtA11[:j10])
+		i = encodeVarintTx(dAtA, i, uint64(j10))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if len(m.TokenID) > 0 {
+		i -= len(m.TokenID)
+		copy(dAtA[i:], m.TokenID)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.TokenID)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.ValidatorDst) > 0 {
+		i -= len(m.ValidatorDst)
+		copy(dAtA[i:], m.ValidatorDst)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ValidatorDst)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.ValidatorSrc) > 0 {
+		i -= len(m.ValidatorSrc)
+		copy(dAtA[i:], m.ValidatorSrc)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ValidatorSrc)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Delegator) > 0 {
+		i -= len(m.Delegator)
+		copy(dAtA[i:], m.Delegator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Delegator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgRedelegateNFTResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgRedelegateNFTResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgRedelegateNFTResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	n12, err12 := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.CompletionTime, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdTime(m.CompletionTime):])
+	if err12 != nil {
+		return 0, err12
+	}
+	i -= n12
+	i = encodeVarintTx(dAtA, i, uint64(n12))
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgUndelegate) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgUndelegate) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgUndelegate) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.Coin.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1a
+	if len(m.Validator) > 0 {
+		i -= len(m.Validator)
+		copy(dAtA[i:], m.Validator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Validator)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Delegator) > 0 {
+		i -= len(m.Delegator)
+		copy(dAtA[i:], m.Delegator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Delegator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgUndelegateResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgUndelegateResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgUndelegateResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	n14, err14 := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.CompletionTime, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdTime(m.CompletionTime):])
+	if err14 != nil {
+		return 0, err14
+	}
+	i -= n14
+	i = encodeVarintTx(dAtA, i, uint64(n14))
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgUndelegateNFT) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgUndelegateNFT) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgUndelegateNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.SubTokenIDs) > 0 {
+		dAtA16 := make([]byte, len(m.SubTokenIDs)*10)
+		var j15 int
+		for _, num := range m.SubTokenIDs {
+			for num >= 1<<7 {
+				dAtA16[j15] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j15++
+			}
+			dAtA16[j15] = uint8(num)
+			j15++
+		}
+		i -= j15
+		copy(dAtA[i:], dAtA16[:j15])
+		i = encodeVarintTx(dAtA, i, uint64(j15))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.TokenID) > 0 {
+		i -= len(m.TokenID)
+		copy(dAtA[i:], m.TokenID)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.TokenID)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Validator) > 0 {
+		i -= len(m.Validator)
+		copy(dAtA[i:], m.Validator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Validator)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Delegator) > 0 {
+		i -= len(m.Delegator)
+		copy(dAtA[i:], m.Delegator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Delegator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgUndelegateNFTResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgUndelegateNFTResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgUndelegateNFTResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	n17, err17 := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.CompletionTime, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdTime(m.CompletionTime):])
+	if err17 != nil {
+		return 0, err17
+	}
+	i -= n17
+	i = encodeVarintTx(dAtA, i, uint64(n17))
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgCancelRedelegation) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgCancelRedelegation) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgCancelRedelegation) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.Coin.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x2a
+	if m.CreationHeight != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.CreationHeight))
+		i--
+		dAtA[i] = 0x20
+	}
+	if len(m.ValidatorDst) > 0 {
+		i -= len(m.ValidatorDst)
+		copy(dAtA[i:], m.ValidatorDst)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ValidatorDst)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.ValidatorSrc) > 0 {
+		i -= len(m.ValidatorSrc)
+		copy(dAtA[i:], m.ValidatorSrc)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ValidatorSrc)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Delegator) > 0 {
+		i -= len(m.Delegator)
+		copy(dAtA[i:], m.Delegator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Delegator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgCancelRedelegationResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgCancelRedelegationResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgCancelRedelegationResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgCancelRedelegationNFT) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgCancelRedelegationNFT) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgCancelRedelegationNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.SubTokenIDs) > 0 {
+		dAtA20 := make([]byte, len(m.SubTokenIDs)*10)
+		var j19 int
+		for _, num := range m.SubTokenIDs {
+			for num >= 1<<7 {
+				dAtA20[j19] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j19++
+			}
+			dAtA20[j19] = uint8(num)
+			j19++
+		}
+		i -= j19
+		copy(dAtA[i:], dAtA20[:j19])
+		i = encodeVarintTx(dAtA, i, uint64(j19))
+		i--
+		dAtA[i] = 0x32
+	}
+	if len(m.TokenID) > 0 {
+		i -= len(m.TokenID)
+		copy(dAtA[i:], m.TokenID)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.TokenID)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if m.CreationHeight != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.CreationHeight))
+		i--
+		dAtA[i] = 0x20
+	}
+	if len(m.ValidatorDst) > 0 {
+		i -= len(m.ValidatorDst)
+		copy(dAtA[i:], m.ValidatorDst)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ValidatorDst)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.ValidatorSrc) > 0 {
+		i -= len(m.ValidatorSrc)
+		copy(dAtA[i:], m.ValidatorSrc)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ValidatorSrc)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Delegator) > 0 {
+		i -= len(m.Delegator)
+		copy(dAtA[i:], m.Delegator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Delegator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgCancelRedelegationNFTResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgCancelRedelegationNFTResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgCancelRedelegationNFTResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgCancelUndelegation) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgCancelUndelegation) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgCancelUndelegation) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.Coin.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	if m.CreationHeight != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.CreationHeight))
+		i--
+		dAtA[i] = 0x18
+	}
+	if len(m.Validator) > 0 {
+		i -= len(m.Validator)
+		copy(dAtA[i:], m.Validator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Validator)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Delegator) > 0 {
+		i -= len(m.Delegator)
+		copy(dAtA[i:], m.Delegator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Delegator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgCancelUndelegationResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgCancelUndelegationResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgCancelUndelegationResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgCancelUndelegationNFT) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgCancelUndelegationNFT) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgCancelUndelegationNFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.SubTokenIDs) > 0 {
+		dAtA23 := make([]byte, len(m.SubTokenIDs)*10)
+		var j22 int
+		for _, num := range m.SubTokenIDs {
+			for num >= 1<<7 {
+				dAtA23[j22] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j22++
+			}
+			dAtA23[j22] = uint8(num)
+			j22++
+		}
+		i -= j22
+		copy(dAtA[i:], dAtA23[:j22])
+		i = encodeVarintTx(dAtA, i, uint64(j22))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if len(m.TokenID) > 0 {
+		i -= len(m.TokenID)
+		copy(dAtA[i:], m.TokenID)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.TokenID)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if m.CreationHeight != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.CreationHeight))
+		i--
+		dAtA[i] = 0x18
+	}
+	if len(m.Validator) > 0 {
+		i -= len(m.Validator)
+		copy(dAtA[i:], m.Validator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Validator)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Delegator) > 0 {
+		i -= len(m.Delegator)
+		copy(dAtA[i:], m.Delegator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Delegator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgCancelUndelegationNFTResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgCancelUndelegationNFTResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgCancelUndelegationNFTResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1672,34 +3045,106 @@ func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *MsgDeclareCandidate) Size() (n int) {
+func (m *MsgCreateValidator) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = m.Commission.Size()
-	n += 1 + l + sovTx(uint64(l))
-	l = len(m.ValidatorAddr)
+	l = len(m.OperatorAddress)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.RewardAddr)
+	l = len(m.RewardAddress)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = m.Stake.Size()
-	n += 1 + l + sovTx(uint64(l))
+	if m.ConsensusPubkey != nil {
+		l = m.ConsensusPubkey.Size()
+		n += 1 + l + sovTx(uint64(l))
+	}
 	l = m.Description.Size()
 	n += 1 + l + sovTx(uint64(l))
-	if m.PubKey != nil {
-		l = m.PubKey.Size()
+	l = m.Commission.Size()
+	n += 1 + l + sovTx(uint64(l))
+	l = m.Stake.Size()
+	n += 1 + l + sovTx(uint64(l))
+	return n
+}
+
+func (m *MsgCreateValidatorResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgEditValidator) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.OperatorAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.RewardAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = m.Description.Size()
+	n += 1 + l + sovTx(uint64(l))
+	return n
+}
+
+func (m *MsgEditValidatorResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgSetOnline) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Validator)
+	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
 	return n
 }
 
-func (m *MsgDeclareCandidateResponse) Size() (n int) {
+func (m *MsgSetOnlineResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgSetOffline) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Validator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *MsgSetOfflineResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1714,11 +3159,11 @@ func (m *MsgDelegate) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.DelegatorAddress)
+	l = len(m.Delegator)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.ValidatorAddress)
+	l = len(m.Validator)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
@@ -1742,24 +3187,25 @@ func (m *MsgDelegateNFT) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.DelegatorAddress)
+	l = len(m.Delegator)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.ValidatorAddress)
+	l = len(m.Validator)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.TokenId)
+	l = len(m.TokenID)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.Denom)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
+	if len(m.SubTokenIDs) > 0 {
+		l = 0
+		for _, e := range m.SubTokenIDs {
+			l += sovTx(uint64(e))
+		}
+		n += 1 + sovTx(uint64(l)) + l
 	}
-	l = m.Quantity.Size()
-	n += 1 + l + sovTx(uint64(l))
 	return n
 }
 
@@ -1772,61 +3218,21 @@ func (m *MsgDelegateNFTResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgSetOnline) Size() (n int) {
+func (m *MsgRedelegate) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.ValidatorAddress)
+	l = len(m.Delegator)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	return n
-}
-
-func (m *MsgSetOnlineResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	return n
-}
-
-func (m *MsgSetOffline) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.ValidatorAddress)
+	l = len(m.ValidatorSrc)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	return n
-}
-
-func (m *MsgSetOfflineResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	return n
-}
-
-func (m *MsgUnbond) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.ValidatorAddress)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = len(m.DelegatorAddress)
+	l = len(m.ValidatorDst)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
@@ -1835,71 +3241,271 @@ func (m *MsgUnbond) Size() (n int) {
 	return n
 }
 
-func (m *MsgUnbondResponse) Size() (n int) {
+func (m *MsgRedelegateResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	return n
-}
-
-func (m *MsgUnbondNFT) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.ValidatorAddress)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = len(m.DelegatorAddress)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = len(m.TokenId)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = len(m.Denom)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = m.Quantity.Size()
+	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.CompletionTime)
 	n += 1 + l + sovTx(uint64(l))
 	return n
 }
 
-func (m *MsgUnbondNFTResponse) Size() (n int) {
+func (m *MsgRedelegateNFT) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
+	l = len(m.Delegator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.ValidatorSrc)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.ValidatorDst)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.TokenID)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if len(m.SubTokenIDs) > 0 {
+		l = 0
+		for _, e := range m.SubTokenIDs {
+			l += sovTx(uint64(e))
+		}
+		n += 1 + sovTx(uint64(l)) + l
+	}
 	return n
 }
 
-func (m *MsgEditCandidate) Size() (n int) {
+func (m *MsgRedelegateNFTResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.ValidatorAddress)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = len(m.RewardAddress)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = m.Description.Size()
+	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.CompletionTime)
 	n += 1 + l + sovTx(uint64(l))
 	return n
 }
 
-func (m *MsgEditCandidateResponse) Size() (n int) {
+func (m *MsgUndelegate) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Delegator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Validator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = m.Coin.Size()
+	n += 1 + l + sovTx(uint64(l))
+	return n
+}
+
+func (m *MsgUndelegateResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.CompletionTime)
+	n += 1 + l + sovTx(uint64(l))
+	return n
+}
+
+func (m *MsgUndelegateNFT) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Delegator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Validator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.TokenID)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if len(m.SubTokenIDs) > 0 {
+		l = 0
+		for _, e := range m.SubTokenIDs {
+			l += sovTx(uint64(e))
+		}
+		n += 1 + sovTx(uint64(l)) + l
+	}
+	return n
+}
+
+func (m *MsgUndelegateNFTResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.CompletionTime)
+	n += 1 + l + sovTx(uint64(l))
+	return n
+}
+
+func (m *MsgCancelRedelegation) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Delegator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.ValidatorSrc)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.ValidatorDst)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.CreationHeight != 0 {
+		n += 1 + sovTx(uint64(m.CreationHeight))
+	}
+	l = m.Coin.Size()
+	n += 1 + l + sovTx(uint64(l))
+	return n
+}
+
+func (m *MsgCancelRedelegationResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgCancelRedelegationNFT) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Delegator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.ValidatorSrc)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.ValidatorDst)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.CreationHeight != 0 {
+		n += 1 + sovTx(uint64(m.CreationHeight))
+	}
+	l = len(m.TokenID)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if len(m.SubTokenIDs) > 0 {
+		l = 0
+		for _, e := range m.SubTokenIDs {
+			l += sovTx(uint64(e))
+		}
+		n += 1 + sovTx(uint64(l)) + l
+	}
+	return n
+}
+
+func (m *MsgCancelRedelegationNFTResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgCancelUndelegation) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Delegator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Validator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.CreationHeight != 0 {
+		n += 1 + sovTx(uint64(m.CreationHeight))
+	}
+	l = m.Coin.Size()
+	n += 1 + l + sovTx(uint64(l))
+	return n
+}
+
+func (m *MsgCancelUndelegationResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgCancelUndelegationNFT) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Delegator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Validator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.CreationHeight != 0 {
+		n += 1 + sovTx(uint64(m.CreationHeight))
+	}
+	l = len(m.TokenID)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if len(m.SubTokenIDs) > 0 {
+		l = 0
+		for _, e := range m.SubTokenIDs {
+			l += sovTx(uint64(e))
+		}
+		n += 1 + sovTx(uint64(l)) + l
+	}
+	return n
+}
+
+func (m *MsgCancelUndelegationNFTResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1914,7 +3520,7 @@ func sovTx(x uint64) (n int) {
 func sozTx(x uint64) (n int) {
 	return sovTx(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *MsgDeclareCandidate) Unmarshal(dAtA []byte) error {
+func (m *MsgCreateValidator) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1937,17 +3543,17 @@ func (m *MsgDeclareCandidate) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgDeclareCandidate: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgCreateValidator: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgDeclareCandidate: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgCreateValidator: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Commission", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAddress", wireType)
 			}
-			var byteLen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1957,28 +3563,27 @@ func (m *MsgDeclareCandidate) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				byteLen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if byteLen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + byteLen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.Commission.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
+			m.OperatorAddress = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorAddr", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field RewardAddress", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2006,13 +3611,13 @@ func (m *MsgDeclareCandidate) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ValidatorAddr = string(dAtA[iNdEx:postIndex])
+			m.RewardAddress = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RewardAddr", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ConsensusPubkey", wireType)
 			}
-			var stringLen uint64
+			var msglen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -2022,58 +3627,29 @@ func (m *MsgDeclareCandidate) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				msglen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if msglen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + msglen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.RewardAddr = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Stake", wireType)
+			if m.ConsensusPubkey == nil {
+				m.ConsensusPubkey = &types.Any{}
 			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Stake.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.ConsensusPubkey.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
-		case 5:
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Description", wireType)
 			}
@@ -2106,9 +3682,43 @@ func (m *MsgDeclareCandidate) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Commission", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Commission.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		case 6:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PubKey", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Stake", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -2135,10 +3745,7 @@ func (m *MsgDeclareCandidate) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.PubKey == nil {
-				m.PubKey = &types.Any{}
-			}
-			if err := m.PubKey.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Stake.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2163,7 +3770,7 @@ func (m *MsgDeclareCandidate) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgDeclareCandidateResponse) Unmarshal(dAtA []byte) error {
+func (m *MsgCreateValidatorResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2186,10 +3793,471 @@ func (m *MsgDeclareCandidateResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgDeclareCandidateResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgCreateValidatorResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgDeclareCandidateResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgCreateValidatorResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgEditValidator) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgEditValidator: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgEditValidator: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RewardAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RewardAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Description", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Description.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgEditValidatorResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgEditValidatorResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgEditValidatorResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgSetOnline) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgSetOnline: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgSetOnline: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Validator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Validator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgSetOnlineResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgSetOnlineResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgSetOnlineResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgSetOffline) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgSetOffline: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgSetOffline: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Validator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Validator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgSetOfflineResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgSetOfflineResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgSetOfflineResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
@@ -2244,7 +4312,7 @@ func (m *MsgDelegate) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DelegatorAddress", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Delegator", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2272,11 +4340,11 @@ func (m *MsgDelegate) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.DelegatorAddress = string(dAtA[iNdEx:postIndex])
+			m.Delegator = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorAddress", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Validator", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2304,13 +4372,13 @@ func (m *MsgDelegate) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ValidatorAddress = string(dAtA[iNdEx:postIndex])
+			m.Validator = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Coin", wireType)
 			}
-			var stringLen uint64
+			var msglen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -2320,16 +4388,15 @@ func (m *MsgDelegate) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				msglen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if msglen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + msglen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
@@ -2442,7 +4509,7 @@ func (m *MsgDelegateNFT) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DelegatorAddress", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Delegator", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2470,11 +4537,11 @@ func (m *MsgDelegateNFT) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.DelegatorAddress = string(dAtA[iNdEx:postIndex])
+			m.Delegator = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorAddress", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Validator", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2502,11 +4569,11 @@ func (m *MsgDelegateNFT) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ValidatorAddress = string(dAtA[iNdEx:postIndex])
+			m.Validator = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TokenId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field TokenID", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2534,73 +4601,84 @@ func (m *MsgDelegateNFT) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.TokenId = string(dAtA[iNdEx:postIndex])
+			m.TokenID = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
+			if wireType == 0 {
+				var v uint32
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowTx
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint32(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
 				}
-				if iNdEx >= l {
+				m.SubTokenIDs = append(m.SubTokenIDs, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowTx
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthTx
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthTx
+				}
+				if postIndex > l {
 					return io.ErrUnexpectedEOF
 				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
 				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Denom = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Quantity", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
+				elementCount = count
+				if elementCount != 0 && len(m.SubTokenIDs) == 0 {
+					m.SubTokenIDs = make([]uint32, 0, elementCount)
 				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
+				for iNdEx < postIndex {
+					var v uint32
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowTx
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint32(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.SubTokenIDs = append(m.SubTokenIDs, v)
 				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field SubTokenIDs", wireType)
 			}
-			if byteLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Quantity.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -2672,7 +4750,7 @@ func (m *MsgDelegateNFTResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgSetOnline) Unmarshal(dAtA []byte) error {
+func (m *MsgRedelegate) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2695,15 +4773,15 @@ func (m *MsgSetOnline) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgSetOnline: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgRedelegate: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgSetOnline: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgRedelegate: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorAddress", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Delegator", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2731,275 +4809,11 @@ func (m *MsgSetOnline) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ValidatorAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgSetOnlineResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgSetOnlineResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgSetOnlineResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgSetOffline) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgSetOffline: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgSetOffline: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ValidatorAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgSetOfflineResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgSetOfflineResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgSetOfflineResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgUnbond) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgUnbond: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgUnbond: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ValidatorAddress = string(dAtA[iNdEx:postIndex])
+			m.Delegator = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DelegatorAddress", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorSrc", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -3027,11 +4841,11 @@ func (m *MsgUnbond) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.DelegatorAddress = string(dAtA[iNdEx:postIndex])
+			m.ValidatorSrc = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Coin", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorDst", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -3053,6 +4867,37 @@ func (m *MsgUnbond) Unmarshal(dAtA []byte) error {
 				return ErrInvalidLengthTx
 			}
 			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ValidatorDst = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Coin", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
@@ -3084,7 +4929,7 @@ func (m *MsgUnbond) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgUnbondResponse) Unmarshal(dAtA []byte) error {
+func (m *MsgRedelegateResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3107,390 +4952,15 @@ func (m *MsgUnbondResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgUnbondResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgRedelegateResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgUnbondResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgUnbondNFT) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgUnbondNFT: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgUnbondNFT: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgRedelegateResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ValidatorAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DelegatorAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.DelegatorAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TokenId", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.TokenId = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Denom = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Quantity", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Quantity.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgUnbondNFTResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgUnbondNFTResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgUnbondNFTResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgEditCandidate) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgEditCandidate: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgEditCandidate: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ValidatorAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RewardAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.RewardAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Description", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field CompletionTime", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -3517,7 +4987,7 @@ func (m *MsgEditCandidate) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.Description.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_gogo_protobuf_types.StdTimeUnmarshal(&m.CompletionTime, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -3542,7 +5012,7 @@ func (m *MsgEditCandidate) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgEditCandidateResponse) Unmarshal(dAtA []byte) error {
+func (m *MsgRedelegateNFT) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3565,10 +5035,1910 @@ func (m *MsgEditCandidateResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgEditCandidateResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgRedelegateNFT: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgEditCandidateResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgRedelegateNFT: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Delegator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Delegator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorSrc", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ValidatorSrc = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorDst", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ValidatorDst = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TokenID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TokenID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType == 0 {
+				var v uint32
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowTx
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint32(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.SubTokenIDs = append(m.SubTokenIDs, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowTx
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthTx
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthTx
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.SubTokenIDs) == 0 {
+					m.SubTokenIDs = make([]uint32, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint32
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowTx
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint32(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.SubTokenIDs = append(m.SubTokenIDs, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field SubTokenIDs", wireType)
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgRedelegateNFTResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgRedelegateNFTResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgRedelegateNFTResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CompletionTime", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := github_com_gogo_protobuf_types.StdTimeUnmarshal(&m.CompletionTime, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgUndelegate) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgUndelegate: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgUndelegate: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Delegator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Delegator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Validator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Validator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Coin", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Coin.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgUndelegateResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgUndelegateResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgUndelegateResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CompletionTime", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := github_com_gogo_protobuf_types.StdTimeUnmarshal(&m.CompletionTime, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgUndelegateNFT) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgUndelegateNFT: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgUndelegateNFT: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Delegator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Delegator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Validator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Validator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TokenID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TokenID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType == 0 {
+				var v uint32
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowTx
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint32(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.SubTokenIDs = append(m.SubTokenIDs, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowTx
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthTx
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthTx
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.SubTokenIDs) == 0 {
+					m.SubTokenIDs = make([]uint32, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint32
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowTx
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint32(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.SubTokenIDs = append(m.SubTokenIDs, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field SubTokenIDs", wireType)
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgUndelegateNFTResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgUndelegateNFTResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgUndelegateNFTResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CompletionTime", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := github_com_gogo_protobuf_types.StdTimeUnmarshal(&m.CompletionTime, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgCancelRedelegation) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgCancelRedelegation: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgCancelRedelegation: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Delegator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Delegator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorSrc", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ValidatorSrc = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorDst", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ValidatorDst = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CreationHeight", wireType)
+			}
+			m.CreationHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.CreationHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Coin", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Coin.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgCancelRedelegationResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgCancelRedelegationResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgCancelRedelegationResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgCancelRedelegationNFT) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgCancelRedelegationNFT: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgCancelRedelegationNFT: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Delegator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Delegator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorSrc", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ValidatorSrc = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorDst", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ValidatorDst = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CreationHeight", wireType)
+			}
+			m.CreationHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.CreationHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TokenID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TokenID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 6:
+			if wireType == 0 {
+				var v uint32
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowTx
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint32(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.SubTokenIDs = append(m.SubTokenIDs, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowTx
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthTx
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthTx
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.SubTokenIDs) == 0 {
+					m.SubTokenIDs = make([]uint32, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint32
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowTx
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint32(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.SubTokenIDs = append(m.SubTokenIDs, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field SubTokenIDs", wireType)
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgCancelRedelegationNFTResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgCancelRedelegationNFTResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgCancelRedelegationNFTResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgCancelUndelegation) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgCancelUndelegation: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgCancelUndelegation: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Delegator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Delegator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Validator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Validator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CreationHeight", wireType)
+			}
+			m.CreationHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.CreationHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Coin", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Coin.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgCancelUndelegationResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgCancelUndelegationResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgCancelUndelegationResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgCancelUndelegationNFT) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgCancelUndelegationNFT: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgCancelUndelegationNFT: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Delegator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Delegator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Validator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Validator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CreationHeight", wireType)
+			}
+			m.CreationHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.CreationHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TokenID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TokenID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType == 0 {
+				var v uint32
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowTx
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint32(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.SubTokenIDs = append(m.SubTokenIDs, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowTx
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthTx
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthTx
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.SubTokenIDs) == 0 {
+					m.SubTokenIDs = make([]uint32, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint32
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowTx
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint32(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.SubTokenIDs = append(m.SubTokenIDs, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field SubTokenIDs", wireType)
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgCancelUndelegationNFTResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgCancelUndelegationNFTResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgCancelUndelegationNFTResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

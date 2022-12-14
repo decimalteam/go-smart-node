@@ -1,0 +1,30 @@
+syntax = "proto3";
+package decimal.fee.v1;
+
+import "gogoproto/gogo.proto";
+
+import "cosmos_proto/cosmos.proto";
+import "cosmos/msg/v1/msg.proto";
+
+import "decimal/fee/v1/fee.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/fee/types";
+
+// Msg defines the module Msg service.
+service Msg {
+  // UpdateCoinPrices defines message for updating a coin prices.
+  rpc UpdateCoinPrices(MsgUpdateCoinPrices) returns (MsgUpdateCoinPricesResponse);
+}
+
+// MsgUpdateCoinPrices defines a SDK message for updating specified coin prices.
+message MsgUpdateCoinPrices {
+  option (cosmos.msg.v1.signer) = "oracle";
+
+  // oracle defines address empowered to update coin prices.
+  string oracle = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // prices defines the coin prices requested to update.
+  repeated CoinPrice prices = 2 [ (gogoproto.nullable) = false ];
+}
+
+// MsgUpdateCoinPricesResponse defines the Msg/UpdateCoinPrices response type.
+message MsgUpdateCoinPricesResponse {}

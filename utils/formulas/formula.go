@@ -3,20 +3,20 @@ package formulas
 import (
 	"math/big"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkmath "cosmossdk.io/math"
 
-	"bitbucket.org/decimalteam/go-smart-node/third_party/bigfloat"
+	"bitbucket.org/decimalteam/go-smart-node/types/bigfloat"
 )
 
 // CalculatePurchaseReturn calculates amount of coin that user will receive by depositing given amount of BIP.
 // Return = supply * ((1 + deposit / reserve) ^ (crr / 100) - 1)
-func CalculatePurchaseReturn(supply sdk.Int, reserve sdk.Int, crr uint, deposit sdk.Int) sdk.Int {
+func CalculatePurchaseReturn(supply sdkmath.Int, reserve sdkmath.Int, crr uint, deposit sdkmath.Int) sdkmath.Int {
 	if deposit.Sign() == 0 {
-		return sdk.NewInt(0)
+		return sdkmath.NewInt(0)
 	}
 
 	if crr == 100 {
-		return sdk.NewInt(1).Mul(supply).Mul(deposit).Quo(reserve)
+		return sdkmath.NewInt(1).Mul(supply).Mul(deposit).Quo(reserve)
 	}
 
 	tSupply := newFloat(0).SetInt(supply.BigInt())
@@ -30,20 +30,20 @@ func CalculatePurchaseReturn(supply sdk.Int, reserve sdk.Int, crr uint, deposit 
 	res.Mul(res, tSupply)                               // supply * ((1 + deposit / reserve) ^ (crr / 100) - 1)
 
 	converted, _ := res.Int(nil)
-	result := sdk.NewIntFromBigInt(converted)
+	result := sdkmath.NewIntFromBigInt(converted)
 
 	return result
 }
 
 // CalculatePurchaseAmount is the reversed version of function CalculatePurchaseReturn.
 // Deposit = reserve * (((wantReceive + supply) / supply)^(100/c) - 1)
-func CalculatePurchaseAmount(supply sdk.Int, reserve sdk.Int, crr uint, wantReceive sdk.Int) sdk.Int {
+func CalculatePurchaseAmount(supply sdkmath.Int, reserve sdkmath.Int, crr uint, wantReceive sdkmath.Int) sdkmath.Int {
 	if wantReceive.Sign() == 0 {
-		return sdk.NewInt(0)
+		return sdkmath.NewInt(0)
 	}
 
 	if crr == 100 {
-		return sdk.NewInt(1).Mul(wantReceive).Mul(reserve).Quo(supply)
+		return sdkmath.NewInt(1).Mul(wantReceive).Mul(reserve).Quo(supply)
 	}
 
 	tSupply := newFloat(0).SetInt(supply.BigInt())
@@ -57,17 +57,17 @@ func CalculatePurchaseAmount(supply sdk.Int, reserve sdk.Int, crr uint, wantRece
 	res.Mul(res, tReserve)                              // reserve * (((reserve + supply) / supply)^(100/c) - 1)
 
 	converted, _ := res.Int(nil)
-	result := sdk.NewIntFromBigInt(converted)
+	result := sdkmath.NewIntFromBigInt(converted)
 
 	return result
 }
 
 // CalculateSaleReturn returns amount of BIP user will receive by depositing given amount of coins.
 // Return = reserve * (1 - (1 - sellAmount / supply) ^ (100 / crr))
-func CalculateSaleReturn(supply sdk.Int, reserve sdk.Int, crr uint, sellAmount sdk.Int) sdk.Int {
+func CalculateSaleReturn(supply sdkmath.Int, reserve sdkmath.Int, crr uint, sellAmount sdkmath.Int) sdkmath.Int {
 	// special case for 0 sell amount
 	if sellAmount.Sign() == 0 {
-		return sdk.NewInt(0)
+		return sdkmath.NewInt(0)
 	}
 
 	// special case for selling the entire supply
@@ -76,7 +76,7 @@ func CalculateSaleReturn(supply sdk.Int, reserve sdk.Int, crr uint, sellAmount s
 	}
 
 	if crr == 100 {
-		return sdk.NewInt(1).Mul(reserve).Mul(sellAmount).Quo(supply)
+		return sdkmath.NewInt(1).Mul(reserve).Mul(sellAmount).Quo(supply)
 	}
 
 	tSupply := newFloat(0).SetInt(supply.BigInt())
@@ -90,20 +90,20 @@ func CalculateSaleReturn(supply sdk.Int, reserve sdk.Int, crr uint, sellAmount s
 	res.Mul(res, tReserve)                                // reserve * (1 - (1 - sellAmount / supply) ^ (1 / (crr / 100)))
 
 	converted, _ := res.Int(nil)
-	result := sdk.NewIntFromBigInt(converted)
+	result := sdkmath.NewIntFromBigInt(converted)
 
 	return result
 }
 
 // CalculateSaleAmount is the reversed version of function CalculateSaleReturn.
 // Deposit = -(-1 + (-(wantReceive - reserve)/reserve)^(1/crr)) * supply
-func CalculateSaleAmount(supply sdk.Int, reserve sdk.Int, crr uint, wantReceive sdk.Int) sdk.Int {
+func CalculateSaleAmount(supply sdkmath.Int, reserve sdkmath.Int, crr uint, wantReceive sdkmath.Int) sdkmath.Int {
 	if wantReceive.Sign() == 0 {
-		return sdk.NewInt(0)
+		return sdkmath.NewInt(0)
 	}
 
 	if crr == 100 {
-		return sdk.NewInt(1).Mul(wantReceive).Mul(supply).Quo(reserve)
+		return sdkmath.NewInt(1).Mul(wantReceive).Mul(supply).Quo(reserve)
 	}
 
 	tSupply := newFloat(0).SetInt(supply.BigInt())
@@ -119,7 +119,7 @@ func CalculateSaleAmount(supply sdk.Int, reserve sdk.Int, crr uint, wantReceive 
 	res.Mul(res, tSupply)                               // -(-1 + (-(wantReceive - reserve)/reserve)^(crr/100)) * supply
 
 	converted, _ := res.Int(nil)
-	result := sdk.NewIntFromBigInt(converted)
+	result := sdkmath.NewIntFromBigInt(converted)
 
 	return result
 }

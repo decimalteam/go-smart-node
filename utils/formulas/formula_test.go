@@ -3,39 +3,39 @@ package formulas
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkmath "cosmossdk.io/math"
 )
 
 type PurchaseReturnData struct {
-	Supply  sdk.Int
-	Reserve sdk.Int
+	Supply  sdkmath.Int
+	Reserve sdkmath.Int
 	Crr     uint
-	Deposit sdk.Int
-	Result  sdk.Int
+	Deposit sdkmath.Int
+	Result  sdkmath.Int
 }
 
 func TestCalculatePurchaseReturn(t *testing.T) {
 	data := []PurchaseReturnData{
 		{
-			Supply:  sdk.NewInt(1000000),
-			Reserve: sdk.NewInt(100),
+			Supply:  sdkmath.NewInt(1000000),
+			Reserve: sdkmath.NewInt(100),
 			Crr:     40,
-			Deposit: sdk.NewInt(100),
-			Result:  sdk.NewInt(319507),
+			Deposit: sdkmath.NewInt(100),
+			Result:  sdkmath.NewInt(319507),
 		},
 		{
-			Supply:  sdk.NewInt(1000000),
-			Reserve: sdk.NewInt(100),
+			Supply:  sdkmath.NewInt(1000000),
+			Reserve: sdkmath.NewInt(100),
 			Crr:     100,
-			Deposit: sdk.NewInt(100),
-			Result:  sdk.NewInt(1000000),
+			Deposit: sdkmath.NewInt(100),
+			Result:  sdkmath.NewInt(1000000),
 		},
 		{
-			Supply:  sdk.NewInt(1000000),
-			Reserve: sdk.NewInt(100),
+			Supply:  sdkmath.NewInt(1000000),
+			Reserve: sdkmath.NewInt(100),
 			Crr:     100,
-			Deposit: sdk.NewInt(0),
-			Result:  sdk.NewInt(0),
+			Deposit: sdkmath.NewInt(0),
+			Result:  sdkmath.NewInt(0),
 		},
 	}
 
@@ -49,35 +49,35 @@ func TestCalculatePurchaseReturn(t *testing.T) {
 }
 
 type PurchaseAmountData struct {
-	Supply      sdk.Int
-	Reserve     sdk.Int
+	Supply      sdkmath.Int
+	Reserve     sdkmath.Int
 	Crr         uint
-	WantReceive sdk.Int
-	Deposit     sdk.Int
+	WantReceive sdkmath.Int
+	Deposit     sdkmath.Int
 }
 
 func TestCalculatePurchaseAmount(t *testing.T) {
 	data := []PurchaseAmountData{
 		{
-			Supply:      sdk.NewInt(1000000),
-			Reserve:     sdk.NewInt(1000000),
+			Supply:      sdkmath.NewInt(1000000),
+			Reserve:     sdkmath.NewInt(1000000),
 			Crr:         40,
-			WantReceive: sdk.NewInt(100),
-			Deposit:     sdk.NewInt(250),
+			WantReceive: sdkmath.NewInt(100),
+			Deposit:     sdkmath.NewInt(250),
 		},
 		{
-			Supply:      sdk.NewInt(1000000),
-			Reserve:     sdk.NewInt(1000000),
+			Supply:      sdkmath.NewInt(1000000),
+			Reserve:     sdkmath.NewInt(1000000),
 			Crr:         100,
-			WantReceive: sdk.NewInt(100),
-			Deposit:     sdk.NewInt(100),
+			WantReceive: sdkmath.NewInt(100),
+			Deposit:     sdkmath.NewInt(100),
 		},
 		{
-			Supply:      sdk.NewInt(1000000),
-			Reserve:     sdk.NewInt(1000000),
+			Supply:      sdkmath.NewInt(1000000),
+			Reserve:     sdkmath.NewInt(1000000),
 			Crr:         100,
-			WantReceive: sdk.NewInt(0),
-			Deposit:     sdk.NewInt(0),
+			WantReceive: sdkmath.NewInt(0),
+			Deposit:     sdkmath.NewInt(0),
 		},
 	}
 
@@ -91,42 +91,42 @@ func TestCalculatePurchaseAmount(t *testing.T) {
 }
 
 type CalculateSaleReturnData struct {
-	Supply     sdk.Int
-	Reserve    sdk.Int
+	Supply     sdkmath.Int
+	Reserve    sdkmath.Int
 	Crr        uint
-	SellAmount sdk.Int
-	Result     sdk.Int
+	SellAmount sdkmath.Int
+	Result     sdkmath.Int
 }
 
 func TestCalculateSaleReturn(t *testing.T) {
 	data := []CalculateSaleReturnData{
 		{
-			Supply:     sdk.NewInt(1000000),
-			Reserve:    sdk.NewInt(100),
+			Supply:     sdkmath.NewInt(1000000),
+			Reserve:    sdkmath.NewInt(100),
 			Crr:        40,
-			SellAmount: sdk.NewInt(1000000),
-			Result:     sdk.NewInt(100),
+			SellAmount: sdkmath.NewInt(1000000),
+			Result:     sdkmath.NewInt(100),
 		},
 		{
-			Supply:     sdk.NewInt(1000000),
-			Reserve:    sdk.NewInt(100),
+			Supply:     sdkmath.NewInt(1000000),
+			Reserve:    sdkmath.NewInt(100),
 			Crr:        10,
-			SellAmount: sdk.NewInt(100000),
-			Result:     sdk.NewInt(65),
+			SellAmount: sdkmath.NewInt(100000),
+			Result:     sdkmath.NewInt(65),
 		},
 		{
-			Supply:     sdk.NewInt(1000000),
-			Reserve:    sdk.NewInt(100),
+			Supply:     sdkmath.NewInt(1000000),
+			Reserve:    sdkmath.NewInt(100),
 			Crr:        10,
-			SellAmount: sdk.NewInt(0),
-			Result:     sdk.NewInt(0),
+			SellAmount: sdkmath.NewInt(0),
+			Result:     sdkmath.NewInt(0),
 		},
 		{
-			Supply:     sdk.NewInt(1000000),
-			Reserve:    sdk.NewInt(1000000),
+			Supply:     sdkmath.NewInt(1000000),
+			Reserve:    sdkmath.NewInt(1000000),
 			Crr:        100,
-			SellAmount: sdk.NewInt(100),
-			Result:     sdk.NewInt(100),
+			SellAmount: sdkmath.NewInt(100),
+			Result:     sdkmath.NewInt(100),
 		},
 	}
 
@@ -140,42 +140,42 @@ func TestCalculateSaleReturn(t *testing.T) {
 }
 
 type CalculateBuyDepositData struct {
-	Supply      sdk.Int
-	Reserve     sdk.Int
+	Supply      sdkmath.Int
+	Reserve     sdkmath.Int
 	Crr         uint
-	WantReceive sdk.Int
-	Result      sdk.Int
+	WantReceive sdkmath.Int
+	Result      sdkmath.Int
 }
 
 func TestCalculateBuyDeposit(t *testing.T) {
 	data := []CalculateBuyDepositData{
 		{
-			Supply:      sdk.NewInt(1000000),
-			Reserve:     sdk.NewInt(100),
+			Supply:      sdkmath.NewInt(1000000),
+			Reserve:     sdkmath.NewInt(100),
 			Crr:         40,
-			WantReceive: sdk.NewInt(10),
-			Result:      sdk.NewInt(41268),
+			WantReceive: sdkmath.NewInt(10),
+			Result:      sdkmath.NewInt(41268),
 		},
 		{
-			Supply:      sdk.NewInt(1000000),
-			Reserve:     sdk.NewInt(100),
+			Supply:      sdkmath.NewInt(1000000),
+			Reserve:     sdkmath.NewInt(100),
 			Crr:         10,
-			WantReceive: sdk.NewInt(100),
-			Result:      sdk.NewInt(1000000),
+			WantReceive: sdkmath.NewInt(100),
+			Result:      sdkmath.NewInt(1000000),
 		},
 		{
-			Supply:      sdk.NewInt(1000000),
-			Reserve:     sdk.NewInt(1000000),
+			Supply:      sdkmath.NewInt(1000000),
+			Reserve:     sdkmath.NewInt(1000000),
 			Crr:         100,
-			WantReceive: sdk.NewInt(100),
-			Result:      sdk.NewInt(100),
+			WantReceive: sdkmath.NewInt(100),
+			Result:      sdkmath.NewInt(100),
 		},
 		{
-			Supply:      sdk.NewInt(1000000),
-			Reserve:     sdk.NewInt(1000000),
+			Supply:      sdkmath.NewInt(1000000),
+			Reserve:     sdkmath.NewInt(1000000),
 			Crr:         100,
-			WantReceive: sdk.NewInt(0),
-			Result:      sdk.NewInt(0),
+			WantReceive: sdkmath.NewInt(0),
+			Result:      sdkmath.NewInt(0),
 		},
 	}
 

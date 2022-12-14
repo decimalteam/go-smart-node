@@ -2,6 +2,10 @@ package types
 
 import "encoding/hex"
 
+////////////////////////////////////////////////////////////////
+// Hash
+////////////////////////////////////////////////////////////////
+
 type Hash [32]byte
 
 func (h Hash) MarshalJSON() ([]byte, error) {
@@ -32,32 +36,20 @@ func (h Hash) Unmarshal(bytes []byte) error {
 	return h.UnmarshalJSON(bytes)
 }
 
-type Secret []byte
-
-func (s Secret) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + hex.EncodeToString(s) + "\""), nil
+func (h *Hash) Copy() *Hash {
+	var result Hash
+	copy(result[:], (*h)[:])
+	return &result
 }
 
-func (s *Secret) UnmarshalJSON(b []byte) error {
-	decoded, err := hex.DecodeString(string(b[1 : len(b)-1]))
-	if err != nil {
-		return err
-	}
-	*s = decoded
-	return nil
+func (h Hash) String() string {
+	return hex.EncodeToString(h[:])
 }
 
-func (s Secret) Size() int {
-	raw, _ := s.MarshalJSON()
+////////////////////////////////////////////////////////////////
+// Chain
+////////////////////////////////////////////////////////////////
 
-	return len(raw)
-}
-
-func (s Secret) MarshalTo(bytes []byte) ([]byte, error) {
-	// todo
-	return bytes, nil
-}
-
-func (s Secret) Unmarshal(bytes []byte) error {
-	return s.UnmarshalJSON(bytes)
+func NewChain(id uint32, name string, active bool) Chain {
+	return Chain{Id: id, Name: name, Active: active}
 }

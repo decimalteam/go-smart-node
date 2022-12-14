@@ -1,0 +1,278 @@
+syntax = "proto3";
+package decimal.validator.v1;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
+
+import "cosmos_proto/cosmos.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "tendermint/types/types.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/validator/types";
+
+// Validator defines a validator.
+message Validator {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_stringer) = true;
+  option (gogoproto.goproto_getters) = false;
+
+  // operator_address defines the address of the validator's operator (bech encoded in JSON).
+  string operator_address = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // reward_address defines the address of the account for withdrawing rewards (bech encoded in JSON).
+  string reward_address = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // consensus_pubkey is the consensus public key of the validator (as google.protobuf.Any).
+  google.protobuf.Any consensus_pubkey = 3 [ (cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey" ];
+  // description defines the description terms for the validator.
+  Description description = 4 [ (gogoproto.nullable) = false ];
+  // commission defines the commission rate, as a fraction.
+  string commission = 5 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+
+  // status is the validator status (bonded/unbonding/unbonded).
+  BondStatus status = 6;
+  // online is true if the validator participates in the consensus (validator is bonded).
+  bool online = 7;
+  // jailed defined whether the validator has been jailed from bonded status or not.
+  bool jailed = 8;
+
+  // unbonding_height defines, if unbonding, the height at which this validator has begun unbonding.
+  int64 unbonding_height = 9;
+  // unbonding_time defines, if unbonding, the min time for the validator to complete unbonding.
+  google.protobuf.Timestamp unbonding_time = 10 [ (gogoproto.nullable) = false, (gogoproto.stdtime) = true ];
+  
+  // rewards defines accumulated amount of collected rewards that are not yet distributed to a delegators.
+  // NOTE: It is stored separately in the KVStore.
+  string rewards = 11 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  // total_rewards defines total amount of all collected rewards.
+  // NOTE: It is stored separately in the KVStore.
+  string total_rewards = 12 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  // stake is power of all delegations stake
+  // NOTE: It is stored separately in the KVStore.
+  int64 stake = 13;
+}
+
+// ValidatorRS defines internal object containing dynamic validator's info like rewards or stakes.
+message ValidatorRS {
+  // rewards defines accumulated amount of collected rewards that are not yet distributed to a delegators.
+  string rewards = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  // total_rewards defines total amount of all collected rewards.
+  string total_rewards = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  // stake is power of all delegations stake
+  int64 stake = 3;
+}
+
+// ValAddresses defines a repeated set of validator addresses.
+message ValAddresses {
+  option (gogoproto.goproto_stringer) = false;
+  option (gogoproto.stringer) = true;
+
+  repeated string addresses = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+}
+
+// BondStatus is the status of a validator.
+enum BondStatus {
+  option (gogoproto.goproto_enum_prefix) = true;
+
+  // UNSPECIFIED defines an invalid validator status.
+  BOND_STATUS_UNSPECIFIED = 0 [ (gogoproto.enumvalue_customname) = "Unspecified" ];
+  // UNBONDED defines a validator that is not bonded.
+  BOND_STATUS_UNBONDED = 1 [ (gogoproto.enumvalue_customname) = "Unbonded" ];
+  // UNBONDING defines a validator that is unbonding.
+  BOND_STATUS_UNBONDING = 2 [ (gogoproto.enumvalue_customname) = "Unbonding" ];
+  // BONDED defines a validator that is bonded.
+  BOND_STATUS_BONDED = 3 [ (gogoproto.enumvalue_customname) = "Bonded" ];
+}
+
+// Description defines a validator description.
+message Description {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_stringer) = true;
+
+  // moniker defines a human-readable name for the validator.
+  string moniker = 1;
+  // identity defines an optional identity signature (ex. UPort or Keybase).
+  string identity = 2;
+  // website defines an optional website link.
+  string website = 3;
+  // security_contact defines an optional email for security contact.
+  string security_contact = 4;
+  // details define other optional details.
+  string details = 5;
+}
+
+// StakeType is the type of a delegation stake.
+enum StakeType {
+  option (gogoproto.goproto_enum_prefix) = true;
+
+  // UNSPECIFIED defines an invalid stake type.
+  STAKE_TYPE_UNSPECIFIED = 0 [ (gogoproto.enumvalue_customname) = "Unspecified" ];
+  // COIN defines the type for stakes in coin.
+  STAKE_TYPE_COIN = 1 [ (gogoproto.enumvalue_customname) = "Coin" ];
+  // NFT defines the type for stakes in NFT.
+  STAKE_TYPE_NFT = 2 [ (gogoproto.enumvalue_customname) = "NFT" ];
+}
+
+// Stake contains all necessary info about a delegation stake.
+message Stake {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // type defines type of the stake.
+  StakeType type = 1;
+  // id defines the stake ID.
+  // For stake in Coin: contains coin denom value.
+  // For stake in NFT: contains NFT token ID value.
+  string id = 2 [ (gogoproto.customname) = "ID" ];
+  // stake defines amount of the coin delegated.
+  // For stake in Coin: contains actually delegated coin.
+  // For stake in NFT: contains total reserve of delegated NFT sub-tokens.
+  cosmos.base.v1beta1.Coin stake = 3 [ (gogoproto.nullable) = false ];
+  // sub_token_ids defines list of NFT sub-token IDs.
+  repeated uint32 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
+}
+
+// Delegation represents the bond with coins/NTFs held by an account.
+// It is owned by particular delegator, and is associated with the voting power of particular validator.
+message Delegation {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // delegator is the bech32-encoded address of the delegator.
+  string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // validator is the bech32-encoded address of the validator.
+  string validator = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // stake defines the object describing the stake completely.
+  Stake stake = 3 [ (gogoproto.nullable) = false ];
+}
+
+// Redelegation contains the list of a particular delegator's redelegating bonds
+// from a particular source validator to a particular destination validator.
+message Redelegation {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // delegator is the bech32-encoded address of the delegator.
+  string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // validator_src is the validator redelegation source operator address.
+  string validator_src = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // validator_dst is the validator redelegation destination operator address.
+  string validator_dst = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // entries are the redelegation entries.
+  repeated RedelegationEntry entries = 4 [ (gogoproto.nullable) = false ];
+}
+
+// RedelegationEntry defines a redelegation object with relevant metadata.
+message RedelegationEntry {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // creation_height defines the height at which the redelegation took place.
+  int64 creation_height = 1;
+  // completion_time defines the unix time for redelegation completion.
+  google.protobuf.Timestamp completion_time = 2 [ (gogoproto.nullable) = false, (gogoproto.stdtime) = true ];
+  // stake defines the object describing the stake completely.
+  Stake stake = 3 [ (gogoproto.nullable) = false ];
+}
+
+// Undelegation stores all of a single delegator's unbonding bonds
+// for a single validator in an time-ordered list.
+message Undelegation {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // delegator is the bech32-encoded address of the delegator.
+  string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // validator is the bech32-encoded address of the validator.
+  string validator = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // entries are the unbonding delegation entries.
+  repeated UndelegationEntry entries = 3 [ (gogoproto.nullable) = false ];
+}
+
+// UndelegationEntry defines an undelegation object with relevant metadata.
+message UndelegationEntry {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // creation_height defines the height at which the undelegation took place.
+  int64 creation_height = 1;
+  // completion_time defines the unix time for undelegation completion.
+  google.protobuf.Timestamp completion_time = 2 [ (gogoproto.nullable) = false, (gogoproto.stdtime) = true ];
+  // stake defines the object describing the stake completely.
+  Stake stake = 3 [ (gogoproto.nullable) = false ];
+}
+
+// HistoricalInfo contains header and validator information for a given block.
+// It is stored as part of validator module's state, which persists the `n` most recent HistoricalInfo
+// (`n` is set by the validator module's `historical_entries` parameter).
+message HistoricalInfo {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  tendermint.types.Header header = 1 [ (gogoproto.nullable) = false ];
+  repeated Validator valset = 2 [ (gogoproto.nullable) = false ];
+}
+
+// Pool is used for tracking bonded and not-bonded token supply of the bond denomination.
+message Pool {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // bonded defines complete list of coins delegated and currently bonded.
+  repeated cosmos.base.v1beta1.Coin bonded = 1 [ 
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.nullable) = false
+  ];
+  
+  // not_bonded defines complete list of coins delegated but not bonded (redelegating or undelegating).
+  repeated cosmos.base.v1beta1.Coin not_bonded = 2 [
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// ValidatorSigningInfo defines a validator's signing info for monitoring their
+// liveness activity.
+// To decrease storage space this structure never be stored directly
+message ValidatorSigningInfo {
+  option (gogoproto.equal)            = true;
+  option (gogoproto.goproto_stringer) = true;
+
+  string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // Height at which validator become online, -1 for offline validator
+  int64 start_height = 2;
+  // A counter of missed blocks
+  int64 missed_blocks_counter = 3;
+  // TODO: do we need that? Timestamp until which the validator is jailed due to liveness downtime.
+  google.protobuf.Timestamp jailed_until = 4 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+  // TODO: do we need that? Whether or not a validator has been tombstoned (killed out of validator set). It is set
+  // once the validator commits an equivocation or for any other configured misbehiavor.
+  bool tombstoned = 5;
+}

@@ -1,0 +1,58 @@
+syntax = "proto3";
+package decimal.swap.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+import "cosmos/base/v1beta1/coin.proto";
+
+import "decimal/swap/v1/swap.proto";
+
+option go_package = "bitbucket.org/decimalteam/go-smart-node/x/swap/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // ActiveSwaps queries all active cross-chain swaps.
+  rpc ActiveSwaps(QueryActiveSwapsRequest) returns (QueryActiveSwapsResponse) {
+    option (google.api.http).get = "/decimal/swap/v1/swaps";
+  }
+
+  // Swap queries existing cross-chain swap by hashed secret.
+  rpc Swap(QuerySwapRequest) returns (QuerySwapResponse) {
+    option (google.api.http).get = "/decimal/swap/v1/swap/{hashed_secret}";
+  }
+
+  // Pool queries amount of coins stored in the swap pool.
+  rpc Pool(QueryPoolRequest) returns (QueryPoolResponse) {
+    option (google.api.http).get = "/decimal/swap/v1/pool";
+  }
+}
+
+// QueryActiveSwapsRequest is request type for the Query/ActiveSwaps RPC method.
+message QueryActiveSwapsRequest {}
+
+// QueryActiveSwapsResponse is response type for the Query/ActiveSwaps RPC method.
+message QueryActiveSwapsResponse {
+  repeated Swap swaps = 1 [ (gogoproto.nullable) = false ];
+}
+
+// QuerySwapRequest is request type for the Query/Swap RPC method.
+message QuerySwapRequest {
+  string hashed_secret = 1;
+}
+
+// QuerySwapResponse is response type for the Query/Swap RPC method.
+message QuerySwapResponse {
+  Swap swap = 1 [ (gogoproto.nullable) = false ];
+}
+
+// QueryPoolRequest is request type for the Query/Pool RPC method.
+message QueryPoolRequest {}
+
+// QueryPoolResponse is response type for the Query/Pool RPC method.
+message QueryPoolResponse {
+  repeated cosmos.base.v1beta1.Coin amount = 1 [
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.nullable) = false
+  ];
+}
