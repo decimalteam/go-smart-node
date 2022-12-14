@@ -163,12 +163,12 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 	return nil
 }
 
-const DAOAddress1 = "dx18tay9ayumxjun9sexlq4t3nvt7zts5typnyjdr"
-const DAOAddress2 = "dx1w54s4wq8atjmmu4snv0tt72qpvtg38megw5ngn"
-const DAOAddress3 = "dx19ws36j00axpk0ytumc20l9wyv0ae26zygk2z0f"
+const DAOAddress1 = "d01tlrmpaxn6v2xzwxftmd77tunuxctnqy7apu9x6"
+const DAOAddress2 = "d015v26l75pzlc7u02p9u7xg80uynkj2lck2ehtjq"
+const DAOAddress3 = "d016tfxmfsfftnaukvwuagc4svs8qsp6pzh3s2uky"
 
 func (k Keeper) getDAO(ctx sdk.Context) (sdk.AccAddress, error) {
-	address, err := sdk.AccAddressFromBech32("dx1pk2rurh73er88p032qrd6kq5xmu53thjylflsr")
+	address, err := sdk.AccAddressFromBech32("d01pk2rurh73er88p032qrd6kq5xmu53thjqc22mu")
 	if err != nil {
 		return nil, err
 	}
@@ -209,12 +209,12 @@ func (k Keeper) getDAO(ctx sdk.Context) (sdk.AccAddress, error) {
 	return address, nil
 }
 
-const DevelopAddress1 = "dx1fpjhs2wlaz6dd95d0lmxj5tfrmncwg437jh0y3"
-const DevelopAddress2 = "dx1lfleqkc39pt2jkyhr7m845x207kh5d9av3423z"
-const DevelopAddress3 = "dx1f46tyn4wmnvuxfj9cu5yn6vn939spfzt3yhxey"
+const DevelopAddress1 = "d01zq5slrn7988ml6pldn8dhu9r5aaphgkdr9juqa"
+const DevelopAddress2 = "d01l8qhz9pc4nct0j342r3l6380lg5dpxs2a5eawj"
+const DevelopAddress3 = "d01864lut35xymux2xwnlvdwnjww7q7xy25guzz3f"
 
 func (k Keeper) getDevelop(ctx sdk.Context) (sdk.AccAddress, error) {
-	address, err := sdk.AccAddressFromBech32("dx1gsa4w0cuyjqwt9j7qtc32m6n0lkyxfanphfaug")
+	address, err := sdk.AccAddressFromBech32("d01gsa4w0cuyjqwt9j7qtc32m6n0lkyxfan9s2ghh")
 	if err != nil {
 		return nil, err
 	}
