@@ -1,5 +1,4 @@
 ---
 systemd_path: '/etc/systemd/system/'
 service_name_dscd: dscd.service
-service_name_dscd_rest: dscd-rest.service
 service_name_worker: worker.service

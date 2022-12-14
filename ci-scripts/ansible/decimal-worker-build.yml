@@ -1,0 +1,13 @@
+- name: Create and build worker services (systemd)
+  hosts: all
+  gather_facts: False
+
+  roles:
+    - role: decimal-worker
+#      vars:
+#        srv_mode: stop
+
+#    - role: decimal-worker
+#      vars:
+#        srv_mode: start
+

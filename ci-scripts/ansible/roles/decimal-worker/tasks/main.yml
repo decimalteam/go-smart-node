@@ -1,0 +1,37 @@
+---
+- name: Delite binary dir with parent directories if it not exists
+  file:
+    path: '{{ decimal_bin_worker }}'
+    state: absent
+
+- name: Create binary dir with parent directories if it not exists
+  file:
+    path: '{{ decimal_bin_worker }}'
+    state: directory
+    recurse: true
+
+- name: Upload worker from artifacts
+  copy:
+    src: '{{ artifacts }}/worker'
+    dest: '{{ decimal_bin_worker }}/worker'
+    mode: '{{ decimal_bin_mode }}'
+
+- name: Generate .env
+  template:
+    src: ./env.j2
+    dest: '{{ decimal_bin_worker }}/.env'
+  become: true
+
+- name: Register/update worker service
+  template:
+    src: ./worker.service.j2
+    dest: '{{ systemd_path }}/worker.service'
+  become: true
+
+- name: Run service worker
+  service:
+    name: 'worker.service'
+    state: restarted
+    enabled: true
+  become: true
+  
