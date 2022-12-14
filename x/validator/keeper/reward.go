@@ -13,8 +13,8 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
-var daoAccount = "d01mglzvd5vvfn0sntkcmsfwx768kwmaehswv9duk"
-var developAccount = "d01n2e8claasqxdugl5d2cwwrzv59k625tlweuwg3"
+var daoAccount = "d01pk2rurh73er88p032qrd6kq5xmu53thjqc22mu"
+var developAccount = "d01gsa4w0cuyjqwt9j7qtc32m6n0lkyxfan9s2ghh"
 
 var DAOCommission = sdk.NewDec(5).QuoInt64(100)
 var DevelopCommission = sdk.NewDec(5).QuoInt64(100)
