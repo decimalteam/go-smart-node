@@ -90,21 +90,22 @@ if [[ $1 == "pending" ]]; then
   fi
 fi
 
+#cp /home/tree/A-smartchain/mainnet-genesis/dsc-genesis-mainnet.json "$DECIMAL_GENESIS"
+jq < "$DECIMAL_GENESIS" '.chain_id="decimal_202020-1"' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
+jq < "$DECIMAL_GENESIS" 'del(.app_state["bank"]["supply"])' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
+
 # Allocate genesis accounts (cosmos formatted addresses)
-dscd add-genesis-account $KEY 100000000000000000000000000del --keyring-backend $KEYRING
+dscd add-genesis-account $KEY 100000000000000000000000000000del --keyring-backend $KEYRING
+dscd add-genesis-account $FAUCET_KEY 100000000000000000000000000del --keyring-backend $KEYRING
 
-# Update total supply with claim values
-# validators_supply=$(cat $DECIMAL_GENESIS | jq -r '.app_state["bank"]["supply"][0]["amount"]')
-# Bc is required to add this big numbers
-# total_supply=$(bc <<< "$amount_to_claim+$validators_supply")
-total_supply=100000000000000000000010000
-cat $DECIMAL_GENESIS | jq -r --arg total_supply "$total_supply" '.app_state["bank"]["supply"][0]["amount"]=$total_supply' > $DECIMAL_GENESIS_TMP && mv $DECIMAL_GENESIS_TMP $DECIMAL_GENESIS
+jq < "$DECIMAL_GENESIS" 'del(.app_state["bank"]["supply"])' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
 
-# Sign genesis transaction
-dscd gentx $KEY 1000000000000000000000del --keyring-backend $KEYRING --chain-id $CHAINID
+dscd selfdelegation 100000000000000000000000000del --keyring-backend $KEYRING --from $KEY
 
-# Collect genesis tx
-dscd collect-gentxs
+jq < "$DECIMAL_GENESIS" 'del(.app_state["bank"]["supply"])' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
+jq < "$DECIMAL_GENESIS" '.app_state["validator"]["params"]["redelegation_time"]="30s"' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
+jq < "$DECIMAL_GENESIS" '.app_state["validator"]["params"]["undelegation_time"]="45s"' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
+jq < "$DECIMAL_GENESIS" '.app_state["validator"]["params"]["max_delegations"]=20' > "$DECIMAL_GENESIS_TMP" && mv "$DECIMAL_GENESIS_TMP" "$DECIMAL_GENESIS"
 
 # Run this to ensure everything worked and that the genesis file is setup correctly
 dscd validate-genesis
