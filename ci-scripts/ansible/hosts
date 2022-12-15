@@ -46,4 +46,4 @@ test-explorer-worker-02      ansible_host=185.242.122.126 ansible_port=2226
 
 [worker-host-mainnet]
 main-explorer-worker-01      ansible_host=185.107.95.26 ansible_port=2225
-main-explorer-worker-02      ansible_host=185.107.95.8 ansible_port=2226
+main-explorer-worker-02      ansible_host=185.107.95.26 ansible_port=2226
