@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -9,11 +10,14 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/testutil"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	tmversion "github.com/tendermint/tendermint/proto/tendermint/version"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/keeper"
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
@@ -104,6 +108,91 @@ func TestSetGetRewards(t *testing.T) {
 	rewards2, err := dsc.ValidatorKeeper.GetValidatorRS(ctx, vals[0])
 	require.NoError(t, err)
 	require.Equal(t, rewards1, rewards2)
+}
+
+func TestHistoricalInfo(t *testing.T) {
+	_, dsc, ctx := createTestInput(t)
+	hash := []byte{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1}
+	accs, vals := generateAddresses(dsc, ctx, 10, defaultCoins)
+	dummyval, _ := validatortypes.NewValidator(
+		vals[0],
+		accs[0],
+		PKs[1],
+		types.Description{Moniker: "monik", Identity: "somesadf asdfaewa dsfa sdf asdf asdfasfsf adsf asdf sflong indentity", Website: "..........", SecurityContact: ".........",
+			Details: "Валидатор spectrUM создан для поддержки сети DecimalChain и возможности создания токенизированных проектов, объединенных в один агрегатор, с использованием технd"},
+		sdk.ZeroDec(),
+	)
+	//dummyval.Description = types.Description{Moniker: dummyval.GetMoniker()}
+	dummyval.Description = types.Description{}
+	dummyval.RewardAddress = ""
+	hi := validatortypes.HistoricalInfo{
+		Header: tmproto.Header{
+			Version: tmversion.Consensus{0, 0},
+			ChainID: "decimal_75-1",
+			Height:  0,
+			Time:    time.Now(),
+			LastBlockId: tmproto.BlockID{
+				Hash: hash,
+				PartSetHeader: tmproto.PartSetHeader{
+					Total: 0,
+					Hash:  hash,
+				},
+			},
+			LastCommitHash:     hash,
+			DataHash:           hash,
+			ValidatorsHash:     hash,
+			NextValidatorsHash: hash,
+			ConsensusHash:      hash,
+			AppHash:            hash,
+			LastResultsHash:    hash,
+			EvidenceHash:       hash,
+			ProposerAddress:    hash,
+		},
+		Valset: []validatortypes.Validator{
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+			dummyval,
+		},
+	}
+	bz := dsc.AppCodec().MustMarshal(&hi)
+	t.Logf("HistoricalInfo size = %d\n", len(bz))
 }
 
 //	func initValidators(t testing.TB, power int64, numAddrs int, powers []int64) (*simapp.SimApp, sdk.Context, []sdk.AccAddress, []sdk.ValAddress, []types.Validator) {

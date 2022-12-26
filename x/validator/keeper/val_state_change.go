@@ -192,7 +192,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 			if validator.Online {
 				validator.Online = false
 				err := events.EmitTypedEvent(ctx, &types.EventSetOffline{
-					Sender:    sdk.AccAddress(validator.GetOperator()).String(),
+					Sender:    types.ModuleAddress.String(),
 					Validator: validator.OperatorAddress,
 				})
 				if err != nil {

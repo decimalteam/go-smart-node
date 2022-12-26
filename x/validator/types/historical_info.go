@@ -20,9 +20,21 @@ func NewHistoricalInfo(header tmproto.Header, valSet Validators) HistoricalInfo 
 		return ValidatorsByVotingPower(valSet).Less(i, j)
 	})
 
+	// pruning unused data (for staking.Validator), see keeper.GetHistoricalInfo
+	var prunedValSet Validators
+	for _, v := range valSet {
+		prunedValSet = append(prunedValSet, Validator{
+			OperatorAddress: v.OperatorAddress,
+			ConsensusPubkey: v.ConsensusPubkey,
+			Status:          v.Status,
+			Jailed:          v.Jailed,
+			Stake:           v.Stake,
+		})
+	}
+
 	return HistoricalInfo{
 		Header: header,
-		Valset: valSet,
+		Valset: prunedValSet,
 	}
 }
 
