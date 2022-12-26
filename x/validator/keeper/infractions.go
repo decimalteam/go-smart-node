@@ -106,7 +106,7 @@ func (k Keeper) HandleValidatorSignature(ctx sdk.Context, addr cryptotypes.Addre
 			)
 
 			events.EmitTypedEvent(ctx, &types.EventSetOffline{
-				Sender:    sdk.AccAddress(validator.GetOperator()).String(),
+				Sender:    types.ModuleAddress.String(),
 				Validator: validator.OperatorAddress,
 			})
 		} else {
@@ -180,7 +180,7 @@ func (k Keeper) HandleDoubleSign(ctx sdk.Context, addr crypto.Address, infractio
 	}
 
 	events.EmitTypedEvent(ctx, &types.EventSetOffline{
-		Sender:    sdk.AccAddress(validator.GetOperator()).String(),
+		Sender:    types.ModuleAddress.String(),
 		Validator: validator.OperatorAddress,
 	})
 }
