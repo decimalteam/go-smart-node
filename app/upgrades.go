@@ -16,8 +16,3 @@ var DummyUpgradeHandlerCreator = func(mm *module.Manager, configurator module.Co
 		return mm.RunMigrations(ctx, configurator, fromVM)
 	}
 }
-
-// It's application upgrade table. Different for different environments
-var UpgradeList = []UpgradeCreator{
-	{"https://devnet-repo.decimalchain.com/300000", DummyUpgradeHandlerCreator},
-}
