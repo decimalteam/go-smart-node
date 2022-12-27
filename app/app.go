@@ -310,9 +310,6 @@ func NewDSC(
 	if err != nil && !errors.Is(err, syscall.ENOENT) {
 		panic(fmt.Sprintf("error: read permissions '%s'", err.Error()))
 	}
-	// TODO: remove in first update
-	cmdcfg.UpdatesInfo.PushNewPlanHeight(12611601)
-	cmdcfg.UpdatesInfo.AddExecutedPlan("https://repo.decimalchain.com/1", 12611601)
 
 	err = cmdcfg.UpdatesInfo.Save()
 	if err != nil && !errors.Is(err, syscall.ENOENT) {
