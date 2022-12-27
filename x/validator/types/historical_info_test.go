@@ -2,6 +2,7 @@ package types_test
 
 import (
 	"math/rand"
+	"reflect"
 	"sort"
 	"testing"
 
@@ -43,7 +44,10 @@ func TestHistoricalInfo(t *testing.T) {
 	require.Nil(t, err, "Unmarshalling HistoricalInfo failed")
 	require.Equal(t, hi.Header, recv.Header)
 	for i := range hi.Valset {
-		require.True(t, hi.Valset[i].Equal(&recv.Valset[i]))
+		require.True(t, hi.Valset[i].OperatorAddress == recv.Valset[i].OperatorAddress &&
+			reflect.DeepEqual(hi.Valset[i].ConsensusPubkey.Value, recv.Valset[i].ConsensusPubkey.Value) &&
+			hi.Valset[i].Jailed == recv.Valset[i].Jailed &&
+			hi.Valset[i].Stake == recv.Valset[i].Stake)
 	}
 	require.True(t, sort.IsSorted(types.Validators(hi.Valset)), "Validators are not sorted")
 }
