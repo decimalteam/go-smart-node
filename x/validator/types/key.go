@@ -9,6 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
 	"github.com/cosmos/cosmos-sdk/types/kv"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 const (
@@ -26,6 +27,10 @@ const (
 
 	// QuerierRoute defines the module's query routing key
 	QuerierRoute = ModuleName
+)
+
+var (
+	ModuleAddress = authtypes.NewModuleAddress(ModuleName)
 )
 
 // TODO: It will be better to prepare key bytes and then copy parts into it instead of multiple concatenations.

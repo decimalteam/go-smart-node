@@ -104,6 +104,11 @@ func (k Keeper) HandleValidatorSignature(ctx sdk.Context, addr cryptotypes.Addre
 				"slashed", params.SlashFractionDowntime.String(),
 				"jailed_until", signInfo.JailedUntil,
 			)
+
+			events.EmitTypedEvent(ctx, &types.EventSetOffline{
+				Sender:    types.ModuleAddress.String(),
+				Validator: validator.OperatorAddress,
+			})
 		} else {
 			// validator was (a) not found or (b) already jailed so we do not slash
 			logger.Info(
@@ -173,6 +178,11 @@ func (k Keeper) HandleDoubleSign(ctx sdk.Context, addr crypto.Address, infractio
 	if !validator.IsJailed() {
 		k.Jail(ctx, consAddr)
 	}
+
+	events.EmitTypedEvent(ctx, &types.EventSetOffline{
+		Sender:    types.ModuleAddress.String(),
+		Validator: validator.OperatorAddress,
+	})
 }
 
 // fromHeight must bee less toHeight [fromHeight, toHeight]
