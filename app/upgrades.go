@@ -8,10 +8,10 @@ import (
 
 type UpgradeCreator struct {
 	name    string
-	handler func(mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler
+	handler func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler
 }
 
-var DummyUpgradeHandlerCreator = func(mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+var DummyUpgradeHandlerCreator = func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 		return mm.RunMigrations(ctx, configurator, fromVM)
 	}

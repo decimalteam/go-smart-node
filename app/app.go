@@ -1058,7 +1058,7 @@ func (app *DSC) setupUpgradeHandlers() {
 	for _, uc := range UpgradeList {
 		app.UpgradeKeeper.SetUpgradeHandler(
 			uc.name,
-			uc.handler(app.mm, app.configurator),
+			uc.handler(app, app.mm, app.configurator),
 		)
 	}
 
