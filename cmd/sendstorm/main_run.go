@@ -87,7 +87,7 @@ func cmdRun() *cobra.Command {
 				bytesToSend, err := action.GenerateTx(acc, reactor.feeConfig)
 				if err != nil {
 					fmt.Println(err)
-					return
+					continue
 				}
 				var res *api.TxSyncResponse
 				if doCommitTx {
