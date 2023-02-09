@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	cosmos "github.com/cosmos/cosmos-sdk/x/bank/types"
+	cosmos "github.com/cosmos/cosmos-sdk/x/bank/types"  // add this for keplr
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coin "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
