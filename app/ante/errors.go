@@ -12,7 +12,7 @@ var (
 	FailedToSendCoins              = errors.New(codespace, 3, "failed to send coins")
 	InsufficientFundsToPayFee      = errors.New(codespace, 4, "insufficient funds to pay for fee")
 	InvalidFeeAmount               = errors.New(codespace, 5, "invalid fee amount")
-	UnknownTransaction             = errors.New(codespace, 6, "unknown transaction type")
+	UnknownTransaction             = errors.New(codespace, 6, "unknown transaction type 12")
 	CoinReserveInsufficient        = errors.New(codespace, 7, "coin reserve balance is not sufficient for transaction")
 	CoinReserveBecomeInsufficient  = errors.New(codespace, 8, "coin reserve will become lower than minimal reserve.")
 	NotFeeTxType                   = errors.New(codespace, 9, "x must be a FeeTx")

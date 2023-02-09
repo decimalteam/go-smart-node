@@ -45,6 +45,7 @@ scripts/unsafe_reset_all.sh
 # Local docker volume mappings
 localnet-setup
 .testnets
+testnet
 
 # Testing
 coverage.txt
