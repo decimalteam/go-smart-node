@@ -51,9 +51,9 @@ func SigVerificationGasConsumer(
 	case *secp256k1.PubKey:
 		// Cosmos SDK keys
 		// TODO: Is it needed to support?
-		meter.ConsumeGas(params.SigVerifyCostSecp256k1, "ante verify: secp256k1")
-		// return sdkerrors.ErrInvalidPubKey
-		return nil
+		// meter.ConsumeGas(params.SigVerifyCostSecp256k1, "ante verify: secp256k1")
+		return sdkerrors.ErrInvalidPubKey
+		// return nil
 
 	case *ed25519.PubKey:
 		// Validator keys
