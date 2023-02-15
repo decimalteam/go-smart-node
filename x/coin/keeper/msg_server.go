@@ -60,7 +60,7 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 	}
 
 	// Validate min emission if specified
-	if !msg.MinVolume.IsZero() {
+	if !msg.MinVolume.IsNil() && !msg.MinVolume.IsZero() {
 		if msg.MinVolume.LT(config.MinCoinSupply) || msg.MinVolume.GT(config.MaxCoinSupply) {
 			return nil, errors.InvalidCoinMinEmission
 		}
@@ -179,10 +179,11 @@ func (k Keeper) UpdateCoin(goCtx context.Context, msg *types.MsgUpdateCoin) (*ty
 	}
 
 	// Validate min emission if specified
-	if coin.MinVolume.IsZero() != msg.MinVolume.IsZero() {
+	noMinValue := msg.MinVolume.IsNil() || msg.MinVolume.IsZero()
+	if coin.MinVolume.IsZero() != noMinValue {
 		return nil, errors.UneditableCoinMinEmission
 	}
-	if !msg.MinVolume.IsZero() {
+	if !noMinValue {
 		if msg.MinVolume.LT(config.MinCoinSupply) || msg.MinVolume.GT(config.MaxCoinSupply) {
 			return nil, errors.InvalidCoinMinEmission
 		}

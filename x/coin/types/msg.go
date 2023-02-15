@@ -122,7 +122,7 @@ func (msg *MsgCreateCoin) ValidateBasic() error {
 		return errors.InvalidLimitVolume
 	}
 	// Check coin min emission to be disabled or enabled correctly
-	if !msg.MinVolume.IsZero() {
+	if !msg.MinVolume.IsNil() && !msg.MinVolume.IsZero() {
 		if msg.MinVolume.LT(config.MinCoinSupply) || msg.MinVolume.GT(config.MaxCoinSupply) {
 			return errors.InvalidCoinMinEmission
 		}
@@ -186,7 +186,7 @@ func (msg *MsgUpdateCoin) ValidateBasic() error {
 		return errors.InvalidLimitVolume
 	}
 	// Check coin min emission to be disabled or enabled correctly
-	if !msg.MinVolume.IsZero() {
+	if !msg.MinVolume.IsNil() && !msg.MinVolume.IsZero() {
 		if msg.MinVolume.LT(config.MinCoinSupply) || msg.MinVolume.GT(config.MaxCoinSupply) {
 			return errors.InvalidCoinMinEmission
 		}
