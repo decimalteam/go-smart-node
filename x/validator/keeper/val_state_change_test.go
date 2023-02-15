@@ -185,7 +185,7 @@ func TestApplyAndReturnValidatorSetUpdates(t *testing.T) {
 	limitVolume := keeper.TokensFromConsensusPower(100000000000000000)
 	crr := uint64(50)
 
-	_, err := dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[0], ccDenom, "d", crr, initVolume, initReserve, limitVolume, ""))
+	_, err := dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[0], ccDenom, "d", crr, initVolume, initReserve, limitVolume, sdkmath.ZeroInt(), ""))
 	require.NoError(t, err)
 	// ----------------------------
 
@@ -605,7 +605,7 @@ func TestCheckDelegations(t *testing.T) {
 	limitVolume := keeper.TokensFromConsensusPower(100000000000000000)
 	crr := uint64(50)
 
-	_, err := dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[0], ccDenom, "d", crr, initVolume, initReserve, limitVolume, ""))
+	_, err := dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[0], ccDenom, "d", crr, initVolume, initReserve, limitVolume, sdkmath.ZeroInt(), ""))
 	require.NoError(t, err)
 	// ----------------------------
 
@@ -616,7 +616,7 @@ func TestCheckDelegations(t *testing.T) {
 	initReserve2 := keeper.TokensFromConsensusPower(1000)
 	limitVolume2 := keeper.TokensFromConsensusPower(100000000000000000)
 
-	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[1], ccDenom2, "da", crr, initVolume2, initReserve2, limitVolume2, ""))
+	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[1], ccDenom2, "da", crr, initVolume2, initReserve2, limitVolume2, sdkmath.ZeroInt(), ""))
 	require.NoError(t, err)
 	// ----------------------------
 
@@ -627,7 +627,7 @@ func TestCheckDelegations(t *testing.T) {
 	initReserve3 := keeper.TokensFromConsensusPower(1000)
 	limitVolume3 := keeper.TokensFromConsensusPower(100000000000000000)
 
-	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[2], ccDenom3, "d", crr, initVolume3, initReserve3, limitVolume3, ""))
+	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[2], ccDenom3, "d", crr, initVolume3, initReserve3, limitVolume3, sdkmath.ZeroInt(), ""))
 	require.NoError(t, err)
 	// ----------------------------
 

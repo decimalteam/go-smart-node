@@ -45,6 +45,7 @@ func NewMsgCreateCoin(
 	initVolume sdkmath.Int,
 	initReserve sdkmath.Int,
 	limitVolume sdkmath.Int,
+	minVolume sdkmath.Int,
 	identity string,
 ) *MsgCreateCoin {
 	return &MsgCreateCoin{
@@ -55,6 +56,7 @@ func NewMsgCreateCoin(
 		InitialVolume:  initVolume,
 		InitialReserve: initReserve,
 		LimitVolume:    limitVolume,
+		MinVolume:      minVolume,
 		Identity:       identity,
 	}
 }
@@ -119,6 +121,12 @@ func (msg *MsgCreateCoin) ValidateBasic() error {
 	if msg.LimitVolume.GT(config.MaxCoinSupply) {
 		return errors.InvalidLimitVolume
 	}
+	// Check coin min emission to be disabled or enabled correctly
+	if !msg.MinVolume.IsZero() {
+		if msg.MinVolume.LT(config.MinCoinSupply) || msg.MinVolume.GT(config.MaxCoinSupply) {
+			return errors.InvalidCoinMinEmission
+		}
+	}
 	return nil
 }
 
@@ -131,12 +139,14 @@ func NewMsgUpdateCoin(
 	sender sdk.AccAddress,
 	denom string,
 	limitVolume sdkmath.Int,
+	minVolume sdkmath.Int,
 	identity string,
 ) *MsgUpdateCoin {
 	return &MsgUpdateCoin{
 		Sender:      sender.String(),
 		Denom:       denom,
 		LimitVolume: limitVolume,
+		MinVolume:   minVolume,
 		Identity:    identity,
 	}
 }
@@ -174,6 +184,12 @@ func (msg *MsgUpdateCoin) ValidateBasic() error {
 	// Check coin limit volume to be less than max coin supply
 	if msg.LimitVolume.GT(config.MaxCoinSupply) {
 		return errors.InvalidLimitVolume
+	}
+	// Check coin min emission to be disabled or enabled correctly
+	if !msg.MinVolume.IsZero() {
+		if msg.MinVolume.LT(config.MinCoinSupply) || msg.MinVolume.GT(config.MaxCoinSupply) {
+			return errors.InvalidCoinMinEmission
+		}
 	}
 	return nil
 }

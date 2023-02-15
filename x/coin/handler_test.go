@@ -318,6 +318,7 @@ func TestBurnCoinHandler(t *testing.T) {
 		customVolume.Mul(sdkmath.NewInt(10)),
 		customReserve,
 		customVolume.Mul(sdkmath.NewInt(100)),
+		sdkmath.ZeroInt(),
 		"",
 	))
 	require.NoError(t, err, "create coin")
