@@ -201,8 +201,8 @@ func (k Keeper) UpdateCoin(goCtx context.Context, msg *types.MsgUpdateCoin) (*ty
 		Sender:      msg.Sender,
 		Denom:       coin.Denom,
 		LimitVolume: msg.LimitVolume.String(),
-		Identity:    msg.Identity,
 		MinVolume:   msg.MinVolume.String(),
+		Identity:    msg.Identity,
 	})
 	if err != nil {
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())

@@ -47,7 +47,7 @@ func TestPayValidators(t *testing.T) {
 	limitVolume1 := keeper.TokensFromConsensusPower(1000000000000000000)
 	crr := uint64(50)
 
-	_, err := dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[0], ccDenom1, "d", crr, initVolume1, initReserve1, limitVolume1, ""))
+	_, err := dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[0], ccDenom1, "d", crr, initVolume1, initReserve1, limitVolume1, sdkmath.ZeroInt(), ""))
 	require.NoError(t, err)
 
 	ccDenom2 := "custom2"
@@ -55,7 +55,7 @@ func TestPayValidators(t *testing.T) {
 	initReserve2 := keeper.TokensFromConsensusPower(3000)
 	limitVolume2 := keeper.TokensFromConsensusPower(1000000000000000)
 
-	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[0], ccDenom2, "dd", crr, initVolume2, initReserve2, limitVolume2, ""))
+	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(accs[0], ccDenom2, "dd", crr, initVolume2, initReserve2, limitVolume2, sdkmath.ZeroInt(), ""))
 	require.NoError(t, err)
 
 	goCtx := sdk.WrapSDKContext(ctx)

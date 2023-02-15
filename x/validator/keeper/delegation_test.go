@@ -42,7 +42,7 @@ func TestDelegation(t *testing.T) {
 	limitVolume := keeper.TokensFromConsensusPower(100000000000000000)
 	crr := uint64(50)
 
-	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(addrDels[0], ccDenom, "d", crr, initVolume, initReserve, limitVolume, ""))
+	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(addrDels[0], ccDenom, "d", crr, initVolume, initReserve, limitVolume, sdkmath.ZeroInt(), ""))
 	require.NoError(t, err)
 	// ----------------------------
 
@@ -433,7 +433,7 @@ func TestUndelegation(t *testing.T) {
 	limitVolume := keeper.TokensFromConsensusPower(100000000000000000)
 	crr := uint64(50)
 
-	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(addrDels[0], ccDenom, "d", crr, initVolume, initReserve, limitVolume, ""))
+	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(addrDels[0], ccDenom, "d", crr, initVolume, initReserve, limitVolume, sdkmath.ZeroInt(), ""))
 	require.NoError(t, err)
 	// ----------------------------
 
@@ -739,7 +739,7 @@ func TestRedelegation(t *testing.T) {
 	limitVolume := keeper.TokensFromConsensusPower(100000000000000000)
 	crr := uint64(50)
 
-	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(addrDels[0], ccDenom, "d", crr, initVolume, initReserve, limitVolume, ""))
+	_, err = dsc.CoinKeeper.CreateCoin(ctx, cointypes.NewMsgCreateCoin(addrDels[0], ccDenom, "d", crr, initVolume, initReserve, limitVolume, sdkmath.ZeroInt(), ""))
 	require.NoError(t, err)
 	// ----------------------------
 

@@ -22,6 +22,10 @@ func (k *Keeper) GetCoins(ctx sdk.Context) (coins []types.Coin) {
 		if err != nil {
 			panic(err)
 		}
+		// NOTE: special needed step to avoid migration to add coin min emission
+		if coin.MinVolume.IsNil() {
+			coin.MinVolume = sdkmath.ZeroInt()
+		}
 		// request volume and reserve separately
 		volume, reserve, err := k.getCoinVR(store, coin.Denom)
 		if err != nil {
@@ -48,6 +52,10 @@ func (k *Keeper) GetCoin(ctx sdk.Context, denom string) (coin types.Coin, err er
 	err = k.cdc.UnmarshalLengthPrefixed(value, &coin)
 	if err != nil {
 		return
+	}
+	// NOTE: special needed step to avoid migration to add coin min emission
+	if coin.MinVolume.IsNil() {
+		coin.MinVolume = sdkmath.ZeroInt()
 	}
 	// request volume and reserve separately
 	volume, reserve, err := k.getCoinVR(store, coin.Denom)
