@@ -8,9 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	dscconfig "bitbucket.org/decimalteam/go-smart-node/cmd/config"
-	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
-	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	"golang.org/x/crypto/sha3"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -21,12 +18,15 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
+	dscconfig "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
+	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 )
 
 var _ types.MsgServer = &Keeper{}
@@ -48,6 +48,7 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 		Reserve:     msg.InitialReserve,
 		Volume:      msg.InitialVolume,
 		LimitVolume: msg.LimitVolume,
+		MinVolume:   msg.MinVolume,
 		Creator:     msg.Sender,
 		Identity:    msg.Identity,
 	}
@@ -56,6 +57,13 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 	_, err := k.GetCoin(ctx, coinDenom)
 	if err == nil {
 		return nil, errors.CoinAlreadyExists
+	}
+
+	// Validate min emission if specified
+	if !msg.MinVolume.IsZero() {
+		if msg.MinVolume.LT(config.MinCoinSupply) || msg.MinVolume.GT(config.MaxCoinSupply) {
+			return nil, errors.InvalidCoinMinEmission
+		}
 	}
 
 	// Calculate special fee for creating custom coin
@@ -134,6 +142,7 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 		InitialVolume:        msg.InitialVolume.String(),
 		InitialReserve:       msg.InitialReserve.String(),
 		LimitVolume:          msg.LimitVolume.String(),
+		MinVolume:            msg.MinVolume.String(),
 		Identity:             msg.Identity,
 		CommissionCreateCoin: feeCoin.String(),
 	})
@@ -169,8 +178,19 @@ func (k Keeper) UpdateCoin(goCtx context.Context, msg *types.MsgUpdateCoin) (*ty
 		return nil, errors.NewLimitVolumeLess
 	}
 
+	// Validate min emission if specified
+	if coin.MinVolume.IsZero() != msg.MinVolume.IsZero() {
+		return nil, errors.UneditableCoinMinEmission
+	}
+	if !msg.MinVolume.IsZero() {
+		if msg.MinVolume.LT(config.MinCoinSupply) || msg.MinVolume.GT(config.MaxCoinSupply) {
+			return nil, errors.InvalidCoinMinEmission
+		}
+	}
+
 	// Update coin metadata
 	coin.LimitVolume = msg.LimitVolume
+	coin.MinVolume = msg.MinVolume
 	coin.Identity = msg.Identity
 
 	// Save coin to the storage
@@ -182,6 +202,7 @@ func (k Keeper) UpdateCoin(goCtx context.Context, msg *types.MsgUpdateCoin) (*ty
 		Denom:       coin.Denom,
 		LimitVolume: msg.LimitVolume.String(),
 		Identity:    msg.Identity,
+		MinVolume:   msg.MinVolume.String(),
 	})
 	if err != nil {
 		return nil, errors.Internal.Wrapf("err: %s", err.Error())
@@ -629,10 +650,9 @@ func (k *Keeper) buyCoin(
 	}
 
 	// Ensure reserve of the coin to sell does not underflow
-	if !k.IsCoinBase(ctx, coinToSell.Denom) {
-		if coinToSell.Reserve.Sub(amountInBaseCoin).LT(config.MinCoinReserve) {
-			return errors.TxBreaksMinReserveRule
-		}
+	err = k.CheckFutureChanges(ctx, coinToSell, amountToSell.Neg())
+	if err != nil {
+		return err
 	}
 
 	// Ensure that buyer account holds enough coins to sell

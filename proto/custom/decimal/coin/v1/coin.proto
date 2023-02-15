@@ -45,6 +45,14 @@ message Coin {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
+
+  // min_volume defines optional minimal allowed supply for the coin.
+  // NOTE: when value is zero it means that the coin does not support minimal supply limitations.
+  string min_volume = 9 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
 }
 
 // Check defines the redeemed check.

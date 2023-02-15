@@ -63,6 +63,14 @@ message MsgCreateCoin {
     (gogoproto.nullable) = false
   ];
   string identity = 8;
+
+  // min_volume defines optional minimal allowed supply for the coin.
+  // NOTE: when value is zero it means that the coin does not support minimal supply limitations.
+  string min_volume = 9 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
 }
 
 // MsgCreateCoinResponse defines the Msg/CreateCoin response type.
@@ -84,6 +92,14 @@ message MsgUpdateCoin {
     (gogoproto.nullable) = false
   ];
   string identity = 4;
+
+  // min_volume defines optional minimal allowed supply for the coin.
+  // NOTE: when value is zero it means that the coin does not support minimal supply limitations.
+  string min_volume = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
 }
 
 // MsgUpdateCoinResponse defines the Msg/UpdateCoin response type.
