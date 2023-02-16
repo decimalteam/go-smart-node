@@ -57,4 +57,5 @@ var (
 	InvalidCoinMinEmission        = errors.New(codespace, 144, fmt.Sprintf("coin min emission should be between %s and %s.", config.MinCoinSupply, config.MaxCoinSupply))
 	UneditableCoinMinEmission     = errors.New(codespace, 145, "coin min emission cannot be enabled or disabled after coin creation")
 	TxBreaksMinEmission           = errors.New(codespace, 146, "tx breaks coin min emission rule: volume > min emission")
+	TooBigCoinMinEmission         = errors.New(codespace, 147, fmt.Sprintf("coin min emission should be between %s and %s.", config.MinCoinSupply, "volume limit"))
 )

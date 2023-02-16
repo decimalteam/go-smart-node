@@ -126,6 +126,9 @@ func (msg *MsgCreateCoin) ValidateBasic() error {
 		if msg.MinVolume.LT(config.MinCoinSupply) || msg.MinVolume.GT(config.MaxCoinSupply) {
 			return errors.InvalidCoinMinEmission
 		}
+		if msg.MinVolume.GT(msg.LimitVolume) {
+			return errors.TooBigCoinMinEmission
+		}
 	}
 	return nil
 }
@@ -189,6 +192,9 @@ func (msg *MsgUpdateCoin) ValidateBasic() error {
 	if !msg.MinVolume.IsNil() && !msg.MinVolume.IsZero() {
 		if msg.MinVolume.LT(config.MinCoinSupply) || msg.MinVolume.GT(config.MaxCoinSupply) {
 			return errors.InvalidCoinMinEmission
+		}
+		if msg.MinVolume.GT(msg.LimitVolume) {
+			return errors.TooBigCoinMinEmission
 		}
 	}
 	return nil

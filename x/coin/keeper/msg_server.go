@@ -59,13 +59,6 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 		return nil, errors.CoinAlreadyExists
 	}
 
-	// Validate min emission if specified
-	if !msg.MinVolume.IsNil() && !msg.MinVolume.IsZero() {
-		if msg.MinVolume.LT(config.MinCoinSupply) || msg.MinVolume.GT(config.MaxCoinSupply) {
-			return nil, errors.InvalidCoinMinEmission
-		}
-	}
-
 	// Calculate special fee for creating custom coin
 	feeAmountBase, err := k.getCreateCoinCommission(ctx, coinDenom)
 	if err != nil {
@@ -178,15 +171,9 @@ func (k Keeper) UpdateCoin(goCtx context.Context, msg *types.MsgUpdateCoin) (*ty
 		return nil, errors.NewLimitVolumeLess
 	}
 
-	// Validate min emission if specified
-	noMinValue := msg.MinVolume.IsNil() || msg.MinVolume.IsZero()
-	if coin.MinVolume.IsZero() != noMinValue {
+	// Validate min emission (cannot be enabled/disabled after creation)
+	if coin.MinVolume.IsZero() != msg.MinVolume.IsNil() || msg.MinVolume.IsZero() {
 		return nil, errors.UneditableCoinMinEmission
-	}
-	if !noMinValue {
-		if msg.MinVolume.LT(config.MinCoinSupply) || msg.MinVolume.GT(config.MaxCoinSupply) {
-			return nil, errors.InvalidCoinMinEmission
-		}
 	}
 
 	// Update coin metadata
