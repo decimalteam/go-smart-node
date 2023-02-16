@@ -171,8 +171,8 @@ func (k Keeper) UpdateCoin(goCtx context.Context, msg *types.MsgUpdateCoin) (*ty
 		return nil, errors.NewLimitVolumeLess
 	}
 
-	// Validate min emission (cannot be enabled/disabled after creation)
-	if coin.MinVolume.IsZero() != msg.MinVolume.IsNil() || msg.MinVolume.IsZero() {
+	// Validate min emission if specified
+	if coin.MinVolume.IsZero() != (msg.MinVolume.IsNil() || msg.MinVolume.IsZero()) {
 		return nil, errors.UneditableCoinMinEmission
 	}
 
