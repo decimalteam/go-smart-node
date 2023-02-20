@@ -34,6 +34,7 @@ func TestNegativePower(t *testing.T) {
 		helpers.EtherToWei(sdkmath.NewInt(1_000)),
 		helpers.EtherToWei(sdkmath.NewInt(1_000)),
 		helpers.EtherToWei(sdkmath.NewInt(10_000)),
+		sdkmath.ZeroInt(),
 		"negative")
 	_, err := dsc.CoinKeeper.CreateCoin(goCtx, msgCreateCoin)
 	require.NoError(t, err)

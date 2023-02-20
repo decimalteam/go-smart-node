@@ -48,6 +48,7 @@ func TestFactorCalculation(t *testing.T) {
 		helpers.EtherToWei(sdkmath.NewInt(2000)),
 		helpers.EtherToWei(sdkmath.NewInt(2000)),
 		helpers.EtherToWei(sdkmath.NewInt(10_000)),
+		sdkmath.ZeroInt(),
 		"-",
 	))
 	require.NoError(t, err)
@@ -60,6 +61,7 @@ func TestFactorCalculation(t *testing.T) {
 		helpers.EtherToWei(sdkmath.NewInt(1000)),
 		helpers.EtherToWei(sdkmath.NewInt(2000)),
 		helpers.EtherToWei(sdkmath.NewInt(10_000)),
+		sdkmath.ZeroInt(),
 		"-",
 	))
 	require.NoError(t, err)
@@ -72,6 +74,7 @@ func TestFactorCalculation(t *testing.T) {
 		helpers.EtherToWei(sdkmath.NewInt(2000)),
 		helpers.EtherToWei(sdkmath.NewInt(2000)),
 		helpers.EtherToWei(sdkmath.NewInt(10_000)),
+		sdkmath.ZeroInt(),
 		"-",
 	))
 	require.NoError(t, err)

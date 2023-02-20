@@ -53,14 +53,14 @@ func GetTxCmd() *cobra.Command {
 
 func cmdCreateCoin() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "create [denom] [title] [crr] [initReserve] [initVolume] [limitVolume] [identity]",
+		Use:   "create [denom] [title] [crr] [initReserve] [initVolume] [limitVolume] [minVolume] [identity]",
 		Short: "Creates new coin",
 		Long: fmt.Sprintf(`Create custom coin. Reserve, volumes must be with all 0 (1 coin = 10^18)
 
 Example: 	
-$ %s tx %s create coin1 "title of coin" 20 10000000000 200000000 10000000000000 "coin identity" --from mykey`,
+$ %s tx %s create coin1 "title of coin" 20 10000000000 200000000 10000000000000 0 "coin identity" --from mykey`,
 			cmdcfg.AppBinName, types.ModuleName),
-		Args: cobra.ExactArgs(7),
+		Args: cobra.ExactArgs(8),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -74,7 +74,8 @@ $ %s tx %s create coin1 "title of coin" 20 10000000000 200000000 10000000000000 
 				initReserve, _ = sdk.NewIntFromString(args[3])
 				initVolume, _  = sdk.NewIntFromString(args[4])
 				limitVolume, _ = sdk.NewIntFromString(args[5])
-				identity       = args[6]
+				minVolume, _   = sdk.NewIntFromString(args[6])
+				identity       = args[7]
 			)
 
 			crr, err := strconv.ParseUint(args[2], 10, 8)
@@ -87,7 +88,7 @@ $ %s tx %s create coin1 "title of coin" 20 10000000000 200000000 10000000000000 
 				return errors.CoinAlreadyExists
 			}
 
-			msg := types.NewMsgCreateCoin(from, denom, title, crr, initVolume, initReserve, limitVolume, identity)
+			msg := types.NewMsgCreateCoin(from, denom, title, crr, initVolume, initReserve, limitVolume, minVolume, identity)
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -102,14 +103,14 @@ $ %s tx %s create coin1 "title of coin" 20 10000000000 200000000 10000000000000 
 
 func cmdUpdateCoin() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "update [denom] [limitVolume] [identity]",
+		Use:   "update [denom] [limitVolume] [minVolume] [identity]",
 		Short: "Update custom coin",
 		Long: fmt.Sprintf(`Update your custom coin parameters: limit volume and identity.
 Limit volume must be with all 0 (1 coin = 10^18)
 
 Example: 	
-$ %s tx %s update coin1 10000000 "some identity" --from mykey`, cmdcfg.AppBinName, types.ModuleName),
-		Args: cobra.ExactArgs(3),
+$ %s tx %s update coin1 10000000 0 "some identity" --from mykey`, cmdcfg.AppBinName, types.ModuleName),
+		Args: cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -119,12 +120,17 @@ $ %s tx %s update coin1 10000000 "some identity" --from mykey`, cmdcfg.AppBinNam
 			var (
 				from     = clientCtx.GetFromAddress()
 				denom    = args[0]
-				identity = args[2]
+				identity = args[3]
 			)
 
 			limitVolume, ok := sdk.NewIntFromString(args[1])
 			if !ok {
 				return fmt.Errorf("invalid limit volume")
+			}
+
+			minVolume, ok := sdk.NewIntFromString(args[2])
+			if !ok {
+				return fmt.Errorf("invalid min volume")
 			}
 
 			// Check if coin does not exist yet
@@ -137,7 +143,7 @@ $ %s tx %s update coin1 10000000 "some identity" --from mykey`, cmdcfg.AppBinNam
 				return errors.UpdateOnlyForCreator
 			}
 
-			msg := types.NewMsgUpdateCoin(from, denom, limitVolume, identity)
+			msg := types.NewMsgUpdateCoin(from, denom, limitVolume, minVolume, identity)
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},

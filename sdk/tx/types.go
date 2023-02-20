@@ -9,6 +9,7 @@ import (
 	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
 type (
@@ -59,6 +60,10 @@ type (
 	MsgCancelRedelegationNFT = validatortypes.MsgCancelRedelegationNFT
 
 	Description = validatortypes.Description
+
+	MsgSoftwareUpgrade = upgradetypes.MsgSoftwareUpgrade
+	MsgCancelUpgrade   = upgradetypes.MsgCancelUpgrade
+	Plan               = upgradetypes.Plan
 )
 
 var (

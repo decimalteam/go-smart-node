@@ -54,7 +54,7 @@ func (sh *Helper) Handle(ctx sdk.Context, msg sdk.Msg, ok bool) *sdk.Result {
 
 // CreateCoin create msg and handle create coin
 func (sh *Helper) CreateCoin(sender sdk.AccAddress, title, denom string, crr uint64, initVolume, initReserve, limitVolume sdkmath.Int, identity string, ok bool) types.Coin {
-	msg := types.NewMsgCreateCoin(sender, denom, title, crr, initVolume, initReserve, limitVolume, identity)
+	msg := types.NewMsgCreateCoin(sender, denom, title, crr, initVolume, initReserve, limitVolume, sdkmath.ZeroInt(), identity)
 	sh.Handle(sh.Ctx, msg, ok)
 	return types.Coin{
 		Title:       title,
@@ -63,6 +63,7 @@ func (sh *Helper) CreateCoin(sender sdk.AccAddress, title, denom string, crr uin
 		Reserve:     initReserve,
 		Volume:      initVolume,
 		LimitVolume: limitVolume,
+		MinVolume:   sdkmath.ZeroInt(),
 		Creator:     sender.String(),
 		Identity:    identity,
 	}
@@ -70,7 +71,7 @@ func (sh *Helper) CreateCoin(sender sdk.AccAddress, title, denom string, crr uin
 
 // CreateCoinWithContext create msg and handle create coin with custom context
 func (sh *Helper) CreateCoinWithContext(ctx sdk.Context, sender sdk.AccAddress, title, denom string, crr uint64, initVolume, initReserve, limitVolume sdkmath.Int, identity string, ok bool) types.Coin {
-	msg := types.NewMsgCreateCoin(sender, denom, title, crr, initVolume, initReserve, limitVolume, identity)
+	msg := types.NewMsgCreateCoin(sender, denom, title, crr, initVolume, initReserve, limitVolume, sdkmath.ZeroInt(), identity)
 	sh.Handle(ctx, msg, ok)
 	return types.Coin{
 		Title:       title,
@@ -79,6 +80,7 @@ func (sh *Helper) CreateCoinWithContext(ctx sdk.Context, sender sdk.AccAddress, 
 		Reserve:     initReserve,
 		Volume:      initVolume,
 		LimitVolume: limitVolume,
+		MinVolume:   sdkmath.ZeroInt(),
 		Creator:     sender.String(),
 		Identity:    identity,
 	}
@@ -92,7 +94,7 @@ func (sh *Helper) CheckRedeem(sender sdk.AccAddress, check, proof string, ok boo
 
 // UpdateCoin create msg and handle update coin
 func (sh *Helper) UpdateCoin(sender sdk.AccAddress, denom string, limitVolume sdkmath.Int, identity string, ok bool) {
-	msg := types.NewMsgUpdateCoin(sender, denom, limitVolume, identity)
+	msg := types.NewMsgUpdateCoin(sender, denom, limitVolume, sdkmath.ZeroInt(), identity)
 	sh.Handle(sh.Ctx, msg, ok)
 }
 

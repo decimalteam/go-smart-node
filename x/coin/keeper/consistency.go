@@ -43,10 +43,15 @@ func (k *Keeper) CheckFutureChanges(ctx sdk.Context, coinInfo types.Coin, amount
 			return errors.TxBreaksMinVolumeLimit
 		}
 		// check for minimal reserve
-		futureReserveToDecrease := formulas.CalculateSaleReturn(coinInfo.Volume, coinInfo.Reserve,
-			uint(coinInfo.CRR), futureAmountToBurn)
+		futureReserveToDecrease := formulas.CalculateSaleReturn(coinInfo.Volume, coinInfo.Reserve, uint(coinInfo.CRR), futureAmountToBurn)
 		if coinInfo.Reserve.Sub(futureReserveToDecrease).LT(config.MinCoinReserve) {
 			return errors.TxBreaksMinReserveRule
+		}
+		// check for minimal emission
+		if !coinInfo.MinVolume.IsZero() {
+			if newVolume.LT(coinInfo.MinVolume) {
+				return errors.TxBreaksMinEmission
+			}
 		}
 	}
 	return nil

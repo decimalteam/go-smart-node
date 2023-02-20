@@ -35,6 +35,7 @@ func TestBurningPool(t *testing.T) {
 		helpers.EtherToWei(sdkmath.NewInt(2000)),
 		helpers.EtherToWei(sdkmath.NewInt(1000)),
 		helpers.EtherToWei(sdkmath.NewInt(2_000_000)),
+		sdkmath.ZeroInt(),
 		"",
 	))
 	require.NoError(t, err)

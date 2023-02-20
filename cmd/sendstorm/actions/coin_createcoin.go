@@ -109,6 +109,7 @@ func (ac *CreateCoinAction) GenerateTx(sa *stormTypes.StormAccount, feeConfig *s
 		ac.initVolume,
 		ac.initReserve,
 		ac.limitVolume,
+		sdkmath.ZeroInt(),
 		ac.identity,
 	)
 
