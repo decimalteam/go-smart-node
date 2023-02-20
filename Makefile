@@ -6,7 +6,7 @@ PACKAGES_SIMTEST=$(shell go list ./... | grep '/simulation')
 # DEFAULT_TAG=$(shell git rev-list --tags="v*" --max-count=1)
 # VERSION ?= $(shell echo $(shell git describe --tags $(or $(DIFF_TAG), $(DEFAULT_TAG))) | sed 's/^v//')
 # TODO: Remove this temporary workaround when first tag is appeared
-VERSION := v0.2.1
+VERSION := v0.2.2
 TMVERSION := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::')
 COMMIT := $(shell git log -1 --format='%H')
 LEDGER_ENABLED ?= true
