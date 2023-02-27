@@ -16,3 +16,15 @@ var DummyUpgradeHandlerCreator = func(app *DSC, mm *module.Manager, configurator
 		return mm.RunMigrations(ctx, configurator, fromVM)
 	}
 }
+
+var ExampleUpgradeHandlerCreator = func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+	return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+
+		// Update some params in the state as an example
+		params := app.ValidatorKeeper.GetParams(ctx)
+		params.MaxEntries++
+		app.ValidatorKeeper.SetParams(ctx, params)
+
+		return mm.RunMigrations(ctx, configurator, fromVM)
+	}
+}
