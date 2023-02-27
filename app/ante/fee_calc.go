@@ -4,9 +4,12 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+
+	bank "github.com/cosmos/cosmos-sdk/x/bank/types"
+	upgrade "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+
 	coin "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	fee "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	legacy "bitbucket.org/decimalteam/go-smart-node/x/legacy/types"
@@ -28,6 +31,9 @@ func CalculateFee(cdc codec.BinaryCodec, msgs []sdk.Msg, txBytesLen int64, delPr
 	msgsFee := sdk.ZeroDec()
 	for _, msg := range msgs {
 		switch m := msg.(type) {
+		// cosmos
+		case *bank.MsgSend:
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinSend))
 		// coin
 		case *coin.MsgCreateCoin:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinCreate))
@@ -122,8 +128,8 @@ func CalculateFee(cdc codec.BinaryCodec, msgs []sdk.Msg, txBytesLen int64, delPr
 		*/
 		// fee
 		case *fee.MsgUpdateCoinPrices:
-		case *upgradetypes.MsgSoftwareUpgrade:
-		case *upgradetypes.MsgCancelUpgrade:
+		case *upgrade.MsgSoftwareUpgrade:
+		case *upgrade.MsgCancelUpgrade:
 		// legacy
 		case *legacy.MsgReturnLegacy:
 		default:
