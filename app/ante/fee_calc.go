@@ -4,9 +4,9 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	cosmos "github.com/cosmos/cosmos-sdk/x/bank/types"  // add this for keplr
+	bank "github.com/cosmos/cosmos-sdk/x/bank/types" // add this for keplr
+	upgrade "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	coin "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -30,12 +30,14 @@ func CalculateFee(cdc codec.BinaryCodec, msgs []sdk.Msg, txBytesLen int64, delPr
 	msgsFee := sdk.ZeroDec()
 	for _, msg := range msgs {
 		switch m := msg.(type) {
+		// cosmos
+		case *bank.MsgSend:
+			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinSend))
+
 		// coin
 		case *coin.MsgCreateCoin:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinCreate))
 		case *coin.MsgSendCoin:
-			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinSend))
-		case *cosmos.MsgSend:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinSend))
 		case *coin.MsgMultiSendCoin:
 			multiAdditionFee := params.CoinSendAdd.MulInt64(int64(len(m.Sends) - 1))
@@ -126,8 +128,8 @@ func CalculateFee(cdc codec.BinaryCodec, msgs []sdk.Msg, txBytesLen int64, delPr
 		*/
 		// fee
 		case *fee.MsgUpdateCoinPrices:
-		case *upgradetypes.MsgSoftwareUpgrade:
-		case *upgradetypes.MsgCancelUpgrade:
+		case *upgrade.MsgSoftwareUpgrade:
+		case *upgrade.MsgCancelUpgrade:
 		// legacy
 		case *legacy.MsgReturnLegacy:
 		default:
