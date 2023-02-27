@@ -33,7 +33,6 @@ func CalculateFee(cdc codec.BinaryCodec, msgs []sdk.Msg, txBytesLen int64, delPr
 		// cosmos
 		case *bank.MsgSend:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinSend))
-
 		// coin
 		case *coin.MsgCreateCoin:
 			msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.CoinCreate))
