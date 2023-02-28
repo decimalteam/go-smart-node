@@ -2,13 +2,81 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
-### [Unreleased](https://bitbucket.org/decimalteam/go-smart-node/compare/HEAD..v0.0.8) - 2022-11-15
+### [v2.1.0](https://bitbucket.org/decimalteam/go-smart-node/compare/v2.1.0..v2.0.1) - 2023-02-28
 
 #### Features
 
+-  feature/44640 feat: added custom minimal emission parameter to a coin.  [`3510b82`](https://bitbucket.org/decimalteam/go-smart-node/commits/3510b827db493d58cf58b735d044f3e0bc7d8a00)
+
+### [v2.0.1](https://bitbucket.org/decimalteam/go-smart-node/compare/v2.0.1..v2.0.0) - 2022-12-29
+
+#### Fixes
+
+-  feature/42511 fix: state size growing, EventSetOffline in grace period  [`5da7b32`](https://bitbucket.org/decimalteam/go-smart-node/commits/5da7b32ff8907725d1ea01a4687980a0e86b59f9)
+-  fix: initial grace period  [`df24b30`](https://bitbucket.org/decimalteam/go-smart-node/commits/df24b3087ce0eae4c42982e230cc5b3da1e6c50e)
+-  fix: update block 12830301  [`3272a4f`](https://bitbucket.org/decimalteam/go-smart-node/commits/3272a4feb0ac153f68d7e3782cbd5a88e63a9dd7)
+-  fix: update block 12828401  [`0f2734c`](https://bitbucket.org/decimalteam/go-smart-node/commits/0f2734cc050fa64aab2e8f7c391a43fcbeaa92ac)
+-  fix: update block 12814701  [`d054a8b`](https://bitbucket.org/decimalteam/go-smart-node/commits/d054a8baa135dd2785b0d5d856292c80b5fe9eac)
+
+## [v2.0.0](https://bitbucket.org/decimalteam/go-smart-node/compare/v2.0.0..v0.2.1) - 2022-12-14
+
+#### Features
+
+-  feature: cumulative update before release  [`3d8d112`](https://bitbucket.org/decimalteam/go-smart-node/commits/3d8d112228c3f4694f22b16feed5f0856ea2334f)
+
+#### Fixes
+
+-  fix: update dao+develop owners  [`e4c5aeb`](https://bitbucket.org/decimalteam/go-smart-node/commits/e4c5aeb9d42694206561528b3615b2fa92caa5c1)
+-  hotfix: final mainnet params  [`9f45820`](https://bitbucket.org/decimalteam/go-smart-node/commits/9f45820b43166310c7a2dd47de640549b1131a89)
+-  fix: dao+developer addresses for rewards  [`841c772`](https://bitbucket.org/decimalteam/go-smart-node/commits/841c772d8d2695aef7bbdfeddfe63609615e5bef)
+-  hotfix: final mainnet params  [`aa3ef0f`](https://bitbucket.org/decimalteam/go-smart-node/commits/aa3ef0fea9b9e2904df0527745b37f8f98ce8896)
+-  fix: set GracePeriod to 30 days  [`92fa909`](https://bitbucket.org/decimalteam/go-smart-node/commits/92fa90982f66b8b0f20138e2eabf246a24a1d6bf)
+-  fix: set GracePeriod to 30 days  [`1ea38fd`](https://bitbucket.org/decimalteam/go-smart-node/commits/1ea38fd8a9a2bcf7c66a9dbfb827e08e35af29f9)
+
+### [v0.2.1](https://bitbucket.org/decimalteam/go-smart-node/compare/v0.2.1..v0.2.0) - 2022-12-27
+
+#### Features
+
+-  feat: testing updates  [`ec32860`](https://bitbucket.org/decimalteam/go-smart-node/commits/ec328604d69e17eaade90dd0d54194a88eabe924)
+
+### [v0.2.0](https://bitbucket.org/decimalteam/go-smart-node/compare/v0.2.0..v0.1.1) - 2022-12-15
+
+#### Features
+
+-  feature/41123 feat: new genesis for testnet  [`bdeacfe`](https://bitbucket.org/decimalteam/go-smart-node/commits/bdeacfedcc233103ca79bd0566038582aa9a4bf7)
+-  feat: cumulative patch from devnet  [`79c91c4`](https://bitbucket.org/decimalteam/go-smart-node/commits/79c91c406bfe6936eb34e02e8c85fe7603b2817b)
+-  feat: devnet cumulative update  [`6590b30`](https://bitbucket.org/decimalteam/go-smart-node/commits/6590b306943eae374b8dc859c261a4a0cd097d13)
+
+#### Fixes
+
+-  fix: testnet genesis with prefix d0  [`c504054`](https://bitbucket.org/decimalteam/go-smart-node/commits/c504054ad00679cf51ac8bb0acc7b92d82127135)
+-  hotfix: account numbers in genesis, time of re/undelegation in genesis  [`3b3e631`](https://bitbucket.org/decimalteam/go-smart-node/commits/3b3e6319977db15b6b3e51953a4843ed8b4731c5)
+-  feat: devnet cumulative update  [`6590b30`](https://bitbucket.org/decimalteam/go-smart-node/commits/6590b306943eae374b8dc859c261a4a0cd097d13)
+-  feature/39926 fix: burn commission in RedeemCheck  [`ae02c04`](https://bitbucket.org/decimalteam/go-smart-node/commits/ae02c0460af3da9d6e609100c859ddaf904bcdcb)
+-  fix: cumulative patch from develop  [`c87b89c`](https://bitbucket.org/decimalteam/go-smart-node/commits/c87b89cb649c25b1638cb1231f0e73207d6d872b)
+-  hotfix: redelegation time for unbonded validator  [`f765a78`](https://bitbucket.org/decimalteam/go-smart-node/commits/f765a78fe89253681f6e40bcd231072314c6ff2c)
+-  hotfix: process events for all transactions; transaction, failed on delivery step, made some changes on check step like comission pay  [`7d372bd`](https://bitbucket.org/decimalteam/go-smart-node/commits/7d372bddaf7d1a33ec17630cc87d6af117699e20)
+-  fix: (sendstorm) add parametrized base coin  [`70bdb00`](https://bitbucket.org/decimalteam/go-smart-node/commits/70bdb00d52bd32c7a1ef595618bc6e17366b5564)
+-  hotfix/41347 fix: correct slashing of redelegation  [`3755249`](https://bitbucket.org/decimalteam/go-smart-node/commits/37552499585e6dc2f82f7fa83cf33820367854dc)
+
+### [v0.1.1](https://bitbucket.org/decimalteam/go-smart-node/compare/v0.1.1..v0.1.0) - 2022-12-27
+
+#### Fixes
+
+-  fix: historical info tests  [`ee681d3`](https://bitbucket.org/decimalteam/go-smart-node/commits/ee681d33d5edc0ef9689ab0dfb07af89b8d9b83a)
+-  fix: split types and data  [`6b8f73a`](https://bitbucket.org/decimalteam/go-smart-node/commits/6b8f73a87f8fca7db43968962ee92cc06f40b1a4)
+-  fix: module as sender in EventSetOffline  [`08323d9`](https://bitbucket.org/decimalteam/go-smart-node/commits/08323d9fd34d8d13f0b03826e9ba482f2493e4f6)
+-  fix: historical info test  [`7bbfd2f`](https://bitbucket.org/decimalteam/go-smart-node/commits/7bbfd2f0db07f5ff9dab8629895f87d47a369d31)
+
+### [v0.1.0](https://bitbucket.org/decimalteam/go-smart-node/compare/v0.1.0..v0.0.8) - 2022-12-15
+
+#### Features
+
+-  feat: upgrade to ethermint 0.20.0-rc4  [`665a77d`](https://bitbucket.org/decimalteam/go-smart-node/commits/665a77dbe25792c47f0543a74f22f0f7c3b1a466)
+-  feature/41767 feat: support dx for legacy cases in modules multisig, validator; support prefix d0 in genesis converter  [`145cf32`](https://bitbucket.org/decimalteam/go-smart-node/commits/145cf32c9e207a9a3588c0d9ebb75c9cc679a6fb)
+-  feature/update feat: add grace period to check autoupdate functionality  [`c51e60e`](https://bitbucket.org/decimalteam/go-smart-node/commits/c51e60e049c2fb1cce2a8c44a503c1a9cb893f1f)
 -  feature/39929 feat: burn fee by fee module  [`b6ce824`](https://bitbucket.org/decimalteam/go-smart-node/commits/b6ce824aee60e3d30cf5d73e4af3f4e91675d2c1)
 -  feature/39771 feat: legacy info for validator reward addresses  [`4221750`](https://bitbucket.org/decimalteam/go-smart-node/commits/4221750bd9552397f094cd11830f7db5fa17ffef)
--  feature/39929 feat: parameter for commission burning  [`ca00dcd`](https://bitbucket.org/decimalteam/go-smart-node/commits/ca00dcddd7c90e9d3cc697eb20b60c8b2e46cedc)
 -  feature/37535 feat: (genesis_converter) replacement for NFT URI doublicates  [`33d786c`](https://bitbucket.org/decimalteam/go-smart-node/commits/33d786ceb0ad04b931cbd19c83a98637a7c59ed4)
 -  feature/39771 feat: (sendstorm) add validator pools verification; add execution limit  [`d298dba`](https://bitbucket.org/decimalteam/go-smart-node/commits/d298dbac202fdc17c9ff60424363d0745a01e82a)
 -  feature/39771 feat: (sendstorm) add validator pools verification  [`be98bb3`](https://bitbucket.org/decimalteam/go-smart-node/commits/be98bb31fa4f751080c2895a9e7064eae503d63e)
@@ -17,13 +85,30 @@ All notable changes to this project will be documented in this file. Dates are d
 -  feature/39929 feat: burn 50% of rewards (i.e. burn 50% commission)  [`a8baa56`](https://bitbucket.org/decimalteam/go-smart-node/commits/a8baa56e6c36ae9b75f2614f9c80b9da08f4421e)
 -  feature/37535 feat: smaple script for genesis conversion  [`b71fa88`](https://bitbucket.org/decimalteam/go-smart-node/commits/b71fa88e14f99afa45f471cc0af3909b40176f79)
 -  feature/39929 feat: add commission_burn_factor to devnet genesis  [`5dbe00c`](https://bitbucket.org/decimalteam/go-smart-node/commits/5dbe00c76732a3e8c38470baa77c4aa22ad84420)
+-  feature/39929 feat: parameter for commission burning  [`ca00dcd`](https://bitbucket.org/decimalteam/go-smart-node/commits/ca00dcddd7c90e9d3cc697eb20b60c8b2e46cedc)
 
 #### Fixes
 
+-  hotfix/41723 fix: staked custom coins correct index  [`417bb4f`](https://bitbucket.org/decimalteam/go-smart-node/commits/417bb4f3588bbef4092fffa372f7e825ffe74c39)
+-  hotfix: (genesis_converter) nft owners for delegater/undelegated subtokens; stable nft URI replacements  [`cf611f0`](https://bitbucket.org/decimalteam/go-smart-node/commits/cf611f008a6c3d1a890912d55acca1f5b9f35856)
+-  feature/41767 fix: genesis dx to d0  [`0d59bed`](https://bitbucket.org/decimalteam/go-smart-node/commits/0d59bedd0fe787df83e0b5435a9a6deab88aaf0a)
+-  hotfix/41723 fix: delegation tests  [`f70bff9`](https://bitbucket.org/decimalteam/go-smart-node/commits/f70bff9deacbc59afe71d68f13784ef3a361749b)
+-  hotfix: DISABLE CancelUn/Redelegation  [`62ca570`](https://bitbucket.org/decimalteam/go-smart-node/commits/62ca570ee91e1edcfa503be28e7c2ffc61cfabc0)
+-  hotfix: remove unnecessary EventReturnLegacyCoins  [`67428d0`](https://bitbucket.org/decimalteam/go-smart-node/commits/67428d08264072f4a374b00de3aaba45cc3b8051)
+-  hotfix: (worker) balance changes for NFT delegation  [`6f7425a`](https://bitbucket.org/decimalteam/go-smart-node/commits/6f7425a392d31b0a3d06d70f515d3748ce19623f)
+-  hotfix: add EventDelegate in CreateValidator  [`19c432e`](https://bitbucket.org/decimalteam/go-smart-node/commits/19c432e7d3d364dfa54a36a6e4ffa017d80cb1ae)
+-  hotfix: fee calculation for multisig transaction  [`8f3a6d1`](https://bitbucket.org/decimalteam/go-smart-node/commits/8f3a6d1c1aa033f70581ad1ca6125b9e05d7ce2f)
+-  hotfix: return validator event  [`83f18cf`](https://bitbucket.org/decimalteam/go-smart-node/commits/83f18cfea43da2b0a58787327f5aad66e49f1a13)
+-  hotfix: fix tests after adding UpdateInfo  [`331e09c`](https://bitbucket.org/decimalteam/go-smart-node/commits/331e09c6875e4f736473592f64103393b0fc4192)
+-  fix: legacy tests  [`7b07cd3`](https://bitbucket.org/decimalteam/go-smart-node/commits/7b07cd3e43d751e16bfde63ca9a8620934a9e551)
+-  hotfix/41636 fix: check new limit, now new limit can be less than old  [`90fe639`](https://bitbucket.org/decimalteam/go-smart-node/commits/90fe639f7509ac6ea223d5842deda05acd18840d)
+-  hotfix: remove fmt.Printf  [`2877414`](https://bitbucket.org/decimalteam/go-smart-node/commits/2877414ff750339ef453fc32b3e050237a699459)
+-  hotfix: export genesis for validator module  [`e7f4a36`](https://bitbucket.org/decimalteam/go-smart-node/commits/e7f4a3634ccd6097c8932de7938a32eda7609859)
+-  hotfix: (sendstorm) fix for empty subtokens list  [`4faeb30`](https://bitbucket.org/decimalteam/go-smart-node/commits/4faeb30febfc8edc1a3d6026d2e9433112cdecb8)
+-  fix: set grace period to 5 days  [`c231cac`](https://bitbucket.org/decimalteam/go-smart-node/commits/c231caccb90170d8c60d86f1c938e3ad789970e1)
 -  feature/39771 fix: validator state transitions  [`642bc54`](https://bitbucket.org/decimalteam/go-smart-node/commits/642bc541be0e1f1f60907b292fc28c917bc89c73)
 -  feature/39771 fix: validator state changes  [`1608215`](https://bitbucket.org/decimalteam/go-smart-node/commits/16082150dfc9676a63b81c518ef57dc54bb86819)
 -  feature/39929 fix: proto names, numbeers  [`0dd9222`](https://bitbucket.org/decimalteam/go-smart-node/commits/0dd92221b353c55c949472005def28022fd3d75d)
--  feature/375353 fix: genesis_converter  [`2dc8043`](https://bitbucket.org/decimalteam/go-smart-node/commits/2dc80435f629c18de8831526766bc88ef1979d48)
 -  feature/39771 fix: invalid pools state in case when SetOffline/SetOnline + CancelRedelegation occur in one block  [`ffb2cf9`](https://bitbucket.org/decimalteam/go-smart-node/commits/ffb2cf96bdb766f29526024fdce5eba15555c3c0)
 -  feature/39771 fix: validator set changes  [`9eead98`](https://bitbucket.org/decimalteam/go-smart-node/commits/9eead980b6fc4e12b94d4cdc710b92e4b58c2ccc)
 -  feature/39929 fix: test for EndBlocker  [`7420206`](https://bitbucket.org/decimalteam/go-smart-node/commits/7420206d057aeac9fe3cb21cd43455279614458e)
@@ -33,9 +118,31 @@ All notable changes to this project will be documented in this file. Dates are d
 -  feature/39929 fix: cleanup interfaces  [`1e96e99`](https://bitbucket.org/decimalteam/go-smart-node/commits/1e96e999bb906abedaeaf9af52f2e236a22b9160)
 -  hotfix: case of empty public key  [`1755fe3`](https://bitbucket.org/decimalteam/go-smart-node/commits/1755fe319838a805964401ae9abb9d8e31a1846f)
 -  feature/39929 fix: remove unused interfaces from validator module  [`99dd1c9`](https://bitbucket.org/decimalteam/go-smart-node/commits/99dd1c9b311c80fc3670015505252d385698b248)
+-  hotfix: modules rights in genesis  [`84e2c2f`](https://bitbucket.org/decimalteam/go-smart-node/commits/84e2c2f55eac9b10ab05533b3f066fd37d7b826f)
+-  hotfix: replace all del-&gt;tdel for staging  [`a29d9ff`](https://bitbucket.org/decimalteam/go-smart-node/commits/a29d9ff69eeaa523d6f5a43ec5076f140552af0e)
+-  feature/375353 fix: genesis_converter  [`2dc8043`](https://bitbucket.org/decimalteam/go-smart-node/commits/2dc80435f629c18de8831526766bc88ef1979d48)
+-  hotfix: genesis_converter  [`56a1d3f`](https://bitbucket.org/decimalteam/go-smart-node/commits/56a1d3f0e380db41e69ecaaf4137fc3b280f916e)
+-  hotfix: (sendstorm) parametrize to test in devnet and testnet  [`ce03ba9`](https://bitbucket.org/decimalteam/go-smart-node/commits/ce03ba990599a440b4f2f186623e79cbac5275a6)
+-  hotfix: (genesis_converter) zero account numbers in genesis  [`127fda7`](https://bitbucket.org/decimalteam/go-smart-node/commits/127fda7092199ed662e66ac2824597f7a1a98840)
+-  feature/39767 fix: errors processing in BurnPoolCoins  [`0917f73`](https://bitbucket.org/decimalteam/go-smart-node/commits/0917f737be7b8c28a3c9d67af80d6273c4cae9ab)
+-  hotfix: sync changes staging-&gt;develop  [`ecfc783`](https://bitbucket.org/decimalteam/go-smart-node/commits/ecfc783764d110442fa72aa60f967bf756da5c34)
+-  hotfix: process events for all transactions; transaction, failed on delivery step, made some changes on check step like comission pay  [`ed62ec6`](https://bitbucket.org/decimalteam/go-smart-node/commits/ed62ec6d55108881f63ab0a33c2f92255e463ff5)
+-  hotfix: correct redelegation time for undonded validator  [`2357b16`](https://bitbucket.org/decimalteam/go-smart-node/commits/2357b168a88d66959fc5bce3a6a88f02a177876d)
+-  hotfix: (genesis) split delegators of main validators  [`24a7f32`](https://bitbucket.org/decimalteam/go-smart-node/commits/24a7f320bf3b8e16b6b227db5c0b6547c46a57e1)
+-  hotfix/41347 fix: correct slashing of redelegation  [`f548187`](https://bitbucket.org/decimalteam/go-smart-node/commits/f5481877631e93622f019e6ce5a4611726865634)
+-  feature/40550 fix: remove validator from unbonding queue; remove debug messages  [`f1d1af4`](https://bitbucket.org/decimalteam/go-smart-node/commits/f1d1af440c84b69788d149acbf0011eb5ab4c3fa)
+-  feature/40928 fix: comission calculation test  [`cce0669`](https://bitbucket.org/decimalteam/go-smart-node/commits/cce06691438e034b2262b25313d1fe8444e618d4)
+-  hotfix: (sendstorm) external faucet address  [`7128d02`](https://bitbucket.org/decimalteam/go-smart-node/commits/7128d02607c5f065e8e335326af8956ce5e6d9fd)
+-  hotfix: convert multisig owner for nft  [`727d2e2`](https://bitbucket.org/decimalteam/go-smart-node/commits/727d2e25dda58769c7bcc2a4f910dbcddf088189)
+-  hotfix: (genesis_converter) validators table old-new address with moniker  [`04e9adc`](https://bitbucket.org/decimalteam/go-smart-node/commits/04e9adcec94e8aa8d6c8c08577b25dac64a80216)
+-  hotfix: set grace period to 24 h  [`f1cdf07`](https://bitbucket.org/decimalteam/go-smart-node/commits/f1cdf075a15a8abcc879e9e2b483e73f98a7c9e2)
+-  hotfix: (worker) add BurningPool as pool account  [`0886df6`](https://bitbucket.org/decimalteam/go-smart-node/commits/0886df6896da019df69619009857fd52b4497a0b)
+-  hotfix: (genesis_converter) fix legacy records  [`4d5895f`](https://bitbucket.org/decimalteam/go-smart-node/commits/4d5895fbcc2055151df6d5d0366fce092c774cce)
+-  feature/41559 fix: add codespace for worker results  [`222f6bf`](https://bitbucket.org/decimalteam/go-smart-node/commits/222f6bf050b8dba987ec41d570f978cb4ce310ee)
+-  hotfix: (worker) exclude validator module  [`1b793fd`](https://bitbucket.org/decimalteam/go-smart-node/commits/1b793fda6df5cc007559f952aada064fe45e2e02)
 -  hotfix: genesis params for testnet  [`b7fc94e`](https://bitbucket.org/decimalteam/go-smart-node/commits/b7fc94edaf1c9ae381df249be3bc7879d9f8989a)
 
-### [v0.0.8](https://bitbucket.org/decimalteam/go-smart-node/compare/v0.0.8..v0.0.7) - 2022-11-01
+### [v0.0.8](https://bitbucket.org/decimalteam/go-smart-node/compare/v0.0.8..v0.0.7) - 2022-11-15
 
 #### Features
 
@@ -47,7 +154,6 @@ All notable changes to this project will be documented in this file. Dates are d
 -  feature/37530 feat: check NFT in SetOnline/SetOffline test  [`ed8c97d`](https://bitbucket.org/decimalteam/go-smart-node/commits/ed8c97da8d7798be054d4cd5238dbdd16c72bc76)
 -  feature/37530 feat: turn on slashing on block begining  [`92a0660`](https://bitbucket.org/decimalteam/go-smart-node/commits/92a06602e08aae6546a32608eca7b3f592cd9407)
 -  feature/37530 feat: tests for Stake type  [`4476a73`](https://bitbucket.org/decimalteam/go-smart-node/commits/4476a73044e9250880abbcba2f06849399a98454)
--  feature/37535 feat: multisig genesis tests  [`a4689f3`](https://bitbucket.org/decimalteam/go-smart-node/commits/a4689f3faaf3731bf56087c8e2947c5267130e7c)
 -  feature/39771 feat: (sendstorm) command to dump validators info  [`56adad8`](https://bitbucket.org/decimalteam/go-smart-node/commits/56adad8377dd7ff7efb6b7a345541f4ee33a20d0)
 -  feat: undelegation/redelegation time 10m/20m for testing purposes  [`998e0a4`](https://bitbucket.org/decimalteam/go-smart-node/commits/998e0a461f612b76705a302c2bcc3050953f36da)
 -  feature/37530 feat: genesis_converter for testnet  [`275af6f`](https://bitbucket.org/decimalteam/go-smart-node/commits/275af6fe7dd29a59e8136fe2631c63896195636f)
@@ -70,20 +176,47 @@ All notable changes to this project will be documented in this file. Dates are d
 -  feature/37535 feat: add delegations, unbondings, validator powers conversion  [`33a4a07`](https://bitbucket.org/decimalteam/go-smart-node/commits/33a4a07851db6544e29becd8185de2475a00501e)
 -  feature/37535 feat: initial height = last height+1 from decimal  [`0714c33`](https://bitbucket.org/decimalteam/go-smart-node/commits/0714c33e13c7c6a7661b0dddd10f1d2b1a637f49)
 -  feature/38623 feat: fee calculation for universal transaction; fix queries in multisig  [`306b70a`](https://bitbucket.org/decimalteam/go-smart-node/commits/306b70a7ef8416a237d3c3ae82e160c306d28962)
--  feature/final-regactoring feat: completely reworked nft module. started really hude refactoring, cleaning and commenting/documenting source code. not even close yet to the finish.  [`f81ecd5`](https://bitbucket.org/decimalteam/go-smart-node/commits/f81ecd5dd0141c0c752b5125f1196e67c6ddbdf4)
--  feature/final-regactoring feat: further commenting code.  [`0dd411b`](https://bitbucket.org/decimalteam/go-smart-node/commits/0dd411b24569c8a5052f61dd2f50a54cf1a31509)
+-  feature/27533 feat: updating cosmos-sdk to v0.46.0. Also completely removed evmos from dependencies.  [`9a08920`](https://bitbucket.org/decimalteam/go-smart-node/commits/9a089202219b96db56885f1f6801b62ef773b91e)
 -  feature/38623 feat: universal multisig transaction  [`c95c0d9`](https://bitbucket.org/decimalteam/go-smart-node/commits/c95c0d9ee76cb1c3bc8dd3226a4abd3620d811c0)
--  feature/final-regactoring feat: removed third_party/proto/google/protobuf since it breaks correct protobuf generating.  [`a3c4b9d`](https://bitbucket.org/decimalteam/go-smart-node/commits/a3c4b9d0f10c6f7cd7b2df0b615f1ef8388e6137)
 -  feat: (worker) complete multisig events, tests for coin event  [`fde11bd`](https://bitbucket.org/decimalteam/go-smart-node/commits/fde11bd7d6617904ab0b8f63114df499ece12fa5)
--  feature/37737 feat: add worker optimizations for faster backend processing  [`1707900`](https://bitbucket.org/decimalteam/go-smart-node/commits/170790071490f59dc756d61f3aed7363ab0648ec)
--  feature/final-regactoring feat: further code cleaning up.  [`a7a33c6`](https://bitbucket.org/decimalteam/go-smart-node/commits/a7a33c64aa61a38b18b160115e5875b6a040ea6f)
--  feat: (sendstorm) add testing scenario blockchain blow  [`a47d8e6`](https://bitbucket.org/decimalteam/go-smart-node/commits/a47d8e689ebcbbe55404d153e7ea4ae47989a52d)
--  feature/final-regactoring feat: further code cleaning up.  [`6c321b3`](https://bitbucket.org/decimalteam/go-smart-node/commits/6c321b30b02fe5c408495ef07b018da4dd2e9654)
 -  feature/37530 feat: (genesis_converter) add validators migration  [`d438793`](https://bitbucket.org/decimalteam/go-smart-node/commits/d4387933087a1f12f4fda977911d5bed3ffef149)
--  feature/37530 feat: (genesis_converter) add return of unbonded nft token  [`64cdf12`](https://bitbucket.org/decimalteam/go-smart-node/commits/64cdf12cc0f53ffe9b4d5d7c974360ae38613e4d)
 -  feature/38623 feat: fuzz testing for transaction unpacker  [`03bb6f2`](https://bitbucket.org/decimalteam/go-smart-node/commits/03bb6f27dcef60407483cea82adddbedc5b14973)
+-  feature/final-regactoring feat: completely reworked nft module. started really hude refactoring, cleaning and commenting/documenting source code. not even close yet to the finish.  [`f81ecd5`](https://bitbucket.org/decimalteam/go-smart-node/commits/f81ecd5dd0141c0c752b5125f1196e67c6ddbdf4)
+-  feature/27533 feat: removed not used anymore upgrade proto files and not used yet validator generated .go files.  [`b4c0f36`](https://bitbucket.org/decimalteam/go-smart-node/commits/b4c0f36f315543914fea710e9a68e232d476cd03)
+-  feature/27533 feat: make typed events  [`9609a29`](https://bitbucket.org/decimalteam/go-smart-node/commits/9609a296d1470235a4736bd99f76f55e3a311f35)
+-  feature/final-regactoring feat: further commenting code.  [`0dd411b`](https://bitbucket.org/decimalteam/go-smart-node/commits/0dd411b24569c8a5052f61dd2f50a54cf1a31509)
+-  feaure/34228 feat: migrate swap  [`65e7c9d`](https://bitbucket.org/decimalteam/go-smart-node/commits/65e7c9dee5d4785d8b028bc2d2a8ebbb83f739a4)
+-  feature/final-regactoring feat: removed third_party/proto/google/protobuf since it breaks correct protobuf generating.  [`a3c4b9d`](https://bitbucket.org/decimalteam/go-smart-node/commits/a3c4b9d0f10c6f7cd7b2df0b615f1ef8388e6137)
+-  feature/27533 feat: better coin tests; fix: consensus failure cause  [`424d11b`](https://bitbucket.org/decimalteam/go-smart-node/commits/424d11be6e44b9cbbc1780881692c7714e4f084c)
+-  feature/34622 feat: replace feemarket, add parameters for fee calculation  [`0d8a561`](https://bitbucket.org/decimalteam/go-smart-node/commits/0d8a561bacfb08d733edff863050f85e72bdb849)
+-  feature/34622 feat: implement fee  [`f387972`](https://bitbucket.org/decimalteam/go-smart-node/commits/f3879725fb6828e542a480fedbc29e948fc87903)
+-  feature/37737 feat: add worker optimizations for faster backend processing  [`1707900`](https://bitbucket.org/decimalteam/go-smart-node/commits/170790071490f59dc756d61f3aed7363ab0648ec)
+-  feature/34622 feat: correct fee calculation based on DEL price  [`293e5b7`](https://bitbucket.org/decimalteam/go-smart-node/commits/293e5b7519332cbe2e56e0658e3089a7d59af061)
+-  feature/34516 feat: genesis converter  [`c7c0e80`](https://bitbucket.org/decimalteam/go-smart-node/commits/c7c0e80b6f903cd0ef91c88fc33628cc6280c41c)
+-  feature/final-regactoring feat: further code cleaning up.  [`a7a33c6`](https://bitbucket.org/decimalteam/go-smart-node/commits/a7a33c64aa61a38b18b160115e5875b6a040ea6f)
+-  feature/35823 feat: add 'burn coin' transaction  [`93103f6`](https://bitbucket.org/decimalteam/go-smart-node/commits/93103f61c164314916705f3732f3769afd99ab8c)
+-  feature/27533 feat: add signer option to proto files  [`aa3374f`](https://bitbucket.org/decimalteam/go-smart-node/commits/aa3374fdaf2cd4e6d207245a9a88bb955e7a4cbd)
+-  feature/27533 feat: add swap service address to parameters  [`73c99ba`](https://bitbucket.org/decimalteam/go-smart-node/commits/73c99ba10c707fbe8f6aeb73208d0abf5fda44ee)
+-  feaure/27533 feat: event for edit coin  [`abdd2b4`](https://bitbucket.org/decimalteam/go-smart-node/commits/abdd2b4549c4e4f98cf7c562d8ca0aaa5ccd4570)
+-  feature/34516 feat: add legacy module records, add nft and coin verification  [`8062bcd`](https://bitbucket.org/decimalteam/go-smart-node/commits/8062bcd7658f7f1ef10f679e101038fc6e221782)
+-  feature/34228 feat: add tests for basic validation  [`817c92b`](https://bitbucket.org/decimalteam/go-smart-node/commits/817c92b1ea0ed512a89b78dc34d5c7656eb31962)
+-  feature/34516 feat: multisig tx, genesis copy, fix: multisig and nft genesis  [`01b8794`](https://bitbucket.org/decimalteam/go-smart-node/commits/01b8794afbc711d0bfeee8279d580ec2ff73bd1c)
+-  feature/34622 feat: parametrize fee per transaction byte  [`8f5e21a`](https://bitbucket.org/decimalteam/go-smart-node/commits/8f5e21a8307d96b80aad20f16d730b9a14dcd67d)
+-  feat: (sendstorm) add testing scenario blockchain blow  [`a47d8e6`](https://bitbucket.org/decimalteam/go-smart-node/commits/a47d8e689ebcbbe55404d153e7ea4ae47989a52d)
+-  feature/34228 feat: add cli tests  [`c7e6f0c`](https://bitbucket.org/decimalteam/go-smart-node/commits/c7e6f0ce508b73a72189b91770087002813c69a0)
+-  feature/final-regactoring feat: further code cleaning up.  [`6c321b3`](https://bitbucket.org/decimalteam/go-smart-node/commits/6c321b30b02fe5c408495ef07b018da4dd2e9654)
+-  feature/27533 feat: add error handling for EmitTypedEvent  [`46ac17b`](https://bitbucket.org/decimalteam/go-smart-node/commits/46ac17bfaed26db627103ed500a565f3d133c739)
+-  feature/35823 feat: add burn coin for sendstorm  [`0185de5`](https://bitbucket.org/decimalteam/go-smart-node/commits/0185de5464eecc09a6f5af58255634e11bd629ee)
+-  feature/34622 feat: replace constants with feeTypes.Params in fee calculation  [`7516a40`](https://bitbucket.org/decimalteam/go-smart-node/commits/7516a40091656cd27c8ce69667bf1272cfa6e868)
+-  feature/37530 feat: (genesis_converter) add return of unbonded nft token  [`64cdf12`](https://bitbucket.org/decimalteam/go-smart-node/commits/64cdf12cc0f53ffe9b4d5d7c974360ae38613e4d)
+-  feature/27533 feat: updated go version used in pipelines.  [`d7f5d6a`](https://bitbucket.org/decimalteam/go-smart-node/commits/d7f5d6ac1c0ebc3a7193c247c7dec446fdb7b530)
+-  feature/32750 feat: add devnet faucet usage  [`4f3de64`](https://bitbucket.org/decimalteam/go-smart-node/commits/4f3de64462b129df299d77bfaff3510d423c850b)
 -  feature/27533 feat: fixing tests.  [`fae7970`](https://bitbucket.org/decimalteam/go-smart-node/commits/fae7970cd3f5eb76b49ec8c12ad9f2d948488575)
 -  feature/worker-accumulator feat: accumulation of events for fast backend writing  [`9ad885e`](https://bitbucket.org/decimalteam/go-smart-node/commits/9ad885ee3d2560160749b7e4e26aa2315e661bc5)
+-  feature/35823 feat: add proto for MsgBurnCoin  [`18f2656`](https://bitbucket.org/decimalteam/go-smart-node/commits/18f2656dbfd540aef1128aa20ac78f261f634bbd)
+-  feature/34622 feat: add keeper for del/usd factor  [`8e1ac1d`](https://bitbucket.org/decimalteam/go-smart-node/commits/8e1ac1dab8e59fe44d5360c8008ec0ba69d3b2f0)
+-  feature/34228 feat: fixed merging develop branch  [`6ba0cc3`](https://bitbucket.org/decimalteam/go-smart-node/commits/6ba0cc3db864f7030747d30d1aee80736e6dacf5)
+-  feature/27533 feat: add swap module to genesis converter  [`b75a42e`](https://bitbucket.org/decimalteam/go-smart-node/commits/b75a42ef946b3f11268acc346a6f6cebf73895e9)
 -  feature/37737 feat: (worker) add state changes send  [`feebbd2`](https://bitbucket.org/decimalteam/go-smart-node/commits/feebbd2feb66cb6f574fe1b89d03c0a3d60b46b0)
 
 #### Fixes
@@ -126,75 +259,20 @@ All notable changes to this project will be documented in this file. Dates are d
 -  hotfix: fast fix of burning NFT. [update]  [`927ad67`](https://bitbucket.org/decimalteam/go-smart-node/commits/927ad67e761f1bd21549100cb3479ca443302270)
 -  [update] Merged in feature/39143-fix-redeem-simulate (pull request #65)  [`1337f94`](https://bitbucket.org/decimalteam/go-smart-node/commits/1337f946cb0f88d42eedf421bc48b611f794b35d)
 -  fix: update genesis from testnet  [`9d64bf4`](https://bitbucket.org/decimalteam/go-smart-node/commits/9d64bf48e831a7e3add71e2271a46ef9351c2776)
--  fix: legacy restore cache only on changes  [`bed0884`](https://bitbucket.org/decimalteam/go-smart-node/commits/bed08844b9386602e990ba6062aa760a88d055ed)
 -  fix: address for event in EthGasConsumeDecorator  [`3b20358`](https://bitbucket.org/decimalteam/go-smart-node/commits/3b20358cdce0183b49f3198ebf567958908e1f19)
 -  fix: multisig grpc query filter by wallet/owner  [`deff627`](https://bitbucket.org/decimalteam/go-smart-node/commits/deff627b07fd9b520ae6c4934e015db308aa2b85)
+-  fix: legacy restore cache only on changes  [`bed0884`](https://bitbucket.org/decimalteam/go-smart-node/commits/bed08844b9386602e990ba6062aa760a88d055ed)
 -  fix: sharing of flag for cache restoring  [`62236a0`](https://bitbucket.org/decimalteam/go-smart-node/commits/62236a09c4788ff319a1222339f6190683931b43)
 -  [update] fix: enable PreCreate/PostCreate for CheckTx and simulate  [`63649fd`](https://bitbucket.org/decimalteam/go-smart-node/commits/63649fdc8ee5614d5869fe8bc5727039bc19f539)
 -  fix: bigfloat tests  [`7430a6d`](https://bitbucket.org/decimalteam/go-smart-node/commits/7430a6d984353dec0e9b212849813507a32bc921)
 -  feature/37530 fix: (genesis_converter) test and fix nft conversion  [`8d2f8ab`](https://bitbucket.org/decimalteam/go-smart-node/commits/8d2f8ab36b9d2ecf27a6c406c72381215ff023e2)
--  feature/37530 fix: fee module proto changes  [`dc1230b`](https://bitbucket.org/decimalteam/go-smart-node/commits/dc1230b18028f1eb863505de04917020a5f50018)
--  feature/37530 fix: swap refactor  [`c82af77`](https://bitbucket.org/decimalteam/go-smart-node/commits/c82af77ce31154dcca1e4632965935c4e9dab833)
--  feature/37530 fix: legacy module proto changes  [`30101d8`](https://bitbucket.org/decimalteam/go-smart-node/commits/30101d8324c92e947141b11aa67e93fc51eab496)
--  feature/37530 fix: multisig proto changes  [`f147381`](https://bitbucket.org/decimalteam/go-smart-node/commits/f14738135cc679ab679b30f1dee8d6c4a2b3148f)
--  feature/37530 fix: nft keeper tests  [`bd4db1b`](https://bitbucket.org/decimalteam/go-smart-node/commits/bd4db1b24b340c6383805a2ffca902bbab0f2177)
 -  feature/37530 fix: hide validator code from build  [`b85247b`](https://bitbucket.org/decimalteam/go-smart-node/commits/b85247b3b3a428bca28cde425ff4145d96e321b9)
 -  feature/38623 fix: test and fixs for multisig universal transaction  [`8d1cd6c`](https://bitbucket.org/decimalteam/go-smart-node/commits/8d1cd6cccb54896f8e3752a53e36f84ac5f6a64b)
 -  feature/37530 fix: legacy tests and dscd build  [`fcc605c`](https://bitbucket.org/decimalteam/go-smart-node/commits/fcc605ca012f3b47d529210bc71405a96a733ffb)
 -  feature/37530 fix: (worker) fix events description for changes in proto  [`26caa11`](https://bitbucket.org/decimalteam/go-smart-node/commits/26caa1136371e443a749e3a96c721455241a8041)
--  feature/37530 fix: coin tests  [`80eaf66`](https://bitbucket.org/decimalteam/go-smart-node/commits/80eaf66ef1a8c332b678eeff02740a2789114b65)
--  feature/37530 fix: add fee parameter for coin burn  [`e584aad`](https://bitbucket.org/decimalteam/go-smart-node/commits/e584aad7c3441d6d2aa3bb44b05d768cb17421ee)
--  feature/37530 fix: (genesis_converter) NFT conversion  [`c6032a1`](https://bitbucket.org/decimalteam/go-smart-node/commits/c6032a1ce52497f4fd8366d1229305768c352c15)
--  feature/33737 fix: (worker) event processing on real data  [`f0905f8`](https://bitbucket.org/decimalteam/go-smart-node/commits/f0905f80cdcd8626df37d964504071fb3455811e)
--  feature/37530 fix: (sendstorm) fix for changes in nft module  [`e8b1f42`](https://bitbucket.org/decimalteam/go-smart-node/commits/e8b1f42181feb52494651576f613dce6dfe067ea)
--  feature/34622 fix: merge  [`5710f27`](https://bitbucket.org/decimalteam/go-smart-node/commits/5710f27a085a24e3f81a9a95424d902e4c0f508c)
--  feature/37530 fix: (sdk) fix for changes in nft module  [`0e80031`](https://bitbucket.org/decimalteam/go-smart-node/commits/0e800316b6c7fa0a4b37a28b4be58aaca589796a)
 -  feature/37530 fix: (worker) fix legacy events  [`7ae195b`](https://bitbucket.org/decimalteam/go-smart-node/commits/7ae195bb6fcab4f2bc39176a233853e5806b5e1d)
--  feature/37530 fix: legacy module for changes in nft  [`d05d389`](https://bitbucket.org/decimalteam/go-smart-node/commits/d05d3890ffe97697791a98c7f70038288bcd076c)
 -  feature/37530 fix: (sendstorm) fix testing scenario for new nft structure  [`92a99d9`](https://bitbucket.org/decimalteam/go-smart-node/commits/92a99d9b5472c679b1f96eebff446c0373105533)
--  feature/37530 fix: sdk+sendstorm for changes in multisig and fee  [`88eabf8`](https://bitbucket.org/decimalteam/go-smart-node/commits/88eabf8150cea5abf45c8041dd814782db21b564)
--  fix: increase faucet amount  [`1eda6e0`](https://bitbucket.org/decimalteam/go-smart-node/commits/1eda6e0d79c16c111752537af0edb18e046bfe73)
 -  feature/37530 fix: fee+multisig tests  [`46eaa38`](https://bitbucket.org/decimalteam/go-smart-node/commits/46eaa382a554e2abad0f1ea870e3b0b423b66f4b)
--  feature/37530 fix: (sendstorm) fix for changes in nft module  [`69889c8`](https://bitbucket.org/decimalteam/go-smart-node/commits/69889c870a858846d7bb048d2017f7dff3e482d3)
--  feature/37530 fix: sdk fee query  [`c41f657`](https://bitbucket.org/decimalteam/go-smart-node/commits/c41f657bb3543f982a8cba6fe4f1abb27e27db30)
--  feature/37530 fix: go.mod  [`400ad0d`](https://bitbucket.org/decimalteam/go-smart-node/commits/400ad0d9618e12afc18a48ab10f348d325299939)
--  fix: misspell  [`d72db8c`](https://bitbucket.org/decimalteam/go-smart-node/commits/d72db8cb3269fe8a171a3c0770361bb5ce2f0577)
--  feature/37530 fix: get price in fee decorator  [`87f15a6`](https://bitbucket.org/decimalteam/go-smart-node/commits/87f15a693271a934899b829884ca626f069fb18c)
-
-### [Unreleased](https://bitbucket.org/decimalteam/go-smart-node/compare/HEAD..v0.0.7) - 2022-09-07
-
-#### Features
-
--  feature/27533 feat: updating cosmos-sdk to v0.46.0. Also completely removed evmos from dependencies.  [`9a08920`](https://bitbucket.org/decimalteam/go-smart-node/commits/9a089202219b96db56885f1f6801b62ef773b91e)
--  feature/27533 feat: removed not used anymore upgrade proto files and not used yet validator generated .go files.  [`b4c0f36`](https://bitbucket.org/decimalteam/go-smart-node/commits/b4c0f36f315543914fea710e9a68e232d476cd03)
--  feature/27533 feat: make typed events  [`9609a29`](https://bitbucket.org/decimalteam/go-smart-node/commits/9609a296d1470235a4736bd99f76f55e3a311f35)
--  feature/34228 feat: migrate swap  [`65e7c9d`](https://bitbucket.org/decimalteam/go-smart-node/commits/65e7c9dee5d4785d8b028bc2d2a8ebbb83f739a4)
--  feature/27533 feat: better coin tests; fix: consensus failure cause  [`424d11b`](https://bitbucket.org/decimalteam/go-smart-node/commits/424d11be6e44b9cbbc1780881692c7714e4f084c)
--  feature/34622 feat: replace feemarket, add parameters for fee calculation  [`0d8a561`](https://bitbucket.org/decimalteam/go-smart-node/commits/0d8a561bacfb08d733edff863050f85e72bdb849)
--  feature/34622 feat: implement fee  [`f387972`](https://bitbucket.org/decimalteam/go-smart-node/commits/f3879725fb6828e542a480fedbc29e948fc87903)
--  feature/34622 feat: correct fee calculation based on DEL price  [`293e5b7`](https://bitbucket.org/decimalteam/go-smart-node/commits/293e5b7519332cbe2e56e0658e3089a7d59af061)
--  feature/34516 feat: genesis converter  [`c7c0e80`](https://bitbucket.org/decimalteam/go-smart-node/commits/c7c0e80b6f903cd0ef91c88fc33628cc6280c41c)
--  feature/35823 feat: add 'burn coin' transaction  [`93103f6`](https://bitbucket.org/decimalteam/go-smart-node/commits/93103f61c164314916705f3732f3769afd99ab8c)
--  feature/27533 feat: add signer option to proto files  [`aa3374f`](https://bitbucket.org/decimalteam/go-smart-node/commits/aa3374fdaf2cd4e6d207245a9a88bb955e7a4cbd)
--  feature/27533 feat: add swap service address to parameters  [`73c99ba`](https://bitbucket.org/decimalteam/go-smart-node/commits/73c99ba10c707fbe8f6aeb73208d0abf5fda44ee)
--  feature/27533 feat: event for edit coin  [`abdd2b4`](https://bitbucket.org/decimalteam/go-smart-node/commits/abdd2b4549c4e4f98cf7c562d8ca0aaa5ccd4570)
--  feature/34516 feat: add legacy module records, add nft and coin verification  [`8062bcd`](https://bitbucket.org/decimalteam/go-smart-node/commits/8062bcd7658f7f1ef10f679e101038fc6e221782)
--  feature/34228 feat: add tests for basic validation  [`817c92b`](https://bitbucket.org/decimalteam/go-smart-node/commits/817c92b1ea0ed512a89b78dc34d5c7656eb31962)
--  feature/34516 feat: multisig tx, genesis copy, fix: multisig and nft genesis  [`01b8794`](https://bitbucket.org/decimalteam/go-smart-node/commits/01b8794afbc711d0bfeee8279d580ec2ff73bd1c)
--  feature/34622 feat: parametrize fee per transaction byte  [`8f5e21a`](https://bitbucket.org/decimalteam/go-smart-node/commits/8f5e21a8307d96b80aad20f16d730b9a14dcd67d)
--  feature/34228 feat: add cli tests  [`c7e6f0c`](https://bitbucket.org/decimalteam/go-smart-node/commits/c7e6f0ce508b73a72189b91770087002813c69a0)
--  feature/27533 feat: add error handling for EmitTypedEvent  [`46ac17b`](https://bitbucket.org/decimalteam/go-smart-node/commits/46ac17bfaed26db627103ed500a565f3d133c739)
--  feature/35823 feat: add burn coin for sendstorm  [`0185de5`](https://bitbucket.org/decimalteam/go-smart-node/commits/0185de5464eecc09a6f5af58255634e11bd629ee)
--  feature/34622 feat: replace constants with feeTypes.Params in fee calculation  [`7516a40`](https://bitbucket.org/decimalteam/go-smart-node/commits/7516a40091656cd27c8ce69667bf1272cfa6e868)
--  feature/27533 feat: updated go version used in pipelines.  [`d7f5d6a`](https://bitbucket.org/decimalteam/go-smart-node/commits/d7f5d6ac1c0ebc3a7193c247c7dec446fdb7b530)
--  feature/32750 feat: add devnet faucet usage  [`4f3de64`](https://bitbucket.org/decimalteam/go-smart-node/commits/4f3de64462b129df299d77bfaff3510d423c850b)
--  feature/35823 feat: add proto for MsgBurnCoin  [`18f2656`](https://bitbucket.org/decimalteam/go-smart-node/commits/18f2656dbfd540aef1128aa20ac78f261f634bbd)
--  feature/34622 feat: add keeper for del/usd factor  [`8e1ac1d`](https://bitbucket.org/decimalteam/go-smart-node/commits/8e1ac1dab8e59fe44d5360c8008ec0ba69d3b2f0)
--  feature/34228 feat: fixed merging develop branch  [`6ba0cc3`](https://bitbucket.org/decimalteam/go-smart-node/commits/6ba0cc3db864f7030747d30d1aee80736e6dacf5)
--  feature/27533 feat: add swap module to genesis converter  [`b75a42e`](https://bitbucket.org/decimalteam/go-smart-node/commits/b75a42ef946b3f11268acc346a6f6cebf73895e9)
-
-#### Fixes
-
 -  feature/34516 fix: nft verification  [`534d180`](https://bitbucket.org/decimalteam/go-smart-node/commits/534d180763d82474aa68ed0cf8bc1847a3f968eb)
 -  feature/34516 fix: filter invalid coins (tdel) and empty legacy records  [`3b8d6a8`](https://bitbucket.org/decimalteam/go-smart-node/commits/3b8d6a876d810e972eaf94ccc3adfd3be0ed55a9)
 -  feature/34516 fix: convert tdel to del  [`ab78b4a`](https://bitbucket.org/decimalteam/go-smart-node/commits/ab78b4a509b233c7062210b9bbb73fea1b0e567c)
@@ -202,34 +280,54 @@ All notable changes to this project will be documented in this file. Dates are d
 -  feature/34516 fix: tdel in multisig transactions  [`f0cd87d`](https://bitbucket.org/decimalteam/go-smart-node/commits/f0cd87dcf8ee5a71c65ce291c9f6b20c4097c623)
 -  feature/32750 fix: drop coins with invalid volume/reserve  [`e5fb414`](https://bitbucket.org/decimalteam/go-smart-node/commits/e5fb414001db7581025928669353970b0b86fedf)
 -  feature/27533 fix: codegen from proto  [`7be6df3`](https://bitbucket.org/decimalteam/go-smart-node/commits/7be6df33fddbe5f2b1d03724de6ddbc2bd5250e4)
+-  feature/37530 fix: fee module proto changes  [`dc1230b`](https://bitbucket.org/decimalteam/go-smart-node/commits/dc1230b18028f1eb863505de04917020a5f50018)
+-  feature/37530 fix: swap refactor  [`c82af77`](https://bitbucket.org/decimalteam/go-smart-node/commits/c82af77ce31154dcca1e4632965935c4e9dab833)
+-  feature/37530 fix: legacy module proto changes  [`30101d8`](https://bitbucket.org/decimalteam/go-smart-node/commits/30101d8324c92e947141b11aa67e93fc51eab496)
+-  feature/37530 fix: multisig proto changes  [`f147381`](https://bitbucket.org/decimalteam/go-smart-node/commits/f14738135cc679ab679b30f1dee8d6c4a2b3148f)
 -  feature/27533 feat: better coin tests; fix: consensus failure cause  [`424d11b`](https://bitbucket.org/decimalteam/go-smart-node/commits/424d11be6e44b9cbbc1780881692c7714e4f084c)
 -  feature/27533 fix: missed stringer=true in proto declarations  [`8afcbac`](https://bitbucket.org/decimalteam/go-smart-node/commits/8afcbac575cfdfb2e1586d0f42d003d5410e6d51)
+-  feature/37530 fix: nft keeper tests  [`bd4db1b`](https://bitbucket.org/decimalteam/go-smart-node/commits/bd4db1b24b340c6383805a2ffca902bbab0f2177)
 -  feature/34672 fix: fee calculation in sdk, sendstorm  [`5cdef61`](https://bitbucket.org/decimalteam/go-smart-node/commits/5cdef616a856488e6cf254d36184c453bd180497)
+-  feature/37530 fix: coin tests  [`80eaf66`](https://bitbucket.org/decimalteam/go-smart-node/commits/80eaf66ef1a8c332b678eeff02740a2789114b65)
 -  feature/27533 fix: coin send all tx; doc: coin module cli description  [`ffc7a73`](https://bitbucket.org/decimalteam/go-smart-node/commits/ffc7a7314e4fa655e5f9d995332663eb1b4059f9)
 -  fix: error description, tests, sdk new fields names  [`6fd78ba`](https://bitbucket.org/decimalteam/go-smart-node/commits/6fd78ba15a3545b1ead8bac0ffd57aba79c1ea5b)
 -  feature/34622 fix: error codes, events  [`7d9fc41`](https://bitbucket.org/decimalteam/go-smart-node/commits/7d9fc41cdd6368083a907b13205393e644bad6f3)
 -  feature/27533 fix: remove rest from sdk, sendstorm add logging for commit mode  [`3b6335b`](https://bitbucket.org/decimalteam/go-smart-node/commits/3b6335b83a1b99dafe1432ebfaaace9499cae71f)
 -  feature/27533 fix: burn event + sell coin validation  [`707dea9`](https://bitbucket.org/decimalteam/go-smart-node/commits/707dea96c4f96f1b4626a6b239b406eac97476e2)
 -  feature/34516 feat: multisig tx, genesis copy, fix: multisig and nft genesis  [`01b8794`](https://bitbucket.org/decimalteam/go-smart-node/commits/01b8794afbc711d0bfeee8279d580ec2ff73bd1c)
+-  feature/37530 fix: add fee parameter for coin burn  [`e584aad`](https://bitbucket.org/decimalteam/go-smart-node/commits/e584aad7c3441d6d2aa3bb44b05d768cb17421ee)
 -  feature/34672 fix: protobuf panic for cosmos sdk type Dec  [`d3cb297`](https://bitbucket.org/decimalteam/go-smart-node/commits/d3cb297d416abfe0bb78d92797345527afe4dff8)
+-  feature/37530 fix: (genesis_converter) NFT conversion  [`c6032a1`](https://bitbucket.org/decimalteam/go-smart-node/commits/c6032a1ce52497f4fd8366d1229305768c352c15)
+-  feature/33737 fix: (worker) event processing on real data  [`f0905f8`](https://bitbucket.org/decimalteam/go-smart-node/commits/f0905f80cdcd8626df37d964504071fb3455811e)
+-  feature/37530 fix: (sendstorm) fix for changes in nft module  [`e8b1f42`](https://bitbucket.org/decimalteam/go-smart-node/commits/e8b1f42181feb52494651576f613dce6dfe067ea)
+-  feature/34622 fix: merge  [`5710f27`](https://bitbucket.org/decimalteam/go-smart-node/commits/5710f27a085a24e3f81a9a95424d902e4c0f508c)
+-  feature/37530 fix: (sdk) fix for changes in nft module  [`0e80031`](https://bitbucket.org/decimalteam/go-smart-node/commits/0e800316b6c7fa0a4b37a28b4be58aaca589796a)
 -  feature/34516 fix: remove unwanted test file  [`5c60200`](https://bitbucket.org/decimalteam/go-smart-node/commits/5c60200eca9da95b169b655916aa23953a3e232a)
+-  feature/37530 fix: legacy module for changes in nft  [`d05d389`](https://bitbucket.org/decimalteam/go-smart-node/commits/d05d3890ffe97697791a98c7f70038288bcd076c)
 -  feature/27533 fix: cleanup legacy module  [`b4b93e6`](https://bitbucket.org/decimalteam/go-smart-node/commits/b4b93e6b6d94129339f7f488bd944a138c9d8011)
 -  feature/27533 fix: node launch from genesis  [`8571311`](https://bitbucket.org/decimalteam/go-smart-node/commits/85713114486bba1cb43539f7257e2990dce04e92)
+-  feature/37530 fix: sdk+sendstorm for changes in multisig and fee  [`88eabf8`](https://bitbucket.org/decimalteam/go-smart-node/commits/88eabf8150cea5abf45c8041dd814782db21b564)
 -  feature/27533 fix: legacy cache and naming  [`9642637`](https://bitbucket.org/decimalteam/go-smart-node/commits/9642637b5530f3a5279851445059606b4b5824eb)
 -  feature/27533 fix: organize constants  [`85be798`](https://bitbucket.org/decimalteam/go-smart-node/commits/85be798c852d764ca948d41a754261da5c61e3d8)
 -  feature/35932 fix: broken nft tests  [`bd219d5`](https://bitbucket.org/decimalteam/go-smart-node/commits/bd219d51bf974b239b7501e26c233f4d0ed7946c)
 -  feature/34516 fix: remove completed txs from genesis  [`6ef03f9`](https://bitbucket.org/decimalteam/go-smart-node/commits/6ef03f95a53073f66b959f964047fb50dbd46f5e)
 -  feature/27533 fix: cleanup nft module  [`1d32409`](https://bitbucket.org/decimalteam/go-smart-node/commits/1d3240995e1034d7901115c12de9e8bbd1e82d09)
+-  fix: increase faucet amount  [`1eda6e0`](https://bitbucket.org/decimalteam/go-smart-node/commits/1eda6e0d79c16c111752537af0edb18e046bfe73)
 -  feature/34516 fix: remove modules, unused by dsc  [`464bc25`](https://bitbucket.org/decimalteam/go-smart-node/commits/464bc25dee1b54dd22ecfe68538e3cd4250b71f5)
 -  feature/32750 fix: decrease owner in recipient situation for transfer nft  [`13ab279`](https://bitbucket.org/decimalteam/go-smart-node/commits/13ab279dec646cc49543b571e11b3f32a4741255)
 -  feature/34672 fix: hide fee types for sdk users  [`9ff6dbf`](https://bitbucket.org/decimalteam/go-smart-node/commits/9ff6dbfc382008b1f234713c61f0950b1cae4a6d)
 -  fix: swap service address, MsgBurnCoin registration, sendstorm nft generator  [`4b6dc84`](https://bitbucket.org/decimalteam/go-smart-node/commits/4b6dc84cc475920f0eecddac81dc09294c12e230)
+-  feature/37530 fix: get price in fee decorator  [`87f15a6`](https://bitbucket.org/decimalteam/go-smart-node/commits/87f15a693271a934899b829884ca626f069fb18c)
 -  feature/32750 fix: add multisig wallets as receivers for multisig transaction  [`1397c6e`](https://bitbucket.org/decimalteam/go-smart-node/commits/1397c6eda61ac5e6869d5277dc49537e997bd295)
 -  feature/34516 fix: coin volume verification  [`9065aca`](https://bitbucket.org/decimalteam/go-smart-node/commits/9065acae3284074a0f7340a1b5244afd7cece2bf)
 -  feature/35823 fix: ethermint changes  [`ad14475`](https://bitbucket.org/decimalteam/go-smart-node/commits/ad14475e5e76a8ad8c72591a8805bc4230e5cef1)
 -  feature/35648 fix: sendstorm coins info  [`861891f`](https://bitbucket.org/decimalteam/go-smart-node/commits/861891fab9366bedf325ad4efbccc7921032f5f6)
 -  feature/34672 fix: ethermint panic  [`c208030`](https://bitbucket.org/decimalteam/go-smart-node/commits/c20803097231670dc5c2113664aa01ece01ca008)
 -  fix: coin burn test  [`40334c7`](https://bitbucket.org/decimalteam/go-smart-node/commits/40334c7490b34091b1ef6187da136b50a7ccca3e)
+-  feature/37530 fix: (sendstorm) fix for changes in nft module  [`69889c8`](https://bitbucket.org/decimalteam/go-smart-node/commits/69889c870a858846d7bb048d2017f7dff3e482d3)
+-  feature/37530 fix: sdk fee query  [`c41f657`](https://bitbucket.org/decimalteam/go-smart-node/commits/c41f657bb3543f982a8cba6fe4f1abb27e27db30)
+-  feature/37530 fix: go.mod  [`400ad0d`](https://bitbucket.org/decimalteam/go-smart-node/commits/400ad0d9618e12afc18a48ab10f348d325299939)
+-  fix: misspell  [`d72db8c`](https://bitbucket.org/decimalteam/go-smart-node/commits/d72db8cb3269fe8a171a3c0770361bb5ce2f0577)
 -  feature/27533 fix: legacy module test  [`2b4384a`](https://bitbucket.org/decimalteam/go-smart-node/commits/2b4384aef63a97921956525efbd1891986211d16)
 -  feature/34622 fix: key collision  [`3f2932a`](https://bitbucket.org/decimalteam/go-smart-node/commits/3f2932a94fe3a144ab6654489ed8ba9b2cad5c67)
 
