@@ -18,6 +18,7 @@ message EventCreateCoin {
   string limit_volume = 7;
   string identity = 8;
   string commission_create_coin = 9;
+  string min_volume = 10;
 }
 
 // EventUpdateCoin defines event emitted when existing coin is updated.
@@ -26,6 +27,7 @@ message EventUpdateCoin {
   string denom = 2;
   string limit_volume = 3;
   string identity = 4;
+  string min_volume = 5;
 }
 
 // EventUpdateCoinVR defines event emitted when volume or reserve of existing coin is updated.

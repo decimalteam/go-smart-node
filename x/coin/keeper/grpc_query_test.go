@@ -1,9 +1,10 @@
 package keeper_test
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	gocontext "context"
 	"fmt"
+
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 )
@@ -20,6 +21,7 @@ func (s *KeeperTestSuite) TestGRPCQueryCoins() {
 			Creator:     addr.String(),
 			CRR:         80,
 			LimitVolume: sdk.NewInt(100000),
+			MinVolume:   sdk.ZeroInt(),
 			Volume:      sdk.NewInt(1000),
 			Reserve:     sdk.NewInt(100),
 		},
@@ -29,6 +31,7 @@ func (s *KeeperTestSuite) TestGRPCQueryCoins() {
 			Creator:     addr.String(),
 			CRR:         80,
 			LimitVolume: sdk.NewInt(100000),
+			MinVolume:   sdk.ZeroInt(),
 			Volume:      sdk.NewInt(1000),
 			Reserve:     sdk.NewInt(100),
 		},
@@ -95,6 +98,7 @@ func (s *KeeperTestSuite) TestGRPQueryCoin() {
 		Creator:     addr.String(),
 		CRR:         80,
 		LimitVolume: sdk.NewInt(100000),
+		MinVolume:   sdk.ZeroInt(),
 		Volume:      sdk.NewInt(1000),
 		Reserve:     sdk.NewInt(100),
 	}

@@ -150,6 +150,7 @@ func TestKeeper_Coin(t *testing.T) {
 		Reserve:     helpers.EtherToWei(sdkmath.NewInt(5000)),
 		Volume:      helpers.EtherToWei(sdkmath.NewInt(10000)),
 		LimitVolume: helpers.EtherToWei(sdkmath.NewInt(1000000000)),
+		MinVolume:   sdk.ZeroInt(),
 		Creator:     addrs[0].String(),
 		Identity:    "",
 	}

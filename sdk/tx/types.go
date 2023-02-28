@@ -4,6 +4,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	multisigtypes "bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
@@ -59,6 +61,10 @@ type (
 	MsgCancelRedelegationNFT = validatortypes.MsgCancelRedelegationNFT
 
 	Description = validatortypes.Description
+
+	MsgSoftwareUpgrade = upgradetypes.MsgSoftwareUpgrade
+	MsgCancelUpgrade   = upgradetypes.MsgCancelUpgrade
+	Plan               = upgradetypes.Plan
 )
 
 var (
