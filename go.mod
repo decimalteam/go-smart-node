@@ -12,7 +12,7 @@ require (
 	github.com/cosmos/ibc-go/v5 v5.1.0
 	github.com/dustin/go-humanize v1.0.0
 	github.com/ethereum/go-ethereum v1.10.26
-	github.com/evmos/ethermint v0.20.0-rc4
+	github.com/evmos/ethermint v0.20.0
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/mock v1.6.0
