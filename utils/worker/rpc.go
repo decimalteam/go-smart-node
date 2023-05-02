@@ -33,6 +33,7 @@ func (w *Worker) fetchBlock(height int64) *ctypes.ResultBlock {
 		}
 		// Stop trying when the deadline is reached
 		if time.Now().After(deadline) {
+			w.logger.Error("Failed to fetch block", "block", height, "error", err)
 			return nil
 		}
 		// Sleep some time before next try
