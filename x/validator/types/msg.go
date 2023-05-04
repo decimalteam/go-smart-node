@@ -280,7 +280,7 @@ func (msg *MsgDelegate) Route() string { return RouterKey }
 func (msg *MsgDelegate) Type() string { return TypeMsgDelegate }
 
 // GetSignBytes encodes the message for signing.
-func (msg *MsgDelegate) GetSignBytes() []byte {
+func (msg MsgDelegate) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
 }
 
