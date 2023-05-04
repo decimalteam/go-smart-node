@@ -55,7 +55,7 @@ func (AppModuleBasic) ConsensusVersion() uint64 {
 
 // RegisterLegacyAminoCodec performs a no-op as the module doesn't support Amino encoding.
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	//
+	types.RegisterLegacyAminoCodec(cdc)
 }
 
 // RegisterInterfaces registers the module's interface types.
