@@ -2,7 +2,7 @@ package types
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/codec/legacy"
+	"github.com/cosmos/cosmos-sdk/codec/legacytx"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
@@ -18,7 +18,9 @@ var ModuleCdc = codec.NewProtoCodec(cdctypes.NewInterfaceRegistry())
 // RegisterLegacyAminoCodec registers the necessary x/bank interfaces and concrete types
 // on the provided LegacyAmino codec. These types are used for Amino JSON serialization.
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	legacy.RegisterAminoMsg(cdc, &MsgDelegate{}, "/decimal.validator.v1.MsgDelegate")
+	cdc.RegisterConcrete(&MsgDelegate{}, "/decimal.validator.v1.MsgDelegate")
+
+	legacytx.RegisterLegacyAminoCodec(cdc)
 }
 
 // RegisterInterfaces registers concrete implementations of specific interfaces.
