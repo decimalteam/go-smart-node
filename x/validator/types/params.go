@@ -20,7 +20,7 @@ const (
 	DefaultMaxDelegations uint32 = 1000
 
 	// Default maximum entries in a UBD/RED pair.
-	DefaultMaxEntries uint32 = 7
+	DefaultMaxEntries uint32 = 30
 
 	// DefaultHistorical entries is 10000. Apps that don't use IBC can ignore this value by not
 	// adding the validator module to the application module manager's SetOrderBeginBlockers.
