@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+### [Unreleased](https://bitbucket.org/decimalteam/go-smart-node/compare/HEAD..v2.1.1) - 2023-06-26
+
+### [v2.1.1](https://bitbucket.org/decimalteam/go-smart-node/compare/v2.1.1..v2.1.0) - 2023-06-26
+
+#### Fixes
+
+-  feature/44640 fix: reward of block  [`ce50374`](https://bitbucket.org/decimalteam/go-smart-node/commits/ce50374b16be1477eca17f6930acd3dcafcd6b1e)
+
 ### [v2.1.0](https://bitbucket.org/decimalteam/go-smart-node/compare/v2.1.0..v2.0.1) - 2023-02-28
 
 #### Features
