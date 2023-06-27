@@ -28,7 +28,7 @@ func GetRewardForBlock(blockHeight uint64) sdk.Int {
 
 	reward = reward.Add(sdk.NewInt(11).Mul(rewardIncrease))
 	for i := uint64(1); i <= blockHeight/5184000; i++ {
-		if blockHeight/5184000-i == 1 {
+		if blockHeight/5184000-i >= 1 {
 			rewardIncrease = rewardIncrease.Add(sdk.NewInt(12))
 			reward = reward.Add(sdk.NewInt(12).Mul(rewardIncrease))
 			continue
