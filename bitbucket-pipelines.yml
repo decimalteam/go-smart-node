@@ -628,6 +628,7 @@ pipelines:
                 REMOTE_PATH: $REPO_REMOTE_PATH/$REPO_UPDATE_BLOCK
                 DELETE_FLAG: "true"
                 DEBUG: "true"
+                EXTRA_ARGS: "-aP"
 
     build-and-deploy-binary-files-to-repo-TESTnet:
       - parallel: *repo_build
@@ -643,6 +644,7 @@ pipelines:
                 REMOTE_PATH: $REPO_REMOTE_PATH/$REPO_UPDATE_BLOCK
                 DELETE_FLAG: "true"
                 DEBUG: "true"
+                EXTRA_ARGS: "-aP"
 
     build-and-deploy-binary-files-to-repo-MAINnet:
       - parallel: *repo_build
@@ -658,3 +660,4 @@ pipelines:
                 REMOTE_PATH: $REPO_REMOTE_PATH/$REPO_UPDATE_BLOCK
                 DELETE_FLAG: "true"
                 DEBUG: "true"
+                EXTRA_ARGS: "-aP"
