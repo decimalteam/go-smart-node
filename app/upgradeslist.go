@@ -4,4 +4,5 @@ package app
 var UpgradeList = []UpgradeCreator{
 	{"https://repo.decimalchain.com/12830301", FixSendUpgradeHandlerCreator},
 	{"https://repo.decimalchain.com/13798601", DummyUpgradeHandlerCreator},
+	{"https://repo.decimalchain.com/15656601", DummyUpgradeHandlerCreator},
 }
