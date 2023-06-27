@@ -6,5 +6,5 @@ var UpgradeList = []UpgradeCreator{
 	{"https://testnet-repo.decimalchain.com/7377901", DummyUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/7490501", DummyUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/9421801", DummyUpgradeHandlerCreator},
-	{"https://testnet-repo.decimalchain.com/9434301", DummyUpgradeHandlerCreator},
+	{"https://testnet-repo.decimalchain.com/9434401", DummyUpgradeHandlerCreator},
 }
