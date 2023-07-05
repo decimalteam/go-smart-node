@@ -285,7 +285,7 @@ func VerifySignature(
 		}
 
 		if !pubKey.Equals(pk) {
-			return errorsmod.Wrapf(errortypes.ErrInvalidPubKey, "feePayer pubkey %s is different (my) from transaction pubkey %s", pubKey, pk)
+			return errorsmod.Wrapf(errortypes.ErrInvalidPubKey, "feePayer pubkey %s is different (!) from transaction pubkey %s", pubKey, pk)
 		}
 
 		recoveredFeePayerAcc := sdk.AccAddress(pk.Address().Bytes())
