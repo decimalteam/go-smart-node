@@ -19,7 +19,7 @@ import (
 var _ authante.SignatureVerificationGasConsumer = SigVerificationGasConsumer
 
 const (
-	secp256k1VerifyCost uint64 = 31000
+	secp256k1VerifyCost uint64 = 21000
 )
 
 // SigVerificationGasConsumer is the Decimal implementation of SignatureVerificationGasConsumer. It consumes gas
