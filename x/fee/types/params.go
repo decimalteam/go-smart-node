@@ -118,7 +118,7 @@ func DefaultParams() Params {
 		// NOTE: default address is []byte{0}
 		Oracle: "d01gczphl4h9aqrzy237jfm97elu66dam2wtn9kg8",
 		// evm min gas price in usd*10^-18
-		EvmGasPrice: sdk.MustNewDecFromStr("0.000090476"),
+		EvmGasPrice: sdk.MustNewDecFromStr("0.000020476"),
 	}
 }
 
