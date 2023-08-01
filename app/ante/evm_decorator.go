@@ -48,8 +48,7 @@ func (ed EVMDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 		}
 
 		ctx.Logger().Info(hex.EncodeToString(msgEthTx.AsTransaction().Data()[:]))
-
 	}
 	// we know that we have enough gas on the pool to cover the intrinsic gas
-	return next(newCtx, tx, simulate)
+	return next(ctx, tx, simulate)
 }
