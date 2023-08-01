@@ -3,7 +3,6 @@ package ante
 import (
 	"encoding/hex"
 
-	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ethante "github.com/evmos/ethermint/app/ante"
@@ -14,19 +13,16 @@ import (
 type EVMDecorator struct {
 	evmKeeper  ethante.EVMKeeper
 	bankKeeper BankKeeper
-	feeKeeper  feetypes.FeeKeeper
 }
 
 // NewEVMDecorator creates a new EVMDecorator
 func NewEVMDecorator(
 	evmKeeper ethante.EVMKeeper,
 	bankKeeper BankKeeper,
-	feeKeeper feetypes.FeeKeeper,
 ) EVMDecorator {
 	return EVMDecorator{
 		evmKeeper,
 		bankKeeper,
-		feeKeeper,
 	}
 }
 
