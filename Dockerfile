@@ -1,4 +1,4 @@
-FROM golang:stretch AS build-env
+FROM golang:bullseye AS build-env
 
 WORKDIR /go/src/bitbucket.org/decimalteam/go-smart-node
 
@@ -9,7 +9,7 @@ COPY . .
 
 RUN make build
 
-FROM golang:stretch
+FROM golang:bullseye
 
 RUN apt update
 RUN apt install ca-certificates jq -y
