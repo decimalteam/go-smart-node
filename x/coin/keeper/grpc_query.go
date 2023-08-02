@@ -65,6 +65,20 @@ func (k Keeper) Coin(c context.Context, req *types.QueryCoinRequest) (*types.Que
 	return &types.QueryCoinResponse{Coin: coin}, nil
 }
 
+func (k Keeper) CoinByEVM(c context.Context, req *types.QueryCoinByEVMRequest) (*types.QueryCoinByEVMResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+	ctx := sdk.UnwrapSDKContext(c)
+
+	coin, err := k.GetCoinByErc20(ctx, req.Erc20Address)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.QueryCoinByEVMResponse{Coin: coin}, nil
+}
+
 func (k Keeper) Checks(c context.Context, req *types.QueryChecksRequest) (*types.QueryChecksResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")

@@ -68,6 +68,34 @@ func (k *Keeper) GetCoin(ctx sdk.Context, denom string) (coin types.Coin, err er
 }
 
 // GetCoin returns the coin if exists in KVStore.
+func (k *Keeper) GetCoinByErc20(ctx sdk.Context, denom string) (coin types.Coin, err error) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetCoinKey(denom)
+	// request coin
+	value := store.Get(key)
+	if len(value) == 0 {
+		err = errors.CoinDoesNotExist
+		return
+	}
+	err = k.cdc.UnmarshalLengthPrefixed(value, &coin)
+	if err != nil {
+		return
+	}
+	// NOTE: special needed step to avoid migration to add coin min emission
+	if coin.MinVolume.IsNil() {
+		coin.MinVolume = sdkmath.ZeroInt()
+	}
+	// request volume and reserve separately
+	volume, reserve, err := k.getCoinVR(store, coin.Denom)
+	if err != nil {
+		return
+	}
+	coin.Volume = volume
+	coin.Reserve = reserve
+	return
+}
+
+// GetCoin returns the coin if exists in KVStore.
 func (k *Keeper) IsCoinExists(ctx sdk.Context, denom string) bool {
 	store := ctx.KVStore(k.storeKey)
 	return store.Has(types.GetCoinKey(denom))
