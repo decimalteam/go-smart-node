@@ -22,6 +22,12 @@ func NewQueryCoinRequest(denom string) *QueryCoinRequest {
 	}
 }
 
+func NewQueryCoinByEVMRequest(erc20_address string) *QueryCoinByEVMRequest {
+	return &QueryCoinByEVMRequest{
+		Erc20Address: erc20_address,
+	}
+}
+
 func NewQueryChecksRequest(pagination *query.PageRequest) *QueryChecksRequest {
 	return &QueryChecksRequest{
 		Pagination: pagination,
