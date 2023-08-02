@@ -23,6 +23,11 @@ service Query {
     option (google.api.http).get = "/decimal/coin/v1/coin/{denom}";
   }
 
+  // Coin queries existing coin by specified denom.
+  rpc CoinByEVM(QueryCoinByEVMRequest) returns (QueryCoinByEVMResponse) {
+    option (google.api.http).get = "/decimal/coin/v1/coin/{erc20_address}";
+  }
+
   // Checks queries all redeemed checks.
   rpc Checks(QueryChecksRequest) returns (QueryChecksResponse) {
     option (google.api.http).get = "/decimal/coin/v1/checks";
@@ -53,6 +58,12 @@ message QueryCoinRequest { string denom = 1; }
 
 // QueryCoinResponse is response type for the Query/Coin RPC method.
 message QueryCoinResponse { Coin coin = 1 [ (gogoproto.nullable) = false ]; }
+
+// QueryCoinByEVMRequest is request type for the Query/Coin RPC method.
+message QueryCoinByEVMRequest { string erc20_address = 1; }
+
+// QueryCoinByEVMResponse is response type for the Query/Coin RPC method.
+message QueryCoinByEVMResponse { Coin coin = 1 [ (gogoproto.nullable) = false ]; }
 
 // QueryChecksRequest is request type for the Query/Checks RPC method.
 message QueryChecksRequest { cosmos.base.query.v1beta1.PageRequest pagination = 1; }

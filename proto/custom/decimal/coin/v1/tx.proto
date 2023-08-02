@@ -103,6 +103,9 @@ message MsgUpdateCoin {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
+
+  // erc20_address is the hex address of ERC20 contract token
+  string erc20_address = 6;
 }
 
 // MsgUpdateCoinResponse defines the Msg/UpdateCoin response type.
