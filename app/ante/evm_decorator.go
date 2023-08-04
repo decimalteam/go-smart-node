@@ -2,11 +2,8 @@ package ante
 
 import (
 	"encoding/hex"
-	"strings"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	ethante "github.com/evmos/ethermint/app/ante"
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
 )
@@ -56,17 +53,17 @@ func (ed EVMDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 
 		ctx.Logger().Info(hex.EncodeToString(msgEthTx.AsTransaction().To()[:]))
 
-		parsed, err := abi.JSON(strings.NewReader(ERC20ABI))
-		if err != nil {
-			ctx.Logger().Info(err.Error())
-		}
-
-		method, err := parsed.MethodById(msgEthTx.AsTransaction().Data())
-		if err != nil {
-			ctx.Logger().Info(err.Error())
-		}
-
-		ctx.Logger().Info(method.Name)
+		//parsed, err := abi.JSON(strings.NewReader(ERC20ABI))
+		//if err != nil {
+		//	ctx.Logger().Info(err.Error())
+		//}
+		//
+		//method, err := parsed.MethodById(msgEthTx.AsTransaction().Data())
+		//if err != nil {
+		//	ctx.Logger().Info(err.Error())
+		//}
+		//
+		//ctx.Logger().Info(method.Name)
 		// ctx.Logger().Info(parsed.abi.Get)
 
 		// bind.NewBoundContract("0x588ae821faf69761598d3b3b689672d9fbe91d36", parsed, caller, transactor, filterer)
