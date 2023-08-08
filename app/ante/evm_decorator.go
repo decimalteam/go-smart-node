@@ -50,9 +50,11 @@ func (ed EVMDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 			return ctx, sdkerrors.ErrUnknownRequest.Wrapf("invalid message type %T, expected %T", msg, (*evmtypes.MsgEthereumTx)(nil))
 		}
 
-		ctx.Logger().Info(hex.EncodeToString(msgEthTx.AsTransaction().Data()[:]))
+		if len(msgEthTx.AsTransaction().To()) != 0 {
+			ctx.Logger().Info(hex.EncodeToString(msgEthTx.AsTransaction().Data()[:]))
 
-		ctx.Logger().Info(hex.EncodeToString(msgEthTx.AsTransaction().To()[:]))
+			ctx.Logger().Info(hex.EncodeToString(msgEthTx.AsTransaction().To()[:]))
+		}
 
 		// if (msgEthTx.AsTransaction().To()){
 
