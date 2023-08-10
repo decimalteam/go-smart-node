@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	evmkeeper "github.com/evmos/ethermint/x/evm/keeper"
 	"strings"
 
 	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
@@ -33,6 +34,7 @@ type Keeper struct {
 
 	// cached params value (for optimization)
 	cacheParams types.Params
+	evm         *evmkeeper.Keeper
 }
 
 // NewKeeper creates new Keeper instance.
@@ -43,6 +45,7 @@ func NewKeeper(
 	ac auth.AccountKeeperI,
 	fk feeTypes.FeeMarketKeeper,
 	bk bank.Keeper,
+	evm *evmkeeper.Keeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -55,6 +58,7 @@ func NewKeeper(
 		feeKeeper:     fk,
 		accountKeeper: ac,
 		bankKeeper:    bk,
+		evm:           evm,
 	}
 	return keeper
 }
