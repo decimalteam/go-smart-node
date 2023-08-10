@@ -1,6 +1,12 @@
 package keeper
 
 import (
+	"github.com/cosmos/cosmos-sdk/simapp"
+	ethsrvflags "github.com/evmos/ethermint/server/flags"
+	evmkeeper "github.com/evmos/ethermint/x/evm/keeper"
+	evmtypes "github.com/evmos/ethermint/x/evm/types"
+	evmgeth "github.com/evmos/ethermint/x/evm/vm/geth"
+	"github.com/spf13/cast"
 	"testing"
 
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -21,6 +27,22 @@ func GetTestAppWithCoinKeeper(t *testing.T) (*codec.LegacyAmino, *app.DSC, sdk.C
 
 	appCodec := dsc.AppCodec()
 
+	appOpts := simapp.EmptyAppOptions{}
+
+	dsc.EvmKeeper = evmkeeper.NewKeeper(
+		appCodec,
+		dsc.GetKey(evmtypes.StoreKey),
+		dsc.GetKey(evmtypes.TransientKey),
+		dsc.GetSubspace(evmtypes.ModuleName),
+		dsc.AccountKeeper,
+		dsc.BankKeeper,
+		&dsc.ValidatorKeeper,
+		dsc.FeeKeeper,
+		nil,
+		evmgeth.NewEVM,
+		cast.ToString(appOpts.Get(ethsrvflags.EVMTracer)),
+	)
+
 	dsc.CoinKeeper = *keeper.NewKeeper(
 		appCodec,
 		dsc.GetKey(types.StoreKey),
@@ -28,6 +50,7 @@ func GetTestAppWithCoinKeeper(t *testing.T) (*codec.LegacyAmino, *app.DSC, sdk.C
 		dsc.AccountKeeper,
 		&dsc.FeeKeeper,
 		dsc.BankKeeper,
+		dsc.EvmKeeper,
 	)
 	dsc.CoinKeeper.SetParams(ctx, types.DefaultParams())
 
