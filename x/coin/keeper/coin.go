@@ -68,9 +68,9 @@ func (k *Keeper) GetCoin(ctx sdk.Context, denom string) (coin types.Coin, err er
 }
 
 // GetCoin returns the coin if exists in KVStore.
-func (k *Keeper) GetCoinByErc20(ctx sdk.Context, denom string) (coin types.Coin, err error) {
+func (k *Keeper) GetCoinByDrc20(ctx sdk.Context, drc20Address string) (coin types.Coin, err error) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetCoinKey(denom)
+	key := types.GetCoinDrcKey(drc20Address)
 	// request coin
 	value := store.Get(key)
 	if len(value) == 0 {

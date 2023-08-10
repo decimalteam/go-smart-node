@@ -17,6 +17,7 @@ type CoinKeeper interface {
 	// Coins
 	GetCoins(ctx sdk.Context) (coins []Coin)
 	GetCoin(ctx sdk.Context, denom string) (coin Coin, err error)
+	GetCoinByDrc20(ctx sdk.Context, drc20 string) (coin Coin, err error)
 	SetCoin(ctx sdk.Context, coin Coin)
 	UpdateCoinVR(ctx sdk.Context, denom string, volume sdkmath.Int, reserve sdkmath.Int) error
 
