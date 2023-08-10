@@ -102,6 +102,7 @@ func (s *KeeperTestSuite) SetupTest() {
 		acKeeper,
 		fkKeeper,
 		bankKeeper,
+		nil,
 	)
 	k.SetParams(ctx, types.DefaultParams())
 	// --
