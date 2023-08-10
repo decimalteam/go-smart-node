@@ -71,7 +71,7 @@ func (k Keeper) CoinByEVM(c context.Context, req *types.QueryCoinByEVMRequest) (
 	}
 	ctx := sdk.UnwrapSDKContext(c)
 
-	coin, err := k.GetCoinByErc20(ctx, req.Erc20Address)
+	coin, err := k.GetCoinByDrc20(ctx, req.Drc20Address)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

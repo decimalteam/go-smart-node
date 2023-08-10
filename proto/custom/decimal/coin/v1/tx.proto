@@ -105,7 +105,7 @@ message MsgUpdateCoin {
   ];
 
   // erc20_address is the hex address of ERC20 contract token
-  string erc20_address = 6;
+  string drc20_address = 6;
 }
 
 // MsgUpdateCoinResponse defines the Msg/UpdateCoin response type.

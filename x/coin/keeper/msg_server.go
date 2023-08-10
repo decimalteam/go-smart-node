@@ -180,7 +180,6 @@ func (k Keeper) UpdateCoin(goCtx context.Context, msg *types.MsgUpdateCoin) (*ty
 	coin.LimitVolume = msg.LimitVolume
 	coin.MinVolume = msg.MinVolume
 	coin.Identity = msg.Identity
-	coin.Erc20Address = msg.Erc20Address
 
 	// Save coin to the storage
 	k.SetCoin(ctx, coin)

@@ -457,6 +457,22 @@ func NewDSC(
 	// 	stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	// )
 
+	// Create Ethermint keepers
+
+	app.EvmKeeper = evmkeeper.NewKeeper(
+		appCodec,
+		keys[evmtypes.StoreKey],
+		tkeys[evmtypes.TransientKey],
+		app.GetSubspace(evmtypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+		&app.ValidatorKeeper,
+		app.FeeKeeper,
+		nil,
+		evmgeth.NewEVM,
+		cast.ToString(appOpts.Get(ethsrvflags.EVMTracer)),
+	)
+
 	// Create decimal keeper because Validator = Staking+Slashing+Evidence
 	app.CoinKeeper = *coinkeeper.NewKeeper(
 		appCodec,
@@ -465,7 +481,9 @@ func NewDSC(
 		app.AccountKeeper,
 		&app.FeeKeeper,
 		app.BankKeeper,
+		app.EvmKeeper,
 	)
+
 	app.NFTKeeper = *nftkeeper.NewKeeper(
 		appCodec,
 		keys[nfttypes.StoreKey],
@@ -499,22 +517,6 @@ func NewDSC(
 		&app.NFTKeeper,
 		&app.CoinKeeper,
 		&app.MultisigKeeper,
-	)
-
-	// Create Ethermint keepers
-
-	app.EvmKeeper = evmkeeper.NewKeeper(
-		appCodec,
-		keys[evmtypes.StoreKey],
-		tkeys[evmtypes.TransientKey],
-		app.GetSubspace(evmtypes.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-		&app.ValidatorKeeper,
-		app.FeeKeeper,
-		nil,
-		evmgeth.NewEVM,
-		cast.ToString(appOpts.Get(ethsrvflags.EVMTracer)),
 	)
 
 	// WARNING: Setting up dummy hooks is disabled because it causes doubling ABCI events in EVM transactions.
