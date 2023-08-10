@@ -22,9 +22,9 @@ func NewQueryCoinRequest(denom string) *QueryCoinRequest {
 	}
 }
 
-func NewQueryCoinByEVMRequest(erc20_address string) *QueryCoinByEVMRequest {
+func NewQueryCoinByEVMRequest(drc20_address string) *QueryCoinByEVMRequest {
 	return &QueryCoinByEVMRequest{
-		Erc20Address: erc20_address,
+		Drc20Address: drc20_address,
 	}
 }
 
