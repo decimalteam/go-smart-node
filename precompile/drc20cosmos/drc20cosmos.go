@@ -91,10 +91,10 @@ func NewDrc20Cosmos(ctx sdk.Context,
 // CreateContractIfNotSet creation contract if not not to coin
 func (drc Drc20Cosmos) CreateContractIfNotSet() (bool, error) {
 
-	if drc.coin.Erc20Address == "" {
+	if drc.coin.Drc20Address == "" {
 		drc.ctx.Logger().Info(drc.coin.Title)
 	}
-	drc.ctx.Logger().Info(drc.coin.Erc20Address)
+	drc.ctx.Logger().Info(drc.coin.Drc20Address)
 	drc.ctx.Logger().Info(drc.coin.Denom)
 
 	return true, nil
