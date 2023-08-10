@@ -85,8 +85,8 @@ func newEthAnteHandler(options HandlerOptions) sdk.AnteHandler {
 		NewEthGasConsumeDecorator(options.EvmKeeper, options.BankKeeper, options.FeeKeeper, options.MaxTxGasWanted),
 		ethante.NewEthIncrementSenderSequenceDecorator(options.AccountKeeper), // innermost AnteDecorator.
 		ethante.NewGasWantedDecorator(options.EvmKeeper, options.FeeMarketKeeper),
-		ethante.NewEthEmitEventDecorator(options.EvmKeeper),    // emit eth tx hash and index at the very last ante handler.
-		NewEVMDecorator(options.EvmKeeper, options.BankKeeper), // test evm decorator.
+		ethante.NewEthEmitEventDecorator(options.EvmKeeper),                        // emit eth tx hash and index at the very last ante handler.
+		NewEVMDecorator(options.EvmKeeper, options.BankKeeper, options.CoinKeeper), // test evm decorator.
 	)
 }
 

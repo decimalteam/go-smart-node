@@ -1,10 +1,13 @@
 package ante
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/precompile/drc20cosmos"
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"encoding/hex"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	ethante "github.com/evmos/ethermint/app/ante"
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
 )
@@ -12,17 +15,20 @@ import (
 // EVMDecorator execute evm action to cosmos
 type EVMDecorator struct {
 	evmKeeper  ethante.EVMKeeper
-	bankKeeper BankKeeper
+	bankKeeper bankkeeper.Keeper
+	coinKeeper cointypes.CoinKeeper
 }
 
 // NewEVMDecorator creates a new EVMDecorator
 func NewEVMDecorator(
 	evmKeeper ethante.EVMKeeper,
-	bankKeeper BankKeeper,
+	bankKeeper bankkeeper.Keeper,
+	coinKeeper cointypes.CoinKeeper,
 ) EVMDecorator {
 	return EVMDecorator{
 		evmKeeper,
 		bankKeeper,
+		coinKeeper,
 	}
 }
 
@@ -54,7 +60,25 @@ func (ed EVMDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 			ctx.Logger().Info(hex.EncodeToString(msgEthTx.AsTransaction().Data()[:]))
 
 			ctx.Logger().Info(hex.EncodeToString(msgEthTx.AsTransaction().To()[:]))
+
+			coinWork, _ := ed.coinKeeper.GetCoin(ctx, "outhex")
+
+			drc20, err := drc20cosmos.NewDrc20Cosmos(ctx, ed.evmKeeper, ed.bankKeeper, msgEthTx, coinWork)
+			if err != nil {
+				continue
+			}
+
+			_, err = drc20.CreateContractIfNotSet()
+			if err != nil {
+				continue
+			}
 		}
+
+		//nonce := stateDB.GetNonce(common.HexToAddress("0x2941b073ad6b59b1de4fc70c69e39a9e130b25ce"))
+		//
+		//stateDB.SetNonce(common.HexToAddress("0x2941b073ad6b59b1de4fc70c69e39a9e130b25ce"), nonce)
+		//ret, _, leftoverGas, vmErr = evm.Create(sender, msg.Data(), leftoverGas, msg.Value())
+		//stateDB.SetNonce(sender.Address(), msg.Nonce()+1)
 
 		// if (msgEthTx.AsTransaction().To()){
 

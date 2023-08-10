@@ -39,6 +39,11 @@ func GetCoinKey(denom string) []byte {
 	return append(GetCoinsKey(), []byte(denom)...)
 }
 
+// GetCoinDrcKey returns the key of the coin.
+func GetCoinDrcKey(drc20 string) []byte {
+	return append(GetCoinsKey(), []byte(drc20)...)
+}
+
 // GetCoinVRKey returns the key of the record containing coin volume and reserve.
 func GetCoinVRKey(denom string) []byte {
 	return append(keyPrefixCoinVR, []byte(denom)...)

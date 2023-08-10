@@ -25,7 +25,7 @@ service Query {
 
   // Coin queries existing coin by specified denom.
   rpc CoinByEVM(QueryCoinByEVMRequest) returns (QueryCoinByEVMResponse) {
-    option (google.api.http).get = "/decimal/coin/v1/coin/{erc20_address}";
+    option (google.api.http).get = "/decimal/coin/v1/coin/{drc20_address}";
   }
 
   // Checks queries all redeemed checks.
@@ -60,7 +60,7 @@ message QueryCoinRequest { string denom = 1; }
 message QueryCoinResponse { Coin coin = 1 [ (gogoproto.nullable) = false ]; }
 
 // QueryCoinByEVMRequest is request type for the Query/Coin RPC method.
-message QueryCoinByEVMRequest { string erc20_address = 1; }
+message QueryCoinByEVMRequest { string drc20_address = 1; }
 
 // QueryCoinByEVMResponse is response type for the Query/Coin RPC method.
 message QueryCoinByEVMResponse { Coin coin = 1 [ (gogoproto.nullable) = false ]; }

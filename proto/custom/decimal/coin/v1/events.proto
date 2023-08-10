@@ -32,7 +32,7 @@ message EventUpdateCoin {
 
 // EventUpdateCoinVR defines event emitted when volume or reserve of existing coin is updated.
 message EventUpdateCoinERC20Address {
-  string erc20_address = 1;
+  string drc20_address = 1;
 }
 
 // EventUpdateCoinVR defines event emitted when volume or reserve of existing coin is updated.

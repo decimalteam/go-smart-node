@@ -134,15 +134,15 @@ func request_Query_CoinByEVM_0(ctx context.Context, marshaler runtime.Marshaler,
 		_   = err
 	)
 
-	val, ok = pathParams["erc20_address"]
+	val, ok = pathParams["drc20_address"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "erc20_address")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "drc20_address")
 	}
 
-	protoReq.Erc20Address, err = runtime.String(val)
+	protoReq.Drc20Address, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "erc20_address", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "drc20_address", err)
 	}
 
 	msg, err := client.CoinByEVM(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -161,15 +161,15 @@ func local_request_Query_CoinByEVM_0(ctx context.Context, marshaler runtime.Mars
 		_   = err
 	)
 
-	val, ok = pathParams["erc20_address"]
+	val, ok = pathParams["drc20_address"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "erc20_address")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "drc20_address")
 	}
 
-	protoReq.Erc20Address, err = runtime.String(val)
+	protoReq.Drc20Address, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "erc20_address", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "drc20_address", err)
 	}
 
 	msg, err := server.CoinByEVM(ctx, &protoReq)
@@ -598,7 +598,7 @@ var (
 
 	pattern_Query_Coin_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 1, 1, 0, 4, 1, 5, 3}, []string{"decimal", "coin", "v1", "denom"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_CoinByEVM_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 1, 1, 0, 4, 1, 5, 3}, []string{"decimal", "coin", "v1", "erc20_address"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_CoinByEVM_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 1, 1, 0, 4, 1, 5, 3}, []string{"decimal", "coin", "v1", "drc20_address"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_Query_Checks_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"decimal", "coin", "v1", "checks"}, "", runtime.AssumeColonVerbOpt(true)))
 
