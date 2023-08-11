@@ -239,6 +239,10 @@ message StakeReward {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
+  // Id for what is given reward.
+  // For stake in Coin: contains coin denom value.
+  // For stake in NFT: contains NFT token ID value.
+  string rewardID = 3 [ (gogoproto.customname) = "RewardID" ];
 }
 
 // ValidatorSlash contains the detailed validator slash.
