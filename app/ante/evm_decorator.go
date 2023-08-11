@@ -65,11 +65,13 @@ func (ed EVMDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 
 			drc20, err := drc20cosmos.NewDrc20Cosmos(ctx, ed.evmKeeper, ed.bankKeeper, msgEthTx, coinWork)
 			if err != nil {
+				ctx.Logger().Info(err.Error())
 				continue
 			}
 
 			_, err = drc20.CreateContractIfNotSet()
 			if err != nil {
+				ctx.Logger().Info(err.Error())
 				continue
 			}
 		}
