@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	evmgeth "github.com/evmos/ethermint/x/evm/vm/geth"
 	"io"
 	"net/http"
 	"os"
@@ -95,7 +96,6 @@ import (
 	evm "github.com/evmos/ethermint/x/evm"
 	evmkeeper "github.com/evmos/ethermint/x/evm/keeper"
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
-	evmgeth "github.com/evmos/ethermint/x/evm/vm/geth"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 
 	// Unnamed import of statik for swagger UI support
@@ -457,33 +457,6 @@ func NewDSC(
 	// 	stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	// )
 
-	// Create Ethermint keepers
-
-	app.EvmKeeper = evmkeeper.NewKeeper(
-		appCodec,
-		keys[evmtypes.StoreKey],
-		tkeys[evmtypes.TransientKey],
-		app.GetSubspace(evmtypes.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-		&app.ValidatorKeeper,
-		app.FeeKeeper,
-		nil,
-		evmgeth.NewEVM,
-		cast.ToString(appOpts.Get(ethsrvflags.EVMTracer)),
-	)
-
-	// Create decimal keeper because Validator = Staking+Slashing+Evidence
-	app.CoinKeeper = *coinkeeper.NewKeeper(
-		appCodec,
-		keys[cointypes.StoreKey],
-		app.GetSubspace(cointypes.ModuleName),
-		app.AccountKeeper,
-		&app.FeeKeeper,
-		app.BankKeeper,
-		app.EvmKeeper,
-	)
-
 	app.NFTKeeper = *nftkeeper.NewKeeper(
 		appCodec,
 		keys[nfttypes.StoreKey],
@@ -517,6 +490,33 @@ func NewDSC(
 		&app.NFTKeeper,
 		&app.CoinKeeper,
 		&app.MultisigKeeper,
+	)
+
+	// Create Ethermint keepers
+
+	app.EvmKeeper = evmkeeper.NewKeeper(
+		appCodec,
+		keys[evmtypes.StoreKey],
+		tkeys[evmtypes.TransientKey],
+		app.GetSubspace(evmtypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+		&app.ValidatorKeeper,
+		app.FeeKeeper,
+		nil,
+		evmgeth.NewEVM,
+		cast.ToString(appOpts.Get(ethsrvflags.EVMTracer)),
+	)
+
+	// Create decimal keeper because Validator = Staking+Slashing+Evidence
+	app.CoinKeeper = *coinkeeper.NewKeeper(
+		appCodec,
+		keys[cointypes.StoreKey],
+		app.GetSubspace(cointypes.ModuleName),
+		app.AccountKeeper,
+		&app.FeeKeeper,
+		app.BankKeeper,
+		app.EvmKeeper,
 	)
 
 	// WARNING: Setting up dummy hooks is disabled because it causes doubling ABCI events in EVM transactions.
