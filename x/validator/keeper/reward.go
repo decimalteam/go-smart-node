@@ -123,13 +123,14 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 			}
 			remainder = remainder.Sub(reward)
 			// event
-			if del.GetStake().GetType() == types.StakeType_NFT {
+			if del.GetStake().GetType() != types.StakeType_NFT {
 				delEvent := types.DelegatorReward{
 					Delegator: del.Delegator,
 					Coins: []types.StakeReward{
 						{
-							ID:     k.BaseDenom(ctx),
-							Reward: reward,
+							ID:       k.BaseDenom(ctx),
+							Reward:   reward,
+							RewardID: del.GetStake().GetID(),
 						},
 					},
 					NFTs: nil,
@@ -141,8 +142,9 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 					Coins:     nil,
 					NFTs: []types.StakeReward{
 						{
-							ID:     del.GetStake().GetID(),
-							Reward: reward,
+							ID:       del.GetStake().GetID(),
+							Reward:   reward,
+							RewardID: del.GetStake().GetID(),
 						},
 					},
 				}
