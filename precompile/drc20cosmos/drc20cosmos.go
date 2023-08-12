@@ -112,7 +112,7 @@ func (drc Drc20Cosmos) CreateContractIfNotSet() (bool, error) {
 	nonce := drc.stateDB.GetNonce(common.HexToAddress(addressForContractOwner))
 	drc.stateDB.SetNonce(common.HexToAddress(addressForContractOwner), nonce)
 
-	contractCode, err := f.ReadFile("creation.code")
+	contractCode, err := f.ReadFile("code.json")
 	if err != nil {
 		return false, err
 	}
