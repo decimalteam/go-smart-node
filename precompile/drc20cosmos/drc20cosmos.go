@@ -151,7 +151,7 @@ func (drc Drc20Cosmos) CreateContractIfNotSet() (bool, error) {
 
 	if vmErr != nil {
 		drc.ctx.Logger().Info(vmErr.Error())
-		drc.ctx.Logger().With(vmErr, sender.Address().Hex()).Info("failed to encode log vmErr %T")
+		//drc.ctx.Logger().With(vmErr, sender.Address().Hex()).Info("failed to encode log vmErr %T")
 		//return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log vmErr %T", vmErr)
 	}
 
