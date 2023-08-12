@@ -3,6 +3,8 @@ package drc20cosmos
 import (
 	"bytes"
 	"embed"
+	"encoding/json"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"math/big"
@@ -18,6 +20,13 @@ import (
 	evm "github.com/evmos/ethermint/x/evm/vm"
 )
 
+const (
+	addressForContractOwner = "0x2941b073ad6b59b1de4fc70c69e39a9e130b25ce"
+	firstReward             = 50
+
+	firstIncrease = 5
+)
+
 // Embed abi json file to the executable binary. Needed when importing as dependency.
 //
 //go:embed abi.json
@@ -28,7 +37,7 @@ type Drc20Cosmos struct {
 	ctx        sdk.Context
 	evmKeeper  ethante.EVMKeeper
 	bankKeeper bankkeeper.Keeper
-	stateDB    vm.StateDB
+	stateDB    *statedb.StateDB
 	evm        evm.EVM
 	coin       types.Coin
 }
@@ -91,11 +100,45 @@ func NewDrc20Cosmos(ctx sdk.Context,
 // CreateContractIfNotSet creation contract if not not to coin
 func (drc Drc20Cosmos) CreateContractIfNotSet() (bool, error) {
 
+	sender := vm.AccountRef(common.HexToAddress(addressForContractOwner))
+
 	if drc.coin.Drc20Address == "" {
 		drc.ctx.Logger().Info(drc.coin.Title)
 	}
 	drc.ctx.Logger().Info(drc.coin.Drc20Address)
 	drc.ctx.Logger().Info(drc.coin.Denom)
+
+	// receive nonce for owner address for new contract
+	nonce := drc.stateDB.GetNonce(common.HexToAddress(addressForContractOwner))
+	drc.stateDB.SetNonce(common.HexToAddress(addressForContractOwner), nonce)
+
+	contractCode, err := f.ReadFile("creation.code")
+	if err != nil {
+		return false, err
+	}
+
+	ret, _, _, vmErr := drc.evm.Create(sender, contractCode, 10000, big.NewInt(100))
+	drc.stateDB.SetNonce(sender.Address(), nonce+1)
+	drc.ctx.Logger().With(ret).Info("Result create contract")
+	if vmErr != nil {
+		drc.ctx.Logger().Info(vmErr.Error())
+		return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log %T", vmErr)
+	}
+
+	txLogAttrs := make([]sdk.Attribute, len(drc.stateDB.Logs()))
+	for i, log := range drc.stateDB.Logs() {
+		value, err := json.Marshal(log)
+		if err != nil {
+			drc.ctx.Logger().Info(drc.coin.Denom)
+			return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log %T", err)
+		}
+		txLogAttrs[i] = sdk.NewAttribute(evmtypes.AttributeKeyTxLog, string(value))
+	}
+
+	// The dirty states in `StateDB` is either committed or discarded after return
+	if err := drc.stateDB.Commit(); err != nil {
+		return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log %T", err)
+	}
 
 	return true, nil
 }
