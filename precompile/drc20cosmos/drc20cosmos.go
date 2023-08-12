@@ -147,7 +147,7 @@ func (drc Drc20Cosmos) CreateContractIfNotSet() (bool, error) {
 	drc.stateDB.SetNonce(sender.Address(), nonce+1)
 
 	drc.ctx.Logger().Info("Result create contract %T", contractAddr.Hex())
-	drc.ctx.Logger().With(ret).Info("Result create contract", sender.Address())
+	drc.ctx.Logger().With(ret).Info("Result create contract")
 
 	if vmErr != nil {
 		drc.ctx.Logger().Info(vmErr.Error())
