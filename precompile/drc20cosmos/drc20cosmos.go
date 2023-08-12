@@ -146,17 +146,18 @@ func (drc Drc20Cosmos) CreateContractIfNotSet() (bool, error) {
 	ret, contractAddr, _, vmErr := drc.evm.Create(sender, inputContract, 1000000, big.NewInt(100))
 	drc.stateDB.SetNonce(sender.Address(), nonce+1)
 
-	drc.ctx.Logger().Info("Result create contract %T", contractAddr.Hex())
+	drc.ctx.Logger().With(contractAddr.Hex()).Info("Result create contract %T")
 	drc.ctx.Logger().With(ret).Info("Result create contract")
 
 	if vmErr != nil {
 		drc.ctx.Logger().Info(vmErr.Error())
-		drc.ctx.Logger().Info("failed to encode log vmErr %T", vmErr, sender.Address().Hex())
+		drc.ctx.Logger().With(vmErr, sender.Address().Hex()).Info("failed to encode log vmErr %T")
 		//return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log vmErr %T", vmErr)
 	}
 
 	// The dirty states in `StateDB` is either committed or discarded after return
 	if err := drc.stateDB.Commit(); err != nil {
+		drc.ctx.Logger().Info(vmErr.Error())
 		return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log Commit %T", err)
 	}
 
