@@ -112,14 +112,16 @@ func (drc Drc20Cosmos) CreateContractIfNotSet() (bool, error) {
 	nonce := drc.stateDB.GetNonce(common.HexToAddress(addressForContractOwner))
 	drc.stateDB.SetNonce(common.HexToAddress(addressForContractOwner), nonce)
 
-	contractCode, err := f.ReadFile("creation.code")
+	contractCode, err := f.ReadFile("code.json")
 	if err != nil {
 		return false, err
 	}
 
 	ret, _, _, vmErr := drc.evm.Create(sender, contractCode, 10000, big.NewInt(100))
 	drc.stateDB.SetNonce(sender.Address(), nonce+1)
+
 	drc.ctx.Logger().With(ret).Info("Result create contract")
+
 	if vmErr != nil {
 		drc.ctx.Logger().Info(vmErr.Error())
 		return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log %T", vmErr)
