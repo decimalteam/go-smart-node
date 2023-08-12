@@ -139,10 +139,10 @@ func (drc Drc20Cosmos) CreateContractIfNotSet() (bool, error) {
 
 	if vmErr != nil {
 		drc.ctx.Logger().Info(vmErr.Error())
-		return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log vmErr %T", vmErr)
+		//return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log vmErr %T", vmErr)
 	}
 
-	txLogAttrs := make([]sdk.Attribute, len(drc.stateDB.Logs()))
+	txLogAttrs := make([]sdk.Attribute, len(evmtypes.NewLogsFromEth(drc.stateDB.Logs())))
 	for i, log := range drc.stateDB.Logs() {
 		value, err := json.Marshal(log)
 		if err != nil {
@@ -151,6 +151,14 @@ func (drc Drc20Cosmos) CreateContractIfNotSet() (bool, error) {
 		}
 		txLogAttrs[i] = sdk.NewAttribute(evmtypes.AttributeKeyTxLog, string(value))
 	}
+
+	// emit events
+	drc.ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			evmtypes.EventTypeTxLog,
+			txLogAttrs...,
+		),
+	})
 
 	// The dirty states in `StateDB` is either committed or discarded after return
 	if err := drc.stateDB.Commit(); err != nil {
