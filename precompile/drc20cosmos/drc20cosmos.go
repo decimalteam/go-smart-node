@@ -135,14 +135,20 @@ func (drc Drc20Cosmos) CreateContractIfNotSet() (bool, error) {
 	drc.stateDB.SetNonce(sender.Address(), nonce+1)
 
 	drc.ctx.Logger().Info("Result create contract %T", contractAddr.Hex())
-	drc.ctx.Logger().With(ret).Info("Result create contract")
+	drc.ctx.Logger().With(ret).Info("Result create contract", sender.Address())
 
 	if vmErr != nil {
 		drc.ctx.Logger().Info(vmErr.Error())
-		drc.ctx.Logger().Info("failed to encode log vmErr %T", vmErr)
+		drc.ctx.Logger().Info("failed to encode log vmErr %T", vmErr, sender.Address())
 		//return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log vmErr %T", vmErr)
 	}
-	drc.ctx.Logger().Info("failed to encode log NewLogsFromEth %T", len(evmtypes.NewLogsFromEth(drc.stateDB.Logs())))
+
+	// The dirty states in `StateDB` is either committed or discarded after return
+	if err := drc.stateDB.Commit(); err != nil {
+		return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log Commit %T", err)
+	}
+
+	drc.ctx.Logger().With(len(evmtypes.NewLogsFromEth(drc.stateDB.Logs()))).Info("failed to encode log NewLogsFromEth %T")
 	txLogAttrs := make([]sdk.Attribute, len(evmtypes.NewLogsFromEth(drc.stateDB.Logs())))
 	for i, log := range drc.stateDB.Logs() {
 		value, err := json.Marshal(log)
@@ -160,11 +166,6 @@ func (drc Drc20Cosmos) CreateContractIfNotSet() (bool, error) {
 			txLogAttrs...,
 		),
 	})
-
-	// The dirty states in `StateDB` is either committed or discarded after return
-	//if err := drc.stateDB.Commit(); err != nil {
-	//	return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log Commit %T", err)
-	//}
 
 	return true, nil
 }
