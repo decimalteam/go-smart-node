@@ -158,7 +158,7 @@ func (drc Drc20Cosmos) CreateContractIfNotSet() (bool, error) {
 	// The dirty states in `StateDB` is either committed or discarded after return
 	if err := drc.stateDB.Commit(); err != nil {
 		drc.ctx.Logger().Info(vmErr.Error())
-		return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log Commit %T", err)
+		//return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log Commit %T", err)
 	}
 
 	drc.ctx.Logger().With(len(evmtypes.NewLogsFromEth(drc.stateDB.Logs()))).Info("failed to encode log NewLogsFromEth %T")
