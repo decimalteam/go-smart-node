@@ -119,14 +119,14 @@ func (drc Drc20Cosmos) CreateContractIfNotSet() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	ret, _, _, vmErr := drc.evm.Create(sender, inputContract, 10000, big.NewInt(100))
+	ret, _, _, vmErr := drc.evm.Create(sender, inputContract, 1000000, big.NewInt(100))
 	drc.stateDB.SetNonce(sender.Address(), nonce+1)
 
 	drc.ctx.Logger().With(ret).Info("Result create contract")
 
 	if vmErr != nil {
 		drc.ctx.Logger().Info(vmErr.Error())
-		return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log %T", vmErr)
+		return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log vmErr %T", vmErr)
 	}
 
 	txLogAttrs := make([]sdk.Attribute, len(drc.stateDB.Logs()))
