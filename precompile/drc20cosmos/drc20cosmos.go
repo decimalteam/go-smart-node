@@ -40,6 +40,8 @@ type Drc20Cosmos struct {
 	bankKeeper bankkeeper.Keeper
 	stateDB    *statedb.StateDB
 	evm        evm.EVM
+	msg        *evmtypes.MsgEthereumTx
+	cfg        *evmtypes.EVMConfig
 	coin       types.Coin
 }
 
@@ -94,6 +96,8 @@ func NewDrc20Cosmos(ctx sdk.Context,
 		bankKeeper: bankKeeper,
 		stateDB:    stateNewDB,
 		evm:        evmNew,
+		msg:        msgEthTx,
+		cfg:        cfg,
 		coin:       coinAction,
 	}, nil
 }
@@ -109,6 +113,14 @@ func (drc Drc20Cosmos) CreateContractIfNotSet() (bool, error) {
 	drc.ctx.Logger().Info(drc.coin.Drc20Address)
 	drc.ctx.Logger().Info(drc.coin.Denom)
 
+	msgTx := drc.msg.AsTransaction()
+
+	// access list preparation is moved from ante handler to here, because it's needed when `ApplyMessage` is called
+	// under contexts where ante handlers are not run, for example `eth_call` and `eth_estimateGas`.
+	if rules := drc.cfg.ChainConfig.Rules(big.NewInt(drc.ctx.BlockHeight()), drc.cfg.ChainConfig.MergeNetsplitBlock != nil); rules.IsBerlin {
+		drc.stateDB.PrepareAccessList(common.HexToAddress(addressForContractOwner), nil, drc.evm.ActivePrecompiles(rules), msgTx.AccessList())
+	}
+
 	// receive nonce for owner address for new contract
 	nonce := drc.stateDB.GetNonce(common.HexToAddress(addressForContractOwner))
 	drc.stateDB.SetNonce(common.HexToAddress(addressForContractOwner), nonce)
@@ -119,9 +131,10 @@ func (drc Drc20Cosmos) CreateContractIfNotSet() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	ret, _, _, vmErr := drc.evm.Create(sender, inputContract, 1000000, big.NewInt(100))
+	ret, contractAddr, _, vmErr := drc.evm.Create(sender, inputContract, 1000000, big.NewInt(100))
 	drc.stateDB.SetNonce(sender.Address(), nonce+1)
 
+	drc.ctx.Logger().Info("Result create contract %T", contractAddr.Hex())
 	drc.ctx.Logger().With(ret).Info("Result create contract")
 
 	if vmErr != nil {
