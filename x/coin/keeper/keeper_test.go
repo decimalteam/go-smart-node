@@ -1,8 +1,15 @@
 package keeper_test
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/precompile/drc20cosmos"
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
+	evmtypes "github.com/evmos/ethermint/x/evm/types"
+	"math/big"
 	"testing"
 
 	"bitbucket.org/decimalteam/go-smart-node/testutil"
@@ -143,22 +150,64 @@ func TestKeeper_Coin(t *testing.T) {
 		},
 	})
 
+	//paramsCtx := dsc.EvmKeeper.GetParams(ctx)
+	//ethCfg := paramsCtx.ChainConfig.EthereumConfig(dsc.EvmKeeper.ChainID())
+
+	//signer1 := ethtypes.MakeSigner(ethCfg, big.NewInt(ctx.BlockHeight()))
+
 	denom := "testcoin"
-	newCoin := types.Coin{
-		Denom:       denom,
-		Title:       "test keeper coin functions coin",
-		CRR:         50,
-		Reserve:     helpers.EtherToWei(sdkmath.NewInt(5000)),
-		Volume:      helpers.EtherToWei(sdkmath.NewInt(10000)),
-		LimitVolume: helpers.EtherToWei(sdkmath.NewInt(1000000000)),
-		MinVolume:   sdk.ZeroInt(),
-		Creator:     addrs[0].String(),
-		Identity:    "",
+	newCoin := &types.Coin{
+		Denom:        denom,
+		Title:        "test keeper coin functions coin",
+		CRR:          50,
+		Reserve:      helpers.EtherToWei(sdkmath.NewInt(5000)),
+		Volume:       helpers.EtherToWei(sdkmath.NewInt(10000)),
+		LimitVolume:  helpers.EtherToWei(sdkmath.NewInt(1000000000)),
+		MinVolume:    sdk.ZeroInt(),
+		Creator:      addrs[0].String(),
+		Identity:     "",
+		Drc20Address: "",
 	}
 
 	// check set coin
-	dsc.CoinKeeper.SetCoin(ctx, newCoin)
+	dsc.CoinKeeper.SetCoin(ctx, *newCoin)
 
+	// account key, use a constant account to keep unit test deterministic.
+	ecdsaPriv, err := crypto.HexToECDSA("b71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291")
+	require.NoError(t, err)
+	priv := &ethsecp256k1.PrivKey{
+		Key: crypto.FromECDSA(ecdsaPriv),
+	}
+	address := common.BytesToAddress(priv.PubKey().Address().Bytes())
+	//signer2 := tests.NewSigner(priv)
+
+	contractCreateTx := &ethtypes.AccessListTx{
+		GasPrice: nil,
+		Gas:      53000,
+		To:       nil,
+		Data:     []byte("contract_data"),
+		Nonce:    1,
+	}
+	ethTx := ethtypes.NewTx(contractCreateTx)
+	ethMsg := &evmtypes.MsgEthereumTx{}
+	ethMsg.FromEthereumTx(ethTx)
+	ethMsg.From = address.Hex()
+	fmt.Print(address.Hex())
+	//ethMsg.Sign(signer1, nil)
+
+	dsc.EvmKeeper.SetBalance(ctx, common.HexToAddress(drc20cosmos.AddressForContractOwner), big.NewInt(100000000000000))
+
+	drc20, err1 := drc20cosmos.NewDrc20Cosmos(ctx, dsc.EvmKeeper, dsc.BankKeeper, newCoin)
+	if err1 != nil {
+		ctx.Logger().Info(err1.Error())
+	}
+
+	_, err2 := drc20.CreateContractIfNotSet()
+	if err2 != nil {
+		ctx.Logger().Info(err.Error())
+	}
+
+	//copy(drc20.Coin, newCoin)
 	// check get exist coin
 	getCoin, err := dsc.CoinKeeper.GetCoin(ctx, denom)
 	require.NoError(t, err)
