@@ -1,7 +1,6 @@
 package ante
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/precompile/drc20cosmos"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"encoding/hex"
 
@@ -61,19 +60,19 @@ func (ed EVMDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 
 			ctx.Logger().Info(hex.EncodeToString(msgEthTx.AsTransaction().To()[:]))
 
-			coinWork, _ := ed.coinKeeper.GetCoin(ctx, "outhex")
-
-			drc20, err := drc20cosmos.NewDrc20Cosmos(ctx, ed.evmKeeper, ed.bankKeeper, msgEthTx, coinWork)
-			if err != nil {
-				ctx.Logger().Info(err.Error())
-				continue
-			}
-
-			_, err = drc20.CreateContractIfNotSet()
-			if err != nil {
-				ctx.Logger().Info(err.Error())
-				continue
-			}
+			//coinWork, _ := ed.coinKeeper.GetCoin(ctx, "outhex")
+			//
+			//drc20, err := drc20cosmos.NewDrc20Cosmos(ctx, ed.evmKeeper, ed.bankKeeper, msgEthTx, coinWork)
+			//if err != nil {
+			//	ctx.Logger().Info(err.Error())
+			//	continue
+			//}
+			//
+			//_, err = drc20.CreateContractIfNotSet()
+			//if err != nil {
+			//	ctx.Logger().Info(err.Error())
+			//	continue
+			//}
 		}
 
 		//nonce := stateDB.GetNonce(common.HexToAddress("0x2941b073ad6b59b1de4fc70c69e39a9e130b25ce"))
