@@ -57,15 +57,16 @@ func (sh *Helper) CreateCoin(sender sdk.AccAddress, title, denom string, crr uin
 	msg := types.NewMsgCreateCoin(sender, denom, title, crr, initVolume, initReserve, limitVolume, sdkmath.ZeroInt(), identity)
 	sh.Handle(sh.Ctx, msg, ok)
 	return types.Coin{
-		Title:       title,
-		Denom:       denom,
-		CRR:         uint32(crr),
-		Reserve:     initReserve,
-		Volume:      initVolume,
-		LimitVolume: limitVolume,
-		MinVolume:   sdkmath.ZeroInt(),
-		Creator:     sender.String(),
-		Identity:    identity,
+		Title:        title,
+		Denom:        denom,
+		CRR:          uint32(crr),
+		Reserve:      initReserve,
+		Volume:       initVolume,
+		LimitVolume:  limitVolume,
+		MinVolume:    sdkmath.ZeroInt(),
+		Creator:      sender.String(),
+		Identity:     identity,
+		Drc20Address: "0x1a7e5e7e6c9f33b7d34fd76eeffbcee6a006f700",
 	}
 }
 
