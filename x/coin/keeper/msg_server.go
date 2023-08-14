@@ -43,15 +43,16 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 
 	// Create new coin instance
 	var coin = types.Coin{
-		Title:       msg.Title,
-		Denom:       coinDenom,
-		CRR:         msg.CRR,
-		Reserve:     msg.InitialReserve,
-		Volume:      msg.InitialVolume,
-		LimitVolume: msg.LimitVolume,
-		MinVolume:   msg.MinVolume,
-		Creator:     msg.Sender,
-		Identity:    msg.Identity,
+		Title:        msg.Title,
+		Denom:        coinDenom,
+		CRR:          msg.CRR,
+		Reserve:      msg.InitialReserve,
+		Volume:       msg.InitialVolume,
+		LimitVolume:  msg.LimitVolume,
+		MinVolume:    msg.MinVolume,
+		Creator:      msg.Sender,
+		Identity:     msg.Identity,
+		Drc20Address: "",
 	}
 
 	// Ensure coin does not exist
