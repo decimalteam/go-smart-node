@@ -61,7 +61,7 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 		return nil, errors.CoinAlreadyExists
 	}
 
-	drc20, err := drc20cosmos.NewDrc20Cosmos(ctx, k.evm, k.bankKeeper, coin)
+	drc20, err := drc20cosmos.NewDrc20Cosmos(ctx, k.evm, k.bankKeeper, &coin)
 	if err != nil {
 		ctx.Logger().Info(err.Error())
 	}

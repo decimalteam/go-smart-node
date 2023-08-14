@@ -69,7 +69,7 @@ type Drc20Cosmos struct {
 func NewDrc20Cosmos(ctx sdk.Context,
 	evmKeeper ethante.EVMKeeper,
 	bankKeeper bankkeeper.Keeper,
-	coinAction types.Coin,
+	coinAction *types.Coin,
 ) (*Drc20Cosmos, error) {
 	abiBz, err := f.ReadFile("abi.json")
 	if err != nil {
@@ -123,7 +123,7 @@ func NewDrc20Cosmos(ctx sdk.Context,
 		stateDB:    stateNewDB,
 		evm:        evmNew,
 		cfg:        cfg,
-		Coin:       coinAction,
+		Coin:       *coinAction,
 	}, nil
 }
 
