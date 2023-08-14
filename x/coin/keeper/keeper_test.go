@@ -208,6 +208,8 @@ func TestKeeper_Coin(t *testing.T) {
 	}
 
 	newCoin = drc20.Coin
+	dsc.CoinKeeper.SetCoin(ctx, newCoin)
+
 	// check get exist coin
 	getCoin, err := dsc.CoinKeeper.GetCoin(ctx, denom)
 	require.NoError(t, err)
