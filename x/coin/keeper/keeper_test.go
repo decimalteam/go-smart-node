@@ -156,7 +156,7 @@ func TestKeeper_Coin(t *testing.T) {
 	//signer1 := ethtypes.MakeSigner(ethCfg, big.NewInt(ctx.BlockHeight()))
 
 	denom := "testcoin"
-	newCoin := &types.Coin{
+	newCoin := types.Coin{
 		Denom:        denom,
 		Title:        "test keeper coin functions coin",
 		CRR:          50,
@@ -170,7 +170,7 @@ func TestKeeper_Coin(t *testing.T) {
 	}
 
 	// check set coin
-	dsc.CoinKeeper.SetCoin(ctx, *newCoin)
+	dsc.CoinKeeper.SetCoin(ctx, newCoin)
 
 	// account key, use a constant account to keep unit test deterministic.
 	ecdsaPriv, err := crypto.HexToECDSA("b71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291")
@@ -207,7 +207,7 @@ func TestKeeper_Coin(t *testing.T) {
 		ctx.Logger().Info(err.Error())
 	}
 
-	//copy(drc20.Coin, newCoin)
+	newCoin = drc20.Coin
 	// check get exist coin
 	getCoin, err := dsc.CoinKeeper.GetCoin(ctx, denom)
 	require.NoError(t, err)
