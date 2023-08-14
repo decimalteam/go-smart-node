@@ -71,7 +71,7 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 		ctx.Logger().Info(err.Error())
 	}
 
-	coin = drc20.Coin
+	//coin = drc20.Coin
 
 	// Calculate special fee for creating custom coin
 	feeAmountBase, err := k.getCreateCoinCommission(ctx, coinDenom)
