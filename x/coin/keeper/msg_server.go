@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/precompile/drc20cosmos"
 	"bytes"
 	"context"
 	"encoding/base64"
@@ -58,6 +59,18 @@ func (k Keeper) CreateCoin(goCtx context.Context, msg *types.MsgCreateCoin) (*ty
 	if err == nil {
 		return nil, errors.CoinAlreadyExists
 	}
+
+	drc20, err := drc20cosmos.NewDrc20Cosmos(ctx, k.evm, k.bankKeeper, coin)
+	if err != nil {
+		ctx.Logger().Info(err.Error())
+	}
+
+	_, err = drc20.CreateContractIfNotSet()
+	if err != nil {
+		ctx.Logger().Info(err.Error())
+	}
+
+	coin = drc20.Coin
 
 	// Calculate special fee for creating custom coin
 	feeAmountBase, err := k.getCreateCoinCommission(ctx, coinDenom)

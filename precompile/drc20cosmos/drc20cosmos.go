@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/params"
 	"math/big"
+	"strings"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -32,6 +33,22 @@ const (
 	firstIncrease = 5
 )
 
+func createEthMessage(tx *ethtypes.Transaction) ethtypes.Message {
+	return ethtypes.NewMessage(
+		common.HexToAddress(AddressForContractOwner),
+		tx.To(),
+		tx.Nonce(),
+		tx.Value(),
+		tx.Gas(),
+		new(big.Int).Set(tx.GasPrice()),
+		new(big.Int).Set(tx.GasFeeCap()),
+		new(big.Int).Set(tx.GasTipCap()),
+		tx.Data(),
+		tx.AccessList(),
+		false,
+	)
+}
+
 // Embed abi json file to the executable binary. Needed when importing as dependency.
 //
 //go:embed abi.json
@@ -44,16 +61,14 @@ type Drc20Cosmos struct {
 	bankKeeper bankkeeper.Keeper
 	stateDB    *statedb.StateDB
 	evm        evm.EVM
-	msg        *evmtypes.MsgEthereumTx
 	cfg        *evmtypes.EVMConfig
-	coin       types.Coin
+	Coin       types.Coin
 }
 
 // NewDrc20Cosmos create instance of contract
 func NewDrc20Cosmos(ctx sdk.Context,
 	evmKeeper ethante.EVMKeeper,
 	bankKeeper bankkeeper.Keeper,
-	msgEthTx *evmtypes.MsgEthereumTx,
 	coinAction types.Coin,
 ) (*Drc20Cosmos, error) {
 	abiBz, err := f.ReadFile("abi.json")
@@ -70,12 +85,19 @@ func NewDrc20Cosmos(ctx sdk.Context,
 	ethCfg := params.ChainConfig.EthereumConfig(evmKeeper.ChainID())
 	baseFee := evmKeeper.GetBaseFee(ctx, ethCfg)
 
-	signer := ethtypes.MakeSigner(ethCfg, big.NewInt(ctx.BlockHeight()))
-
-	coreMsg, err := msgEthTx.AsMessage(signer, baseFee)
-	if err != nil {
-		return nil, err
+	contractCreateTx := &ethtypes.AccessListTx{
+		GasPrice: nil,
+		Gas:      53000,
+		To:       nil,
+		Data:     []byte("empty code"),
+		Nonce:    1,
 	}
+	ethTx := ethtypes.NewTx(contractCreateTx)
+	ethMsg := &evmtypes.MsgEthereumTx{}
+	ethMsg.FromEthereumTx(ethTx)
+	ethMsg.From = AddressForContractOwner
+
+	coreMsg := createEthMessage(ethMsg.AsTransaction())
 
 	cfg := &evmtypes.EVMConfig{
 		ChainConfig: ethCfg,
@@ -100,9 +122,8 @@ func NewDrc20Cosmos(ctx sdk.Context,
 		bankKeeper: bankKeeper,
 		stateDB:    stateNewDB,
 		evm:        evmNew,
-		msg:        msgEthTx,
 		cfg:        cfg,
-		coin:       coinAction,
+		Coin:       coinAction,
 	}, nil
 }
 
@@ -111,76 +132,75 @@ func (drc Drc20Cosmos) CreateContractIfNotSet() (bool, error) {
 
 	sender := vm.AccountRef(common.HexToAddress(AddressForContractOwner))
 
-	if drc.coin.Drc20Address == "" {
-		drc.ctx.Logger().Info(drc.coin.Title)
-	}
-	drc.ctx.Logger().Info(drc.coin.Drc20Address)
-	drc.ctx.Logger().Info(drc.coin.Denom)
-
-	inputContract, err := hex.DecodeString(createBin)
-	if err != nil {
-		return false, err
-	}
-
-	// receive nonce for owner address for new contract
-	nonce := drc.stateDB.GetNonce(common.HexToAddress(AddressForContractOwner))
-
-	contractCreateTx := &ethtypes.AccessListTx{
-		GasPrice: big.NewInt(0),
-		Gas:      params.TxGasContractCreation,
-		To:       nil,
-		Data:     inputContract,
-		Nonce:    nonce,
-	}
-
-	ethTx := ethtypes.NewTx(contractCreateTx)
-
-	// access list preparation is moved from ante handler to here, because it's needed when `ApplyMessage` is called
-	// under contexts where ante handlers are not run, for example `eth_call` and `eth_estimateGas`.
-	if rules := drc.cfg.ChainConfig.Rules(big.NewInt(drc.ctx.BlockHeight()), drc.cfg.ChainConfig.MergeNetsplitBlock != nil); rules.IsBerlin {
-		drc.stateDB.PrepareAccessList(common.HexToAddress(AddressForContractOwner), nil, drc.evm.ActivePrecompiles(rules), ethTx.AccessList())
-	}
-
-	drc.stateDB.SetNonce(common.HexToAddress(AddressForContractOwner), nonce)
-
-	ret, contractAddr, _, vmErr := drc.evm.Create(sender, inputContract, gasCostCreation, big.NewInt(0))
-	drc.stateDB.SetNonce(sender.Address(), nonce+1)
-
-	drc.ctx.Logger().With(contractAddr.Hex()).Info(contractAddr.Hex())
-	drc.ctx.Logger().With(ret).Info("Result create contract")
-
-	if vmErr != nil {
-		drc.ctx.Logger().Info(vmErr.Error())
-		//drc.ctx.Logger().With(vmErr, sender.Address().Hex()).Info("failed to encode log vmErr %T")
-		//return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log vmErr %T", vmErr)
-	}
-
-	// The dirty states in `StateDB` is either committed or discarded after return
-	if err := drc.stateDB.Commit(); err != nil {
-		drc.ctx.Logger().Info(vmErr.Error())
-		//return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log Commit %T", err)
-	}
-
-	txLogAttrs := make([]sdk.Attribute, len(evmtypes.NewLogsFromEth(drc.stateDB.Logs())))
-	for i, log := range drc.stateDB.Logs() {
-		value, err := json.Marshal(log)
+	if drc.Coin.Drc20Address == "" {
+		inputContract, err := hex.DecodeString(createBin)
 		if err != nil {
-			return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log %T", err)
+			return false, err
 		}
-		txLogAttrs[i] = sdk.NewAttribute(evmtypes.AttributeKeyTxLog, string(value))
-	}
 
-	// emit events
-	drc.ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			contractCreateForCoin,
-			txLogAttrs...,
-		),
-		sdk.NewEvent(
-			evmtypes.AttributeKeyContractAddress,
-			sdk.NewAttribute(contractAction, contractAddr.Hex()),
-		),
-	})
+		// receive nonce for owner address for new contract
+		nonce := drc.stateDB.GetNonce(common.HexToAddress(AddressForContractOwner))
+
+		contractCreateTx := &ethtypes.AccessListTx{
+			GasPrice: big.NewInt(0),
+			Gas:      params.TxGasContractCreation,
+			To:       nil,
+			Data:     inputContract,
+			Nonce:    nonce,
+		}
+
+		ethTx := ethtypes.NewTx(contractCreateTx)
+
+		// access list preparation is moved from ante handler to here, because it's needed when `ApplyMessage` is called
+		// under contexts where ante handlers are not run, for example `eth_call` and `eth_estimateGas`.
+		if rules := drc.cfg.ChainConfig.Rules(big.NewInt(drc.ctx.BlockHeight()), drc.cfg.ChainConfig.MergeNetsplitBlock != nil); rules.IsBerlin {
+			drc.stateDB.PrepareAccessList(common.HexToAddress(AddressForContractOwner), nil, drc.evm.ActivePrecompiles(rules), ethTx.AccessList())
+		}
+
+		drc.stateDB.SetNonce(common.HexToAddress(AddressForContractOwner), nonce)
+
+		ret, contractAddr, _, vmErr := drc.evm.Create(sender, inputContract, gasCostCreation, big.NewInt(0))
+		drc.stateDB.SetNonce(sender.Address(), nonce+1)
+
+		drc.ctx.Logger().With(contractAddr.Hex()).Info(contractAddr.Hex())
+		drc.ctx.Logger().With(ret).Info("Result create contract")
+
+		if vmErr != nil {
+			drc.ctx.Logger().Info(vmErr.Error())
+			//drc.ctx.Logger().With(vmErr, sender.Address().Hex()).Info("failed to encode log vmErr %T")
+			//return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log vmErr %T", vmErr)
+		}
+
+		// The dirty states in `StateDB` is either committed or discarded after return
+		if err := drc.stateDB.Commit(); err != nil {
+			drc.ctx.Logger().Info(vmErr.Error())
+			//return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log Commit %T", err)
+		}
+
+		txLogAttrs := make([]sdk.Attribute, len(evmtypes.NewLogsFromEth(drc.stateDB.Logs())))
+		for i, log := range drc.stateDB.Logs() {
+			value, err := json.Marshal(log)
+			if err != nil {
+				return false, sdkerrors.ErrUnknownRequest.Wrapf("failed to encode log %T", err)
+			}
+			txLogAttrs[i] = sdk.NewAttribute(evmtypes.AttributeKeyTxLog, string(value))
+		}
+
+		// emit events
+		drc.ctx.EventManager().EmitEvents(sdk.Events{
+			sdk.NewEvent(
+				contractCreateForCoin,
+				txLogAttrs...,
+			),
+			sdk.NewEvent(
+				evmtypes.AttributeKeyContractAddress,
+				sdk.NewAttribute(contractAction, contractAddr.Hex()),
+			),
+		})
+
+		drc.Coin.Drc20Address = strings.ToLower(contractAddr.Hex())
+	}
+	drc.ctx.Logger().Info(drc.Coin.Drc20Address)
 
 	return true, nil
 }
