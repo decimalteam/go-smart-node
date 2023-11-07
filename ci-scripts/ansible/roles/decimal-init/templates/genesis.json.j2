@@ -199,7 +199,7 @@
           "updated_at": "0001-01-01T00:00:00Z"
         }
       ]
-    },    
+    },
     "distribution": {
       "params": {
         "community_tax": "0.020000000000000000",
@@ -268,25 +268,34 @@
     "genutil": null,
     "gov": {
       "starting_proposal_id": "1",
-      "deposits": [],
-      "votes": [],
-      "proposals": [],
-      "deposit_params": {
+      "deposits": [
+
+      ],
+      "votes": [
+
+      ],
+      "proposals": [
+
+      ],
+      "deposit_params": null,
+      "voting_params": null,
+      "tally_params": null,
+      "params": {
         "min_deposit": [
           {
             "denom": "del",
             "amount": "10000000"
           }
         ],
-        "max_deposit_period": "172800s"
-      },
-      "voting_params": {
-        "voting_period": "172800s"
-      },
-      "tally_params": {
+        "max_deposit_period": "172800s",
+        "voting_period": "172800s",
         "quorum": "0.334000000000000000",
         "threshold": "0.500000000000000000",
-        "veto_threshold": "0.334000000000000000"
+        "veto_threshold": "0.334000000000000000",
+        "min_initial_deposit_ratio": "0.000000000000000000",
+        "burn_vote_quorum": false,
+        "burn_proposal_deposit_prevote": false,
+        "burn_vote_veto": true
       }
     },
     "ibc": {
@@ -448,18 +457,18 @@
       ],
       "last_total_power": "90000000",
       "last_validator_powers": [
-          {
-              "address": "d0valoper1yvgq6uh35a395hexhxcde2zfpwwafzpa7dtezu",
-              "power": "30000000"
-          },
-          {
-              "address": "d0valoper1wyhcct0rqvwwwg37a95ujdfhyu6swlq4va6hjv",
-              "power": "30000000"
-          },
-          {
-              "address": "d0valoper14elhyzmq95f98wrkvujtsr5cyudffp6qwyerml",
-              "power": "30000000"
-          }
+        {
+          "address": "d0valoper1yvgq6uh35a395hexhxcde2zfpwwafzpa7dtezu",
+          "power": "30000000"
+        },
+        {
+          "address": "d0valoper1wyhcct0rqvwwwg37a95ujdfhyu6swlq4va6hjv",
+          "power": "30000000"
+        },
+        {
+          "address": "d0valoper14elhyzmq95f98wrkvujtsr5cyudffp6qwyerml",
+          "power": "30000000"
+        }
       ],
       "params": {
         "base_denom": "del",
