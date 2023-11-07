@@ -21,6 +21,78 @@ type MockKeeper struct {
 	recorder *MockKeeperMockRecorder
 }
 
+func (m *MockKeeper) SpendableCoin(ctx types.Context, addr types.AccAddress, denom string) types.Coin {
+	//TODO implement me
+	panic("implement me")
+}
+
+// SetParams mocks base method.
+func (m *MockKeeper) SetParams(ctx types.Context, params types0.Params) error {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetParams", params)
+	return nil
+}
+
+func (m *MockKeeper) IsSendEnabledDenom(ctx types.Context, denom string) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m *MockKeeper) GetSendEnabledEntry(ctx types.Context, denom string) (types0.SendEnabled, bool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m *MockKeeper) SetSendEnabled(ctx types.Context, denom string, value bool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m *MockKeeper) SetAllSendEnabled(ctx types.Context, sendEnableds []*types0.SendEnabled) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m *MockKeeper) DeleteSendEnabled(ctx types.Context, denoms ...string) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m *MockKeeper) IterateSendEnabledEntries(ctx types.Context, cb func(denom string, sendEnabled bool) (stop bool)) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m *MockKeeper) GetAllSendEnabledEntries(ctx types.Context) []types0.SendEnabled {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m *MockKeeper) GetBlockedAddresses() map[string]bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m *MockKeeper) GetAuthority() string {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m *MockKeeper) GetAllDenomMetaData(ctx types.Context) []types0.Metadata {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m *MockKeeper) SpendableBalanceByDenom(ctx context.Context, request *types0.QuerySpendableBalanceByDenomRequest) (*types0.QuerySpendableBalanceByDenomResponse, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m *MockKeeper) SendEnabled(ctx context.Context, request *types0.QuerySendEnabledRequest) (*types0.QuerySendEnabledResponse, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 // MockKeeperMockRecorder is the mock recorder for MockKeeper.
 type MockKeeperMockRecorder struct {
 	mock *MockKeeper
@@ -544,11 +616,11 @@ func (mr *MockKeeperMockRecorder) SetDenomMetaData(arg0, arg1 interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetDenomMetaData", reflect.TypeOf((*MockKeeper)(nil).SetDenomMetaData), arg0, arg1)
 }
 
-// SetParams mocks base method.
-func (m *MockKeeper) SetParams(arg0 types.Context, arg1 types0.Params) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetParams", arg0, arg1)
-}
+//// SetParams mocks base method.
+//func (m *MockKeeper) SetParams(arg0 types.Context, arg1 types0.Params) {
+//	m.ctrl.T.Helper()
+//	m.ctrl.Call(m, "SetParams", arg0, arg1)
+//}
 
 // SetParams indicates an expected call of SetParams.
 func (mr *MockKeeperMockRecorder) SetParams(arg0, arg1 interface{}) *gomock.Call {

@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	sdkmath "cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 type EventDelegate struct {
@@ -62,7 +62,7 @@ func processEventDelegate(ea *EventAccumulator, event abci.Event, txHash string)
 		case "stake":
 			var stake Stake
 
-			err := json.Unmarshal(attr.Value, &stake)
+			err := json.Unmarshal([]byte(attr.Value), &stake)
 			if err != nil {
 				panic(err)
 			}
@@ -98,7 +98,7 @@ func processEventUndelegateComplete(ea *EventAccumulator, event abci.Event, txHa
 		case "stake":
 			var stake Stake
 
-			err := json.Unmarshal(attr.Value, &stake)
+			err := json.Unmarshal([]byte(attr.Value), &stake)
 			if err != nil {
 				panic(err)
 			}
@@ -137,7 +137,7 @@ func processEventRedelegateComplete(ea *EventAccumulator, event abci.Event, txHa
 		case "stake":
 			var stake Stake
 
-			err := json.Unmarshal(attr.Value, &stake)
+			err := json.Unmarshal([]byte(attr.Value), &stake)
 			if err != nil {
 				panic(err)
 			}

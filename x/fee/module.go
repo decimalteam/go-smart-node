@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 
 	"github.com/spf13/cobra"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
-	abci "github.com/tendermint/tendermint/abci/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -17,7 +18,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/client/cli"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/keeper"
@@ -77,6 +78,11 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingCo
 	return gs.Validate()
 }
 
+// RegisterRESTRoutes performs a no-op as the EVM module doesn't expose REST
+// endpoints
+func (AppModuleBasic) RegisterRESTRoutes(_ client.Context, _ *mux.Router) {
+}
+
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(c client.Context, serveMux *runtime.ServeMux) {
 	if err := types.RegisterQueryHandlerClient(context.Background(), serveMux, types.NewQueryClient(c)); err != nil {
@@ -121,22 +127,10 @@ func (AppModule) Name() string {
 	return types.ModuleName
 }
 
-// Route returns the module's message routing key.
-// Deprecated: use RegisterServices instead.
-func (AppModule) Route() sdk.Route {
-	return sdk.Route{}
-}
-
 // QuerierRoute returns the module's query routing key.
 // Deprecated: use RegisterServices instead.
 func (AppModule) QuerierRoute() string {
 	return types.QuerierRoute
-}
-
-// LegacyQuerierHandler returns the module's Querier.
-// Deprecated: use RegisterServices instead.
-func (AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier {
-	return nil
 }
 
 // RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries.

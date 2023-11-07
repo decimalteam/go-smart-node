@@ -404,13 +404,13 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_CoinPrices_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"decimal", "fee", "v1", "prices"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_CoinPrices_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"decimal", "fee", "v1", "prices"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_CoinPrice_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5}, []string{"decimal", "fee", "v1", "price", "denom", "quote"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_CoinPrice_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5}, []string{"decimal", "fee", "v1", "price", "denom", "quote"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_ModuleParams_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"decimal", "fee", "v1", "params"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_ModuleParams_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"decimal", "fee", "v1", "params"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_CalculateCommission_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"decimal", "fee", "v1", "calculate_commission"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_CalculateCommission_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"decimal", "fee", "v1", "calculate_commission"}, "", runtime.AssumeColonVerbOpt(false)))
 )
 
 var (

@@ -4,7 +4,7 @@ import (
 	commonTypes "bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/x/legacy/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/evmos/ethermint/crypto/ethsecp256k1"
+	"github.com/decimalteam/ethermint/crypto/ethsecp256k1"
 )
 
 var (

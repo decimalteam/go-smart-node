@@ -4,16 +4,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	"strconv"
 	"testing"
 	"time"
 
+	dbm "github.com/cometbft/cometbft-db"
+	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/cometbft/cometbft/libs/log"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	tmtypes "github.com/cometbft/cometbft/types"
 	"github.com/stretchr/testify/require"
-	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/log"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	tmtypes "github.com/tendermint/tendermint/types"
-	dbm "github.com/tendermint/tm-db"
 
 	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -25,15 +26,15 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/cosmos/ibc-go/v5/testing/simapp"
-
-	"github.com/evmos/ethermint/encoding"
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	"github.com/decimalteam/ethermint/encoding"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	dsctestutil "bitbucket.org/decimalteam/go-smart-node/testutil/dsc"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 )
 
 func init() {
@@ -48,7 +49,8 @@ func setup(withGenesis bool, invCheckPeriod uint) (*DSC, GenesisState) {
 	db := dbm.NewMemDB()
 
 	app := NewDSC(log.NewNopLogger(), db, nil, true,
-		map[int64]bool{}, DefaultNodeHome, invCheckPeriod, encoding.MakeConfig(ModuleBasics), simapp.EmptyAppOptions{})
+		map[int64]bool{}, DefaultNodeHome, invCheckPeriod, encoding.MakeConfig(ModuleBasics),
+		simtestutil.NewAppOptionsWithFlagHome(DefaultNodeHome), baseapp.SetChainID(chainID))
 	if withGenesis {
 		return app, NewDefaultGenesisState(app.AppCodec())
 	}
@@ -333,8 +335,14 @@ func GenesisStateWithValSet(codec codec.Codec, genesisState map[string]json.RawM
 		Coins:   sdk.Coins{sdk.NewCoin(sdk.DefaultBondDenom, bondAmt)},
 	})
 
+	var sendActive []banktypes.SendEnabled
+	sendActive = append(sendActive, banktypes.SendEnabled{
+		Denom:   sdk.DefaultBondDenom,
+		Enabled: true,
+	})
+
 	// update total supply
-	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().Params, balances, totalSupply, []banktypes.Metadata{})
+	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().Params, balances, totalSupply, []banktypes.Metadata{}, sendActive)
 	genesisState[banktypes.ModuleName] = codec.MustMarshalJSON(bankGenesis)
 
 	return genesisState, nil

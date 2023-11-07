@@ -5,25 +5,28 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	evmgeth "github.com/evmos/ethermint/x/evm/vm/geth"
+	"github.com/cosmos/cosmos-sdk/client/grpc/node"
+	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"syscall"
 
+	"cosmossdk.io/simapp"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 
 	// Tendermint
-	abci "github.com/tendermint/tendermint/abci/types"
-	tmlog "github.com/tendermint/tendermint/libs/log"
-	tmos "github.com/tendermint/tendermint/libs/os"
-	tmdb "github.com/tendermint/tm-db"
+	tmdb "github.com/cometbft/cometbft-db"
+	abci "github.com/cometbft/cometbft/abci/types"
+	tmlog "github.com/cometbft/cometbft/libs/log"
+	tmos "github.com/cometbft/cometbft/libs/os"
 
 	// SDK
+	simappparams "cosmossdk.io/simapp/params"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
@@ -32,8 +35,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
-	"github.com/cosmos/cosmos-sdk/simapp"
-	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
 	store "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -58,7 +59,6 @@ import (
 	crisis "github.com/cosmos/cosmos-sdk/x/crisis"
 	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
-	distrclient "github.com/cosmos/cosmos-sdk/x/distribution/client"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	feegrant "github.com/cosmos/cosmos-sdk/x/feegrant"
 	feegrantkeeper "github.com/cosmos/cosmos-sdk/x/feegrant/keeper"
@@ -81,23 +81,24 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	// IBC
-	ibc "github.com/cosmos/ibc-go/v5/modules/core"
-	ibcclient "github.com/cosmos/ibc-go/v5/modules/core/02-client"
-	ibcclientclient "github.com/cosmos/ibc-go/v5/modules/core/02-client/client"
-	ibchost "github.com/cosmos/ibc-go/v5/modules/core/24-host"
-	ibckeeper "github.com/cosmos/ibc-go/v5/modules/core/keeper"
+	ibc "github.com/cosmos/ibc-go/v7/modules/core"
+	ibcclient "github.com/cosmos/ibc-go/v7/modules/core/02-client"
+	ibcclientclient "github.com/cosmos/ibc-go/v7/modules/core/02-client/client"
+	ibctypes "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 
 	// Ethermint
-	ethencoding "github.com/evmos/ethermint/encoding"
-	ethsrvflags "github.com/evmos/ethermint/server/flags"
-	ethtypes "github.com/evmos/ethermint/types"
+	ethencoding "github.com/decimalteam/ethermint/encoding"
+	ethsrvflags "github.com/decimalteam/ethermint/server/flags"
+	ethtypes "github.com/decimalteam/ethermint/types"
 
 	// Ethermint modules
-	evm "github.com/evmos/ethermint/x/evm"
-	evmkeeper "github.com/evmos/ethermint/x/evm/keeper"
-	evmtypes "github.com/evmos/ethermint/x/evm/types"
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	evm "github.com/decimalteam/ethermint/x/evm"
+	evmkeeper "github.com/decimalteam/ethermint/x/evm/keeper"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 
+	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	// Unnamed import of statik for swagger UI support
 	// _ "bitbucket.org/decimalteam/go-smart-node/client/docs/statik"
 
@@ -163,7 +164,7 @@ var (
 		gov.NewAppModuleBasic([]govclient.ProposalHandler{
 			// SDK proposal handlers
 			paramsclient.ProposalHandler,
-			distrclient.ProposalHandler,
+			//distrclient.ProposalHandler, // check after
 			upgradeclient.LegacyProposalHandler,
 			upgradeclient.LegacyCancelProposalHandler,
 			// IBC proposal handlers
@@ -219,8 +220,8 @@ var (
 
 var (
 	_ servertypes.Application = (*DSC)(nil)
-	_ simapp.App              = (*DSC)(nil)
 	//_ ibctesting.TestingApp   = (*DSC)(nil)
+	//_ runtime.AppI            = (*DSC)(nil)
 )
 
 // DSC implements an extended ABCI application. It is an application that may process
@@ -247,12 +248,13 @@ type DSC struct {
 	//StakingKeeper    stakingkeeper.Keeper
 	//SlashingKeeper   slashingkeeper.Keeper
 	//DistrKeeper    distrkeeper.Keeper
-	GovKeeper      govkeeper.Keeper
-	CrisisKeeper   crisiskeeper.Keeper
-	UpgradeKeeper  upgradekeeper.Keeper
-	ParamsKeeper   paramskeeper.Keeper
-	FeeGrantKeeper feegrantkeeper.Keeper
-	AuthzKeeper    authzkeeper.Keeper
+	GovKeeper             *govkeeper.Keeper
+	CrisisKeeper          *crisiskeeper.Keeper
+	UpgradeKeeper         *upgradekeeper.Keeper
+	ParamsKeeper          paramskeeper.Keeper
+	FeeGrantKeeper        feegrantkeeper.Keeper
+	AuthzKeeper           authzkeeper.Keeper
+	ConsensusParamsKeeper consensusparamkeeper.Keeper
 	//EvidenceKeeper   evidencekeeper.Keeper
 
 	// IBC keepers
@@ -287,6 +289,12 @@ type DSC struct {
 	// application options is *viper.Viper
 	// need for proper telemetry initialization
 	appOpts servertypes.AppOptions
+}
+
+// RegisterNodeService registers the node gRPC service on the provided
+// application gRPC query router.
+func (app *DSC) RegisterNodeService(clientCtx client.Context) {
+	node.RegisterNodeService(clientCtx, app.GRPCQueryRouter())
 }
 
 // NewDSC returns a reference to a new initialized Decimal application.
@@ -348,8 +356,10 @@ func NewDSC(
 		capabilitytypes.StoreKey,
 		feegrant.StoreKey,
 		authzkeeper.StoreKey,
+		consensusparamtypes.StoreKey,
+		crisistypes.StoreKey,
 		// IBC keys
-		ibchost.StoreKey,
+		ibctypes.StoreKey,
 		// Ethermint keys
 		evmtypes.StoreKey,
 		// Decimal keys
@@ -382,14 +392,19 @@ func NewDSC(
 
 	// Init params keeper and subspaces
 	app.ParamsKeeper = initParamsKeeper(appCodec, cdc, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
+
+	// get authority address
+	authAddr := authtypes.NewModuleAddress(govtypes.ModuleName).String()
+
 	// set the BaseApp's parameter store
-	bApp.SetParamStore(app.ParamsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramstypes.ConsensusParamsKeyTable()))
+	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, keys[consensusparamtypes.StoreKey], authAddr)
+	bApp.SetParamStore(&app.ConsensusParamsKeeper)
 
 	// Add capability keeper and ScopeToModule for IBC module
 	app.CapabilityKeeper = capabilitykeeper.NewKeeper(appCodec, keys[capabilitytypes.StoreKey], memKeys[capabilitytypes.MemStoreKey])
 
 	// Grant capabilities for the IBC and IBC-transfer modules
-	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibchost.ModuleName)
+	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibctypes.ModuleName)
 
 	// Applications that wish to enforce statically created ScopedKeepers should call `Seal`
 	// after creating their scoped modules in `NewApp` with `ScopeToModule`
@@ -399,17 +414,17 @@ func NewDSC(
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
 		appCodec,
 		keys[authtypes.StoreKey],
-		app.GetSubspace(authtypes.ModuleName),
 		ethtypes.ProtoAccount,
 		maccPerms,
 		cmdcfg.Bech32Prefix,
+		authAddr,
 	)
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec,
 		keys[banktypes.StoreKey],
 		app.AccountKeeper,
-		app.GetSubspace(banktypes.ModuleName),
 		app.BlockedAddrs(),
+		authAddr,
 	)
 	// app.StakingKeeper = stakingkeeper.NewKeeper(
 	// 	appCodec,
@@ -434,10 +449,12 @@ func NewDSC(
 	// 	app.GetSubspace(slashingtypes.ModuleName),
 	// )
 	app.CrisisKeeper = crisiskeeper.NewKeeper(
-		app.GetSubspace(crisistypes.ModuleName),
+		appCodec,
+		keys[crisistypes.StoreKey],
 		invCheckPeriod,
 		app.BankKeeper,
 		authtypes.FeeCollectorName,
+		authAddr,
 	)
 	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(
 		appCodec,
@@ -498,14 +515,14 @@ func NewDSC(
 		appCodec,
 		keys[evmtypes.StoreKey],
 		tkeys[evmtypes.TransientKey],
-		app.GetSubspace(evmtypes.ModuleName),
+		authtypes.NewModuleAddress(govtypes.ModuleName),
 		app.AccountKeeper,
 		app.BankKeeper,
 		&app.ValidatorKeeper,
 		app.FeeKeeper,
 		nil,
-		evmgeth.NewEVM,
 		cast.ToString(appOpts.Get(ethsrvflags.EVMTracer)),
+		app.GetSubspace(evmtypes.ModuleName),
 	)
 
 	// Create decimal keeper because Validator = Staking+Slashing+Evidence
@@ -538,8 +555,8 @@ func NewDSC(
 	// Create IBC keeper
 	app.IBCKeeper = ibckeeper.NewKeeper(
 		appCodec,
-		keys[ibchost.StoreKey],
-		app.GetSubspace(ibchost.ModuleName),
+		keys[ibctypes.StoreKey],
+		app.GetSubspace(ibctypes.ModuleName),
 		app.ValidatorKeeper,
 		app.UpgradeKeeper,
 		scopedIBCKeeper,
@@ -550,19 +567,18 @@ func NewDSC(
 	govLegacyRouter.AddRoute(govtypes.RouterKey, govtypesv1beta1.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
-		AddRoute(ibchost.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
+		AddRoute(ibctypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 	govConfig := govtypes.DefaultConfig()
 
 	app.GovKeeper = govkeeper.NewKeeper(
 		appCodec,
 		keys[govtypes.StoreKey],
-		app.GetSubspace(govtypes.ModuleName),
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.ValidatorKeeper,
-		govLegacyRouter,
-		app.BaseApp.MsgServiceRouter(),
+		app.MsgServiceRouter(),
 		govConfig,
+		authAddr,
 	)
 
 	// If evidence needs to be handled for the app, set routes in router here and seal
@@ -595,11 +611,11 @@ func NewDSC(
 	app.mm = module.NewManager(
 		// SDK app modules
 		genutil.NewAppModule(app.AccountKeeper, app.ValidatorKeeper, app.BaseApp.DeliverTx, encodingConfig.TxConfig),
-		auth.NewAppModule(appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts),
-		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
-		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
-		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants),
-		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
+		auth.NewAppModule(appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts, app.GetSubspace(authtypes.ModuleName)),
+		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper, app.GetSubspace(banktypes.ModuleName)),
+		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
+		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
+		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(govtypes.ModuleName)),
 		//slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		//distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		//staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
@@ -611,7 +627,7 @@ func NewDSC(
 		// IBC app modules
 		ibc.NewAppModule(app.IBCKeeper),
 		// Ethermint app modules
-		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper),
+		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper, app.GetSubspace(evmtypes.ModuleName)),
 
 		// Decimal app modules
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
@@ -638,7 +654,7 @@ func NewDSC(
 		//slashingtypes.ModuleName,
 		//evidencetypes.ModuleName,
 		//stakingtypes.ModuleName,
-		ibchost.ModuleName,
+		ibctypes.ModuleName,
 		// no-op modules
 		authtypes.ModuleName,
 		banktypes.ModuleName,
@@ -665,7 +681,7 @@ func NewDSC(
 		evmtypes.ModuleName,
 		//claimstypes.ModuleName,
 		// no-op modules
-		ibchost.ModuleName,
+		ibctypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
@@ -699,7 +715,7 @@ func NewDSC(
 		//stakingtypes.ModuleName,
 		//slashingtypes.ModuleName,
 		govtypes.ModuleName,
-		ibchost.ModuleName,
+		ibctypes.ModuleName,
 		//evidencetypes.ModuleName,
 		authz.ModuleName,
 		feegrant.ModuleName,
@@ -722,17 +738,17 @@ func NewDSC(
 		crisistypes.ModuleName,
 	)
 
-	app.mm.RegisterInvariants(&app.CrisisKeeper)
-	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
+	app.mm.RegisterInvariants(app.CrisisKeeper)
+	//app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	app.mm.RegisterServices(app.configurator)
 
 	// NOTE: this is not required apps that don't use the simulator for fuzz testing transactions
 	app.sm = module.NewSimulationManager(
-		auth.NewAppModule(appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts),
-		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
-		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
-		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
+		auth.NewAppModule(appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts, app.GetSubspace(authtypes.ModuleName)),
+		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper, app.GetSubspace(banktypes.ModuleName)),
+		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
+		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(govtypes.ModuleName)),
 		//staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		//distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.ValidatorKeeper),
 		//slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
@@ -741,7 +757,7 @@ func NewDSC(
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		ibc.NewAppModule(app.IBCKeeper),
-		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper),
+		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper, app.GetSubspace(evmtypes.ModuleName)),
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
 		swap.NewAppModule(appCodec, app.SwapKeeper, app.AccountKeeper, app.BankKeeper),
 	)
@@ -774,7 +790,7 @@ func NewDSC(
 		MaxTxGasWanted:  maxGasWanted,
 		// TODO: ethermint stopped to use this option and checker
 		//ExtensionOptionChecker: ethtypes.HasDynamicFeeExtensionOption,
-		//TxFeeChecker:           ethante.NewDynamicFeeChecker(app.EvmKeeper),
+		//TxFeeChecker:           evm.NewDynamicFeeChecker(app.EvmKeeper),
 	}
 
 	if err := options.Validate(); err != nil {
@@ -1042,7 +1058,7 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govtypesv1.ParamKeyTable())
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	// IBC subspaces
-	paramsKeeper.Subspace(ibchost.ModuleName)
+	paramsKeeper.Subspace(ibctypes.ModuleName)
 	// Ethermint subspaces
 	paramsKeeper.Subspace(evmtypes.ModuleName)
 	//paramsKeeper.Subspace(recoverytypes.ModuleName)

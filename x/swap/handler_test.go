@@ -10,10 +10,10 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/types"
 
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 	"github.com/stretchr/testify/require"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
 func TestChainOperations(t *testing.T) {

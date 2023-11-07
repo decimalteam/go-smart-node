@@ -4,11 +4,11 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/precompile/drc20cosmos"
 	"context"
 	"fmt"
+	"github.com/decimalteam/ethermint/crypto/ethsecp256k1"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/evmos/ethermint/crypto/ethsecp256k1"
-	evmtypes "github.com/evmos/ethermint/x/evm/types"
 	"math/big"
 	"testing"
 
@@ -17,6 +17,8 @@ import (
 	coinkeeper "bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/testcoin"
 	cointestutil "bitbucket.org/decimalteam/go-smart-node/x/coin/testutil"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	tmtime "github.com/cometbft/cometbft/types/time"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -26,8 +28,6 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	tmtime "github.com/tendermint/tendermint/types/time"
 
 	"github.com/stretchr/testify/require"
 

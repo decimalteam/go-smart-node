@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	abci "github.com/tendermint/tendermint/abci/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -43,7 +43,7 @@ func processEventReturnLegacyCoins(ea *EventAccumulator, event abci.Event, txHas
 		case "owner":
 			newAddress = string(attr.Value)
 		case "coins":
-			err = json.Unmarshal(attr.Value, &coins)
+			err = json.Unmarshal([]byte(attr.Value), &coins)
 			if err != nil {
 				return fmt.Errorf("can't parse coins '%s': %s", string(attr.Value), err.Error())
 			}

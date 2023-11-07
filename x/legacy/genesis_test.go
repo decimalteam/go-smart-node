@@ -5,13 +5,13 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/cometbft/cometbft/libs/strings"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cosmosAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	cosmosBankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/tendermint/tendermint/libs/strings"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
@@ -26,7 +26,7 @@ import (
 )
 
 func TestInitGenesisForLegacy(t *testing.T) {
-	app, ctx := getBaseApp(t)
+	appTest, ctx := getBaseApp(t)
 
 	publicKey := []byte{0x3, 0x44, 0x8e, 0x6b, 0x3d, 0x50, 0xd6, 0xa3, 0x9c, 0xab, 0x3b, 0xab, 0xaa,
 		0x4a, 0xa2, 0xb0, 0x88, 0x5f, 0x55, 0x6f, 0xe0, 0x5d, 0x71, 0x49, 0x88, 0x5a, 0x5, 0xa0, 0xe7, 0x94, 0xa, 0x7e, 0x4f}
@@ -62,7 +62,7 @@ func TestInitGenesisForLegacy(t *testing.T) {
 	}
 
 	require.NoError(t, bankGenesisState.Validate(), "bankGenesisState")
-	app.BankKeeper.InitGenesis(ctx, bankGenesisState)
+	appTest.BankKeeper.InitGenesis(ctx, bankGenesisState)
 	reserve := sdk.NewCoin("del", helpers.EtherToWei(sdk.NewInt(10)))
 	nftGenesisState := nfttypes.GenesisState{
 		Params: nfttypes.DefaultParams(),
@@ -111,7 +111,7 @@ func TestInitGenesisForLegacy(t *testing.T) {
 		},
 	}
 	require.NoError(t, nftGenesisState.Validate(), "nftGenesisState")
-	nftkeeper.InitGenesis(ctx, app.NFTKeeper, &nftGenesisState)
+	nftkeeper.InitGenesis(ctx, appTest.NFTKeeper, &nftGenesisState)
 
 	multisigGenesisState := multisigtypes.GenesisState{
 		Wallets: []multisigtypes.Wallet{
@@ -130,7 +130,7 @@ func TestInitGenesisForLegacy(t *testing.T) {
 		},
 	}
 	require.NoError(t, nftGenesisState.Validate(), "nftGenesisState")
-	multisig.InitGenesis(ctx, app.MultisigKeeper, &multisigGenesisState)
+	multisig.InitGenesis(ctx, appTest.MultisigKeeper, &multisigGenesisState)
 
 	legacyGenesisState := types.GenesisState{
 		Records: []types.Record{
@@ -148,42 +148,42 @@ func TestInitGenesisForLegacy(t *testing.T) {
 	}
 
 	require.NoError(t, legacyGenesisState.Validate(), "legacyGenesisState")
-	legacy.InitGenesis(ctx, app.LegacyKeeper, &legacyGenesisState)
+	legacy.InitGenesis(ctx, appTest.LegacyKeeper, &legacyGenesisState)
 
 	// init  genesis done
 	// let's check
-	require.True(t, app.LegacyKeeper.IsLegacyAddress(ctx, oldAddress), "check legacy address 1")
-	require.False(t, app.LegacyKeeper.IsLegacyAddress(ctx, newAddress), "check legacy address 2")
-	err = app.LegacyKeeper.ActualizeLegacy(ctx, publicKey)
+	require.True(t, appTest.LegacyKeeper.IsLegacyAddress(ctx, oldAddress), "check legacy address 1")
+	require.False(t, appTest.LegacyKeeper.IsLegacyAddress(ctx, newAddress), "check legacy address 2")
+	err = appTest.LegacyKeeper.ActualizeLegacy(ctx, publicKey)
 	require.NoError(t, err, "ActualizeLegacy")
 
 	// coins
-	legacyRemain := app.BankKeeper.GetAllBalances(ctx, cosmosAuthTypes.NewModuleAddress(types.LegacyCoinPool))
+	legacyRemain := appTest.BankKeeper.GetAllBalances(ctx, cosmosAuthTypes.NewModuleAddress(types.LegacyCoinPool))
 	require.True(t, legacyRemain.IsEqual(sdk.NewCoins(sdk.NewCoin("del", sdk.NewInt(50)), sdk.NewCoin("foo", sdk.NewInt(99)))),
 		"legacy coins remain")
 
 	// nft no changes
-	subs := app.NFTKeeper.GetSubTokens(ctx, "a1")
+	subs := appTest.NFTKeeper.GetSubTokens(ctx, "a1")
 	require.Len(t, subs, 1, "nft-a1")
 	require.Equal(t, oldAddress, subs[0].Owner, "nft-a1 must not changed")
 	//  nft changes
-	subs = app.NFTKeeper.GetSubTokens(ctx, "a2")
+	subs = appTest.NFTKeeper.GetSubTokens(ctx, "a2")
 	require.Len(t, subs, 1, "nft-a2")
 	require.Equal(t, newAddress, subs[0].Owner, "nft-a2 must changed")
 
 	// wallet changes
-	wallet, err := app.MultisigKeeper.GetWallet(ctx, wallet1)
+	wallet, err := appTest.MultisigKeeper.GetWallet(ctx, wallet1)
 	require.NoError(t, err, "multisig wallet 1")
 	require.False(t, strings.StringInSlice(oldAddress, wallet.Owners), "wallet must have no old owner")
 	require.True(t, strings.StringInSlice(otherAddress, wallet.Owners), "wallet must keep other owner")
 	// wallet without changes
-	wallet, err = app.MultisigKeeper.GetWallet(ctx, wallet2)
+	wallet, err = appTest.MultisigKeeper.GetWallet(ctx, wallet2)
 	require.NoError(t, err, "multisig wallet 2")
 	require.True(t, strings.StringInSlice(oldAddress, wallet.Owners), "wallet must not changed")
 	require.True(t, strings.StringInSlice(otherAddress, wallet.Owners), "wallet must not changed")
 
 	// check kepeer end state
-	_, err = app.LegacyKeeper.GetLegacyRecord(ctx, oldAddress)
+	_, err = appTest.LegacyKeeper.GetLegacyRecord(ctx, oldAddress)
 	require.Error(t, err, "must no record")
 	//require.False(t, app.LegacyKeeper.IsLegacyAddress(ctx, oldAddress), "check legacy address at end")
 }

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	tmtypes "github.com/tendermint/tendermint/types"
+	tmtypes "github.com/cometbft/cometbft/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -87,8 +87,14 @@ func GenesisStateWithValSet(cdc codec.Codec, genesisState map[string]json.RawMes
 		Coins:   bondSum,
 	})
 
+	var sendActive []banktypes.SendEnabled
+	sendActive = append(sendActive, banktypes.SendEnabled{
+		Denom:   sdk.DefaultBondDenom,
+		Enabled: true,
+	})
+
 	// update total supply
-	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().Params, balances, totalSupply, []banktypes.Metadata{})
+	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().Params, balances, totalSupply, []banktypes.Metadata{}, sendActive)
 	genesisState[banktypes.ModuleName] = cdc.MustMarshalJSON(bankGenesis)
 
 	return genesisState, nil

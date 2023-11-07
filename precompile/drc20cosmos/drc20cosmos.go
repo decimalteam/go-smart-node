@@ -8,19 +8,18 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/ethereum/go-ethereum/params"
+	goethparams "github.com/ethereum/go-ethereum/params"
 	"math/big"
 	"strings"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	ethante "github.com/decimalteam/ethermint/app/ante"
+	"github.com/decimalteam/ethermint/x/evm/statedb"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	ethante "github.com/evmos/ethermint/app/ante"
-	"github.com/evmos/ethermint/x/evm/statedb"
-	evmtypes "github.com/evmos/ethermint/x/evm/types"
-	evm "github.com/evmos/ethermint/x/evm/vm"
 )
 
 const (
@@ -60,8 +59,8 @@ type Drc20Cosmos struct {
 	evmKeeper  ethante.EVMKeeper
 	bankKeeper bankkeeper.Keeper
 	stateDB    *statedb.StateDB
-	evm        evm.EVM
-	cfg        *evmtypes.EVMConfig
+	evm        *vm.EVM
+	cfg        *statedb.EVMConfig
 	Coin       types.Coin
 }
 
@@ -99,7 +98,7 @@ func NewDrc20Cosmos(ctx sdk.Context,
 
 	coreMsg := createEthMessage(ethMsg.AsTransaction())
 
-	cfg := &evmtypes.EVMConfig{
+	cfg := &statedb.EVMConfig{
 		ChainConfig: ethCfg,
 		Params:      params,
 		CoinBase:    common.Address{},
@@ -143,7 +142,7 @@ func (drc *Drc20Cosmos) CreateContractIfNotSet() (bool, error) {
 
 		contractCreateTx := &ethtypes.AccessListTx{
 			GasPrice: big.NewInt(0),
-			Gas:      params.TxGasContractCreation,
+			Gas:      goethparams.TxGasContractCreation,
 			To:       nil,
 			Data:     inputContract,
 			Nonce:    nonce,

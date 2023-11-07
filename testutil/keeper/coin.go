@@ -1,20 +1,21 @@
 package keeper
 
 import (
-	"github.com/cosmos/cosmos-sdk/simapp"
-	ethsrvflags "github.com/evmos/ethermint/server/flags"
-	evmkeeper "github.com/evmos/ethermint/x/evm/keeper"
-	evmtypes "github.com/evmos/ethermint/x/evm/types"
-	evmgeth "github.com/evmos/ethermint/x/evm/vm/geth"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	ethsrvflags "github.com/decimalteam/ethermint/server/flags"
+	evmkeeper "github.com/decimalteam/ethermint/x/evm/keeper"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 	"github.com/spf13/cast"
 	"testing"
 
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
@@ -27,20 +28,23 @@ func GetTestAppWithCoinKeeper(t *testing.T) (*codec.LegacyAmino, *app.DSC, sdk.C
 
 	appCodec := dsc.AppCodec()
 
-	appOpts := simapp.EmptyAppOptions{}
+	appOpts := simtestutil.NewAppOptionsWithFlagHome(app.DefaultNodeHome)
+
+	// get authority address
+	authAddr := authtypes.NewModuleAddress(govtypes.ModuleName)
 
 	dsc.EvmKeeper = evmkeeper.NewKeeper(
 		appCodec,
 		dsc.GetKey(evmtypes.StoreKey),
 		dsc.GetKey(evmtypes.TransientKey),
-		dsc.GetSubspace(evmtypes.ModuleName),
+		authAddr,
 		dsc.AccountKeeper,
 		dsc.BankKeeper,
 		&dsc.ValidatorKeeper,
 		dsc.FeeKeeper,
 		nil,
-		evmgeth.NewEVM,
 		cast.ToString(appOpts.Get(ethsrvflags.EVMTracer)),
+		dsc.GetSubspace(evmtypes.ModuleName),
 	)
 
 	dsc.CoinKeeper = *keeper.NewKeeper(

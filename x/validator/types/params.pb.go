@@ -6,9 +6,9 @@ package types
 import (
 	fmt "fmt"
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
+	proto "github.com/cosmos/gogoproto/proto"
+	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
 	_ "github.com/gogo/protobuf/gogoproto"
-	proto "github.com/gogo/protobuf/proto"
-	github_com_gogo_protobuf_types "github.com/gogo/protobuf/types"
 	_ "google.golang.org/protobuf/types/known/durationpb"
 	io "io"
 	math "math"
@@ -231,7 +231,7 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	i--
 	dAtA[i] = 0x6a
-	n1, err1 := github_com_gogo_protobuf_types.StdDurationMarshalTo(m.DowntimeJailDuration, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdDuration(m.DowntimeJailDuration):])
+	n1, err1 := github_com_cosmos_gogoproto_types.StdDurationMarshalTo(m.DowntimeJailDuration, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdDuration(m.DowntimeJailDuration):])
 	if err1 != nil {
 		return 0, err1
 	}
@@ -261,7 +261,7 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x3a
 	}
-	n2, err2 := github_com_gogo_protobuf_types.StdDurationMarshalTo(m.UndelegationTime, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdDuration(m.UndelegationTime):])
+	n2, err2 := github_com_cosmos_gogoproto_types.StdDurationMarshalTo(m.UndelegationTime, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdDuration(m.UndelegationTime):])
 	if err2 != nil {
 		return 0, err2
 	}
@@ -269,7 +269,7 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i = encodeVarintParams(dAtA, i, uint64(n2))
 	i--
 	dAtA[i] = 0x32
-	n3, err3 := github_com_gogo_protobuf_types.StdDurationMarshalTo(m.RedelegationTime, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdDuration(m.RedelegationTime):])
+	n3, err3 := github_com_cosmos_gogoproto_types.StdDurationMarshalTo(m.RedelegationTime, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdDuration(m.RedelegationTime):])
 	if err3 != nil {
 		return 0, err3
 	}
@@ -329,9 +329,9 @@ func (m *Params) Size() (n int) {
 	if m.HistoricalEntries != 0 {
 		n += 1 + sovParams(uint64(m.HistoricalEntries))
 	}
-	l = github_com_gogo_protobuf_types.SizeOfStdDuration(m.RedelegationTime)
+	l = github_com_cosmos_gogoproto_types.SizeOfStdDuration(m.RedelegationTime)
 	n += 1 + l + sovParams(uint64(l))
-	l = github_com_gogo_protobuf_types.SizeOfStdDuration(m.UndelegationTime)
+	l = github_com_cosmos_gogoproto_types.SizeOfStdDuration(m.UndelegationTime)
 	n += 1 + l + sovParams(uint64(l))
 	l = len(m.BaseDenom)
 	if l > 0 {
@@ -342,7 +342,7 @@ func (m *Params) Size() (n int) {
 	}
 	l = m.MinSignedPerWindow.Size()
 	n += 1 + l + sovParams(uint64(l))
-	l = github_com_gogo_protobuf_types.SizeOfStdDuration(m.DowntimeJailDuration)
+	l = github_com_cosmos_gogoproto_types.SizeOfStdDuration(m.DowntimeJailDuration)
 	n += 1 + l + sovParams(uint64(l))
 	l = m.SlashFractionDoubleSign.Size()
 	n += 1 + l + sovParams(uint64(l))
@@ -491,7 +491,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := github_com_gogo_protobuf_types.StdDurationUnmarshal(&m.RedelegationTime, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_cosmos_gogoproto_types.StdDurationUnmarshal(&m.RedelegationTime, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -524,7 +524,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := github_com_gogo_protobuf_types.StdDurationUnmarshal(&m.UndelegationTime, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_cosmos_gogoproto_types.StdDurationUnmarshal(&m.UndelegationTime, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -641,7 +641,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := github_com_gogo_protobuf_types.StdDurationUnmarshal(&m.DowntimeJailDuration, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_cosmos_gogoproto_types.StdDurationUnmarshal(&m.DowntimeJailDuration, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

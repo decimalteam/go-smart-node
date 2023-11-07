@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	abci "github.com/tendermint/tendermint/abci/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -67,12 +67,12 @@ func processEventCreateWallet(ea *EventAccumulator, event abci.Event, txHash str
 			}
 			e.Threshold = uint32(thr)
 		case "owners":
-			err := json.Unmarshal(attr.Value, &owners)
+			err := json.Unmarshal([]byte(attr.Value), &owners)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal owners: %s, value: '%s'", err.Error(), string(attr.Value))
 			}
 		case "weights":
-			err := json.Unmarshal(attr.Value, &weights)
+			err := json.Unmarshal([]byte(attr.Value), &weights)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal weights: %s", err.Error())
 			}
@@ -109,7 +109,7 @@ func processEventCreateTransaction(ea *EventAccumulator, event abci.Event, txHas
 		case "receiver":
 			e.Receiver = string(attr.Value)
 		case "coins":
-			err := json.Unmarshal(attr.Value, &e.Coins)
+			err := json.Unmarshal([]byte(attr.Value), &e.Coins)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal coins: %s, value: '%s'", err.Error(), string(attr.Value))
 			}
@@ -143,17 +143,17 @@ func processEventSignTransaction(ea *EventAccumulator, event abci.Event, txHash 
 		case "transaction":
 			e.Transaction = string(attr.Value)
 		case "signer_weight":
-			err := json.Unmarshal(attr.Value, &e.SignerWeight)
+			err := json.Unmarshal([]byte(attr.Value), &e.SignerWeight)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal signer_weight: %s, value: '%s'", err.Error(), string(attr.Value))
 			}
 		case "confirmations":
-			err := json.Unmarshal(attr.Value, &e.Confirmations)
+			err := json.Unmarshal([]byte(attr.Value), &e.Confirmations)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal confirmations: %s, value: '%s'", err.Error(), string(attr.Value))
 			}
 		case "confirmed":
-			err := json.Unmarshal(attr.Value, &e.Confirmed)
+			err := json.Unmarshal([]byte(attr.Value), &e.Confirmed)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal confirmed: %s, value: '%s'", err.Error(), string(attr.Value))
 			}

@@ -303,11 +303,11 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_ActiveSwaps_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"decimal", "swap", "v1", "swaps"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_ActiveSwaps_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"decimal", "swap", "v1", "swaps"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_Swap_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 1, 1, 0, 4, 1, 5, 3}, []string{"decimal", "swap", "v1", "hashed_secret"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Swap_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 1, 1, 0, 4, 1, 5, 3}, []string{"decimal", "swap", "v1", "hashed_secret"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_Pool_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"decimal", "swap", "v1", "pool"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Pool_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"decimal", "swap", "v1", "pool"}, "", runtime.AssumeColonVerbOpt(false)))
 )
 
 var (

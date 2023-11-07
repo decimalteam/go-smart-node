@@ -7,7 +7,7 @@ import (
 
 	"github.com/status-im/keycard-go/hexutils"
 
-	ctypes "github.com/tendermint/tendermint/rpc/core/types"
+	ctypes "github.com/cometbft/cometbft/rpc/core/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 )

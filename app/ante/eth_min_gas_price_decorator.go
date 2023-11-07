@@ -1,13 +1,13 @@
 package ante
 
 import (
+	evmante "github.com/decimalteam/ethermint/app/ante"
 	"math/big"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	evmante "github.com/evmos/ethermint/app/ante"
-	evmtypes "github.com/evmos/ethermint/x/evm/types"
 )
 
 // EthMinGasPriceDecorator is the copy of evmos decorator, but with fixed error type

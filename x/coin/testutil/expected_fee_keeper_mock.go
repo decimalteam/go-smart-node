@@ -12,7 +12,7 @@ import (
 	types0 "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	types1 "github.com/cosmos/cosmos-sdk/types"
 	types2 "github.com/cosmos/cosmos-sdk/x/auth/types"
-	types3 "github.com/evmos/ethermint/x/feemarket/types"
+	types3 "github.com/decimalteam/ethermint/x/feemarket/types"
 	gomock "github.com/golang/mock/gomock"
 )
 

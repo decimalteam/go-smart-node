@@ -19,6 +19,16 @@ type MockAccountKeeperI struct {
 	recorder *MockAccountKeeperIMockRecorder
 }
 
+func (m *MockAccountKeeperI) NextAccountNumber(context types0.Context) uint64 {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m *MockAccountKeeperI) GetModulePermissions() map[string]types1.PermissionsForAddress {
+	//TODO implement me
+	panic("implement me")
+}
+
 // MockAccountKeeperIMockRecorder is the mock recorder for MockAccountKeeperI.
 type MockAccountKeeperIMockRecorder struct {
 	mock *MockAccountKeeperI

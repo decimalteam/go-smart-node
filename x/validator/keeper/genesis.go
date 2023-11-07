@@ -3,12 +3,12 @@ package keeper
 import (
 	"fmt"
 
-	abci "github.com/tendermint/tendermint/abci/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	ethtypes "github.com/evmos/ethermint/types"
+	ethtypes "github.com/decimalteam/ethermint/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )

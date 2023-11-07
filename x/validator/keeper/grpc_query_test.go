@@ -3,12 +3,12 @@ package keeper_test
 import (
 	gocontext "context"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	"testing"
 
 	sdkmath "cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
-	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
@@ -375,7 +375,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidatorDelegations() {
 	dsc, ctx, queryClient, addrs, vals := suite.dsc, suite.ctx, suite.queryClient, suite.addrs, suite.vals
 	addrAcc := addrs[0]
 	addrVal1 := vals[1].OperatorAddress
-	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
+	valAddrs := sims.ConvertAddrsToValAddrs(addrs)
 	addrVal2 := valAddrs[4]
 	valAddr, err := sdk.ValAddressFromBech32(addrVal1)
 	suite.NoError(err)
@@ -669,7 +669,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryRedelegations() {
 	dsc, ctx, queryClient, addrs, vals := suite.dsc, suite.ctx, suite.queryClient, suite.addrs, suite.vals
 
 	addrAcc, addrAcc1 := addrs[0], addrs[1]
-	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
+	valAddrs := sims.ConvertAddrsToValAddrs(addrs)
 	val1, val2, val3 := vals[0], vals[1], valAddrs[3]
 	//applyValidatorSetUpdates(suite.T(), ctx, dsc.ValidatorKeeper, -1)
 	val1.Status = types.BondStatus_Bonded
@@ -982,7 +982,7 @@ func createValidators(t *testing.T, ctx sdk.Context, dsc *app.DSC, powers []int6
 	coins := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(300)))
 	addrs := app.AddTestAddrsIncremental(dsc, ctx, 5, sdk.NewCoins(coins))
 	valAddrs := app.ConvertAddrsToValAddrs(addrs)
-	pks := simapp.CreateTestPubKeys(5)
+	pks := sims.CreateTestPubKeys(5)
 	dsc.ValidatorKeeper = keeper.NewKeeper(
 		dsc.AppCodec(),
 		dsc.GetKey(types.StoreKey),

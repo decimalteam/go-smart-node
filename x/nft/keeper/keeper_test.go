@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	tmtime "github.com/cometbft/cometbft/types/time"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -13,8 +15,6 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	tmtime "github.com/tendermint/tendermint/types/time"
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/testutil"
@@ -71,7 +71,7 @@ func (s *KeeperTestSuite) SetupTest() {
 
 	// -- create mock controller
 	ctrl := gomock.NewController(s.T())
-	bankKeeper := nfttestutil.NewMockKeeper(ctrl)
+	bankKeeper := nfttestutil.NewMockBankKeeper(ctrl)
 	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, addr, types.ReservedPool, sdk.NewCoins(defaultCoin)).AnyTimes().Return(nil)
 	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, addr, types.ReservedPool, sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdk.NewInt(2))))).AnyTimes().Return(nil)
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(ctx, types.ReservedPool, addr, sdk.NewCoins(defaultCoin)).AnyTimes().Return(nil)

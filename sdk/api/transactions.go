@@ -3,8 +3,8 @@ package api
 import (
 	"context"
 
+	tmtypes "github.com/cometbft/cometbft/abci/types"
 	cosmostx "github.com/cosmos/cosmos-sdk/types/tx"
-	tmtypes "github.com/tendermint/tendermint/abci/types"
 )
 
 type TxResult struct {

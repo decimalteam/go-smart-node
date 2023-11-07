@@ -1,8 +1,6 @@
 package fee
 
 import (
-	"math/rand"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
@@ -25,10 +23,10 @@ func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 	//simulation.RandomizedGenState(simState)
 }
 
-// RandomizedParams doesn't create randomized nft param changes for the simulator.
-func (am AppModule) RandomizedParams(_ *rand.Rand) []simtypes.ParamChange {
-	return nil
-}
+//// RandomizedParams doesn't create randomized nft param changes for the simulator.
+//func (am AppModule) RandomizedParams(_ *rand.Rand) []simtypes.ParamChange {
+//	return nil
+//}
 
 // WeightedOperations doesn't return any operation for the nft module.
 func (am AppModule) WeightedOperations(_ module.SimulationState) []simtypes.WeightedOperation {
