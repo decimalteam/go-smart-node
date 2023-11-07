@@ -5,7 +5,7 @@ import (
 
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/errors"
 
-	"github.com/tendermint/tendermint/libs/log"
+	"github.com/cometbft/cometbft/libs/log"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"

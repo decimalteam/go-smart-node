@@ -6,8 +6,8 @@ import (
 	"sync"
 
 	sdkmath "cosmossdk.io/math"
+	"github.com/cometbft/cometbft/libs/strings"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tendermint/tendermint/libs/strings"
 
 	appAnte "bitbucket.org/decimalteam/go-smart-node/app/ante"
 	dscApi "bitbucket.org/decimalteam/go-smart-node/sdk/api"

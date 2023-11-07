@@ -1954,41 +1954,41 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_Validators_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"decimal", "validator", "v1", "validators"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Validators_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"decimal", "validator", "v1", "validators"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_Validator_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 1}, []string{"decimal", "validator", "v1", "validators"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Validator_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 1}, []string{"decimal", "validator", "v1", "validators"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_ValidatorDelegations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 1, 2, 4}, []string{"decimal", "validator", "v1", "validators", "delegations"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_ValidatorDelegations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 1, 2, 4}, []string{"decimal", "validator", "v1", "validators", "delegations"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_ValidatorRedelegations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 1, 2, 4}, []string{"decimal", "validator", "v1", "validators", "redelegations"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_ValidatorRedelegations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 1, 2, 4}, []string{"decimal", "validator", "v1", "validators", "redelegations"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_ValidatorUndelegations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 1, 2, 4}, []string{"decimal", "validator", "v1", "validators", "undelegations"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_ValidatorUndelegations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 1, 2, 4}, []string{"decimal", "validator", "v1", "validators", "undelegations"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_Delegations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 1, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"decimal", "validator", "v1", "validators", "delegations", "delegator"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Delegations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 1, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"decimal", "validator", "v1", "validators", "delegations", "delegator"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_Redelegations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 1, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"decimal", "validator", "v1", "validators", "delegations", "delegator", "redelegations"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Redelegations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 1, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"decimal", "validator", "v1", "validators", "delegations", "delegator", "redelegations"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_Undelegation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 1, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"decimal", "validator", "v1", "validators", "delegations", "delegator", "undelegation"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Undelegation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 1, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"decimal", "validator", "v1", "validators", "delegations", "delegator", "undelegation"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_DelegatorDelegations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"decimal", "validator", "v1", "delegators", "delegator", "delegations"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_DelegatorDelegations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"decimal", "validator", "v1", "delegators", "delegator", "delegations"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_DelegatorRedelegations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"decimal", "validator", "v1", "delegators", "delegator", "redelegations"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_DelegatorRedelegations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"decimal", "validator", "v1", "delegators", "delegator", "redelegations"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_DelegatorUndelegations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"decimal", "validator", "v1", "delegators", "delegator", "undelegations"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_DelegatorUndelegations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"decimal", "validator", "v1", "delegators", "delegator", "undelegations"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_DelegatorValidators_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"decimal", "validator", "v1", "delegators", "delegator", "validators"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_DelegatorValidators_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"decimal", "validator", "v1", "delegators", "delegator", "validators"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_DelegatorValidator_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5, 1, 0, 4, 1, 5, 1}, []string{"decimal", "validator", "v1", "delegators", "delegator", "validators"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_DelegatorValidator_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5, 1, 0, 4, 1, 5, 1}, []string{"decimal", "validator", "v1", "delegators", "delegator", "validators"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_HistoricalInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"decimal", "validator", "v1", "historical_info", "height"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_HistoricalInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"decimal", "validator", "v1", "historical_info", "height"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_Pool_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"decimal", "validator", "v1", "pool"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Pool_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"decimal", "validator", "v1", "pool"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_CustomCoinPrice_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"decimal", "validator", "v1", "custom_coin_price", "denom"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_CustomCoinPrice_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"decimal", "validator", "v1", "custom_coin_price", "denom"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_TotalCustomCoin_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"decimal", "validator", "v1", "total_custom_coin", "denom"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_TotalCustomCoin_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"decimal", "validator", "v1", "total_custom_coin", "denom"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"decimal", "validator", "v1", "params"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"decimal", "validator", "v1", "params"}, "", runtime.AssumeColonVerbOpt(false)))
 )
 
 var (

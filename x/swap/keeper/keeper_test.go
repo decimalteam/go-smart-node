@@ -9,6 +9,8 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/keeper"
 	swaptestutil "bitbucket.org/decimalteam/go-smart-node/x/swap/testutil"
 	"bitbucket.org/decimalteam/go-smart-node/x/swap/types"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	tmtime "github.com/cometbft/cometbft/types/time"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -17,12 +19,10 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/evmos/ethermint/crypto/ethsecp256k1"
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	"github.com/decimalteam/ethermint/crypto/ethsecp256k1"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	tmtime "github.com/tendermint/tendermint/types/time"
 )
 
 var (
@@ -88,7 +88,7 @@ func (s *KeeperTestSuite) SetupTest() {
 	// -- create mock controller
 	poolAddr := cosmosAuthTypes.NewModuleAddress(types.SwapPool)
 	ctrl := gomock.NewController(s.T())
-	bankKeeper := swaptestutil.NewMockKeeper(ctrl)
+	bankKeeper := swaptestutil.NewMockBankKeeper(ctrl)
 	bankKeeper.EXPECT().GetAllBalances(ctx, user2).AnyTimes().Return(defaultCoins)
 	bankKeeper.EXPECT().GetAllBalances(ctx, user3).AnyTimes().Return(sdk.NewCoins())
 	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, user2, types.SwapPool, defaultCoins).AnyTimes().Return(nil)

@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	abci "github.com/tendermint/tendermint/abci/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -28,7 +28,7 @@ var (
 // The purpose is to ensure the binary is switched EXACTLY at the desired block, and to allow
 // a migration to be executed if needed upon this switch (migration defined in the new binary)
 // skipUpgradeHeightArray is a set of block heights for which the upgrade must be skipped
-func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
+func BeginBlocker(k *keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
 	plan, found := k.GetUpgradePlan(ctx)
@@ -46,7 +46,7 @@ func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
 				var appVersion uint64
 				cp := ctx.ConsensusParams()
 				if cp != nil && cp.Version != nil {
-					appVersion = cp.Version.AppVersion
+					appVersion = cp.Version.App
 				}
 				panic(fmt.Sprintf("Wrong app version %d, upgrade handler is missing for %s upgrade plan", appVersion, lastAppliedPlan))
 			}

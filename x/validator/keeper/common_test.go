@@ -1,23 +1,23 @@
 package keeper_test
 
 import (
+	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	"math/big"
 	"testing"
 
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
-var PKs = simapp.CreateTestPubKeys(500)
+var PKs = sims.CreateTestPubKeys(500)
 
 func init() {
 	sdk.DefaultPowerReduction = sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil))

@@ -9,7 +9,7 @@ import (
 
 	"github.com/dustin/go-humanize"
 
-	"github.com/tendermint/tendermint/crypto/tmhash"
+	"github.com/cometbft/cometbft/crypto/tmhash"
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"

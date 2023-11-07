@@ -4,7 +4,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	ethtypes "github.com/evmos/ethermint/types"
+	ethtypes "github.com/decimalteam/ethermint/types"
 )
 
 // TokensToConsensusPower converts input tokens to potential consensus-engine power

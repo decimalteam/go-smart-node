@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	abci "github.com/tendermint/tendermint/abci/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -139,7 +139,7 @@ func processEventCreateToken(ea *EventAccumulator, event abci.Event, txHash stri
 				return fmt.Errorf("can't parse reserve '%s': %s", string(attr.Value), err.Error())
 			}
 		case "subTokenIds":
-			err := json.Unmarshal(attr.Value, &e.SubTokenIDs)
+			err := json.Unmarshal([]byte(attr.Value), &e.SubTokenIDs)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal subTokenIds: %s", err.Error())
 			}
@@ -192,7 +192,7 @@ func processEventMintNFT(ea *EventAccumulator, event abci.Event, txHash string) 
 				return fmt.Errorf("can't parse reserve '%s': %s", string(attr.Value), err.Error())
 			}
 		case "sub_token_ids":
-			err := json.Unmarshal(attr.Value, &e.SubTokenIDs)
+			err := json.Unmarshal([]byte(attr.Value), &e.SubTokenIDs)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal subTokenIds: %s", err.Error())
 			}
@@ -233,7 +233,7 @@ func processEventBurnNFT(ea *EventAccumulator, event abci.Event, txHash string) 
 			//	return fmt.Errorf("can't parse reserve '%s': %s", string(attr.Value), err.Error())
 			//}
 		case "sub_token_ids":
-			err := json.Unmarshal(attr.Value, &e.SubTokenIDs)
+			err := json.Unmarshal([]byte(attr.Value), &e.SubTokenIDs)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal subTokenIds: %s", err.Error())
 			}
@@ -300,7 +300,7 @@ func processEventUpdateReserve(ea *EventAccumulator, event abci.Event, txHash st
 				return fmt.Errorf("can't parse reserve '%s': %s", string(attr.Value), err.Error())
 			}
 		case "sub_token_ids":
-			err := json.Unmarshal(attr.Value, &e.SubTokenIDs)
+			err := json.Unmarshal([]byte(attr.Value), &e.SubTokenIDs)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal subTokenIds: %s", err.Error())
 			}
@@ -332,7 +332,7 @@ func processEventSendNFT(ea *EventAccumulator, event abci.Event, txHash string) 
 		case "recipient":
 			e.Recipient = string(attr.Value)
 		case "sub_token_ids":
-			err := json.Unmarshal(attr.Value, &e.SubTokenIDs)
+			err := json.Unmarshal([]byte(attr.Value), &e.SubTokenIDs)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal subTokenIds: %s", err.Error())
 			}

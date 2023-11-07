@@ -11,8 +11,8 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
+	"github.com/decimalteam/ethermint/crypto/ethsecp256k1"
 	ethereumCommon "github.com/ethereum/go-ethereum/common"
-	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )

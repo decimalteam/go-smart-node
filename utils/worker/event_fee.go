@@ -7,7 +7,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	abci "github.com/tendermint/tendermint/abci/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 )
 
 type EventPayCommission struct {
@@ -56,12 +56,12 @@ func processEventPayCommission(ea *EventAccumulator, event abci.Event, txHash st
 		case "payer":
 			e.Payer = string(attr.Value)
 		case "coins":
-			err = json.Unmarshal(attr.Value, &coins)
+			err = json.Unmarshal([]byte(attr.Value), &coins)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal coins: %s, value: '%s'", err.Error(), string(attr.Value))
 			}
 		case "burnt":
-			err = json.Unmarshal(attr.Value, &burnt)
+			err = json.Unmarshal([]byte(attr.Value), &burnt)
 			if err != nil {
 				return fmt.Errorf("can't unmarshal burnt coins: %s, value: '%s'", err.Error(), string(attr.Value))
 			}

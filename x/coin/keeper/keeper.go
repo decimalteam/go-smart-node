@@ -2,13 +2,13 @@ package keeper
 
 import (
 	"fmt"
-	evmkeeper "github.com/evmos/ethermint/x/evm/keeper"
+	evmkeeper "github.com/decimalteam/ethermint/x/evm/keeper"
 	"strings"
 
 	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdkmath "cosmossdk.io/math"
 
-	"github.com/tendermint/tendermint/libs/log"
+	"github.com/cometbft/cometbft/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	store "github.com/cosmos/cosmos-sdk/store/types"

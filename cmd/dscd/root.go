@@ -1,21 +1,22 @@
 package main
 
 import (
+	rosettaCmd "cosmossdk.io/tools/rosetta/cmd"
 	"errors"
 	"fmt"
+	dbm "github.com/cometbft/cometbft-db"
+	tmcfg "github.com/cometbft/cometbft/config"
+	tmcli "github.com/cometbft/cometbft/libs/cli"
+	"github.com/cometbft/cometbft/libs/log"
+	tmtypes "github.com/cometbft/cometbft/types"
+	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	"github.com/spf13/cast"
+	"github.com/spf13/cobra"
 	"io"
 	"os"
 	"path/filepath"
 
-	tmcfg "github.com/tendermint/tendermint/config"
-
-	"github.com/spf13/cast"
-	"github.com/spf13/cobra"
-
-	tmcli "github.com/tendermint/tendermint/libs/cli"
-	"github.com/tendermint/tendermint/libs/log"
-	dbm "github.com/tendermint/tm-db"
-
+	"cosmossdk.io/simapp/params"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
@@ -23,7 +24,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	sdkserver "github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
-	"github.com/cosmos/cosmos-sdk/simapp/params"
 	"github.com/cosmos/cosmos-sdk/snapshots"
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store"
@@ -34,12 +34,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
-	ethermintclient "github.com/evmos/ethermint/client"
-	"github.com/evmos/ethermint/client/debug"
-	"github.com/evmos/ethermint/encoding"
-	ethermintserver "github.com/evmos/ethermint/server"
-	servercfg "github.com/evmos/ethermint/server/config"
-	srvflags "github.com/evmos/ethermint/server/flags"
+	ethermintclient "github.com/decimalteam/ethermint/client"
+	"github.com/decimalteam/ethermint/client/debug"
+	"github.com/decimalteam/ethermint/encoding"
+	ethermintserver "github.com/decimalteam/ethermint/server"
+	servercfg "github.com/decimalteam/ethermint/server/config"
+	srvflags "github.com/decimalteam/ethermint/server/flags"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
@@ -62,7 +62,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithLegacyAmino(encodingConfig.Amino).
 		WithInput(os.Stdin).
 		WithAccountRetriever(types.AccountRetriever{}).
-		WithBroadcastMode(flags.BroadcastBlock).
+		WithBroadcastMode(flags.FlagBroadcastMode).
 		WithHomeDir(app.DefaultNodeHome).
 		WithKeyringOptions(dsckr.Option()).
 		WithViper(EnvPrefix)
@@ -115,7 +115,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			InitCmd(app.ModuleBasics, app.DefaultNodeHome),
 		),
 		SelfDelegationCmd(app.ModuleBasics, encodingConfig.TxConfig, app.DefaultNodeHome),
-		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
+		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome, genutiltypes.DefaultMessageValidator),
 		genutilcli.GenTxCmd(app.ModuleBasics, encodingConfig.TxConfig, banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
 		genutilcli.ValidateGenesisCmd(app.ModuleBasics),
 		AddGenesisAccountCmd(app.DefaultNodeHome),
@@ -126,7 +126,12 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	)
 
 	a := appCreator{encodingConfig}
-	ethermintserver.AddCommands(rootCmd, app.DefaultNodeHome, a.newApp, a.appExport, addModuleInitFlags)
+	ethermintserver.AddCommands(
+		rootCmd,
+		ethermintserver.NewDefaultStartOptions(a.newApp, app.DefaultNodeHome),
+		a.appExport,
+		addModuleInitFlags,
+	)
 
 	// Add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(
@@ -141,7 +146,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	}
 
 	// Add rosetta
-	rootCmd.AddCommand(sdkserver.RosettaCommand(encodingConfig.InterfaceRegistry, encodingConfig.Codec))
+	rootCmd.AddCommand(rosettaCmd.RosettaCommand(encodingConfig.InterfaceRegistry, encodingConfig.Codec))
 
 	return rootCmd, encodingConfig
 }
@@ -241,8 +246,9 @@ func (a appCreator) newApp(logger log.Logger, db dbm.DB, traceStore io.Writer, a
 		panic(err)
 	}
 
-	snapshotDir := filepath.Join(cast.ToString(appOpts.Get(flags.FlagHome)), "data", "snapshots")
-	snapshotDB, err := sdk.NewLevelDB("metadata", snapshotDir)
+	home := cast.ToString(appOpts.Get(flags.FlagHome))
+	snapshotDir := filepath.Join(home, "data", "snapshots")
+	snapshotDB, err := dbm.NewDB("metadata", sdkserver.GetAppDBBackend(appOpts), snapshotDir)
 	if err != nil {
 		panic(err)
 	}
@@ -251,6 +257,17 @@ func (a appCreator) newApp(logger log.Logger, db dbm.DB, traceStore io.Writer, a
 		panic(err)
 	}
 
+	var chainID string
+
+	// fallback to genesis chain-id
+	appGenesis, err := tmtypes.GenesisDocFromFile(filepath.Join(home, "config", "genesis.json"))
+	if err != nil {
+		// Setup chainId
+		chainID = cast.ToString(appOpts.Get(flags.FlagChainID))
+	} else {
+		chainID = appGenesis.ChainID
+	}
+	//appGenesis
 	dscApp := app.NewDSC(
 		logger,
 		db,
@@ -273,6 +290,7 @@ func (a appCreator) newApp(logger log.Logger, db dbm.DB, traceStore io.Writer, a
 			Interval:   cast.ToUint64(appOpts.Get(sdkserver.FlagStateSyncSnapshotInterval)),
 			KeepRecent: cast.ToUint32(appOpts.Get(sdkserver.FlagStateSyncSnapshotKeepRecent)),
 		}),
+		baseapp.SetChainID(chainID),
 	)
 
 	return dscApp
@@ -287,6 +305,7 @@ func (a appCreator) appExport(
 	forZeroHeight bool,
 	jailAllowedAddrs []string,
 	appOpts servertypes.AppOptions,
+	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
 	var dscApp *app.DSC
 	homePath, ok := appOpts.Get(flags.FlagHome).(string)
@@ -302,5 +321,5 @@ func (a appCreator) appExport(
 		}
 	}
 
-	return dscApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)
+	return dscApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
 }

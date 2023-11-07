@@ -357,11 +357,11 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_Records_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"legacy", "v1", "records"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Records_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"legacy", "v1", "records"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_Record_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"legacy", "v1", "record", "legacy_address"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Record_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"legacy", "v1", "record", "legacy_address"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_Check_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"legacy", "v1", "check", "pubkey"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Check_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"legacy", "v1", "check", "pubkey"}, "", runtime.AssumeColonVerbOpt(false)))
 )
 
 var (

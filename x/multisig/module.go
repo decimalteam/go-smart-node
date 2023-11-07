@@ -8,6 +8,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/client/cli"
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/multisig/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -16,7 +17,6 @@ import (
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
-	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 var (
@@ -122,11 +122,11 @@ func (AppModule) Name() string {
 	return types.ModuleName
 }
 
-// Route returns the module's message routing key.
-// Deprecated: use RegisterServices instead.
-func (AppModule) Route() sdk.Route {
-	return sdk.Route{}
-}
+//// Route returns the module's message routing key.
+//// Deprecated: use RegisterServices instead.
+//func (AppModule) Route() sdk.Route {
+//	return sdk.Route{}
+//}
 
 // QuerierRoute returns the module's query routing key.
 // Deprecated: use RegisterServices instead.
@@ -134,11 +134,11 @@ func (AppModule) QuerierRoute() string {
 	return types.QuerierRoute
 }
 
-// LegacyQuerierHandler returns the module's Querier.
-// Deprecated: use RegisterServices instead.
-func (AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier {
-	return nil
-}
+//// LegacyQuerierHandler returns the module's Querier.
+//// Deprecated: use RegisterServices instead.
+//func (AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier {
+//	return nil
+//}
 
 // RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {

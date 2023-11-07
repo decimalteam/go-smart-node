@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
@@ -33,7 +33,7 @@ func BeginBlocker(ctx sdk.Context, k Keeper, req abci.RequestBeginBlock) {
 	// who contributed to valid infractions
 	for _, evidence := range req.ByzantineValidators {
 		switch evidence.Type {
-		case abci.EvidenceType_DUPLICATE_VOTE:
+		case abci.MisbehaviorType_DUPLICATE_VOTE:
 			k.HandleDoubleSign(ctx, evidence.Validator.Address, evidence.Height, evidence.Time, evidence.Validator.Power, params)
 		default:
 			k.Logger(ctx).Error(fmt.Sprintf("ignored unknown evidence type: %s", evidence.Type))

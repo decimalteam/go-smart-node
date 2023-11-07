@@ -11,12 +11,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	cfg "github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tendermint/libs/cli"
-	tmos "github.com/tendermint/tendermint/libs/os"
-	tmrand "github.com/tendermint/tendermint/libs/rand"
-	pvm "github.com/tendermint/tendermint/privval"
-	tmtypes "github.com/tendermint/tendermint/types"
+	cfg "github.com/cometbft/cometbft/config"
+	"github.com/cometbft/cometbft/libs/cli"
+	tmos "github.com/cometbft/cometbft/libs/os"
+	tmrand "github.com/cometbft/cometbft/libs/rand"
+	pvm "github.com/cometbft/cometbft/privval"
+	tmtypes "github.com/cometbft/cometbft/types"
 
 	"github.com/cosmos/go-bip39"
 

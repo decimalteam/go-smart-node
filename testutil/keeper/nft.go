@@ -7,9 +7,9 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 )
 
 func GetBaseAppWithCustomKeeper(t *testing.T) (*app.DSC, sdk.Context) {

@@ -5,7 +5,7 @@ import (
 
 	proto "github.com/gogo/protobuf/proto"
 
-	abci "github.com/tendermint/tendermint/abci/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -36,8 +36,8 @@ func TypedEventToEvent(tev proto.Message) (sdk.Event, error) {
 		}
 		//
 		attrs = append(attrs, abci.EventAttribute{
-			Key:   []byte(k),
-			Value: value,
+			Key:   k,
+			Value: string(value),
 		})
 	}
 
