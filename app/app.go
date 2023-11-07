@@ -699,6 +699,7 @@ func NewDSC(
 		nfttypes.ModuleName,
 		legacytypes.ModuleName,
 		feetypes.ModuleName,
+		consensusparamtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -736,6 +737,7 @@ func NewDSC(
 		genutiltypes.ModuleName,
 		// NOTE: crisis module must go at the end to check for invariants on each module
 		crisistypes.ModuleName,
+		consensusparamtypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(app.CrisisKeeper)
