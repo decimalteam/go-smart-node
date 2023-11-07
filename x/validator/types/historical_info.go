@@ -29,6 +29,7 @@ func NewHistoricalInfo(header tmproto.Header, valSet Validators) HistoricalInfo 
 			Status:          v.Status,
 			Jailed:          v.Jailed,
 			Stake:           v.Stake,
+			Commission:      v.Commission,
 		})
 	}
 
