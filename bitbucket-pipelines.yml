@@ -494,8 +494,8 @@ pipelines:
             - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
             - dnf install -y epel-release
             - dnf install -y snappy gcc git which wget make
-            - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-            - tar -xvf go1.18.5.linux-amd64.tar.gz
+            - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+            - tar -xvf go1.21.3.linux-amd64.tar.gz
             - mv go /usr/local
             - export GOROOT=/usr/local/go
             - export GOPATH=~/go
@@ -538,8 +538,8 @@ pipelines:
             - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
             - dnf install -y epel-release
             - dnf install -y snappy gcc git which wget make
-            - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-            - tar -xvf go1.18.5.linux-amd64.tar.gz
+            - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+            - tar -xvf go1.21.3.linux-amd64.tar.gz
             - mv go /usr/local
             - export GOROOT=/usr/local/go
             - export GOPATH=~/go
@@ -582,8 +582,8 @@ pipelines:
             - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
             - dnf install -y epel-release
             - dnf install -y snappy gcc git which wget make
-            - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-            - tar -xvf go1.18.5.linux-amd64.tar.gz
+            - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+            - tar -xvf go1.21.3.linux-amd64.tar.gz
             - mv go /usr/local
             - export GOROOT=/usr/local/go
             - export GOPATH=~/go

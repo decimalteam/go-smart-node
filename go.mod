@@ -17,7 +17,6 @@ require (
 	github.com/decimalteam/ethermint v0.22.3
 	github.com/dustin/go-humanize v1.0.1
 	github.com/ethereum/go-ethereum v1.11.5
-	//github.com/decimalteam/ethermint v0.20.0-rc4
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/mock v1.6.0
@@ -33,8 +32,6 @@ require (
 	github.com/spf13/viper v1.16.0
 	github.com/status-im/keycard-go v0.3.2
 	github.com/stretchr/testify v1.8.4
-	//github.com/cometbft/cometbft v0.34.23
-	//github.com/tendermint/tm-db v0.6.7
 	go.opencensus.io v0.24.0
 	golang.org/x/crypto v0.14.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20230629202037-9506855d4529
