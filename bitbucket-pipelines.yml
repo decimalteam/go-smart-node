@@ -15,8 +15,8 @@ definitions:
           - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
           - dnf install -y epel-release
           - dnf install -y  leveldb leveldb-devel snappy gcc git which wget make --nobest
-          - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-          - tar -xvf go1.18.5.linux-amd64.tar.gz
+          - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+          - tar -xvf go1.21.3.linux-amd64.tar.gz
           - mv go /usr/local
           - export GOROOT=/usr/local/go
           - export GOPATH=~/go
@@ -79,8 +79,8 @@ definitions:
             script:
               - dnf install -y epel-release
               - dnf install -y tar leveldb leveldb-devel snappy gcc git which wget make --nobest
-              - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-              - tar -xvf go1.18.5.linux-amd64.tar.gz
+              - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+              - tar -xvf go1.21.3.linux-amd64.tar.gz
               - mv go /usr/local
               - export GOROOT=/usr/local/go
               - export GOPATH=~/go
@@ -113,8 +113,8 @@ definitions:
             script:
               - dnf install -y epel-release
               - dnf install -y tar leveldb leveldb-devel snappy gcc git which wget make --nobest
-              - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-              - tar -xvf go1.18.5.linux-amd64.tar.gz
+              - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+              - tar -xvf go1.21.3.linux-amd64.tar.gz
               - mv go /usr/local
               - export GOROOT=/usr/local/go
               - export GOPATH=~/go
@@ -149,8 +149,8 @@ definitions:
                - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
                - dnf install -y epel-release
                - dnf install -y leveldb leveldb-devel snappy gcc git which wget make --nobest
-               - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-               - tar -xvf go1.18.5.linux-amd64.tar.gz
+               - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+               - tar -xvf go1.21.3.linux-amd64.tar.gz
                - mv go /usr/local
                - export GOROOT=/usr/local/go
                - export GOPATH=~/go
@@ -179,8 +179,8 @@ definitions:
             script:
               - dnf install -y oracle-epel-release-el9
               - dnf install -y tar leveldb leveldb-devel snappy gcc git which wget make --nobest
-              - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-              - tar -xvf go1.18.5.linux-amd64.tar.gz
+              - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+              - tar -xvf go1.21.3.linux-amd64.tar.gz
               - mv go /usr/local
               - export GOROOT=/usr/local/go
               - export GOPATH=~/go
@@ -213,8 +213,8 @@ definitions:
             script:
               - dnf install -y oracle-epel-release-el8
               - dnf install -y tar leveldb leveldb-devel snappy gcc git which wget make --nobest
-              - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-              - tar -xvf go1.18.5.linux-amd64.tar.gz
+              - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+              - tar -xvf go1.21.3.linux-amd64.tar.gz
               - mv go /usr/local
               - export GOROOT=/usr/local/go
               - export GOPATH=~/go
@@ -247,8 +247,8 @@ definitions:
             script:
               - yum install -y epel-release
               - yum install -y leveldb leveldb-devel snappy gcc git which wget make
-              - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-              - tar -xvf go1.18.5.linux-amd64.tar.gz
+              - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+              - tar -xvf go1.21.3.linux-amd64.tar.gz
               - mv go /usr/local
               - export GOROOT=/usr/local/go
               - export GOPATH=~/go
@@ -278,8 +278,8 @@ definitions:
               - apt-get update -y
               - apt-get install -y build-essential
               - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
-              - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-              - tar -xvf go1.18.5.linux-amd64.tar.gz
+              - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+              - tar -xvf go1.21.3.linux-amd64.tar.gz
               - mv go /usr/local
               - export GOROOT=/usr/local/go
               - export GOPATH=~/go
@@ -309,8 +309,8 @@ definitions:
               - apt-get update -y
               - apt-get install -y build-essential
               - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
-              - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-              - tar -xvf go1.18.5.linux-amd64.tar.gz
+              - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+              - tar -xvf go1.21.3.linux-amd64.tar.gz
               - mv go /usr/local
               - export GOROOT=/usr/local/go
               - export GOPATH=~/go
@@ -340,8 +340,8 @@ definitions:
               - apt-get update -y
               - apt-get install -y build-essential
               - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
-              - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-              - tar -xvf go1.18.5.linux-amd64.tar.gz
+              - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+              - tar -xvf go1.21.3.linux-amd64.tar.gz
               - mv go /usr/local
               - export GOROOT=/usr/local/go
               - export GOPATH=~/go
@@ -371,8 +371,8 @@ definitions:
               - apt-get update -y
               - apt-get install -y build-essential
               - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
-              - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-              - tar -xvf go1.18.5.linux-amd64.tar.gz
+              - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+              - tar -xvf go1.21.3.linux-amd64.tar.gz
               - mv go /usr/local
               - export GOROOT=/usr/local/go
               - export GOPATH=~/go
@@ -402,8 +402,8 @@ definitions:
               - apt-get update -y
               - apt-get install -y build-essential
               - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
-              - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-              - tar -xvf go1.18.5.linux-amd64.tar.gz
+              - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+              - tar -xvf go1.21.3.linux-amd64.tar.gz
               - mv go /usr/local
               - export GOROOT=/usr/local/go
               - export GOPATH=~/go
@@ -433,8 +433,8 @@ definitions:
               - apt-get update -y
               - apt-get install -y build-essential
               - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
-              - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-              - tar -xvf go1.18.5.linux-amd64.tar.gz
+              - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+              - tar -xvf go1.21.3.linux-amd64.tar.gz
               - mv go /usr/local
               - export GOROOT=/usr/local/go
               - export GOPATH=~/go
@@ -494,8 +494,8 @@ pipelines:
             - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
             - dnf install -y epel-release
             - dnf install -y snappy gcc git which wget make
-            - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-            - tar -xvf go1.18.5.linux-amd64.tar.gz
+            - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+            - tar -xvf go1.21.3.linux-amd64.tar.gz
             - mv go /usr/local
             - export GOROOT=/usr/local/go
             - export GOPATH=~/go
@@ -538,8 +538,8 @@ pipelines:
             - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
             - dnf install -y epel-release
             - dnf install -y snappy gcc git which wget make
-            - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-            - tar -xvf go1.18.5.linux-amd64.tar.gz
+            - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+            - tar -xvf go1.21.3.linux-amd64.tar.gz
             - mv go /usr/local
             - export GOROOT=/usr/local/go
             - export GOPATH=~/go
@@ -582,8 +582,8 @@ pipelines:
             - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
             - dnf install -y epel-release
             - dnf install -y snappy gcc git which wget make
-            - wget https://golang.org/dl/go1.18.5.linux-amd64.tar.gz
-            - tar -xvf go1.18.5.linux-amd64.tar.gz
+            - wget https://golang.org/dl/go1.21.3.linux-amd64.tar.gz
+            - tar -xvf go1.21.3.linux-amd64.tar.gz
             - mv go /usr/local
             - export GOROOT=/usr/local/go
             - export GOPATH=~/go
