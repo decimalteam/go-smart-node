@@ -15,7 +15,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 
-	ethtypes "github.com/evmos/ethermint/types"
+	ethtypes "github.com/decimalteam/ethermint/types"
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"

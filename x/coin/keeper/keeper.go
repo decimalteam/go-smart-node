@@ -2,7 +2,7 @@ package keeper
 
 import (
 	"fmt"
-	evmkeeper "github.com/evmos/ethermint/x/evm/keeper"
+	evmkeeper "github.com/decimalteam/ethermint/x/evm/keeper"
 	"strings"
 
 	feeTypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"

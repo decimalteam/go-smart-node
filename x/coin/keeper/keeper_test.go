@@ -4,11 +4,11 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/precompile/drc20cosmos"
 	"context"
 	"fmt"
+	"github.com/decimalteam/ethermint/crypto/ethsecp256k1"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/evmos/ethermint/crypto/ethsecp256k1"
-	evmtypes "github.com/evmos/ethermint/x/evm/types"
 	"math/big"
 	"testing"
 

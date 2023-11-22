@@ -12,11 +12,11 @@ import (
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
-	ibcante "github.com/cosmos/ibc-go/v5/modules/core/ante"
-	ibckeeper "github.com/cosmos/ibc-go/v5/modules/core/keeper"
+	ibcante "github.com/cosmos/ibc-go/v6/modules/core/ante"
+	ibckeeper "github.com/cosmos/ibc-go/v6/modules/core/keeper"
 
-	ethante "github.com/evmos/ethermint/app/ante"
-	evmtypes "github.com/evmos/ethermint/x/evm/types"
+	ethante "github.com/decimalteam/ethermint/app/ante"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
@@ -140,7 +140,7 @@ func newCosmosAnteHandlerEip712(options HandlerOptions) sdk.AnteHandler {
 		authante.NewValidateSigCountDecorator(options.AccountKeeper),
 		authante.NewSigGasConsumeDecorator(options.AccountKeeper, options.SigGasConsumer),
 		// Note: signature verification uses EIP instead of the cosmos signature validator
-		NewLegacyEip712SigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
+		ethante.NewLegacyEip712SigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		NewPostCreateAccountDecorator(options.AccountKeeper), // should be after SigVerificationDecorator
 		NewLegacyActualizerDecorator(options.LegacyKeeper),
 		authante.NewIncrementSequenceDecorator(options.AccountKeeper),

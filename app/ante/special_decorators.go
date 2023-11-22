@@ -3,7 +3,7 @@ package ante
 import (
 	coin "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	evmtypes "github.com/evmos/ethermint/x/evm/types"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 )
 
 // Out limits: only 1 message in transaction

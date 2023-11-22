@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	cosmosAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/evmos/ethermint/crypto/ethsecp256k1"
+	"github.com/decimalteam/ethermint/crypto/ethsecp256k1"
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 )
