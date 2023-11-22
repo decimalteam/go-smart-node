@@ -9,7 +9,7 @@ import (
 	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 )
 
 func (s *KeeperTestSuite) TestGRPCQueryCoinPrices() {

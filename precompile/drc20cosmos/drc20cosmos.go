@@ -14,13 +14,13 @@ import (
 
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	ethante "github.com/decimalteam/ethermint/app/ante"
+	"github.com/decimalteam/ethermint/x/evm/statedb"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
+	evm "github.com/decimalteam/ethermint/x/evm/vm"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	ethante "github.com/evmos/ethermint/app/ante"
-	"github.com/evmos/ethermint/x/evm/statedb"
-	evmtypes "github.com/evmos/ethermint/x/evm/types"
-	evm "github.com/evmos/ethermint/x/evm/vm"
 )
 
 const (
@@ -61,7 +61,7 @@ type Drc20Cosmos struct {
 	bankKeeper bankkeeper.Keeper
 	stateDB    *statedb.StateDB
 	evm        evm.EVM
-	cfg        *evmtypes.EVMConfig
+	cfg        *statedb.EVMConfig
 	Coin       types.Coin
 }
 
@@ -99,7 +99,7 @@ func NewDrc20Cosmos(ctx sdk.Context,
 
 	coreMsg := createEthMessage(ethMsg.AsTransaction())
 
-	cfg := &evmtypes.EVMConfig{
+	cfg := &statedb.EVMConfig{
 		ChainConfig: ethCfg,
 		Params:      params,
 		CoinBase:    common.Address{},
