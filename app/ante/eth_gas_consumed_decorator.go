@@ -70,7 +70,12 @@ func (egcd EthGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 	blockHeight := big.NewInt(ctx.BlockHeight())
 	homestead := ethCfg.IsHomestead(blockHeight)
 	istanbul := ethCfg.IsIstanbul(blockHeight)
-	evmDenom := params.EvmDenom
+
+	evmDenom := params.GetEvmDenom()
+	// if node is pruned, params is empty. Return invalid value
+	if evmDenom == "" {
+		evmDenom = config.BaseDenom
+	}
 	gasWanted := uint64(0)
 	baseFee := egcd.evmKeeper.GetBaseFee(ctx, ethCfg)
 
