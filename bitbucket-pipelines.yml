@@ -4,6 +4,15 @@ image: python:3.8.2
 definitions:
   steps:
 
+    - step: &mirror
+        name: Sync GitHub Mirror
+        image: alpine/git:latest
+        clone:
+          enabled: false
+        script:
+          - git clone --bare git@bitbucket.org:decimalteam/go-smart-node.git
+          - cd go-smart-node.git
+          - git push --mirror git@github.com:decimalteam/go-smart-node.git
     - step: &build
         name: Build
         image: centos:centos8
@@ -465,27 +474,22 @@ options:
 
 pipelines:
   default:
-    - step:
-        name: Sync GitHub Mirror
-        image: alpine/git:latest
-        clone:
-          enabled: false
-        script:
-          - git clone --bare git@bitbucket.org:decimalteam/go-smart-node.git
-          - cd go-smart-node.git
-          - git push --mirror git@github.com:decimalteam/go-smart-node.git
+    - step: *mirror
 
   branches:
     master:
+      - step: *mirror
       - step: *build
 
     staging:
+      - step: *mirror
       - step: *build
       - step:
           deployment: Staging
           <<: *deploy
 
     develop-new:
+      - step: *mirror
       - step: *build
       - step:
           deployment: Test
