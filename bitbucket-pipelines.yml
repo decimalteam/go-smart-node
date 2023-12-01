@@ -464,8 +464,18 @@ options:
   max-time: 30
 
 pipelines:
-  branches:
+  default:
+    - step:
+        name: Sync GitHub Mirror
+        image: alpine/git:latest
+        clone:
+          enabled: false
+        script:
+          - git clone --bare git@bitbucket.org:decimalteam/go-smart-node.git
+          - cd go-smart-node.git
+          - git push --mirror git@github.com:decimalteam/go-smart-node.git
 
+  branches:
     master:
       - step: *build
 
@@ -661,3 +671,4 @@ pipelines:
                 DELETE_FLAG: "true"
                 DEBUG: "true"
                 EXTRA_ARGS: "-aP"
+
