@@ -1,6 +1,6 @@
 module bitbucket.org/decimalteam/go-smart-node
 
-go 1.18
+go 1.21
 
 require (
 	cosmossdk.io/errors v1.0.0-beta.7
