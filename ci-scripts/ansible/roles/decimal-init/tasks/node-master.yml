@@ -25,8 +25,5 @@
 - name: Sets chain-id in config.toml
   shell: '{{ decimal_bin }}/dscd config chain-id {{ chain_id }}'
 
-- name: Set trust mode for the node in config.toml
-  shell: '{{ decimal_bin }}/dscd config trust-node true'
-
 - name: Include tasks with common (master & slave) final actions
   include: node-common-in-last.yml
