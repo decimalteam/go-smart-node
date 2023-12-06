@@ -1,5 +1,5 @@
 ---
-image: python:3.8.2
+image: python:3.8.10
 
 definitions:
   steps:
