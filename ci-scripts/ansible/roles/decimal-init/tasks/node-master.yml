@@ -39,6 +39,22 @@
   template:
     src: ./genesis.json.j2
     dest: '{{ decimal_data }}/daemon/config/genesis.json'
+    mode: '0640'
+  when: "'main' in inventory_hostname"
+
+- name: Generate genesis.json file from template devnet
+  template:
+    src: ./genesis-devnet.json.j2
+    dest: '{{ decimal_data }}/daemon/config/genesis.json'
+    mode: '0640'
+  when: "'dev' in inventory_hostname"
+
+- name: Generate genesis.json file from template testnet
+  template:
+    src: ./genesis-testnet.json.j2
+    dest: '{{ decimal_data }}/daemon/config/genesis.json'
+    mode: '0640'
+  when: "'test' in inventory_hostname"
 
 - name: Sets chain-id in config.toml
   shell: '{{ decimal_bin }}/dscd config chain-id {{ chain_id }}'
