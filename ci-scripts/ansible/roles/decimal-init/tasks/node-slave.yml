@@ -2,28 +2,76 @@
 - name: Include tasks for clear data and update binary files
   include: node-common-at-first.yml
 
-- name: Initialize private validator, p2p, genesis, and application configuration files
-  shell: '{{ decimal_bin }}/dscd init $(hostname) --chain-id={{ chain_id }}'
-  register: initialization
+#- name: Initialize private validator, p2p, genesis, and application configuration files
+#  shell: '{{ decimal_bin }}/dscd init $(hostname) --chain-id={{ chain_id }}'
+#  register: initialization
 
-- debug: var=initialization
+- name: Create config directory if necessary
+  file:
+    path: '{{ decimal_data }}/daemon/config'
+    state: directory
+    recurse: true
 
-- name: Get genesis blockchain file from validator
-  uri:
-    url: 'http://{{ src_genesis }}/rpc/genesis'
-    return_content: true
-  register: content
+- name: Create data directory if necessary
+  file:
+    path: '{{ decimal_data }}/daemon/data'
+    state: directory
+    recurse: true
 
-- set_fact:
-    content: '{{ content.json.result.genesis }}'
+- name: Copy app.toml
+  shell: 'cp -b -f {{ decimal_keys }}/app.toml {{ decimal_data }}/daemon/config/app.toml'
 
-- debug: var=content
+- name: Copy node_key.json
+  shell: 'cp -b -f {{ decimal_keys }}/node_key.json {{ decimal_data }}/daemon/config/node_key.json'
 
-- name: Save genesis file
-  copy:
-    content: '{{ content }}'
+- name: Copy config.toml
+  shell: 'cp -b -f {{ decimal_keys }}/config.toml {{ decimal_data }}/daemon/config/config.toml'
+
+- name: Copy validator key
+  shell: 'cp -b -f {{ decimal_keys }}/priv_validator_key.json {{ decimal_data }}/daemon/config/priv_validator_key.json'
+
+- name: Copy private validator state file
+  shell: 'cp -b -f {{ decimal_keys }}/priv_validator_state.json {{ decimal_data }}/daemon/data/priv_validator_state.json'
+
+#- debug: var=initialization
+
+#- name: Get genesis blockchain file from validator
+#  uri:
+#    url: 'https://{{ src_genesis }}/rpc/genesis'
+#    return_content: true
+#  register: content
+
+#- set_fact:
+#    content: '{{ content.json.result.genesis }}'
+
+#- debug: var=content
+
+#- name: Save genesis file
+#  copy:
+#    content: '{{ content }}'
+#    dest: '{{ decimal_data }}/daemon/config/genesis.json'
+#    mode: '0750'
+
+- name: Generate genesis.json file from template
+  template:
+    src: ./genesis.json.j2
     dest: '{{ decimal_data }}/daemon/config/genesis.json'
-    mode: '0750'
+    mode: '0640'
+  when: "'main' in inventory_hostname"
+
+- name: Generate genesis.json file from template devnet
+  template:
+    src: ./genesis-devnet.json.j2
+    dest: '{{ decimal_data }}/daemon/config/genesis.json'
+    mode: '0640'
+  when: "'dev' in inventory_hostname"
+
+- name: Generate genesis.json file from template testnet
+  template:
+    src: ./genesis-testnet.json.j2
+    dest: '{{ decimal_data }}/daemon/config/genesis.json'
+    mode: '0640'
+  when: "'test' in inventory_hostname"
 
 - name: Include tasks with common (master & slave) final actions
   include: node-common-in-last.yml
