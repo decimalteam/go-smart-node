@@ -1,5 +1,5 @@
 ---
-image: python:3.8.10
+image: python:3.8.18
 
 definitions:
   steps:
@@ -13,6 +13,7 @@ definitions:
           - git clone --bare git@bitbucket.org:decimalteam/go-smart-node.git
           - cd go-smart-node.git
           - git push --mirror git@github.com:decimalteam/go-smart-node.git
+
     - step: &build
         name: Build
         image: centos:centos8
@@ -408,9 +409,6 @@ options:
   max-time: 30
 
 pipelines:
-  default:
-    - step: *mirror
-
   branches:
     master:
       - step: *mirror
