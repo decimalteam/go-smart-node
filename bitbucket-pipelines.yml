@@ -1,5 +1,5 @@
 ---
-image: python:3.8.10
+image: python:3.8.18
 
 definitions:
   steps:
@@ -425,9 +425,6 @@ options:
   max-time: 30
 
 pipelines:
-  default:
-    - step: *mirror
-
   branches:
     master:
       - step: *mirror
