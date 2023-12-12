@@ -414,7 +414,7 @@ pipelines:
       - step: *mirror
       - step: *build
 
-    staging:
+    stage:
       - step: *mirror
       - step: *build
       - step:
