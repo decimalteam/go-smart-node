@@ -2,7 +2,6 @@
 dev-validator-01            ansible_host=91.219.31.205 ansible_port=2251
 dev-validator-02            ansible_host=91.219.31.205 ansible_port=2252
 dev-validator-03            ansible_host=91.219.31.205 ansible_port=2253
-backup-testnet              ansible_host=185.242.122.78
 
 [slave-host-devnet]
 dev-gw-backend-01           ansible_host=91.219.31.205 ansible_port=2231
@@ -26,6 +25,7 @@ dev-explorer-worker-02      ansible_host=91.219.31.205 ansible_port=2226
 test-validator-01            ansible_host=185.242.122.126 ansible_port=2251
 test-validator-02            ansible_host=185.242.122.126 ansible_port=2252
 test-validator-03            ansible_host=185.242.122.126 ansible_port=2253
+backup-testnet               ansible_host=185.242.122.78
 
 [slave-host-testnet]
 test-gw-backend-01           ansible_host=185.242.122.126 ansible_port=2231
