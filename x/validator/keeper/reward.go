@@ -123,17 +123,33 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 			}
 			remainder = remainder.Sub(reward)
 			// event
-			delEvent := types.DelegatorReward{
-				Delegator: del.Delegator,
-				Coins: []types.StakeReward{
-					{
-						ID:     k.BaseDenom(ctx),
-						Reward: reward,
+			if del.GetStake().GetType() != types.StakeType_NFT {
+				delEvent := types.DelegatorReward{
+					Delegator: del.Delegator,
+					Coins: []types.StakeReward{
+						{
+							ID:       k.BaseDenom(ctx),
+							Reward:   reward,
+							RewardID: del.GetStake().GetID(),
+						},
 					},
-				},
-				NFTs: nil,
+					NFTs: nil,
+				}
+				valEvent.Delegators = append(valEvent.Delegators, delEvent)
+			} else {
+				nftEvent := types.DelegatorReward{
+					Delegator: del.Delegator,
+					Coins:     nil,
+					NFTs: []types.StakeReward{
+						{
+							ID:       del.GetStake().GetID(),
+							Reward:   reward,
+							RewardID: del.GetStake().GetID(),
+						},
+					},
+				}
+				valEvent.Delegators = append(valEvent.Delegators, nftEvent)
 			}
-			valEvent.Delegators = append(valEvent.Delegators, delEvent)
 		}
 		// update validator rewards
 		valRewards, err := k.GetValidatorRS(ctx, validator)
