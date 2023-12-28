@@ -116,14 +116,14 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 				continue
 			}
 			// pay reward
-
 			err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, del.GetDelegator(), sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), reward)))
 			if err != nil {
 				continue
 			}
 			remainder = remainder.Sub(reward)
 			// event
-			if del.GetStake().GetType() != types.StakeType_NFT {
+			if del.GetStake().GetType() == types.StakeType_Coin {
+				// rewards coins
 				delEvent := types.DelegatorReward{
 					Delegator: del.Delegator,
 					Coins: []types.StakeReward{
@@ -136,7 +136,9 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 					NFTs: nil,
 				}
 				valEvent.Delegators = append(valEvent.Delegators, delEvent)
-			} else {
+			}
+			if del.GetStake().GetType() == types.StakeType_NFT {
+				// rewards nft
 				nftEvent := types.DelegatorReward{
 					Delegator: del.Delegator,
 					Coins:     nil,
