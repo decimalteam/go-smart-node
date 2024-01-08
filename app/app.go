@@ -1046,7 +1046,7 @@ func initParamsKeeper(
 	// IBC subspaces
 	paramsKeeper.Subspace(ibchost.ModuleName)
 	// Ethermint subspaces
-	paramsKeeper.Subspace(evmtypes.ModuleName)
+	paramsKeeper.Subspace(evmtypes.ModuleName).WithKeyTable(evmtypes.ParamKeyTable())
 	//paramsKeeper.Subspace(recoverytypes.ModuleName)
 	// Decimal subspaces
 	paramsKeeper.Subspace(cointypes.ModuleName)
