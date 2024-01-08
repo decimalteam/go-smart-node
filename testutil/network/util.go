@@ -28,8 +28,8 @@ import (
 	govv1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/evmos/ethermint/server"
-	evmtypes "github.com/evmos/ethermint/x/evm/types"
+	"github.com/decimalteam/ethermint/server"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 )
 
 func startInProcess(cfg Config, val *Validator) error {

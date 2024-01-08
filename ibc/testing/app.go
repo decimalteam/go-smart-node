@@ -20,7 +20,7 @@ import (
 
 	ibcgotesting "github.com/cosmos/ibc-go/v5/testing"
 
-	ethermint "github.com/evmos/ethermint/types"
+	ethermint "github.com/decimalteam/ethermint/types"
 
 	app "bitbucket.org/decimalteam/go-smart-node/app"
 )

@@ -34,12 +34,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
-	ethermintclient "github.com/evmos/ethermint/client"
-	"github.com/evmos/ethermint/client/debug"
-	"github.com/evmos/ethermint/encoding"
-	ethermintserver "github.com/evmos/ethermint/server"
-	servercfg "github.com/evmos/ethermint/server/config"
-	srvflags "github.com/evmos/ethermint/server/flags"
+	ethermintclient "github.com/decimalteam/ethermint/client"
+	"github.com/decimalteam/ethermint/client/debug"
+	"github.com/decimalteam/ethermint/encoding"
+	ethermintserver "github.com/decimalteam/ethermint/server"
+	servercfg "github.com/decimalteam/ethermint/server/config"
+	srvflags "github.com/decimalteam/ethermint/server/flags"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"

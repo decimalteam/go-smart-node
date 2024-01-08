@@ -87,16 +87,16 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v6/modules/core/keeper"
 
 	// Ethermint
-	ethencoding "github.com/evmos/ethermint/encoding"
-	ethsrvflags "github.com/evmos/ethermint/server/flags"
-	ethtypes "github.com/evmos/ethermint/types"
+	ethencoding "github.com/decimalteam/ethermint/encoding"
+	ethsrvflags "github.com/decimalteam/ethermint/server/flags"
+	ethtypes "github.com/decimalteam/ethermint/types"
 
 	// Ethermint modules
-	evm "github.com/evmos/ethermint/x/evm"
-	evmkeeper "github.com/evmos/ethermint/x/evm/keeper"
-	evmtypes "github.com/evmos/ethermint/x/evm/types"
-	evmgeth "github.com/evmos/ethermint/x/evm/vm/geth"
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	evm "github.com/decimalteam/ethermint/x/evm"
+	evmkeeper "github.com/decimalteam/ethermint/x/evm/keeper"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
+	evmgeth "github.com/decimalteam/ethermint/x/evm/vm/geth"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 
 	// Unnamed import of statik for swagger UI support
 	// _ "bitbucket.org/decimalteam/go-smart-node/client/docs/statik"

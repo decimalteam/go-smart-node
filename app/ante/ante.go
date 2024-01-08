@@ -6,7 +6,7 @@ import (
 
 	authante "github.com/cosmos/cosmos-sdk/x/auth/ante"
 
-	ethante "github.com/evmos/ethermint/app/ante"
+	ethante "github.com/decimalteam/ethermint/app/ante"
 )
 
 // NewAnteHandler returns an ante handler responsible for attempting to route an
