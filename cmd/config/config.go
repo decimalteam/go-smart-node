@@ -48,6 +48,8 @@ const (
 	// BaseDenom defines to the default denomination used in Decimal (staking, EVM, governance, etc.)
 	// TODO: Load it from
 	BaseDenom = "del"
+
+	FlagPruningForValidatorOnly = "pruning-for-validator-only"
 )
 
 var (

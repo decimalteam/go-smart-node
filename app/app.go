@@ -490,7 +490,6 @@ func NewDSC(
 		app.BankKeeper,
 		&app.CoinKeeper,
 		app.AccountKeeper,
-		cmdcfg.BaseDenom,
 		ante.CalculateFee,
 	)
 	app.ValidatorKeeper = validatorkeeper.NewKeeper(
@@ -523,9 +522,11 @@ func NewDSC(
 
 	// WARNING: Setting up dummy hooks is disabled because it causes doubling ABCI events in EVM transactions.
 	// NOTE: Since we do not actually use any EVM hooks lets them will be unset.
-	// app.EvmKeeper = app.EvmKeeper.SetHooks(
-	// 	evmkeeper.NewMultiEvmHooks(),
-	// )
+	app.EvmKeeper = app.EvmKeeper.SetHooks(
+		evmkeeper.NewMultiEvmHooks(
+			app.CoinKeeper.Hooks(),
+		),
+	)
 
 	// Create upgrade keeper
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(

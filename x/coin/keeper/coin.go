@@ -67,7 +67,7 @@ func (k *Keeper) GetCoin(ctx sdk.Context, denom string) (coin types.Coin, err er
 	return
 }
 
-// GetCoin returns the coin if exists in KVStore.
+// IsCoinExists returns the coin if exists in KVStore.
 func (k *Keeper) IsCoinExists(ctx sdk.Context, denom string) bool {
 	store := ctx.KVStore(k.storeKey)
 	return store.Has(types.GetCoinKey(denom))

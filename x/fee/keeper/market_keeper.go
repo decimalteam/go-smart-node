@@ -1,11 +1,10 @@
 package keeper
 
 import (
-	"math/big"
-
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
+	"math/big"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -32,8 +31,8 @@ func (k Keeper) GetParams(ctx sdk.Context) feemarkettypes.Params {
 	// TODO: watch for new params
 	return feemarkettypes.NewParams(
 		false,                                  //noBaseFee bool,
-		1,                                      //baseFeeChangeDenom,
-		1,                                      //elasticityMultiplier uint32,
+		8,                                      //baseFeeChangeDenom,
+		2,                                      //elasticityMultiplier uint32,
 		k.GetBaseFee(ctx).Uint64(),             //baseFee uint64,
 		0,                                      //enableHeight int64,
 		minGasPrice,                            //minGasPrice sdk.Dec,

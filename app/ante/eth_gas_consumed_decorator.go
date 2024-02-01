@@ -70,6 +70,7 @@ func (egcd EthGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 	blockHeight := big.NewInt(ctx.BlockHeight())
 	homestead := ethCfg.IsHomestead(blockHeight)
 	istanbul := ethCfg.IsIstanbul(blockHeight)
+	isShanghai := ethCfg.IsShanghai(blockHeight, uint64(ctx.BlockTime().Unix()))
 	evmDenom := params.EvmDenom
 	gasWanted := uint64(0)
 	baseFee := egcd.evmKeeper.GetBaseFee(ctx, ethCfg)
@@ -99,7 +100,7 @@ func (egcd EthGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 			gasWanted += txData.GetGas()
 		}
 
-		fees, err := evmkeeper.VerifyFee(txData, evmDenom, baseFee, homestead, istanbul, ctx.IsCheckTx())
+		fees, err := evmkeeper.VerifyFee(txData, evmDenom, baseFee, homestead, istanbul, isShanghai, ctx.IsCheckTx())
 		if err != nil {
 			return ctx, sdkerrors.Wrapf(err, "failed to verify the fees")
 		}
