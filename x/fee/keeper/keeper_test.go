@@ -88,7 +88,6 @@ func (s *KeeperTestSuite) SetupTest() {
 		bankKeeper,
 		coinKeeper,
 		authKeeper,
-		baseDenom,
 		ante.CalculateFee,
 	)
 	dp := types.DefaultParams()

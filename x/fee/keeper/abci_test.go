@@ -80,7 +80,6 @@ func createTestInput(t *testing.T) (*codec.LegacyAmino, *app.DSC, sdk.Context) {
 		dsc.BankKeeper,
 		&dsc.CoinKeeper,
 		dsc.AccountKeeper,
-		cmdcfg.BaseDenom,
 		ante.CalculateFee,
 	)
 	return dsc.LegacyAmino(), dsc, ctx
