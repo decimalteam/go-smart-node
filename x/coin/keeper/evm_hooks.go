@@ -10,10 +10,10 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"cosmossdk.io/math"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
-	web3hexutil "github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"google.golang.org/grpc/codes"
@@ -213,15 +213,17 @@ func (k *Keeper) CreateCoinEvent(ctx sdk.Context, reserve *big.Int, token contra
 	// get authority address
 	authAddr := authtypes.NewModuleAddress(cointypes.ModuleName)
 
+	fmt.Print(reserve)
+
 	// Create new coin instance
 	var coin = types.Coin{
 		Title:       token.Name,
 		Denom:       coinDenom,
 		CRR:         uint32(token.Crr),
-		Reserve:     math.NewInt((*web3hexutil.Big)(reserve).ToInt().Int64()),
-		Volume:      math.NewInt(token.InitialMint.Int64()),
-		LimitVolume: math.NewInt(token.MaxTotalSupply.Int64()),
-		MinVolume:   math.NewInt(token.MinTotalSupply.Int64()),
+		Reserve:     math.NewIntFromBigInt(reserve),
+		Volume:      math.NewIntFromBigInt(token.InitialMint),
+		LimitVolume: math.NewIntFromBigInt(token.MaxTotalSupply),
+		MinVolume:   math.NewIntFromBigInt(token.MinTotalSupply),
 		Creator:     authAddr.String(),
 		Identity:    token.Identity,
 	}
