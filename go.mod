@@ -9,7 +9,7 @@ require (
 	github.com/cosmos/cosmos-proto v1.0.0-beta.3
 	github.com/cosmos/cosmos-sdk v0.46.16
 	github.com/cosmos/go-bip39 v1.0.0
-	github.com/cosmos/ibc-go/v6 v6.1.0
+	github.com/cosmos/ibc-go/v6 v6.2.1
 	github.com/decimalteam/ethermint v0.22.7
 	github.com/dustin/go-humanize v1.0.0
 	github.com/ethereum/go-ethereum v1.13.11
