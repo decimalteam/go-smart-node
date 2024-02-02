@@ -53,6 +53,9 @@ message Coin {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
+
+  // drc20_address is the hex address of ERC20 contract token
+  string drc20_address = 10 [ (gogoproto.customname) = "DRC20Contract" ];
 }
 
 // Check defines the redeemed check.
