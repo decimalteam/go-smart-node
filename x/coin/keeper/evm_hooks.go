@@ -54,7 +54,7 @@ func (h Hooks) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *etht
 func (k Keeper) PostTxProcessing(
 	ctx sdk.Context,
 	msg core.Message,
-	_ *ethtypes.Receipt,
+	recipient *ethtypes.Receipt,
 ) error {
 	//params := k.GetParams(ctx)
 	//if !params.EnableErc20 || !params.EnableEVMHook {
@@ -76,9 +76,23 @@ func (k Keeper) PostTxProcessing(
 	// Check if processed method
 	switch methodId.Name {
 	case types.DRC20MethodCreateToken:
+
+		var tokenAddress contracts.ContractsTokenDeployed
+		for _, log := range recipient.Logs {
+			eventByID, errEvent := coinCenter.EventByID(log.Topics[0])
+			if errEvent == nil {
+				if eventByID.Name == "TokenDeployed" {
+					_ = coinCenter.UnpackIntoInterface(&tokenAddress, eventByID.Name, log.Data)
+				}
+			}
+			//fmt.Println(log)
+			//fmt.Println(eventByID)
+			//coinCenter
+		}
+
 		var tokenNew NewToken
 		err = contracts.UnpackInputsData(&tokenNew, methodId.Inputs, msg.Data[4:])
-		err = k.CreateCoinEvent(ctx, msg.Value, tokenNew.TokenData)
+		err = k.CreateCoinEvent(ctx, msg.Value, tokenNew.TokenData, tokenAddress.TokenAddress.String())
 		if err != nil {
 			return status.Error(codes.Internal, err.Error())
 		}
@@ -200,7 +214,7 @@ func (k Keeper) PostTxProcessing(
 }
 
 // CreateCoinEvent returns the coin if exists in KVStore.
-func (k *Keeper) CreateCoinEvent(ctx sdk.Context, reserve *big.Int, token contracts.DecimalTokenCenterToken) error {
+func (k *Keeper) CreateCoinEvent(ctx sdk.Context, reserve *big.Int, token contracts.DecimalTokenCenterToken, tokenAddress string) error {
 	k.Logger(ctx).Info("emitted event", token)
 
 	coinDenom := strings.ToLower(token.Symbol)
@@ -217,15 +231,16 @@ func (k *Keeper) CreateCoinEvent(ctx sdk.Context, reserve *big.Int, token contra
 
 	// Create new coin instance
 	var coin = types.Coin{
-		Title:       token.Name,
-		Denom:       coinDenom,
-		CRR:         uint32(token.Crr),
-		Reserve:     math.NewIntFromBigInt(reserve),
-		Volume:      math.NewIntFromBigInt(token.InitialMint),
-		LimitVolume: math.NewIntFromBigInt(token.MaxTotalSupply),
-		MinVolume:   math.NewIntFromBigInt(token.MinTotalSupply),
-		Creator:     authAddr.String(),
-		Identity:    token.Identity,
+		Title:         token.Name,
+		Denom:         coinDenom,
+		CRR:           uint32(token.Crr),
+		Reserve:       math.NewIntFromBigInt(reserve),
+		Volume:        math.NewIntFromBigInt(token.InitialMint),
+		LimitVolume:   math.NewIntFromBigInt(token.MaxTotalSupply),
+		MinVolume:     math.NewIntFromBigInt(token.MinTotalSupply),
+		Creator:       authAddr.String(),
+		Identity:      token.Identity,
+		DRC20Contract: tokenAddress,
 	}
 
 	// Save coin to the storage
