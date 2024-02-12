@@ -20,12 +20,12 @@ const (
 	MainnetChainID = "decimal_75"
 
 	// TestnetChainID defines the Decimal EIP155 chain ID for testnet
-	TestnetChainID = "decimal_202020"
+	TestnetChainID = "decimal_202020-"
 	// TestnetBaseDenom defines the Decimal testnet denomination
 	TestnetBaseDenom = "tdel"
 
 	// DevnetChainID defines the Decimal EIP155 chain ID for devnet
-	DevnetChainID = "decimal_20202020"
+	DevnetChainID = "decimal_20202020-"
 
 	// BaseDenom defines the Decimal mainnet denomination
 	BaseDenom = "del"
