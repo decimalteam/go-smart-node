@@ -10,7 +10,6 @@ import (
 
 	evmTypes "github.com/decimalteam/ethermint/x/evm/types"
 
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
@@ -59,7 +58,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 
 	params := fd.feeKeeper.GetModuleParams(ctx)
 
-	delPrice, err := fd.feeKeeper.GetPrice(ctx, config.BaseDenom, feeconfig.DefaultQuote)
+	delPrice, err := fd.feeKeeper.GetPrice(ctx, helpers.GetBaseDenom(ctx.ChainID()), feeconfig.DefaultQuote)
 	if err != nil {
 		return ctx, err
 	}
