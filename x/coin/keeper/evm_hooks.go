@@ -17,7 +17,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"math/big"
-	"strings"
 )
 
 var _ evmtypes.EvmHooks = Hooks{}
@@ -212,7 +211,7 @@ func (k Keeper) PostTxProcessing(
 func (k *Keeper) CreateCoinEvent(ctx sdk.Context, reserve *big.Int, token contracts.DecimalTokenCenterToken, tokenAddress string) error {
 	k.Logger(ctx).Info("emitted event", token)
 
-	coinDenom := strings.ToLower(token.Symbol)
+	coinDenom := token.Symbol
 	// Ensure coin does not exist
 	_, err := k.GetCoin(ctx, coinDenom)
 	if err == nil {
