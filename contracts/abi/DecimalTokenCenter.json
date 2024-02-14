@@ -11,6 +11,11 @@
     "type": "error"
   },
   {
+    "inputs": [],
+    "name": "DeployError",
+    "type": "error"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -568,26 +573,6 @@
       {
         "components": [
           {
-            "internalType": "address",
-            "name": "tokenOwner",
-            "type": "address"
-          },
-          {
-            "internalType": "string",
-            "name": "symbol",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "internalType": "uint8",
-            "name": "crr",
-            "type": "uint8"
-          },
-          {
             "internalType": "uint256",
             "name": "initialMint",
             "type": "uint256"
@@ -603,8 +588,28 @@
             "type": "uint256"
           },
           {
+            "internalType": "address",
+            "name": "tokenOwner",
+            "type": "address"
+          },
+          {
+            "internalType": "uint8",
+            "name": "crr",
+            "type": "uint8"
+          },
+          {
             "internalType": "string",
             "name": "identity",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "name",
             "type": "string"
           }
         ],
