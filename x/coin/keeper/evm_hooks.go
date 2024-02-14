@@ -6,11 +6,9 @@ package keeper
 import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"cosmossdk.io/math"
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
@@ -63,7 +61,7 @@ func (k Keeper) PostTxProcessing(
 	//	return nil
 	//}
 
-	coinCenter, _ := contracts.ContractsMetaData.GetAbi()
+	coinCenter, _ := contracts.TokenCenterMetaData.GetAbi()
 
 	methodId, err := coinCenter.MethodById(msg.Data)
 	if err != nil {
@@ -77,7 +75,7 @@ func (k Keeper) PostTxProcessing(
 	switch methodId.Name {
 	case types.DRC20MethodCreateToken:
 
-		var tokenAddress contracts.ContractsTokenDeployed
+		var tokenAddress contracts.TokenCenterDeployed
 		for _, log := range recipient.Logs {
 			eventByID, errEvent := coinCenter.EventByID(log.Topics[0])
 			if errEvent == nil {
@@ -85,9 +83,6 @@ func (k Keeper) PostTxProcessing(
 					_ = coinCenter.UnpackIntoInterface(&tokenAddress, eventByID.Name, log.Data)
 				}
 			}
-			//fmt.Println(log)
-			//fmt.Println(eventByID)
-			//coinCenter
 		}
 
 		var tokenNew NewToken
@@ -221,13 +216,16 @@ func (k *Keeper) CreateCoinEvent(ctx sdk.Context, reserve *big.Int, token contra
 	// Ensure coin does not exist
 	_, err := k.GetCoin(ctx, coinDenom)
 	if err == nil {
-		return errors.CoinAlreadyExists
+		// Update coin DRC address
+		err = k.UpdateCoinDRC(ctx, coinDenom, tokenAddress)
+		if err != nil {
+			return err
+		}
+		return nil
 	}
 
 	// get authority address
 	authAddr := authtypes.NewModuleAddress(cointypes.ModuleName)
-
-	fmt.Print(reserve)
 
 	// Create new coin instance
 	var coin = types.Coin{

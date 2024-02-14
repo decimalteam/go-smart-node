@@ -528,6 +528,8 @@ func NewDSC(
 		),
 	)
 
+	app.ValidatorKeeper.SetEvmKeeper(app.EvmKeeper)
+
 	// Create upgrade keeper
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(
 		skipUpgradeHeights,

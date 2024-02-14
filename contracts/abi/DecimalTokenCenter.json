@@ -22,79 +22,62 @@
     "type": "error"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "ERC1967NonPayable",
     "type": "error"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "FailedInnerCall",
     "type": "error"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "InvalidAddress",
     "type": "error"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
+    "name": "InvalidComissionSymbol",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "InvalidCrr",
     "type": "error"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "InvalidInitialMint",
     "type": "error"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "InvalidInitialization",
     "type": "error"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "InvalidMaxTotalSupply",
     "type": "error"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "InvalidMinReserve",
     "type": "error"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "InvalidMinTotalSupply",
     "type": "error"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "InvalidPayloadLength",
     "type": "error"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "NotInitializing",
     "type": "error"
   },
@@ -122,8 +105,65 @@
   },
   {
     "inputs": [
-
+      {
+        "internalType": "uint256",
+        "name": "x",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "y",
+        "type": "uint256"
+      }
     ],
+    "name": "PRBMath_MulDiv18_Overflow",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "x",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "y",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "denominator",
+        "type": "uint256"
+      }
+    ],
+    "name": "PRBMath_MulDiv_Overflow",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "UD60x18",
+        "name": "x",
+        "type": "uint256"
+      }
+    ],
+    "name": "PRBMath_UD60x18_Exp2_InputTooBig",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "UD60x18",
+        "name": "x",
+        "type": "uint256"
+      }
+    ],
+    "name": "PRBMath_UD60x18_Log_InputTooSmall",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "TokenSymbolExist",
     "type": "error"
   },
@@ -224,9 +264,7 @@
     "type": "event"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "MAX_CRR",
     "outputs": [
       {
@@ -239,9 +277,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "MAX_TOTAL_SUPPLY",
     "outputs": [
       {
@@ -254,9 +290,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "MIN_CRR",
     "outputs": [
       {
@@ -269,9 +303,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "MIN_INITIAL_MINT",
     "outputs": [
       {
@@ -284,9 +316,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "MIN_RESERVE",
     "outputs": [
       {
@@ -299,9 +329,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "MIN_TOTAL_SUPPLY",
     "outputs": [
       {
@@ -311,6 +339,142 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "supply",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "customReserve",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "customCrr",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountOut",
+        "type": "uint256"
+      }
+    ],
+    "name": "calculateBuyInput",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "supply",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "customReserve",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "customCrr",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountIn",
+        "type": "uint256"
+      }
+    ],
+    "name": "calculateBuyOutput",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "supply",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "customReserve",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "customCrr",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountOut",
+        "type": "uint256"
+      }
+    ],
+    "name": "calculateSellInput",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "supply",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "customReserve",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "customCrr",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountIn",
+        "type": "uint256"
+      }
+    ],
+    "name": "calculateSellOutput",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -342,9 +506,7 @@
       }
     ],
     "name": "convert",
-    "outputs": [
-
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -397,9 +559,7 @@
       }
     ],
     "name": "convert",
-    "outputs": [
-
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -454,16 +614,31 @@
       }
     ],
     "name": "createToken",
-    "outputs": [
-
-    ],
+    "outputs": [],
     "stateMutability": "payable",
     "type": "function"
   },
   {
     "inputs": [
-
+      {
+        "internalType": "string",
+        "name": "symbol",
+        "type": "string"
+      }
     ],
+    "name": "getCommissionSymbol",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "implementation",
     "outputs": [
       {
@@ -476,13 +651,9 @@
     "type": "function"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "initialize",
-    "outputs": [
-
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -506,9 +677,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -521,13 +690,9 @@
     "type": "function"
   },
   {
-    "inputs": [
-
-    ],
+    "inputs": [],
     "name": "renounceOwnership",
-    "outputs": [
-
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -559,9 +724,7 @@
       }
     ],
     "name": "transferOwnership",
-    "outputs": [
-
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -574,9 +737,7 @@
       }
     ],
     "name": "upgrade",
-    "outputs": [
-
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -589,9 +750,7 @@
       }
     ],
     "name": "upgradeToken",
-    "outputs": [
-
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },

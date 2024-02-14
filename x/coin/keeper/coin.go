@@ -33,6 +33,11 @@ func (k *Keeper) GetCoins(ctx sdk.Context) (coins []types.Coin) {
 		}
 		coin.Volume = volume
 		coin.Reserve = reserve
+
+		// request address DRC separately
+		addressDRC, _ := k.getCoinDRC(store, coin.Denom)
+		coin.DRC20Contract = addressDRC
+
 		coins = append(coins, coin)
 	}
 
@@ -62,8 +67,12 @@ func (k *Keeper) GetCoin(ctx sdk.Context, denom string) (coin types.Coin, err er
 	if err != nil {
 		return
 	}
+	// request address DRC separately
+	addressDRC, _ := k.getCoinDRC(store, coin.Denom)
+
 	coin.Volume = volume
 	coin.Reserve = reserve
+	coin.DRC20Contract = addressDRC
 	return
 }
 
@@ -86,6 +95,9 @@ func (k *Keeper) SetCoin(ctx sdk.Context, coin types.Coin) {
 	store.Set(key, value)
 	// write volume and reserve separately
 	k.setCoinVR(store, coin.Denom, coin.Volume, coin.Reserve)
+
+	// write DRC address separately
+	k.setCoinDRC(store, coin.Denom, coin.DRC20Contract)
 }
 
 // UpdateCoinVR updates current coin reserve and volume and writes coin to KVStore.
@@ -101,6 +113,14 @@ func (k *Keeper) UpdateCoinVR(ctx sdk.Context, denom string, volume sdkmath.Int,
 	if err != nil {
 		return errors.Internal.Wrapf("err: %s", err.Error())
 	}
+	return nil
+}
+
+// UpdateCoinDRC updates current coin reserve and volume and writes coin to KVStore.
+func (k *Keeper) UpdateCoinDRC(ctx sdk.Context, denom string, addressDRC string) error {
+	store := ctx.KVStore(k.storeKey)
+	// write volume and reserve separately
+	k.setCoinDRC(store, denom, addressDRC)
 	return nil
 }
 
@@ -128,6 +148,32 @@ func (k *Keeper) setCoinVR(store sdk.KVStore, denom string, volume sdkmath.Int, 
 	value := k.cdc.MustMarshalLengthPrefixed(&types.CoinVR{
 		Volume:  volume,
 		Reserve: reserve,
+	})
+	store.Set(key, value)
+}
+
+// getCoinDRC returns volume and reserve of the coin if exists in KVStore.
+func (k *Keeper) getCoinDRC(store sdk.KVStore, denom string) (addressDRC string, err error) {
+	key := types.GetCoinDRCKey(denom)
+	value := store.Get(key)
+	if len(value) == 0 {
+		err = errors.CoinDoesNotExist
+		return
+	}
+	var coinDRC types.CoinDRC
+	err = k.cdc.UnmarshalLengthPrefixed(value, &coinDRC)
+	if err != nil {
+		return
+	}
+	addressDRC = coinDRC.DRC20Contract
+	return
+}
+
+// setCoinDRC writes coin volume and reserve to KVStore.
+func (k *Keeper) setCoinDRC(store sdk.KVStore, denom string, addressDRC string) {
+	key := types.GetCoinDRCKey(denom)
+	value := k.cdc.MustMarshalLengthPrefixed(&types.CoinDRC{
+		DRC20Contract: addressDRC,
 	})
 	store.Set(key, value)
 }

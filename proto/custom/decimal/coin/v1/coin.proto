@@ -113,3 +113,13 @@ message CoinVR {
     (gogoproto.nullable) = false
   ];
 }
+
+// CoinDRC defines object containing just DRC contract address of the coin.
+message CoinDRC {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // drc20_address is the hex address of ERC20 contract token
+  string drc20_address = 1 [ (gogoproto.customname) = "DRC20Contract" ];
+}

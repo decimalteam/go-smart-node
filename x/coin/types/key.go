@@ -24,9 +24,10 @@ const (
 
 // KVStore key prefixes
 var (
-	keyPrefixCoin   = []byte{0x11} // prefix for each key to a coin
-	keyPrefixCoinVR = []byte{0x12} // prefix for each key to a record containing coin volume and reserve
-	keyPrefixCheck  = []byte{0x21} // prefix for each key to a redeemed check
+	keyPrefixCoin    = []byte{0x11} // prefix for each key to a coin
+	keyPrefixCoinVR  = []byte{0x12} // prefix for each key to a record containing coin volume and reserve
+	keyPrefixCoinDRC = []byte{0x13} // prefix for each key to a record containing coin volume and reserve
+	keyPrefixCheck   = []byte{0x21} // prefix for each key to a redeemed check
 )
 
 // GetCoinsKey returns the key prefix of the coins.
@@ -42,6 +43,11 @@ func GetCoinKey(denom string) []byte {
 // GetCoinVRKey returns the key of the record containing coin volume and reserve.
 func GetCoinVRKey(denom string) []byte {
 	return append(keyPrefixCoinVR, []byte(denom)...)
+}
+
+// GetCoinDRCKey returns the key of the record containing coin volume and reserve.
+func GetCoinDRCKey(denom string) []byte {
+	return append(keyPrefixCoinDRC, []byte(denom)...)
 }
 
 // GetChecksKey returns the key prefix of the redeemed check.
