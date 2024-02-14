@@ -212,6 +212,7 @@ func (k *Keeper) CreateCoinEvent(ctx sdk.Context, reserve *big.Int, token contra
 	k.Logger(ctx).Info("emitted event", token)
 
 	coinDenom := token.Symbol
+
 	// Ensure coin does not exist
 	coinExist, err := k.GetCoin(ctx, coinDenom)
 	if err == nil {
