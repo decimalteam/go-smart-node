@@ -213,38 +213,36 @@ func (k *Keeper) CreateCoinEvent(ctx sdk.Context, reserve *big.Int, token contra
 
 	coinDenom := token.Symbol
 
+	var coin = types.Coin{}
+
 	// Ensure coin does not exist
 	coinExist, err := k.GetCoin(ctx, coinDenom)
 	if err == nil {
-		if coinExist.DRC20Contract == "" {
-			// Update coin DRC address
-			_ = k.UpdateCoinDRC(ctx, coinDenom, tokenAddress)
+		coin = coinExist
+	} else {
+		// get authority address
+		authAddr := authtypes.NewModuleAddress(cointypes.ModuleName)
+
+		// Create new coin instance
+		coin = types.Coin{
+			Title:         token.Name,
+			Denom:         coinDenom,
+			CRR:           uint32(token.Crr),
+			Reserve:       math.NewIntFromBigInt(reserve),
+			Volume:        math.NewIntFromBigInt(token.InitialMint),
+			LimitVolume:   math.NewIntFromBigInt(token.MaxTotalSupply),
+			MinVolume:     math.NewIntFromBigInt(token.MinTotalSupply),
+			Creator:       authAddr.String(),
+			Identity:      token.Identity,
+			DRC20Contract: tokenAddress,
 		}
-		return nil
-	}
-
-	// get authority address
-	authAddr := authtypes.NewModuleAddress(cointypes.ModuleName)
-
-	// Create new coin instance
-	var coin = types.Coin{
-		Title:         token.Name,
-		Denom:         coinDenom,
-		CRR:           uint32(token.Crr),
-		Reserve:       math.NewIntFromBigInt(reserve),
-		Volume:        math.NewIntFromBigInt(token.InitialMint),
-		LimitVolume:   math.NewIntFromBigInt(token.MaxTotalSupply),
-		MinVolume:     math.NewIntFromBigInt(token.MinTotalSupply),
-		Creator:       authAddr.String(),
-		Identity:      token.Identity,
-		DRC20Contract: tokenAddress,
 	}
 
 	// Save coin to the storage
 	k.SetCoin(ctx, coin)
 
 	// Emit transaction events
-	err = events.EmitTypedEvent(ctx, &types.EventCreateCoin{
+	_ = events.EmitTypedEvent(ctx, &types.EventCreateCoin{
 		Sender:               coin.Creator,
 		Denom:                coinDenom,
 		Title:                coin.Title,
