@@ -9,11 +9,14 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"cosmossdk.io/math"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"math/big"
 )
 
@@ -58,39 +61,41 @@ func (k Keeper) PostTxProcessing(
 	//	return nil
 	//}
 
-	//coinCenter, _ := contracts.TokenCenterMetaData.GetAbi()
-	//
-	//methodId, err := coinCenter.MethodById(msg.Data)
-	//if err != nil {
-	//	return nil
-	//}
-	//
-	//type NewToken struct {
-	//	TokenData contracts.DecimalTokenCenterToken `abi:"tokenData"`
-	//}
-	//// Check if processed method
-	//switch methodId.Name {
-	//case types.DRC20MethodCreateToken:
-	//
-	//	var tokenAddress contracts.TokenCenterDeployed
-	//	for _, log := range recipient.Logs {
-	//		eventByID, errEvent := coinCenter.EventByID(log.Topics[0])
-	//		if errEvent == nil {
-	//			if eventByID.Name == "TokenDeployed" {
-	//				_ = coinCenter.UnpackIntoInterface(&tokenAddress, eventByID.Name, log.Data)
-	//			}
-	//		}
-	//	}
-	//
-	//	var tokenNew NewToken
-	//	err = contracts.UnpackInputsData(&tokenNew, methodId.Inputs, msg.Data[4:])
-	//	err = k.CreateCoinEvent(ctx, msg.Value, tokenNew.TokenData, tokenAddress.TokenAddress.String())
-	//	if err != nil {
-	//		return status.Error(codes.Internal, err.Error())
-	//	}
-	//default:
-	//	return nil
-	//}
+	coinCenter, _ := contracts.TokenCenterMetaData.GetAbi()
+
+	methodId, err := coinCenter.MethodById(msg.Data)
+	if err != nil {
+		return nil
+	}
+	fmt.Print(methodId)
+
+	type NewToken struct {
+		TokenData contracts.DecimalTokenCenterToken `abi:"tokenData"`
+	}
+	// Check if processed method
+	switch methodId.Name {
+	case types.DRC20MethodCreateToken:
+
+		var tokenAddress contracts.TokenCenterDeployed
+		for _, log := range recipient.Logs {
+			eventByID, errEvent := coinCenter.EventByID(log.Topics[0])
+			if errEvent == nil {
+				if eventByID.Name == "TokenDeployed" {
+					_ = coinCenter.UnpackIntoInterface(&tokenAddress, eventByID.Name, log.Data)
+				}
+			}
+		}
+
+		var tokenNew NewToken
+		err = contracts.UnpackInputsData(&tokenNew, methodId.Inputs, msg.Data[4:])
+		fmt.Print(tokenNew)
+		err = k.CreateCoinEvent(ctx, msg.Value, tokenNew.TokenData, tokenAddress.TokenAddress.String())
+		if err != nil {
+			return status.Error(codes.Internal, err.Error())
+		}
+	default:
+		return nil
+	}
 
 	//for i, log := range receipt.Logs {
 	//	// Note: the `Transfer` event contains 3 topics (id, from, to)

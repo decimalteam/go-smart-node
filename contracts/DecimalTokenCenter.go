@@ -28,14 +28,14 @@ var (
 
 // DecimalTokenCenterToken is an auto generated low-level Go binding around an user-defined struct.
 type DecimalTokenCenterToken struct {
-	TokenOwner     common.Address `abi:"tokenOwner"`
-	Symbol         string         `abi:"symbol"`
-	Name           string         `abi:"name"`
-	Crr            uint8          `abi:"crr"`
 	InitialMint    *big.Int       `abi:"initialMint"`
 	MinTotalSupply *big.Int       `abi:"minTotalSupply"`
 	MaxTotalSupply *big.Int       `abi:"maxTotalSupply"`
+	TokenOwner     common.Address `abi:"tokenOwner"`
+	Crr            uint8          `abi:"crr"`
 	Identity       string         `abi:"identity"`
+	Symbol         string         `abi:"symbol"`
+	Name           string         `abi:"name"`
 }
 
 // TokenCenterMetaData contains all meta data concerning the Contracts contract.
