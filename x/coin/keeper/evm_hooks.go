@@ -27,6 +27,10 @@ type Hooks struct {
 	k Keeper
 }
 
+type NewToken struct {
+	TokenData contracts.DecimalTokenCenterToken `abi:"tokenData"`
+}
+
 // Return the wrapper struct
 func (k Keeper) Hooks() Hooks {
 	return Hooks{k}
@@ -69,9 +73,6 @@ func (k Keeper) PostTxProcessing(
 	}
 	fmt.Print(methodId)
 
-	type NewToken struct {
-		TokenData contracts.DecimalTokenCenterToken `abi:"tokenData"`
-	}
 	// Check if processed method
 	switch methodId.Name {
 	case types.DRC20MethodCreateToken:
@@ -221,24 +222,28 @@ func (k *Keeper) CreateCoinEvent(ctx sdk.Context, reserve *big.Int, token contra
 	// Ensure coin does not exist
 	coinExist, err := k.GetCoin(ctx, coinDenom)
 	if err == nil {
-		coin = coinExist
-	} else {
-		// get authority address
-		authAddr := authtypes.NewModuleAddress(cointypes.ModuleName)
-
-		// Create new coin instance
-		coin = types.Coin{
-			Title:         token.Name,
-			Denom:         coinDenom,
-			CRR:           uint32(token.Crr),
-			Reserve:       math.NewIntFromBigInt(reserve),
-			Volume:        math.NewIntFromBigInt(token.InitialMint),
-			LimitVolume:   math.NewIntFromBigInt(token.MaxTotalSupply),
-			MinVolume:     math.NewIntFromBigInt(token.MinTotalSupply),
-			Creator:       authAddr.String(),
-			Identity:      token.Identity,
-			DRC20Contract: tokenAddress,
+		if coinExist.DRC20Contract == "" {
+			_ = k.UpdateCoinDRC(ctx, coinDenom, tokenAddress)
+			coinExist.DRC20Contract = tokenAddress
+			k.SetCoin(ctx, coinExist)
 		}
+		return nil
+	}
+	// get authority address
+	authAddr := authtypes.NewModuleAddress(cointypes.ModuleName)
+
+	// Create new coin instance
+	coin = types.Coin{
+		Title:         token.Name,
+		Denom:         coinDenom,
+		CRR:           uint32(token.Crr),
+		Reserve:       math.NewIntFromBigInt(reserve),
+		Volume:        math.NewIntFromBigInt(token.InitialMint),
+		LimitVolume:   math.NewIntFromBigInt(token.MaxTotalSupply),
+		MinVolume:     math.NewIntFromBigInt(token.MinTotalSupply),
+		Creator:       authAddr.String(),
+		Identity:      token.Identity,
+		DRC20Contract: tokenAddress,
 	}
 
 	// Save coin to the storage
