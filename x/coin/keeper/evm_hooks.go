@@ -67,13 +67,9 @@ func (k Keeper) PostTxProcessing(
 	coinCenter, _ := contracts.TokenCenterMetaData.GetAbi()
 	coinContract, _ := contracts.TokenMetaData.GetAbi()
 
-	methodId, err := coinCenter.MethodById(msg.Data)
-	if err != nil {
-		return nil
-	}
-
 	// this var is only for new token create from token center
 	var tokenAddress contracts.TokenCenterDeployed
+	var tokenUpdata contracts.TokenReserveUpdated
 
 	for _, log := range recipient.Logs {
 		eventCenterByID, errEvent := coinCenter.EventByID(log.Topics[0])
@@ -84,14 +80,17 @@ func (k Keeper) PostTxProcessing(
 		}
 		eventCoinByID, errEvent := coinContract.EventByID(log.Topics[0])
 		if errEvent == nil {
-			if eventCoinByID.Name == "TokenReserveUpdated" {
-				var tokenUpdata contracts.TokenReserveUpdated
-				_ = coinCenter.UnpackIntoInterface(&tokenUpdata, eventCoinByID.Name, log.Data)
-
+			if eventCoinByID.Name == "ReserveUpdated" {
+				_ = contracts.UnpackInputsData(&tokenUpdata, eventCoinByID.Inputs, log.Data)
+				_ = k.UpdateCoinFromEvent(ctx, tokenUpdata, log.Address.String())
 			}
 		}
 	}
 
+	methodId, err := coinCenter.MethodById(msg.Data)
+	if err != nil {
+		return nil
+	}
 	// Check if processed method
 	switch methodId.Name {
 	case types.DRC20MethodCreateToken:

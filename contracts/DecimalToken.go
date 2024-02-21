@@ -51,9 +51,9 @@ type TokenInitialized struct {
 
 // TokenReserveUpdated represents a ReserveUpdated event raised by the Contracts contract.
 type TokenReserveUpdated struct {
-	NewReserve *big.Int
-	NewSupply  *big.Int
-	NewPrice   *big.Int
+	NewReserve *big.Int  `abi:"newReserve"`
+	NewSupply  *big.Int  `abi:"newSupply"`
+	NewPrice   *big.Int  `abi:"newPrice"`
 	Raw        types.Log // Blockchain specific contextual infos
 }
 
