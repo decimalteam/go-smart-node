@@ -98,7 +98,7 @@ func (k Keeper) PostTxProcessing(
 		var tokenNew NewToken
 		err = contracts.UnpackInputsData(&tokenNew, methodId.Inputs, msg.Data[4:])
 
-		err = k.CreateCoinEvent(ctx, tokenUpdata.NewReserve, tokenNew.TokenData, tokenAddress.TokenAddress.String())
+		err = k.CreateCoinEvent(ctx, msg.Value, tokenNew.TokenData, tokenAddress.TokenAddress.String())
 		if err != nil {
 			return status.Error(codes.Internal, err.Error())
 		}
@@ -118,7 +118,7 @@ func (k *Keeper) UpdateCoinFromEvent(ctx sdk.Context, dataUpdate contracts.Token
 		return nil
 	}
 
-	_ = k.UpdateCoinVR(ctx, coinExist.Denom, math.NewIntFromBigInt(dataUpdate.NewSupply), math.NewIntFromBigInt(dataUpdate.NewReserve))
+	_ = k.UpdateCoinVR(ctx, coinExist.Denom, math.NewIntFromBigInt(dataUpdate.NewReserve), math.NewIntFromBigInt(dataUpdate.NewSupply))
 
 	// Emit transaction events
 	_ = events.EmitTypedEvent(ctx, &types.EventUpdateCoinVR{
