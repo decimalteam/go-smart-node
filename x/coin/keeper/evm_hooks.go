@@ -9,11 +9,9 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"cosmossdk.io/math"
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"google.golang.org/grpc/codes"
@@ -70,11 +68,11 @@ func (k Keeper) PostTxProcessing(
 	//	fmt.Print(params)
 	//}
 
-	dataAddress, err := k.QueryAddressTokenCenter(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
+	//dataAddress, err := k.QueryAddressTokenCenter(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
 	//
 	//tokenCenter := ContractCenter{}
 	//fmt.Print(err)
-	fmt.Print(dataAddress)
+	//fmt.Print(dataAddress)
 	//fmt.Print(tokenCenter)
 	coinCenter, _ := contracts.TokenCenterMetaData.GetAbi()
 	coinContract, _ := contracts.TokenMetaData.GetAbi()

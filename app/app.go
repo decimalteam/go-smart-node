@@ -529,7 +529,8 @@ func NewDSC(
 		),
 	)
 
-	app.ValidatorKeeper.SetEvmKeeper(app.EvmKeeper)
+	//app.ValidatorKeeper.SetEvmKeeper(app.EvmKeeper)
+	//app.CoinKeeper = *app.CoinKeeper.SetEvmKeeper(app.EvmKeeper)
 
 	// Create upgrade keeper
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(
