@@ -28,6 +28,7 @@ func GetTestAppWithCoinKeeper(t *testing.T) (*codec.LegacyAmino, *app.DSC, sdk.C
 		dsc.AccountKeeper,
 		&dsc.FeeKeeper,
 		dsc.BankKeeper,
+		dsc.EvmKeeper,
 	)
 	dsc.CoinKeeper.SetParams(ctx, types.DefaultParams())
 

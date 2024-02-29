@@ -9,9 +9,11 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"cosmossdk.io/math"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"google.golang.org/grpc/codes"
@@ -28,6 +30,10 @@ type Hooks struct {
 
 type NewToken struct {
 	TokenData contracts.DecimalTokenCenterToken `abi:"tokenData"`
+}
+
+type ContractCenter struct {
+	Address string
 }
 
 // Return the wrapper struct
@@ -58,18 +64,24 @@ func (k Keeper) PostTxProcessing(
 	recipient *ethtypes.Receipt,
 ) error {
 	//params := k.GetParams(ctx)
-	//if !params.EnableErc20 || !params.EnableEVMHook {
+	//if params.TokenCenter == "" {
 	//	// no error is returned to avoid reverting the tx and allow for other post
 	//	// processing txs to pass and
-	//	return nil
+	//	fmt.Print(params)
 	//}
 
+	dataAddress, err := k.QueryAddressTokenCenter(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
+	//
+	//tokenCenter := ContractCenter{}
+	//fmt.Print(err)
+	fmt.Print(dataAddress)
+	//fmt.Print(tokenCenter)
 	coinCenter, _ := contracts.TokenCenterMetaData.GetAbi()
 	coinContract, _ := contracts.TokenMetaData.GetAbi()
 
 	// this var is only for new token create from token center
 	var tokenAddress contracts.TokenCenterDeployed
-	var tokenUpdata contracts.TokenReserveUpdated
+	var tokenUpdated contracts.TokenReserveUpdated
 
 	for _, log := range recipient.Logs {
 		eventCenterByID, errEvent := coinCenter.EventByID(log.Topics[0])
@@ -81,8 +93,8 @@ func (k Keeper) PostTxProcessing(
 		eventCoinByID, errEvent := coinContract.EventByID(log.Topics[0])
 		if errEvent == nil {
 			if eventCoinByID.Name == "ReserveUpdated" {
-				_ = contracts.UnpackInputsData(&tokenUpdata, eventCoinByID.Inputs, log.Data)
-				_ = k.UpdateCoinFromEvent(ctx, tokenUpdata, log.Address.String())
+				_ = contracts.UnpackInputsData(&tokenUpdated, eventCoinByID.Inputs, log.Data)
+				_ = k.UpdateCoinFromEvent(ctx, tokenUpdated, log.Address.String())
 			}
 		}
 	}
@@ -118,7 +130,7 @@ func (k *Keeper) UpdateCoinFromEvent(ctx sdk.Context, dataUpdate contracts.Token
 		return nil
 	}
 
-	_ = k.UpdateCoinVR(ctx, coinExist.Denom, math.NewIntFromBigInt(dataUpdate.NewReserve), math.NewIntFromBigInt(dataUpdate.NewSupply))
+	_ = k.UpdateCoinVR(ctx, coinExist.Denom, math.NewIntFromBigInt(dataUpdate.NewSupply), math.NewIntFromBigInt(dataUpdate.NewReserve))
 
 	// Emit transaction events
 	_ = events.EmitTypedEvent(ctx, &types.EventUpdateCoinVR{

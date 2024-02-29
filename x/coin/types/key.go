@@ -1,5 +1,7 @@
 package types
 
+import authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+
 const (
 	// ModuleName defines the module name
 	ModuleName = "coin"
@@ -15,6 +17,10 @@ const (
 
 	// QuerierRoute defines the module's query routing key
 	QuerierRoute = ModuleName
+)
+
+var (
+	ModuleAddress = authtypes.NewModuleAddress(ModuleName)
 )
 
 // Coins and checks are stored as follows:

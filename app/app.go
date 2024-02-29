@@ -468,6 +468,7 @@ func NewDSC(
 		app.AccountKeeper,
 		&app.FeeKeeper,
 		app.BankKeeper,
+		app.EvmKeeper,
 	)
 	app.NFTKeeper = *nftkeeper.NewKeeper(
 		appCodec,

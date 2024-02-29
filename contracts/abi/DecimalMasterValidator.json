@@ -43,6 +43,11 @@
   },
   {
     "inputs": [],
+    "name": "InvalidPenalty",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "InvalidStatus",
     "type": "error"
   },
@@ -155,6 +160,12 @@
         "internalType": "address",
         "name": "validator",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "meta",
+        "type": "string"
       }
     ],
     "name": "ValidatorAdded",
@@ -168,9 +179,15 @@
         "internalType": "address",
         "name": "validator",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "percentage",
+        "type": "uint256"
       }
     ],
-    "name": "ValidatorRemoved",
+    "name": "ValidatorPenalty",
     "type": "event"
   },
   {
@@ -198,6 +215,29 @@
         "internalType": "address",
         "name": "validator",
         "type": "address"
+      },
+      {
+        "internalType": "uint16",
+        "name": "penaltyPercentage",
+        "type": "uint16"
+      }
+    ],
+    "name": "addPenalty",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validator",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "meta",
+        "type": "string"
       }
     ],
     "name": "addValidator",
@@ -211,6 +251,11 @@
         "internalType": "address[]",
         "name": "validatorsToAdd",
         "type": "address[]"
+      },
+      {
+        "internalType": "string[]",
+        "name": "metas",
+        "type": "string[]"
       }
     ],
     "name": "addValidators",
@@ -221,80 +266,17 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      }
-    ],
-    "name": "getValidator",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "enum IDecimalMasterValidator.ValidatorStatus",
-            "name": "status",
-            "type": "uint8"
-          },
-          {
-            "internalType": "address",
-            "name": "validator",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct IDecimalMasterValidator.Validator",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      }
-    ],
-    "name": "getValidatorAddress",
-    "outputs": [
-      {
         "internalType": "address",
-        "name": "",
+        "name": "validator",
         "type": "address"
       }
     ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getValidatorAddresses",
+    "name": "getValidatorPenalties",
     "outputs": [
       {
-        "internalType": "address[]",
+        "internalType": "uint16[]",
         "name": "",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      }
-    ],
-    "name": "getValidatorStatus",
-    "outputs": [
-      {
-        "internalType": "enum IDecimalMasterValidator.ValidatorStatus",
-        "name": "",
-        "type": "uint8"
+        "type": "uint16[]"
       }
     ],
     "stateMutability": "view",
@@ -314,99 +296,6 @@
         "internalType": "enum IDecimalMasterValidator.ValidatorStatus",
         "name": "",
         "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getValidators",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "enum IDecimalMasterValidator.ValidatorStatus",
-            "name": "status",
-            "type": "uint8"
-          },
-          {
-            "internalType": "address",
-            "name": "validator",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct IDecimalMasterValidator.Validator[]",
-        "name": "",
-        "type": "tuple[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getValidatorsLength",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "pageSize",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "pageIndex",
-        "type": "uint256"
-      }
-    ],
-    "name": "getValidatorsPage",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "enum IDecimalMasterValidator.ValidatorStatus",
-            "name": "status",
-            "type": "uint8"
-          },
-          {
-            "internalType": "address",
-            "name": "validator",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct IDecimalMasterValidator.Validator[]",
-        "name": "",
-        "type": "tuple[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      }
-    ],
-    "name": "isActive",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -437,25 +326,6 @@
         "internalType": "address",
         "name": "validator",
         "type": "address"
-      }
-    ],
-    "name": "isMember",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
       }
     ],
     "name": "isMember",
