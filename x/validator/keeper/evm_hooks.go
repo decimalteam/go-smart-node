@@ -5,6 +5,11 @@ package keeper
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
+	types2 "bitbucket.org/decimalteam/go-smart-node/types"
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
+	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
+	"cosmossdk.io/math"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 	"github.com/ethereum/go-ethereum/core"
@@ -62,36 +67,36 @@ func (k Keeper) PostTxProcessing(
 	for _, log := range recipient.Logs {
 		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
 		if errEvent == nil {
-			if eventValidatorByID.Name == "TokenDeployed1" {
+			if eventValidatorByID.Name == "TokenDeployed" {
 				_ = validatorMaster.UnpackIntoInterface(&tokenStaked, eventValidatorByID.Name, log.Data)
 			}
 		}
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
-			if eventDelegationByID.Name == "ContractsStaked1" {
+			if eventDelegationByID.Name == "Staked1" {
 				_ = validatorMaster.UnpackIntoInterface(&tokenStaked, eventDelegationByID.Name, log.Data)
 
-				//coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, tokenStaked.Stake.Token.String())
-				//if err != nil {
-				//	return errors.CoinDoesNotExist
-				//}
-				//
-				//stake := types.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(tokenStaked.Stake.Amount)})
-				//
-				//cosmosAddress, _ := types2.GetDecimalAddressFromHex(tokenStaked.Stake.Delegator.String())
-				//cosmosAddressValidator, _ := types2.GetDecimalAddressFromHex(tokenStaked.Stake.Validator.String())
-				//
-				//valAddr, err := sdk.ValAddressFromBech32(cosmosAddressValidator.String())
-				//
-				//validator, found := k.GetValidator(ctx, valAddr)
-				//if !found {
-				//	return fmt.Errorf("not found validator %s", valAddr)
-				//}
-				//
-				//_ = k.Delegate(ctx, cosmosAddress, validator, stake)
-				//if err != nil {
-				//	return err
-				//}
+				coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, tokenStaked.Stake.Token.String())
+				if err != nil {
+					return errors.CoinDoesNotExist
+				}
+
+				stake := types.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(tokenStaked.Stake.Amount)})
+
+				cosmosAddress, _ := types2.GetDecimalAddressFromHex(tokenStaked.Stake.Delegator.String())
+				cosmosAddressValidator, _ := types2.GetDecimalAddressFromHex(tokenStaked.Stake.Validator.String())
+
+				valAddr, err := sdk.ValAddressFromBech32(cosmosAddressValidator.String())
+
+				validator, found := k.GetValidator(ctx, valAddr)
+				if !found {
+					return fmt.Errorf("not found validator %s", valAddr)
+				}
+
+				_ = k.Delegate(ctx, cosmosAddress, validator, stake)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
