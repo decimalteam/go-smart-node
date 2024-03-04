@@ -215,7 +215,7 @@ func TestKeeper_Coin_From_Hook(t *testing.T) {
 		MinVolume:     math.NewIntFromBigInt(newCoin.TokenData.MinTotalSupply),
 		Creator:       authAddr.String(),
 		Identity:      newCoin.TokenData.Identity,
-		DRC20Contract: "0x73ef3CE5D88fFf56ff32B3083641a1792e87C7E6",
+		DRC20Contract: "0x73ef3ce5d88fff56ff32b3083641a1792e87c7e6",
 	}
 
 	// check set coin
@@ -275,7 +275,7 @@ func TestKeeper_Coin_Update_DRC(t *testing.T) {
 	err = dsc.CoinKeeper.CreateCoinEvent(ctx, big.NewInt(5000), newCoinForUpdate.TokenData, "0x73ef3CE5D88fFf56ff32B3083641a1792e87C7E6")
 	require.NoError(t, err)
 
-	getCoin.DRC20Contract = "0x73ef3CE5D88fFf56ff32B3083641a1792e87C7E6"
+	getCoin.DRC20Contract = "0x73ef3ce5d88fff56ff32b3083641a1792e87c7e6"
 
 	// check get exist coin
 	getCoinUpdate, err := dsc.CoinKeeper.GetCoin(ctx, denom)
