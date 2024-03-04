@@ -5,7 +5,6 @@ package keeper
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
-	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 	"github.com/ethereum/go-ethereum/core"
@@ -54,44 +53,57 @@ func (k Keeper) PostTxProcessing(
 	//}
 
 	validatorMaster, _ := contracts.MasterValidatorMetaData.GetAbi()
+	delegatorCenter, _ := contracts.DelegationMetaData.GetAbi()
 
 	// this var is only for new token create from token center
-	var tokenAddress contracts.TokenCenterDeployed
-	var tokenUpdata contracts.TokenReserveUpdated
+	var tokenStaked contracts.ContractsStaked
+	//var tokenUpdata contracts.TokenReserveUpdated
 
 	for _, log := range recipient.Logs {
-		eventCenterByID, errEvent := validatorMaster.EventByID(log.Topics[0])
+		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
 		if errEvent == nil {
-			if eventCenterByID.Name == "TokenDeployed" {
-				_ = validatorMaster.UnpackIntoInterface(&tokenAddress, eventCenterByID.Name, log.Data)
+			if eventValidatorByID.Name == "TokenDeployed1" {
+				_ = validatorMaster.UnpackIntoInterface(&tokenStaked, eventValidatorByID.Name, log.Data)
 			}
 		}
-		eventCoinByID, errEvent := validatorMaster.EventByID(log.Topics[0])
+		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
-			if eventCoinByID.Name == "ReserveUpdated" {
-				_ = contracts.UnpackInputsData(&tokenUpdata, eventCoinByID.Inputs, log.Data)
+			if eventDelegationByID.Name == "ContractsStaked1" {
+				_ = validatorMaster.UnpackIntoInterface(&tokenStaked, eventDelegationByID.Name, log.Data)
+
+				//coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, tokenStaked.Stake.Token.String())
+				//if err != nil {
+				//	return errors.CoinDoesNotExist
+				//}
+				//
+				//stake := types.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(tokenStaked.Stake.Amount)})
+				//
+				//cosmosAddress, _ := types2.GetDecimalAddressFromHex(tokenStaked.Stake.Delegator.String())
+				//cosmosAddressValidator, _ := types2.GetDecimalAddressFromHex(tokenStaked.Stake.Validator.String())
+				//
+				//valAddr, err := sdk.ValAddressFromBech32(cosmosAddressValidator.String())
+				//
+				//validator, found := k.GetValidator(ctx, valAddr)
+				//if !found {
+				//	return fmt.Errorf("not found validator %s", valAddr)
+				//}
+				//
+				//_ = k.Delegate(ctx, cosmosAddress, validator, stake)
+				//if err != nil {
+				//	return err
+				//}
 			}
 		}
 	}
 
-	methodId, err := validatorMaster.MethodById(msg.Data)
-	if err != nil {
-		return nil
-	}
 	// Check if processed method
-	switch methodId.Name {
-	case types.ContractMethodCreateValidator:
-
-		//var tokenNew NewToken
-		//err = contracts.UnpackInputsData(&tokenNew, methodId.Inputs, msg.Data[4:])
-		//
-		//err = k.CreateCoinEvent(ctx, msg.Value, tokenNew.TokenData, tokenAddress.TokenAddress.String())
-		//if err != nil {
-		//	return status.Error(codes.Internal, err.Error())
-		//}
-	default:
-		return nil
-	}
+	//switch methodId.Name {
+	//case types.ContractMethodCreateValidator:
+	//
+	//
+	//default:
+	//	return nil
+	//}
 
 	return nil
 }

@@ -9,14 +9,17 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"cosmossdk.io/math"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"math/big"
+	"strings"
 )
 
 var _ evmtypes.EvmHooks = Hooks{}
@@ -68,11 +71,11 @@ func (k Keeper) PostTxProcessing(
 	//	fmt.Print(params)
 	//}
 
-	//dataAddress, err := k.QueryAddressTokenCenter(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
+	dataAddress, err := k.QueryAddressTokenCenter(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
 	//
 	//tokenCenter := ContractCenter{}
 	//fmt.Print(err)
-	//fmt.Print(dataAddress)
+	fmt.Print(dataAddress)
 	//fmt.Print(tokenCenter)
 	coinCenter, _ := contracts.TokenCenterMetaData.GetAbi()
 	coinContract, _ := contracts.TokenMetaData.GetAbi()
@@ -122,6 +125,8 @@ func (k Keeper) PostTxProcessing(
 // UpdateCoinFromEvent update reserve and volume by event
 func (k *Keeper) UpdateCoinFromEvent(ctx sdk.Context, dataUpdate contracts.TokenReserveUpdated, tokenAddress string) error {
 
+	tokenAddress = strings.ToLower(tokenAddress)
+
 	// Ensure coin does not exist
 	coinExist, err := k.GetCoinByDRC(ctx, tokenAddress)
 	if err != nil {
@@ -143,6 +148,7 @@ func (k *Keeper) UpdateCoinFromEvent(ctx sdk.Context, dataUpdate contracts.Token
 // CreateCoinEvent returns the coin if exists in KVStore.
 func (k *Keeper) CreateCoinEvent(ctx sdk.Context, reserve *big.Int, token contracts.DecimalTokenCenterToken, tokenAddress string) error {
 
+	tokenAddress = strings.ToLower(tokenAddress)
 	coinDenom := token.Symbol
 
 	// Ensure coin does not exist

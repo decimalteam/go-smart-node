@@ -29,20 +29,15 @@ func (k Keeper) QueryAddressTokenCenter(
 ) (string, error) {
 
 	contractCenter, _ := contracts.ContractCenterMetaData.GetAbi()
+	methodCall := "getAddress"
+	// Address token center
+	res, err := k.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, types.NameOfSlugForGetAddressTokenCenter)
+	if err != nil {
+		return new(common.Address).Hex(), err
+	}
+	data, err := contractCenter.Unpack(methodCall, res.Ret)
 
-	// Name
-	_, _ = k.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, "getAddress", types.NameOfSlugForGetAddressTokenCenter)
-	//if err != nil {
-	//	return types.ERC20Data{}, err
-	//}
-	//
-	//if err := erc20.UnpackIntoInterface(&nameRes, "name", res.Ret); err != nil {
-	//	return types.ERC20Data{}, errorsmod.Wrapf(
-	//		types.ErrABIUnpack, "failed to unpack name: %s", err.Error(),
-	//	)
-	//}
-
-	return "", nil
+	return data[0].(common.Address).String(), err
 }
 
 // BalanceOf queries an account's balance for a given ERC20 contract
@@ -78,31 +73,18 @@ func (k Keeper) CallEVM(
 	method string,
 	args ...interface{},
 ) (*evmtypes.MsgEthereumTxResponse, error) {
-	data, _ := abi.Pack(method, args...)
-	//if err != nil {
-	//	return nil, errorsmod.Wrap(
-	//		types.ErrABIPack,
-	//		errorsmod.Wrap(err, "failed to create transaction data").Error(),
-	//	)
-	//}
-
-	argsCall, err := json.Marshal(evmtypes.TransactionArgs{
-		From: nil,
-		To:   &contract,
-		Data: (*hexutil.Bytes)(&data),
-	})
+	data, err := abi.Pack(method, args...)
 	if err != nil {
-		return nil, errorsmod.Wrapf(errortypes.ErrJSONMarshal, "failed to marshal tx args: %s", err.Error())
+		return nil, errorsmod.Wrap(
+			err,
+			errorsmod.Wrap(err, "failed to create transaction data").Error(),
+		)
 	}
-	resp, err := k.evmKeeper.EthCall(sdk.WrapSDKContext(ctx), &evmtypes.EthCallRequest{
-		Args:   argsCall,
-		GasCap: config.DefaultGasCap,
-	})
-	fmt.Print(err)
-	//resp, _ := k.CallEVMWithData(ctx, from, &contract, data, commit)
-	//if err != nil {
-	//	return nil, errorsmod.Wrapf(err, "contract call failed: method '%s', contract '%s'", method, contract)
-	//}
+
+	resp, err := k.CallEVMWithData(ctx, from, &contract, data, commit)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "contract call failed: method '%s', contract '%s'", method, contract)
+	}
 	return resp, nil
 }
 
@@ -156,13 +138,13 @@ func (k Keeper) CallEVMWithData(
 
 	res, err := k.evmKeeper.ApplyMessage(ctx, msg, evmtypes.NewNoOpTracer(), commit)
 	fmt.Print(err)
-	//if err != nil {
-	//	return nil, err
-	//}
+	if err != nil {
+		return nil, err
+	}
 
-	//if res.Failed() {
-	//	return nil, errorsmod.Wrap(evmtypes.ErrVMExecution, res.VmError)
-	//}
+	if res.Failed() {
+		return nil, errorsmod.Wrap(evmtypes.ErrVMExecution, res.VmError)
+	}
 
 	return res, nil
 }

@@ -59,6 +59,8 @@ type CoinKeeper interface {
 	BurnPoolCoins(ctx sdk.Context, poolName string, coins sdk.Coins) error
 	UpdateCoinVR(ctx sdk.Context, denom string, volume sdkmath.Int, reserve sdkmath.Int) error
 	IsCoinExists(ctx sdk.Context, denom string) bool
+	IsCoinExistsByDRC(ctx sdk.Context, addressDRC string) bool
+	GetCoinByDRC(ctx sdk.Context, addressDRC string) (coin cointypes.Coin, err error)
 }
 
 type MultisigKeeper interface {

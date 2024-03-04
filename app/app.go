@@ -262,7 +262,7 @@ type DSC struct {
 	ScopedIBCKeeper capabilitykeeper.ScopedKeeper
 
 	// Ethermint keepers
-	EvmKeeper *evmkeeper.Keeper
+	EvmKeeper evmkeeper.Keeper
 
 	// Decimal keepers
 	CoinKeeper      coinkeeper.Keeper
@@ -468,7 +468,7 @@ func NewDSC(
 		app.AccountKeeper,
 		&app.FeeKeeper,
 		app.BankKeeper,
-		app.EvmKeeper,
+		&app.EvmKeeper,
 	)
 	app.NFTKeeper = *nftkeeper.NewKeeper(
 		appCodec,
@@ -506,7 +506,7 @@ func NewDSC(
 
 	// Create Ethermint keepers
 
-	app.EvmKeeper = evmkeeper.NewKeeper(
+	app.EvmKeeper = *evmkeeper.NewKeeper(
 		appCodec,
 		keys[evmtypes.StoreKey],
 		tkeys[evmtypes.TransientKey],
@@ -523,9 +523,10 @@ func NewDSC(
 
 	// WARNING: Setting up dummy hooks is disabled because it causes doubling ABCI events in EVM transactions.
 	// NOTE: Since we do not actually use any EVM hooks lets them will be unset.
-	app.EvmKeeper = app.EvmKeeper.SetHooks(
+	app.EvmKeeper.SetHooks(
 		evmkeeper.NewMultiEvmHooks(
 			app.CoinKeeper.Hooks(),
+			app.ValidatorKeeper.Hooks(),
 		),
 	)
 
@@ -618,7 +619,7 @@ func NewDSC(
 		// IBC app modules
 		ibc.NewAppModule(app.IBCKeeper),
 		// Ethermint app modules
-		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper, app.GetSubspace(evmtypes.ModuleName)),
+		evm.NewAppModule(&app.EvmKeeper, app.AccountKeeper, app.GetSubspace(evmtypes.ModuleName)),
 
 		// Decimal app modules
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
@@ -748,7 +749,7 @@ func NewDSC(
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		ibc.NewAppModule(app.IBCKeeper),
-		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper, app.GetSubspace(evmtypes.ModuleName)),
+		evm.NewAppModule(&app.EvmKeeper, app.AccountKeeper, app.GetSubspace(evmtypes.ModuleName)),
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
 		swap.NewAppModule(appCodec, app.SwapKeeper, app.AccountKeeper, app.BankKeeper),
 	)
@@ -769,7 +770,7 @@ func NewDSC(
 		Cdc:             appCodec,
 		AccountKeeper:   app.AccountKeeper,
 		BankKeeper:      app.BankKeeper,
-		EvmKeeper:       app.EvmKeeper,
+		EvmKeeper:       &app.EvmKeeper,
 		FeeMarketKeeper: app.FeeKeeper,
 		FeegrantKeeper:  app.FeeGrantKeeper,
 		IBCKeeper:       app.IBCKeeper,

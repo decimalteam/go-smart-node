@@ -3,6 +3,7 @@ package keeper
 import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"strings"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/errors"
@@ -113,6 +114,13 @@ func (k *Keeper) IsCoinExists(ctx sdk.Context, denom string) bool {
 	return store.Has(types.GetCoinKey(denom))
 }
 
+// IsCoinExistsByDRC returns the coin if exists in KVStore.
+func (k *Keeper) IsCoinExistsByDRC(ctx sdk.Context, addressDRC string) bool {
+	addressDRC = strings.ToLower(addressDRC)
+	store := ctx.KVStore(k.storeKey)
+	return store.Has(types.GetCoinDRCKey(addressDRC))
+}
+
 // SetCoin writes coin to KVStore.
 func (k *Keeper) SetCoin(ctx sdk.Context, coin types.Coin) {
 	store := ctx.KVStore(k.storeKey)
@@ -185,6 +193,7 @@ func (k *Keeper) setCoinVR(store sdk.KVStore, denom string, volume sdkmath.Int, 
 
 // getCoinDRC returns volume and reserve of the coin if exists in KVStore.
 func (k *Keeper) getCoinDRC(store sdk.KVStore, addressDRC string) (coinDRC types.CoinDRC, err error) {
+	addressDRC = strings.ToLower(addressDRC)
 	key := types.GetCoinDRCKey(addressDRC)
 	value := store.Get(key)
 	if len(value) == 0 {
@@ -200,6 +209,7 @@ func (k *Keeper) getCoinDRC(store sdk.KVStore, addressDRC string) (coinDRC types
 
 // setCoinDRC writes coin volume and reserve to KVStore.
 func (k *Keeper) setCoinDRC(store sdk.KVStore, denom string, addressDRC string) {
+	addressDRC = strings.ToLower(addressDRC)
 	key := types.GetCoinDRCKey(addressDRC)
 	value := k.cdc.MustMarshalLengthPrefixed(&types.CoinDRC{
 		Denom:         denom,
