@@ -77,7 +77,7 @@ func (k Keeper) PostTxProcessing(
 		}
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
-			if eventDelegationByID.Name == "Staked1" {
+			if eventDelegationByID.Name == "Staked" {
 				_ = delegatorCenter.UnpackIntoInterface(&tokenStaked, eventDelegationByID.Name, log.Data)
 				fmt.Println(tokenStaked)
 				coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, tokenStaked.Stake.Token.String())
