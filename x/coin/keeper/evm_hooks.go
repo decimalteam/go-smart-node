@@ -156,11 +156,9 @@ func (k *Keeper) CreateCoinEvent(ctx sdk.Context, reserve *big.Int, token contra
 	// Ensure coin does not exist
 	coinExist, err := k.GetCoin(ctx, coinDenom)
 	if err == nil {
-		if coinExist.DRC20Contract == "" {
-			_ = k.UpdateCoinDRC(ctx, coinDenom, tokenAddress)
-			coinExist.DRC20Contract = tokenAddress
-			k.SetCoin(ctx, coinExist)
-		}
+		_ = k.UpdateCoinDRC(ctx, coinDenom, tokenAddress)
+		coinExist.DRC20Contract = tokenAddress
+		k.SetCoin(ctx, coinExist)
 		return nil
 	}
 	// get authority address
