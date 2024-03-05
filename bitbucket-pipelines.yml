@@ -101,6 +101,8 @@ definitions:
               - ln -s 9 9.0
               - ln -s 9 9.1
               - ln -s 9 9.2
+              - ln -s 9 9.3
+              - cd ${BITBUCKET_CLONE_DIR}/build && ln -s $REPO_UPDATE_BLOCK latest
             artifacts:
               - build/**
 
@@ -135,6 +137,7 @@ definitions:
               - ln -s 8 8.6
               - ln -s 8 8.7
               - ln -s 8 8.8
+              - ln -s 8 8.9
             artifacts:
               - build/**
 
@@ -198,6 +201,7 @@ definitions:
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ol/9/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ol/9/
               - cd ${BITBUCKET_CLONE_DIR}/build/linux/ol
+              - ln -s 9 9.3
               - ln -s 9 9.2
               - ln -s 9 9.1
               - ln -s 9 9.0
@@ -232,9 +236,11 @@ definitions:
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ol/8/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ol/8/
               - cd ${BITBUCKET_CLONE_DIR}/build/linux/ol
+              - ln -s 8 8.5
               - ln -s 8 8.6
               - ln -s 8 8.7
               - ln -s 8 8.8
+              - ln -s 8 8.9
             artifacts:
               - build/**
 
@@ -424,8 +430,8 @@ definitions:
               - build/**
 
         - step:
-            name: Build on Debian 10.10
-            image: debian:10.10
+            name: Build on Debian 10
+            image: debian:10
             caches:
               - go-src
               - go-pkg
@@ -620,7 +626,7 @@ pipelines:
           name: Deploy
           deployment: Test
           script:
-            - pipe: atlassian/rsync-deploy:0.8.1
+            - pipe: atlassian/rsync-deploy:0.12.0
               variables:
                 USER: $REPO_USER
                 SERVER: $REPO_HOST
@@ -636,7 +642,7 @@ pipelines:
           name: Deploy
           deployment: Staging
           script:
-            - pipe: atlassian/rsync-deploy:0.8.1
+            - pipe: atlassian/rsync-deploy:0.12.0
               variables:
                 USER: $REPO_USER
                 SERVER: $REPO_HOST
@@ -652,7 +658,7 @@ pipelines:
           name: Deploy
           deployment: Production
           script:
-            - pipe: atlassian/rsync-deploy:0.8.1
+            - pipe: atlassian/rsync-deploy:0.12.0
               variables:
                 USER: $REPO_USER
                 SERVER: $REPO_HOST
