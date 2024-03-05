@@ -72,6 +72,7 @@ func (k *Keeper) GetCoin(ctx sdk.Context, denom string) (coin types.Coin, err er
 
 // GetCoinByDRC returns the coin if exists in KVStore.
 func (k *Keeper) GetCoinByDRC(ctx sdk.Context, addressDRC string) (coin types.Coin, err error) {
+	addressDRC = strings.ToLower(addressDRC)
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetCoinDRCKey(addressDRC)
 	// request coin
