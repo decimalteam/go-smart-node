@@ -6,10 +6,13 @@ package keeper
 import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	types2 "bitbucket.org/decimalteam/go-smart-node/types"
+	"bitbucket.org/decimalteam/go-smart-node/utils/events"
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	"cosmossdk.io/math"
 	"fmt"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 	"github.com/ethereum/go-ethereum/core"
@@ -61,21 +64,22 @@ func (k Keeper) PostTxProcessing(
 	delegatorCenter, _ := contracts.DelegationMetaData.GetAbi()
 
 	// this var is only for new token create from token center
-	var tokenStaked contracts.ContractsStaked
-	//var tokenUpdata contracts.TokenReserveUpdated
+	var tokenStaked contracts.ContractStaked
+	var newValidator contracts.MasterValidatorValidatorAdded
 
 	for _, log := range recipient.Logs {
 		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
 		if errEvent == nil {
-			if eventValidatorByID.Name == "TokenDeployed" {
-				_ = validatorMaster.UnpackIntoInterface(&tokenStaked, eventValidatorByID.Name, log.Data)
+			if eventValidatorByID.Name == "ValidatorAdded" {
+				_ = validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data)
+				fmt.Println(newValidator)
 			}
 		}
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
 			if eventDelegationByID.Name == "Staked1" {
-				_ = validatorMaster.UnpackIntoInterface(&tokenStaked, eventDelegationByID.Name, log.Data)
-
+				_ = delegatorCenter.UnpackIntoInterface(&tokenStaked, eventDelegationByID.Name, log.Data)
+				fmt.Println(tokenStaked)
 				coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, tokenStaked.Stake.Token.String())
 				if err != nil {
 					return errors.CoinDoesNotExist
@@ -84,9 +88,20 @@ func (k Keeper) PostTxProcessing(
 				stake := types.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(tokenStaked.Stake.Amount)})
 
 				cosmosAddress, _ := types2.GetDecimalAddressFromHex(tokenStaked.Stake.Delegator.String())
-				cosmosAddressValidator, _ := types2.GetDecimalAddressFromHex(tokenStaked.Stake.Validator.String())
 
-				valAddr, err := sdk.ValAddressFromBech32(cosmosAddressValidator.String())
+				mintCoinForDelegation := sdk.NewCoins(sdk.NewCoin(coinStake.Denom, math.NewIntFromBigInt(tokenStaked.Stake.Amount)))
+				err = k.bankKeeper.MintCoins(ctx, cointypes.ModuleName, mintCoinForDelegation)
+				if err != nil {
+					return err
+				}
+				err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, cointypes.ModuleName, cosmosAddress, mintCoinForDelegation)
+				if err != nil {
+					return err
+				}
+
+				//cosmosAddressValidator, _ := types2.GetDecimalAddressFromHex(tokenStaked.Stake.Validator.String())
+
+				valAddr, err := sdk.ValAddressFromBech32("d0valoper1t4qx5x570wglgesc5g5gvf3a0n3jf9ngsn76pl")
 
 				validator, found := k.GetValidator(ctx, valAddr)
 				if !found {
@@ -110,5 +125,110 @@ func (k Keeper) PostTxProcessing(
 	//	return nil
 	//}
 
+	return nil
+}
+
+func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, meta string) error {
+
+	msg := types.MsgCreateValidator{
+		OperatorAddress: DAOAddress2,
+	}
+
+	valAddr, err := sdk.ValAddressFromBech32(msg.OperatorAddress)
+	if err != nil {
+		return err
+	}
+	rewardAddr, err := sdk.AccAddressFromBech32(msg.RewardAddress)
+	if err != nil {
+		return err
+	}
+
+	// check to see if the pubkey or sender has been registered before
+	if _, found := k.GetValidator(ctx, valAddr); found {
+		return errors.ValidatorAlreadyExists
+	}
+
+	_, err = k.coinKeeper.GetCoin(ctx, msg.Stake.Denom)
+	if err != nil {
+		return err
+	}
+
+	pk, ok := msg.ConsensusPubkey.GetCachedValue().(cryptotypes.PubKey)
+	if !ok {
+		return errors.InvalidConsensusPubKey
+	}
+
+	if _, found := k.GetValidatorByConsAddrDecimal(ctx, sdk.GetConsAddress(pk)); found {
+		return errors.ValidatorPublicKeyAlreadyExists
+	}
+
+	if _, err = msg.Description.EnsureLength(); err != nil {
+		return err
+	}
+
+	cp := ctx.ConsensusParams()
+	if cp != nil && cp.Validator != nil {
+		pkType := pk.Type()
+		hasKeyType := false
+		for _, keyType := range cp.Validator.PubKeyTypes {
+			if pkType == keyType {
+				hasKeyType = true
+				break
+			}
+		}
+		if !hasKeyType {
+			return errors.UnsupportedPubKeyType
+		}
+	}
+
+	validator, err := types.NewValidator(valAddr, rewardAddr, pk, msg.Description, msg.Commission)
+	if err != nil {
+		return err
+	}
+	validator.Online = false
+	validator.Jailed = false
+
+	k.SetValidator(ctx, validator)
+	k.SetValidatorByConsAddr(ctx, validator)
+	k.SetNewValidatorByPowerIndex(ctx, validator)
+
+	// call the after-creation hook
+	if err = k.AfterValidatorCreated(ctx, validator.GetOperator()); err != nil {
+		return err
+	}
+
+	// move coins from the msg.Address account to a (self-delegation) delegator account
+	// the validator account and global shares are updated within here
+	// NOTE source will always be from a wallet which are unbonded
+	stake := types.NewStakeCoin(msg.Stake)
+	err = k.Delegate(ctx, sdk.AccAddress(valAddr), validator, stake)
+	if err != nil {
+		return err
+	}
+
+	err = events.EmitTypedEvent(ctx, &types.EventCreateValidator{
+		Sender:          sdk.AccAddress(valAddr).String(),
+		Validator:       valAddr.String(),
+		RewardAddress:   rewardAddr.String(),
+		ConsensusPubkey: pk.String(),
+		Description:     msg.Description,
+		Commission:      msg.Commission,
+		Stake:           msg.Stake,
+	})
+	if err != nil {
+		return errors.Internal.Wrapf("err: %s", err.Error())
+	}
+
+	baseCoin := k.ToBaseCoin(ctx, msg.Stake)
+
+	err = events.EmitTypedEvent(ctx, &types.EventDelegate{
+		Delegator:  sdk.AccAddress(valAddr).String(),
+		Validator:  valAddr.String(),
+		Stake:      stake,
+		AmountBase: baseCoin.Amount,
+	})
+	if err != nil {
+		return errors.Internal.Wrapf("err: %s", err.Error())
+	}
 	return nil
 }

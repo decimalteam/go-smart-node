@@ -70,12 +70,14 @@ func (k Keeper) PostTxProcessing(
 	//	// processing txs to pass and
 	//	fmt.Print(params)
 	//}
+	authAddr := authtypes.NewModuleAddress("bonded_tokens_pool").String()
 
 	dataAddress, err := k.QueryAddressTokenCenter(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
 	//
 	//tokenCenter := ContractCenter{}
 	//fmt.Print(err)
 	fmt.Print(dataAddress)
+	fmt.Print(authAddr)
 	//fmt.Print(tokenCenter)
 	coinCenter, _ := contracts.TokenCenterMetaData.GetAbi()
 	coinContract, _ := contracts.TokenMetaData.GetAbi()
