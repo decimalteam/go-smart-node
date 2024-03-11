@@ -10,7 +10,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.46.16
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/ibc-go/v6 v6.2.1
-	github.com/decimalteam/ethermint v0.22.7
+	github.com/decimalteam/ethermint v0.22.8
 	github.com/dustin/go-humanize v1.0.0
 	github.com/ethereum/go-ethereum v1.13.12
 	github.com/go-resty/resty/v2 v2.7.0
