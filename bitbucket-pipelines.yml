@@ -108,7 +108,6 @@ definitions:
                - make install
                - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/centos/8/
                - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/centos/8/
-               - cd ${BITBUCKET_CLONE_DIR}/build && ln -s $REPO_UPDATE_BLOCK latest
              artifacts:
                - build/**
 
