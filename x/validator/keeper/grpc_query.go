@@ -56,7 +56,8 @@ func (k Querier) Validators(c context.Context, req *types.QueryValidatorsRequest
 			val.TotalRewards = rs.TotalRewards
 			val.Stake = rs.Stake
 		}
-		accAddress, _ := sdk.AccAddressFromBech32(val.GetOperator().String())
+		accAddressVal, _ := sdk.ValAddressFromBech32(val.GetOperator().String())
+		accAddress, _ := sdk.AccAddressFromBech32(accAddressVal.String())
 		val.DRC20Contract = common.BytesToAddress(accAddress).String()
 		return val, nil
 	}, func() *types.Validator {
