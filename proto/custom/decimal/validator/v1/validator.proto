@@ -61,6 +61,9 @@ message Validator {
   // stake is power of all delegations stake
   // NOTE: It is stored separately in the KVStore.
   int64 stake = 13;
+
+  // drc20_address is the hex address of ERC20 contract token
+  string drc20_address = 14 [ (gogoproto.customname) = "DRC20Contract" ];
 }
 
 // ValidatorRS defines internal object containing dynamic validator's info like rewards or stakes.
