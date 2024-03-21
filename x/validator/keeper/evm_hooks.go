@@ -11,10 +11,12 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	"cosmossdk.io/math"
+	sdkmath "cosmossdk.io/math"
 	"fmt"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 )
@@ -59,13 +61,20 @@ func (k Keeper) PostTxProcessing(
 	//	// processing txs to pass and
 	//	return nil
 	//}
+	accAddressVal, _ := sdk.ValAddressFromBech32("d0valoper1t4qx5x570wglgesc5g5gvf3a0n3jf9ngsn76pl")
+	//accAddress, _ := sdk.Address(accAddressVal)
+	add := common.BytesToAddress(accAddressVal).String()
+	fmt.Println(add)
 
 	validatorMaster, _ := contracts.MasterValidatorMetaData.GetAbi()
 	delegatorCenter, _ := contracts.DelegationMetaData.GetAbi()
 
 	// this var is only for new token create from token center
-	var tokenStaked contracts.ContractStaked
+	var tokenDelegate contracts.ContractStaked
+	var tokenUndelegate contracts.ContractsRequestWithdraw
+	var tokenRedelegation contracts.ContractsRequestTransfer
 	var newValidator contracts.MasterValidatorValidatorAdded
+	var updateValidator contracts.MasterValidatorValidatorUpdated
 
 	for _, log := range recipient.Logs {
 		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
@@ -74,41 +83,47 @@ func (k Keeper) PostTxProcessing(
 				_ = validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data)
 				fmt.Println(newValidator)
 			}
+			if eventValidatorByID.Name == "ValidatorUpdated" {
+				_ = validatorMaster.UnpackIntoInterface(&updateValidator, eventValidatorByID.Name, log.Data)
+				updateValidator.Validator = common.BytesToAddress(log.Topics[1].Bytes())
+				fmt.Println(updateValidator)
+				if updateValidator.Status == 2 {
+					err := k.SetOnlineFromEvm(ctx, updateValidator.Validator.Hex())
+					if err != nil {
+						return err
+					}
+				}
+				if updateValidator.Status == 1 {
+					err := k.SetOfflineFromEvm(ctx, updateValidator.Validator.Hex())
+					if err != nil {
+						return err
+					}
+				}
+			}
 		}
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
 			if eventDelegationByID.Name == "Staked" {
-				_ = delegatorCenter.UnpackIntoInterface(&tokenStaked, eventDelegationByID.Name, log.Data)
-				fmt.Println(tokenStaked)
-				coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, tokenStaked.Stake.Token.String())
-				if err != nil {
-					return errors.CoinDoesNotExist
-				}
-
-				stake := types.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(tokenStaked.Stake.Amount)})
-
-				cosmosAddress, _ := types2.GetDecimalAddressFromHex(tokenStaked.Stake.Delegator.String())
-
-				mintCoinForDelegation := sdk.NewCoins(sdk.NewCoin(coinStake.Denom, math.NewIntFromBigInt(tokenStaked.Stake.Amount)))
-				err = k.bankKeeper.MintCoins(ctx, cointypes.ModuleName, mintCoinForDelegation)
+				_ = delegatorCenter.UnpackIntoInterface(&tokenDelegate, eventDelegationByID.Name, log.Data)
+				fmt.Println(tokenDelegate)
+				err := k.Staked(ctx, tokenDelegate)
 				if err != nil {
 					return err
 				}
-				err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, cointypes.ModuleName, cosmosAddress, mintCoinForDelegation)
+			}
+
+			if eventDelegationByID.Name == "RequestWithdraw1" {
+				_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationByID.Name, log.Data)
+				fmt.Println(tokenUndelegate)
+				err := k.RequestWithdraw(ctx, tokenUndelegate)
 				if err != nil {
 					return err
 				}
-
-				//cosmosAddressValidator, _ := types2.GetDecimalAddressFromHex(tokenStaked.Stake.Validator.String())
-
-				valAddr, err := sdk.ValAddressFromBech32("d0valoper1t4qx5x570wglgesc5g5gvf3a0n3jf9ngsn76pl")
-
-				validator, found := k.GetValidator(ctx, valAddr)
-				if !found {
-					return fmt.Errorf("not found validator %s", valAddr)
-				}
-
-				_ = k.Delegate(ctx, cosmosAddress, validator, stake)
+			}
+			if eventDelegationByID.Name == "RequestTransfer1" {
+				_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationByID.Name, log.Data)
+				fmt.Println(tokenRedelegation)
+				err := k.RequestTransfer(ctx, tokenRedelegation)
 				if err != nil {
 					return err
 				}
@@ -124,6 +139,109 @@ func (k Keeper) PostTxProcessing(
 	//default:
 	//	return nil
 	//}
+
+	return nil
+}
+
+func (k Keeper) Staked(ctx sdk.Context, stakeData contracts.ContractStaked) error {
+	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, stakeData.Stake.Token.String())
+	if err != nil {
+		return errors.CoinDoesNotExist
+	}
+
+	stake := types.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(stakeData.Stake.Amount)})
+
+	cosmosAddress, _ := types2.GetDecimalAddressFromHex(stakeData.Stake.Delegator.String())
+
+	mintCoinForDelegation := sdk.NewCoins(sdk.NewCoin(coinStake.Denom, math.NewIntFromBigInt(stakeData.Stake.Amount)))
+	err = k.bankKeeper.MintCoins(ctx, cointypes.ModuleName, mintCoinForDelegation)
+	if err != nil {
+		return err
+	}
+	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, cointypes.ModuleName, cosmosAddress, mintCoinForDelegation)
+	if err != nil {
+		return err
+	}
+
+	//cosmosAddressValidator, _ := types2.GetDecimalAddressFromHex(tokenStaked.Stake.Validator.String())
+
+	valAddr, err := sdk.ValAddressFromBech32("d0valoper1t4qx5x570wglgesc5g5gvf3a0n3jf9ngsn76pl")
+
+	validator, found := k.GetValidator(ctx, valAddr)
+	if !found {
+		return fmt.Errorf("not found validator %s", valAddr)
+	}
+
+	_ = k.Delegate(ctx, cosmosAddress, validator, stake)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate contracts.ContractsRequestWithdraw) error {
+	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, tokenUndelegate.FrozenStake.Stake.Token.String())
+	if err != nil {
+		return errors.CoinDoesNotExist
+	}
+
+	stake := types.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(tokenUndelegate.FrozenStake.Stake.Amount)})
+
+	cosmosAddress, _ := types2.GetDecimalAddressFromHex(tokenUndelegate.FrozenStake.Stake.Delegator.String())
+
+	//cosmosAddressValidator, _ := types2.GetDecimalAddressFromHex(tokenStaked.Stake.Validator.String())
+
+	valAddr, err := sdk.ValAddressFromBech32("d0valoper1t4qx5x570wglgesc5g5gvf3a0n3jf9ngsn76pl")
+
+	delegation, found := k.GetDelegation(ctx, cosmosAddress, valAddr, stake.ID)
+	if !found {
+		return errors.DelegationNotFound
+	}
+
+	remainStake, err := k.CalculateRemainStake(ctx, delegation.Stake, stake)
+	if err != nil {
+		return err
+	}
+
+	_, err = k.Undelegate(ctx, cosmosAddress, valAddr, stake, remainStake)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation contracts.ContractsRequestTransfer) error {
+	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, tokenRedelegation.FrozenStake.Stake.Token.String())
+	if err != nil {
+		return errors.CoinDoesNotExist
+	}
+
+	stake := types.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(tokenRedelegation.FrozenStake.Stake.Amount)})
+
+	cosmosAddress, _ := types2.GetDecimalAddressFromHex(tokenRedelegation.FrozenStake.Stake.Delegator.String())
+
+	//cosmosAddressValidator, _ := types2.GetDecimalAddressFromHex(tokenStaked.Stake.Validator.String())
+
+	valAddr, err := sdk.ValAddressFromBech32("d0valoper1t4qx5x570wglgesc5g5gvf3a0n3jf9ngsn76pl")
+
+	delegation, found := k.GetDelegation(ctx, cosmosAddress, valAddr, stake.ID)
+	if !found {
+		return errors.DelegationNotFound
+	}
+
+	remainStake, err := k.CalculateRemainStake(ctx, delegation.Stake, stake)
+	if err != nil {
+		return err
+	}
+
+	_, err = k.BeginRedelegation(
+		ctx, cosmosAddress, valAddr, valAddr, stake, remainStake,
+	)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -230,5 +348,119 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, meta string) error {
 	if err != nil {
 		return errors.Internal.Wrapf("err: %s", err.Error())
 	}
+	return nil
+}
+
+// SetOnlineFromEvm defines a method for turning on a validator into the blockchain consensus.
+func (k Keeper) SetOnlineFromEvm(goCtx sdk.Context, validatorAddrHex string) error {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	valAddr, err := sdk.ValAddressFromHex(validatorAddrHex)
+	if err != nil {
+		return err
+	}
+	// validator must already be registered
+	validator, found := k.GetValidator(ctx, valAddr)
+	if !found {
+		return errors.ValidatorNotFound
+	}
+
+	if validator.Online {
+		if !validator.Jailed {
+			return errors.ValidatorAlreadyOnline
+		}
+	}
+
+	// validator without delegations can't become online
+	if !k.HasDelegations(ctx, valAddr) {
+		return errors.ValidatorHasNoDelegations
+	}
+
+	k.DeleteValidatorByPowerIndex(ctx, validator)
+
+	// TODO: move Online and Jailed to store keys?
+	validator.Online = true
+	validator.Jailed = false
+
+	delByValidator := k.GetAllDelegationsByValidator(ctx)
+	customCoinStaked := k.GetAllCustomCoinsStaked(ctx)
+	customCoinPrices := k.CalculateCustomCoinPrices(ctx, customCoinStaked)
+	totalStake, err := k.CalculateTotalPowerWithDelegationsAndPrices(ctx, validator.GetOperator(), delByValidator[validator.OperatorAddress], customCoinPrices)
+	if err != nil {
+		return err
+	}
+
+	stake := TokensToConsensusPower(totalStake)
+	if stake == 0 {
+		return errors.ValidatorStakeTooSmall
+	}
+
+	validator.Stake = stake
+
+	rs, err := k.GetValidatorRS(ctx, valAddr)
+	if err != nil {
+		rs = types.ValidatorRS{
+			Rewards:      sdkmath.ZeroInt(),
+			TotalRewards: sdkmath.ZeroInt(),
+		}
+	}
+	rs.Stake = stake
+	k.SetValidator(ctx, validator)
+	k.SetValidatorByPowerIndex(ctx, validator)
+	k.SetValidatorRS(ctx, valAddr, rs)
+
+	// StartHeight need for correct calculation of missing blocks
+	consAdr, err := validator.GetConsAddr()
+	if err != nil {
+		return err
+	}
+	k.SetStartHeight(ctx, consAdr, ctx.BlockHeight())
+
+	err = events.EmitTypedEvent(ctx, &types.EventSetOnline{
+		Sender:    sdk.AccAddress(valAddr).String(),
+		Validator: valAddr.String(),
+	})
+	if err != nil {
+		return errors.Internal.Wrapf("err: %s", err.Error())
+	}
+
+	return nil
+}
+
+// SetOfflineFromEvm defines a method for turning on a validator into the blockchain consensus.
+func (k Keeper) SetOfflineFromEvm(goCtx sdk.Context, validatorAddrHex string) error {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	valAddr, err := sdk.ValAddressFromHex(validatorAddrHex)
+	if err != nil {
+		return err
+	}
+	// validator must already be registered
+	validator, found := k.GetValidator(ctx, valAddr)
+	if !found {
+		return errors.ValidatorNotFound
+	}
+	if !validator.Online {
+		return errors.ValidatorAlreadyOffline
+	}
+
+	validator.Online = false
+	// TODO: optimize
+	k.SetValidator(ctx, validator)
+
+	consAdr, err := validator.GetConsAddr()
+	if err != nil {
+		return err
+	}
+	k.DeleteStartHeight(ctx, consAdr)
+
+	err = events.EmitTypedEvent(ctx, &types.EventSetOffline{
+		Sender:    sdk.AccAddress(valAddr).String(),
+		Validator: valAddr.String(),
+	})
+	if err != nil {
+		return errors.Internal.Wrapf("err: %s", err.Error())
+	}
+
 	return nil
 }

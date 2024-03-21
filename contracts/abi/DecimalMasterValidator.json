@@ -353,6 +353,13 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "pauseSelf",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -394,6 +401,13 @@
       }
     ],
     "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "unpauseSelf",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

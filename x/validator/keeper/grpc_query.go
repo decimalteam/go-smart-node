@@ -94,6 +94,8 @@ func (k Querier) Validator(c context.Context, req *types.QueryValidatorRequest) 
 		return nil, status.Errorf(codes.NotFound, "validator %s not found", req.Validator)
 	}
 
+	validator.DRC20Contract = common.BytesToAddress(validator.GetOperator()).String()
+
 	return &types.QueryValidatorResponse{Validator: validator}, nil
 }
 
