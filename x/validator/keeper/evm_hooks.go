@@ -12,6 +12,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	"cosmossdk.io/math"
 	sdkmath "cosmossdk.io/math"
+	"encoding/json"
 	"fmt"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -61,10 +62,6 @@ func (k Keeper) PostTxProcessing(
 	//	// processing txs to pass and
 	//	return nil
 	//}
-	accAddressVal, _ := sdk.ValAddressFromBech32("d0valoper1t4qx5x570wglgesc5g5gvf3a0n3jf9ngsn76pl")
-	//accAddress, _ := sdk.Address(accAddressVal)
-	add := common.BytesToAddress(accAddressVal).String()
-	fmt.Println(add)
 
 	validatorMaster, _ := contracts.MasterValidatorMetaData.GetAbi()
 	delegatorCenter, _ := contracts.DelegationMetaData.GetAbi()
@@ -81,7 +78,13 @@ func (k Keeper) PostTxProcessing(
 		if errEvent == nil {
 			if eventValidatorByID.Name == "ValidatorAdded" {
 				_ = validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data)
-				fmt.Println(newValidator)
+				newValidator.Validator = common.BytesToAddress(log.Topics[1].Bytes())
+				var validatorInfo *types.MsgCreateValidator
+				_ = json.Unmarshal([]byte(newValidator.Meta), validatorInfo)
+				//if err != nil {
+				//	return err
+				//}
+				fmt.Println(validatorInfo)
 			}
 			if eventValidatorByID.Name == "ValidatorUpdated" {
 				_ = validatorMaster.UnpackIntoInterface(&updateValidator, eventValidatorByID.Name, log.Data)
