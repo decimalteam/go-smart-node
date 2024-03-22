@@ -87,17 +87,15 @@ func (k Keeper) PostTxProcessing(
 				fmt.Println(validatorInfo)
 			}
 			if eventValidatorByID.Name == "ValidatorUpdated" {
-				_ = validatorMaster.UnpackIntoInterface(&updateValidator, eventValidatorByID.Name, log.Data)
-				updateValidator.Validator = common.BytesToAddress(log.Topics[1].Bytes())
-				fmt.Println(updateValidator)
+				cosmosAddressValidator, _ := types2.GetDecimalAddressFromHex(common.BytesToAddress(log.Topics[1].Bytes()).String())
 				if updateValidator.Status == 2 {
-					err := k.SetOnlineFromEvm(ctx, updateValidator.Validator.Hex())
+					err := k.SetOnlineFromEvm(ctx, cosmosAddressValidator.String())
 					if err != nil {
 						return err
 					}
 				}
 				if updateValidator.Status == 1 {
-					err := k.SetOfflineFromEvm(ctx, updateValidator.Validator.Hex())
+					err := k.SetOfflineFromEvm(ctx, cosmosAddressValidator.String())
 					if err != nil {
 						return err
 					}
@@ -355,10 +353,10 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, meta string) error {
 }
 
 // SetOnlineFromEvm defines a method for turning on a validator into the blockchain consensus.
-func (k Keeper) SetOnlineFromEvm(goCtx sdk.Context, validatorAddrHex string) error {
+func (k Keeper) SetOnlineFromEvm(goCtx sdk.Context, validatorAddr string) error {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	valAddr, err := sdk.ValAddressFromHex(validatorAddrHex)
+	valAddr, err := sdk.ValAddressFromBech32(validatorAddr)
 	if err != nil {
 		return err
 	}
@@ -370,7 +368,7 @@ func (k Keeper) SetOnlineFromEvm(goCtx sdk.Context, validatorAddrHex string) err
 
 	if validator.Online {
 		if !validator.Jailed {
-			return errors.ValidatorAlreadyOnline
+			return nil
 		}
 	}
 
@@ -434,7 +432,7 @@ func (k Keeper) SetOnlineFromEvm(goCtx sdk.Context, validatorAddrHex string) err
 func (k Keeper) SetOfflineFromEvm(goCtx sdk.Context, validatorAddrHex string) error {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	valAddr, err := sdk.ValAddressFromHex(validatorAddrHex)
+	valAddr, err := sdk.ValAddressFromBech32(validatorAddrHex)
 	if err != nil {
 		return err
 	}
