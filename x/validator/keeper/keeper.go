@@ -42,6 +42,7 @@ func NewKeeper(
 	nk types.NFTKeeper,
 	ck types.CoinKeeper,
 	mk types.MultisigKeeper,
+	evm *evmkeeper.Keeper,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -66,6 +67,7 @@ func NewKeeper(
 		coinKeeper:     ck,
 		multisigKeeper: mk,
 		paramstore:     ps,
+		evmKeeper:      evm,
 		hooks:          nil,
 	}
 }

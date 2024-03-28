@@ -502,6 +502,7 @@ func NewDSC(
 		&app.NFTKeeper,
 		&app.CoinKeeper,
 		&app.MultisigKeeper,
+		&app.EvmKeeper,
 	)
 
 	// Create Ethermint keepers
