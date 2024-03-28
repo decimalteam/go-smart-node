@@ -6,14 +6,11 @@ package keeper
 import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-	"math/big"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// QueryAddressTokenCenter returns the data of a deployed ERC20 contract
+// QueryAddressDelegation returns the data of a deployed ERC20 contract
 func (k *Keeper) QueryAddressDelegation(
 	ctx sdk.Context,
 	contract common.Address,
@@ -31,26 +28,20 @@ func (k *Keeper) QueryAddressDelegation(
 	return data[0].(common.Address).String(), err
 }
 
-// BalanceOf queries an account's balance for a given ERC20 contract
-func (k *Keeper) BalanceOf(
+// QueryIfNeedExecuteFinish returns the data of a deployed ERC20 contract
+func (k *Keeper) QueryIfNeedExecuteFinish(
 	ctx sdk.Context,
-	abi abi.ABI,
-	contract, account common.Address,
-) *big.Int {
-	res, err := k.evmKeeper.CallEVM(ctx, abi, common.Address(types.ModuleAddress), contract, false, "balanceOf", account)
+	contract common.Address,
+) (bool, error) {
+
+	contractDelegation, _ := contracts.DelegationMetaData.GetAbi()
+	methodCall := "isFrozenStakesQueueReady"
+	// Address token center
+	res, err := k.evmKeeper.CallEVM(ctx, *contractDelegation, common.Address(types.ModuleAddress), contract, false, methodCall)
 	if err != nil {
-		return nil
+		return false, err
 	}
+	data, err := contractDelegation.Unpack(methodCall, res.Ret)
 
-	unpacked, err := abi.Unpack("balanceOf", res.Ret)
-	if err != nil || len(unpacked) == 0 {
-		return nil
-	}
-
-	balance, ok := unpacked[0].(*big.Int)
-	if !ok {
-		return nil
-	}
-
-	return balance
+	return data[0].(bool), err
 }
