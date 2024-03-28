@@ -19,7 +19,7 @@ func (k *Keeper) QueryAddressDelegation(
 	contract common.Address,
 ) (string, error) {
 
-	contractCenter, _ := contracts.DelegationMetaData.GetAbi()
+	contractCenter, _ := contracts.ContractCenterMetaData.GetAbi()
 	methodCall := "getAddress"
 	// Address token center
 	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, types.NameOfSlugForGetAddressDelegation)
