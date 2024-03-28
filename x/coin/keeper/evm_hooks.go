@@ -59,7 +59,7 @@ func (h Hooks) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *etht
 // Note that the PostTxProcessing hook is only called by sending an EVM
 // transaction that triggers `ApplyTransaction`. A cosmos tx with a
 // `ConvertERC20` msg does not trigger the hook as it only calls `ApplyMessage`.
-func (k Keeper) PostTxProcessing(
+func (k *Keeper) PostTxProcessing(
 	ctx sdk.Context,
 	msg core.Message,
 	recipient *ethtypes.Receipt,
@@ -70,14 +70,12 @@ func (k Keeper) PostTxProcessing(
 	//	// processing txs to pass and
 	//	fmt.Print(params)
 	//}
-	authAddr := authtypes.NewModuleAddress("bonded_tokens_pool").String()
 
 	dataAddress, err := k.QueryAddressTokenCenter(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
 	//
 	//tokenCenter := ContractCenter{}
 	//fmt.Print(err)
 	fmt.Print(dataAddress)
-	fmt.Print(authAddr)
 	//fmt.Print(tokenCenter)
 	coinCenter, _ := contracts.TokenCenterMetaData.GetAbi()
 	coinContract, _ := contracts.TokenMetaData.GetAbi()

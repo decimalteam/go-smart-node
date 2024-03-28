@@ -74,6 +74,11 @@
   },
   {
     "inputs": [],
+    "name": "InvalidTokenType",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "InvalidValidator",
     "type": "error"
   },
@@ -161,6 +166,16 @@
     "type": "error"
   },
   {
+    "inputs": [],
+    "name": "ZeroAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroAmount",
+    "type": "error"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -177,7 +192,7 @@
       },
       {
         "indexed": false,
-        "internalType": "enum DecimalDelegationCore.TokenType",
+        "internalType": "enum DecimalDelegationCommon.TokenType",
         "name": "tokenType",
         "type": "uint8"
       },
@@ -234,13 +249,13 @@
             "type": "uint256"
           },
           {
-            "internalType": "enum DecimalDelegationCore.TokenType",
+            "internalType": "enum DecimalDelegationCommon.TokenType",
             "name": "tokenType",
             "type": "uint8"
           }
         ],
         "indexed": false,
-        "internalType": "struct DecimalDelegationCore.Stake",
+        "internalType": "struct DecimalDelegationCommon.Stake",
         "name": "stake",
         "type": "tuple"
       }
@@ -279,13 +294,13 @@
             "type": "uint256"
           },
           {
-            "internalType": "enum DecimalDelegationCore.TokenType",
+            "internalType": "enum DecimalDelegationCommon.TokenType",
             "name": "tokenType",
             "type": "uint8"
           }
         ],
         "indexed": false,
-        "internalType": "struct DecimalDelegationCore.Stake",
+        "internalType": "struct DecimalDelegationCommon.Stake",
         "name": "stake",
         "type": "tuple"
       }
@@ -377,17 +392,17 @@
                 "type": "uint256"
               },
               {
-                "internalType": "enum DecimalDelegationCore.TokenType",
+                "internalType": "enum DecimalDelegationCommon.TokenType",
                 "name": "tokenType",
                 "type": "uint8"
               }
             ],
-            "internalType": "struct DecimalDelegationCore.Stake",
+            "internalType": "struct DecimalDelegationCommon.Stake",
             "name": "stake",
             "type": "tuple"
           },
           {
-            "internalType": "enum DecimalDelegationCore.FreezeType",
+            "internalType": "enum DecimalDelegationCommon.FreezeType",
             "name": "freezeType",
             "type": "uint8"
           },
@@ -398,7 +413,7 @@
           }
         ],
         "indexed": false,
-        "internalType": "struct DecimalDelegationCore.FrozenStake",
+        "internalType": "struct DecimalDelegationCommon.FrozenStake",
         "name": "frozenStake",
         "type": "tuple"
       },
@@ -451,17 +466,17 @@
                 "type": "uint256"
               },
               {
-                "internalType": "enum DecimalDelegationCore.TokenType",
+                "internalType": "enum DecimalDelegationCommon.TokenType",
                 "name": "tokenType",
                 "type": "uint8"
               }
             ],
-            "internalType": "struct DecimalDelegationCore.Stake",
+            "internalType": "struct DecimalDelegationCommon.Stake",
             "name": "stake",
             "type": "tuple"
           },
           {
-            "internalType": "enum DecimalDelegationCore.FreezeType",
+            "internalType": "enum DecimalDelegationCommon.FreezeType",
             "name": "freezeType",
             "type": "uint8"
           },
@@ -472,7 +487,7 @@
           }
         ],
         "indexed": false,
-        "internalType": "struct DecimalDelegationCore.FrozenStake",
+        "internalType": "struct DecimalDelegationCommon.FrozenStake",
         "name": "frozenStake",
         "type": "tuple"
       },
@@ -517,13 +532,13 @@
             "type": "uint256"
           },
           {
-            "internalType": "enum DecimalDelegationCore.TokenType",
+            "internalType": "enum DecimalDelegationCommon.TokenType",
             "name": "tokenType",
             "type": "uint8"
           }
         ],
         "indexed": false,
-        "internalType": "struct DecimalDelegationCore.Stake",
+        "internalType": "struct DecimalDelegationCommon.Stake",
         "name": "stake",
         "type": "tuple"
       }
@@ -735,6 +750,19 @@
   },
   {
     "inputs": [],
+    "name": "getCompletableFrozenStakesIndexes",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getContractCenter",
     "outputs": [
       {
@@ -749,7 +777,7 @@
   {
     "inputs": [
       {
-        "internalType": "enum DecimalDelegationCore.FreezeType",
+        "internalType": "enum DecimalDelegationCommon.FreezeType",
         "name": "freezeType",
         "type": "uint8"
       }
@@ -799,17 +827,17 @@
                 "type": "uint256"
               },
               {
-                "internalType": "enum DecimalDelegationCore.TokenType",
+                "internalType": "enum DecimalDelegationCommon.TokenType",
                 "name": "tokenType",
                 "type": "uint8"
               }
             ],
-            "internalType": "struct DecimalDelegationCore.Stake",
+            "internalType": "struct DecimalDelegationCommon.Stake",
             "name": "stake",
             "type": "tuple"
           },
           {
-            "internalType": "enum DecimalDelegationCore.FreezeType",
+            "internalType": "enum DecimalDelegationCommon.FreezeType",
             "name": "freezeType",
             "type": "uint8"
           },
@@ -819,7 +847,7 @@
             "type": "uint256"
           }
         ],
-        "internalType": "struct DecimalDelegationCore.FrozenStake[]",
+        "internalType": "struct DecimalDelegationCommon.FrozenStake[]",
         "name": "",
         "type": "tuple[]"
       }
@@ -875,12 +903,12 @@
             "type": "uint256"
           },
           {
-            "internalType": "enum DecimalDelegationCore.TokenType",
+            "internalType": "enum DecimalDelegationCommon.TokenType",
             "name": "tokenType",
             "type": "uint8"
           }
         ],
-        "internalType": "struct DecimalDelegationCore.Stake",
+        "internalType": "struct DecimalDelegationCommon.Stake",
         "name": "",
         "type": "tuple"
       }
@@ -955,12 +983,12 @@
             "type": "uint256"
           },
           {
-            "internalType": "enum DecimalDelegationCore.TokenType",
+            "internalType": "enum DecimalDelegationCommon.TokenType",
             "name": "tokenType",
             "type": "uint8"
           }
         ],
-        "internalType": "struct DecimalDelegationCore.Stake[]",
+        "internalType": "struct DecimalDelegationCommon.Stake[]",
         "name": "stakes",
         "type": "tuple[]"
       }
@@ -1016,12 +1044,12 @@
             "type": "uint256"
           },
           {
-            "internalType": "enum DecimalDelegationCore.TokenType",
+            "internalType": "enum DecimalDelegationCommon.TokenType",
             "name": "tokenType",
             "type": "uint8"
           }
         ],
-        "internalType": "struct DecimalDelegationCore.Stake[]",
+        "internalType": "struct DecimalDelegationCommon.Stake[]",
         "name": "stakes",
         "type": "tuple[]"
       },

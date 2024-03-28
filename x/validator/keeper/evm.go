@@ -14,15 +14,15 @@ import (
 )
 
 // QueryAddressTokenCenter returns the data of a deployed ERC20 contract
-func (k *Keeper) QueryAddressTokenCenter(
+func (k *Keeper) QueryAddressDelegation(
 	ctx sdk.Context,
 	contract common.Address,
 ) (string, error) {
 
-	contractCenter, _ := contracts.ContractCenterMetaData.GetAbi()
+	contractCenter, _ := contracts.DelegationMetaData.GetAbi()
 	methodCall := "getAddress"
 	// Address token center
-	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, types.NameOfSlugForGetAddressTokenCenter)
+	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, types.NameOfSlugForGetAddressDelegation)
 	if err != nil {
 		return new(common.Address).Hex(), err
 	}

@@ -1,9 +1,11 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"bytes"
 	goerrors "errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"runtime/debug"
 	"sort"
 
@@ -117,6 +119,8 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 		}
 	}
 
+	dataAddress, err := k.QueryAddressDelegation(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
+	fmt.Println(dataAddress)
 	return validatorUpdates
 }
 

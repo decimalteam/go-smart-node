@@ -79,8 +79,8 @@ func (k Keeper) PostTxProcessing(
 			if eventValidatorByID.Name == "ValidatorAdded" {
 				_ = validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data)
 				newValidator.Validator = common.BytesToAddress(log.Topics[1].Bytes())
-				var validatorInfo *types.MsgCreateValidator
-				_ = json.Unmarshal([]byte(newValidator.Meta), validatorInfo)
+				var validatorInfo contracts.MasterValidatorValidatorAddedMeta
+				_ = json.Unmarshal([]byte(newValidator.Meta), &validatorInfo)
 				//if err != nil {
 				//	return err
 				//}

@@ -64,6 +64,19 @@ type MasterValidatorValidatorAdded struct {
 	Raw       types.Log // Blockchain specific contextual infos
 }
 
+// MasterValidatorValidatorAddedMeta represents a ReserveUpdated event raised by the Contracts contract.
+type MasterValidatorValidatorAddedMeta struct {
+	OperatorAddress string `json:"operator_address"`
+	RewardAddress   string `json:"reward_address"`
+	ConsensusPubkey string `json:"consensus_pubkey"`
+	Description     string `json:"description"`
+	Commission      string `json:"commission"`
+	Stake           struct {
+		Denom  string `json:"denom"`
+		Amount string `json:"amount"`
+	} `json:"stake"`
+}
+
 // MasterValidatorValidatorPenalty represents a ValidatorPenalty event raised by the Contracts contract.
 type MasterValidatorValidatorPenalty struct {
 	Validator  common.Address
