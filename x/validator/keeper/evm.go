@@ -45,3 +45,39 @@ func (k *Keeper) QueryIfNeedExecuteFinish(
 
 	return data[0].(bool), err
 }
+
+// QueryOwnerDelegation returns the data of a deployed ERC20 contract
+func (k *Keeper) QueryOwnerDelegation(
+	ctx sdk.Context,
+	contract common.Address,
+) (string, error) {
+
+	contractDelegation, _ := contracts.DelegationMetaData.GetAbi()
+	methodCall := "owner"
+	// Address token center
+	res, err := k.evmKeeper.CallEVM(ctx, *contractDelegation, common.Address(types.ModuleAddress), contract, false, methodCall)
+	if err != nil {
+		return new(common.Address).Hex(), err
+	}
+	data, err := contractDelegation.Unpack(methodCall, res.Ret)
+
+	return data[0].(common.Address).String(), err
+}
+
+// ExecuteQueueEVMAction returns the data of a deployed ERC20 contract
+func (k *Keeper) ExecuteQueueEVMAction(
+	ctx sdk.Context,
+	contract common.Address,
+) (bool, error) {
+
+	contractDelegation, _ := contracts.DelegationMetaData.GetAbi()
+	methodCall := "completeQueuedStake"
+	// Address token center
+	res, err := k.evmKeeper.CallEVM(ctx, *contractDelegation, common.Address(types.ModuleAddress), contract, true, methodCall)
+	if err != nil {
+		return false, err
+	}
+	data, err := contractDelegation.Unpack(methodCall, res.Ret)
+
+	return data[0].(bool), err
+}
