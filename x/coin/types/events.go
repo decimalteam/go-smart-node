@@ -11,9 +11,10 @@ import (
 
 // evm coin center events
 const (
-	NameOfSlugForGetAddressTokenCenter = "token-center"
-	NameOfSlugForGetAddressDelegation  = "delegation"
-	EventChangeTokenCenter             = "ContractAdded"
+	NameOfSlugForGetAddressTokenCenter     = "token-center"
+	NameOfSlugForGetAddressDelegation      = "delegation"
+	NameOfSlugForGetAddressMasterValidator = "master-validator"
+	EventChangeTokenCenter                 = "ContractAdded"
 
 	// DRC20MethodCreateToken defines the create method for DRC20 token
 	DRC20MethodCreateToken = "createToken"

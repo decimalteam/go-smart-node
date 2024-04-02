@@ -28,6 +28,24 @@ func (k *Keeper) QueryAddressDelegation(
 	return data[0].(common.Address).String(), err
 }
 
+// QueryAddressMasterValidator returns the data of a deployed ERC20 contract
+func (k *Keeper) QueryAddressMasterValidator(
+	ctx sdk.Context,
+	contract common.Address,
+) (string, error) {
+
+	contractCenter, _ := contracts.ContractCenterMetaData.GetAbi()
+	methodCall := "getAddress"
+	// Address token center
+	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, types.NameOfSlugForGetAddressMasterValidator)
+	if err != nil {
+		return new(common.Address).Hex(), err
+	}
+	data, err := contractCenter.Unpack(methodCall, res.Ret)
+
+	return data[0].(common.Address).String(), err
+}
+
 // QueryIfNeedExecuteFinish returns the data of a deployed ERC20 contract
 func (k *Keeper) QueryIfNeedExecuteFinish(
 	ctx sdk.Context,
@@ -80,4 +98,37 @@ func (k *Keeper) ExecuteQueueEVMAction(
 	data, err := contractDelegation.Unpack(methodCall, res.Ret)
 
 	return data[0].(bool), err
+}
+
+// ExecuteAddPenalty returns the data of a deployed ERC20 contract
+func (k *Keeper) ExecuteAddPenalty(
+	ctx sdk.Context,
+	contract common.Address,
+	validatorAddress string,
+	penaltyPercent int,
+) (bool, error) {
+
+	contractDelegation, _ := contracts.MasterValidatorMetaData.GetAbi()
+	methodCall := "addPenalty"
+	_, err := k.evmKeeper.CallEVM(ctx, *contractDelegation, common.Address(types.ModuleAddress), contract, true, methodCall, validatorAddress, penaltyPercent)
+	if err != nil {
+		return false, err
+	}
+	return true, err
+}
+
+// ExecuteBurnPenaltyTokens returns the data of a deployed ERC20 contract
+func (k *Keeper) ExecuteBurnPenaltyTokens(
+	ctx sdk.Context,
+	contract common.Address,
+	validatorAddress string,
+) (bool, error) {
+
+	contractDelegation, _ := contracts.DelegationMetaData.GetAbi()
+	methodCall := "burnPenaltyTokensValidator"
+	_, err := k.evmKeeper.CallEVM(ctx, *contractDelegation, common.Address(types.ModuleAddress), contract, true, methodCall, validatorAddress)
+	if err != nil {
+		return false, err
+	}
+	return true, err
 }
