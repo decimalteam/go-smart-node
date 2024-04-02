@@ -83,7 +83,7 @@ func TestSetGetValidatorByConsAddr(t *testing.T) {
 	val, err := validatortypes.NewValidator(vals[0], accs[0], PKs[0],
 		validatortypes.NewDescription("monik", "ident", "website", "secur", "details"), sdk.ZeroDec())
 	require.NoError(t, err, "new validator")
-
+	val.DRC20Contract = common.BytesToAddress(val.GetOperator()).String()
 	// Set/Get Validator
 	dsc.ValidatorKeeper.SetValidator(ctx, val)
 
