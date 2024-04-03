@@ -59,7 +59,7 @@
   },
   {
     "inputs": [],
-    "name": "InvalidFrozenStakeIndex",
+    "name": "InvalidFrozenType",
     "type": "error"
   },
   {
@@ -74,27 +74,17 @@
   },
   {
     "inputs": [],
-    "name": "InvalidTokenType",
-    "type": "error"
-  },
-  {
-    "inputs": [],
     "name": "InvalidValidator",
     "type": "error"
   },
   {
     "inputs": [],
+    "name": "NoCompletableFrozenStakes",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "NoPenaltyToApply",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "NotERC1155",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "NotERC721",
     "type": "error"
   },
   {
@@ -105,11 +95,6 @@
   {
     "inputs": [],
     "name": "NothingToBurn",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "OnlyNftWithReserveAllowed",
     "type": "error"
   },
   {
@@ -132,11 +117,6 @@
       }
     ],
     "name": "OwnableUnauthorizedAccount",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "PenaltyNotCompleted",
     "type": "error"
   },
   {
@@ -222,96 +202,6 @@
     "anonymous": false,
     "inputs": [
       {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "validator",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "delegator",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "token",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "enum DecimalDelegationCommon.TokenType",
-            "name": "tokenType",
-            "type": "uint8"
-          }
-        ],
-        "indexed": false,
-        "internalType": "struct DecimalDelegationCommon.Stake",
-        "name": "stake",
-        "type": "tuple"
-      }
-    ],
-    "name": "CompletedTransfer",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "validator",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "delegator",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "token",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "enum DecimalDelegationCommon.TokenType",
-            "name": "tokenType",
-            "type": "uint8"
-          }
-        ],
-        "indexed": false,
-        "internalType": "struct DecimalDelegationCommon.Stake",
-        "name": "stake",
-        "type": "tuple"
-      }
-    ],
-    "name": "CompletedWithdraw",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
         "indexed": true,
         "internalType": "address",
         "name": "oldContract",
@@ -365,140 +255,43 @@
       {
         "components": [
           {
-            "components": [
-              {
-                "internalType": "address",
-                "name": "validator",
-                "type": "address"
-              },
-              {
-                "internalType": "address",
-                "name": "delegator",
-                "type": "address"
-              },
-              {
-                "internalType": "address",
-                "name": "token",
-                "type": "address"
-              },
-              {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "tokenId",
-                "type": "uint256"
-              },
-              {
-                "internalType": "enum DecimalDelegationCommon.TokenType",
-                "name": "tokenType",
-                "type": "uint8"
-              }
-            ],
-            "internalType": "struct DecimalDelegationCommon.Stake",
-            "name": "stake",
-            "type": "tuple"
+            "internalType": "address",
+            "name": "validator",
+            "type": "address"
           },
           {
-            "internalType": "enum DecimalDelegationCommon.FreezeType",
-            "name": "freezeType",
-            "type": "uint8"
+            "internalType": "address",
+            "name": "delegator",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
           },
           {
             "internalType": "uint256",
-            "name": "unfreezeTimestamp",
+            "name": "amount",
             "type": "uint256"
-          }
-        ],
-        "indexed": false,
-        "internalType": "struct DecimalDelegationCommon.FrozenStake",
-        "name": "frozenStake",
-        "type": "tuple"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "queueIndex",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "newValidator",
-        "type": "address"
-      }
-    ],
-    "name": "RequestTransfer",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "components": [
-          {
-            "components": [
-              {
-                "internalType": "address",
-                "name": "validator",
-                "type": "address"
-              },
-              {
-                "internalType": "address",
-                "name": "delegator",
-                "type": "address"
-              },
-              {
-                "internalType": "address",
-                "name": "token",
-                "type": "address"
-              },
-              {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "tokenId",
-                "type": "uint256"
-              },
-              {
-                "internalType": "enum DecimalDelegationCommon.TokenType",
-                "name": "tokenType",
-                "type": "uint8"
-              }
-            ],
-            "internalType": "struct DecimalDelegationCommon.Stake",
-            "name": "stake",
-            "type": "tuple"
-          },
-          {
-            "internalType": "enum DecimalDelegationCommon.FreezeType",
-            "name": "freezeType",
-            "type": "uint8"
           },
           {
             "internalType": "uint256",
-            "name": "unfreezeTimestamp",
+            "name": "tokenId",
             "type": "uint256"
+          },
+          {
+            "internalType": "enum DecimalDelegationCommon.TokenType",
+            "name": "tokenType",
+            "type": "uint8"
           }
         ],
         "indexed": false,
-        "internalType": "struct DecimalDelegationCommon.FrozenStake",
-        "name": "frozenStake",
+        "internalType": "struct DecimalDelegationCommon.Stake",
+        "name": "stake",
         "type": "tuple"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "queueIndex",
-        "type": "uint256"
       }
     ],
-    "name": "RequestWithdraw",
+    "name": "Staked",
     "type": "event"
   },
   {
@@ -543,7 +336,81 @@
         "type": "tuple"
       }
     ],
-    "name": "Staked",
+    "name": "TransferCompleted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "validator",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "delegator",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "token",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              },
+              {
+                "internalType": "enum DecimalDelegationCommon.TokenType",
+                "name": "tokenType",
+                "type": "uint8"
+              }
+            ],
+            "internalType": "struct DecimalDelegationCommon.Stake",
+            "name": "stake",
+            "type": "tuple"
+          },
+          {
+            "internalType": "enum DecimalDelegationCommon.FreezeStatus",
+            "name": "freezeStatus",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "unfreezeTimestamp",
+            "type": "uint256"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct DecimalDelegationCommon.FrozenStake",
+        "name": "frozenStake",
+        "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "queueIndex",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newValidator",
+        "type": "address"
+      }
+    ],
+    "name": "TransferRequest",
     "type": "event"
   },
   {
@@ -557,6 +424,119 @@
       }
     ],
     "name": "Upgraded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "validator",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "delegator",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum DecimalDelegationCommon.TokenType",
+            "name": "tokenType",
+            "type": "uint8"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct DecimalDelegationCommon.Stake",
+        "name": "stake",
+        "type": "tuple"
+      }
+    ],
+    "name": "WithdrawCompleted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "validator",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "delegator",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "token",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              },
+              {
+                "internalType": "enum DecimalDelegationCommon.TokenType",
+                "name": "tokenType",
+                "type": "uint8"
+              }
+            ],
+            "internalType": "struct DecimalDelegationCommon.Stake",
+            "name": "stake",
+            "type": "tuple"
+          },
+          {
+            "internalType": "enum DecimalDelegationCommon.FreezeStatus",
+            "name": "freezeStatus",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "unfreezeTimestamp",
+            "type": "uint256"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct DecimalDelegationCommon.FrozenStake",
+        "name": "frozenStake",
+        "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "queueIndex",
+        "type": "uint256"
+      }
+    ],
+    "name": "WithdrawRequest",
     "type": "event"
   },
   {
@@ -651,7 +631,27 @@
   },
   {
     "inputs": [],
-    "name": "completeQueuedStake",
+    "name": "completeStake",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "completeStakes",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "limit",
+        "type": "uint256"
+      }
+    ],
+    "name": "completeStakesWithLimit",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -664,7 +664,20 @@
         "type": "uint256"
       }
     ],
-    "name": "completeStake",
+    "name": "completeTransfer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "completeWithdraw",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -750,19 +763,6 @@
   },
   {
     "inputs": [],
-    "name": "getCompletableFrozenStakesIndexes",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "getContractCenter",
     "outputs": [
       {
@@ -794,7 +794,13 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "enum DecimalDelegationCommon.FreezeType",
+        "name": "freezeType",
+        "type": "uint8"
+      }
+    ],
     "name": "getFrozenStakesQueue",
     "outputs": [
       {
@@ -837,8 +843,8 @@
             "type": "tuple"
           },
           {
-            "internalType": "enum DecimalDelegationCommon.FreezeType",
-            "name": "freezeType",
+            "internalType": "enum DecimalDelegationCommon.FreezeStatus",
+            "name": "freezeStatus",
             "type": "uint8"
           },
           {
@@ -1088,7 +1094,7 @@
   },
   {
     "inputs": [],
-    "name": "isFrozenStakesQueueReady",
+    "name": "isQueueReady",
     "outputs": [
       {
         "internalType": "bool",
@@ -1169,19 +1175,6 @@
       }
     ],
     "name": "transferOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "newImplementation",
-        "type": "address"
-      }
-    ],
-    "name": "upgrade",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
