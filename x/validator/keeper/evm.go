@@ -104,7 +104,7 @@ func (k *Keeper) ExecuteQueueEVMAction(
 func (k *Keeper) ExecuteAddPenalty(
 	ctx sdk.Context,
 	contract common.Address,
-	validatorAddress string,
+	validatorAddress common.Address,
 	penaltyPercent int,
 ) (bool, error) {
 
@@ -121,7 +121,7 @@ func (k *Keeper) ExecuteAddPenalty(
 func (k *Keeper) ExecuteBurnPenaltyTokens(
 	ctx sdk.Context,
 	contract common.Address,
-	validatorAddress string,
+	validatorAddress common.Address,
 ) (bool, error) {
 
 	contractDelegation, _ := contracts.DelegationMetaData.GetAbi()
