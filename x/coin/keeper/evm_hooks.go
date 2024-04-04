@@ -71,11 +71,11 @@ func (k *Keeper) PostTxProcessing(
 	//	fmt.Print(params)
 	//}
 
-	dataAddress, err := k.QueryAddressTokenCenter(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
+	tokenCenter, err := k.QueryAddressTokenCenter(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
 	//
 	//tokenCenter := ContractCenter{}
 	//fmt.Print(err)
-	fmt.Print(dataAddress)
+	fmt.Print(tokenCenter)
 	//fmt.Print(tokenCenter)
 	coinCenter, _ := contracts.TokenCenterMetaData.GetAbi()
 	coinContract, _ := contracts.TokenMetaData.GetAbi()
@@ -107,13 +107,14 @@ func (k *Keeper) PostTxProcessing(
 	// Check if processed method
 	switch methodId.Name {
 	case types.DRC20MethodCreateToken:
+		if tokenCenter == msg.To.String() {
+			var tokenNew NewToken
+			err = contracts.UnpackInputsData(&tokenNew, methodId.Inputs, msg.Data[4:])
 
-		var tokenNew NewToken
-		err = contracts.UnpackInputsData(&tokenNew, methodId.Inputs, msg.Data[4:])
-
-		err = k.CreateCoinEvent(ctx, msg.Value, tokenNew.TokenData, tokenAddress.TokenAddress.String())
-		if err != nil {
-			return status.Error(codes.Internal, err.Error())
+			err = k.CreateCoinEvent(ctx, msg.Value, tokenNew.TokenData, tokenAddress.TokenAddress.String())
+			if err != nil {
+				return status.Error(codes.Internal, err.Error())
+			}
 		}
 	default:
 		return nil
