@@ -111,7 +111,7 @@ func (k *Keeper) PostTxProcessing(
 			var tokenNew NewToken
 			err = contracts.UnpackInputsData(&tokenNew, methodId.Inputs, msg.Data[4:])
 
-			err = k.CreateCoinEvent(ctx, msg.Value, tokenNew.TokenData, tokenAddress.TokenAddress.String())
+			err = k.CreateCoinEvent(ctx, tokenUpdated.NewReserve, tokenNew.TokenData, tokenAddress.TokenAddress.String())
 			if err != nil {
 				return status.Error(codes.Internal, err.Error())
 			}
