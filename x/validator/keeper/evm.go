@@ -105,7 +105,7 @@ func (k *Keeper) ExecuteAddPenalty(
 	ctx sdk.Context,
 	contract common.Address,
 	validatorAddress common.Address,
-	penaltyPercent int,
+	penaltyPercent uint16,
 ) (bool, error) {
 
 	contractDelegation, _ := contracts.MasterValidatorMetaData.GetAbi()
