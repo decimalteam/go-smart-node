@@ -248,14 +248,21 @@
   {
     "inputs": [
       {
-        "internalType": "address[]",
-        "name": "validatorsToAdd",
-        "type": "address[]"
-      },
-      {
-        "internalType": "string[]",
+        "components": [
+          {
+            "internalType": "address",
+            "name": "validator",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "meta",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct IDecimalMasterValidator.ValidatorMeta[]",
         "name": "metas",
-        "type": "string[]"
+        "type": "tuple[]"
       }
     ],
     "name": "addValidators",
