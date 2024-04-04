@@ -122,9 +122,11 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 	dataAddress, err := k.QueryAddressDelegation(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
 	ifNeedExec, err := k.QueryIfNeedExecuteFinish(ctx, common.HexToAddress(dataAddress))
 	if ifNeedExec {
-		resultExec, _ := k.ExecuteQueueEVMAction(ctx, common.HexToAddress(dataAddress))
+		resultExec, errexec := k.ExecuteQueueEVMAction(ctx, common.HexToAddress(dataAddress))
 		fmt.Println(resultExec)
+		fmt.Println(errexec)
 	}
+
 	fmt.Println(dataAddress)
 	fmt.Println(ifNeedExec)
 	//fmt.Println(addressOwner)

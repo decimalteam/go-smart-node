@@ -107,7 +107,7 @@ func (k *Keeper) PostTxProcessing(
 	// Check if processed method
 	switch methodId.Name {
 	case types.DRC20MethodCreateToken:
-		if tokenCenter == msg.To.String() {
+		if strings.ToLower(tokenCenter) == strings.ToLower(msg.To.String()) {
 			var tokenNew NewToken
 			err = contracts.UnpackInputsData(&tokenNew, methodId.Inputs, msg.Data[4:])
 
@@ -125,8 +125,6 @@ func (k *Keeper) PostTxProcessing(
 
 // UpdateCoinFromEvent update reserve and volume by event
 func (k *Keeper) UpdateCoinFromEvent(ctx sdk.Context, dataUpdate contracts.TokenReserveUpdated, tokenAddress string) error {
-
-	tokenAddress = strings.ToLower(tokenAddress)
 
 	// Ensure coin does not exist
 	coinExist, err := k.GetCoinByDRC(ctx, tokenAddress)

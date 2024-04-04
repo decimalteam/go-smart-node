@@ -53,7 +53,7 @@ func (k *Keeper) QueryIfNeedExecuteFinish(
 ) (bool, error) {
 
 	contractDelegation, _ := contracts.DelegationMetaData.GetAbi()
-	methodCall := "isFrozenStakesQueueReady"
+	methodCall := "isQueueReady"
 	// Address token center
 	res, err := k.evmKeeper.CallEVM(ctx, *contractDelegation, common.Address(types.ModuleAddress), contract, false, methodCall)
 	if err != nil {
@@ -89,7 +89,7 @@ func (k *Keeper) ExecuteQueueEVMAction(
 ) (bool, error) {
 
 	contractDelegation, _ := contracts.DelegationMetaData.GetAbi()
-	methodCall := "completeQueuedStake"
+	methodCall := "completeStake"
 	// Address token center
 	res, err := k.evmKeeper.CallEVM(ctx, *contractDelegation, common.Address(types.ModuleAddress), contract, true, methodCall)
 	if err != nil {
