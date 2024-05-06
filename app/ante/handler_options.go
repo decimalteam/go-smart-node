@@ -71,22 +71,22 @@ func (options HandlerOptions) Validate() error {
 }
 
 // newCosmosAnteHandler creates the default ante handler for Ethereum transactions
-func newEthAnteHandler(options HandlerOptions) sdk.AnteHandler {
-	return sdk.ChainAnteDecorators(
-		ethante.NewEthSetUpContextDecorator(options.EvmKeeper), // outermost AnteDecorator. SetUpContext must be called first
-		NewCountMsgDecorator(),
-		ethante.NewEthMempoolFeeDecorator(options.EvmKeeper),                   // Check eth effective gas price against minimal-gas-prices
-		NewEthMinGasPriceDecorator(options.FeeMarketKeeper, options.EvmKeeper), // Check eth effective gas price against the global MinGasPrice
-		ethante.NewEthValidateBasicDecorator(options.EvmKeeper),
-		ethante.NewEthSigVerificationDecorator(options.EvmKeeper),
-		ethante.NewEthAccountVerificationDecorator(options.AccountKeeper, options.EvmKeeper),
-		ethante.NewCanTransferDecorator(options.EvmKeeper),
-		NewEthGasConsumeDecorator(options.EvmKeeper, options.BankKeeper, options.FeeKeeper, options.MaxTxGasWanted),
-		ethante.NewEthIncrementSenderSequenceDecorator(options.AccountKeeper), // innermost AnteDecorator.
-		ethante.NewGasWantedDecorator(options.EvmKeeper, options.FeeMarketKeeper),
-		ethante.NewEthEmitEventDecorator(options.EvmKeeper), // emit eth tx hash and index at the very last ante handler.
-	)
-}
+//func newEthAnteHandler(options HandlerOptions) sdk.AnteHandler {
+//	return sdk.ChainAnteDecorators(
+//		ethante.NewEthSetUpContextDecorator(options.EvmKeeper), // outermost AnteDecorator. SetUpContext must be called first
+//		NewCountMsgDecorator(),
+//		ethante.NewEthMempoolFeeDecorator(options.EvmKeeper),                   // Check eth effective gas price against minimal-gas-prices
+//		NewEthMinGasPriceDecorator(options.FeeMarketKeeper, options.EvmKeeper), // Check eth effective gas price against the global MinGasPrice
+//		ethante.NewEthValidateBasicDecorator(options.EvmKeeper),
+//		ethante.NewEthSigVerificationDecorator(options.EvmKeeper),
+//		ethante.NewEthAccountVerificationDecorator(options.AccountKeeper, options.EvmKeeper),
+//		ethante.NewCanTransferDecorator(options.EvmKeeper),
+//		NewEthGasConsumeDecorator(options.EvmKeeper, options.BankKeeper, options.FeeKeeper, options.MaxTxGasWanted),
+//		ethante.NewEthIncrementSenderSequenceDecorator(options.AccountKeeper), // innermost AnteDecorator.
+//		ethante.NewGasWantedDecorator(options.EvmKeeper, options.FeeMarketKeeper),
+//		ethante.NewEthEmitEventDecorator(options.EvmKeeper), // emit eth tx hash and index at the very last ante handler.
+//	)
+//}
 
 //// newCosmosAnteHandler creates the default ante handler for Cosmos transactions
 //// keep in sync with newCosmosAnteHandlerEip712, except signature verification
