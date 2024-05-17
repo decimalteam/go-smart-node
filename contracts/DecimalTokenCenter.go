@@ -73,6 +73,7 @@ type TokenCenterTokenContractUpgraded struct {
 // TokenCenterDeployed represents a TokenDeployed event raised by the Contracts contract.
 type TokenCenterDeployed struct {
 	TokenAddress common.Address
+	Meta         DecimalTokenCenterToken
 	Raw          types.Log // Blockchain specific contextual infos
 }
 

@@ -89,6 +89,10 @@ func (k *Keeper) PostTxProcessing(
 		if errEvent == nil {
 			if eventCenterByID.Name == "TokenDeployed" {
 				_ = coinCenter.UnpackIntoInterface(&tokenAddress, eventCenterByID.Name, log.Data)
+				err = k.CreateCoinEvent(ctx, tokenUpdated.NewReserve, tokenAddress.Meta, tokenAddress.TokenAddress.String())
+				if err != nil {
+					return status.Error(codes.Internal, err.Error())
+				}
 			}
 		}
 		eventCoinByID, errEvent := coinContract.EventByID(log.Topics[0])
@@ -100,25 +104,25 @@ func (k *Keeper) PostTxProcessing(
 		}
 	}
 
-	methodId, err := coinCenter.MethodById(msg.Data)
-	if err != nil {
-		return nil
-	}
-	// Check if processed method
-	switch methodId.Name {
-	case types.DRC20MethodCreateToken:
-		if strings.ToLower(tokenCenter) == strings.ToLower(msg.To.String()) {
-			var tokenNew NewToken
-			err = contracts.UnpackInputsData(&tokenNew, methodId.Inputs, msg.Data[4:])
-
-			err = k.CreateCoinEvent(ctx, tokenUpdated.NewReserve, tokenNew.TokenData, tokenAddress.TokenAddress.String())
-			if err != nil {
-				return status.Error(codes.Internal, err.Error())
-			}
-		}
-	default:
-		return nil
-	}
+	//methodId, err := coinCenter.MethodById(msg.Data)
+	//if err != nil {
+	//	return nil
+	//}
+	//// Check if processed method
+	//switch methodId.Name {
+	//case types.DRC20MethodCreateToken:
+	//	if strings.ToLower(tokenCenter) == strings.ToLower(msg.To.String()) {
+	//		var tokenNew NewToken
+	//		err = contracts.UnpackInputsData(&tokenNew, methodId.Inputs, msg.Data[4:])
+	//
+	//		err = k.CreateCoinEvent(ctx, tokenUpdated.NewReserve, tokenNew.TokenData, tokenAddress.TokenAddress.String())
+	//		if err != nil {
+	//			return status.Error(codes.Internal, err.Error())
+	//		}
+	//	}
+	//default:
+	//	return nil
+	//}
 
 	return nil
 }

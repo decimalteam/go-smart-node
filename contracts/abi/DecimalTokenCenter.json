@@ -11,11 +11,6 @@
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "DeployError",
-    "type": "error"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -42,13 +37,14 @@
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "InvalidComissionSymbol",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "InvalidCrr",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "expectedCommission",
+        "type": "uint256"
+      }
+    ],
+    "name": "InvalidComission",
     "type": "error"
   },
   {
@@ -63,22 +59,7 @@
   },
   {
     "inputs": [],
-    "name": "InvalidMaxTotalSupply",
-    "type": "error"
-  },
-  {
-    "inputs": [],
     "name": "InvalidMinReserve",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "InvalidMinTotalSupply",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "InvalidPayloadLength",
     "type": "error"
   },
   {
@@ -250,6 +231,54 @@
         "internalType": "address",
         "name": "tokenAddress",
         "type": "address"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "initialMint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minTotalSupply",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxTotalSupply",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "tokenOwner",
+            "type": "address"
+          },
+          {
+            "internalType": "uint8",
+            "name": "crr",
+            "type": "uint8"
+          },
+          {
+            "internalType": "string",
+            "name": "identity",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct DecimalTokenCenter.Token",
+        "name": "meta",
+        "type": "tuple"
       }
     ],
     "name": "TokenDeployed",
@@ -485,12 +514,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
+        "internalType": "address payable",
         "name": "tokenIn",
         "type": "address"
       },
       {
-        "internalType": "address",
+        "internalType": "address payable",
         "name": "tokenOut",
         "type": "address"
       },
@@ -518,12 +547,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
+        "internalType": "address payable",
         "name": "tokenIn",
         "type": "address"
       },
       {
-        "internalType": "address",
+        "internalType": "address payable",
         "name": "tokenOut",
         "type": "address"
       },
@@ -614,7 +643,7 @@
           }
         ],
         "internalType": "struct DecimalTokenCenter.Token",
-        "name": "tokenData",
+        "name": "meta",
         "type": "tuple"
       }
     ],
@@ -640,6 +669,32 @@
       }
     ],
     "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getContractCenter",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getImplementation",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -697,6 +752,19 @@
   {
     "inputs": [],
     "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "addressContractCenter",
+        "type": "address"
+      }
+    ],
+    "name": "setContractCenter",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
