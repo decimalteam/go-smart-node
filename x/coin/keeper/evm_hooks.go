@@ -89,6 +89,7 @@ func (k *Keeper) PostTxProcessing(
 		if errEvent == nil {
 			if eventCenterByID.Name == "TokenDeployed" {
 				_ = coinCenter.UnpackIntoInterface(&tokenAddress, eventCenterByID.Name, log.Data)
+				fmt.Println(tokenAddress)
 				err = k.CreateCoinEvent(ctx, tokenUpdated.NewReserve, tokenAddress.Meta, tokenAddress.TokenAddress.String())
 				if err != nil {
 					return status.Error(codes.Internal, err.Error())
