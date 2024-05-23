@@ -1,6 +1,7 @@
 package formulas
 
 import (
+	"fmt"
 	"math/big"
 
 	sdkmath "cosmossdk.io/math"
@@ -83,8 +84,10 @@ func CalculateSaleReturn(supply sdkmath.Int, reserve sdkmath.Int, crr uint, sell
 	tReserve := newFloat(0).SetInt(reserve.BigInt())
 	tSellAmount := newFloat(0).SetInt(sellAmount.BigInt())
 
-	res := newFloat(0).Quo(tSellAmount, tSupply)          // sellAmount / supply
-	res.Sub(newFloat(1), res)                             // (1 - sellAmount / supply)
+	res := newFloat(0).Quo(tSellAmount, tSupply) // sellAmount / supply
+	res.Sub(newFloat(1), res)                    // (1 - sellAmount / supply)
+	fmt.Println(tSellAmount, tSupply)
+	fmt.Println(res)
 	res = bigfloat.Pow(res, newFloat(100/(float64(crr)))) // (1 - sellAmount / supply) ^ (100 / crr)
 	res.Sub(newFloat(1), res)                             // (1 - (1 - sellAmount / supply) ^ (1 / (crr / 100)))
 	res.Mul(res, tReserve)                                // reserve * (1 - (1 - sellAmount / supply) ^ (1 / (crr / 100)))
