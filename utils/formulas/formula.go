@@ -1,7 +1,6 @@
 package formulas
 
 import (
-	"fmt"
 	"math/big"
 
 	sdkmath "cosmossdk.io/math"
@@ -66,7 +65,7 @@ func CalculatePurchaseAmount(supply sdkmath.Int, reserve sdkmath.Int, crr uint, 
 // CalculateSaleReturn returns amount of BIP user will receive by depositing given amount of coins.
 // Return = reserve * (1 - (1 - sellAmount / supply) ^ (100 / crr))
 func CalculateSaleReturn(supply sdkmath.Int, reserve sdkmath.Int, crr uint, sellAmount sdkmath.Int) sdkmath.Int {
-	fmt.Println(sellAmount)
+
 	// special case for 0 sell amount
 	if sellAmount.Sign() == 0 {
 		return sdkmath.NewInt(0)
@@ -87,8 +86,12 @@ func CalculateSaleReturn(supply sdkmath.Int, reserve sdkmath.Int, crr uint, sell
 
 	res := newFloat(0).Quo(tSellAmount, tSupply) // sellAmount / supply
 	res.Sub(newFloat(1), res)                    // (1 - sellAmount / supply)
-	fmt.Println(tSellAmount, tSupply)
-	fmt.Println(res)
+
+	// special case for 0 sell amount
+	if res.Sign() < 0 {
+		return sdkmath.NewInt(0)
+	}
+
 	res = bigfloat.Pow(res, newFloat(100/(float64(crr)))) // (1 - sellAmount / supply) ^ (100 / crr)
 	res.Sub(newFloat(1), res)                             // (1 - (1 - sellAmount / supply) ^ (1 / (crr / 100)))
 	res.Mul(res, tReserve)                                // reserve * (1 - (1 - sellAmount / supply) ^ (1 / (crr / 100)))
