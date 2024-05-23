@@ -66,6 +66,7 @@ func CalculatePurchaseAmount(supply sdkmath.Int, reserve sdkmath.Int, crr uint, 
 // CalculateSaleReturn returns amount of BIP user will receive by depositing given amount of coins.
 // Return = reserve * (1 - (1 - sellAmount / supply) ^ (100 / crr))
 func CalculateSaleReturn(supply sdkmath.Int, reserve sdkmath.Int, crr uint, sellAmount sdkmath.Int) sdkmath.Int {
+	fmt.Println(sellAmount)
 	// special case for 0 sell amount
 	if sellAmount.Sign() == 0 {
 		return sdkmath.NewInt(0)
