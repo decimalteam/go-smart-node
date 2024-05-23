@@ -2,6 +2,7 @@
 dev-validator-01            ansible_host=91.219.31.65 ansible_port=2251
 dev-validator-02            ansible_host=91.219.31.65 ansible_port=2252
 dev-validator-03            ansible_host=91.219.31.65 ansible_port=2253
+dev-validator-04            ansible_host=91.219.31.65 ansible_port=2254
 
 [slave-host-devnet]
 dev-gw-backend-01           ansible_host=91.219.31.65 ansible_port=2231
