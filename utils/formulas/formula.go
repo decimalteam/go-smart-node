@@ -117,9 +117,15 @@ func CalculateSaleAmount(supply sdkmath.Int, reserve sdkmath.Int, crr uint, want
 	tReserve := newFloat(0).SetInt(reserve.BigInt())
 	tWantReceive := newFloat(0).SetInt(wantReceive.BigInt())
 
-	res := newFloat(0).Sub(tWantReceive, tReserve)      // (wantReceive - reserve)
-	res.Neg(res)                                        // -(wantReceive - reserve)
-	res.Quo(res, tReserve)                              // -(wantReceive - reserve)/reserve
+	res := newFloat(0).Sub(tWantReceive, tReserve) // (wantReceive - reserve)
+	res.Neg(res)                                   // -(wantReceive - reserve)
+	res.Quo(res, tReserve)                         // -(wantReceive - reserve)/reserve
+
+	// special case for 0 sell amount
+	if res.Sign() < 0 {
+		return sdkmath.NewInt(0)
+	}
+
 	res = bigfloat.Pow(res, newFloat(float64(crr)/100)) // (-(wantReceive - reserve)/reserve)^(crr/100)
 	res.Add(res, newFloat(-1))                          // -1 + (-(wantReceive - reserve)/reserve)^(crr/100)
 	res.Neg(res)                                        // -(-1 + (-(wantReceive - reserve)/reserve)^(crr/100))
