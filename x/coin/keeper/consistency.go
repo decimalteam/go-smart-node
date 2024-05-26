@@ -136,8 +136,6 @@ func (k *Keeper) GetDecreasingFactor(ctx sdk.Context, coin sdk.Coin) (sdk.Dec, e
 // CalculateDecreasingFactor checks future parameters for coin burn
 func CalculateDecreasingFactor(coinInfo types.Coin, amountInCollector sdkmath.Int, amountToBurn sdkmath.Int) sdk.Dec {
 	fmt.Println(coinInfo)
-	fmt.Println(amountInCollector)
-	fmt.Println(amountToBurn)
 	newAmount := amountToBurn
 	futureAmountToBurn := amountInCollector.Add(newAmount)
 	// check for minimal volume

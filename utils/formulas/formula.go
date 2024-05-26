@@ -1,6 +1,7 @@
 package formulas
 
 import (
+	"fmt"
 	"math/big"
 
 	sdkmath "cosmossdk.io/math"
@@ -105,6 +106,9 @@ func CalculateSaleReturn(supply sdkmath.Int, reserve sdkmath.Int, crr uint, sell
 // CalculateSaleAmount is the reversed version of function CalculateSaleReturn.
 // Deposit = -(-1 + (-(wantReceive - reserve)/reserve)^(1/crr)) * supply
 func CalculateSaleAmount(supply sdkmath.Int, reserve sdkmath.Int, crr uint, wantReceive sdkmath.Int) sdkmath.Int {
+	fmt.Println(supply)
+	fmt.Println(reserve)
+	fmt.Println(wantReceive)
 	if wantReceive.Sign() == 0 {
 		return sdkmath.NewInt(0)
 	}
@@ -117,15 +121,9 @@ func CalculateSaleAmount(supply sdkmath.Int, reserve sdkmath.Int, crr uint, want
 	tReserve := newFloat(0).SetInt(reserve.BigInt())
 	tWantReceive := newFloat(0).SetInt(wantReceive.BigInt())
 
-	res := newFloat(0).Sub(tWantReceive, tReserve) // (wantReceive - reserve)
-	res.Neg(res)                                   // -(wantReceive - reserve)
-	res.Quo(res, tReserve)                         // -(wantReceive - reserve)/reserve
-
-	// special case for 0 sell amount
-	if res.Sign() < 0 {
-		return sdkmath.NewInt(0)
-	}
-
+	res := newFloat(0).Sub(tWantReceive, tReserve)      // (wantReceive - reserve)
+	res.Neg(res)                                        // -(wantReceive - reserve)
+	res.Quo(res, tReserve)                              // -(wantReceive - reserve)/reserve
 	res = bigfloat.Pow(res, newFloat(float64(crr)/100)) // (-(wantReceive - reserve)/reserve)^(crr/100)
 	res.Add(res, newFloat(-1))                          // -1 + (-(wantReceive - reserve)/reserve)^(crr/100)
 	res.Neg(res)                                        // -(-1 + (-(wantReceive - reserve)/reserve)^(crr/100))
