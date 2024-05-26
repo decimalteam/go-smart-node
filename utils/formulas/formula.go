@@ -1,7 +1,6 @@
 package formulas
 
 import (
-	"fmt"
 	"math/big"
 
 	sdkmath "cosmossdk.io/math"
@@ -106,10 +105,10 @@ func CalculateSaleReturn(supply sdkmath.Int, reserve sdkmath.Int, crr uint, sell
 // CalculateSaleAmount is the reversed version of function CalculateSaleReturn.
 // Deposit = -(-1 + (-(wantReceive - reserve)/reserve)^(1/crr)) * supply
 func CalculateSaleAmount(supply sdkmath.Int, reserve sdkmath.Int, crr uint, wantReceive sdkmath.Int) sdkmath.Int {
-	fmt.Println(supply)
-	fmt.Println(reserve)
-	fmt.Println(wantReceive)
 	if wantReceive.Sign() == 0 {
+		return sdkmath.NewInt(0)
+	}
+	if reserve.Sign() == 0 {
 		return sdkmath.NewInt(0)
 	}
 
