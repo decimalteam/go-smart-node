@@ -13,6 +13,7 @@ import (
 const (
 	NameOfSlugForGetAddressTokenCenter     = "token-center"
 	NameOfSlugForGetAddressDelegation      = "delegation"
+	NameOfSlugForGetAddressWDEL            = "wdel"
 	NameOfSlugForGetAddressMasterValidator = "master-validator"
 	EventChangeTokenCenter                 = "ContractAdded"
 
