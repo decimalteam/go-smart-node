@@ -3,6 +3,7 @@ package keeper
 import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts/tokenCenter"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	"fmt"
 	"math/big"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -24,6 +25,7 @@ func (k *Keeper) QueryAddressTokenCenter(
 		return new(common.Address).Hex(), err
 	}
 	data, err := contractCenter.Unpack(methodCall, res.Ret)
+	fmt.Println(data)
 	if len(data) == 0 {
 		return new(common.Address).Hex(), err
 	}

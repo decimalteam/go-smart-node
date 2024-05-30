@@ -8,6 +8,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts/delegation"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/validator"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -46,6 +47,7 @@ func (k *Keeper) QueryAddressDelegation(
 		return new(common.Address).Hex(), err
 	}
 	data, err := contractCenter.Unpack(methodCall, res.Ret)
+	fmt.Println(data)
 	if len(data) == 0 {
 		return new(common.Address).Hex(), err
 	}
