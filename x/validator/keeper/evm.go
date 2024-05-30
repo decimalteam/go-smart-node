@@ -43,7 +43,7 @@ func (k *Keeper) QueryAddressDelegation(
 	methodCall := "getAddress"
 	// Address token center
 	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, types.NameOfSlugForGetAddressDelegation)
-	fmt.Println("data", res)
+	fmt.Println("data", res, err, contract.Hex())
 	if err != nil {
 		return new(common.Address).Hex(), err
 	}
