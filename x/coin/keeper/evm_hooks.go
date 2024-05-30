@@ -5,6 +5,8 @@ package keeper
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
+	"bitbucket.org/decimalteam/go-smart-node/contracts/token"
+	"bitbucket.org/decimalteam/go-smart-node/contracts/tokenCenter"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -30,7 +32,7 @@ type Hooks struct {
 }
 
 type NewToken struct {
-	TokenData contracts.DecimalTokenCenterToken `abi:"tokenData"`
+	TokenData tokenCenter.DecimalTokenCenterToken `abi:"tokenData"`
 }
 
 type ContractCenter struct {
@@ -71,24 +73,24 @@ func (k *Keeper) PostTxProcessing(
 	//	fmt.Print(params)
 	//}
 
-	tokenCenter, err := k.QueryAddressTokenCenter(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
+	contractTokenCenter, err := k.QueryAddressTokenCenter(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
 	//
-	//tokenCenter := ContractCenter{}
+	//tokenCenter := center{}
 	//fmt.Print(err)
-	fmt.Print(tokenCenter)
+	fmt.Print(contractTokenCenter)
 	//fmt.Print(tokenCenter)
-	coinCenter, _ := contracts.TokenCenterMetaData.GetAbi()
-	coinContract, _ := contracts.TokenMetaData.GetAbi()
+	tokenContractCenter, _ := tokenCenter.TokenMetaData.GetAbi()
+	coinContract, _ := token.TokenMetaData.GetAbi()
 
 	// this var is only for new token create from token center
-	var tokenAddress contracts.TokenCenterDeployed
-	var tokenUpdated contracts.TokenReserveUpdated
+	var tokenAddress tokenCenter.TokenTokenDeployed
+	var tokenUpdated token.TokenReserveUpdated
 
 	for _, log := range recipient.Logs {
-		eventCenterByID, errEvent := coinCenter.EventByID(log.Topics[0])
+		eventCenterByID, errEvent := tokenContractCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
 			if eventCenterByID.Name == "TokenDeployed" {
-				_ = coinCenter.UnpackIntoInterface(&tokenAddress, eventCenterByID.Name, log.Data)
+				_ = tokenContractCenter.UnpackIntoInterface(&tokenAddress, eventCenterByID.Name, log.Data)
 				fmt.Println(tokenAddress)
 				err = k.CreateCoinEvent(ctx, tokenUpdated.NewReserve, tokenAddress.Meta, tokenAddress.TokenAddress.String())
 				if err != nil {
@@ -129,7 +131,7 @@ func (k *Keeper) PostTxProcessing(
 }
 
 // UpdateCoinFromEvent update reserve and volume by event
-func (k *Keeper) UpdateCoinFromEvent(ctx sdk.Context, dataUpdate contracts.TokenReserveUpdated, tokenAddress string) error {
+func (k *Keeper) UpdateCoinFromEvent(ctx sdk.Context, dataUpdate token.TokenReserveUpdated, tokenAddress string) error {
 
 	// Ensure coin does not exist
 	coinExist, err := k.GetCoinByDRC(ctx, tokenAddress)
@@ -150,7 +152,7 @@ func (k *Keeper) UpdateCoinFromEvent(ctx sdk.Context, dataUpdate contracts.Token
 }
 
 // CreateCoinEvent returns the coin if exists in KVStore.
-func (k *Keeper) CreateCoinEvent(ctx sdk.Context, reserve *big.Int, token contracts.DecimalTokenCenterToken, tokenAddress string) error {
+func (k *Keeper) CreateCoinEvent(ctx sdk.Context, reserve *big.Int, token tokenCenter.DecimalTokenCenterToken, tokenAddress string) error {
 
 	tokenAddress = strings.ToLower(tokenAddress)
 	coinDenom := token.Symbol

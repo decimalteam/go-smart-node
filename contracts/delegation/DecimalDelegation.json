@@ -54,17 +54,17 @@
   },
   {
     "inputs": [],
-    "name": "InvalidCollection",
-    "type": "error"
-  },
-  {
-    "inputs": [],
     "name": "InvalidFrozenType",
     "type": "error"
   },
   {
     "inputs": [],
     "name": "InvalidInitialization",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidTimestamp",
     "type": "error"
   },
   {
@@ -90,11 +90,6 @@
   {
     "inputs": [],
     "name": "NotInitializing",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "NothingToBurn",
     "type": "error"
   },
   {
@@ -142,6 +137,11 @@
   },
   {
     "inputs": [],
+    "name": "StakeInactive",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "TimestampError",
     "type": "error"
   },
@@ -154,49 +154,6 @@
     "inputs": [],
     "name": "ZeroAmount",
     "type": "error"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "validator",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "enum DecimalDelegationCommon.TokenType",
-        "name": "tokenType",
-        "type": "uint8"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "penaltyIndex",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "penaltyPercentage",
-        "type": "uint256"
-      }
-    ],
-    "name": "BurnedPenaltyTokens",
-    "type": "event"
   },
   {
     "anonymous": false,
@@ -215,6 +172,25 @@
       }
     ],
     "name": "ContractUpgraded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "withdrawFreezeTime",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "transferFreezeTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "FreezeTimeUpdated",
     "type": "event"
   },
   {
@@ -253,50 +229,79 @@
     "anonymous": false,
     "inputs": [
       {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "validator",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "delegator",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "token",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "enum DecimalDelegationCommon.TokenType",
-            "name": "tokenType",
-            "type": "uint8"
-          }
-        ],
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "stakeId",
+        "type": "bytes32"
+      },
+      {
         "indexed": false,
-        "internalType": "struct DecimalDelegationCommon.Stake",
-        "name": "stake",
-        "type": "tuple"
+        "internalType": "uint256",
+        "name": "newPenaltyIndex",
+        "type": "uint256"
       }
     ],
-    "name": "Staked",
+    "name": "PenaltyAppliedToStake",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "validator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum IDecimalDelegationCommon.TokenType",
+        "name": "tokenType",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "penaltyIndex",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "reserve",
+            "type": "uint256"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct IDecimalDelegationCommon.ValidatorReserve",
+        "name": "validatorReserve",
+        "type": "tuple"
+      }
+    ],
+    "name": "PenaltyAppliedToValidator",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "stakeId",
+        "type": "bytes32"
+      },
       {
         "components": [
           {
@@ -325,15 +330,33 @@
             "type": "uint256"
           },
           {
-            "internalType": "enum DecimalDelegationCommon.TokenType",
+            "internalType": "enum IDecimalDelegationCommon.TokenType",
             "name": "tokenType",
             "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "holdTimestamp",
+            "type": "uint256"
           }
         ],
         "indexed": false,
-        "internalType": "struct DecimalDelegationCommon.Stake",
+        "internalType": "struct IDecimalDelegationCommon.Stake",
         "name": "stake",
         "type": "tuple"
+      }
+    ],
+    "name": "Staked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "stakeIndex",
+        "type": "uint256"
       }
     ],
     "name": "TransferCompleted",
@@ -342,6 +365,18 @@
   {
     "anonymous": false,
     "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "stakeId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "stakeIndex",
+        "type": "uint256"
+      },
       {
         "components": [
           {
@@ -372,18 +407,28 @@
                 "type": "uint256"
               },
               {
-                "internalType": "enum DecimalDelegationCommon.TokenType",
+                "internalType": "enum IDecimalDelegationCommon.TokenType",
                 "name": "tokenType",
                 "type": "uint8"
+              },
+              {
+                "internalType": "uint256",
+                "name": "holdTimestamp",
+                "type": "uint256"
               }
             ],
-            "internalType": "struct DecimalDelegationCommon.Stake",
+            "internalType": "struct IDecimalDelegationCommon.Stake",
             "name": "stake",
             "type": "tuple"
           },
           {
-            "internalType": "enum DecimalDelegationCommon.FreezeStatus",
+            "internalType": "enum IDecimalDelegationCommon.FreezeStatus",
             "name": "freezeStatus",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum IDecimalDelegationCommon.FreezeType",
+            "name": "freezeType",
             "type": "uint8"
           },
           {
@@ -393,21 +438,9 @@
           }
         ],
         "indexed": false,
-        "internalType": "struct DecimalDelegationCommon.FrozenStake",
+        "internalType": "struct IDecimalDelegationCommon.FrozenStake",
         "name": "frozenStake",
         "type": "tuple"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "queueIndex",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "newValidator",
-        "type": "address"
       }
     ],
     "name": "TransferRequest",
@@ -430,42 +463,10 @@
     "anonymous": false,
     "inputs": [
       {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "validator",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "delegator",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "token",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "enum DecimalDelegationCommon.TokenType",
-            "name": "tokenType",
-            "type": "uint8"
-          }
-        ],
         "indexed": false,
-        "internalType": "struct DecimalDelegationCommon.Stake",
-        "name": "stake",
-        "type": "tuple"
+        "internalType": "uint256",
+        "name": "stakeIndex",
+        "type": "uint256"
       }
     ],
     "name": "WithdrawCompleted",
@@ -474,6 +475,18 @@
   {
     "anonymous": false,
     "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "stakeId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "stakeIndex",
+        "type": "uint256"
+      },
       {
         "components": [
           {
@@ -504,18 +517,28 @@
                 "type": "uint256"
               },
               {
-                "internalType": "enum DecimalDelegationCommon.TokenType",
+                "internalType": "enum IDecimalDelegationCommon.TokenType",
                 "name": "tokenType",
                 "type": "uint8"
+              },
+              {
+                "internalType": "uint256",
+                "name": "holdTimestamp",
+                "type": "uint256"
               }
             ],
-            "internalType": "struct DecimalDelegationCommon.Stake",
+            "internalType": "struct IDecimalDelegationCommon.Stake",
             "name": "stake",
             "type": "tuple"
           },
           {
-            "internalType": "enum DecimalDelegationCommon.FreezeStatus",
+            "internalType": "enum IDecimalDelegationCommon.FreezeStatus",
             "name": "freezeStatus",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum IDecimalDelegationCommon.FreezeType",
+            "name": "freezeType",
             "type": "uint8"
           },
           {
@@ -525,15 +548,9 @@
           }
         ],
         "indexed": false,
-        "internalType": "struct DecimalDelegationCommon.FrozenStake",
+        "internalType": "struct IDecimalDelegationCommon.FrozenStake",
         "name": "frozenStake",
         "type": "tuple"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "queueIndex",
-        "type": "uint256"
       }
     ],
     "name": "WithdrawRequest",
@@ -555,22 +572,29 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "validator",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "delegator",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
+        "components": [
+          {
+            "internalType": "address",
+            "name": "validator",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IDecimalDelegationCommon.ValidatorToken[]",
+        "name": "validatorTokens",
+        "type": "tuple[]"
       }
     ],
-    "name": "applyPenaltiesToStake",
+    "name": "applyPenaltiesToValidator",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -578,106 +602,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "validator",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "delegator",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
+        "internalType": "uint256[]",
+        "name": "indexes",
+        "type": "uint256[]"
       }
     ],
-    "name": "applyPenaltyToStake",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "validator",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
-      }
-    ],
-    "name": "burnPenaltyTokens",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "validator",
-        "type": "address"
-      }
-    ],
-    "name": "burnPenaltyTokensValidator",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "completeStake",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "completeStakes",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "limit",
-        "type": "uint256"
-      }
-    ],
-    "name": "completeStakesWithLimit",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      }
-    ],
-    "name": "completeTransfer",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      }
-    ],
-    "name": "completeWithdraw",
+    "name": "complete",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -762,6 +692,146 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "delegator",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "validator",
+        "type": "address"
+      }
+    ],
+    "name": "delegateETHTo",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validator",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "holdTimestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "delegateHold",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validator",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "holdTimestamp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "deadline",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "v",
+        "type": "uint8"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "r",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "s",
+        "type": "bytes32"
+      }
+    ],
+    "name": "delegateHoldByPermit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validator",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "holdTimestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "delegateHoldETH",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "delegator",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "validator",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "delegateTo",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getContractCenter",
     "outputs": [
@@ -777,7 +847,7 @@
   {
     "inputs": [
       {
-        "internalType": "enum DecimalDelegationCommon.FreezeType",
+        "internalType": "enum IDecimalDelegationCommon.FreezeType",
         "name": "freezeType",
         "type": "uint8"
       }
@@ -796,12 +866,12 @@
   {
     "inputs": [
       {
-        "internalType": "enum DecimalDelegationCommon.FreezeType",
-        "name": "freezeType",
-        "type": "uint8"
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
       }
     ],
-    "name": "getFrozenStakesQueue",
+    "name": "getFrozenStake",
     "outputs": [
       {
         "components": [
@@ -833,18 +903,28 @@
                 "type": "uint256"
               },
               {
-                "internalType": "enum DecimalDelegationCommon.TokenType",
+                "internalType": "enum IDecimalDelegationCommon.TokenType",
                 "name": "tokenType",
                 "type": "uint8"
+              },
+              {
+                "internalType": "uint256",
+                "name": "holdTimestamp",
+                "type": "uint256"
               }
             ],
-            "internalType": "struct DecimalDelegationCommon.Stake",
+            "internalType": "struct IDecimalDelegationCommon.Stake",
             "name": "stake",
             "type": "tuple"
           },
           {
-            "internalType": "enum DecimalDelegationCommon.FreezeStatus",
+            "internalType": "enum IDecimalDelegationCommon.FreezeStatus",
             "name": "freezeStatus",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum IDecimalDelegationCommon.FreezeType",
+            "name": "freezeType",
             "type": "uint8"
           },
           {
@@ -853,9 +933,205 @@
             "type": "uint256"
           }
         ],
-        "internalType": "struct DecimalDelegationCommon.FrozenStake[]",
+        "internalType": "struct IDecimalDelegationCommon.FrozenStake",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "stakeIndexes",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "getFrozenStakes",
+    "outputs": [
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "validator",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "delegator",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "token",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              },
+              {
+                "internalType": "enum IDecimalDelegationCommon.TokenType",
+                "name": "tokenType",
+                "type": "uint8"
+              },
+              {
+                "internalType": "uint256",
+                "name": "holdTimestamp",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct IDecimalDelegationCommon.Stake",
+            "name": "stake",
+            "type": "tuple"
+          },
+          {
+            "internalType": "enum IDecimalDelegationCommon.FreezeStatus",
+            "name": "freezeStatus",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum IDecimalDelegationCommon.FreezeType",
+            "name": "freezeType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "unfreezeTimestamp",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IDecimalDelegationCommon.FrozenStake[]",
         "name": "",
         "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validator",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "delegator",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "holdTimestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "getHoldStake",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "validator",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "delegator",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum IDecimalDelegationCommon.TokenType",
+            "name": "tokenType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "holdTimestamp",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IDecimalDelegationCommon.Stake",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validator",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "delegator",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "holdTimestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "getHoldStakeId",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getImplementation",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -909,12 +1185,17 @@
             "type": "uint256"
           },
           {
-            "internalType": "enum DecimalDelegationCommon.TokenType",
+            "internalType": "enum IDecimalDelegationCommon.TokenType",
             "name": "tokenType",
             "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "holdTimestamp",
+            "type": "uint256"
           }
         ],
-        "internalType": "struct DecimalDelegationCommon.Stake",
+        "internalType": "struct IDecimalDelegationCommon.Stake",
         "name": "",
         "type": "tuple"
       }
@@ -954,49 +1235,17 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "member",
-        "type": "address"
+        "internalType": "bytes32",
+        "name": "stakeId",
+        "type": "bytes32"
       }
     ],
-    "name": "getStakesByMember",
+    "name": "getStakePenaltyIndex",
     "outputs": [
       {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "validator",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "delegator",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "token",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "enum DecimalDelegationCommon.TokenType",
-            "name": "tokenType",
-            "type": "uint8"
-          }
-        ],
-        "internalType": "struct DecimalDelegationCommon.Stake[]",
-        "name": "stakes",
-        "type": "tuple[]"
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1005,22 +1254,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "member",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "size",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "offset",
-        "type": "uint256"
+        "internalType": "bytes32[]",
+        "name": "stakeIds",
+        "type": "bytes32[]"
       }
     ],
-    "name": "getStakesPageByMember",
+    "name": "getStakes",
     "outputs": [
       {
         "components": [
@@ -1050,19 +1289,19 @@
             "type": "uint256"
           },
           {
-            "internalType": "enum DecimalDelegationCommon.TokenType",
+            "internalType": "enum IDecimalDelegationCommon.TokenType",
             "name": "tokenType",
             "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "holdTimestamp",
+            "type": "uint256"
           }
         ],
-        "internalType": "struct DecimalDelegationCommon.Stake[]",
+        "internalType": "struct IDecimalDelegationCommon.Stake[]",
         "name": "stakes",
         "type": "tuple[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "newOffset",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1084,22 +1323,21 @@
     "name": "getValidatorReserve",
     "outputs": [
       {
-        "internalType": "uint256",
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "penaltyIndex",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "reserve",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IDecimalDelegationCommon.ValidatorReserve",
         "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "isQueueReady",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
+        "type": "tuple"
       }
     ],
     "stateMutability": "view",
@@ -1141,6 +1379,24 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "withdrawFreezeTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "transferFreezeTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "setFreezeTime",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "validator",
         "type": "address"
@@ -1162,6 +1418,39 @@
       }
     ],
     "name": "transfer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validator",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "holdTimestamp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "newValidator",
+        "type": "address"
+      }
+    ],
+    "name": "transferHold",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1216,6 +1505,34 @@
       }
     ],
     "name": "withdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validator",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "holdTimestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdrawHold",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -5,6 +5,8 @@ package keeper
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
+	"bitbucket.org/decimalteam/go-smart-node/contracts/delegation"
+	"bitbucket.org/decimalteam/go-smart-node/contracts/validator"
 	types2 "bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -14,12 +16,14 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"encoding/json"
 	"fmt"
+	typescodec "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	"math/big"
 )
 
 var _ evmtypes.EvmHooks = Hooks{}
@@ -63,28 +67,37 @@ func (k Keeper) PostTxProcessing(
 	//	return nil
 	//}
 
-	validatorMaster, _ := contracts.MasterValidatorMetaData.GetAbi()
-	delegatorCenter, _ := contracts.DelegationMetaData.GetAbi()
+	addressDelegation, _ := k.QueryAddressDelegation(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
+	addressWDEL, _ := k.QueryAddressWDEL(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
+	//
+	//tokenCenter := center{}
+	//fmt.Print(err)
+	fmt.Print(addressDelegation)
+	fmt.Print(addressWDEL)
+
+	validatorMaster, _ := validator.ValidatorMetaData.GetAbi()
+	delegatorCenter, _ := delegation.DelegationMetaData.GetAbi()
 
 	// this var is only for new token create from token center
-	var tokenDelegate contracts.ContractStaked
-	var tokenUndelegate contracts.ContractsRequestWithdraw
-	var tokenRedelegation contracts.ContractsRequestTransfer
-	var newValidator contracts.MasterValidatorValidatorAdded
-	var updateValidator contracts.MasterValidatorValidatorUpdated
+	var tokenDelegate delegation.DelegationStaked
+	var tokenUndelegate delegation.DelegationWithdrawRequest
+	var tokenRedelegation delegation.DelegationTransferRequest
+	var newValidator validator.ValidatorValidatorAdded
+	var updateValidator validator.ValidatorValidatorUpdated
 
 	for _, log := range recipient.Logs {
 		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
 		if errEvent == nil {
 			if eventValidatorByID.Name == "ValidatorAdded" {
 				_ = validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data)
-				newValidator.Validator = common.BytesToAddress(log.Topics[1].Bytes())
 				var validatorInfo contracts.MasterValidatorValidatorAddedMeta
 				_ = json.Unmarshal([]byte(newValidator.Meta), &validatorInfo)
-				//if err != nil {
-				//	return err
-				//}
-				fmt.Println(validatorInfo)
+				valAddr, _ := sdk.ValAddressFromHex(msg.From.String()[2:])
+				validatorInfo.OperatorAddress = valAddr.String()
+
+				//err := k.CreateValidatorFromEVM(ctx, validatorInfo)
+				//fmt.Println(validatorInfo)
+				//fmt.Println(err)
 			}
 			if eventValidatorByID.Name == "ValidatorUpdated" {
 				cosmosAddressValidator, _ := types2.GetDecimalAddressFromHex(common.BytesToAddress(log.Topics[1].Bytes()).String())
@@ -144,7 +157,7 @@ func (k Keeper) PostTxProcessing(
 	return nil
 }
 
-func (k Keeper) Staked(ctx sdk.Context, stakeData contracts.ContractStaked) error {
+func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStaked) error {
 	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, stakeData.Stake.Token.String())
 	if err != nil {
 		return errors.CoinDoesNotExist
@@ -166,12 +179,12 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData contracts.ContractStaked) erro
 
 	valAddr, err := sdk.ValAddressFromHex(stakeData.Stake.Validator.String()[2:])
 
-	validator, found := k.GetValidator(ctx, valAddr)
+	validatorCosmos, found := k.GetValidator(ctx, valAddr)
 	if !found {
 		return fmt.Errorf("not found validator %s", valAddr)
 	}
 
-	_ = k.Delegate(ctx, delegatorAddress, validator, stake)
+	_ = k.Delegate(ctx, delegatorAddress, validatorCosmos, stake)
 	if err != nil {
 		return err
 	}
@@ -179,7 +192,7 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData contracts.ContractStaked) erro
 	return nil
 }
 
-func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate contracts.ContractsRequestWithdraw) error {
+func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.DelegationWithdrawRequest) error {
 	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, tokenUndelegate.FrozenStake.Stake.Token.String())
 	if err != nil {
 		return errors.CoinDoesNotExist
@@ -191,12 +204,12 @@ func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate contracts.Contr
 
 	valAddr, err := sdk.ValAddressFromBech32(tokenUndelegate.FrozenStake.Stake.Validator.String()[2:])
 
-	delegation, found := k.GetDelegation(ctx, delegatorAddress, valAddr, stake.ID)
+	delegationCosmos, found := k.GetDelegation(ctx, delegatorAddress, valAddr, stake.ID)
 	if !found {
 		return errors.DelegationNotFound
 	}
 
-	remainStake, err := k.CalculateRemainStake(ctx, delegation.Stake, stake)
+	remainStake, err := k.CalculateRemainStake(ctx, delegationCosmos.Stake, stake)
 	if err != nil {
 		return err
 	}
@@ -209,7 +222,7 @@ func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate contracts.Contr
 	return nil
 }
 
-func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation contracts.ContractsRequestTransfer) error {
+func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.DelegationTransferRequest) error {
 	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, tokenRedelegation.FrozenStake.Stake.Token.String())
 	if err != nil {
 		return errors.CoinDoesNotExist
@@ -221,12 +234,12 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation contracts.Con
 
 	valAddr, err := sdk.ValAddressFromHex(tokenRedelegation.FrozenStake.Stake.Validator.String()[2:])
 
-	delegation, found := k.GetDelegation(ctx, delegatorAddress, valAddr, stake.ID)
+	delegationCosmos, found := k.GetDelegation(ctx, delegatorAddress, valAddr, stake.ID)
 	if !found {
 		return errors.DelegationNotFound
 	}
 
-	remainStake, err := k.CalculateRemainStake(ctx, delegation.Stake, stake)
+	remainStake, err := k.CalculateRemainStake(ctx, delegationCosmos.Stake, stake)
 	if err != nil {
 		return err
 	}
@@ -241,10 +254,26 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation contracts.Con
 	return nil
 }
 
-func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, meta string) error {
+func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.MasterValidatorValidatorAddedMeta) error {
+
+	commission, _ := sdkmath.NewIntFromString(validatorMeta.Commission)
 
 	msg := types.MsgCreateValidator{
-		OperatorAddress: DAOAddress2,
+		OperatorAddress: validatorMeta.OperatorAddress,
+		RewardAddress:   validatorMeta.RewardAddress,
+		ConsensusPubkey: typescodec.UnsafePackAny(validatorMeta.ConsensusPubkey),
+		Description: types.Description{
+			Moniker:         validatorMeta.Description.Moniker,
+			Identity:        validatorMeta.Description.Identity,
+			Website:         validatorMeta.Description.Website,
+			SecurityContact: validatorMeta.Description.SecurityContact,
+			Details:         validatorMeta.Description.Details,
+		},
+		Commission: sdk.NewDecFromInt(commission),
+		Stake: sdk.Coin{
+			Denom:  "del",
+			Amount: math.NewIntFromBigInt(big.NewInt(0)),
+		},
 	}
 
 	valAddr, err := sdk.ValAddressFromBech32(msg.OperatorAddress)
@@ -258,7 +287,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, meta string) error {
 
 	// check to see if the pubkey or sender has been registered before
 	if _, found := k.GetValidator(ctx, valAddr); found {
-		return errors.ValidatorAlreadyExists
+		return nil
 	}
 
 	_, err = k.coinKeeper.GetCoin(ctx, msg.Stake.Denom)
@@ -294,19 +323,19 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, meta string) error {
 		}
 	}
 
-	validator, err := types.NewValidator(valAddr, rewardAddr, pk, msg.Description, msg.Commission)
+	validatorCosmos, err := types.NewValidator(valAddr, rewardAddr, pk, msg.Description, msg.Commission)
 	if err != nil {
 		return err
 	}
-	validator.Online = false
-	validator.Jailed = false
+	validatorCosmos.Online = false
+	validatorCosmos.Jailed = false
 
-	k.SetValidator(ctx, validator)
-	k.SetValidatorByConsAddr(ctx, validator)
-	k.SetNewValidatorByPowerIndex(ctx, validator)
+	k.SetValidator(ctx, validatorCosmos)
+	k.SetValidatorByConsAddr(ctx, validatorCosmos)
+	k.SetNewValidatorByPowerIndex(ctx, validatorCosmos)
 
 	// call the after-creation hook
-	if err = k.AfterValidatorCreated(ctx, validator.GetOperator()); err != nil {
+	if err = k.AfterValidatorCreated(ctx, validatorCosmos.GetOperator()); err != nil {
 		return err
 	}
 
@@ -314,10 +343,10 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, meta string) error {
 	// the validator account and global shares are updated within here
 	// NOTE source will always be from a wallet which are unbonded
 	stake := types.NewStakeCoin(msg.Stake)
-	err = k.Delegate(ctx, sdk.AccAddress(valAddr), validator, stake)
-	if err != nil {
-		return err
-	}
+	//err = k.Delegate(ctx, sdk.AccAddress(valAddr), validator, stake)
+	//if err != nil {
+	//	return err
+	//}
 
 	err = events.EmitTypedEvent(ctx, &types.EventCreateValidator{
 		Sender:          sdk.AccAddress(valAddr).String(),
@@ -355,13 +384,13 @@ func (k Keeper) SetOnlineFromEvm(goCtx sdk.Context, validatorAddr string) error 
 		return err
 	}
 	// validator must already be registered
-	validator, found := k.GetValidator(ctx, valAddr)
+	validatorCosmos, found := k.GetValidator(ctx, valAddr)
 	if !found {
 		return errors.ValidatorNotFound
 	}
 
-	if validator.Online {
-		if !validator.Jailed {
+	if validatorCosmos.Online {
+		if !validatorCosmos.Jailed {
 			return nil
 		}
 	}
@@ -371,16 +400,16 @@ func (k Keeper) SetOnlineFromEvm(goCtx sdk.Context, validatorAddr string) error 
 		return errors.ValidatorHasNoDelegations
 	}
 
-	k.DeleteValidatorByPowerIndex(ctx, validator)
+	k.DeleteValidatorByPowerIndex(ctx, validatorCosmos)
 
 	// TODO: move Online and Jailed to store keys?
-	validator.Online = true
-	validator.Jailed = false
+	validatorCosmos.Online = true
+	validatorCosmos.Jailed = false
 
 	delByValidator := k.GetAllDelegationsByValidator(ctx)
 	customCoinStaked := k.GetAllCustomCoinsStaked(ctx)
 	customCoinPrices := k.CalculateCustomCoinPrices(ctx, customCoinStaked)
-	totalStake, err := k.CalculateTotalPowerWithDelegationsAndPrices(ctx, validator.GetOperator(), delByValidator[validator.OperatorAddress], customCoinPrices)
+	totalStake, err := k.CalculateTotalPowerWithDelegationsAndPrices(ctx, validatorCosmos.GetOperator(), delByValidator[validatorCosmos.OperatorAddress], customCoinPrices)
 	if err != nil {
 		return err
 	}
@@ -390,7 +419,7 @@ func (k Keeper) SetOnlineFromEvm(goCtx sdk.Context, validatorAddr string) error 
 		return errors.ValidatorStakeTooSmall
 	}
 
-	validator.Stake = stake
+	validatorCosmos.Stake = stake
 
 	rs, err := k.GetValidatorRS(ctx, valAddr)
 	if err != nil {
@@ -400,12 +429,12 @@ func (k Keeper) SetOnlineFromEvm(goCtx sdk.Context, validatorAddr string) error 
 		}
 	}
 	rs.Stake = stake
-	k.SetValidator(ctx, validator)
-	k.SetValidatorByPowerIndex(ctx, validator)
+	k.SetValidator(ctx, validatorCosmos)
+	k.SetValidatorByPowerIndex(ctx, validatorCosmos)
 	k.SetValidatorRS(ctx, valAddr, rs)
 
 	// StartHeight need for correct calculation of missing blocks
-	consAdr, err := validator.GetConsAddr()
+	consAdr, err := validatorCosmos.GetConsAddr()
 	if err != nil {
 		return err
 	}
@@ -431,19 +460,19 @@ func (k Keeper) SetOfflineFromEvm(goCtx sdk.Context, validatorAddrHex string) er
 		return err
 	}
 	// validator must already be registered
-	validator, found := k.GetValidator(ctx, valAddr)
+	validatorCosmos, found := k.GetValidator(ctx, valAddr)
 	if !found {
 		return errors.ValidatorNotFound
 	}
-	if !validator.Online {
+	if !validatorCosmos.Online {
 		return errors.ValidatorAlreadyOffline
 	}
 
-	validator.Online = false
+	validatorCosmos.Online = false
 	// TODO: optimize
-	k.SetValidator(ctx, validator)
+	k.SetValidator(ctx, validatorCosmos)
 
-	consAdr, err := validator.GetConsAddr()
+	consAdr, err := validatorCosmos.GetConsAddr()
 	if err != nil {
 		return err
 	}

@@ -133,6 +133,10 @@ enum StakeType {
   STAKE_TYPE_COIN = 1 [ (gogoproto.enumvalue_customname) = "Coin" ];
   // NFT defines the type for stakes in NFT.
   STAKE_TYPE_NFT = 2 [ (gogoproto.enumvalue_customname) = "NFT" ];
+  // COIN defines the type for stakes in coin with hold.
+  STAKE_TYPE_COIN_HOLD = 3 [ (gogoproto.enumvalue_customname) = "CoinHold" ];
+  // NFT defines the type for stakes in NFT.
+  STAKE_TYPE_NFT_HOLD = 4 [ (gogoproto.enumvalue_customname) = "NFTHold" ];
 }
 
 // Stake contains all necessary info about a delegation stake.
@@ -153,6 +157,9 @@ message Stake {
   cosmos.base.v1beta1.Coin stake = 3 [ (gogoproto.nullable) = false ];
   // sub_token_ids defines list of NFT sub-token IDs.
   repeated uint32 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
+
+  // creation_height defines the height at which the redelegation took place.
+  int64 hold_height = 5;
 }
 
 // Delegation represents the bond with coins/NTFs held by an account.

@@ -4,7 +4,9 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/contracts"
+	"bitbucket.org/decimalteam/go-smart-node/contracts/center"
+	"bitbucket.org/decimalteam/go-smart-node/contracts/delegation"
+	"bitbucket.org/decimalteam/go-smart-node/contracts/validator"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -16,7 +18,7 @@ func (k *Keeper) QueryAddressWDEL(
 	contract common.Address,
 ) (string, error) {
 
-	contractCenter, _ := contracts.ContractCenterMetaData.GetAbi()
+	contractCenter, _ := center.CenterMetaData.GetAbi()
 	methodCall := "getAddress"
 	// Address token center
 	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, types.NameOfSlugForGetAddressWDEL)
@@ -36,7 +38,7 @@ func (k *Keeper) QueryAddressDelegation(
 	contract common.Address,
 ) (string, error) {
 
-	contractCenter, _ := contracts.ContractCenterMetaData.GetAbi()
+	contractCenter, _ := center.CenterMetaData.GetAbi()
 	methodCall := "getAddress"
 	// Address token center
 	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, types.NameOfSlugForGetAddressDelegation)
@@ -56,7 +58,7 @@ func (k *Keeper) QueryAddressMasterValidator(
 	contract common.Address,
 ) (string, error) {
 
-	contractCenter, _ := contracts.ContractCenterMetaData.GetAbi()
+	contractCenter, _ := center.CenterMetaData.GetAbi()
 	methodCall := "getAddress"
 	// Address token center
 	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, types.NameOfSlugForGetAddressMasterValidator)
@@ -76,7 +78,7 @@ func (k *Keeper) QueryIfNeedExecuteFinish(
 	contract common.Address,
 ) (bool, error) {
 
-	contractDelegation, _ := contracts.DelegationMetaData.GetAbi()
+	contractDelegation, _ := delegation.DelegationMetaData.GetAbi()
 	methodCall := "isQueueReady"
 	// Address token center
 	res, err := k.evmKeeper.CallEVM(ctx, *contractDelegation, common.Address(types.ModuleAddress), contract, false, methodCall)
@@ -94,7 +96,7 @@ func (k *Keeper) QueryOwnerDelegation(
 	contract common.Address,
 ) (string, error) {
 
-	contractDelegation, _ := contracts.DelegationMetaData.GetAbi()
+	contractDelegation, _ := delegation.DelegationMetaData.GetAbi()
 	methodCall := "owner"
 	// Address token center
 	res, err := k.evmKeeper.CallEVM(ctx, *contractDelegation, common.Address(types.ModuleAddress), contract, false, methodCall)
@@ -112,7 +114,7 @@ func (k *Keeper) ExecuteQueueEVMAction(
 	contract common.Address,
 ) (bool, error) {
 
-	contractDelegation, _ := contracts.DelegationMetaData.GetAbi()
+	contractDelegation, _ := delegation.DelegationMetaData.GetAbi()
 	methodCall := "completeStake"
 	// Address token center
 	res, err := k.evmKeeper.CallEVM(ctx, *contractDelegation, common.Address(types.ModuleAddress), contract, true, methodCall)
@@ -132,7 +134,7 @@ func (k *Keeper) ExecuteAddPenalty(
 	penaltyPercent uint16,
 ) (bool, error) {
 
-	contractDelegation, _ := contracts.MasterValidatorMetaData.GetAbi()
+	contractDelegation, _ := validator.ValidatorMetaData.GetAbi()
 	methodCall := "addPenalty"
 	_, err := k.evmKeeper.CallEVM(ctx, *contractDelegation, common.Address(types.ModuleAddress), contract, true, methodCall, validatorAddress, penaltyPercent)
 	if err != nil {
@@ -148,7 +150,7 @@ func (k *Keeper) ExecuteBurnPenaltyTokens(
 	validatorAddress common.Address,
 ) (bool, error) {
 
-	contractDelegation, _ := contracts.DelegationMetaData.GetAbi()
+	contractDelegation, _ := delegation.DelegationMetaData.GetAbi()
 	methodCall := "burnPenaltyTokensValidator"
 	_, err := k.evmKeeper.CallEVM(ctx, *contractDelegation, common.Address(types.ModuleAddress), contract, true, methodCall, validatorAddress)
 	if err != nil {

@@ -1,7 +1,7 @@
 package keeper_test
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/contracts"
+	"bitbucket.org/decimalteam/go-smart-node/contracts/tokenCenter"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"context"
 	"fmt"
@@ -190,7 +190,7 @@ func TestKeeper_Coin_From_Hook(t *testing.T) {
 
 	denom := "testcoin"
 	newCoin := keeper.NewToken{
-		TokenData: contracts.DecimalTokenCenterToken{
+		TokenData: tokenCenter.DecimalTokenCenterToken{
 			InitialMint:    big.NewInt(0),
 			MinTotalSupply: big.NewInt(0),
 			MaxTotalSupply: big.NewInt(5000),
@@ -259,7 +259,7 @@ func TestKeeper_Coin_Update_DRC(t *testing.T) {
 	require.True(t, getCoin.Equal(newCoin))
 
 	newCoinForUpdate := keeper.NewToken{
-		TokenData: contracts.DecimalTokenCenterToken{
+		TokenData: tokenCenter.DecimalTokenCenterToken{
 			InitialMint:    big.NewInt(0),
 			MinTotalSupply: big.NewInt(0),
 			MaxTotalSupply: big.NewInt(5000),

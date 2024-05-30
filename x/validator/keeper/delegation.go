@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"bytes"
 	"encoding/binary"
 	"fmt"
@@ -969,8 +970,23 @@ func (k Keeper) CompleteUnbonding(ctx sdk.Context, delegator sdk.AccAddress, val
 			case types.StakeType_Coin:
 				amt := stake.Stake
 
+				// undelegate coin
 				if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(
 					ctx, types.NotBondedPoolName, delegator, sdk.NewCoins(amt),
+				); err != nil {
+					return err
+				}
+
+				// send coind to module
+				if err := k.bankKeeper.SendCoinsFromAccountToModule(
+					ctx, delegator, cointypes.ModuleName, sdk.NewCoins(amt),
+				); err != nil {
+					return err
+				}
+
+				// burn coins
+				if err := k.bankKeeper.BurnCoins(
+					ctx, cointypes.ModuleName, sdk.NewCoins(amt),
 				); err != nil {
 					return err
 				}
