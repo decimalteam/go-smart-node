@@ -81,6 +81,13 @@ func (k *Keeper) PostTxProcessing(
 	//fmt.Print(tokenCenter)
 	tokenContractCenter, _ := tokenCenter.TokenMetaData.GetAbi()
 	coinContract, _ := token.TokenMetaData.GetAbi()
+	addressWDEL, _ := k.QueryAddressWDEL(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
+	coinDel, _ := k.GetCoin(ctx, "del")
+	if coinDel.DRC20Contract == "" || coinDel.DRC20Contract != addressWDEL {
+		_ = k.UpdateCoinDRC(ctx, coinDel.Denom, addressWDEL)
+		coinDel.DRC20Contract = addressWDEL
+		k.SetCoin(ctx, coinDel)
+	}
 
 	// this var is only for new token create from token center
 	var tokenAddress tokenCenter.TokenTokenDeployed

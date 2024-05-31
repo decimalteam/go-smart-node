@@ -13,26 +13,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// QueryAddressWDEL returns the data of a deployed ERC20 contract
-func (k *Keeper) QueryAddressWDEL(
-	ctx sdk.Context,
-	contract common.Address,
-) (string, error) {
-
-	contractCenter, _ := center.CenterMetaData.GetAbi()
-	methodCall := "getAddress"
-	// Address token center
-	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, types.NameOfSlugForGetAddressWDEL)
-	if err != nil {
-		return new(common.Address).Hex(), err
-	}
-	data, err := contractCenter.Unpack(methodCall, res.Ret)
-	if len(data) == 0 {
-		return new(common.Address).Hex(), err
-	}
-	return data[0].(common.Address).String(), err
-}
-
 // QueryAddressDelegation returns the data of a deployed ERC20 contract
 func (k *Keeper) QueryAddressDelegation(
 	ctx sdk.Context,

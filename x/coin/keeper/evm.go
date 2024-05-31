@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/contracts/center"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/tokenCenter"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"fmt"
@@ -10,6 +11,26 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )
+
+// QueryAddressWDEL returns the data of a deployed ERC20 contract
+func (k *Keeper) QueryAddressWDEL(
+	ctx sdk.Context,
+	contract common.Address,
+) (string, error) {
+
+	contractCenter, _ := center.CenterMetaData.GetAbi()
+	methodCall := "getAddress"
+	// Address token center
+	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, types.NameOfSlugForGetAddressWDEL)
+	if err != nil {
+		return new(common.Address).Hex(), err
+	}
+	data, err := contractCenter.Unpack(methodCall, res.Ret)
+	if len(data) == 0 {
+		return new(common.Address).Hex(), err
+	}
+	return data[0].(common.Address).String(), err
+}
 
 // QueryAddressTokenCenter returns the data of a deployed ERC20 contract
 func (k *Keeper) QueryAddressTokenCenter(
