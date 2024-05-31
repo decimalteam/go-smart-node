@@ -117,10 +117,10 @@ func (k Keeper) PostTxProcessing(
 		}
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
-			if eventDelegationByID.Name == "Staked" {
+			if eventDelegationByID.Name == "StakedUpdated" {
 				_ = delegatorCenter.UnpackIntoInterface(&tokenDelegate, eventDelegationByID.Name, log.Data)
 				fmt.Println(tokenDelegate)
-				err := k.Staked(ctx, tokenDelegate)
+				err := k.Staked(ctx, tokenDelegate, addressWDEL)
 				if err != nil {
 					return err
 				}
@@ -157,18 +157,26 @@ func (k Keeper) PostTxProcessing(
 	return nil
 }
 
-func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStaked) error {
-	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, stakeData.Stake.Token.String())
-	if err != nil {
-		return errors.CoinDoesNotExist
-	}
+func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStaked, addressWDEL string) error {
 
-	stake := types.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(stakeData.Stake.Amount)})
+	var stake types.Stake
+	var coinStake cointypes.Coin
+
+	if addressWDEL != stakeData.Stake.Token.String() {
+		coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, stakeData.Stake.Token.String())
+		if err != nil {
+			return errors.CoinDoesNotExist
+		}
+		stake = types.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(stakeData.Stake.Amount)})
+	} else {
+		coinStake = cointypes.Coin{Denom: "DEL"}
+		stake = types.NewStakeCoin(sdk.Coin{Denom: "DEL", Amount: math.NewIntFromBigInt(stakeData.Stake.Amount)})
+	}
 
 	delegatorAddress, _ := types2.GetDecimalAddressFromHex(stakeData.Stake.Delegator.String())
 
 	mintCoinForDelegation := sdk.NewCoins(sdk.NewCoin(coinStake.Denom, math.NewIntFromBigInt(stakeData.Stake.Amount)))
-	err = k.bankKeeper.MintCoins(ctx, cointypes.ModuleName, mintCoinForDelegation)
+	err := k.bankKeeper.MintCoins(ctx, cointypes.ModuleName, mintCoinForDelegation)
 	if err != nil {
 		return err
 	}
