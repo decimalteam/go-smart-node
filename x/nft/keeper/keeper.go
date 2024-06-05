@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	evmkeeper "github.com/decimalteam/ethermint/x/evm/keeper"
 
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -22,6 +23,7 @@ type Keeper struct {
 	ps       paramtypes.Subspace
 
 	bankKeeper keeper.Keeper
+	evmKeeper  *evmkeeper.Keeper
 
 	// cached params value (for optimization)
 	cacheParams types.Params
@@ -33,6 +35,7 @@ func NewKeeper(
 	storeKey store.StoreKey,
 	ps paramtypes.Subspace,
 	bk keeper.Keeper,
+	evm *evmkeeper.Keeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -43,6 +46,7 @@ func NewKeeper(
 		storeKey:   storeKey,
 		ps:         ps,
 		bankKeeper: bk,
+		evmKeeper:  evm,
 	}
 }
 

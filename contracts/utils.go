@@ -1,8 +1,14 @@
 package contracts
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/contracts/tokenCenter"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	evmkeeper "github.com/decimalteam/ethermint/x/evm/keeper"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 // MasterValidatorValidatorAddedMeta represents a ReserveUpdated event raised by the Contracts contract.
@@ -26,6 +32,27 @@ func UnpackInputsData(v interface{}, inputs abi.Arguments, data []byte) error {
 		return err
 	}
 	return inputs.Copy(v, unpacked)
+}
+
+func GetAddressFromContractCenter(
+	ctx sdk.Context,
+	evmKeeper *evmkeeper.Keeper,
+	nameOfAddress string,
+) (string, error) {
+	contractCenter, _ := tokenCenter.TokenMetaData.GetAbi()
+	contract := common.HexToAddress(GetContractCenter(ctx.ChainID()))
+	methodCall := "getAddress"
+	// Address token center
+	res, err := evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, nameOfAddress)
+	if err != nil {
+		return new(common.Address).Hex(), err
+	}
+	data, err := contractCenter.Unpack(methodCall, res.Ret)
+	fmt.Println(data)
+	if len(data) == 0 {
+		return new(common.Address).Hex(), err
+	}
+	return data[0].(common.Address).String(), err
 }
 
 func GetContractCenter(chainID string) string {

@@ -12,6 +12,7 @@ import (
 // evm coin center events
 const (
 	NameOfSlugForGetAddressTokenCenter     = "token-center"
+	NameOfSlugForGetAddressNftCenter       = "nft-center"
 	NameOfSlugForGetAddressDelegation      = "delegation"
 	NameOfSlugForGetAddressWDEL            = "wdel"
 	NameOfSlugForGetAddressMasterValidator = "master-validator"

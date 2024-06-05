@@ -15,7 +15,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"google.golang.org/grpc/codes"
@@ -73,7 +72,7 @@ func (k *Keeper) PostTxProcessing(
 	//	fmt.Print(params)
 	//}
 
-	contractTokenCenter, err := k.QueryAddressTokenCenter(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
+	contractTokenCenter, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, types.NameOfSlugForGetAddressTokenCenter)
 	//
 	//tokenCenter := center{}
 	//fmt.Print(err)
@@ -81,7 +80,7 @@ func (k *Keeper) PostTxProcessing(
 	//fmt.Print(tokenCenter)
 	tokenContractCenter, _ := tokenCenter.TokenMetaData.GetAbi()
 	coinContract, _ := token.TokenMetaData.GetAbi()
-	addressWDEL, _ := k.QueryAddressWDEL(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
+	addressWDEL, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, types.NameOfSlugForGetAddressWDEL)
 	coinDel, _ := k.GetCoin(ctx, "del")
 	if coinDel.DRC20Contract == "" || coinDel.DRC20Contract != addressWDEL {
 		_ = k.UpdateCoinDRC(ctx, coinDel.Denom, addressWDEL)

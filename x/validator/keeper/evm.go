@@ -28,7 +28,6 @@ func (k *Keeper) QueryAddressDelegation(
 		return new(common.Address).Hex(), err
 	}
 	data, err := contractCenter.Unpack(methodCall, res.Ret)
-	fmt.Println("data", data)
 	if len(data) == 0 {
 		return new(common.Address).Hex(), err
 	}

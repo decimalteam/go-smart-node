@@ -475,6 +475,7 @@ func NewDSC(
 		keys[nfttypes.StoreKey],
 		app.GetSubspace(nfttypes.ModuleName),
 		app.BankKeeper,
+		&app.EvmKeeper,
 	)
 	app.MultisigKeeper = *multisigkeeper.NewKeeper(
 		appCodec,
@@ -527,6 +528,7 @@ func NewDSC(
 	app.EvmKeeper.SetHooks(
 		evmkeeper.NewMultiEvmHooks(
 			app.CoinKeeper.Hooks(),
+			app.NFTKeeper.Hooks(),
 			app.ValidatorKeeper.Hooks(),
 		),
 	)

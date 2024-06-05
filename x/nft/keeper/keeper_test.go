@@ -85,6 +85,7 @@ func (s *KeeperTestSuite) SetupTest() {
 		key,
 		space,
 		bankKeeper,
+		nil,
 	)
 	keeper.SetParams(ctx, types.DefaultParams())
 	// --

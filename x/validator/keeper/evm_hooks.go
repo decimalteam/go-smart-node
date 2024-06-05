@@ -69,9 +69,6 @@ func (k Keeper) PostTxProcessing(
 
 	addressDelegation, _ := k.QueryAddressDelegation(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
 
-	//
-	//tokenCenter := center{}
-	//fmt.Print(err)
 	fmt.Print(addressDelegation)
 
 	validatorMaster, _ := validator.ValidatorMetaData.GetAbi()
