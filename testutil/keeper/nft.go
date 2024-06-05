@@ -23,6 +23,7 @@ func GetBaseAppWithCustomKeeper(t *testing.T) (*app.DSC, sdk.Context) {
 		dsc.GetKey(types.StoreKey),
 		dsc.GetSubspace(nfttypes.ModuleName),
 		dsc.BankKeeper,
+		&dsc.EvmKeeper,
 	)
 
 	return dsc, ctx
