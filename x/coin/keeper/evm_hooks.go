@@ -72,7 +72,7 @@ func (k *Keeper) PostTxProcessing(
 	//	fmt.Print(params)
 	//}
 
-	contractTokenCenter, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, types.NameOfSlugForGetAddressTokenCenter)
+	contractTokenCenter, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressTokenCenter)
 	//
 	//tokenCenter := center{}
 	//fmt.Print(err)
@@ -80,7 +80,7 @@ func (k *Keeper) PostTxProcessing(
 	//fmt.Print(tokenCenter)
 	tokenContractCenter, _ := tokenCenter.TokenMetaData.GetAbi()
 	coinContract, _ := token.TokenMetaData.GetAbi()
-	addressWDEL, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, types.NameOfSlugForGetAddressWDEL)
+	addressWDEL, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressWDEL)
 	coinDel, _ := k.GetCoin(ctx, "del")
 	if coinDel.DRC20Contract == "" || coinDel.DRC20Contract != addressWDEL {
 		_ = k.UpdateCoinDRC(ctx, coinDel.Denom, addressWDEL)
@@ -93,6 +93,9 @@ func (k *Keeper) PostTxProcessing(
 	var tokenUpdated token.TokenReserveUpdated
 
 	for _, log := range recipient.Logs {
+		if log.Address.String() != contractTokenCenter {
+			continue
+		}
 		eventCenterByID, errEvent := tokenContractCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
 			if eventCenterByID.Name == "TokenDeployed" {

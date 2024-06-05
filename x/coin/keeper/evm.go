@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/center"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/tokenCenter"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
@@ -21,7 +22,7 @@ func (k *Keeper) QueryAddressWDEL(
 	contractCenter, _ := center.CenterMetaData.GetAbi()
 	methodCall := "getAddress"
 	// Address token center
-	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, types.NameOfSlugForGetAddressWDEL)
+	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, contracts.NameOfSlugForGetAddressWDEL)
 	if err != nil {
 		return new(common.Address).Hex(), err
 	}
@@ -41,7 +42,7 @@ func (k *Keeper) QueryAddressTokenCenter(
 	contractCenter, _ := tokenCenter.TokenMetaData.GetAbi()
 	methodCall := "getAddress"
 	// Address token center
-	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, types.NameOfSlugForGetAddressTokenCenter)
+	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, contracts.NameOfSlugForGetAddressTokenCenter)
 	if err != nil {
 		return new(common.Address).Hex(), err
 	}

@@ -7,8 +7,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/nftCenter"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/tokenCenter"
-	types2 "bitbucket.org/decimalteam/go-smart-node/types"
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	"bitbucket.org/decimalteam/go-smart-node/types"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -66,12 +65,14 @@ func (k *Keeper) PostTxProcessing(
 	//	fmt.Print(params)
 	//}
 
-	contractNftCenter, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, types.NameOfSlugForGetAddressNftCenter)
+	contractNftCenter, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressNftCenter)
 	//
 	//tokenCenter := center{}
 	//fmt.Print(err)
-	fmt.Print(contractNftCenter)
-	fmt.Print(err)
+	fmt.Println("nft hooks")
+	fmt.Println(contracts.GetContractCenter(ctx.ChainID()))
+	fmt.Println(contractNftCenter)
+	fmt.Println(err)
 	//fmt.Print(tokenCenter)
 	nftContractCenter, _ := nftCenter.NftCenterMetaData.GetAbi()
 
@@ -89,7 +90,7 @@ func (k *Keeper) PostTxProcessing(
 				_ = nftContractCenter.UnpackIntoInterface(&nftCreated, eventCenterByID.Name, log.Data)
 				fmt.Println(nftCreated)
 				// create NFT collection
-				creatorAddress, _ := types2.GetDecimalAddressFromHex(nftCreated.Nft.TokenOwner.Hex())
+				creatorAddress, _ := types.GetDecimalAddressFromHex(nftCreated.Nft.TokenOwner.Hex())
 				collection := nfttypes.Collection{
 					Creator:    creatorAddress.String(),
 					Denom:      nftCreated.Nft.Symbol,

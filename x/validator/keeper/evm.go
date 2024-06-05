@@ -4,6 +4,7 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/center"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/delegation"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/validator"
@@ -22,7 +23,7 @@ func (k *Keeper) QueryAddressDelegation(
 	contractCenter, _ := center.CenterMetaData.GetAbi()
 	methodCall := "getAddress"
 	// Address token center
-	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, types.NameOfSlugForGetAddressDelegation)
+	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, contracts.NameOfSlugForGetAddressDelegation)
 	fmt.Println("data", res, err, contract.Hex())
 	if err != nil {
 		return new(common.Address).Hex(), err
@@ -43,7 +44,7 @@ func (k *Keeper) QueryAddressMasterValidator(
 	contractCenter, _ := center.CenterMetaData.GetAbi()
 	methodCall := "getAddress"
 	// Address token center
-	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, types.NameOfSlugForGetAddressMasterValidator)
+	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, contracts.NameOfSlugForGetAddressMasterValidator)
 	if err != nil {
 		return new(common.Address).Hex(), err
 	}

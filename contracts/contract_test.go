@@ -4,7 +4,6 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts/center"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/nft721"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/nftCenter"
-	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -26,7 +25,7 @@ func TestInitCmd(t *testing.T) {
 		web3Client,
 	)
 
-	address, err := contractCenter.GetAddress(&bind.CallOpts{}, types.NameOfSlugForGetAddressNftCenter)
+	address, err := contractCenter.GetAddress(&bind.CallOpts{}, NameOfSlugForGetAddressNftCenter)
 	if err != nil {
 		return
 	}

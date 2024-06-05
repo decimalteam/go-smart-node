@@ -11,6 +11,19 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+// evm coin center events
+const (
+	NameOfSlugForGetAddressTokenCenter     = "token-center"
+	NameOfSlugForGetAddressNftCenter       = "nft-center"
+	NameOfSlugForGetAddressDelegation      = "delegation"
+	NameOfSlugForGetAddressWDEL            = "wdel"
+	NameOfSlugForGetAddressMasterValidator = "master-validator"
+	EventChangeTokenCenter                 = "ContractAdded"
+
+	// DRC20MethodCreateToken defines the create method for DRC20 token
+	DRC20MethodCreateToken = "createToken"
+)
+
 // MasterValidatorValidatorAddedMeta represents a ReserveUpdated event raised by the Contracts contract.
 type MasterValidatorValidatorAddedMeta struct {
 	OperatorAddress string `json:"operator_address"`
