@@ -131,6 +131,7 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 	fmt.Println(ifNeedExec)
 
 	contractNftCenter, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressNftCenter)
+	fmt.Println("contractNftCenter")
 	fmt.Println(contractNftCenter)
 	fmt.Println(err)
 	//fmt.Println(addressOwner)
