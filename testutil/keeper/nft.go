@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"github.com/cosmos/cosmos-sdk/codec"
 	"testing"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
@@ -12,7 +13,7 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
-func GetBaseAppWithCustomKeeper(t *testing.T) (*app.DSC, sdk.Context) {
+func GetBaseAppWithCustomKeeper(t *testing.T) (*codec.LegacyAmino, *app.DSC, sdk.Context) {
 	dsc := app.Setup(t, false, feemarkettypes.DefaultGenesisState())
 	ctx := dsc.BaseApp.NewContext(false, tmproto.Header{})
 
@@ -26,5 +27,5 @@ func GetBaseAppWithCustomKeeper(t *testing.T) (*app.DSC, sdk.Context) {
 		&dsc.EvmKeeper,
 	)
 
-	return dsc, ctx
+	return codec.NewLegacyAmino(), dsc, ctx
 }

@@ -34,7 +34,7 @@ func TestInitCmd(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	recipient, err := web3Client.TransactionReceipt(context.Background(), common.HexToHash("0xcd4156839b8834ead3d9e5d893df183a0a6e676c256cf5f5079a89e5cccb8ca7"))
+	recipient, err := web3Client.TransactionReceipt(context.Background(), common.HexToHash("0x0f15aec191d9673695b678fbcfe90a07750b9fc5bd2f6a35b8a5f05222024ebf"))
 	if err != nil {
 		return
 	}

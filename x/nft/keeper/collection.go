@@ -41,7 +41,6 @@ func (k *Keeper) SetCollection(ctx sdk.Context, collection types.Collection) {
 
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetCollectionKey(creator, collection.Denom)
-	keyDrc := types.GetCollectionsByAddressDRCKey(collection.AddressDRC)
 
 	// write only creator address and denom to the main record
 	bz := k.cdc.MustMarshalLengthPrefixed(&types.Collection{
@@ -49,7 +48,6 @@ func (k *Keeper) SetCollection(ctx sdk.Context, collection types.Collection) {
 		Denom:   collection.Denom,
 	})
 	store.Set(key, bz)
-	store.Set(keyDrc, bz)
 
 	// write collection counter separately
 	k.setCollectionCounter(ctx, creator, collection.Denom, types.CollectionCounter{

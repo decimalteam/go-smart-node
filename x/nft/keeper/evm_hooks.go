@@ -88,7 +88,7 @@ func (k *Keeper) PostTxProcessing(
 				_ = nftContractCenter.UnpackIntoInterface(&nftCreated, eventCenterByID.Name, log.Data)
 				fmt.Println(nftCreated)
 				// create NFT collection
-				creatorAddress, _ := types.GetDecimalAddressFromHex(contractNftCenter)
+				creatorAddress, _ := types.GetDecimalAddressFromHex(nftCreated.TokenAddress.Hex())
 				collection := nfttypes.Collection{
 					Creator:    creatorAddress.String(),
 					Denom:      nftCreated.Nft.Symbol,
@@ -99,7 +99,6 @@ func (k *Keeper) PostTxProcessing(
 				}
 				// write collection with it's counter
 				k.SetCollection(ctx, collection)
-				fmt.Println(collection)
 			}
 		}
 		//eventCoinByID, errEvent := coinContract.EventByID(log.Topics[0])
