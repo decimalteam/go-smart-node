@@ -81,9 +81,6 @@ func (k *Keeper) PostTxProcessing(
 	//var tokenUpdated token.TokenReserveUpdated
 	//
 	for _, log := range recipient.Logs {
-		if log.Address.String() != contractNftCenter {
-			continue
-		}
 		eventCenterByID, errEvent := nftContractCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
 			if eventCenterByID.Name == "NFTCreated" {
