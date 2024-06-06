@@ -34,7 +34,6 @@ type DecimalNFTCenterNFT struct {
 	TokenOwner common.Address
 	Symbol     string
 	Name       string
-	BaseURI    string
 	Refundable bool
 }
 
@@ -46,7 +45,7 @@ type NFTState struct {
 
 // NftCenterMetaData contains all meta data concerning the NftCenter contract.
 var NftCenterMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"}],\"name\":\"AddressEmptyCode\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AlreadyDeployed\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\"}],\"name\":\"ERC1967InvalidImplementation\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ERC1967NonPayable\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAllowMint\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialMint\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidPayloadLength\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidToken\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oldContract\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newContract\",\"type\":\"address\"}],\"name\":\"ContractUpgraded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oldContract\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newContract\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"enumNFTType\",\"name\":\"nftType\",\"type\":\"uint8\"}],\"name\":\"ContractUpgradedNFT\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"enumNFTType\",\"name\":\"nftType\",\"type\":\"uint8\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenOwner\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"baseURI\",\"type\":\"string\"},{\"internalType\":\"bool\",\"name\":\"refundable\",\"type\":\"bool\"}],\"indexed\":false,\"internalType\":\"structDecimalNFTCenter.NFT\",\"name\":\"nft\",\"type\":\"tuple\"}],\"name\":\"NFTCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\"}],\"name\":\"Upgraded\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"MIN_RESERVE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enumNFTType\",\"name\":\"nftType\",\"type\":\"uint8\"}],\"name\":\"beacon\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"checkToken\",\"outputs\":[],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenOwner\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"baseURI\",\"type\":\"string\"},{\"internalType\":\"bool\",\"name\":\"refundable\",\"type\":\"bool\"}],\"internalType\":\"structDecimalNFTCenter.NFT\",\"name\":\"meta\",\"type\":\"tuple\"}],\"name\":\"createERC1155\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenOwner\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"baseURI\",\"type\":\"string\"},{\"internalType\":\"bool\",\"name\":\"refundable\",\"type\":\"bool\"}],\"internalType\":\"structDecimalNFTCenter.NFT\",\"name\":\"meta\",\"type\":\"tuple\"}],\"name\":\"createERC721\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getContractCenter\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getImplementation\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"}],\"name\":\"getNftState\",\"outputs\":[{\"components\":[{\"internalType\":\"bool\",\"name\":\"active\",\"type\":\"bool\"},{\"internalType\":\"enumNFTType\",\"name\":\"nftType\",\"type\":\"uint8\"}],\"internalType\":\"structNFTState\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enumNFTType\",\"name\":\"nftType\",\"type\":\"uint8\"}],\"name\":\"implementation\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"addressContractCenter\",\"type\":\"address\"}],\"name\":\"setContractCenter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImplementation\",\"type\":\"address\"}],\"name\":\"upgrade\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newNFTImplementation\",\"type\":\"address\"},{\"internalType\":\"enumNFTType\",\"name\":\"nftType\",\"type\":\"uint8\"}],\"name\":\"upgradeNFT\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"}],\"name\":\"AddressEmptyCode\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AlreadyDeployed\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\"}],\"name\":\"ERC1967InvalidImplementation\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ERC1967NonPayable\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAllowMint\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialMint\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidPayloadLength\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidToken\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oldContract\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newContract\",\"type\":\"address\"}],\"name\":\"ContractUpgraded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oldContract\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newContract\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"enumNFTType\",\"name\":\"nftType\",\"type\":\"uint8\"}],\"name\":\"ContractUpgradedNFT\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"enumNFTType\",\"name\":\"nftType\",\"type\":\"uint8\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenOwner\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"bool\",\"name\":\"refundable\",\"type\":\"bool\"}],\"indexed\":false,\"internalType\":\"structDecimalNFTCenter.NFT\",\"name\":\"nft\",\"type\":\"tuple\"}],\"name\":\"NFTCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\"}],\"name\":\"Upgraded\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"MIN_RESERVE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enumNFTType\",\"name\":\"nftType\",\"type\":\"uint8\"}],\"name\":\"beacon\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"checkToken\",\"outputs\":[],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenOwner\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"bool\",\"name\":\"refundable\",\"type\":\"bool\"}],\"internalType\":\"structDecimalNFTCenter.NFT\",\"name\":\"meta\",\"type\":\"tuple\"}],\"name\":\"createERC1155\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenOwner\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"bool\",\"name\":\"refundable\",\"type\":\"bool\"}],\"internalType\":\"structDecimalNFTCenter.NFT\",\"name\":\"meta\",\"type\":\"tuple\"}],\"name\":\"createERC721\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getContractCenter\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getImplementation\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"}],\"name\":\"getNftState\",\"outputs\":[{\"components\":[{\"internalType\":\"bool\",\"name\":\"active\",\"type\":\"bool\"},{\"internalType\":\"enumNFTType\",\"name\":\"nftType\",\"type\":\"uint8\"}],\"internalType\":\"structNFTState\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enumNFTType\",\"name\":\"nftType\",\"type\":\"uint8\"}],\"name\":\"implementation\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"addressContractCenter\",\"type\":\"address\"}],\"name\":\"setContractCenter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImplementation\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"upgrade\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newNFTImplementation\",\"type\":\"address\"},{\"internalType\":\"enumNFTType\",\"name\":\"nftType\",\"type\":\"uint8\"}],\"name\":\"upgradeNFT\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}]",
 }
 
 // NftCenterABI is the input ABI used to generate the binding from.
@@ -441,44 +440,44 @@ func (_NftCenter *NftCenterCallerSession) Owner() (common.Address, error) {
 	return _NftCenter.Contract.Owner(&_NftCenter.CallOpts)
 }
 
-// CreateERC1155 is a paid mutator transaction binding the contract method 0xdded1bd1.
+// CreateERC1155 is a paid mutator transaction binding the contract method 0x969a269d.
 //
-// Solidity: function createERC1155((address,string,string,string,bool) meta) returns(address)
+// Solidity: function createERC1155((address,string,string,bool) meta) returns(address)
 func (_NftCenter *NftCenterTransactor) CreateERC1155(opts *bind.TransactOpts, meta DecimalNFTCenterNFT) (*types.Transaction, error) {
 	return _NftCenter.contract.Transact(opts, "createERC1155", meta)
 }
 
-// CreateERC1155 is a paid mutator transaction binding the contract method 0xdded1bd1.
+// CreateERC1155 is a paid mutator transaction binding the contract method 0x969a269d.
 //
-// Solidity: function createERC1155((address,string,string,string,bool) meta) returns(address)
+// Solidity: function createERC1155((address,string,string,bool) meta) returns(address)
 func (_NftCenter *NftCenterSession) CreateERC1155(meta DecimalNFTCenterNFT) (*types.Transaction, error) {
 	return _NftCenter.Contract.CreateERC1155(&_NftCenter.TransactOpts, meta)
 }
 
-// CreateERC1155 is a paid mutator transaction binding the contract method 0xdded1bd1.
+// CreateERC1155 is a paid mutator transaction binding the contract method 0x969a269d.
 //
-// Solidity: function createERC1155((address,string,string,string,bool) meta) returns(address)
+// Solidity: function createERC1155((address,string,string,bool) meta) returns(address)
 func (_NftCenter *NftCenterTransactorSession) CreateERC1155(meta DecimalNFTCenterNFT) (*types.Transaction, error) {
 	return _NftCenter.Contract.CreateERC1155(&_NftCenter.TransactOpts, meta)
 }
 
-// CreateERC721 is a paid mutator transaction binding the contract method 0x7ec4900d.
+// CreateERC721 is a paid mutator transaction binding the contract method 0x976d659c.
 //
-// Solidity: function createERC721((address,string,string,string,bool) meta) returns(address)
+// Solidity: function createERC721((address,string,string,bool) meta) returns(address)
 func (_NftCenter *NftCenterTransactor) CreateERC721(opts *bind.TransactOpts, meta DecimalNFTCenterNFT) (*types.Transaction, error) {
 	return _NftCenter.contract.Transact(opts, "createERC721", meta)
 }
 
-// CreateERC721 is a paid mutator transaction binding the contract method 0x7ec4900d.
+// CreateERC721 is a paid mutator transaction binding the contract method 0x976d659c.
 //
-// Solidity: function createERC721((address,string,string,string,bool) meta) returns(address)
+// Solidity: function createERC721((address,string,string,bool) meta) returns(address)
 func (_NftCenter *NftCenterSession) CreateERC721(meta DecimalNFTCenterNFT) (*types.Transaction, error) {
 	return _NftCenter.Contract.CreateERC721(&_NftCenter.TransactOpts, meta)
 }
 
-// CreateERC721 is a paid mutator transaction binding the contract method 0x7ec4900d.
+// CreateERC721 is a paid mutator transaction binding the contract method 0x976d659c.
 //
-// Solidity: function createERC721((address,string,string,string,bool) meta) returns(address)
+// Solidity: function createERC721((address,string,string,bool) meta) returns(address)
 func (_NftCenter *NftCenterTransactorSession) CreateERC721(meta DecimalNFTCenterNFT) (*types.Transaction, error) {
 	return _NftCenter.Contract.CreateERC721(&_NftCenter.TransactOpts, meta)
 }
@@ -567,25 +566,25 @@ func (_NftCenter *NftCenterTransactorSession) TransferOwnership(newOwner common.
 	return _NftCenter.Contract.TransferOwnership(&_NftCenter.TransactOpts, newOwner)
 }
 
-// Upgrade is a paid mutator transaction binding the contract method 0x0900f010.
+// Upgrade is a paid mutator transaction binding the contract method 0xc987336c.
 //
-// Solidity: function upgrade(address newImplementation) returns()
-func (_NftCenter *NftCenterTransactor) Upgrade(opts *bind.TransactOpts, newImplementation common.Address) (*types.Transaction, error) {
-	return _NftCenter.contract.Transact(opts, "upgrade", newImplementation)
+// Solidity: function upgrade(address newImplementation, bytes data) returns()
+func (_NftCenter *NftCenterTransactor) Upgrade(opts *bind.TransactOpts, newImplementation common.Address, data []byte) (*types.Transaction, error) {
+	return _NftCenter.contract.Transact(opts, "upgrade", newImplementation, data)
 }
 
-// Upgrade is a paid mutator transaction binding the contract method 0x0900f010.
+// Upgrade is a paid mutator transaction binding the contract method 0xc987336c.
 //
-// Solidity: function upgrade(address newImplementation) returns()
-func (_NftCenter *NftCenterSession) Upgrade(newImplementation common.Address) (*types.Transaction, error) {
-	return _NftCenter.Contract.Upgrade(&_NftCenter.TransactOpts, newImplementation)
+// Solidity: function upgrade(address newImplementation, bytes data) returns()
+func (_NftCenter *NftCenterSession) Upgrade(newImplementation common.Address, data []byte) (*types.Transaction, error) {
+	return _NftCenter.Contract.Upgrade(&_NftCenter.TransactOpts, newImplementation, data)
 }
 
-// Upgrade is a paid mutator transaction binding the contract method 0x0900f010.
+// Upgrade is a paid mutator transaction binding the contract method 0xc987336c.
 //
-// Solidity: function upgrade(address newImplementation) returns()
-func (_NftCenter *NftCenterTransactorSession) Upgrade(newImplementation common.Address) (*types.Transaction, error) {
-	return _NftCenter.Contract.Upgrade(&_NftCenter.TransactOpts, newImplementation)
+// Solidity: function upgrade(address newImplementation, bytes data) returns()
+func (_NftCenter *NftCenterTransactorSession) Upgrade(newImplementation common.Address, data []byte) (*types.Transaction, error) {
+	return _NftCenter.Contract.Upgrade(&_NftCenter.TransactOpts, newImplementation, data)
 }
 
 // UpgradeNFT is a paid mutator transaction binding the contract method 0x97451e91.
@@ -1154,9 +1153,9 @@ type NftCenterNFTCreated struct {
 	Raw          types.Log // Blockchain specific contextual infos
 }
 
-// FilterNFTCreated is a free log retrieval operation binding the contract event 0x90f6044530e519155c7f7c84474c4a4fdfb6b203716628919bb7b48908bad236.
+// FilterNFTCreated is a free log retrieval operation binding the contract event 0x80e7e91eab84672429971f005c9d800477ffaaa3de26a1a85269fbdbc45dc465.
 //
-// Solidity: event NFTCreated(address tokenAddress, uint8 indexed nftType, (address,string,string,string,bool) nft)
+// Solidity: event NFTCreated(address tokenAddress, uint8 indexed nftType, (address,string,string,bool) nft)
 func (_NftCenter *NftCenterFilterer) FilterNFTCreated(opts *bind.FilterOpts, nftType []uint8) (*NftCenterNFTCreatedIterator, error) {
 
 	var nftTypeRule []interface{}
@@ -1171,9 +1170,9 @@ func (_NftCenter *NftCenterFilterer) FilterNFTCreated(opts *bind.FilterOpts, nft
 	return &NftCenterNFTCreatedIterator{contract: _NftCenter.contract, event: "NFTCreated", logs: logs, sub: sub}, nil
 }
 
-// WatchNFTCreated is a free log subscription operation binding the contract event 0x90f6044530e519155c7f7c84474c4a4fdfb6b203716628919bb7b48908bad236.
+// WatchNFTCreated is a free log subscription operation binding the contract event 0x80e7e91eab84672429971f005c9d800477ffaaa3de26a1a85269fbdbc45dc465.
 //
-// Solidity: event NFTCreated(address tokenAddress, uint8 indexed nftType, (address,string,string,string,bool) nft)
+// Solidity: event NFTCreated(address tokenAddress, uint8 indexed nftType, (address,string,string,bool) nft)
 func (_NftCenter *NftCenterFilterer) WatchNFTCreated(opts *bind.WatchOpts, sink chan<- *NftCenterNFTCreated, nftType []uint8) (event.Subscription, error) {
 
 	var nftTypeRule []interface{}
@@ -1213,9 +1212,9 @@ func (_NftCenter *NftCenterFilterer) WatchNFTCreated(opts *bind.WatchOpts, sink 
 	}), nil
 }
 
-// ParseNFTCreated is a log parse operation binding the contract event 0x90f6044530e519155c7f7c84474c4a4fdfb6b203716628919bb7b48908bad236.
+// ParseNFTCreated is a log parse operation binding the contract event 0x80e7e91eab84672429971f005c9d800477ffaaa3de26a1a85269fbdbc45dc465.
 //
-// Solidity: event NFTCreated(address tokenAddress, uint8 indexed nftType, (address,string,string,string,bool) nft)
+// Solidity: event NFTCreated(address tokenAddress, uint8 indexed nftType, (address,string,string,bool) nft)
 func (_NftCenter *NftCenterFilterer) ParseNFTCreated(log types.Log) (*NftCenterNFTCreated, error) {
 	event := new(NftCenterNFTCreated)
 	if err := _NftCenter.contract.UnpackLog(event, "NFTCreated", log); err != nil {
