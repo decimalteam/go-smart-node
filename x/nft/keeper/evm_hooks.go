@@ -83,6 +83,7 @@ func (k *Keeper) PostTxProcessing(
 	for _, log := range recipient.Logs {
 		eventCenterByID, errEvent := nftContractCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
+			fmt.Println(eventCenterByID.Name)
 			if eventCenterByID.Name == "NFTCreated" {
 				_ = nftContractCenter.UnpackIntoInterface(&nftCreated, eventCenterByID.Name, log.Data)
 				fmt.Println(nftCreated)
@@ -98,6 +99,7 @@ func (k *Keeper) PostTxProcessing(
 				}
 				// write collection with it's counter
 				k.SetCollection(ctx, collection)
+				fmt.Println(collection)
 			}
 		}
 		//eventCoinByID, errEvent := coinContract.EventByID(log.Topics[0])
