@@ -183,11 +183,6 @@
             "type": "string"
           },
           {
-            "internalType": "string",
-            "name": "baseURI",
-            "type": "string"
-          },
-          {
             "internalType": "bool",
             "name": "refundable",
             "type": "bool"
@@ -299,11 +294,6 @@
             "type": "string"
           },
           {
-            "internalType": "string",
-            "name": "baseURI",
-            "type": "string"
-          },
-          {
             "internalType": "bool",
             "name": "refundable",
             "type": "bool"
@@ -342,11 +332,6 @@
           {
             "internalType": "string",
             "name": "name",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "baseURI",
             "type": "string"
           },
           {
@@ -506,6 +491,11 @@
         "internalType": "address",
         "name": "newImplementation",
         "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
       }
     ],
     "name": "upgrade",
