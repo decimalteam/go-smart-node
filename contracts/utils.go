@@ -1,7 +1,7 @@
 package contracts
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/contracts/tokenCenter"
+	"bitbucket.org/decimalteam/go-smart-node/contracts/center"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"fmt"
@@ -52,7 +52,7 @@ func GetAddressFromContractCenter(
 	evmKeeper *evmkeeper.Keeper,
 	nameOfAddress string,
 ) (string, error) {
-	contractCenter, _ := tokenCenter.TokenMetaData.GetAbi()
+	contractCenter, _ := center.CenterMetaData.GetAbi()
 	contract := common.HexToAddress(GetContractCenter(ctx.ChainID()))
 	methodCall := "getAddress"
 	// Address token center
