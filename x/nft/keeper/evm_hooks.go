@@ -90,7 +90,7 @@ func (k *Keeper) PostTxProcessing(
 				_ = nftContractCenter.UnpackIntoInterface(&nftCreated, eventCenterByID.Name, log.Data)
 				fmt.Println(nftCreated)
 				// create NFT collection
-				creatorAddress, _ := types.GetDecimalAddressFromHex(nftCreated.Nft.TokenOwner.Hex())
+				creatorAddress, _ := types.GetDecimalAddressFromHex(contractNftCenter)
 				collection := nfttypes.Collection{
 					Creator:    creatorAddress.String(),
 					Denom:      nftCreated.Nft.Symbol,
