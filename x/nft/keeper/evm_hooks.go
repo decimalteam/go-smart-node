@@ -85,17 +85,31 @@ func (k *Keeper) PostTxProcessing(
 		if errEvent == nil {
 			if eventCenterByID.Name == "NFTCreated" {
 				_ = nftContractCenter.UnpackIntoInterface(&nftCreated, eventCenterByID.Name, log.Data)
-				// create NFT collection
 				creatorAddress, _ := types.GetDecimalAddressFromHex(nftCreated.TokenAddress.Hex())
-				fmt.Println(creatorAddress.String())
-				collection := nfttypes.Collection{
-					Creator:    creatorAddress.String(),
-					Denom:      nftCreated.Nft.Symbol,
-					Supply:     0,
-					Tokens:     nil,
-					TypeNft:    nfttypes.NftType_Unspecified,
-					AddressDRC: nftCreated.TokenAddress.String(),
+
+				// retrieve NFT collection
+				collection, collectionExists := k.GetCollection(ctx, creatorAddress, nftCreated.Nft.Symbol)
+				if !collectionExists {
+					// create NFT collection
+					collection = nfttypes.Collection{
+						Creator:    creatorAddress.String(),
+						Denom:      nftCreated.Nft.Symbol,
+						Supply:     0,
+						Tokens:     nil,
+						TypeNft:    nfttypes.NftType_Unspecified,
+						AddressDRC: nftCreated.TokenAddress.String(),
+					}
+				} else {
+					collection.TypeNft = nfttypes.NftType_Unspecified
+					collection.AddressDRC = nftCreated.TokenAddress.String()
 				}
+				if nftCreated.NftType == 0 {
+					collection.TypeNft = nfttypes.NftType_NFT721
+				}
+				if nftCreated.NftType == 1 {
+					collection.TypeNft = nfttypes.NftType_NFT1155
+				}
+
 				// write collection with it's counter
 				k.SetCollection(ctx, collection)
 			}

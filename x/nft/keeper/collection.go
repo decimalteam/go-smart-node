@@ -44,8 +44,10 @@ func (k *Keeper) SetCollection(ctx sdk.Context, collection types.Collection) {
 
 	// write only creator address and denom to the main record
 	bz := k.cdc.MustMarshalLengthPrefixed(&types.Collection{
-		Creator: collection.Creator,
-		Denom:   collection.Denom,
+		Creator:    collection.Creator,
+		Denom:      collection.Denom,
+		TypeNft:    collection.TypeNft,
+		AddressDRC: collection.AddressDRC,
 	})
 	store.Set(key, bz)
 

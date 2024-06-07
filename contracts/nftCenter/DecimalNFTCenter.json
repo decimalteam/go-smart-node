@@ -160,7 +160,7 @@
         "type": "address"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "enum NFTType",
         "name": "nftType",
         "type": "uint8"

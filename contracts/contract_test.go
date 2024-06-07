@@ -34,7 +34,7 @@ func TestInitCmd(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	recipient, err := web3Client.TransactionReceipt(context.Background(), common.HexToHash("0x0f15aec191d9673695b678fbcfe90a07750b9fc5bd2f6a35b8a5f05222024ebf"))
+	recipient, err := web3Client.TransactionReceipt(context.Background(), common.HexToHash("0xc8ebf0e59b04b48770400b775c5febf950096453ee4b1dd952717ee4fb5f7bc0"))
 	if err != nil {
 		return
 	}
@@ -50,6 +50,7 @@ func TestInitCmd(t *testing.T) {
 		if errEvent == nil {
 			if eventCenterByID.Name == "NFTCreated" {
 				_ = nftContractCenter.UnpackIntoInterface(&tokenAddress, eventCenterByID.Name, log.Data)
+				//tokenAddress.TokenAddress = common.HexToAddress(log.Topics[1].Hex())
 				fmt.Println(tokenAddress)
 				//err = k.CreateCoinEvent(ctx, tokenUpdated.NewReserve, tokenAddress.Meta, tokenAddress.TokenAddress.String())
 				//if err != nil {
