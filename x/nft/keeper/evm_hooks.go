@@ -83,12 +83,11 @@ func (k *Keeper) PostTxProcessing(
 	for _, log := range recipient.Logs {
 		eventCenterByID, errEvent := nftContractCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
-			fmt.Println(eventCenterByID.Name)
 			if eventCenterByID.Name == "NFTCreated" {
 				_ = nftContractCenter.UnpackIntoInterface(&nftCreated, eventCenterByID.Name, log.Data)
-				fmt.Println(nftCreated)
 				// create NFT collection
 				creatorAddress, _ := types.GetDecimalAddressFromHex(nftCreated.TokenAddress.Hex())
+				fmt.Println(creatorAddress.String())
 				collection := nfttypes.Collection{
 					Creator:    creatorAddress.String(),
 					Denom:      nftCreated.Nft.Symbol,
@@ -101,13 +100,6 @@ func (k *Keeper) PostTxProcessing(
 				k.SetCollection(ctx, collection)
 			}
 		}
-		//eventCoinByID, errEvent := coinContract.EventByID(log.Topics[0])
-		//if errEvent == nil {
-		//	if eventCoinByID.Name == "ReserveUpdated" {
-		//		_ = contracts.UnpackInputsData(&tokenUpdated, eventCoinByID.Inputs, log.Data)
-		//		_ = k.UpdateCoinFromEvent(ctx, tokenUpdated, log.Address.String())
-		//	}
-		//}
 	}
 
 	//methodId, err := coinCenter.MethodById(msg.Data)
