@@ -94,7 +94,7 @@ func (k *Keeper) PostTxProcessing(
 					Supply:     0,
 					Tokens:     nil,
 					TypeNft:    nfttypes.NftType_Unspecified,
-					AddressDRC: nftCreated.TokenAddress.Hex(),
+					AddressDRC: nftCreated.TokenAddress.String(),
 				}
 				// write collection with it's counter
 				k.SetCollection(ctx, collection)
