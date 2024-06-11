@@ -25,6 +25,7 @@ func GetBaseAppWithCustomKeeper(t *testing.T) (*codec.LegacyAmino, *app.DSC, sdk
 		dsc.GetSubspace(nfttypes.ModuleName),
 		dsc.BankKeeper,
 		&dsc.EvmKeeper,
+		&dsc.CoinKeeper,
 	)
 
 	return codec.NewLegacyAmino(), dsc, ctx
