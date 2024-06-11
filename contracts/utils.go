@@ -9,6 +9,7 @@ import (
 	evmkeeper "github.com/decimalteam/ethermint/x/evm/keeper"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
 )
 
 // evm coin center events
@@ -16,6 +17,7 @@ const (
 	NameOfSlugForGetAddressTokenCenter     = "token-center"
 	NameOfSlugForGetAddressNftCenter       = "nft-center"
 	NameOfSlugForGetAddressDelegation      = "delegation"
+	NameOfSlugForGetAddressDelegationNft   = "delegation-nft"
 	NameOfSlugForGetAddressWDEL            = "wdel"
 	NameOfSlugForGetAddressMasterValidator = "master-validator"
 	EventChangeTokenCenter                 = "ContractAdded"
@@ -45,6 +47,22 @@ func UnpackInputsData(v interface{}, inputs abi.Arguments, data []byte) error {
 		return err
 	}
 	return inputs.Copy(v, unpacked)
+}
+
+// UnpackLog unpacks a retrieved log into the provided output structure.
+func UnpackLog(abiUsed *abi.ABI, out interface{}, event string, log *ethTypes.Log) error {
+	if len(log.Data) > 0 {
+		if err := abiUsed.UnpackIntoInterface(out, event, log.Data); err != nil {
+			return err
+		}
+	}
+	var indexed abi.Arguments
+	for _, arg := range abiUsed.Events[event].Inputs {
+		if arg.Indexed {
+			indexed = append(indexed, arg)
+		}
+	}
+	return abi.ParseTopics(out, indexed, log.Topics[1:])
 }
 
 func GetAddressFromContractCenter(

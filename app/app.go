@@ -476,6 +476,7 @@ func NewDSC(
 		app.GetSubspace(nfttypes.ModuleName),
 		app.BankKeeper,
 		&app.EvmKeeper,
+		&app.CoinKeeper,
 	)
 	app.MultisigKeeper = *multisigkeeper.NewKeeper(
 		appCodec,

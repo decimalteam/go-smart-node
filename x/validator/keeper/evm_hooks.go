@@ -6,6 +6,7 @@ package keeper
 import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/delegation"
+	"bitbucket.org/decimalteam/go-smart-node/contracts/delegationNft"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/validator"
 	types2 "bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
@@ -67,12 +68,12 @@ func (k Keeper) PostTxProcessing(
 	//	return nil
 	//}
 
-	addressDelegation, _ := k.QueryAddressDelegation(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
-
-	fmt.Print(addressDelegation)
+	addressDelegation, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
+	addressDelegationNft, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegationNft)
 
 	validatorMaster, _ := validator.ValidatorMetaData.GetAbi()
 	delegatorCenter, _ := delegation.DelegationMetaData.GetAbi()
+	delegatorNftCenter, _ := delegationNft.DelegationNftMetaData.GetAbi()
 
 	// this var is only for new token create from token center
 	var tokenDelegate delegation.DelegationStaked
@@ -112,7 +113,7 @@ func (k Keeper) PostTxProcessing(
 			}
 		}
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
-		if errEvent == nil {
+		if errEvent == nil && log.Address.String() == addressDelegation {
 			if eventDelegationByID.Name == "StakedUpdated" {
 				_ = delegatorCenter.UnpackIntoInterface(&tokenDelegate, eventDelegationByID.Name, log.Data)
 				fmt.Println(tokenDelegate)
@@ -132,6 +133,34 @@ func (k Keeper) PostTxProcessing(
 			}
 			if eventDelegationByID.Name == "RequestTransfer" {
 				_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationByID.Name, log.Data)
+				fmt.Println(tokenRedelegation)
+				err := k.RequestTransfer(ctx, tokenRedelegation)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		eventDelegationNftByID, errEvent := delegatorNftCenter.EventByID(log.Topics[0])
+		if errEvent == nil && log.Address.String() == addressDelegationNft {
+			if eventDelegationNftByID.Name == "StakedUpdated" {
+				_ = delegatorCenter.UnpackIntoInterface(&tokenDelegate, eventDelegationNftByID.Name, log.Data)
+				fmt.Println(tokenDelegate)
+				err := k.Staked(ctx, tokenDelegate)
+				if err != nil {
+					return err
+				}
+			}
+
+			if eventDelegationNftByID.Name == "RequestWithdraw" {
+				_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationNftByID.Name, log.Data)
+				fmt.Println(tokenUndelegate)
+				err := k.RequestWithdraw(ctx, tokenUndelegate)
+				if err != nil {
+					return err
+				}
+			}
+			if eventDelegationNftByID.Name == "RequestTransfer" {
+				_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationNftByID.Name, log.Data)
 				fmt.Println(tokenRedelegation)
 				err := k.RequestTransfer(ctx, tokenRedelegation)
 				if err != nil {

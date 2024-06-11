@@ -4,6 +4,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts/center"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/nft721"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/nftCenter"
+	"bitbucket.org/decimalteam/go-smart-node/contracts/token"
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -34,15 +35,17 @@ func TestInitCmd(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	recipient, err := web3Client.TransactionReceipt(context.Background(), common.HexToHash("0xc8ebf0e59b04b48770400b775c5febf950096453ee4b1dd952717ee4fb5f7bc0"))
+	recipient, err := web3Client.TransactionReceipt(context.Background(), common.HexToHash("0xbd6a379f8cf44bc558db3cd0046860a7c674a6375d8c17d84f54a4857363c854"))
 	if err != nil {
 		return
 	}
 
 	nftContractCenter, _ := nftCenter.NftCenterMetaData.GetAbi()
 	nftContract721, _ := nft721.Nft721MetaData.GetAbi()
+	tokenContract, _ := token.TokenMetaData.GetAbi()
 
 	var tokenAddress nftCenter.NftCenterNFTCreated
+	var tokenReserve token.TokenTransfer
 	var nft721Mint nft721.Nft721Transfer
 
 	for _, log := range recipient.Logs {
@@ -58,12 +61,27 @@ func TestInitCmd(t *testing.T) {
 				//}
 			}
 		}
+		eventTokenByID, errEvent := tokenContract.EventByID(log.Topics[0])
+		if errEvent == nil {
+			if eventTokenByID.Name == "Transfer" {
+
+				_ = UnpackLog(tokenContract, &tokenReserve, eventTokenByID.Name, log)
+				fmt.Println(tokenReserve)
+				//err = k.CreateCoinEvent(ctx, tokenUpdated.NewReserve, tokenAddress.Meta, tokenAddress.TokenAddress.String())
+				//if err != nil {
+				//	return status.Error(codes.Internal, err.Error())
+				//}
+			}
+		}
 		event721ByID, errEvent := nftContract721.EventByID(log.Topics[0])
 		if errEvent == nil {
 			if event721ByID.Name == "Transfer" {
-				_ = nftContract721.UnpackIntoInterface(&nft721Mint, event721ByID.Name, log.Data)
-				nft721Mint.From = common.HexToAddress(log.Topics[1].Hex())
-				nft721Mint.To = common.HexToAddress(log.Topics[2].Hex())
+				_ = UnpackLog(nftContract721, &nft721Mint, event721ByID.Name, log)
+				//nft721Mint.From = common.HexToAddress(log.Topics[1].Hex())
+				//nft721Mint.To = common.HexToAddress(log.Topics[2].Hex())
+				//
+				//_ = abi.ParseTopics(nft721Mint, indexed, log.Topics[1:])
+
 				fmt.Println(log.Topics[0].Hex())
 				fmt.Println(log.Topics[1].Hex())
 				fmt.Println(log.Topics[2].Hex())
