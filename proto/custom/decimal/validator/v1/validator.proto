@@ -159,7 +159,8 @@ message Stake {
   repeated uint32 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
 
   // creation_height defines the height at which the redelegation took place.
-  int64 hold_height = 5;
+  int64 hold_start_time = 5;
+  int64 hold_end_time = 6;
 }
 
 // Delegation represents the bond with coins/NTFs held by an account.
