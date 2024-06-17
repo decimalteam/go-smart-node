@@ -2,6 +2,7 @@ package contracts
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts/center"
+	"bitbucket.org/decimalteam/go-smart-node/contracts/delegation"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/nft721"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/nftCenter"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/token"
@@ -35,11 +36,12 @@ func TestInitCmd(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	recipient, err := web3Client.TransactionReceipt(context.Background(), common.HexToHash("0xbd6a379f8cf44bc558db3cd0046860a7c674a6375d8c17d84f54a4857363c854"))
+	recipient, err := web3Client.TransactionReceipt(context.Background(), common.HexToHash("0xd6e7ec3aa6001cd210b6f0186bcc37e06d085f01f9a1cae9caf8239078b5a49f"))
 	if err != nil {
 		return
 	}
 
+	tokenDelegation, _ := delegation.DelegationMetaData.GetAbi()
 	nftContractCenter, _ := nftCenter.NftCenterMetaData.GetAbi()
 	nftContract721, _ := nft721.Nft721MetaData.GetAbi()
 	tokenContract, _ := token.TokenMetaData.GetAbi()
@@ -47,8 +49,22 @@ func TestInitCmd(t *testing.T) {
 	var tokenAddress nftCenter.NftCenterNFTCreated
 	var tokenReserve token.TokenTransfer
 	var nft721Mint nft721.Nft721Transfer
+	var tokenDelegationUser delegation.DelegationStakeUpdated
 
 	for _, log := range recipient.Logs {
+		eventDelegationByID, errEvent := tokenDelegation.EventByID(log.Topics[0])
+		if errEvent == nil {
+			if eventDelegationByID.Name == "StakeUpdated" {
+				_ = UnpackLog(tokenDelegation, &tokenDelegationUser, eventDelegationByID.Name, log)
+				//tokenAddress.TokenAddress = common.HexToAddress(log.Topics[1].Hex())
+				fmt.Println(tokenDelegationUser)
+				fmt.Println(tokenDelegationUser)
+				//err = k.CreateCoinEvent(ctx, tokenUpdated.NewReserve, tokenAddress.Meta, tokenAddress.TokenAddress.String())
+				//if err != nil {
+				//	return status.Error(codes.Internal, err.Error())
+				//}
+			}
+		}
 		eventCenterByID, errEvent := nftContractCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
 			if eventCenterByID.Name == "NFTCreated" {

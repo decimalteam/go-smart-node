@@ -25,6 +25,7 @@ import (
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
+	"time"
 )
 
 var _ evmtypes.EvmHooks = Hooks{}
@@ -76,7 +77,7 @@ func (k Keeper) PostTxProcessing(
 	delegatorNftCenter, _ := delegationNft.DelegationNftMetaData.GetAbi()
 
 	// this var is only for new token create from token center
-	var tokenDelegate delegation.DelegationStaked
+	var tokenDelegate delegation.DelegationStakeUpdated
 	var tokenUndelegate delegation.DelegationWithdrawRequest
 	var tokenRedelegation delegation.DelegationTransferRequest
 	var newValidator validator.ValidatorValidatorAdded
@@ -115,7 +116,7 @@ func (k Keeper) PostTxProcessing(
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil && log.Address.String() == addressDelegation {
 			if eventDelegationByID.Name == "StakedUpdated" {
-				_ = delegatorCenter.UnpackIntoInterface(&tokenDelegate, eventDelegationByID.Name, log.Data)
+				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
 				fmt.Println(tokenDelegate)
 				err := k.Staked(ctx, tokenDelegate)
 				if err != nil {
@@ -182,7 +183,7 @@ func (k Keeper) PostTxProcessing(
 	return nil
 }
 
-func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStaked) error {
+func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpdated) error {
 
 	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, stakeData.Stake.Token.String())
 	if err != nil {
@@ -190,6 +191,11 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStaked) e
 	}
 
 	stake := types.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(stakeData.Stake.Amount)})
+
+	if stakeData.Stake.HoldTimestamp != nil {
+		stake.HoldStartTime = time.Now().Unix()
+		stake.HoldEndTime = stakeData.Stake.HoldTimestamp.Int64()
+	}
 
 	delegatorAddress, _ := types2.GetDecimalAddressFromHex(stakeData.Stake.Delegator.String())
 
