@@ -251,7 +251,7 @@
           },
           {
             "internalType": "address",
-            "name": "tokenOwner",
+            "name": "creator",
             "type": "address"
           },
           {
@@ -618,7 +618,7 @@
           },
           {
             "internalType": "address",
-            "name": "tokenOwner",
+            "name": "creator",
             "type": "address"
           },
           {
@@ -807,6 +807,11 @@
         "internalType": "address",
         "name": "newImplementation",
         "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
       }
     ],
     "name": "upgrade",

@@ -160,7 +160,7 @@
         "type": "address"
       },
       {
-        "indexed": false,
+        "indexed": true,
         "internalType": "enum NFTType",
         "name": "nftType",
         "type": "uint8"
@@ -169,7 +169,7 @@
         "components": [
           {
             "internalType": "address",
-            "name": "tokenOwner",
+            "name": "creator",
             "type": "address"
           },
           {
@@ -180,6 +180,11 @@
           {
             "internalType": "string",
             "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "contractURI",
             "type": "string"
           },
           {
@@ -280,7 +285,7 @@
         "components": [
           {
             "internalType": "address",
-            "name": "tokenOwner",
+            "name": "creator",
             "type": "address"
           },
           {
@@ -291,6 +296,11 @@
           {
             "internalType": "string",
             "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "contractURI",
             "type": "string"
           },
           {
@@ -321,7 +331,7 @@
         "components": [
           {
             "internalType": "address",
-            "name": "tokenOwner",
+            "name": "creator",
             "type": "address"
           },
           {
@@ -332,6 +342,11 @@
           {
             "internalType": "string",
             "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "contractURI",
             "type": "string"
           },
           {
