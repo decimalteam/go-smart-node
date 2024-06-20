@@ -121,6 +121,7 @@ func (k Keeper) PostTxProcessing(
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
 				fmt.Println("addressDelegation")
 				fmt.Println(log.Address.String())
+				fmt.Println("addressDelegation")
 
 				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
 				if err != nil {
@@ -234,7 +235,10 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 	if err != nil {
 		return err
 	}
-
+	fmt.Println("finish delegation")
+	fmt.Println(delegatorAddress)
+	fmt.Println(validatorCosmos)
+	fmt.Println("finish delegation")
 	return nil
 }
 
