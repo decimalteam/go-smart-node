@@ -71,7 +71,8 @@ func (k Keeper) PostTxProcessing(
 	fmt.Println("validator hook")
 	addressDelegation, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
 	addressDelegationNft, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegationNft)
-
+	fmt.Println(addressDelegation)
+	fmt.Println(addressDelegationNft)
 	validatorMaster, _ := validator.ValidatorMetaData.GetAbi()
 	delegatorCenter, _ := delegation.DelegationMetaData.GetAbi()
 	delegatorNftCenter, _ := delegationNft.DelegationNftMetaData.GetAbi()
@@ -115,6 +116,7 @@ func (k Keeper) PostTxProcessing(
 		}
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
+			fmt.Println(eventDelegationByID.Name)
 			if eventDelegationByID.Name == "StakedUpdated" {
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
 				fmt.Println("tokenDelegate")
