@@ -170,7 +170,7 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 
 	//////////////////////////////////////////////////
 	// 7. call function evm for add Penalty to validator contract
-	masterValidatorAddress, err := k.QueryAddressMasterValidator(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
+	masterValidatorAddress, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressMasterValidator)
 	fmt.Println(err)
 	executePenalty, err := k.ExecuteAddPenalty(ctx, common.HexToAddress(masterValidatorAddress), common.HexToAddress(validator.DRC20Contract), 1)
 	fmt.Println(err)
@@ -178,7 +178,7 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 
 	//////////////////////////////////////////////////
 	// 8. call function evm for burn reserve to coins
-	delegatorAddress, err := k.QueryAddressDelegation(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
+	delegatorAddress, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
 	fmt.Println(err)
 	burnPenaltyTokens, err := k.ExecuteBurnPenaltyTokens(ctx, common.HexToAddress(delegatorAddress), common.HexToAddress(validator.DRC20Contract))
 	fmt.Println(err)
