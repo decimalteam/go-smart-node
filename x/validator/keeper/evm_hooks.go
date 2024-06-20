@@ -117,7 +117,7 @@ func (k Keeper) PostTxProcessing(
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
 			fmt.Println(eventDelegationByID.Name)
-			if eventDelegationByID.Name == "StakedUpdated" {
+			if eventDelegationByID.Name == "StakeUpdated" {
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
 				fmt.Println("tokenDelegate")
 				fmt.Println(tokenDelegate)
