@@ -4,56 +4,13 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/contracts"
-	"bitbucket.org/decimalteam/go-smart-node/contracts/center"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/delegation"
+	"bitbucket.org/decimalteam/go-smart-node/contracts/token"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/validator"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 )
-
-// QueryAddressDelegation returns the data of a deployed ERC20 contract
-func (k *Keeper) QueryAddressDelegation(
-	ctx sdk.Context,
-	contract common.Address,
-) (string, error) {
-
-	contractCenter, _ := center.CenterMetaData.GetAbi()
-	methodCall := "getAddress"
-	// Address token center
-	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, contracts.NameOfSlugForGetAddressDelegation)
-	fmt.Println("data", res, err, contract.Hex())
-	if err != nil {
-		return new(common.Address).Hex(), err
-	}
-	data, err := contractCenter.Unpack(methodCall, res.Ret)
-	if len(data) == 0 {
-		return new(common.Address).Hex(), err
-	}
-	return data[0].(common.Address).String(), err
-}
-
-// QueryAddressMasterValidator returns the data of a deployed ERC20 contract
-func (k *Keeper) QueryAddressMasterValidator(
-	ctx sdk.Context,
-	contract common.Address,
-) (string, error) {
-
-	contractCenter, _ := center.CenterMetaData.GetAbi()
-	methodCall := "getAddress"
-	// Address token center
-	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, contracts.NameOfSlugForGetAddressMasterValidator)
-	if err != nil {
-		return new(common.Address).Hex(), err
-	}
-	data, err := contractCenter.Unpack(methodCall, res.Ret)
-	if len(data) == 0 {
-		return new(common.Address).Hex(), err
-	}
-	return data[0].(common.Address).String(), err
-}
 
 // QueryIfNeedExecuteFinish returns the data of a deployed ERC20 contract
 func (k *Keeper) QueryIfNeedExecuteFinish(
@@ -71,6 +28,24 @@ func (k *Keeper) QueryIfNeedExecuteFinish(
 	data, err := contractDelegation.Unpack(methodCall, res.Ret)
 
 	return data[0].(bool), err
+}
+
+// QuerySymbolToken returns the data of a deployed ERC20 contract
+func (k *Keeper) QuerySymbolToken(
+	ctx sdk.Context,
+	contract common.Address,
+) (string, error) {
+
+	contractDelegation, _ := token.TokenMetaData.GetAbi()
+	methodCall := "symbol"
+	// Address token center
+	res, err := k.evmKeeper.CallEVM(ctx, *contractDelegation, common.Address(types.ModuleAddress), contract, false, methodCall)
+	if err != nil {
+		return new(common.Address).Hex(), err
+	}
+	data, err := contractDelegation.Unpack(methodCall, res.Ret)
+
+	return data[0].(string), err
 }
 
 // QueryOwnerDelegation returns the data of a deployed ERC20 contract
