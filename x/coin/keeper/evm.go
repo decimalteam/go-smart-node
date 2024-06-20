@@ -39,7 +39,7 @@ func (k *Keeper) QueryAddressTokenCenter(
 	contract common.Address,
 ) (string, error) {
 
-	contractCenter, _ := tokenCenter.TokenMetaData.GetAbi()
+	contractCenter, _ := tokenCenter.TokenCenterMetaData.GetAbi()
 	methodCall := "getAddress"
 	// Address token center
 	res, err := k.evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, contracts.NameOfSlugForGetAddressTokenCenter)

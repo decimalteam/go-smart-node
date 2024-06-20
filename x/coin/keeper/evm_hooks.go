@@ -78,7 +78,7 @@ func (k *Keeper) PostTxProcessing(
 	//fmt.Print(err)
 	fmt.Print(contractTokenCenter)
 	//fmt.Print(tokenCenter)
-	tokenContractCenter, _ := tokenCenter.TokenMetaData.GetAbi()
+	tokenContractCenter, _ := tokenCenter.TokenCenterMetaData.GetAbi()
 	coinContract, _ := token.TokenMetaData.GetAbi()
 	addressWDEL, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressWDEL)
 	coinDel, _ := k.GetCoin(ctx, "del")
@@ -89,7 +89,7 @@ func (k *Keeper) PostTxProcessing(
 	}
 
 	// this var is only for new token create from token center
-	var tokenAddress tokenCenter.TokenTokenDeployed
+	var tokenAddress tokenCenter.TokenCenterTokenDeployed
 	var tokenUpdated token.TokenReserveUpdated
 
 	for _, log := range recipient.Logs {
