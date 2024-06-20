@@ -62,6 +62,8 @@ type CoinKeeper interface {
 	IsCoinExists(ctx sdk.Context, denom string) bool
 	IsCoinExistsByDRC(ctx sdk.Context, addressDRC string) bool
 	GetCoinByDRC(ctx sdk.Context, addressDRC string) (coin cointypes.Coin, err error)
+	UpdateCoinDRC(ctx sdk.Context, denom string, addressDRC string) error
+	SetCoin(ctx sdk.Context, coin cointypes.Coin)
 }
 
 type MultisigKeeper interface {

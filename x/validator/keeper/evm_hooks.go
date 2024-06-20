@@ -119,17 +119,19 @@ func (k Keeper) PostTxProcessing(
 			fmt.Println(eventDelegationByID.Name)
 			if eventDelegationByID.Name == "StakeUpdated" {
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
-				fmt.Println("tokenDelegate")
-				fmt.Println(tokenDelegate)
 				fmt.Println("addressDelegation")
-				fmt.Println(addressDelegation)
 				fmt.Println(log.Address.String())
 
 				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
 				if err != nil {
-					fmt.Println(k.QuerySymbolToken(ctx, tokenDelegate.Stake.Token))
+					symbolToken, _ := k.QuerySymbolToken(ctx, tokenDelegate.Stake.Token)
+					coinUpdate, err := k.coinKeeper.GetCoin(ctx, symbolToken)
+					if err == nil {
+						_ = k.coinKeeper.UpdateCoinDRC(ctx, symbolToken, tokenDelegate.Stake.Token.String())
+						coinUpdate.DRC20Contract = tokenDelegate.Stake.Token.String()
+						k.coinKeeper.SetCoin(ctx, coinUpdate)
+					}
 				}
-
 				err = k.Staked(ctx, tokenDelegate)
 				if err != nil {
 					return err
