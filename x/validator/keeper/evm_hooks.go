@@ -127,7 +127,7 @@ func (k Keeper) PostTxProcessing(
 
 				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
 				if err != nil {
-					fmt.Println(k.QuerySymbolToken(ctx, log.Address))
+					fmt.Println(k.QuerySymbolToken(ctx, tokenDelegate.Stake.Token))
 				}
 
 				err = k.Staked(ctx, tokenDelegate)
