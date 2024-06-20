@@ -68,7 +68,7 @@ func (k Keeper) PostTxProcessing(
 	//	// processing txs to pass and
 	//	return nil
 	//}
-
+	fmt.Println("validator hook")
 	addressDelegation, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
 	addressDelegationNft, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegationNft)
 
