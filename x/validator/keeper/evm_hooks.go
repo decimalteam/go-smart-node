@@ -25,6 +25,7 @@ import (
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
+	"strings"
 	"time"
 )
 
@@ -71,6 +72,7 @@ func (k Keeper) PostTxProcessing(
 	fmt.Println("validator hook")
 	addressDelegation, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
 	addressDelegationNft, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegationNft)
+	addressDelegation = strings.ToLower(addressDelegation)
 	fmt.Println(addressDelegation)
 	fmt.Println(addressDelegationNft)
 	validatorMaster, _ := validator.ValidatorMetaData.GetAbi()
@@ -115,7 +117,7 @@ func (k Keeper) PostTxProcessing(
 			}
 		}
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
-		if errEvent == nil && log.Address.String() == addressDelegationNft {
+		if errEvent == nil && strings.ToLower(log.Address.String()) == addressDelegationNft {
 			fmt.Println(eventDelegationByID.Name)
 			if eventDelegationByID.Name == "StakeUpdated" {
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
