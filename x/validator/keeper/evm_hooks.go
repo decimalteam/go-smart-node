@@ -120,7 +120,7 @@ func (k Keeper) PostTxProcessing(
 		fmt.Println("addressDelegation")
 		fmt.Println(log.Address.String())
 		fmt.Println("addressDelegation")
-		if errEvent == nil && strings.ToLower(log.Address.String()) == addressDelegationNft {
+		if errEvent == nil && strings.ToLower(log.Address.String()) == addressDelegation {
 			fmt.Println(eventDelegationByID.Name)
 			if eventDelegationByID.Name == "StakeUpdated" {
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
