@@ -117,6 +117,9 @@ func (k Keeper) PostTxProcessing(
 			}
 		}
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
+		fmt.Println("addressDelegation")
+		fmt.Println(log.Address.String())
+		fmt.Println("addressDelegation")
 		if errEvent == nil && strings.ToLower(log.Address.String()) == addressDelegationNft {
 			fmt.Println(eventDelegationByID.Name)
 			if eventDelegationByID.Name == "StakeUpdated" {
