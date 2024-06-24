@@ -117,17 +117,9 @@ func (k Keeper) PostTxProcessing(
 			}
 		}
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
-		fmt.Println("addressDelegation")
-		fmt.Println(log.Address.String())
-		fmt.Println("addressDelegation")
 		if errEvent == nil && strings.ToLower(log.Address.String()) == addressDelegation {
-			fmt.Println(eventDelegationByID.Name)
 			if eventDelegationByID.Name == "StakeUpdated" {
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
-				fmt.Println("addressDelegation")
-				fmt.Println(log.Address.String())
-				fmt.Println("addressDelegation")
-
 				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
 				if err != nil {
 					symbolToken, _ := k.QuerySymbolToken(ctx, tokenDelegate.Stake.Token)
