@@ -159,7 +159,11 @@ message Stake {
   repeated uint32 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
 
   // creation_height defines the height at which the redelegation took place.
-  repeated StakeHold holds = 5 [ (gogoproto.customname) = "Holds" ];
+  int64 hold_start_time = 5;
+  int64 hold_end_time = 6;
+
+  // creation_height defines the height at which the redelegation took place.
+  repeated StakeHold holds = 7 [ (gogoproto.customname) = "Holds" ];
 }
 
 // Stake contains all necessary info about a delegation stake.
