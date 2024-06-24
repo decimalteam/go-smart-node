@@ -26,7 +26,6 @@ import (
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"strings"
-	"time"
 )
 
 var _ evmtypes.EvmHooks = Hooks{}
@@ -204,10 +203,10 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 
 	stake := types.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(stakeData.Stake.Amount)})
 
-	if stakeData.Stake.HoldTimestamp != nil {
-		stake.HoldStartTime = time.Now().Unix()
-		stake.HoldEndTime = stakeData.Stake.HoldTimestamp.Int64()
-	}
+	//if stakeData.Stake.HoldTimestamp != nil {
+	//	stake.HoldStartTime = time.Now().Unix()
+	//	stake.HoldEndTime = stakeData.Stake.HoldTimestamp.Int64()
+	//}
 
 	delegatorAddress, _ := types2.GetDecimalAddressFromHex(stakeData.Stake.Delegator.String())
 

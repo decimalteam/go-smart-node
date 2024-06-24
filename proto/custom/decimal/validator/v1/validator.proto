@@ -171,7 +171,11 @@ message StakeHold {
   // stake defines amount of the coin delegated.
   // For stake in Coin: contains actually delegated coin.
   // For stake in NFT: contains total reserve of delegated NFT sub-tokens.
-  string amount = 1 [(gogoproto.customtype) = "Int", (gogoproto.nullable) = false];
+  string amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
   // sub_token_ids defines list of NFT sub-token IDs.
   repeated uint32 sub_token_ids = 2 [ (gogoproto.customname) = "SubTokenIDs" ];
 
