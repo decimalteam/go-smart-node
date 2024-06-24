@@ -135,6 +135,11 @@ func (k Keeper) IterateAllDelegations(ctx sdk.Context, cb func(delegation types.
 	iterator := sdk.KVStorePrefixIterator(store, types.GetAllDelegationsKey())
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
+		_, err := types.UnmarshalDelegation(k.cdc, iterator.Value())
+		if err != nil {
+			store.Delete(iterator.Key())
+			continue
+		}
 		delegation := types.MustUnmarshalDelegation(k.cdc, iterator.Value())
 		if cb(delegation) {
 			break
