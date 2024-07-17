@@ -135,7 +135,6 @@ func (k Keeper) PostTxProcessing(
 
 			if eventDelegationByID.Name == "RequestWithdraw" {
 				_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationByID.Name, log.Data)
-				fmt.Println(tokenUndelegate)
 				err := k.RequestWithdraw(ctx, tokenUndelegate)
 				if err != nil {
 					return err
@@ -143,7 +142,6 @@ func (k Keeper) PostTxProcessing(
 			}
 			if eventDelegationByID.Name == "RequestTransfer" {
 				_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationByID.Name, log.Data)
-				fmt.Println(tokenRedelegation)
 				err := k.RequestTransfer(ctx, tokenRedelegation)
 				if err != nil {
 					return err
