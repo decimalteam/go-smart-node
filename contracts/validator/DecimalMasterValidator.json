@@ -168,7 +168,7 @@
         "type": "string"
       }
     ],
-    "name": "ValidatorAdded",
+    "name": "ValidatorMetaUpdated",
     "type": "event"
   },
   {
@@ -238,11 +238,28 @@
         "internalType": "string",
         "name": "meta",
         "type": "string"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IDecimalMasterValidator.Stake",
+        "name": "initialStake",
+        "type": "tuple"
       }
     ],
     "name": "addValidator",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -268,6 +285,19 @@
     "name": "addValidators",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getImpl",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -436,11 +466,16 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "newImplementation",
+        "name": "validator",
         "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "meta",
+        "type": "string"
       }
     ],
-    "name": "upgrade",
+    "name": "updateValidatorMeta",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -449,7 +484,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "newImplementation",
+        "name": "newImpl",
         "type": "address"
       },
       {

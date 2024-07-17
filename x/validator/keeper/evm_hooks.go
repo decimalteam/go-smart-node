@@ -10,6 +10,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts/validator"
 	types2 "bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
@@ -24,7 +25,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	"math/big"
 	"strings"
 )
 
@@ -72,8 +72,6 @@ func (k Keeper) PostTxProcessing(
 	addressDelegation, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
 	addressDelegationNft, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegationNft)
 	addressDelegation = strings.ToLower(addressDelegation)
-	fmt.Println(addressDelegation)
-	fmt.Println(addressDelegationNft)
 	validatorMaster, _ := validator.ValidatorMetaData.GetAbi()
 	delegatorCenter, _ := delegation.DelegationMetaData.GetAbi()
 	delegatorNftCenter, _ := delegationNft.DelegationNftMetaData.GetAbi()
@@ -82,22 +80,22 @@ func (k Keeper) PostTxProcessing(
 	var tokenDelegate delegation.DelegationStakeUpdated
 	var tokenUndelegate delegation.DelegationWithdrawRequest
 	var tokenRedelegation delegation.DelegationTransferRequest
-	var newValidator validator.ValidatorValidatorAdded
+	var newValidator validator.ValidatorValidatorMetaUpdated
 	var updateValidator validator.ValidatorValidatorUpdated
 
 	for _, log := range recipient.Logs {
 		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
 		if errEvent == nil {
-			if eventValidatorByID.Name == "ValidatorAdded" {
+			if eventValidatorByID.Name == "ValidatorMetaUpdated" {
 				_ = validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data)
 				var validatorInfo contracts.MasterValidatorValidatorAddedMeta
 				_ = json.Unmarshal([]byte(newValidator.Meta), &validatorInfo)
 				valAddr, _ := sdk.ValAddressFromHex(msg.From.String()[2:])
 				validatorInfo.OperatorAddress = valAddr.String()
 
-				//err := k.CreateValidatorFromEVM(ctx, validatorInfo)
-				//fmt.Println(validatorInfo)
-				//fmt.Println(err)
+				err := k.CreateValidatorFromEVM(ctx, validatorInfo)
+				fmt.Println(validatorInfo)
+				fmt.Println(err)
 			}
 			if eventValidatorByID.Name == "ValidatorUpdated" {
 				cosmosAddressValidator, _ := types2.GetDecimalAddressFromHex(common.BytesToAddress(log.Topics[1].Bytes()).String())
@@ -304,6 +302,7 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.MasterValidatorValidatorAddedMeta) error {
 
 	commission, _ := sdkmath.NewIntFromString(validatorMeta.Commission)
+	stakeSum, _ := sdkmath.NewIntFromString(validatorMeta.Stake)
 
 	msg := types.MsgCreateValidator{
 		OperatorAddress: validatorMeta.OperatorAddress,
@@ -318,8 +317,8 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 		},
 		Commission: sdk.NewDecFromInt(commission),
 		Stake: sdk.Coin{
-			Denom:  "del",
-			Amount: math.NewIntFromBigInt(big.NewInt(0)),
+			Denom:  validatorMeta.Coin,
+			Amount: helpers.EtherToWei(stakeSum),
 		},
 	}
 
