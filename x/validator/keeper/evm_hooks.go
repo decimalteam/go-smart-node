@@ -86,6 +86,7 @@ func (k Keeper) PostTxProcessing(
 	for _, log := range recipient.Logs {
 		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
 		if errEvent == nil {
+			fmt.Println("validator hook", eventValidatorByID.Name)
 			if eventValidatorByID.Name == "ValidatorMetaUpdated" {
 				_ = validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data)
 				var validatorInfo contracts.MasterValidatorValidatorAddedMeta

@@ -9,7 +9,6 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts/tokenCenter"
 	"bitbucket.org/decimalteam/go-smart-node/types"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 	"github.com/ethereum/go-ethereum/core"
@@ -58,22 +57,7 @@ func (k *Keeper) PostTxProcessing(
 	msg core.Message,
 	recipient *ethtypes.Receipt,
 ) error {
-	//params := k.GetParams(ctx)
-	//if params.TokenCenter == "" {
-	//	// no error is returned to avoid reverting the tx and allow for other post
-	//	// processing txs to pass and
-	//	fmt.Print(params)
-	//}
-
-	contractNftCenter, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressNftCenter)
-	//
-	//tokenCenter := center{}
-	//fmt.Print(err)
-	fmt.Println("nft hooks")
-	fmt.Println(contracts.GetContractCenter(ctx.ChainID()))
-	fmt.Println(contractNftCenter)
-	fmt.Println(err)
-	//fmt.Print(tokenCenter)
+	contractNftCenter, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressNftCenter)
 
 	// parser for create new or update nft collection
 	nftContractCenter, _ := nftCenter.NftCenterMetaData.GetAbi()
