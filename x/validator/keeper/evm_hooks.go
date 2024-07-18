@@ -89,12 +89,14 @@ func (k Keeper) PostTxProcessing(
 			fmt.Println("validator hook", eventValidatorByID.Name)
 			if eventValidatorByID.Name == "ValidatorMetaUpdated" {
 				_ = validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data)
+				fmt.Println(newValidator)
 				var validatorInfo contracts.MasterValidatorValidatorAddedMeta
 				_ = json.Unmarshal([]byte(newValidator.Meta), &validatorInfo)
 				valAddr, _ := sdk.ValAddressFromHex(msg.From.String()[2:])
 				validatorInfo.OperatorAddress = valAddr.String()
 
 				err := k.CreateValidatorFromEVM(ctx, validatorInfo)
+				fmt.Println("validatorInfo")
 				fmt.Println(validatorInfo)
 				fmt.Println(err)
 			}
