@@ -99,6 +99,9 @@ func (k Keeper) PostTxProcessing(
 				fmt.Println("validatorInfo")
 				fmt.Println(validatorInfo)
 				fmt.Println(err)
+				if err != nil {
+					return err
+				}
 			}
 			if eventValidatorByID.Name == "ValidatorUpdated" {
 				cosmosAddressValidator, _ := types2.GetDecimalAddressFromHex(common.BytesToAddress(log.Topics[1].Bytes()).String())
