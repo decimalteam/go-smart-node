@@ -94,7 +94,7 @@ func (k Keeper) PostTxProcessing(
 				_ = json.Unmarshal([]byte(newValidator.Meta), &validatorInfo)
 				valAddr, _ := sdk.ValAddressFromHex(msg.From.String()[2:])
 				validatorInfo.OperatorAddress = valAddr.String()
-
+				fmt.Println("validatorInfo")
 				err := k.CreateValidatorFromEVM(ctx, validatorInfo)
 				fmt.Println("validatorInfo")
 				fmt.Println(validatorInfo)
@@ -307,7 +307,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 
 	commission, _ := sdkmath.NewIntFromString(validatorMeta.Commission)
 	stakeSum, _ := sdkmath.NewIntFromString(validatorMeta.Stake)
-
+	fmt.Println("validatorInfo 1")
 	msg := types.MsgCreateValidator{
 		OperatorAddress: validatorMeta.OperatorAddress,
 		RewardAddress:   validatorMeta.RewardAddress,
@@ -325,7 +325,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 			Amount: helpers.EtherToWei(stakeSum),
 		},
 	}
-
+	fmt.Println("validatorInfo 2")
 	valAddr, err := sdk.ValAddressFromBech32(msg.OperatorAddress)
 	if err != nil {
 		return err
@@ -339,7 +339,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	if _, found := k.GetValidator(ctx, valAddr); found {
 		return nil
 	}
-
+	fmt.Println("validatorInfo 3")
 	_, err = k.coinKeeper.GetCoin(ctx, msg.Stake.Denom)
 	if err != nil {
 		return err
@@ -353,7 +353,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	if _, found := k.GetValidatorByConsAddrDecimal(ctx, sdk.GetConsAddress(pk)); found {
 		return errors.ValidatorPublicKeyAlreadyExists
 	}
-
+	fmt.Println("validatorInfo 4")
 	if _, err = msg.Description.EnsureLength(); err != nil {
 		return err
 	}
@@ -372,7 +372,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 			return errors.UnsupportedPubKeyType
 		}
 	}
-
+	fmt.Println("validatorInfo 5")
 	validatorCosmos, err := types.NewValidator(valAddr, rewardAddr, pk, msg.Description, msg.Commission)
 	if err != nil {
 		return err
@@ -383,7 +383,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	k.SetValidator(ctx, validatorCosmos)
 	k.SetValidatorByConsAddr(ctx, validatorCosmos)
 	k.SetNewValidatorByPowerIndex(ctx, validatorCosmos)
-
+	fmt.Println("validatorInfo 6")
 	// call the after-creation hook
 	if err = k.AfterValidatorCreated(ctx, validatorCosmos.GetOperator()); err != nil {
 		return err
@@ -397,7 +397,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	//if err != nil {
 	//	return err
 	//}
-
+	fmt.Println("validatorInfo 7")
 	err = events.EmitTypedEvent(ctx, &types.EventCreateValidator{
 		Sender:          sdk.AccAddress(valAddr).String(),
 		Validator:       valAddr.String(),
@@ -412,7 +412,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	}
 
 	baseCoin := k.ToBaseCoin(ctx, msg.Stake)
-
+	fmt.Println("validatorInfo 8")
 	err = events.EmitTypedEvent(ctx, &types.EventDelegate{
 		Delegator:  sdk.AccAddress(valAddr).String(),
 		Validator:  valAddr.String(),
