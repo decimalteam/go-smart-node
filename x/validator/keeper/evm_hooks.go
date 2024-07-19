@@ -8,12 +8,12 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts/delegation"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/delegationNft"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/validator"
-	types2 "bitbucket.org/decimalteam/go-smart-node/types"
+	"bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
-	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
+	validatorType "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	"cosmossdk.io/math"
 	sdkmath "cosmossdk.io/math"
 	"encoding/json"
@@ -104,7 +104,7 @@ func (k Keeper) PostTxProcessing(
 				}
 			}
 			if eventValidatorByID.Name == "ValidatorUpdated" {
-				cosmosAddressValidator, _ := types2.GetDecimalAddressFromHex(common.BytesToAddress(log.Topics[1].Bytes()).String())
+				cosmosAddressValidator, _ := types.GetDecimalAddressFromHex(common.BytesToAddress(log.Topics[1].Bytes()).String())
 				if updateValidator.Status == 2 {
 					err := k.SetOnlineFromEvm(ctx, cosmosAddressValidator.String())
 					if err != nil {
@@ -203,14 +203,14 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 		return errors.CoinDoesNotExist
 	}
 
-	stake := types.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(stakeData.Stake.Amount)})
+	stake := validatorType.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(stakeData.Stake.Amount)})
 
 	//if stakeData.Stake.HoldTimestamp != nil {
 	//	stake.HoldStartTime = time.Now().Unix()
 	//	stake.HoldEndTime = stakeData.Stake.HoldTimestamp.Int64()
 	//}
 
-	delegatorAddress, _ := types2.GetDecimalAddressFromHex(stakeData.Stake.Delegator.String())
+	delegatorAddress, _ := types.GetDecimalAddressFromHex(stakeData.Stake.Delegator.String())
 
 	mintCoinForDelegation := sdk.NewCoins(sdk.NewCoin(coinStake.Denom, math.NewIntFromBigInt(stakeData.Stake.Amount)))
 	err = k.bankKeeper.MintCoins(ctx, cointypes.ModuleName, mintCoinForDelegation)
@@ -247,9 +247,9 @@ func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.Dele
 		return errors.CoinDoesNotExist
 	}
 
-	stake := types.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(tokenUndelegate.FrozenStake.Stake.Amount)})
+	stake := validatorType.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(tokenUndelegate.FrozenStake.Stake.Amount)})
 
-	delegatorAddress, _ := types2.GetDecimalAddressFromHex(tokenUndelegate.FrozenStake.Stake.Delegator.String())
+	delegatorAddress, _ := types.GetDecimalAddressFromHex(tokenUndelegate.FrozenStake.Stake.Delegator.String())
 
 	valAddr, err := sdk.ValAddressFromBech32(tokenUndelegate.FrozenStake.Stake.Validator.String()[2:])
 
@@ -277,9 +277,9 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 		return errors.CoinDoesNotExist
 	}
 
-	stake := types.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(tokenRedelegation.FrozenStake.Stake.Amount)})
+	stake := validatorType.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(tokenRedelegation.FrozenStake.Stake.Amount)})
 
-	delegatorAddress, _ := types2.GetDecimalAddressFromHex(tokenRedelegation.FrozenStake.Stake.Delegator.String())
+	delegatorAddress, _ := types.GetDecimalAddressFromHex(tokenRedelegation.FrozenStake.Stake.Delegator.String())
 
 	valAddr, err := sdk.ValAddressFromHex(tokenRedelegation.FrozenStake.Stake.Validator.String()[2:])
 
@@ -307,12 +307,14 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 
 	commission, _ := sdkmath.NewIntFromString(validatorMeta.Commission)
 	stakeSum, _ := sdkmath.NewIntFromString(validatorMeta.Stake)
+	operatorAddress, _ := types.GetDecimalAddressFromHex(validatorMeta.OperatorAddress)
+	rewardAddress, _ := types.GetDecimalAddressFromHex(validatorMeta.RewardAddress)
 	fmt.Println("validatorInfo 1")
-	msg := types.MsgCreateValidator{
-		OperatorAddress: validatorMeta.OperatorAddress,
-		RewardAddress:   validatorMeta.RewardAddress,
+	msg := validatorType.MsgCreateValidator{
+		OperatorAddress: operatorAddress.String(),
+		RewardAddress:   rewardAddress.String(),
 		ConsensusPubkey: typescodec.UnsafePackAny(validatorMeta.ConsensusPubkey),
-		Description: types.Description{
+		Description: validatorType.Description{
 			Moniker:         validatorMeta.Description.Moniker,
 			Identity:        validatorMeta.Description.Identity,
 			Website:         validatorMeta.Description.Website,
@@ -373,7 +375,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 		}
 	}
 	fmt.Println("validatorInfo 5")
-	validatorCosmos, err := types.NewValidator(valAddr, rewardAddr, pk, msg.Description, msg.Commission)
+	validatorCosmos, err := validatorType.NewValidator(valAddr, rewardAddr, pk, msg.Description, msg.Commission)
 	if err != nil {
 		return err
 	}
@@ -392,13 +394,13 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	// move coins from the msg.Address account to a (self-delegation) delegator account
 	// the validator account and global shares are updated within here
 	// NOTE source will always be from a wallet which are unbonded
-	stake := types.NewStakeCoin(msg.Stake)
+	stake := validatorType.NewStakeCoin(msg.Stake)
 	//err = k.Delegate(ctx, sdk.AccAddress(valAddr), validator, stake)
 	//if err != nil {
 	//	return err
 	//}
 	fmt.Println("validatorInfo 7")
-	err = events.EmitTypedEvent(ctx, &types.EventCreateValidator{
+	err = events.EmitTypedEvent(ctx, &validatorType.EventCreateValidator{
 		Sender:          sdk.AccAddress(valAddr).String(),
 		Validator:       valAddr.String(),
 		RewardAddress:   rewardAddr.String(),
@@ -413,7 +415,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 
 	baseCoin := k.ToBaseCoin(ctx, msg.Stake)
 	fmt.Println("validatorInfo 8")
-	err = events.EmitTypedEvent(ctx, &types.EventDelegate{
+	err = events.EmitTypedEvent(ctx, &validatorType.EventDelegate{
 		Delegator:  sdk.AccAddress(valAddr).String(),
 		Validator:  valAddr.String(),
 		Stake:      stake,
@@ -473,7 +475,7 @@ func (k Keeper) SetOnlineFromEvm(goCtx sdk.Context, validatorAddr string) error 
 
 	rs, err := k.GetValidatorRS(ctx, valAddr)
 	if err != nil {
-		rs = types.ValidatorRS{
+		rs = validatorType.ValidatorRS{
 			Rewards:      sdkmath.ZeroInt(),
 			TotalRewards: sdkmath.ZeroInt(),
 		}
@@ -490,7 +492,7 @@ func (k Keeper) SetOnlineFromEvm(goCtx sdk.Context, validatorAddr string) error 
 	}
 	k.SetStartHeight(ctx, consAdr, ctx.BlockHeight())
 
-	err = events.EmitTypedEvent(ctx, &types.EventSetOnline{
+	err = events.EmitTypedEvent(ctx, &validatorType.EventSetOnline{
 		Sender:    sdk.AccAddress(valAddr).String(),
 		Validator: valAddr.String(),
 	})
@@ -528,7 +530,7 @@ func (k Keeper) SetOfflineFromEvm(goCtx sdk.Context, validatorAddrHex string) er
 	}
 	k.DeleteStartHeight(ctx, consAdr)
 
-	err = events.EmitTypedEvent(ctx, &types.EventSetOffline{
+	err = events.EmitTypedEvent(ctx, &validatorType.EventSetOffline{
 		Sender:    sdk.AccAddress(valAddr).String(),
 		Validator: valAddr.String(),
 	})
