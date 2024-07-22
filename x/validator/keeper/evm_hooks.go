@@ -10,7 +10,6 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts/validator"
 	"bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
 	validatorType "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
@@ -19,12 +18,15 @@ import (
 	"encoding/json"
 	"fmt"
 	typescodec "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/tendermint/tendermint/crypto"
+	cmtjson "github.com/tendermint/tendermint/libs/json"
 	"strings"
 )
 
@@ -306,14 +308,23 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.MasterValidatorValidatorAddedMeta) error {
 
 	commission, _ := sdkmath.NewIntFromString(validatorMeta.Commission)
-	stakeSum, _ := sdkmath.NewIntFromString(validatorMeta.Stake)
-	operatorAddress, _ := types.GetDecimalAddressFromHex(validatorMeta.OperatorAddress)
+
 	rewardAddress, _ := types.GetDecimalAddressFromHex(validatorMeta.RewardAddress)
-	fmt.Println("validatorInfo 1")
+
+	var pubKey crypto.PubKey
+	_ = cmtjson.Unmarshal(
+		[]byte(fmt.Sprintf("{\"type\":\"tendermint/PubKeyEd25519\",\"value\":\"%s\"}", validatorMeta.ConsensusPubkey)),
+		&pubKey)
+
+	valPubKey, err := cryptocodec.FromTmPubKeyInterface(pubKey)
+	if err != nil {
+		return err
+	}
+
 	msg := validatorType.MsgCreateValidator{
-		OperatorAddress: operatorAddress.String(),
+		OperatorAddress: validatorMeta.OperatorAddress,
 		RewardAddress:   rewardAddress.String(),
-		ConsensusPubkey: typescodec.UnsafePackAny(validatorMeta.ConsensusPubkey),
+		ConsensusPubkey: typescodec.UnsafePackAny(valPubKey),
 		Description: validatorType.Description{
 			Moniker:         validatorMeta.Description.Moniker,
 			Identity:        validatorMeta.Description.Identity,
@@ -322,12 +333,9 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 			Details:         validatorMeta.Description.Details,
 		},
 		Commission: sdk.NewDecFromInt(commission),
-		Stake: sdk.Coin{
-			Denom:  validatorMeta.Coin,
-			Amount: helpers.EtherToWei(stakeSum),
-		},
+		Stake:      sdk.Coin{},
 	}
-	fmt.Println("validatorInfo 2")
+
 	valAddr, err := sdk.ValAddressFromBech32(msg.OperatorAddress)
 	if err != nil {
 		return err
@@ -341,21 +349,34 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	if _, found := k.GetValidator(ctx, valAddr); found {
 		return nil
 	}
-	fmt.Println("validatorInfo 3")
-	_, err = k.coinKeeper.GetCoin(ctx, msg.Stake.Denom)
-	if err != nil {
-		return err
-	}
 
 	pk, ok := msg.ConsensusPubkey.GetCachedValue().(cryptotypes.PubKey)
 	if !ok {
 		return errors.InvalidConsensusPubKey
 	}
 
-	if _, found := k.GetValidatorByConsAddrDecimal(ctx, sdk.GetConsAddress(pk)); found {
-		return errors.ValidatorPublicKeyAlreadyExists
+	if valEdit, found := k.GetValidatorByConsAddrDecimal(ctx, sdk.GetConsAddress(pk)); found {
+		// validator must already be registered
+		// replace all editable fields (clients should autofill existing values)
+		description, err := valEdit.Description.UpdateDescription(msg.Description)
+		if err != nil {
+			return err
+		}
+
+		valEdit.Description = description
+		valEdit.RewardAddress = msg.RewardAddress
+
+		k.SetValidator(ctx, valEdit)
+
+		err = events.EmitTypedEvent(ctx, &validatorType.EventEditValidator{
+			Sender:        sdk.AccAddress(valAddr).String(),
+			Validator:     valAddr.String(),
+			RewardAddress: msg.RewardAddress,
+			Description:   description,
+		})
+		return err
 	}
-	fmt.Println("validatorInfo 4")
+
 	if _, err = msg.Description.EnsureLength(); err != nil {
 		return err
 	}
@@ -374,7 +395,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 			return errors.UnsupportedPubKeyType
 		}
 	}
-	fmt.Println("validatorInfo 5")
+
 	validatorCosmos, err := validatorType.NewValidator(valAddr, rewardAddr, pk, msg.Description, msg.Commission)
 	if err != nil {
 		return err
@@ -385,21 +406,12 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	k.SetValidator(ctx, validatorCosmos)
 	k.SetValidatorByConsAddr(ctx, validatorCosmos)
 	k.SetNewValidatorByPowerIndex(ctx, validatorCosmos)
-	fmt.Println("validatorInfo 6")
+
 	// call the after-creation hook
 	if err = k.AfterValidatorCreated(ctx, validatorCosmos.GetOperator()); err != nil {
 		return err
 	}
 
-	// move coins from the msg.Address account to a (self-delegation) delegator account
-	// the validator account and global shares are updated within here
-	// NOTE source will always be from a wallet which are unbonded
-	stake := validatorType.NewStakeCoin(msg.Stake)
-	//err = k.Delegate(ctx, sdk.AccAddress(valAddr), validator, stake)
-	//if err != nil {
-	//	return err
-	//}
-	fmt.Println("validatorInfo 7")
 	err = events.EmitTypedEvent(ctx, &validatorType.EventCreateValidator{
 		Sender:          sdk.AccAddress(valAddr).String(),
 		Validator:       valAddr.String(),
@@ -408,18 +420,6 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 		Description:     msg.Description,
 		Commission:      msg.Commission,
 		Stake:           msg.Stake,
-	})
-	if err != nil {
-		return errors.Internal.Wrapf("err: %s", err.Error())
-	}
-
-	baseCoin := k.ToBaseCoin(ctx, msg.Stake)
-	fmt.Println("validatorInfo 8")
-	err = events.EmitTypedEvent(ctx, &validatorType.EventDelegate{
-		Delegator:  sdk.AccAddress(valAddr).String(),
-		Validator:  valAddr.String(),
-		Stake:      stake,
-		AmountBase: baseCoin.Amount,
 	})
 	if err != nil {
 		return errors.Internal.Wrapf("err: %s", err.Error())
