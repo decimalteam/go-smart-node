@@ -3,7 +3,6 @@ package keeper_test
 import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"encoding/json"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"testing"
 	"time"
@@ -103,7 +102,7 @@ func TestSetGetValidatorByConsAddr(t *testing.T) {
 func TestSetValidatorByEvm(t *testing.T) {
 	_, dsc, ctx := createTestInput(t)
 
-	jsonData := "{\"operator_address\":\"0x3b9d257c1631ad4c5b734540748d4569e5868f4b\",\"reward_address\":\"0x3b9d257c1631ad4c5b734540748d4569e5868f4b\",\"consensus_pubkey\":\"BBd/zqlZaNEHST/vIZV+j1+kkvuyiOMmkgdZr/LgSqZN+6QXpa51ZHiJ1O5fhRCrNNFgktBQY35jCl1/Pwx4oNI=\",\"coin\":\"DEL\",\"stake\":\"3232\",\"description\":{\"moniker\":\"dsadsa\",\"identity\":\"ipfs://QmSFoo6jrJpYEAKvY172uY1h5uLER4m1b6Mp33C8BW8o7Q\",\"website\":\"\",\"security_contact\":\"dsadsa@gmail.com\",\"details\":\"dsadsadsadsa\"},\"commission\":\"10\"}"
+	jsonData := "{\"operator_address\":\"0x3b9d257c1631ad4c5b734540748d4569e5868f4b\",\"reward_address\":\"0x3b9d257c1631ad4c5b734540748d4569e5868f4b\",\"consensus_pubkey\":\"4TSIE37UP0qXG7/tN41WSpbUQoMkajsUdbNyKXnuW1g=\",\"coin\":\"DEL\",\"stake\":\"3232\",\"description\":{\"moniker\":\"dsadsa\",\"identity\":\"ipfs://QmSFoo6jrJpYEAKvY172uY1h5uLER4m1b6Mp33C8BW8o7Q\",\"website\":\"\",\"security_contact\":\"dsadsa@gmail.com\",\"details\":\"dsadsadsadsa\"},\"commission\":\"10\"}"
 
 	var validatorInfo contracts.MasterValidatorValidatorAddedMeta
 	_ = json.Unmarshal([]byte(jsonData), &validatorInfo)
@@ -111,7 +110,6 @@ func TestSetValidatorByEvm(t *testing.T) {
 	valAddr, _ := sdk.ValAddressFromHex(validatorInfo.OperatorAddress[2:])
 	validatorInfo.OperatorAddress = valAddr.String()
 
-	fmt.Println(PKs[0])
 	err := dsc.ValidatorKeeper.CreateValidatorFromEVM(ctx, validatorInfo)
 	require.NoError(t, err)
 
