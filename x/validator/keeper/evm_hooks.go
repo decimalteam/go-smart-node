@@ -346,16 +346,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	}
 
 	// check to see if the pubkey or sender has been registered before
-	if _, found := k.GetValidator(ctx, valAddr); found {
-		return nil
-	}
-
-	pk, ok := msg.ConsensusPubkey.GetCachedValue().(cryptotypes.PubKey)
-	if !ok {
-		return errors.InvalidConsensusPubKey
-	}
-
-	if valEdit, found := k.GetValidatorByConsAddrDecimal(ctx, sdk.GetConsAddress(pk)); found {
+	if valEdit, found := k.GetValidator(ctx, valAddr); found {
 		// validator must already be registered
 		// replace all editable fields (clients should autofill existing values)
 		description, err := valEdit.Description.UpdateDescription(msg.Description)
@@ -375,6 +366,15 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 			Description:   description,
 		})
 		return err
+	}
+
+	pk, ok := msg.ConsensusPubkey.GetCachedValue().(cryptotypes.PubKey)
+	if !ok {
+		return errors.InvalidConsensusPubKey
+	}
+
+	if _, found := k.GetValidatorByConsAddrDecimal(ctx, sdk.GetConsAddress(pk)); found {
+		return errors.ValidatorPublicKeyAlreadyExists
 	}
 
 	if _, err = msg.Description.EnsureLength(); err != nil {
