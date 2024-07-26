@@ -92,25 +92,6 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "oldContract",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "newContract",
-        "type": "address"
-      }
-    ],
-    "name": "ContractUpgraded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
         "indexed": false,
         "internalType": "uint64",
         "name": "version",
@@ -204,10 +185,69 @@
         "internalType": "enum IDecimalMasterValidator.ValidatorStatus",
         "name": "status",
         "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "paused",
+        "type": "bool"
       }
     ],
     "name": "ValidatorUpdated",
     "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validator",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "meta",
+        "type": "string"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IDecimalMasterValidator.Stake",
+        "name": "initialStake",
+        "type": "tuple"
+      }
+    ],
+    "name": "addCandidate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validator",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "meta",
+        "type": "string"
+      }
+    ],
+    "name": "addCandidateDEL",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
   },
   {
     "inputs": [
@@ -259,6 +299,24 @@
     ],
     "name": "addValidator",
     "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validator",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "meta",
+        "type": "string"
+      }
+    ],
+    "name": "addValidatorDEL",
+    "outputs": [],
     "stateMutability": "payable",
     "type": "function"
   },
@@ -288,6 +346,19 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "candidates",
+        "type": "address[]"
+      }
+    ],
+    "name": "approveCandidates",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getImpl",
     "outputs": [
@@ -295,6 +366,42 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validator",
+        "type": "address"
+      }
+    ],
+    "name": "getValidator",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "enum IDecimalMasterValidator.ValidatorStatus",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bool",
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint16[]",
+            "name": "penaltyPercantages",
+            "type": "uint16[]"
+          }
+        ],
+        "internalType": "struct IDecimalMasterValidator.Validator",
+        "name": "",
+        "type": "tuple"
       }
     ],
     "stateMutability": "view",
