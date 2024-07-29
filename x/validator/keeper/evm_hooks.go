@@ -109,13 +109,13 @@ func (k Keeper) PostTxProcessing(
 			}
 			if eventValidatorByID.Name == "ValidatorUpdated" {
 				cosmosAddressValidator, _ := types.GetDecimalAddressFromHex(common.BytesToAddress(log.Topics[1].Bytes()).String())
-				if updateValidator.Status == 2 {
+				if updateValidator.Paused == false {
 					err := k.SetOnlineFromEvm(ctx, cosmosAddressValidator.String())
 					if err != nil {
 						return err
 					}
 				}
-				if updateValidator.Status == 1 {
+				if updateValidator.Paused == true {
 					err := k.SetOfflineFromEvm(ctx, cosmosAddressValidator.String())
 					if err != nil {
 						return err
