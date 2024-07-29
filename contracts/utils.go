@@ -31,8 +31,6 @@ type MasterValidatorValidatorAddedMeta struct {
 	OperatorAddress string `json:"operator_address"`
 	RewardAddress   string `json:"reward_address"`
 	ConsensusPubkey string `json:"consensus_pubkey"`
-	Coin            string `json:"coin"`
-	Stake           string `json:"stake"`
 	Description     struct {
 		Moniker         string `json:"moniker"`
 		Identity        string `json:"identity"`

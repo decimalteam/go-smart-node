@@ -71,8 +71,10 @@ func (k Keeper) PostTxProcessing(
 	//	return nil
 	//}
 	fmt.Println("validator hook")
+	addressValidator, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressMasterValidator)
 	addressDelegation, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
 	addressDelegationNft, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegationNft)
+	addressValidator = strings.ToLower(addressValidator)
 	addressDelegation = strings.ToLower(addressDelegation)
 	validatorMaster, _ := validator.ValidatorMetaData.GetAbi()
 	delegatorCenter, _ := delegation.DelegationMetaData.GetAbi()
@@ -87,7 +89,7 @@ func (k Keeper) PostTxProcessing(
 
 	for _, log := range recipient.Logs {
 		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
-		if errEvent == nil {
+		if errEvent == nil && addressValidator == strings.ToLower(log.Address.String()) {
 			fmt.Println("validator hook", eventValidatorByID.Name)
 			if eventValidatorByID.Name == "ValidatorMetaUpdated" {
 				_ = validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data)
