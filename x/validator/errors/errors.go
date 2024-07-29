@@ -46,4 +46,5 @@ var (
 	RewardsNotFound                 = errors.New(codespace, 139, "not found rewards for validator")
 	ValidatorHasNoDelegations       = errors.New(codespace, 140, "validator has no delegations")
 	ValidatorStakeTooSmall          = errors.New(codespace, 141, "validator stake too small")
+	ValidatorCommissionIsTooBig     = errors.New(codespace, 142, "validator commission is big of 100")
 )

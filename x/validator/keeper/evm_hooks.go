@@ -311,6 +311,10 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 
 	commission, _ := sdkmath.NewIntFromString(validatorMeta.Commission)
 
+	if commission.Uint64() > 100 {
+		return errors.ValidatorCommissionIsTooBig
+	}
+
 	rewardAddress, _ := types.GetDecimalAddressFromHex(validatorMeta.RewardAddress)
 
 	var pubKey crypto.PubKey
