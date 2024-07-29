@@ -86,6 +86,26 @@ func GetAddressFromContractCenter(
 	return data[0].(common.Address).String(), err
 }
 
+func GetIsMigration(
+	ctx sdk.Context,
+	evmKeeper *evmkeeper.Keeper,
+) (bool, error) {
+	contractCenter, _ := center.CenterMetaData.GetAbi()
+	contract := common.HexToAddress(GetContractCenter(ctx.ChainID()))
+	methodCall := "isMigrating"
+	// Address token center
+	res, err := evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall)
+	if err != nil {
+		return false, err
+	}
+	data, err := contractCenter.Unpack(methodCall, res.Ret)
+	fmt.Println(data)
+	if len(data) == 0 {
+		return false, err
+	}
+	return data[0].(bool), err
+}
+
 func GetContractCenter(chainID string) string {
 	if helpers.IsMainnet(chainID) {
 		return "0x2r32432"
