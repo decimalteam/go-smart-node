@@ -11,6 +11,21 @@
     "type": "error"
   },
   {
+    "inputs": [],
+    "name": "AllReservesAlreadyAdded",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "AvailableOnlyDuringMigration",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "DisabledDuringMigration",
+    "type": "error"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -32,13 +47,65 @@
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "contractAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "FailedToMigrateReserve",
+    "type": "error"
+  },
+  {
     "inputs": [],
     "name": "InvalidInitialization",
     "type": "error"
   },
   {
     "inputs": [],
+    "name": "InvalidStartIndex",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidStartOrEndIndex",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "provided",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expected",
+        "type": "uint256"
+      }
+    ],
+    "name": "InvalidValueToMigrateReserve",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ListOfContractsIsEpmty",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "NotInitializing",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NothingToMigrate",
     "type": "error"
   },
   {
@@ -64,6 +131,22 @@
     "type": "error"
   },
   {
+    "inputs": [],
+    "name": "PayloadMismatch",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "remainingMsgValue",
+        "type": "uint256"
+      }
+    ],
+    "name": "SomethingGoesWrong",
+    "type": "error"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -80,25 +163,6 @@
       }
     ],
     "name": "ContractAdded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "oldContract",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "newContract",
-        "type": "address"
-      }
-    ],
-    "name": "ContractUpgraded",
     "type": "event"
   },
   {
@@ -166,8 +230,14 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "getImplementation",
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "symbol",
+        "type": "string"
+      }
+    ],
+    "name": "getContractAddress",
     "outputs": [
       {
         "internalType": "address",
@@ -176,6 +246,201 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getImpl",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "contractAddress",
+        "type": "address"
+      }
+    ],
+    "name": "getMarkedReserve",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getTotalMarkedReserve",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "isMigrating",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "contractAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct Reserve",
+        "name": "reserve",
+        "type": "tuple"
+      }
+    ],
+    "name": "isReserveMigrated",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "contractAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct Reserve[]",
+        "name": "reserves",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "isReservesMigrated",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "contractAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct Reserve",
+        "name": "reserve",
+        "type": "tuple"
+      }
+    ],
+    "name": "markReserve",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "contractAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct Reserve[]",
+        "name": "reserves",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "markReserves",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "migrateReserves",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "start",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "end",
+        "type": "uint256"
+      }
+    ],
+    "name": "migrateReservesPage",
+    "outputs": [],
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -219,6 +484,37 @@
   {
     "inputs": [
       {
+        "internalType": "string",
+        "name": "symbol",
+        "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "contractAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setContractAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "newIsMigrating",
+        "type": "bool"
+      }
+    ],
+    "name": "setMigrating",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "newOwner",
         "type": "address"
@@ -233,20 +529,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "newImplementation",
-        "type": "address"
-      }
-    ],
-    "name": "upgrade",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "newImplementation",
+        "name": "newImpl",
         "type": "address"
       },
       {

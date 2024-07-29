@@ -29,9 +29,15 @@ var (
 	_ = abi.ConvertType
 )
 
+// Reserve is an auto generated low-level Go binding around an user-defined struct.
+type Reserve struct {
+	ContractAddress common.Address
+	Amount          *big.Int
+}
+
 // CenterMetaData contains all meta data concerning the Center contract.
 var CenterMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"}],\"name\":\"AddressEmptyCode\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\"}],\"name\":\"ERC1967InvalidImplementation\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ERC1967NonPayable\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"}],\"name\":\"ContractAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oldContract\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newContract\",\"type\":\"address\"}],\"name\":\"ContractUpgraded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\"}],\"name\":\"Upgraded\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"}],\"name\":\"getAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getImplementation\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"}],\"name\":\"setAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImplementation\",\"type\":\"address\"}],\"name\":\"upgrade\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImplementation\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"upgrade\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"}],\"name\":\"AddressEmptyCode\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AllReservesAlreadyAdded\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AvailableOnlyDuringMigration\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"DisabledDuringMigration\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\"}],\"name\":\"ERC1967InvalidImplementation\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ERC1967NonPayable\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"FailedToMigrateReserve\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidStartIndex\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidStartOrEndIndex\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"provided\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expected\",\"type\":\"uint256\"}],\"name\":\"InvalidValueToMigrateReserve\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ListOfContractsIsEpmty\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NothingToMigrate\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"PayloadMismatch\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"remainingMsgValue\",\"type\":\"uint256\"}],\"name\":\"SomethingGoesWrong\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"}],\"name\":\"ContractAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\"}],\"name\":\"Upgraded\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"}],\"name\":\"getAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"}],\"name\":\"getContractAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getImpl\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"}],\"name\":\"getMarkedReserve\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTotalMarkedReserve\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"isMigrating\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structReserve\",\"name\":\"reserve\",\"type\":\"tuple\"}],\"name\":\"isReserveMigrated\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structReserve[]\",\"name\":\"reserves\",\"type\":\"tuple[]\"}],\"name\":\"isReservesMigrated\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structReserve\",\"name\":\"reserve\",\"type\":\"tuple\"}],\"name\":\"markReserve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structReserve[]\",\"name\":\"reserves\",\"type\":\"tuple[]\"}],\"name\":\"markReserves\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"migrateReserves\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"start\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"end\",\"type\":\"uint256\"}],\"name\":\"migrateReservesPage\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"}],\"name\":\"setAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"}],\"name\":\"setContractAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"newIsMigrating\",\"type\":\"bool\"}],\"name\":\"setMigrating\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImpl\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"upgrade\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // CenterABI is the input ABI used to generate the binding from.
@@ -211,12 +217,12 @@ func (_Center *CenterCallerSession) GetAddress(symbol string) (common.Address, e
 	return _Center.Contract.GetAddress(&_Center.CallOpts, symbol)
 }
 
-// GetImplementation is a free data retrieval call binding the contract method 0xaaf10f42.
+// GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
 //
-// Solidity: function getImplementation() view returns(address)
-func (_Center *CenterCaller) GetImplementation(opts *bind.CallOpts) (common.Address, error) {
+// Solidity: function getContractAddress(string symbol) view returns(address)
+func (_Center *CenterCaller) GetContractAddress(opts *bind.CallOpts, symbol string) (common.Address, error) {
 	var out []interface{}
-	err := _Center.contract.Call(opts, &out, "getImplementation")
+	err := _Center.contract.Call(opts, &out, "getContractAddress", symbol)
 
 	if err != nil {
 		return *new(common.Address), err
@@ -228,18 +234,204 @@ func (_Center *CenterCaller) GetImplementation(opts *bind.CallOpts) (common.Addr
 
 }
 
-// GetImplementation is a free data retrieval call binding the contract method 0xaaf10f42.
+// GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
 //
-// Solidity: function getImplementation() view returns(address)
-func (_Center *CenterSession) GetImplementation() (common.Address, error) {
-	return _Center.Contract.GetImplementation(&_Center.CallOpts)
+// Solidity: function getContractAddress(string symbol) view returns(address)
+func (_Center *CenterSession) GetContractAddress(symbol string) (common.Address, error) {
+	return _Center.Contract.GetContractAddress(&_Center.CallOpts, symbol)
 }
 
-// GetImplementation is a free data retrieval call binding the contract method 0xaaf10f42.
+// GetContractAddress is a free data retrieval call binding the contract method 0x04433bbc.
 //
-// Solidity: function getImplementation() view returns(address)
-func (_Center *CenterCallerSession) GetImplementation() (common.Address, error) {
-	return _Center.Contract.GetImplementation(&_Center.CallOpts)
+// Solidity: function getContractAddress(string symbol) view returns(address)
+func (_Center *CenterCallerSession) GetContractAddress(symbol string) (common.Address, error) {
+	return _Center.Contract.GetContractAddress(&_Center.CallOpts, symbol)
+}
+
+// GetImpl is a free data retrieval call binding the contract method 0xdfb80831.
+//
+// Solidity: function getImpl() view returns(address)
+func (_Center *CenterCaller) GetImpl(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _Center.contract.Call(opts, &out, "getImpl")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// GetImpl is a free data retrieval call binding the contract method 0xdfb80831.
+//
+// Solidity: function getImpl() view returns(address)
+func (_Center *CenterSession) GetImpl() (common.Address, error) {
+	return _Center.Contract.GetImpl(&_Center.CallOpts)
+}
+
+// GetImpl is a free data retrieval call binding the contract method 0xdfb80831.
+//
+// Solidity: function getImpl() view returns(address)
+func (_Center *CenterCallerSession) GetImpl() (common.Address, error) {
+	return _Center.Contract.GetImpl(&_Center.CallOpts)
+}
+
+// GetMarkedReserve is a free data retrieval call binding the contract method 0x95d9d943.
+//
+// Solidity: function getMarkedReserve(address contractAddress) view returns(uint256)
+func (_Center *CenterCaller) GetMarkedReserve(opts *bind.CallOpts, contractAddress common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _Center.contract.Call(opts, &out, "getMarkedReserve", contractAddress)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetMarkedReserve is a free data retrieval call binding the contract method 0x95d9d943.
+//
+// Solidity: function getMarkedReserve(address contractAddress) view returns(uint256)
+func (_Center *CenterSession) GetMarkedReserve(contractAddress common.Address) (*big.Int, error) {
+	return _Center.Contract.GetMarkedReserve(&_Center.CallOpts, contractAddress)
+}
+
+// GetMarkedReserve is a free data retrieval call binding the contract method 0x95d9d943.
+//
+// Solidity: function getMarkedReserve(address contractAddress) view returns(uint256)
+func (_Center *CenterCallerSession) GetMarkedReserve(contractAddress common.Address) (*big.Int, error) {
+	return _Center.Contract.GetMarkedReserve(&_Center.CallOpts, contractAddress)
+}
+
+// GetTotalMarkedReserve is a free data retrieval call binding the contract method 0x9c6da6ef.
+//
+// Solidity: function getTotalMarkedReserve() view returns(uint256)
+func (_Center *CenterCaller) GetTotalMarkedReserve(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _Center.contract.Call(opts, &out, "getTotalMarkedReserve")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetTotalMarkedReserve is a free data retrieval call binding the contract method 0x9c6da6ef.
+//
+// Solidity: function getTotalMarkedReserve() view returns(uint256)
+func (_Center *CenterSession) GetTotalMarkedReserve() (*big.Int, error) {
+	return _Center.Contract.GetTotalMarkedReserve(&_Center.CallOpts)
+}
+
+// GetTotalMarkedReserve is a free data retrieval call binding the contract method 0x9c6da6ef.
+//
+// Solidity: function getTotalMarkedReserve() view returns(uint256)
+func (_Center *CenterCallerSession) GetTotalMarkedReserve() (*big.Int, error) {
+	return _Center.Contract.GetTotalMarkedReserve(&_Center.CallOpts)
+}
+
+// IsMigrating is a free data retrieval call binding the contract method 0xf05e777d.
+//
+// Solidity: function isMigrating() view returns(bool)
+func (_Center *CenterCaller) IsMigrating(opts *bind.CallOpts) (bool, error) {
+	var out []interface{}
+	err := _Center.contract.Call(opts, &out, "isMigrating")
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// IsMigrating is a free data retrieval call binding the contract method 0xf05e777d.
+//
+// Solidity: function isMigrating() view returns(bool)
+func (_Center *CenterSession) IsMigrating() (bool, error) {
+	return _Center.Contract.IsMigrating(&_Center.CallOpts)
+}
+
+// IsMigrating is a free data retrieval call binding the contract method 0xf05e777d.
+//
+// Solidity: function isMigrating() view returns(bool)
+func (_Center *CenterCallerSession) IsMigrating() (bool, error) {
+	return _Center.Contract.IsMigrating(&_Center.CallOpts)
+}
+
+// IsReserveMigrated is a free data retrieval call binding the contract method 0xf144f040.
+//
+// Solidity: function isReserveMigrated((address,uint256) reserve) view returns(bool)
+func (_Center *CenterCaller) IsReserveMigrated(opts *bind.CallOpts, reserve Reserve) (bool, error) {
+	var out []interface{}
+	err := _Center.contract.Call(opts, &out, "isReserveMigrated", reserve)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// IsReserveMigrated is a free data retrieval call binding the contract method 0xf144f040.
+//
+// Solidity: function isReserveMigrated((address,uint256) reserve) view returns(bool)
+func (_Center *CenterSession) IsReserveMigrated(reserve Reserve) (bool, error) {
+	return _Center.Contract.IsReserveMigrated(&_Center.CallOpts, reserve)
+}
+
+// IsReserveMigrated is a free data retrieval call binding the contract method 0xf144f040.
+//
+// Solidity: function isReserveMigrated((address,uint256) reserve) view returns(bool)
+func (_Center *CenterCallerSession) IsReserveMigrated(reserve Reserve) (bool, error) {
+	return _Center.Contract.IsReserveMigrated(&_Center.CallOpts, reserve)
+}
+
+// IsReservesMigrated is a free data retrieval call binding the contract method 0xbfb25601.
+//
+// Solidity: function isReservesMigrated((address,uint256)[] reserves) view returns(bool)
+func (_Center *CenterCaller) IsReservesMigrated(opts *bind.CallOpts, reserves []Reserve) (bool, error) {
+	var out []interface{}
+	err := _Center.contract.Call(opts, &out, "isReservesMigrated", reserves)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// IsReservesMigrated is a free data retrieval call binding the contract method 0xbfb25601.
+//
+// Solidity: function isReservesMigrated((address,uint256)[] reserves) view returns(bool)
+func (_Center *CenterSession) IsReservesMigrated(reserves []Reserve) (bool, error) {
+	return _Center.Contract.IsReservesMigrated(&_Center.CallOpts, reserves)
+}
+
+// IsReservesMigrated is a free data retrieval call binding the contract method 0xbfb25601.
+//
+// Solidity: function isReservesMigrated((address,uint256)[] reserves) view returns(bool)
+func (_Center *CenterCallerSession) IsReservesMigrated(reserves []Reserve) (bool, error) {
+	return _Center.Contract.IsReservesMigrated(&_Center.CallOpts, reserves)
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
@@ -271,6 +463,90 @@ func (_Center *CenterSession) Owner() (common.Address, error) {
 // Solidity: function owner() view returns(address)
 func (_Center *CenterCallerSession) Owner() (common.Address, error) {
 	return _Center.Contract.Owner(&_Center.CallOpts)
+}
+
+// MarkReserve is a paid mutator transaction binding the contract method 0x73274bce.
+//
+// Solidity: function markReserve((address,uint256) reserve) returns()
+func (_Center *CenterTransactor) MarkReserve(opts *bind.TransactOpts, reserve Reserve) (*types.Transaction, error) {
+	return _Center.contract.Transact(opts, "markReserve", reserve)
+}
+
+// MarkReserve is a paid mutator transaction binding the contract method 0x73274bce.
+//
+// Solidity: function markReserve((address,uint256) reserve) returns()
+func (_Center *CenterSession) MarkReserve(reserve Reserve) (*types.Transaction, error) {
+	return _Center.Contract.MarkReserve(&_Center.TransactOpts, reserve)
+}
+
+// MarkReserve is a paid mutator transaction binding the contract method 0x73274bce.
+//
+// Solidity: function markReserve((address,uint256) reserve) returns()
+func (_Center *CenterTransactorSession) MarkReserve(reserve Reserve) (*types.Transaction, error) {
+	return _Center.Contract.MarkReserve(&_Center.TransactOpts, reserve)
+}
+
+// MarkReserves is a paid mutator transaction binding the contract method 0x55c82602.
+//
+// Solidity: function markReserves((address,uint256)[] reserves) returns()
+func (_Center *CenterTransactor) MarkReserves(opts *bind.TransactOpts, reserves []Reserve) (*types.Transaction, error) {
+	return _Center.contract.Transact(opts, "markReserves", reserves)
+}
+
+// MarkReserves is a paid mutator transaction binding the contract method 0x55c82602.
+//
+// Solidity: function markReserves((address,uint256)[] reserves) returns()
+func (_Center *CenterSession) MarkReserves(reserves []Reserve) (*types.Transaction, error) {
+	return _Center.Contract.MarkReserves(&_Center.TransactOpts, reserves)
+}
+
+// MarkReserves is a paid mutator transaction binding the contract method 0x55c82602.
+//
+// Solidity: function markReserves((address,uint256)[] reserves) returns()
+func (_Center *CenterTransactorSession) MarkReserves(reserves []Reserve) (*types.Transaction, error) {
+	return _Center.Contract.MarkReserves(&_Center.TransactOpts, reserves)
+}
+
+// MigrateReserves is a paid mutator transaction binding the contract method 0x41b63c6f.
+//
+// Solidity: function migrateReserves() payable returns()
+func (_Center *CenterTransactor) MigrateReserves(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Center.contract.Transact(opts, "migrateReserves")
+}
+
+// MigrateReserves is a paid mutator transaction binding the contract method 0x41b63c6f.
+//
+// Solidity: function migrateReserves() payable returns()
+func (_Center *CenterSession) MigrateReserves() (*types.Transaction, error) {
+	return _Center.Contract.MigrateReserves(&_Center.TransactOpts)
+}
+
+// MigrateReserves is a paid mutator transaction binding the contract method 0x41b63c6f.
+//
+// Solidity: function migrateReserves() payable returns()
+func (_Center *CenterTransactorSession) MigrateReserves() (*types.Transaction, error) {
+	return _Center.Contract.MigrateReserves(&_Center.TransactOpts)
+}
+
+// MigrateReservesPage is a paid mutator transaction binding the contract method 0xc4d678af.
+//
+// Solidity: function migrateReservesPage(uint256 start, uint256 end) payable returns()
+func (_Center *CenterTransactor) MigrateReservesPage(opts *bind.TransactOpts, start *big.Int, end *big.Int) (*types.Transaction, error) {
+	return _Center.contract.Transact(opts, "migrateReservesPage", start, end)
+}
+
+// MigrateReservesPage is a paid mutator transaction binding the contract method 0xc4d678af.
+//
+// Solidity: function migrateReservesPage(uint256 start, uint256 end) payable returns()
+func (_Center *CenterSession) MigrateReservesPage(start *big.Int, end *big.Int) (*types.Transaction, error) {
+	return _Center.Contract.MigrateReservesPage(&_Center.TransactOpts, start, end)
+}
+
+// MigrateReservesPage is a paid mutator transaction binding the contract method 0xc4d678af.
+//
+// Solidity: function migrateReservesPage(uint256 start, uint256 end) payable returns()
+func (_Center *CenterTransactorSession) MigrateReservesPage(start *big.Int, end *big.Int) (*types.Transaction, error) {
+	return _Center.Contract.MigrateReservesPage(&_Center.TransactOpts, start, end)
 }
 
 // RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
@@ -315,6 +591,48 @@ func (_Center *CenterTransactorSession) SetAddress(symbol string, contractAddres
 	return _Center.Contract.SetAddress(&_Center.TransactOpts, symbol, contractAddress)
 }
 
+// SetContractAddress is a paid mutator transaction binding the contract method 0x534e785c.
+//
+// Solidity: function setContractAddress(string symbol, address contractAddress) returns()
+func (_Center *CenterTransactor) SetContractAddress(opts *bind.TransactOpts, symbol string, contractAddress common.Address) (*types.Transaction, error) {
+	return _Center.contract.Transact(opts, "setContractAddress", symbol, contractAddress)
+}
+
+// SetContractAddress is a paid mutator transaction binding the contract method 0x534e785c.
+//
+// Solidity: function setContractAddress(string symbol, address contractAddress) returns()
+func (_Center *CenterSession) SetContractAddress(symbol string, contractAddress common.Address) (*types.Transaction, error) {
+	return _Center.Contract.SetContractAddress(&_Center.TransactOpts, symbol, contractAddress)
+}
+
+// SetContractAddress is a paid mutator transaction binding the contract method 0x534e785c.
+//
+// Solidity: function setContractAddress(string symbol, address contractAddress) returns()
+func (_Center *CenterTransactorSession) SetContractAddress(symbol string, contractAddress common.Address) (*types.Transaction, error) {
+	return _Center.Contract.SetContractAddress(&_Center.TransactOpts, symbol, contractAddress)
+}
+
+// SetMigrating is a paid mutator transaction binding the contract method 0xf785f03d.
+//
+// Solidity: function setMigrating(bool newIsMigrating) returns()
+func (_Center *CenterTransactor) SetMigrating(opts *bind.TransactOpts, newIsMigrating bool) (*types.Transaction, error) {
+	return _Center.contract.Transact(opts, "setMigrating", newIsMigrating)
+}
+
+// SetMigrating is a paid mutator transaction binding the contract method 0xf785f03d.
+//
+// Solidity: function setMigrating(bool newIsMigrating) returns()
+func (_Center *CenterSession) SetMigrating(newIsMigrating bool) (*types.Transaction, error) {
+	return _Center.Contract.SetMigrating(&_Center.TransactOpts, newIsMigrating)
+}
+
+// SetMigrating is a paid mutator transaction binding the contract method 0xf785f03d.
+//
+// Solidity: function setMigrating(bool newIsMigrating) returns()
+func (_Center *CenterTransactorSession) SetMigrating(newIsMigrating bool) (*types.Transaction, error) {
+	return _Center.Contract.SetMigrating(&_Center.TransactOpts, newIsMigrating)
+}
+
 // TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 //
 // Solidity: function transferOwnership(address newOwner) returns()
@@ -336,46 +654,25 @@ func (_Center *CenterTransactorSession) TransferOwnership(newOwner common.Addres
 	return _Center.Contract.TransferOwnership(&_Center.TransactOpts, newOwner)
 }
 
-// Upgrade is a paid mutator transaction binding the contract method 0x0900f010.
+// Upgrade is a paid mutator transaction binding the contract method 0xc987336c.
 //
-// Solidity: function upgrade(address newImplementation) returns()
-func (_Center *CenterTransactor) Upgrade(opts *bind.TransactOpts, newImplementation common.Address) (*types.Transaction, error) {
-	return _Center.contract.Transact(opts, "upgrade", newImplementation)
+// Solidity: function upgrade(address newImpl, bytes data) returns()
+func (_Center *CenterTransactor) Upgrade(opts *bind.TransactOpts, newImpl common.Address, data []byte) (*types.Transaction, error) {
+	return _Center.contract.Transact(opts, "upgrade", newImpl, data)
 }
 
-// Upgrade is a paid mutator transaction binding the contract method 0x0900f010.
+// Upgrade is a paid mutator transaction binding the contract method 0xc987336c.
 //
-// Solidity: function upgrade(address newImplementation) returns()
-func (_Center *CenterSession) Upgrade(newImplementation common.Address) (*types.Transaction, error) {
-	return _Center.Contract.Upgrade(&_Center.TransactOpts, newImplementation)
+// Solidity: function upgrade(address newImpl, bytes data) returns()
+func (_Center *CenterSession) Upgrade(newImpl common.Address, data []byte) (*types.Transaction, error) {
+	return _Center.Contract.Upgrade(&_Center.TransactOpts, newImpl, data)
 }
 
-// Upgrade is a paid mutator transaction binding the contract method 0x0900f010.
+// Upgrade is a paid mutator transaction binding the contract method 0xc987336c.
 //
-// Solidity: function upgrade(address newImplementation) returns()
-func (_Center *CenterTransactorSession) Upgrade(newImplementation common.Address) (*types.Transaction, error) {
-	return _Center.Contract.Upgrade(&_Center.TransactOpts, newImplementation)
-}
-
-// Upgrade0 is a paid mutator transaction binding the contract method 0xc987336c.
-//
-// Solidity: function upgrade(address newImplementation, bytes data) returns()
-func (_Center *CenterTransactor) Upgrade0(opts *bind.TransactOpts, newImplementation common.Address, data []byte) (*types.Transaction, error) {
-	return _Center.contract.Transact(opts, "upgrade0", newImplementation, data)
-}
-
-// Upgrade0 is a paid mutator transaction binding the contract method 0xc987336c.
-//
-// Solidity: function upgrade(address newImplementation, bytes data) returns()
-func (_Center *CenterSession) Upgrade0(newImplementation common.Address, data []byte) (*types.Transaction, error) {
-	return _Center.Contract.Upgrade0(&_Center.TransactOpts, newImplementation, data)
-}
-
-// Upgrade0 is a paid mutator transaction binding the contract method 0xc987336c.
-//
-// Solidity: function upgrade(address newImplementation, bytes data) returns()
-func (_Center *CenterTransactorSession) Upgrade0(newImplementation common.Address, data []byte) (*types.Transaction, error) {
-	return _Center.Contract.Upgrade0(&_Center.TransactOpts, newImplementation, data)
+// Solidity: function upgrade(address newImpl, bytes data) returns()
+func (_Center *CenterTransactorSession) Upgrade(newImpl common.Address, data []byte) (*types.Transaction, error) {
+	return _Center.Contract.Upgrade(&_Center.TransactOpts, newImpl, data)
 }
 
 // CenterContractAddedIterator is returned from FilterContractAdded and is used to iterate over the raw logs and unpacked data for ContractAdded events raised by the Center contract.
@@ -517,159 +814,6 @@ func (_Center *CenterFilterer) WatchContractAdded(opts *bind.WatchOpts, sink cha
 func (_Center *CenterFilterer) ParseContractAdded(log types.Log) (*CenterContractAdded, error) {
 	event := new(CenterContractAdded)
 	if err := _Center.contract.UnpackLog(event, "ContractAdded", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// CenterContractUpgradedIterator is returned from FilterContractUpgraded and is used to iterate over the raw logs and unpacked data for ContractUpgraded events raised by the Center contract.
-type CenterContractUpgradedIterator struct {
-	Event *CenterContractUpgraded // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *CenterContractUpgradedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(CenterContractUpgraded)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(CenterContractUpgraded)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *CenterContractUpgradedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *CenterContractUpgradedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// CenterContractUpgraded represents a ContractUpgraded event raised by the Center contract.
-type CenterContractUpgraded struct {
-	OldContract common.Address
-	NewContract common.Address
-	Raw         types.Log // Blockchain specific contextual infos
-}
-
-// FilterContractUpgraded is a free log retrieval operation binding the contract event 0x2e4cc16c100f0b55e2df82ab0b1a7e294aa9cbd01b48fbaf622683fbc0507a49.
-//
-// Solidity: event ContractUpgraded(address indexed oldContract, address indexed newContract)
-func (_Center *CenterFilterer) FilterContractUpgraded(opts *bind.FilterOpts, oldContract []common.Address, newContract []common.Address) (*CenterContractUpgradedIterator, error) {
-
-	var oldContractRule []interface{}
-	for _, oldContractItem := range oldContract {
-		oldContractRule = append(oldContractRule, oldContractItem)
-	}
-	var newContractRule []interface{}
-	for _, newContractItem := range newContract {
-		newContractRule = append(newContractRule, newContractItem)
-	}
-
-	logs, sub, err := _Center.contract.FilterLogs(opts, "ContractUpgraded", oldContractRule, newContractRule)
-	if err != nil {
-		return nil, err
-	}
-	return &CenterContractUpgradedIterator{contract: _Center.contract, event: "ContractUpgraded", logs: logs, sub: sub}, nil
-}
-
-// WatchContractUpgraded is a free log subscription operation binding the contract event 0x2e4cc16c100f0b55e2df82ab0b1a7e294aa9cbd01b48fbaf622683fbc0507a49.
-//
-// Solidity: event ContractUpgraded(address indexed oldContract, address indexed newContract)
-func (_Center *CenterFilterer) WatchContractUpgraded(opts *bind.WatchOpts, sink chan<- *CenterContractUpgraded, oldContract []common.Address, newContract []common.Address) (event.Subscription, error) {
-
-	var oldContractRule []interface{}
-	for _, oldContractItem := range oldContract {
-		oldContractRule = append(oldContractRule, oldContractItem)
-	}
-	var newContractRule []interface{}
-	for _, newContractItem := range newContract {
-		newContractRule = append(newContractRule, newContractItem)
-	}
-
-	logs, sub, err := _Center.contract.WatchLogs(opts, "ContractUpgraded", oldContractRule, newContractRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(CenterContractUpgraded)
-				if err := _Center.contract.UnpackLog(event, "ContractUpgraded", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseContractUpgraded is a log parse operation binding the contract event 0x2e4cc16c100f0b55e2df82ab0b1a7e294aa9cbd01b48fbaf622683fbc0507a49.
-//
-// Solidity: event ContractUpgraded(address indexed oldContract, address indexed newContract)
-func (_Center *CenterFilterer) ParseContractUpgraded(log types.Log) (*CenterContractUpgraded, error) {
-	event := new(CenterContractUpgraded)
-	if err := _Center.contract.UnpackLog(event, "ContractUpgraded", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
