@@ -145,14 +145,34 @@ func (k Keeper) PostTxProcessing(
 
 			if eventDelegationByID.Name == "RequestWithdraw" {
 				_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationByID.Name, log.Data)
-				err := k.RequestWithdraw(ctx, tokenUndelegate)
+				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
+				if err != nil {
+					symbolToken, _ := k.QuerySymbolToken(ctx, tokenDelegate.Stake.Token)
+					coinUpdate, err := k.coinKeeper.GetCoin(ctx, symbolToken)
+					if err == nil {
+						_ = k.coinKeeper.UpdateCoinDRC(ctx, symbolToken, tokenDelegate.Stake.Token.String())
+						coinUpdate.DRC20Contract = tokenDelegate.Stake.Token.String()
+						k.coinKeeper.SetCoin(ctx, coinUpdate)
+					}
+				}
+				err = k.RequestWithdraw(ctx, tokenUndelegate)
 				if err != nil {
 					return err
 				}
 			}
 			if eventDelegationByID.Name == "RequestTransfer" {
 				_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationByID.Name, log.Data)
-				err := k.RequestTransfer(ctx, tokenRedelegation)
+				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
+				if err != nil {
+					symbolToken, _ := k.QuerySymbolToken(ctx, tokenDelegate.Stake.Token)
+					coinUpdate, err := k.coinKeeper.GetCoin(ctx, symbolToken)
+					if err == nil {
+						_ = k.coinKeeper.UpdateCoinDRC(ctx, symbolToken, tokenDelegate.Stake.Token.String())
+						coinUpdate.DRC20Contract = tokenDelegate.Stake.Token.String()
+						k.coinKeeper.SetCoin(ctx, coinUpdate)
+					}
+				}
+				err = k.RequestTransfer(ctx, tokenRedelegation)
 				if err != nil {
 					return err
 				}
