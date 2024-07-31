@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	tmtypes "github.com/tendermint/tendermint/types"
 	"io"
 	"net/http"
 	"os"
@@ -795,7 +796,18 @@ func NewDSC(
 
 	app.SetAnteHandler(ante.NewAnteHandler(options))
 	app.SetEndBlocker(app.EndBlocker)
-	app.setupUpgradeHandlers()
+	genDoc := &tmtypes.GenesisDoc{}
+	if _, err = os.Stat(filepath.Join(homePath, "config", "genesis.json")); err != nil {
+		if !os.IsNotExist(err) {
+			tmos.Exit(err.Error())
+		}
+	} else {
+		genDoc, err = tmtypes.GenesisDocFromFile(filepath.Join(homePath, "config", "genesis.json"))
+		if err != nil {
+			tmos.Exit(err.Error())
+		}
+	}
+	app.setupUpgradeHandlers(genDoc.ChainID)
 
 	if loadLatest {
 		if err := app.LoadLatestVersion(); err != nil {
@@ -1068,8 +1080,8 @@ func initParamsKeeper(
 	return paramsKeeper
 }
 
-func (app *DSC) setupUpgradeHandlers() {
-	for _, uc := range UpgradeList {
+func (app *DSC) setupUpgradeHandlers(chainID string) {
+	for _, uc := range GetUpgradeList(chainID) {
 		app.UpgradeKeeper.SetUpgradeHandler(
 			uc.name,
 			uc.handler(app, app.mm, app.configurator),

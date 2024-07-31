@@ -65,19 +65,10 @@ func (k *Keeper) PostTxProcessing(
 	msg core.Message,
 	recipient *ethtypes.Receipt,
 ) error {
-	//params := k.GetParams(ctx)
-	//if params.TokenCenter == "" {
-	//	// no error is returned to avoid reverting the tx and allow for other post
-	//	// processing txs to pass and
-	//	fmt.Print(params)
-	//}
 
 	contractTokenCenter, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressTokenCenter)
-	//
-	//tokenCenter := center{}
-	//fmt.Print(err)
+
 	fmt.Print(contractTokenCenter)
-	//fmt.Print(tokenCenter)
 	tokenContractCenter, _ := tokenCenter.TokenCenterMetaData.GetAbi()
 	coinContract, _ := token.TokenMetaData.GetAbi()
 	addressWDEL, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressWDEL)
