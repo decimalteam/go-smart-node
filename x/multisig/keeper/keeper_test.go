@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"testing"
 
 	"bitbucket.org/decimalteam/go-smart-node/testutil"
@@ -38,6 +39,11 @@ var (
 	defaultWalletAddress, _              = sdk.AccAddressFromBech32(defaultWallet.Address)
 	existsWallet, _                      = types.NewWallet(defaultOwners, defaultWeights, defaultThreeshold, []byte{112})
 	existsWalletAddress, _               = sdk.AccAddressFromBech32(existsWallet.Address)
+)
+
+var (
+	defaultDenom = cmdcfg.BaseDenom
+	defaultCoins = sdk.NewCoins(sdk.NewCoin(defaultDenom, sdk.NewInt(1)))
 )
 
 type KeeperTestSuite struct {
