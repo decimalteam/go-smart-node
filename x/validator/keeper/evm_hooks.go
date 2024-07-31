@@ -178,33 +178,34 @@ func (k Keeper) PostTxProcessing(
 				}
 			}
 		}
-		eventDelegationNftByID, errEvent := delegatorNftCenter.EventByID(log.Topics[0])
+		_, errEvent = delegatorNftCenter.EventByID(log.Topics[0])
 		if errEvent == nil && log.Address.String() == addressDelegationNft {
-			if eventDelegationNftByID.Name == "StakedUpdated" {
-				_ = delegatorCenter.UnpackIntoInterface(&tokenDelegate, eventDelegationNftByID.Name, log.Data)
-				fmt.Println(tokenDelegate)
-				err := k.Staked(ctx, tokenDelegate)
-				if err != nil {
-					return err
-				}
-			}
-
-			if eventDelegationNftByID.Name == "RequestWithdraw" {
-				_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationNftByID.Name, log.Data)
-				fmt.Println(tokenUndelegate)
-				err := k.RequestWithdraw(ctx, tokenUndelegate)
-				if err != nil {
-					return err
-				}
-			}
-			if eventDelegationNftByID.Name == "RequestTransfer" {
-				_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationNftByID.Name, log.Data)
-				fmt.Println(tokenRedelegation)
-				err := k.RequestTransfer(ctx, tokenRedelegation)
-				if err != nil {
-					return err
-				}
-			}
+			return errors.ValidatorNftDelegationInactive
+			//if eventDelegationNftByID.Name == "StakedUpdated" {
+			//	_ = delegatorCenter.UnpackIntoInterface(&tokenDelegate, eventDelegationNftByID.Name, log.Data)
+			//	fmt.Println(tokenDelegate)
+			//	err := k.Staked(ctx, tokenDelegate)
+			//	if err != nil {
+			//		return err
+			//	}
+			//}
+			//
+			//if eventDelegationNftByID.Name == "RequestWithdraw" {
+			//	_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationNftByID.Name, log.Data)
+			//	fmt.Println(tokenUndelegate)
+			//	err := k.RequestWithdraw(ctx, tokenUndelegate)
+			//	if err != nil {
+			//		return err
+			//	}
+			//}
+			//if eventDelegationNftByID.Name == "RequestTransfer" {
+			//	_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationNftByID.Name, log.Data)
+			//	fmt.Println(tokenRedelegation)
+			//	err := k.RequestTransfer(ctx, tokenRedelegation)
+			//	if err != nil {
+			//		return err
+			//	}
+			//}
 		}
 	}
 
@@ -229,10 +230,10 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 
 	stake := validatorType.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(stakeData.Stake.Amount)})
 
-	//if stakeData.Stake.HoldTimestamp != nil {
-	//	stake.HoldStartTime = time.Now().Unix()
-	//	stake.HoldEndTime = stakeData.Stake.HoldTimestamp.Int64()
-	//}
+	if stakeData.Stake.HoldTimestamp != nil {
+		stake.HoldStartTime = time.Now().Unix()
+		stake.HoldEndTime = stakeData.Stake.HoldTimestamp.Int64()
+	}
 
 	delegatorAddress, _ := types.GetDecimalAddressFromHex(stakeData.Stake.Delegator.String())
 
