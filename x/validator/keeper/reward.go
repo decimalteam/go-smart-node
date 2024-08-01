@@ -30,6 +30,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 	ctx.Logger().Debug("custom prices", "is", customCoinPrices)
 
 	allRewards := sdk.NewInt(0)
+	allDelegationSum := sdk.NewInt(0)
 
 	for _, val := range validators {
 		if val.Rewards.IsZero() {
@@ -98,7 +99,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 		if err != nil {
 			return err
 		}
-
+		allDelegationSum = allDelegationSum.Add(totalStake)
 		remainder := rewards
 		for _, del := range delByValidator[validator.String()] {
 			reward := sdk.NewIntFromBigInt(rewards.BigInt())
