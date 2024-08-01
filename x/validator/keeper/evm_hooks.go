@@ -28,6 +28,7 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	cmtjson "github.com/tendermint/tendermint/libs/json"
 	"strings"
+	"time"
 )
 
 var _ evmtypes.EvmHooks = Hooks{}
@@ -230,10 +231,13 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 
 	stake := validatorType.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(stakeData.Stake.Amount)})
 
-	//if stakeData.Stake.HoldTimestamp != nil {
-	//	stake.HoldStartTime = time.Now().Unix()
-	//	stake.HoldEndTime = stakeData.Stake.HoldTimestamp.Int64()
-	//}
+	if stakeData.Stake.HoldTimestamp != nil {
+		var newHold validatorType.StakeHold
+		newHold.Amount = math.NewIntFromBigInt(stakeData.Stake.Amount)
+		newHold.HoldStartTime = time.Now().Unix()
+		newHold.HoldEndTime = stakeData.Stake.HoldTimestamp.Int64()
+		stake.Holds = append(stake.Holds, &newHold)
+	}
 
 	delegatorAddress, _ := types.GetDecimalAddressFromHex(stakeData.Stake.Delegator.String())
 
