@@ -140,10 +140,11 @@ definitions:
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ol/9/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ol/9/
               - cd ${BITBUCKET_CLONE_DIR}/build/linux/ol
-              - ln -s 9 9.3
-              - ln -s 9 9.2
-              - ln -s 9 9.1
               - ln -s 9 9.0
+              - ln -s 9 9.1
+              - ln -s 9 9.2
+              - ln -s 9 9.3
+              - ln -s 9 9.4
             artifacts:
               - build/**
 
@@ -175,11 +176,16 @@ definitions:
               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ol/8/
               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ol/8/
               - cd ${BITBUCKET_CLONE_DIR}/build/linux/ol
+              - ln -s 8 8.1
+              - ln -s 8 8.2
+              - ln -s 8 8.3
+              - ln -s 8 8.4
               - ln -s 8 8.5
               - ln -s 8 8.6
               - ln -s 8 8.7
               - ln -s 8 8.8
               - ln -s 8 8.9
+              - ln -s 8 8.10
             artifacts:
               - build/**
 
@@ -429,6 +435,17 @@ pipelines:
           <<: *deploy
 
   custom:
+    worker-docker-build:
+      - step:
+          name: Worker Docker Alpine image
+          script:
+            - export BITBUCKET_COMMIT_SHORT="${BITBUCKET_COMMIT::7}"
+            - docker login ${REGISTRY_URL} -u ${REGISTRY_LOGIN} -p ${REGISTRY_PASSWORD}
+            - docker build -t ${REGISTRY_URL}/${BITBUCKET_REPO_SLUG}:${BITBUCKET_COMMIT_SHORT} -t ${REGISTRY_URL}/${BITBUCKET_REPO_SLUG}:${BITBUCKET_BRANCH} -f Dockerfile-worker .
+            - docker push --all-tags ${REGISTRY_URL}/${BITBUCKET_REPO_SLUG}
+          services:
+            - docker
+
     worker-dev-smart-chain:
       - step:
           name: Build worker
