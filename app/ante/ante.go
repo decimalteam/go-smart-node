@@ -4,6 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	authante "github.com/cosmos/cosmos-sdk/x/auth/ante"
+	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	ethante "github.com/decimalteam/ethermint/app/ante"
 )
 
@@ -40,15 +41,23 @@ func NewAnteHandler(options HandlerOptions) sdk.AnteHandler {
 				return anteHandler(ctx, tx, sim)
 			}
 		}
+
+		switch tx.(type) {
+		case sdk.Tx:
+			for _, msg := range tx.GetMsgs() {
+				if _, ok := msg.(*types.MsgSoftwareUpgrade); ok {
+					anteHandler = newCosmosAnteHandler(options)
+					return anteHandler(ctx, tx, sim)
+				}
+				if _, ok := msg.(*types.MsgCancelUpgrade); ok {
+					anteHandler = newCosmosAnteHandler(options)
+					return anteHandler(ctx, tx, sim)
+				}
+			}
+		default:
+			return ctx, sdkerrors.ErrUnknownRequest
+		}
+
 		return ctx, sdkerrors.ErrUnknownRequest
-		// handle as totally normal Decimal SDK tx
-		//switch tx.(type) {
-		////case sdk.Tx:
-		////	anteHandler = newCosmosAnteHandler(options)
-		//default:
-		//	return ctx, sdkerrors.ErrUnknownRequest
-		//}
-		//
-		//return anteHandler(ctx, tx, sim)
 	}
 }

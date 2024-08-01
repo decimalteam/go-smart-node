@@ -41,11 +41,6 @@ var (
 	existsWalletAddress, _               = sdk.AccAddressFromBech32(existsWallet.Address)
 )
 
-var (
-	defaultDenom = cmdcfg.BaseDenom
-	defaultCoins = sdk.NewCoins(sdk.NewCoin(defaultDenom, sdk.NewInt(1)))
-)
-
 type KeeperTestSuite struct {
 	suite.Suite
 
@@ -90,9 +85,9 @@ func (s *KeeperTestSuite) SetupTest() {
 	var emptyAccount authtypes.AccountI
 	ctrl := gomock.NewController(s.T())
 	bankKeeper := mstestutil.NewMockKeeper(ctrl)
-	bankKeeper.EXPECT().GetAllBalances(ctx, defaultWalletAddress).AnyTimes().Return(defaultCoins)
-	bankKeeper.EXPECT().GetAllBalances(ctx, existsWalletAddress).AnyTimes().Return(sdk.NewCoins(sdk.NewCoin(defaultDenom, sdk.NewInt(0))))
-	bankKeeper.EXPECT().SendCoins(ctx, defaultWalletAddress, user1, defaultCoins).AnyTimes().Return(nil)
+	bankKeeper.EXPECT().GetAllBalances(ctx, defaultWalletAddress).AnyTimes().Return(sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, sdk.NewInt(1))))
+	bankKeeper.EXPECT().GetAllBalances(ctx, existsWalletAddress).AnyTimes().Return(sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, sdk.NewInt(0))))
+	bankKeeper.EXPECT().SendCoins(ctx, defaultWalletAddress, user1, sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, sdk.NewInt(1)))).AnyTimes().Return(nil)
 	accountKeeper := mstestutil.NewMockAccountKeeperI(ctrl)
 	accountKeeper.EXPECT().GetAccount(ctx, defaultWalletAddress).AnyTimes().Return(nil)
 	accountKeeper.EXPECT().GetAccount(ctx.WithTxBytes([]byte{1}), existsWalletAddress).AnyTimes().Return(emptyAccount)
