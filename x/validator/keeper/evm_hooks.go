@@ -262,11 +262,6 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 	if err != nil {
 		return err
 	}
-	fmt.Println("finish delegation")
-	fmt.Println(stake)
-	fmt.Println(delegatorAddress)
-	fmt.Println(validatorCosmos)
-	fmt.Println("finish delegation")
 	return nil
 }
 
