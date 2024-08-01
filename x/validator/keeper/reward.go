@@ -29,6 +29,8 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 	ctx.Logger().Debug("custom coin staked", "is", customCoinStaked)
 	ctx.Logger().Debug("custom prices", "is", customCoinPrices)
 
+	allRewards := sdk.NewInt(0)
+
 	for _, val := range validators {
 		if val.Rewards.IsZero() {
 			continue
@@ -61,6 +63,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 		}
 		rewards = rewards.Sub(daoVal)
 		rewards = rewards.Sub(developVal)
+		allRewards = allRewards.Add(rewards)
 		// validator commission
 		valComission := sdk.NewDecFromInt(rewards).Mul(val.Commission).TruncateInt()
 		var valRewardAddress sdk.AccAddress
