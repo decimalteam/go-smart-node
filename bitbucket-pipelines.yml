@@ -13,6 +13,17 @@ definitions:
           - git clone --bare git@bitbucket.org:decimalteam/go-smart-node.git
           - cd go-smart-node.git
           - git push --mirror git@github.com:decimalteam/go-smart-node.git
+
+    - step: &worker-docker-build
+        name: Worker Docker Alpine image
+        script:
+          - export BITBUCKET_COMMIT_SHORT="${BITBUCKET_COMMIT::7}"
+          - docker login ${REGISTRY_URL} -u ${REGISTRY_LOGIN} -p ${REGISTRY_PASSWORD}
+          - docker build -t ${REGISTRY_URL}/worker:${BITBUCKET_COMMIT_SHORT} -t ${REGISTRY_URL}/worker:${BITBUCKET_BRANCH} -f Dockerfile-worker .
+          - docker push --all-tags ${REGISTRY_URL}/worker
+        services:
+          - docker
+
     - step: &build
         name: Build
         image: centos:centos8
@@ -420,10 +431,12 @@ pipelines:
   branches:
     master:
       - step: *mirror
+      - step: *worker-docker-build
       - step: *build
 
     staging:
       - step: *mirror
+      - step: *worker-docker-build
       - step: *build
       - step:
           deployment: Staging
@@ -431,23 +444,13 @@ pipelines:
 
     development:
       - step: *mirror
+      - step: *worker-docker-build
       - step: *build
       - step:
           deployment: Test
           <<: *deploy
 
   custom:
-    worker-docker-build:
-      - step:
-          name: Worker Docker Alpine image
-          script:
-            - export BITBUCKET_COMMIT_SHORT="${BITBUCKET_COMMIT::7}"
-            - docker login ${REGISTRY_URL} -u ${REGISTRY_LOGIN} -p ${REGISTRY_PASSWORD}
-            - docker build -t ${REGISTRY_URL}/${BITBUCKET_REPO_SLUG}:${BITBUCKET_COMMIT_SHORT} -t ${REGISTRY_URL}/${BITBUCKET_REPO_SLUG}:${BITBUCKET_BRANCH} -f Dockerfile-worker .
-            - docker push --all-tags ${REGISTRY_URL}/${BITBUCKET_REPO_SLUG}
-          services:
-            - docker
-
     worker-dev-smart-chain:
       - step:
           name: Build worker
