@@ -71,6 +71,8 @@ func (k Keeper) PostTxProcessing(
 	//	// processing txs to pass and
 	//	return nil
 	//}
+	//params.UndelegationTime =
+	//k.SetParams(ctx)
 	fmt.Println("validator hook")
 	addressValidator, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressMasterValidator)
 	addressDelegation, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)

@@ -97,7 +97,7 @@ func (s Stake) Add(a Stake) (Stake, error) {
 		}
 	}
 	if len(s.Holds) != 0 {
-		result.Holds = append(result.Holds, s.Holds...)
+		result.Holds = append(s.Holds, a.Holds...)
 	}
 	return result, nil
 }
