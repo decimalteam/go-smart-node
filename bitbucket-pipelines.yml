@@ -15,7 +15,7 @@ definitions:
           - git push --mirror git@github.com:decimalteam/go-smart-node.git
 
     - step: &worker-docker-build
-        name: Worker Docker Alpine image
+        name: Build Worker Docker Alpine image
         script:
           - export BITBUCKET_COMMIT_SHORT="${BITBUCKET_COMMIT::7}"
           - docker login ${REGISTRY_URL} -u ${REGISTRY_LOGIN} -p ${REGISTRY_PASSWORD}
@@ -428,21 +428,21 @@ pipelines:
   branches:
     master:
       - step: *mirror
-      - step: *worker-docker-build
       - step: *build
+      - step: *worker-docker-build
 
     staging:
       - step: *mirror
-      - step: *worker-docker-build
       - step: *build
+      - step: *worker-docker-build
       - step:
           deployment: Staging
           <<: *deploy
 
     development:
       - step: *mirror
-      - step: *worker-docker-build
       - step: *build
+      - step: *worker-docker-build
       - step:
           deployment: Test
           <<: *deploy
