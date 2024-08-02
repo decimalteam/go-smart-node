@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"fmt"
 	"time"
 
@@ -34,8 +33,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 	allRewards := sdk.NewInt(0)
 	allDelegationSum := sdk.NewInt(0)
 	allHoldBigOneYearsSum := sdk.NewInt(0)
-	//allEmmision := types.GetAllEmission(uint64(ctx.BlockHeight()))
-	allEmmision := helpers.BipToPip(sdk.NewInt(2100))
+	allEmmision := types.GetAllEmission(ctx)
 
 	for _, val := range validators {
 		if val.Rewards.IsZero() {

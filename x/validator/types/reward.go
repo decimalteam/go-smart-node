@@ -2,7 +2,6 @@ package types
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -17,12 +16,14 @@ const (
 	blockStartEmission     = 10214628091
 )
 
-func GetAllEmission(blockCurrentHeight uint64) sdk.Int {
+func GetAllEmission(ctx sdk.Context) sdk.Int {
 	allEmision := helpers.EtherToWei(sdk.NewInt(blockStartEmission))
-	for j := uint64(blockStartCalcEmission); j < blockCurrentHeight; j++ {
+	if !helpers.IsMainnet(ctx.ChainID()) {
+		allEmision = helpers.EtherToWei(sdk.NewInt(1))
+	}
+	for j := uint64(blockStartCalcEmission); j < uint64(ctx.BlockHeight()); j++ {
 		allEmision = allEmision.Add(GetRewardOldForBlock(j))
 	}
-	fmt.Println(helpers.WeiToEther(allEmision))
 	return allEmision
 }
 

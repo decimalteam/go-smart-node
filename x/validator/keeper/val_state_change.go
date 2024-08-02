@@ -121,7 +121,7 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 
 	//dataAddress, err := k.QueryAddressDelegation(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
 	isMigration, err := contracts.GetIsMigration(ctx, k.evmKeeper)
-	fmt.Println(types.GetAllEmission(uint64(ctx.BlockHeight())))
+	fmt.Println(types.GetAllEmission(ctx))
 	fmt.Println(isMigration)
 	fmt.Println(err)
 	dataAddress, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
