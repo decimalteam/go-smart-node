@@ -112,6 +112,6 @@ func GetContractCenter(chainID string) string {
 	} else if helpers.IsTestnet(chainID) {
 		return "0x464eB51b5965f4520B7180E2cC7805c55f9cefDA"
 	} else {
-		return "0x30bc74d5d6867421d78f05b8c22e81d265e39fbd"
+		return "0x12aa4439bc5df831e070fd6fe3055f0c4da2e6d5"
 	}
 }
