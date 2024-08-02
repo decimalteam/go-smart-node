@@ -89,7 +89,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 		}
 		validator := val.GetOperator()
 		rewards := val.Rewards
-		accumRewards := rewards
+		accumRewards := sdk.NewDecFromInt(rewards).Mul(sdk.NewDecFromInt(percentForHold).QuoInt64(100)).TruncateInt()
 
 		//daoWallet, err := k.getDAO(ctx)
 		//if err != nil {
@@ -225,7 +225,9 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 				}
 				valEvent.Delegators = append(valEvent.Delegators, nftEvent)
 			}
-
+			if sumHold.LT(sdk.NewInt(1)) {
+				continue
+			}
 			rewardHold := sumRewardForHold.Mul(sumHold).Quo(allHoldBigOneYearsSum)
 			if rewardHold.LT(sdk.NewInt(1)) {
 				continue
