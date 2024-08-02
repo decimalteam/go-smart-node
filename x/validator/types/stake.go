@@ -50,6 +50,11 @@ func (s Stake) GetSubTokenIDs() []uint32 {
 	return s.SubTokenIDs
 }
 
+// GetSubTokenIDs returns the list of staked NFT sub-token IDs.
+func (s Stake) GetHolds() []*StakeHold {
+	return s.Holds
+}
+
 func (s Stake) AddSubTokens(newSubTokens []uint32) ([]uint32, error) {
 	if s.Type != StakeType_NFT {
 		return nil, errors.WrongStakeType

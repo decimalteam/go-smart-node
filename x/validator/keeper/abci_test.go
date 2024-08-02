@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -282,6 +283,12 @@ func TestPayValidators(t *testing.T) {
 	stake42 := types.NewStakeCoin(sdk.NewCoin(ccDenom2, helpers.EtherToWei(sdkmath.NewInt(1200))))
 	stake33 := types.NewStakeCoin(sdk.NewCoin(ccDenom1, helpers.EtherToWei(sdkmath.NewInt(1000))))
 	stake34 := types.NewStakeCoin(sdk.NewCoin(ccDenom2, helpers.EtherToWei(sdkmath.NewInt(1200))))
+	//stake35 := types.NewStakeCoin(sdk.NewCoin(ccDenom2, helpers.EtherToWei(sdkmath.NewInt(1200))))
+	var newHold types.StakeHold
+	newHold.Amount = helpers.EtherToWei(sdkmath.NewInt(1200))
+	newHold.HoldStartTime = time.Now().Unix()
+	newHold.HoldEndTime = time.Now().AddDate(1, 0, 1).Unix()
+	stake34.Holds = append(stake34.Holds, &newHold)
 	{
 		err = valK.Delegate(ctx, accs[3], val2, stake32)
 		require.NoError(t, err)

@@ -73,7 +73,7 @@ func (k Keeper) PostTxProcessing(
 	//}
 	//params.UndelegationTime =
 	//k.SetParams(ctx)
-	fmt.Println("validator hook")
+
 	addressValidator, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressMasterValidator)
 	addressDelegation, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
 	addressDelegationNft, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegationNft)
@@ -93,19 +93,13 @@ func (k Keeper) PostTxProcessing(
 	for _, log := range recipient.Logs {
 		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
 		if errEvent == nil && addressValidator == strings.ToLower(log.Address.String()) {
-			fmt.Println("validator hook", eventValidatorByID.Name)
 			if eventValidatorByID.Name == "ValidatorMetaUpdated" {
 				_ = validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data)
-				fmt.Println(newValidator)
 				var validatorInfo contracts.MasterValidatorValidatorAddedMeta
 				_ = json.Unmarshal([]byte(newValidator.Meta), &validatorInfo)
 				valAddr, _ := sdk.ValAddressFromHex(msg.From.String()[2:])
 				validatorInfo.OperatorAddress = valAddr.String()
-				fmt.Println("validatorInfo")
 				err := k.CreateValidatorFromEVM(ctx, validatorInfo)
-				fmt.Println("validatorInfo")
-				fmt.Println(validatorInfo)
-				fmt.Println(err)
 				if err != nil {
 					return err
 				}
@@ -232,7 +226,7 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 	}
 
 	stake := validatorType.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(stakeData.Stake.Amount)})
-	fmt.Println(stakeData)
+
 	if stakeData.Stake.HoldTimestamp != nil {
 		var newHold validatorType.StakeHold
 		newHold.Amount = math.NewIntFromBigInt(stakeData.Stake.Amount)

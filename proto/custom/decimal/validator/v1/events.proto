@@ -155,7 +155,6 @@ message EventEmission {
 // EventPayRewards defines event emitted when all accumulated commissions are payed as rewards.
 message EventPayRewards {
   repeated ValidatorReward validators = 1 [ (gogoproto.nullable) = false ];
-  repeated DelegatorHoldReward rewardHold = 2 [ (gogoproto.nullable) = false ];
 }
 
 // EventLiveness defines event emitted when a validator is missed a block to sign.
@@ -208,23 +207,11 @@ message ValidatorReward {
   ];
   // delegators is the complete list of delegator rewards.
   repeated DelegatorReward delegators = 6 [ (gogoproto.nullable) = false ];
+  repeated DelegatorReward delegatorHolds = 7 [ (gogoproto.nullable) = false ];
 }
 
 // DelegatorReward contains delegator address and amount of a reward in base coin.
 message DelegatorReward {
-  option (gogoproto.equal) = false;
-  option (gogoproto.goproto_getters) = false;
-  option (gogoproto.goproto_stringer) = true;
-
-  // delegator is the bech32-encoded address of the delegator.
-  string delegator = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-  // coins is the complete list of coin stakes rewards.
-  repeated StakeReward coins = 2 [ (gogoproto.nullable) = false ];
-  // nfts is the complete list of NFT stakes rewards.
-  repeated StakeReward nfts = 3 [ (gogoproto.customname) = "NFTs", (gogoproto.nullable) = false ];
-}
-
-message DelegatorHoldReward {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
   option (gogoproto.goproto_stringer) = true;
