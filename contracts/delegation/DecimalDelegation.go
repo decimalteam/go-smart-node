@@ -63,7 +63,7 @@ type IDecimalDelegationCommonValidatorToken struct {
 
 // DelegationMetaData contains all meta data concerning the Delegation contract.
 var DelegationMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"}],\"name\":\"AddressEmptyCode\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\"}],\"name\":\"ERC1967InvalidImplementation\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ERC1967NonPayable\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FrozenStakesQueueIsEmpty\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidFrozenType\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidTimestamp\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidToken\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidTokenType\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidValidator\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NoCompletableFrozenStakes\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NoPenaltyToApply\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ReentrancyGuardReentrantCall\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"SafeERC20FailedOperation\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"StakeAlreadyUnfrozen\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"StakeInactive\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"TimestampError\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroAmount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oldContract\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newContract\",\"type\":\"address\"}],\"name\":\"ContractUpgraded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"withdrawFreezeTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"transferFreezeTime\",\"type\":\"uint256\"}],\"name\":\"FreezeTimeUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newPenaltyIndex\",\"type\":\"uint256\"}],\"name\":\"PenaltyAppliedToStake\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"penaltyIndex\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reserve\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structIDecimalDelegationCommon.ValidatorReserve\",\"name\":\"validatorReserve\",\"type\":\"tuple\"}],\"name\":\"PenaltyAppliedToValidator\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"}],\"name\":\"StakeUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakeIndex\",\"type\":\"uint256\"}],\"name\":\"TransferCompleted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakeIndex\",\"type\":\"uint256\"},{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeStatus\",\"name\":\"freezeStatus\",\"type\":\"uint8\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"unfreezeTimestamp\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structIDecimalDelegationCommon.FrozenStake\",\"name\":\"frozenStake\",\"type\":\"tuple\"}],\"name\":\"TransferRequest\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\"}],\"name\":\"Upgraded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakeIndex\",\"type\":\"uint256\"}],\"name\":\"WithdrawCompleted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakeIndex\",\"type\":\"uint256\"},{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeStatus\",\"name\":\"freezeStatus\",\"type\":\"uint8\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"unfreezeTimestamp\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structIDecimalDelegationCommon.FrozenStake\",\"name\":\"frozenStake\",\"type\":\"tuple\"}],\"name\":\"WithdrawRequest\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"WETH\",\"outputs\":[{\"internalType\":\"contractIWETH\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.ValidatorToken[]\",\"name\":\"validatorTokens\",\"type\":\"tuple[]\"}],\"name\":\"applyPenaltiesToValidator\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"indexes\",\"type\":\"uint256[]\"}],\"name\":\"complete\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"delegate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"delegateByPermit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"}],\"name\":\"delegateETH\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"}],\"name\":\"delegateETHTo\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"delegateHold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"delegateHoldByPermit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"delegateHoldETH\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"delegateTo\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getContractCenter\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"}],\"name\":\"getFreezeTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"getFrozenStake\",\"outputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeStatus\",\"name\":\"freezeStatus\",\"type\":\"uint8\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"unfreezeTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.FrozenStake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"stakeIndexes\",\"type\":\"uint256[]\"}],\"name\":\"getFrozenStakes\",\"outputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeStatus\",\"name\":\"freezeStatus\",\"type\":\"uint8\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"unfreezeTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.FrozenStake[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"getHoldStake\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"getHoldStakeId\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getImplementation\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"getStake\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"getStakeId\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"}],\"name\":\"getStakePenaltyIndex\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"stakeIds\",\"type\":\"bytes32[]\"}],\"name\":\"getStakes\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake[]\",\"name\":\"stakes\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"getValidatorReserve\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"penaltyIndex\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reserve\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.ValidatorReserve\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amountToHold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"oldHoldTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"newHoldTimestamp\",\"type\":\"uint256\"}],\"name\":\"hold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"contractCenter\",\"type\":\"address\"}],\"name\":\"setContractCenter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"withdrawFreezeTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"transferFreezeTime\",\"type\":\"uint256\"}],\"name\":\"setFreezeTime\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"newValidator\",\"type\":\"address\"}],\"name\":\"transfer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"newValidator\",\"type\":\"address\"}],\"name\":\"transferHold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImplementation\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"upgrade\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"withdrawHold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"}],\"name\":\"AddressEmptyCode\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\"}],\"name\":\"ERC1967InvalidImplementation\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ERC1967NonPayable\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FrozenStakesQueueIsEmpty\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidFrozenType\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidTimestamp\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidToken\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidTokenType\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidValidator\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NoCompletableFrozenStakes\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NoPenaltyToApply\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ReentrancyGuardReentrantCall\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"SafeERC20FailedOperation\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"StakeAlreadyUnfrozen\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"StakeInactive\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"TimestampError\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroAmount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"withdrawFreezeTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"transferFreezeTime\",\"type\":\"uint256\"}],\"name\":\"FreezeTimeUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newPenaltyIndex\",\"type\":\"uint256\"}],\"name\":\"PenaltyAppliedToStake\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"penaltyIndex\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reserve\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structIDecimalDelegationCommon.ValidatorReserve\",\"name\":\"validatorReserve\",\"type\":\"tuple\"}],\"name\":\"PenaltyAppliedToValidator\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"isNew\",\"type\":\"bool\"}],\"name\":\"StakeHolded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"isNew\",\"type\":\"bool\"}],\"name\":\"StakeUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakeIndex\",\"type\":\"uint256\"}],\"name\":\"TransferCompleted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakeIndex\",\"type\":\"uint256\"},{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeStatus\",\"name\":\"freezeStatus\",\"type\":\"uint8\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"unfreezeTimestamp\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structIDecimalDelegationCommon.FrozenStake\",\"name\":\"frozenStake\",\"type\":\"tuple\"}],\"name\":\"TransferRequest\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\"}],\"name\":\"Upgraded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakeIndex\",\"type\":\"uint256\"}],\"name\":\"WithdrawCompleted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakeIndex\",\"type\":\"uint256\"},{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeStatus\",\"name\":\"freezeStatus\",\"type\":\"uint8\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"unfreezeTimestamp\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structIDecimalDelegationCommon.FrozenStake\",\"name\":\"frozenStake\",\"type\":\"tuple\"}],\"name\":\"WithdrawRequest\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"WETH\",\"outputs\":[{\"internalType\":\"contractIWETH\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.ValidatorToken[]\",\"name\":\"validatorTokens\",\"type\":\"tuple[]\"}],\"name\":\"applyPenaltiesToValidator\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"indexes\",\"type\":\"uint256[]\"}],\"name\":\"complete\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"delegate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"delegateByPermit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"}],\"name\":\"delegateDEL\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"}],\"name\":\"delegateDELTo\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"delegateHold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"delegateHoldByPermit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"delegateHoldDEL\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"delegateTo\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getContractCenter\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"}],\"name\":\"getFreezeTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"getFrozenStake\",\"outputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeStatus\",\"name\":\"freezeStatus\",\"type\":\"uint8\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"unfreezeTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.FrozenStake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"stakeIndexes\",\"type\":\"uint256[]\"}],\"name\":\"getFrozenStakes\",\"outputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeStatus\",\"name\":\"freezeStatus\",\"type\":\"uint8\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"unfreezeTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.FrozenStake[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"getHoldStake\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"getHoldStakeId\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getImpl\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"getStake\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"getStakeId\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"}],\"name\":\"getStakePenaltyIndex\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"stakeIds\",\"type\":\"bytes32[]\"}],\"name\":\"getStakes\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake[]\",\"name\":\"stakes\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"getValidatorReserve\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"penaltyIndex\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reserve\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.ValidatorReserve\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amountToHold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"oldHoldTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"newHoldTimestamp\",\"type\":\"uint256\"}],\"name\":\"hold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"contractCenter\",\"type\":\"address\"}],\"name\":\"setContractCenter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"withdrawFreezeTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"transferFreezeTime\",\"type\":\"uint256\"}],\"name\":\"setFreezeTime\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"newValidator\",\"type\":\"address\"}],\"name\":\"transfer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"newValidator\",\"type\":\"address\"}],\"name\":\"transferHold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImpl\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"upgrade\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"withdrawHold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}]",
 }
 
 // DelegationABI is the input ABI used to generate the binding from.
@@ -429,12 +429,12 @@ func (_Delegation *DelegationCallerSession) GetHoldStakeId(validator common.Addr
 	return _Delegation.Contract.GetHoldStakeId(&_Delegation.CallOpts, validator, delegator, token, holdTimestamp)
 }
 
-// GetImplementation is a free data retrieval call binding the contract method 0xaaf10f42.
+// GetImpl is a free data retrieval call binding the contract method 0xdfb80831.
 //
-// Solidity: function getImplementation() view returns(address)
-func (_Delegation *DelegationCaller) GetImplementation(opts *bind.CallOpts) (common.Address, error) {
+// Solidity: function getImpl() view returns(address)
+func (_Delegation *DelegationCaller) GetImpl(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
-	err := _Delegation.contract.Call(opts, &out, "getImplementation")
+	err := _Delegation.contract.Call(opts, &out, "getImpl")
 
 	if err != nil {
 		return *new(common.Address), err
@@ -446,18 +446,18 @@ func (_Delegation *DelegationCaller) GetImplementation(opts *bind.CallOpts) (com
 
 }
 
-// GetImplementation is a free data retrieval call binding the contract method 0xaaf10f42.
+// GetImpl is a free data retrieval call binding the contract method 0xdfb80831.
 //
-// Solidity: function getImplementation() view returns(address)
-func (_Delegation *DelegationSession) GetImplementation() (common.Address, error) {
-	return _Delegation.Contract.GetImplementation(&_Delegation.CallOpts)
+// Solidity: function getImpl() view returns(address)
+func (_Delegation *DelegationSession) GetImpl() (common.Address, error) {
+	return _Delegation.Contract.GetImpl(&_Delegation.CallOpts)
 }
 
-// GetImplementation is a free data retrieval call binding the contract method 0xaaf10f42.
+// GetImpl is a free data retrieval call binding the contract method 0xdfb80831.
 //
-// Solidity: function getImplementation() view returns(address)
-func (_Delegation *DelegationCallerSession) GetImplementation() (common.Address, error) {
-	return _Delegation.Contract.GetImplementation(&_Delegation.CallOpts)
+// Solidity: function getImpl() view returns(address)
+func (_Delegation *DelegationCallerSession) GetImpl() (common.Address, error) {
+	return _Delegation.Contract.GetImpl(&_Delegation.CallOpts)
 }
 
 // GetStake is a free data retrieval call binding the contract method 0x5d518866.
@@ -730,46 +730,46 @@ func (_Delegation *DelegationTransactorSession) DelegateByPermit(validator commo
 	return _Delegation.Contract.DelegateByPermit(&_Delegation.TransactOpts, validator, token, amount, deadline, v, r, s)
 }
 
-// DelegateETH is a paid mutator transaction binding the contract method 0xb77d4f76.
+// DelegateDEL is a paid mutator transaction binding the contract method 0xcc5e5500.
 //
-// Solidity: function delegateETH(address validator) payable returns()
-func (_Delegation *DelegationTransactor) DelegateETH(opts *bind.TransactOpts, validator common.Address) (*types.Transaction, error) {
-	return _Delegation.contract.Transact(opts, "delegateETH", validator)
+// Solidity: function delegateDEL(address validator) payable returns()
+func (_Delegation *DelegationTransactor) DelegateDEL(opts *bind.TransactOpts, validator common.Address) (*types.Transaction, error) {
+	return _Delegation.contract.Transact(opts, "delegateDEL", validator)
 }
 
-// DelegateETH is a paid mutator transaction binding the contract method 0xb77d4f76.
+// DelegateDEL is a paid mutator transaction binding the contract method 0xcc5e5500.
 //
-// Solidity: function delegateETH(address validator) payable returns()
-func (_Delegation *DelegationSession) DelegateETH(validator common.Address) (*types.Transaction, error) {
-	return _Delegation.Contract.DelegateETH(&_Delegation.TransactOpts, validator)
+// Solidity: function delegateDEL(address validator) payable returns()
+func (_Delegation *DelegationSession) DelegateDEL(validator common.Address) (*types.Transaction, error) {
+	return _Delegation.Contract.DelegateDEL(&_Delegation.TransactOpts, validator)
 }
 
-// DelegateETH is a paid mutator transaction binding the contract method 0xb77d4f76.
+// DelegateDEL is a paid mutator transaction binding the contract method 0xcc5e5500.
 //
-// Solidity: function delegateETH(address validator) payable returns()
-func (_Delegation *DelegationTransactorSession) DelegateETH(validator common.Address) (*types.Transaction, error) {
-	return _Delegation.Contract.DelegateETH(&_Delegation.TransactOpts, validator)
+// Solidity: function delegateDEL(address validator) payable returns()
+func (_Delegation *DelegationTransactorSession) DelegateDEL(validator common.Address) (*types.Transaction, error) {
+	return _Delegation.Contract.DelegateDEL(&_Delegation.TransactOpts, validator)
 }
 
-// DelegateETHTo is a paid mutator transaction binding the contract method 0x5ff469a4.
+// DelegateDELTo is a paid mutator transaction binding the contract method 0x2d9473ea.
 //
-// Solidity: function delegateETHTo(address delegator, address validator) payable returns()
-func (_Delegation *DelegationTransactor) DelegateETHTo(opts *bind.TransactOpts, delegator common.Address, validator common.Address) (*types.Transaction, error) {
-	return _Delegation.contract.Transact(opts, "delegateETHTo", delegator, validator)
+// Solidity: function delegateDELTo(address delegator, address validator) payable returns()
+func (_Delegation *DelegationTransactor) DelegateDELTo(opts *bind.TransactOpts, delegator common.Address, validator common.Address) (*types.Transaction, error) {
+	return _Delegation.contract.Transact(opts, "delegateDELTo", delegator, validator)
 }
 
-// DelegateETHTo is a paid mutator transaction binding the contract method 0x5ff469a4.
+// DelegateDELTo is a paid mutator transaction binding the contract method 0x2d9473ea.
 //
-// Solidity: function delegateETHTo(address delegator, address validator) payable returns()
-func (_Delegation *DelegationSession) DelegateETHTo(delegator common.Address, validator common.Address) (*types.Transaction, error) {
-	return _Delegation.Contract.DelegateETHTo(&_Delegation.TransactOpts, delegator, validator)
+// Solidity: function delegateDELTo(address delegator, address validator) payable returns()
+func (_Delegation *DelegationSession) DelegateDELTo(delegator common.Address, validator common.Address) (*types.Transaction, error) {
+	return _Delegation.Contract.DelegateDELTo(&_Delegation.TransactOpts, delegator, validator)
 }
 
-// DelegateETHTo is a paid mutator transaction binding the contract method 0x5ff469a4.
+// DelegateDELTo is a paid mutator transaction binding the contract method 0x2d9473ea.
 //
-// Solidity: function delegateETHTo(address delegator, address validator) payable returns()
-func (_Delegation *DelegationTransactorSession) DelegateETHTo(delegator common.Address, validator common.Address) (*types.Transaction, error) {
-	return _Delegation.Contract.DelegateETHTo(&_Delegation.TransactOpts, delegator, validator)
+// Solidity: function delegateDELTo(address delegator, address validator) payable returns()
+func (_Delegation *DelegationTransactorSession) DelegateDELTo(delegator common.Address, validator common.Address) (*types.Transaction, error) {
+	return _Delegation.Contract.DelegateDELTo(&_Delegation.TransactOpts, delegator, validator)
 }
 
 // DelegateHold is a paid mutator transaction binding the contract method 0x40bbbd6d.
@@ -814,25 +814,25 @@ func (_Delegation *DelegationTransactorSession) DelegateHoldByPermit(validator c
 	return _Delegation.Contract.DelegateHoldByPermit(&_Delegation.TransactOpts, validator, token, amount, holdTimestamp, deadline, v, r, s)
 }
 
-// DelegateHoldETH is a paid mutator transaction binding the contract method 0xe6ece7ba.
+// DelegateHoldDEL is a paid mutator transaction binding the contract method 0x9e0f4c7c.
 //
-// Solidity: function delegateHoldETH(address validator, uint256 holdTimestamp) payable returns()
-func (_Delegation *DelegationTransactor) DelegateHoldETH(opts *bind.TransactOpts, validator common.Address, holdTimestamp *big.Int) (*types.Transaction, error) {
-	return _Delegation.contract.Transact(opts, "delegateHoldETH", validator, holdTimestamp)
+// Solidity: function delegateHoldDEL(address validator, uint256 holdTimestamp) payable returns()
+func (_Delegation *DelegationTransactor) DelegateHoldDEL(opts *bind.TransactOpts, validator common.Address, holdTimestamp *big.Int) (*types.Transaction, error) {
+	return _Delegation.contract.Transact(opts, "delegateHoldDEL", validator, holdTimestamp)
 }
 
-// DelegateHoldETH is a paid mutator transaction binding the contract method 0xe6ece7ba.
+// DelegateHoldDEL is a paid mutator transaction binding the contract method 0x9e0f4c7c.
 //
-// Solidity: function delegateHoldETH(address validator, uint256 holdTimestamp) payable returns()
-func (_Delegation *DelegationSession) DelegateHoldETH(validator common.Address, holdTimestamp *big.Int) (*types.Transaction, error) {
-	return _Delegation.Contract.DelegateHoldETH(&_Delegation.TransactOpts, validator, holdTimestamp)
+// Solidity: function delegateHoldDEL(address validator, uint256 holdTimestamp) payable returns()
+func (_Delegation *DelegationSession) DelegateHoldDEL(validator common.Address, holdTimestamp *big.Int) (*types.Transaction, error) {
+	return _Delegation.Contract.DelegateHoldDEL(&_Delegation.TransactOpts, validator, holdTimestamp)
 }
 
-// DelegateHoldETH is a paid mutator transaction binding the contract method 0xe6ece7ba.
+// DelegateHoldDEL is a paid mutator transaction binding the contract method 0x9e0f4c7c.
 //
-// Solidity: function delegateHoldETH(address validator, uint256 holdTimestamp) payable returns()
-func (_Delegation *DelegationTransactorSession) DelegateHoldETH(validator common.Address, holdTimestamp *big.Int) (*types.Transaction, error) {
-	return _Delegation.Contract.DelegateHoldETH(&_Delegation.TransactOpts, validator, holdTimestamp)
+// Solidity: function delegateHoldDEL(address validator, uint256 holdTimestamp) payable returns()
+func (_Delegation *DelegationTransactorSession) DelegateHoldDEL(validator common.Address, holdTimestamp *big.Int) (*types.Transaction, error) {
+	return _Delegation.Contract.DelegateHoldDEL(&_Delegation.TransactOpts, validator, holdTimestamp)
 }
 
 // DelegateTo is a paid mutator transaction binding the contract method 0x2c1b15f4.
@@ -1005,23 +1005,23 @@ func (_Delegation *DelegationTransactorSession) TransferOwnership(newOwner commo
 
 // Upgrade is a paid mutator transaction binding the contract method 0xc987336c.
 //
-// Solidity: function upgrade(address newImplementation, bytes data) returns()
-func (_Delegation *DelegationTransactor) Upgrade(opts *bind.TransactOpts, newImplementation common.Address, data []byte) (*types.Transaction, error) {
-	return _Delegation.contract.Transact(opts, "upgrade", newImplementation, data)
+// Solidity: function upgrade(address newImpl, bytes data) returns()
+func (_Delegation *DelegationTransactor) Upgrade(opts *bind.TransactOpts, newImpl common.Address, data []byte) (*types.Transaction, error) {
+	return _Delegation.contract.Transact(opts, "upgrade", newImpl, data)
 }
 
 // Upgrade is a paid mutator transaction binding the contract method 0xc987336c.
 //
-// Solidity: function upgrade(address newImplementation, bytes data) returns()
-func (_Delegation *DelegationSession) Upgrade(newImplementation common.Address, data []byte) (*types.Transaction, error) {
-	return _Delegation.Contract.Upgrade(&_Delegation.TransactOpts, newImplementation, data)
+// Solidity: function upgrade(address newImpl, bytes data) returns()
+func (_Delegation *DelegationSession) Upgrade(newImpl common.Address, data []byte) (*types.Transaction, error) {
+	return _Delegation.Contract.Upgrade(&_Delegation.TransactOpts, newImpl, data)
 }
 
 // Upgrade is a paid mutator transaction binding the contract method 0xc987336c.
 //
-// Solidity: function upgrade(address newImplementation, bytes data) returns()
-func (_Delegation *DelegationTransactorSession) Upgrade(newImplementation common.Address, data []byte) (*types.Transaction, error) {
-	return _Delegation.Contract.Upgrade(&_Delegation.TransactOpts, newImplementation, data)
+// Solidity: function upgrade(address newImpl, bytes data) returns()
+func (_Delegation *DelegationTransactorSession) Upgrade(newImpl common.Address, data []byte) (*types.Transaction, error) {
+	return _Delegation.Contract.Upgrade(&_Delegation.TransactOpts, newImpl, data)
 }
 
 // Withdraw is a paid mutator transaction binding the contract method 0xd9caed12.
@@ -1085,159 +1085,6 @@ func (_Delegation *DelegationSession) Receive() (*types.Transaction, error) {
 // Solidity: receive() payable returns()
 func (_Delegation *DelegationTransactorSession) Receive() (*types.Transaction, error) {
 	return _Delegation.Contract.Receive(&_Delegation.TransactOpts)
-}
-
-// DelegationContractUpgradedIterator is returned from FilterContractUpgraded and is used to iterate over the raw logs and unpacked data for ContractUpgraded events raised by the Delegation contract.
-type DelegationContractUpgradedIterator struct {
-	Event *DelegationContractUpgraded // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *DelegationContractUpgradedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(DelegationContractUpgraded)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(DelegationContractUpgraded)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *DelegationContractUpgradedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *DelegationContractUpgradedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// DelegationContractUpgraded represents a ContractUpgraded event raised by the Delegation contract.
-type DelegationContractUpgraded struct {
-	OldContract common.Address
-	NewContract common.Address
-	Raw         types.Log // Blockchain specific contextual infos
-}
-
-// FilterContractUpgraded is a free log retrieval operation binding the contract event 0x2e4cc16c100f0b55e2df82ab0b1a7e294aa9cbd01b48fbaf622683fbc0507a49.
-//
-// Solidity: event ContractUpgraded(address indexed oldContract, address indexed newContract)
-func (_Delegation *DelegationFilterer) FilterContractUpgraded(opts *bind.FilterOpts, oldContract []common.Address, newContract []common.Address) (*DelegationContractUpgradedIterator, error) {
-
-	var oldContractRule []interface{}
-	for _, oldContractItem := range oldContract {
-		oldContractRule = append(oldContractRule, oldContractItem)
-	}
-	var newContractRule []interface{}
-	for _, newContractItem := range newContract {
-		newContractRule = append(newContractRule, newContractItem)
-	}
-
-	logs, sub, err := _Delegation.contract.FilterLogs(opts, "ContractUpgraded", oldContractRule, newContractRule)
-	if err != nil {
-		return nil, err
-	}
-	return &DelegationContractUpgradedIterator{contract: _Delegation.contract, event: "ContractUpgraded", logs: logs, sub: sub}, nil
-}
-
-// WatchContractUpgraded is a free log subscription operation binding the contract event 0x2e4cc16c100f0b55e2df82ab0b1a7e294aa9cbd01b48fbaf622683fbc0507a49.
-//
-// Solidity: event ContractUpgraded(address indexed oldContract, address indexed newContract)
-func (_Delegation *DelegationFilterer) WatchContractUpgraded(opts *bind.WatchOpts, sink chan<- *DelegationContractUpgraded, oldContract []common.Address, newContract []common.Address) (event.Subscription, error) {
-
-	var oldContractRule []interface{}
-	for _, oldContractItem := range oldContract {
-		oldContractRule = append(oldContractRule, oldContractItem)
-	}
-	var newContractRule []interface{}
-	for _, newContractItem := range newContract {
-		newContractRule = append(newContractRule, newContractItem)
-	}
-
-	logs, sub, err := _Delegation.contract.WatchLogs(opts, "ContractUpgraded", oldContractRule, newContractRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(DelegationContractUpgraded)
-				if err := _Delegation.contract.UnpackLog(event, "ContractUpgraded", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseContractUpgraded is a log parse operation binding the contract event 0x2e4cc16c100f0b55e2df82ab0b1a7e294aa9cbd01b48fbaf622683fbc0507a49.
-//
-// Solidity: event ContractUpgraded(address indexed oldContract, address indexed newContract)
-func (_Delegation *DelegationFilterer) ParseContractUpgraded(log types.Log) (*DelegationContractUpgraded, error) {
-	event := new(DelegationContractUpgraded)
-	if err := _Delegation.contract.UnpackLog(event, "ContractUpgraded", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
 }
 
 // DelegationFreezeTimeUpdatedIterator is returned from FilterFreezeTimeUpdated and is used to iterate over the raw logs and unpacked data for FreezeTimeUpdated events raised by the Delegation contract.
@@ -1955,6 +1802,142 @@ func (_Delegation *DelegationFilterer) ParsePenaltyAppliedToValidator(log types.
 	return event, nil
 }
 
+// DelegationStakeHoldedIterator is returned from FilterStakeHolded and is used to iterate over the raw logs and unpacked data for StakeHolded events raised by the Delegation contract.
+type DelegationStakeHoldedIterator struct {
+	Event *DelegationStakeHolded // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *DelegationStakeHoldedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(DelegationStakeHolded)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(DelegationStakeHolded)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *DelegationStakeHoldedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *DelegationStakeHoldedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// DelegationStakeHolded represents a StakeHolded event raised by the Delegation contract.
+type DelegationStakeHolded struct {
+	StakeId [32]byte
+	Stake   IDecimalDelegationCommonStake
+	IsNew   bool
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterStakeHolded is a free log retrieval operation binding the contract event 0xa0a8b22bc7aca2e71ba792f9390bbc1875d1fa8b0d9a82c0158f96c7f4b89cdb.
+//
+// Solidity: event StakeHolded(bytes32 stakeId, (address,address,address,uint256,uint256,uint8,uint256) stake, bool isNew)
+func (_Delegation *DelegationFilterer) FilterStakeHolded(opts *bind.FilterOpts) (*DelegationStakeHoldedIterator, error) {
+
+	logs, sub, err := _Delegation.contract.FilterLogs(opts, "StakeHolded")
+	if err != nil {
+		return nil, err
+	}
+	return &DelegationStakeHoldedIterator{contract: _Delegation.contract, event: "StakeHolded", logs: logs, sub: sub}, nil
+}
+
+// WatchStakeHolded is a free log subscription operation binding the contract event 0xa0a8b22bc7aca2e71ba792f9390bbc1875d1fa8b0d9a82c0158f96c7f4b89cdb.
+//
+// Solidity: event StakeHolded(bytes32 stakeId, (address,address,address,uint256,uint256,uint8,uint256) stake, bool isNew)
+func (_Delegation *DelegationFilterer) WatchStakeHolded(opts *bind.WatchOpts, sink chan<- *DelegationStakeHolded) (event.Subscription, error) {
+
+	logs, sub, err := _Delegation.contract.WatchLogs(opts, "StakeHolded")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(DelegationStakeHolded)
+				if err := _Delegation.contract.UnpackLog(event, "StakeHolded", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseStakeHolded is a log parse operation binding the contract event 0xa0a8b22bc7aca2e71ba792f9390bbc1875d1fa8b0d9a82c0158f96c7f4b89cdb.
+//
+// Solidity: event StakeHolded(bytes32 stakeId, (address,address,address,uint256,uint256,uint8,uint256) stake, bool isNew)
+func (_Delegation *DelegationFilterer) ParseStakeHolded(log types.Log) (*DelegationStakeHolded, error) {
+	event := new(DelegationStakeHolded)
+	if err := _Delegation.contract.UnpackLog(event, "StakeHolded", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
 // DelegationStakeUpdatedIterator is returned from FilterStakeUpdated and is used to iterate over the raw logs and unpacked data for StakeUpdated events raised by the Delegation contract.
 type DelegationStakeUpdatedIterator struct {
 	Event *DelegationStakeUpdated // Event containing the contract specifics and raw log
@@ -2026,12 +2009,13 @@ func (it *DelegationStakeUpdatedIterator) Close() error {
 type DelegationStakeUpdated struct {
 	StakeId [32]byte
 	Stake   IDecimalDelegationCommonStake
+	IsNew   bool
 	Raw     types.Log // Blockchain specific contextual infos
 }
 
-// FilterStakeUpdated is a free log retrieval operation binding the contract event 0xfb6b00cef76eb2cc290324d5cf5e6cca53263a82112aaab5b633db5e992e903a.
+// FilterStakeUpdated is a free log retrieval operation binding the contract event 0x71a822c8b2dd1c5369373dd93ec6a6b04cf7d41eb154314433c73f4f8856c03b.
 //
-// Solidity: event StakeUpdated(bytes32 stakeId, (address,address,address,uint256,uint256,uint8,uint256) stake)
+// Solidity: event StakeUpdated(bytes32 stakeId, (address,address,address,uint256,uint256,uint8,uint256) stake, bool isNew)
 func (_Delegation *DelegationFilterer) FilterStakeUpdated(opts *bind.FilterOpts) (*DelegationStakeUpdatedIterator, error) {
 
 	logs, sub, err := _Delegation.contract.FilterLogs(opts, "StakeUpdated")
@@ -2041,9 +2025,9 @@ func (_Delegation *DelegationFilterer) FilterStakeUpdated(opts *bind.FilterOpts)
 	return &DelegationStakeUpdatedIterator{contract: _Delegation.contract, event: "StakeUpdated", logs: logs, sub: sub}, nil
 }
 
-// WatchStakeUpdated is a free log subscription operation binding the contract event 0xfb6b00cef76eb2cc290324d5cf5e6cca53263a82112aaab5b633db5e992e903a.
+// WatchStakeUpdated is a free log subscription operation binding the contract event 0x71a822c8b2dd1c5369373dd93ec6a6b04cf7d41eb154314433c73f4f8856c03b.
 //
-// Solidity: event StakeUpdated(bytes32 stakeId, (address,address,address,uint256,uint256,uint8,uint256) stake)
+// Solidity: event StakeUpdated(bytes32 stakeId, (address,address,address,uint256,uint256,uint8,uint256) stake, bool isNew)
 func (_Delegation *DelegationFilterer) WatchStakeUpdated(opts *bind.WatchOpts, sink chan<- *DelegationStakeUpdated) (event.Subscription, error) {
 
 	logs, sub, err := _Delegation.contract.WatchLogs(opts, "StakeUpdated")
@@ -2078,9 +2062,9 @@ func (_Delegation *DelegationFilterer) WatchStakeUpdated(opts *bind.WatchOpts, s
 	}), nil
 }
 
-// ParseStakeUpdated is a log parse operation binding the contract event 0xfb6b00cef76eb2cc290324d5cf5e6cca53263a82112aaab5b633db5e992e903a.
+// ParseStakeUpdated is a log parse operation binding the contract event 0x71a822c8b2dd1c5369373dd93ec6a6b04cf7d41eb154314433c73f4f8856c03b.
 //
-// Solidity: event StakeUpdated(bytes32 stakeId, (address,address,address,uint256,uint256,uint8,uint256) stake)
+// Solidity: event StakeUpdated(bytes32 stakeId, (address,address,address,uint256,uint256,uint8,uint256) stake, bool isNew)
 func (_Delegation *DelegationFilterer) ParseStakeUpdated(log types.Log) (*DelegationStakeUpdated, error) {
 	event := new(DelegationStakeUpdated)
 	if err := _Delegation.contract.UnpackLog(event, "StakeUpdated", log); err != nil {

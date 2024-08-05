@@ -83,12 +83,12 @@
   },
   {
     "inputs": [],
-    "name": "NotERC1155",
+    "name": "NotDRC1155",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "NotERC721",
+    "name": "NotDRC721",
     "type": "error"
   },
   {
@@ -142,25 +142,6 @@
     "inputs": [],
     "name": "ZeroAmount",
     "type": "error"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "oldContract",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "newContract",
-        "type": "address"
-      }
-    ],
-    "name": "ContractUpgraded",
-    "type": "event"
   },
   {
     "anonymous": false,
@@ -332,9 +313,77 @@
         "internalType": "struct IDecimalDelegationCommon.Stake",
         "name": "stake",
         "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isNew",
+        "type": "bool"
       }
     ],
-    "name": "Staked",
+    "name": "StakeHolded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "stakeId",
+        "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "validator",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "delegator",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum IDecimalDelegationCommon.TokenType",
+            "name": "tokenType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "holdTimestamp",
+            "type": "uint256"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct IDecimalDelegationCommon.Stake",
+        "name": "stake",
+        "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isNew",
+        "type": "bool"
+      }
+    ],
+    "name": "StakeUpdated",
     "type": "event"
   },
   {
@@ -610,7 +659,7 @@
         "type": "uint256"
       }
     ],
-    "name": "delegateERC1155",
+    "name": "delegateDRC1155",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -658,7 +707,7 @@
         "type": "bytes32"
       }
     ],
-    "name": "delegateERC1155ByPermit",
+    "name": "delegateDRC1155ByPermit",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -681,7 +730,7 @@
         "type": "uint256"
       }
     ],
-    "name": "delegateERC721",
+    "name": "delegateDRC721",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -724,7 +773,7 @@
         "type": "bytes32"
       }
     ],
-    "name": "delegateERC721ByPermit",
+    "name": "delegateDRC721ByPermit",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -757,7 +806,7 @@
         "type": "uint256"
       }
     ],
-    "name": "delegateHoldERC1155",
+    "name": "delegateHoldDRC1155",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -810,7 +859,7 @@
         "type": "bytes32"
       }
     ],
-    "name": "delegateHoldERC1155ByPermit",
+    "name": "delegateHoldDRC1155ByPermit",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -838,7 +887,7 @@
         "type": "uint256"
       }
     ],
-    "name": "delegateHoldERC721",
+    "name": "delegateHoldDRC721",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -886,7 +935,7 @@
         "type": "bytes32"
       }
     ],
-    "name": "delegateHoldERC721ByPermit",
+    "name": "delegateHoldDRC721ByPermit",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1196,7 +1245,7 @@
   },
   {
     "inputs": [],
-    "name": "getImplementation",
+    "name": "getImpl",
     "outputs": [
       {
         "internalType": "address",
@@ -1426,6 +1475,44 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validator",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountToHold",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "oldHoldTimestamp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "newHoldTimestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "hold",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1698,7 +1785,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "newImplementation",
+        "name": "newImpl",
         "type": "address"
       },
       {

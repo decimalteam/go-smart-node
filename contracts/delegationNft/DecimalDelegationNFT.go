@@ -63,7 +63,7 @@ type IDecimalDelegationCommonValidatorToken struct {
 
 // DelegationNftMetaData contains all meta data concerning the DelegationNft contract.
 var DelegationNftMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"}],\"name\":\"AddressEmptyCode\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\"}],\"name\":\"ERC1967InvalidImplementation\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ERC1967NonPayable\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FrozenStakesQueueIsEmpty\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidCollection\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidFrozenType\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidTimestamp\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidTokenType\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidValidator\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NoCompletableFrozenStakes\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NoPenaltyToApply\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotERC1155\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotERC721\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"StakeAlreadyUnfrozen\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"StakeInactive\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"TimestampError\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroAmount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oldContract\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newContract\",\"type\":\"address\"}],\"name\":\"ContractUpgraded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"withdrawFreezeTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"transferFreezeTime\",\"type\":\"uint256\"}],\"name\":\"FreezeTimeUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newPenaltyIndex\",\"type\":\"uint256\"}],\"name\":\"PenaltyAppliedToStake\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"penaltyIndex\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reserve\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structIDecimalDelegationCommon.ValidatorReserve\",\"name\":\"validatorReserve\",\"type\":\"tuple\"}],\"name\":\"PenaltyAppliedToValidator\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"}],\"name\":\"Staked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakeIndex\",\"type\":\"uint256\"}],\"name\":\"TransferCompleted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakeIndex\",\"type\":\"uint256\"},{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeStatus\",\"name\":\"freezeStatus\",\"type\":\"uint8\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"unfreezeTimestamp\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structIDecimalDelegationCommon.FrozenStake\",\"name\":\"frozenStake\",\"type\":\"tuple\"}],\"name\":\"TransferRequest\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\"}],\"name\":\"Upgraded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakeIndex\",\"type\":\"uint256\"}],\"name\":\"WithdrawCompleted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakeIndex\",\"type\":\"uint256\"},{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeStatus\",\"name\":\"freezeStatus\",\"type\":\"uint8\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"unfreezeTimestamp\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structIDecimalDelegationCommon.FrozenStake\",\"name\":\"frozenStake\",\"type\":\"tuple\"}],\"name\":\"WithdrawRequest\",\"type\":\"event\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.ValidatorToken[]\",\"name\":\"validatorTokens\",\"type\":\"tuple[]\"}],\"name\":\"applyPenaltiesToValidator\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"indexes\",\"type\":\"uint256[]\"}],\"name\":\"complete\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"delegateERC1155\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"delegateERC1155ByPermit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"delegateERC721\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"delegateERC721ByPermit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"delegateHoldERC1155\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"delegateHoldERC1155ByPermit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"delegateHoldERC721\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"delegateHoldERC721ByPermit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getContractCenter\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"}],\"name\":\"getFreezeTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"getFrozenStake\",\"outputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeStatus\",\"name\":\"freezeStatus\",\"type\":\"uint8\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"unfreezeTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.FrozenStake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"stakeIndexes\",\"type\":\"uint256[]\"}],\"name\":\"getFrozenStakes\",\"outputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeStatus\",\"name\":\"freezeStatus\",\"type\":\"uint8\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"unfreezeTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.FrozenStake[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"getHoldStake\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"getHoldStakeId\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getImplementation\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getStake\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getStakeId\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"}],\"name\":\"getStakePenaltyIndex\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"stakeIds\",\"type\":\"bytes32[]\"}],\"name\":\"getStakes\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake[]\",\"name\":\"stakes\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getValidatorReserve\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"penaltyIndex\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reserve\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.ValidatorReserve\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC1155BatchReceived\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC1155Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC721Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"contractCenter\",\"type\":\"address\"}],\"name\":\"setContractCenter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"withdrawFreezeTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"transferFreezeTime\",\"type\":\"uint256\"}],\"name\":\"setFreezeTime\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"newValidator\",\"type\":\"address\"}],\"name\":\"transfer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"newValidator\",\"type\":\"address\"}],\"name\":\"transferHold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImplementation\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"upgrade\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"withdrawHold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"}],\"name\":\"AddressEmptyCode\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\"}],\"name\":\"ERC1967InvalidImplementation\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ERC1967NonPayable\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FrozenStakesQueueIsEmpty\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidCollection\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidFrozenType\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidTimestamp\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidTokenType\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidValidator\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NoCompletableFrozenStakes\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NoPenaltyToApply\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotDRC1155\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotDRC721\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"StakeAlreadyUnfrozen\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"StakeInactive\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"TimestampError\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroAmount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"withdrawFreezeTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"transferFreezeTime\",\"type\":\"uint256\"}],\"name\":\"FreezeTimeUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newPenaltyIndex\",\"type\":\"uint256\"}],\"name\":\"PenaltyAppliedToStake\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"penaltyIndex\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reserve\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structIDecimalDelegationCommon.ValidatorReserve\",\"name\":\"validatorReserve\",\"type\":\"tuple\"}],\"name\":\"PenaltyAppliedToValidator\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"isNew\",\"type\":\"bool\"}],\"name\":\"StakeHolded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"isNew\",\"type\":\"bool\"}],\"name\":\"StakeUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakeIndex\",\"type\":\"uint256\"}],\"name\":\"TransferCompleted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakeIndex\",\"type\":\"uint256\"},{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeStatus\",\"name\":\"freezeStatus\",\"type\":\"uint8\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"unfreezeTimestamp\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structIDecimalDelegationCommon.FrozenStake\",\"name\":\"frozenStake\",\"type\":\"tuple\"}],\"name\":\"TransferRequest\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\"}],\"name\":\"Upgraded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakeIndex\",\"type\":\"uint256\"}],\"name\":\"WithdrawCompleted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakeIndex\",\"type\":\"uint256\"},{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeStatus\",\"name\":\"freezeStatus\",\"type\":\"uint8\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"unfreezeTimestamp\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structIDecimalDelegationCommon.FrozenStake\",\"name\":\"frozenStake\",\"type\":\"tuple\"}],\"name\":\"WithdrawRequest\",\"type\":\"event\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.ValidatorToken[]\",\"name\":\"validatorTokens\",\"type\":\"tuple[]\"}],\"name\":\"applyPenaltiesToValidator\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"indexes\",\"type\":\"uint256[]\"}],\"name\":\"complete\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"delegateDRC1155\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"delegateDRC1155ByPermit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"delegateDRC721\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"delegateDRC721ByPermit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"delegateHoldDRC1155\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"delegateHoldDRC1155ByPermit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"delegateHoldDRC721\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"delegateHoldDRC721ByPermit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getContractCenter\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"}],\"name\":\"getFreezeTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"getFrozenStake\",\"outputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeStatus\",\"name\":\"freezeStatus\",\"type\":\"uint8\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"unfreezeTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.FrozenStake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"stakeIndexes\",\"type\":\"uint256[]\"}],\"name\":\"getFrozenStakes\",\"outputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"stake\",\"type\":\"tuple\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeStatus\",\"name\":\"freezeStatus\",\"type\":\"uint8\"},{\"internalType\":\"enumIDecimalDelegationCommon.FreezeType\",\"name\":\"freezeType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"unfreezeTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.FrozenStake[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"getHoldStake\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"getHoldStakeId\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getImpl\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getStake\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getStakeId\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"stakeId\",\"type\":\"bytes32\"}],\"name\":\"getStakePenaltyIndex\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"stakeIds\",\"type\":\"bytes32[]\"}],\"name\":\"getStakes\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enumIDecimalDelegationCommon.TokenType\",\"name\":\"tokenType\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.Stake[]\",\"name\":\"stakes\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getValidatorReserve\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"penaltyIndex\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reserve\",\"type\":\"uint256\"}],\"internalType\":\"structIDecimalDelegationCommon.ValidatorReserve\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amountToHold\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"oldHoldTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"newHoldTimestamp\",\"type\":\"uint256\"}],\"name\":\"hold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC1155BatchReceived\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC1155Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC721Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"contractCenter\",\"type\":\"address\"}],\"name\":\"setContractCenter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"withdrawFreezeTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"transferFreezeTime\",\"type\":\"uint256\"}],\"name\":\"setFreezeTime\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"newValidator\",\"type\":\"address\"}],\"name\":\"transfer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"newValidator\",\"type\":\"address\"}],\"name\":\"transferHold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImpl\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"upgrade\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"nft\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"holdTimestamp\",\"type\":\"uint256\"}],\"name\":\"withdrawHold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}]",
 }
 
 // DelegationNftABI is the input ABI used to generate the binding from.
@@ -398,12 +398,12 @@ func (_DelegationNft *DelegationNftCallerSession) GetHoldStakeId(validator commo
 	return _DelegationNft.Contract.GetHoldStakeId(&_DelegationNft.CallOpts, validator, delegator, nft, tokenId, holdTimestamp)
 }
 
-// GetImplementation is a free data retrieval call binding the contract method 0xaaf10f42.
+// GetImpl is a free data retrieval call binding the contract method 0xdfb80831.
 //
-// Solidity: function getImplementation() view returns(address)
-func (_DelegationNft *DelegationNftCaller) GetImplementation(opts *bind.CallOpts) (common.Address, error) {
+// Solidity: function getImpl() view returns(address)
+func (_DelegationNft *DelegationNftCaller) GetImpl(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
-	err := _DelegationNft.contract.Call(opts, &out, "getImplementation")
+	err := _DelegationNft.contract.Call(opts, &out, "getImpl")
 
 	if err != nil {
 		return *new(common.Address), err
@@ -415,18 +415,18 @@ func (_DelegationNft *DelegationNftCaller) GetImplementation(opts *bind.CallOpts
 
 }
 
-// GetImplementation is a free data retrieval call binding the contract method 0xaaf10f42.
+// GetImpl is a free data retrieval call binding the contract method 0xdfb80831.
 //
-// Solidity: function getImplementation() view returns(address)
-func (_DelegationNft *DelegationNftSession) GetImplementation() (common.Address, error) {
-	return _DelegationNft.Contract.GetImplementation(&_DelegationNft.CallOpts)
+// Solidity: function getImpl() view returns(address)
+func (_DelegationNft *DelegationNftSession) GetImpl() (common.Address, error) {
+	return _DelegationNft.Contract.GetImpl(&_DelegationNft.CallOpts)
 }
 
-// GetImplementation is a free data retrieval call binding the contract method 0xaaf10f42.
+// GetImpl is a free data retrieval call binding the contract method 0xdfb80831.
 //
-// Solidity: function getImplementation() view returns(address)
-func (_DelegationNft *DelegationNftCallerSession) GetImplementation() (common.Address, error) {
-	return _DelegationNft.Contract.GetImplementation(&_DelegationNft.CallOpts)
+// Solidity: function getImpl() view returns(address)
+func (_DelegationNft *DelegationNftCallerSession) GetImpl() (common.Address, error) {
+	return _DelegationNft.Contract.GetImpl(&_DelegationNft.CallOpts)
 }
 
 // GetStake is a free data retrieval call binding the contract method 0x347406a2.
@@ -688,172 +688,193 @@ func (_DelegationNft *DelegationNftTransactorSession) Complete(indexes []*big.In
 	return _DelegationNft.Contract.Complete(&_DelegationNft.TransactOpts, indexes)
 }
 
-// DelegateERC1155 is a paid mutator transaction binding the contract method 0x2e5d7bb7.
+// DelegateDRC1155 is a paid mutator transaction binding the contract method 0x1caa077d.
 //
-// Solidity: function delegateERC1155(address validator, address nft, uint256 tokenId, uint256 amount) returns()
-func (_DelegationNft *DelegationNftTransactor) DelegateERC1155(opts *bind.TransactOpts, validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int) (*types.Transaction, error) {
-	return _DelegationNft.contract.Transact(opts, "delegateERC1155", validator, nft, tokenId, amount)
+// Solidity: function delegateDRC1155(address validator, address nft, uint256 tokenId, uint256 amount) returns()
+func (_DelegationNft *DelegationNftTransactor) DelegateDRC1155(opts *bind.TransactOpts, validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int) (*types.Transaction, error) {
+	return _DelegationNft.contract.Transact(opts, "delegateDRC1155", validator, nft, tokenId, amount)
 }
 
-// DelegateERC1155 is a paid mutator transaction binding the contract method 0x2e5d7bb7.
+// DelegateDRC1155 is a paid mutator transaction binding the contract method 0x1caa077d.
 //
-// Solidity: function delegateERC1155(address validator, address nft, uint256 tokenId, uint256 amount) returns()
-func (_DelegationNft *DelegationNftSession) DelegateERC1155(validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int) (*types.Transaction, error) {
-	return _DelegationNft.Contract.DelegateERC1155(&_DelegationNft.TransactOpts, validator, nft, tokenId, amount)
+// Solidity: function delegateDRC1155(address validator, address nft, uint256 tokenId, uint256 amount) returns()
+func (_DelegationNft *DelegationNftSession) DelegateDRC1155(validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int) (*types.Transaction, error) {
+	return _DelegationNft.Contract.DelegateDRC1155(&_DelegationNft.TransactOpts, validator, nft, tokenId, amount)
 }
 
-// DelegateERC1155 is a paid mutator transaction binding the contract method 0x2e5d7bb7.
+// DelegateDRC1155 is a paid mutator transaction binding the contract method 0x1caa077d.
 //
-// Solidity: function delegateERC1155(address validator, address nft, uint256 tokenId, uint256 amount) returns()
-func (_DelegationNft *DelegationNftTransactorSession) DelegateERC1155(validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int) (*types.Transaction, error) {
-	return _DelegationNft.Contract.DelegateERC1155(&_DelegationNft.TransactOpts, validator, nft, tokenId, amount)
+// Solidity: function delegateDRC1155(address validator, address nft, uint256 tokenId, uint256 amount) returns()
+func (_DelegationNft *DelegationNftTransactorSession) DelegateDRC1155(validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int) (*types.Transaction, error) {
+	return _DelegationNft.Contract.DelegateDRC1155(&_DelegationNft.TransactOpts, validator, nft, tokenId, amount)
 }
 
-// DelegateERC1155ByPermit is a paid mutator transaction binding the contract method 0x653ac771.
+// DelegateDRC1155ByPermit is a paid mutator transaction binding the contract method 0x019a2159.
 //
-// Solidity: function delegateERC1155ByPermit(address validator, address nft, uint256 tokenId, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
-func (_DelegationNft *DelegationNftTransactor) DelegateERC1155ByPermit(opts *bind.TransactOpts, validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
-	return _DelegationNft.contract.Transact(opts, "delegateERC1155ByPermit", validator, nft, tokenId, amount, deadline, v, r, s)
+// Solidity: function delegateDRC1155ByPermit(address validator, address nft, uint256 tokenId, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
+func (_DelegationNft *DelegationNftTransactor) DelegateDRC1155ByPermit(opts *bind.TransactOpts, validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
+	return _DelegationNft.contract.Transact(opts, "delegateDRC1155ByPermit", validator, nft, tokenId, amount, deadline, v, r, s)
 }
 
-// DelegateERC1155ByPermit is a paid mutator transaction binding the contract method 0x653ac771.
+// DelegateDRC1155ByPermit is a paid mutator transaction binding the contract method 0x019a2159.
 //
-// Solidity: function delegateERC1155ByPermit(address validator, address nft, uint256 tokenId, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
-func (_DelegationNft *DelegationNftSession) DelegateERC1155ByPermit(validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
-	return _DelegationNft.Contract.DelegateERC1155ByPermit(&_DelegationNft.TransactOpts, validator, nft, tokenId, amount, deadline, v, r, s)
+// Solidity: function delegateDRC1155ByPermit(address validator, address nft, uint256 tokenId, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
+func (_DelegationNft *DelegationNftSession) DelegateDRC1155ByPermit(validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
+	return _DelegationNft.Contract.DelegateDRC1155ByPermit(&_DelegationNft.TransactOpts, validator, nft, tokenId, amount, deadline, v, r, s)
 }
 
-// DelegateERC1155ByPermit is a paid mutator transaction binding the contract method 0x653ac771.
+// DelegateDRC1155ByPermit is a paid mutator transaction binding the contract method 0x019a2159.
 //
-// Solidity: function delegateERC1155ByPermit(address validator, address nft, uint256 tokenId, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
-func (_DelegationNft *DelegationNftTransactorSession) DelegateERC1155ByPermit(validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
-	return _DelegationNft.Contract.DelegateERC1155ByPermit(&_DelegationNft.TransactOpts, validator, nft, tokenId, amount, deadline, v, r, s)
+// Solidity: function delegateDRC1155ByPermit(address validator, address nft, uint256 tokenId, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
+func (_DelegationNft *DelegationNftTransactorSession) DelegateDRC1155ByPermit(validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
+	return _DelegationNft.Contract.DelegateDRC1155ByPermit(&_DelegationNft.TransactOpts, validator, nft, tokenId, amount, deadline, v, r, s)
 }
 
-// DelegateERC721 is a paid mutator transaction binding the contract method 0x45a9198e.
+// DelegateDRC721 is a paid mutator transaction binding the contract method 0x556e055f.
 //
-// Solidity: function delegateERC721(address validator, address nft, uint256 tokenId) returns()
-func (_DelegationNft *DelegationNftTransactor) DelegateERC721(opts *bind.TransactOpts, validator common.Address, nft common.Address, tokenId *big.Int) (*types.Transaction, error) {
-	return _DelegationNft.contract.Transact(opts, "delegateERC721", validator, nft, tokenId)
+// Solidity: function delegateDRC721(address validator, address nft, uint256 tokenId) returns()
+func (_DelegationNft *DelegationNftTransactor) DelegateDRC721(opts *bind.TransactOpts, validator common.Address, nft common.Address, tokenId *big.Int) (*types.Transaction, error) {
+	return _DelegationNft.contract.Transact(opts, "delegateDRC721", validator, nft, tokenId)
 }
 
-// DelegateERC721 is a paid mutator transaction binding the contract method 0x45a9198e.
+// DelegateDRC721 is a paid mutator transaction binding the contract method 0x556e055f.
 //
-// Solidity: function delegateERC721(address validator, address nft, uint256 tokenId) returns()
-func (_DelegationNft *DelegationNftSession) DelegateERC721(validator common.Address, nft common.Address, tokenId *big.Int) (*types.Transaction, error) {
-	return _DelegationNft.Contract.DelegateERC721(&_DelegationNft.TransactOpts, validator, nft, tokenId)
+// Solidity: function delegateDRC721(address validator, address nft, uint256 tokenId) returns()
+func (_DelegationNft *DelegationNftSession) DelegateDRC721(validator common.Address, nft common.Address, tokenId *big.Int) (*types.Transaction, error) {
+	return _DelegationNft.Contract.DelegateDRC721(&_DelegationNft.TransactOpts, validator, nft, tokenId)
 }
 
-// DelegateERC721 is a paid mutator transaction binding the contract method 0x45a9198e.
+// DelegateDRC721 is a paid mutator transaction binding the contract method 0x556e055f.
 //
-// Solidity: function delegateERC721(address validator, address nft, uint256 tokenId) returns()
-func (_DelegationNft *DelegationNftTransactorSession) DelegateERC721(validator common.Address, nft common.Address, tokenId *big.Int) (*types.Transaction, error) {
-	return _DelegationNft.Contract.DelegateERC721(&_DelegationNft.TransactOpts, validator, nft, tokenId)
+// Solidity: function delegateDRC721(address validator, address nft, uint256 tokenId) returns()
+func (_DelegationNft *DelegationNftTransactorSession) DelegateDRC721(validator common.Address, nft common.Address, tokenId *big.Int) (*types.Transaction, error) {
+	return _DelegationNft.Contract.DelegateDRC721(&_DelegationNft.TransactOpts, validator, nft, tokenId)
 }
 
-// DelegateERC721ByPermit is a paid mutator transaction binding the contract method 0xdde4cb2a.
+// DelegateDRC721ByPermit is a paid mutator transaction binding the contract method 0x8bbf0a25.
 //
-// Solidity: function delegateERC721ByPermit(address validator, address nft, uint256 tokenId, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
-func (_DelegationNft *DelegationNftTransactor) DelegateERC721ByPermit(opts *bind.TransactOpts, validator common.Address, nft common.Address, tokenId *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
-	return _DelegationNft.contract.Transact(opts, "delegateERC721ByPermit", validator, nft, tokenId, deadline, v, r, s)
+// Solidity: function delegateDRC721ByPermit(address validator, address nft, uint256 tokenId, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
+func (_DelegationNft *DelegationNftTransactor) DelegateDRC721ByPermit(opts *bind.TransactOpts, validator common.Address, nft common.Address, tokenId *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
+	return _DelegationNft.contract.Transact(opts, "delegateDRC721ByPermit", validator, nft, tokenId, deadline, v, r, s)
 }
 
-// DelegateERC721ByPermit is a paid mutator transaction binding the contract method 0xdde4cb2a.
+// DelegateDRC721ByPermit is a paid mutator transaction binding the contract method 0x8bbf0a25.
 //
-// Solidity: function delegateERC721ByPermit(address validator, address nft, uint256 tokenId, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
-func (_DelegationNft *DelegationNftSession) DelegateERC721ByPermit(validator common.Address, nft common.Address, tokenId *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
-	return _DelegationNft.Contract.DelegateERC721ByPermit(&_DelegationNft.TransactOpts, validator, nft, tokenId, deadline, v, r, s)
+// Solidity: function delegateDRC721ByPermit(address validator, address nft, uint256 tokenId, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
+func (_DelegationNft *DelegationNftSession) DelegateDRC721ByPermit(validator common.Address, nft common.Address, tokenId *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
+	return _DelegationNft.Contract.DelegateDRC721ByPermit(&_DelegationNft.TransactOpts, validator, nft, tokenId, deadline, v, r, s)
 }
 
-// DelegateERC721ByPermit is a paid mutator transaction binding the contract method 0xdde4cb2a.
+// DelegateDRC721ByPermit is a paid mutator transaction binding the contract method 0x8bbf0a25.
 //
-// Solidity: function delegateERC721ByPermit(address validator, address nft, uint256 tokenId, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
-func (_DelegationNft *DelegationNftTransactorSession) DelegateERC721ByPermit(validator common.Address, nft common.Address, tokenId *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
-	return _DelegationNft.Contract.DelegateERC721ByPermit(&_DelegationNft.TransactOpts, validator, nft, tokenId, deadline, v, r, s)
+// Solidity: function delegateDRC721ByPermit(address validator, address nft, uint256 tokenId, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
+func (_DelegationNft *DelegationNftTransactorSession) DelegateDRC721ByPermit(validator common.Address, nft common.Address, tokenId *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
+	return _DelegationNft.Contract.DelegateDRC721ByPermit(&_DelegationNft.TransactOpts, validator, nft, tokenId, deadline, v, r, s)
 }
 
-// DelegateHoldERC1155 is a paid mutator transaction binding the contract method 0x524eaafa.
+// DelegateHoldDRC1155 is a paid mutator transaction binding the contract method 0xd55c3e08.
 //
-// Solidity: function delegateHoldERC1155(address validator, address nft, uint256 tokenId, uint256 amount, uint256 holdTimestamp) returns()
-func (_DelegationNft *DelegationNftTransactor) DelegateHoldERC1155(opts *bind.TransactOpts, validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int, holdTimestamp *big.Int) (*types.Transaction, error) {
-	return _DelegationNft.contract.Transact(opts, "delegateHoldERC1155", validator, nft, tokenId, amount, holdTimestamp)
+// Solidity: function delegateHoldDRC1155(address validator, address nft, uint256 tokenId, uint256 amount, uint256 holdTimestamp) returns()
+func (_DelegationNft *DelegationNftTransactor) DelegateHoldDRC1155(opts *bind.TransactOpts, validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int, holdTimestamp *big.Int) (*types.Transaction, error) {
+	return _DelegationNft.contract.Transact(opts, "delegateHoldDRC1155", validator, nft, tokenId, amount, holdTimestamp)
 }
 
-// DelegateHoldERC1155 is a paid mutator transaction binding the contract method 0x524eaafa.
+// DelegateHoldDRC1155 is a paid mutator transaction binding the contract method 0xd55c3e08.
 //
-// Solidity: function delegateHoldERC1155(address validator, address nft, uint256 tokenId, uint256 amount, uint256 holdTimestamp) returns()
-func (_DelegationNft *DelegationNftSession) DelegateHoldERC1155(validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int, holdTimestamp *big.Int) (*types.Transaction, error) {
-	return _DelegationNft.Contract.DelegateHoldERC1155(&_DelegationNft.TransactOpts, validator, nft, tokenId, amount, holdTimestamp)
+// Solidity: function delegateHoldDRC1155(address validator, address nft, uint256 tokenId, uint256 amount, uint256 holdTimestamp) returns()
+func (_DelegationNft *DelegationNftSession) DelegateHoldDRC1155(validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int, holdTimestamp *big.Int) (*types.Transaction, error) {
+	return _DelegationNft.Contract.DelegateHoldDRC1155(&_DelegationNft.TransactOpts, validator, nft, tokenId, amount, holdTimestamp)
 }
 
-// DelegateHoldERC1155 is a paid mutator transaction binding the contract method 0x524eaafa.
+// DelegateHoldDRC1155 is a paid mutator transaction binding the contract method 0xd55c3e08.
 //
-// Solidity: function delegateHoldERC1155(address validator, address nft, uint256 tokenId, uint256 amount, uint256 holdTimestamp) returns()
-func (_DelegationNft *DelegationNftTransactorSession) DelegateHoldERC1155(validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int, holdTimestamp *big.Int) (*types.Transaction, error) {
-	return _DelegationNft.Contract.DelegateHoldERC1155(&_DelegationNft.TransactOpts, validator, nft, tokenId, amount, holdTimestamp)
+// Solidity: function delegateHoldDRC1155(address validator, address nft, uint256 tokenId, uint256 amount, uint256 holdTimestamp) returns()
+func (_DelegationNft *DelegationNftTransactorSession) DelegateHoldDRC1155(validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int, holdTimestamp *big.Int) (*types.Transaction, error) {
+	return _DelegationNft.Contract.DelegateHoldDRC1155(&_DelegationNft.TransactOpts, validator, nft, tokenId, amount, holdTimestamp)
 }
 
-// DelegateHoldERC1155ByPermit is a paid mutator transaction binding the contract method 0x6d1c1d70.
+// DelegateHoldDRC1155ByPermit is a paid mutator transaction binding the contract method 0x57420901.
 //
-// Solidity: function delegateHoldERC1155ByPermit(address validator, address nft, uint256 tokenId, uint256 amount, uint256 holdTimestamp, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
-func (_DelegationNft *DelegationNftTransactor) DelegateHoldERC1155ByPermit(opts *bind.TransactOpts, validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int, holdTimestamp *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
-	return _DelegationNft.contract.Transact(opts, "delegateHoldERC1155ByPermit", validator, nft, tokenId, amount, holdTimestamp, deadline, v, r, s)
+// Solidity: function delegateHoldDRC1155ByPermit(address validator, address nft, uint256 tokenId, uint256 amount, uint256 holdTimestamp, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
+func (_DelegationNft *DelegationNftTransactor) DelegateHoldDRC1155ByPermit(opts *bind.TransactOpts, validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int, holdTimestamp *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
+	return _DelegationNft.contract.Transact(opts, "delegateHoldDRC1155ByPermit", validator, nft, tokenId, amount, holdTimestamp, deadline, v, r, s)
 }
 
-// DelegateHoldERC1155ByPermit is a paid mutator transaction binding the contract method 0x6d1c1d70.
+// DelegateHoldDRC1155ByPermit is a paid mutator transaction binding the contract method 0x57420901.
 //
-// Solidity: function delegateHoldERC1155ByPermit(address validator, address nft, uint256 tokenId, uint256 amount, uint256 holdTimestamp, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
-func (_DelegationNft *DelegationNftSession) DelegateHoldERC1155ByPermit(validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int, holdTimestamp *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
-	return _DelegationNft.Contract.DelegateHoldERC1155ByPermit(&_DelegationNft.TransactOpts, validator, nft, tokenId, amount, holdTimestamp, deadline, v, r, s)
+// Solidity: function delegateHoldDRC1155ByPermit(address validator, address nft, uint256 tokenId, uint256 amount, uint256 holdTimestamp, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
+func (_DelegationNft *DelegationNftSession) DelegateHoldDRC1155ByPermit(validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int, holdTimestamp *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
+	return _DelegationNft.Contract.DelegateHoldDRC1155ByPermit(&_DelegationNft.TransactOpts, validator, nft, tokenId, amount, holdTimestamp, deadline, v, r, s)
 }
 
-// DelegateHoldERC1155ByPermit is a paid mutator transaction binding the contract method 0x6d1c1d70.
+// DelegateHoldDRC1155ByPermit is a paid mutator transaction binding the contract method 0x57420901.
 //
-// Solidity: function delegateHoldERC1155ByPermit(address validator, address nft, uint256 tokenId, uint256 amount, uint256 holdTimestamp, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
-func (_DelegationNft *DelegationNftTransactorSession) DelegateHoldERC1155ByPermit(validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int, holdTimestamp *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
-	return _DelegationNft.Contract.DelegateHoldERC1155ByPermit(&_DelegationNft.TransactOpts, validator, nft, tokenId, amount, holdTimestamp, deadline, v, r, s)
+// Solidity: function delegateHoldDRC1155ByPermit(address validator, address nft, uint256 tokenId, uint256 amount, uint256 holdTimestamp, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
+func (_DelegationNft *DelegationNftTransactorSession) DelegateHoldDRC1155ByPermit(validator common.Address, nft common.Address, tokenId *big.Int, amount *big.Int, holdTimestamp *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
+	return _DelegationNft.Contract.DelegateHoldDRC1155ByPermit(&_DelegationNft.TransactOpts, validator, nft, tokenId, amount, holdTimestamp, deadline, v, r, s)
 }
 
-// DelegateHoldERC721 is a paid mutator transaction binding the contract method 0x604da2be.
+// DelegateHoldDRC721 is a paid mutator transaction binding the contract method 0x3ae02675.
 //
-// Solidity: function delegateHoldERC721(address validator, address nft, uint256 tokenId, uint256 holdTimestamp) returns()
-func (_DelegationNft *DelegationNftTransactor) DelegateHoldERC721(opts *bind.TransactOpts, validator common.Address, nft common.Address, tokenId *big.Int, holdTimestamp *big.Int) (*types.Transaction, error) {
-	return _DelegationNft.contract.Transact(opts, "delegateHoldERC721", validator, nft, tokenId, holdTimestamp)
+// Solidity: function delegateHoldDRC721(address validator, address nft, uint256 tokenId, uint256 holdTimestamp) returns()
+func (_DelegationNft *DelegationNftTransactor) DelegateHoldDRC721(opts *bind.TransactOpts, validator common.Address, nft common.Address, tokenId *big.Int, holdTimestamp *big.Int) (*types.Transaction, error) {
+	return _DelegationNft.contract.Transact(opts, "delegateHoldDRC721", validator, nft, tokenId, holdTimestamp)
 }
 
-// DelegateHoldERC721 is a paid mutator transaction binding the contract method 0x604da2be.
+// DelegateHoldDRC721 is a paid mutator transaction binding the contract method 0x3ae02675.
 //
-// Solidity: function delegateHoldERC721(address validator, address nft, uint256 tokenId, uint256 holdTimestamp) returns()
-func (_DelegationNft *DelegationNftSession) DelegateHoldERC721(validator common.Address, nft common.Address, tokenId *big.Int, holdTimestamp *big.Int) (*types.Transaction, error) {
-	return _DelegationNft.Contract.DelegateHoldERC721(&_DelegationNft.TransactOpts, validator, nft, tokenId, holdTimestamp)
+// Solidity: function delegateHoldDRC721(address validator, address nft, uint256 tokenId, uint256 holdTimestamp) returns()
+func (_DelegationNft *DelegationNftSession) DelegateHoldDRC721(validator common.Address, nft common.Address, tokenId *big.Int, holdTimestamp *big.Int) (*types.Transaction, error) {
+	return _DelegationNft.Contract.DelegateHoldDRC721(&_DelegationNft.TransactOpts, validator, nft, tokenId, holdTimestamp)
 }
 
-// DelegateHoldERC721 is a paid mutator transaction binding the contract method 0x604da2be.
+// DelegateHoldDRC721 is a paid mutator transaction binding the contract method 0x3ae02675.
 //
-// Solidity: function delegateHoldERC721(address validator, address nft, uint256 tokenId, uint256 holdTimestamp) returns()
-func (_DelegationNft *DelegationNftTransactorSession) DelegateHoldERC721(validator common.Address, nft common.Address, tokenId *big.Int, holdTimestamp *big.Int) (*types.Transaction, error) {
-	return _DelegationNft.Contract.DelegateHoldERC721(&_DelegationNft.TransactOpts, validator, nft, tokenId, holdTimestamp)
+// Solidity: function delegateHoldDRC721(address validator, address nft, uint256 tokenId, uint256 holdTimestamp) returns()
+func (_DelegationNft *DelegationNftTransactorSession) DelegateHoldDRC721(validator common.Address, nft common.Address, tokenId *big.Int, holdTimestamp *big.Int) (*types.Transaction, error) {
+	return _DelegationNft.Contract.DelegateHoldDRC721(&_DelegationNft.TransactOpts, validator, nft, tokenId, holdTimestamp)
 }
 
-// DelegateHoldERC721ByPermit is a paid mutator transaction binding the contract method 0x71d58b40.
+// DelegateHoldDRC721ByPermit is a paid mutator transaction binding the contract method 0xac029ddb.
 //
-// Solidity: function delegateHoldERC721ByPermit(address validator, address nft, uint256 tokenId, uint256 holdTimestamp, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
-func (_DelegationNft *DelegationNftTransactor) DelegateHoldERC721ByPermit(opts *bind.TransactOpts, validator common.Address, nft common.Address, tokenId *big.Int, holdTimestamp *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
-	return _DelegationNft.contract.Transact(opts, "delegateHoldERC721ByPermit", validator, nft, tokenId, holdTimestamp, deadline, v, r, s)
+// Solidity: function delegateHoldDRC721ByPermit(address validator, address nft, uint256 tokenId, uint256 holdTimestamp, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
+func (_DelegationNft *DelegationNftTransactor) DelegateHoldDRC721ByPermit(opts *bind.TransactOpts, validator common.Address, nft common.Address, tokenId *big.Int, holdTimestamp *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
+	return _DelegationNft.contract.Transact(opts, "delegateHoldDRC721ByPermit", validator, nft, tokenId, holdTimestamp, deadline, v, r, s)
 }
 
-// DelegateHoldERC721ByPermit is a paid mutator transaction binding the contract method 0x71d58b40.
+// DelegateHoldDRC721ByPermit is a paid mutator transaction binding the contract method 0xac029ddb.
 //
-// Solidity: function delegateHoldERC721ByPermit(address validator, address nft, uint256 tokenId, uint256 holdTimestamp, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
-func (_DelegationNft *DelegationNftSession) DelegateHoldERC721ByPermit(validator common.Address, nft common.Address, tokenId *big.Int, holdTimestamp *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
-	return _DelegationNft.Contract.DelegateHoldERC721ByPermit(&_DelegationNft.TransactOpts, validator, nft, tokenId, holdTimestamp, deadline, v, r, s)
+// Solidity: function delegateHoldDRC721ByPermit(address validator, address nft, uint256 tokenId, uint256 holdTimestamp, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
+func (_DelegationNft *DelegationNftSession) DelegateHoldDRC721ByPermit(validator common.Address, nft common.Address, tokenId *big.Int, holdTimestamp *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
+	return _DelegationNft.Contract.DelegateHoldDRC721ByPermit(&_DelegationNft.TransactOpts, validator, nft, tokenId, holdTimestamp, deadline, v, r, s)
 }
 
-// DelegateHoldERC721ByPermit is a paid mutator transaction binding the contract method 0x71d58b40.
+// DelegateHoldDRC721ByPermit is a paid mutator transaction binding the contract method 0xac029ddb.
 //
-// Solidity: function delegateHoldERC721ByPermit(address validator, address nft, uint256 tokenId, uint256 holdTimestamp, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
-func (_DelegationNft *DelegationNftTransactorSession) DelegateHoldERC721ByPermit(validator common.Address, nft common.Address, tokenId *big.Int, holdTimestamp *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
-	return _DelegationNft.Contract.DelegateHoldERC721ByPermit(&_DelegationNft.TransactOpts, validator, nft, tokenId, holdTimestamp, deadline, v, r, s)
+// Solidity: function delegateHoldDRC721ByPermit(address validator, address nft, uint256 tokenId, uint256 holdTimestamp, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns()
+func (_DelegationNft *DelegationNftTransactorSession) DelegateHoldDRC721ByPermit(validator common.Address, nft common.Address, tokenId *big.Int, holdTimestamp *big.Int, deadline *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
+	return _DelegationNft.Contract.DelegateHoldDRC721ByPermit(&_DelegationNft.TransactOpts, validator, nft, tokenId, holdTimestamp, deadline, v, r, s)
+}
+
+// Hold is a paid mutator transaction binding the contract method 0x0029ae70.
+//
+// Solidity: function hold(address validator, address token, uint256 tokenId, uint256 amountToHold, uint256 oldHoldTimestamp, uint256 newHoldTimestamp) returns()
+func (_DelegationNft *DelegationNftTransactor) Hold(opts *bind.TransactOpts, validator common.Address, token common.Address, tokenId *big.Int, amountToHold *big.Int, oldHoldTimestamp *big.Int, newHoldTimestamp *big.Int) (*types.Transaction, error) {
+	return _DelegationNft.contract.Transact(opts, "hold", validator, token, tokenId, amountToHold, oldHoldTimestamp, newHoldTimestamp)
+}
+
+// Hold is a paid mutator transaction binding the contract method 0x0029ae70.
+//
+// Solidity: function hold(address validator, address token, uint256 tokenId, uint256 amountToHold, uint256 oldHoldTimestamp, uint256 newHoldTimestamp) returns()
+func (_DelegationNft *DelegationNftSession) Hold(validator common.Address, token common.Address, tokenId *big.Int, amountToHold *big.Int, oldHoldTimestamp *big.Int, newHoldTimestamp *big.Int) (*types.Transaction, error) {
+	return _DelegationNft.Contract.Hold(&_DelegationNft.TransactOpts, validator, token, tokenId, amountToHold, oldHoldTimestamp, newHoldTimestamp)
+}
+
+// Hold is a paid mutator transaction binding the contract method 0x0029ae70.
+//
+// Solidity: function hold(address validator, address token, uint256 tokenId, uint256 amountToHold, uint256 oldHoldTimestamp, uint256 newHoldTimestamp) returns()
+func (_DelegationNft *DelegationNftTransactorSession) Hold(validator common.Address, token common.Address, tokenId *big.Int, amountToHold *big.Int, oldHoldTimestamp *big.Int, newHoldTimestamp *big.Int) (*types.Transaction, error) {
+	return _DelegationNft.Contract.Hold(&_DelegationNft.TransactOpts, validator, token, tokenId, amountToHold, oldHoldTimestamp, newHoldTimestamp)
 }
 
 // OnERC1155BatchReceived is a paid mutator transaction binding the contract method 0xbc197c81.
@@ -1047,23 +1068,23 @@ func (_DelegationNft *DelegationNftTransactorSession) TransferOwnership(newOwner
 
 // Upgrade is a paid mutator transaction binding the contract method 0xc987336c.
 //
-// Solidity: function upgrade(address newImplementation, bytes data) returns()
-func (_DelegationNft *DelegationNftTransactor) Upgrade(opts *bind.TransactOpts, newImplementation common.Address, data []byte) (*types.Transaction, error) {
-	return _DelegationNft.contract.Transact(opts, "upgrade", newImplementation, data)
+// Solidity: function upgrade(address newImpl, bytes data) returns()
+func (_DelegationNft *DelegationNftTransactor) Upgrade(opts *bind.TransactOpts, newImpl common.Address, data []byte) (*types.Transaction, error) {
+	return _DelegationNft.contract.Transact(opts, "upgrade", newImpl, data)
 }
 
 // Upgrade is a paid mutator transaction binding the contract method 0xc987336c.
 //
-// Solidity: function upgrade(address newImplementation, bytes data) returns()
-func (_DelegationNft *DelegationNftSession) Upgrade(newImplementation common.Address, data []byte) (*types.Transaction, error) {
-	return _DelegationNft.Contract.Upgrade(&_DelegationNft.TransactOpts, newImplementation, data)
+// Solidity: function upgrade(address newImpl, bytes data) returns()
+func (_DelegationNft *DelegationNftSession) Upgrade(newImpl common.Address, data []byte) (*types.Transaction, error) {
+	return _DelegationNft.Contract.Upgrade(&_DelegationNft.TransactOpts, newImpl, data)
 }
 
 // Upgrade is a paid mutator transaction binding the contract method 0xc987336c.
 //
-// Solidity: function upgrade(address newImplementation, bytes data) returns()
-func (_DelegationNft *DelegationNftTransactorSession) Upgrade(newImplementation common.Address, data []byte) (*types.Transaction, error) {
-	return _DelegationNft.Contract.Upgrade(&_DelegationNft.TransactOpts, newImplementation, data)
+// Solidity: function upgrade(address newImpl, bytes data) returns()
+func (_DelegationNft *DelegationNftTransactorSession) Upgrade(newImpl common.Address, data []byte) (*types.Transaction, error) {
+	return _DelegationNft.Contract.Upgrade(&_DelegationNft.TransactOpts, newImpl, data)
 }
 
 // Withdraw is a paid mutator transaction binding the contract method 0x7bfe950c.
@@ -1127,159 +1148,6 @@ func (_DelegationNft *DelegationNftSession) Receive() (*types.Transaction, error
 // Solidity: receive() payable returns()
 func (_DelegationNft *DelegationNftTransactorSession) Receive() (*types.Transaction, error) {
 	return _DelegationNft.Contract.Receive(&_DelegationNft.TransactOpts)
-}
-
-// DelegationNftContractUpgradedIterator is returned from FilterContractUpgraded and is used to iterate over the raw logs and unpacked data for ContractUpgraded events raised by the DelegationNft contract.
-type DelegationNftContractUpgradedIterator struct {
-	Event *DelegationNftContractUpgraded // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *DelegationNftContractUpgradedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(DelegationNftContractUpgraded)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(DelegationNftContractUpgraded)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *DelegationNftContractUpgradedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *DelegationNftContractUpgradedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// DelegationNftContractUpgraded represents a ContractUpgraded event raised by the DelegationNft contract.
-type DelegationNftContractUpgraded struct {
-	OldContract common.Address
-	NewContract common.Address
-	Raw         types.Log // Blockchain specific contextual infos
-}
-
-// FilterContractUpgraded is a free log retrieval operation binding the contract event 0x2e4cc16c100f0b55e2df82ab0b1a7e294aa9cbd01b48fbaf622683fbc0507a49.
-//
-// Solidity: event ContractUpgraded(address indexed oldContract, address indexed newContract)
-func (_DelegationNft *DelegationNftFilterer) FilterContractUpgraded(opts *bind.FilterOpts, oldContract []common.Address, newContract []common.Address) (*DelegationNftContractUpgradedIterator, error) {
-
-	var oldContractRule []interface{}
-	for _, oldContractItem := range oldContract {
-		oldContractRule = append(oldContractRule, oldContractItem)
-	}
-	var newContractRule []interface{}
-	for _, newContractItem := range newContract {
-		newContractRule = append(newContractRule, newContractItem)
-	}
-
-	logs, sub, err := _DelegationNft.contract.FilterLogs(opts, "ContractUpgraded", oldContractRule, newContractRule)
-	if err != nil {
-		return nil, err
-	}
-	return &DelegationNftContractUpgradedIterator{contract: _DelegationNft.contract, event: "ContractUpgraded", logs: logs, sub: sub}, nil
-}
-
-// WatchContractUpgraded is a free log subscription operation binding the contract event 0x2e4cc16c100f0b55e2df82ab0b1a7e294aa9cbd01b48fbaf622683fbc0507a49.
-//
-// Solidity: event ContractUpgraded(address indexed oldContract, address indexed newContract)
-func (_DelegationNft *DelegationNftFilterer) WatchContractUpgraded(opts *bind.WatchOpts, sink chan<- *DelegationNftContractUpgraded, oldContract []common.Address, newContract []common.Address) (event.Subscription, error) {
-
-	var oldContractRule []interface{}
-	for _, oldContractItem := range oldContract {
-		oldContractRule = append(oldContractRule, oldContractItem)
-	}
-	var newContractRule []interface{}
-	for _, newContractItem := range newContract {
-		newContractRule = append(newContractRule, newContractItem)
-	}
-
-	logs, sub, err := _DelegationNft.contract.WatchLogs(opts, "ContractUpgraded", oldContractRule, newContractRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(DelegationNftContractUpgraded)
-				if err := _DelegationNft.contract.UnpackLog(event, "ContractUpgraded", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseContractUpgraded is a log parse operation binding the contract event 0x2e4cc16c100f0b55e2df82ab0b1a7e294aa9cbd01b48fbaf622683fbc0507a49.
-//
-// Solidity: event ContractUpgraded(address indexed oldContract, address indexed newContract)
-func (_DelegationNft *DelegationNftFilterer) ParseContractUpgraded(log types.Log) (*DelegationNftContractUpgraded, error) {
-	event := new(DelegationNftContractUpgraded)
-	if err := _DelegationNft.contract.UnpackLog(event, "ContractUpgraded", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
 }
 
 // DelegationNftFreezeTimeUpdatedIterator is returned from FilterFreezeTimeUpdated and is used to iterate over the raw logs and unpacked data for FreezeTimeUpdated events raised by the DelegationNft contract.
@@ -1997,9 +1865,9 @@ func (_DelegationNft *DelegationNftFilterer) ParsePenaltyAppliedToValidator(log 
 	return event, nil
 }
 
-// DelegationNftStakedIterator is returned from FilterStaked and is used to iterate over the raw logs and unpacked data for Staked events raised by the DelegationNft contract.
-type DelegationNftStakedIterator struct {
-	Event *DelegationNftStaked // Event containing the contract specifics and raw log
+// DelegationNftStakeHoldedIterator is returned from FilterStakeHolded and is used to iterate over the raw logs and unpacked data for StakeHolded events raised by the DelegationNft contract.
+type DelegationNftStakeHoldedIterator struct {
+	Event *DelegationNftStakeHolded // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -2013,7 +1881,7 @@ type DelegationNftStakedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *DelegationNftStakedIterator) Next() bool {
+func (it *DelegationNftStakeHoldedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -2022,7 +1890,7 @@ func (it *DelegationNftStakedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(DelegationNftStaked)
+			it.Event = new(DelegationNftStakeHolded)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -2037,7 +1905,7 @@ func (it *DelegationNftStakedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(DelegationNftStaked)
+		it.Event = new(DelegationNftStakeHolded)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -2053,42 +1921,43 @@ func (it *DelegationNftStakedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *DelegationNftStakedIterator) Error() error {
+func (it *DelegationNftStakeHoldedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *DelegationNftStakedIterator) Close() error {
+func (it *DelegationNftStakeHoldedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// DelegationNftStaked represents a Staked event raised by the DelegationNft contract.
-type DelegationNftStaked struct {
+// DelegationNftStakeHolded represents a StakeHolded event raised by the DelegationNft contract.
+type DelegationNftStakeHolded struct {
 	StakeId [32]byte
 	Stake   IDecimalDelegationCommonStake
+	IsNew   bool
 	Raw     types.Log // Blockchain specific contextual infos
 }
 
-// FilterStaked is a free log retrieval operation binding the contract event 0x0444b7a634891439344147461cb709e562bf41563dd2fcfcf82c9f1447c8bba5.
+// FilterStakeHolded is a free log retrieval operation binding the contract event 0xa0a8b22bc7aca2e71ba792f9390bbc1875d1fa8b0d9a82c0158f96c7f4b89cdb.
 //
-// Solidity: event Staked(bytes32 stakeId, (address,address,address,uint256,uint256,uint8,uint256) stake)
-func (_DelegationNft *DelegationNftFilterer) FilterStaked(opts *bind.FilterOpts) (*DelegationNftStakedIterator, error) {
+// Solidity: event StakeHolded(bytes32 stakeId, (address,address,address,uint256,uint256,uint8,uint256) stake, bool isNew)
+func (_DelegationNft *DelegationNftFilterer) FilterStakeHolded(opts *bind.FilterOpts) (*DelegationNftStakeHoldedIterator, error) {
 
-	logs, sub, err := _DelegationNft.contract.FilterLogs(opts, "Staked")
+	logs, sub, err := _DelegationNft.contract.FilterLogs(opts, "StakeHolded")
 	if err != nil {
 		return nil, err
 	}
-	return &DelegationNftStakedIterator{contract: _DelegationNft.contract, event: "Staked", logs: logs, sub: sub}, nil
+	return &DelegationNftStakeHoldedIterator{contract: _DelegationNft.contract, event: "StakeHolded", logs: logs, sub: sub}, nil
 }
 
-// WatchStaked is a free log subscription operation binding the contract event 0x0444b7a634891439344147461cb709e562bf41563dd2fcfcf82c9f1447c8bba5.
+// WatchStakeHolded is a free log subscription operation binding the contract event 0xa0a8b22bc7aca2e71ba792f9390bbc1875d1fa8b0d9a82c0158f96c7f4b89cdb.
 //
-// Solidity: event Staked(bytes32 stakeId, (address,address,address,uint256,uint256,uint8,uint256) stake)
-func (_DelegationNft *DelegationNftFilterer) WatchStaked(opts *bind.WatchOpts, sink chan<- *DelegationNftStaked) (event.Subscription, error) {
+// Solidity: event StakeHolded(bytes32 stakeId, (address,address,address,uint256,uint256,uint8,uint256) stake, bool isNew)
+func (_DelegationNft *DelegationNftFilterer) WatchStakeHolded(opts *bind.WatchOpts, sink chan<- *DelegationNftStakeHolded) (event.Subscription, error) {
 
-	logs, sub, err := _DelegationNft.contract.WatchLogs(opts, "Staked")
+	logs, sub, err := _DelegationNft.contract.WatchLogs(opts, "StakeHolded")
 	if err != nil {
 		return nil, err
 	}
@@ -2098,8 +1967,8 @@ func (_DelegationNft *DelegationNftFilterer) WatchStaked(opts *bind.WatchOpts, s
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(DelegationNftStaked)
-				if err := _DelegationNft.contract.UnpackLog(event, "Staked", log); err != nil {
+				event := new(DelegationNftStakeHolded)
+				if err := _DelegationNft.contract.UnpackLog(event, "StakeHolded", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -2120,12 +1989,148 @@ func (_DelegationNft *DelegationNftFilterer) WatchStaked(opts *bind.WatchOpts, s
 	}), nil
 }
 
-// ParseStaked is a log parse operation binding the contract event 0x0444b7a634891439344147461cb709e562bf41563dd2fcfcf82c9f1447c8bba5.
+// ParseStakeHolded is a log parse operation binding the contract event 0xa0a8b22bc7aca2e71ba792f9390bbc1875d1fa8b0d9a82c0158f96c7f4b89cdb.
 //
-// Solidity: event Staked(bytes32 stakeId, (address,address,address,uint256,uint256,uint8,uint256) stake)
-func (_DelegationNft *DelegationNftFilterer) ParseStaked(log types.Log) (*DelegationNftStaked, error) {
-	event := new(DelegationNftStaked)
-	if err := _DelegationNft.contract.UnpackLog(event, "Staked", log); err != nil {
+// Solidity: event StakeHolded(bytes32 stakeId, (address,address,address,uint256,uint256,uint8,uint256) stake, bool isNew)
+func (_DelegationNft *DelegationNftFilterer) ParseStakeHolded(log types.Log) (*DelegationNftStakeHolded, error) {
+	event := new(DelegationNftStakeHolded)
+	if err := _DelegationNft.contract.UnpackLog(event, "StakeHolded", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// DelegationNftStakeUpdatedIterator is returned from FilterStakeUpdated and is used to iterate over the raw logs and unpacked data for StakeUpdated events raised by the DelegationNft contract.
+type DelegationNftStakeUpdatedIterator struct {
+	Event *DelegationNftStakeUpdated // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *DelegationNftStakeUpdatedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(DelegationNftStakeUpdated)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(DelegationNftStakeUpdated)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *DelegationNftStakeUpdatedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *DelegationNftStakeUpdatedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// DelegationNftStakeUpdated represents a StakeUpdated event raised by the DelegationNft contract.
+type DelegationNftStakeUpdated struct {
+	StakeId [32]byte
+	Stake   IDecimalDelegationCommonStake
+	IsNew   bool
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterStakeUpdated is a free log retrieval operation binding the contract event 0x71a822c8b2dd1c5369373dd93ec6a6b04cf7d41eb154314433c73f4f8856c03b.
+//
+// Solidity: event StakeUpdated(bytes32 stakeId, (address,address,address,uint256,uint256,uint8,uint256) stake, bool isNew)
+func (_DelegationNft *DelegationNftFilterer) FilterStakeUpdated(opts *bind.FilterOpts) (*DelegationNftStakeUpdatedIterator, error) {
+
+	logs, sub, err := _DelegationNft.contract.FilterLogs(opts, "StakeUpdated")
+	if err != nil {
+		return nil, err
+	}
+	return &DelegationNftStakeUpdatedIterator{contract: _DelegationNft.contract, event: "StakeUpdated", logs: logs, sub: sub}, nil
+}
+
+// WatchStakeUpdated is a free log subscription operation binding the contract event 0x71a822c8b2dd1c5369373dd93ec6a6b04cf7d41eb154314433c73f4f8856c03b.
+//
+// Solidity: event StakeUpdated(bytes32 stakeId, (address,address,address,uint256,uint256,uint8,uint256) stake, bool isNew)
+func (_DelegationNft *DelegationNftFilterer) WatchStakeUpdated(opts *bind.WatchOpts, sink chan<- *DelegationNftStakeUpdated) (event.Subscription, error) {
+
+	logs, sub, err := _DelegationNft.contract.WatchLogs(opts, "StakeUpdated")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(DelegationNftStakeUpdated)
+				if err := _DelegationNft.contract.UnpackLog(event, "StakeUpdated", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseStakeUpdated is a log parse operation binding the contract event 0x71a822c8b2dd1c5369373dd93ec6a6b04cf7d41eb154314433c73f4f8856c03b.
+//
+// Solidity: event StakeUpdated(bytes32 stakeId, (address,address,address,uint256,uint256,uint8,uint256) stake, bool isNew)
+func (_DelegationNft *DelegationNftFilterer) ParseStakeUpdated(log types.Log) (*DelegationNftStakeUpdated, error) {
+	event := new(DelegationNftStakeUpdated)
+	if err := _DelegationNft.contract.UnpackLog(event, "StakeUpdated", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
