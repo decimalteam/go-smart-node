@@ -131,6 +131,29 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 		fmt.Println(resultExec)
 		fmt.Println(errexec)
 	}
+
+	notBondedPool := k.GetNotBondedPool(ctx).GetAddress()
+	bondedPool := k.GetBondedPool(ctx).GetAddress()
+	//var receiverName string
+	//var receiverPool sdk.AccAddress
+	//switch {
+	//case validator.IsBonded():
+	//	receiverName = types.BondedPoolName
+	//	receiverPool = bondedPool
+	//case validator.IsUnbonding(), validator.IsUnbonded():
+	//	receiverName = types.NotBondedPoolName
+	//	receiverPool = notBondedPool
+	//default:
+	//	return errors.ValidatorStatusUnknown
+	//}
+
+	balance := k.bankKeeper.GetBalance(ctx, notBondedPool, "del")
+	fmt.Println("notBondedPool")
+	fmt.Println(balance.Amount)
+	balanceNo := k.bankKeeper.GetBalance(ctx, bondedPool, "del")
+	fmt.Println("bondedPool")
+	fmt.Println(balanceNo.Amount)
+
 	return validatorUpdates
 }
 

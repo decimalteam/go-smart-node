@@ -10,7 +10,6 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts/validator"
 	"bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
-	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
 	validatorType "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	"cosmossdk.io/math"
@@ -237,15 +236,15 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 
 	delegatorAddress, _ := types.GetDecimalAddressFromHex(stakeData.Stake.Delegator.String())
 
-	mintCoinForDelegation := sdk.NewCoins(sdk.NewCoin(coinStake.Denom, math.NewIntFromBigInt(stakeData.Stake.Amount)))
-	err = k.bankKeeper.MintCoins(ctx, cointypes.ModuleName, mintCoinForDelegation)
-	if err != nil {
-		return err
-	}
-	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, cointypes.ModuleName, delegatorAddress, mintCoinForDelegation)
-	if err != nil {
-		return err
-	}
+	//mintCoinForDelegation := sdk.NewCoins(sdk.NewCoin(coinStake.Denom, math.NewIntFromBigInt(stakeData.Stake.Amount)))
+	//err = k.bankKeeper.MintCoins(ctx, cointypes.ModuleName, mintCoinForDelegation)
+	//if err != nil {
+	//	return err
+	//}
+	//err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, cointypes.ModuleName, delegatorAddress, mintCoinForDelegation)
+	//if err != nil {
+	//	return err
+	//}
 
 	valAddr, err := sdk.ValAddressFromHex(stakeData.Stake.Validator.String()[2:])
 

@@ -773,32 +773,32 @@ func (k Keeper) Delegate(
 	}
 
 	// 3. transfer coin/nft
-	notBondedPool := k.GetNotBondedPool(ctx).GetAddress()
-	bondedPool := k.GetBondedPool(ctx).GetAddress()
-	var receiverName string
-	var receiverPool sdk.AccAddress
-	switch {
-	case validator.IsBonded():
-		receiverName = types.BondedPoolName
-		receiverPool = bondedPool
-	case validator.IsUnbonding(), validator.IsUnbonded():
-		receiverName = types.NotBondedPoolName
-		receiverPool = notBondedPool
-	default:
-		return errors.ValidatorStatusUnknown
-	}
+	//notBondedPool := k.GetNotBondedPool(ctx).GetAddress()
+	//bondedPool := k.GetBondedPool(ctx).GetAddress()
+	//var receiverName string
+	//var receiverPool sdk.AccAddress
+	//switch {
+	//case validator.IsBonded():
+	//	receiverName = types.BondedPoolName
+	//	receiverPool = bondedPool
+	//case validator.IsUnbonding(), validator.IsUnbonded():
+	//	receiverName = types.NotBondedPoolName
+	//	receiverPool = notBondedPool
+	//default:
+	//	return errors.ValidatorStatusUnknown
+	//}
 
 	// the transfer of user assets is carried out in coins or nft
-	switch stake.Type {
-	case types.StakeType_Coin:
-		if err := k.bankKeeper.DelegateCoinsFromAccountToModule(ctx, delegator, receiverName, sdk.NewCoins(stake.Stake)); err != nil {
-			return err
-		}
-	case types.StakeType_NFT:
-		if err := k.nftKeeper.TransferSubTokens(ctx, delegator, receiverPool, stake.ID, stake.SubTokenIDs); err != nil {
-			return err
-		}
-	}
+	//switch stake.Type {
+	//case types.StakeType_Coin:
+	//	if err := k.bankKeeper.DelegateCoinsFromAccountToModule(ctx, delegator, receiverName, sdk.NewCoins(stake.Stake)); err != nil {
+	//		return err
+	//	}
+	//case types.StakeType_NFT:
+	//	if err := k.nftKeeper.TransferSubTokens(ctx, delegator, receiverPool, stake.ID, stake.SubTokenIDs); err != nil {
+	//		return err
+	//	}
+	//}
 
 	// Update delegation
 	k.SetDelegation(ctx, delegation)

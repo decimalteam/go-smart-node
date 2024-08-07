@@ -12,22 +12,22 @@ const (
 
 	firstIncrease          = 10
 	firstOldIncrease       = 5
-	blockStartCalcEmission = 21837188
-	blockStartEmission     = 10214628091
+	blockStartCalcEmission = 21937711
+	blockStartEmission     = 10345770095
 )
 
 func GetAllEmission(ctx sdk.Context) sdk.Int {
 	allEmision := helpers.EtherToWei(sdk.NewInt(blockStartEmission))
-	if !helpers.IsMainnet(ctx.ChainID()) {
-		allEmision = helpers.EtherToWei(sdk.NewInt(1))
-		for j := uint64(1); j < uint64(ctx.BlockHeight()); j++ {
-			allEmision = allEmision.Add(GetRewardOldForBlock(j))
-		}
-	} else {
-		for j := uint64(blockStartCalcEmission); j < uint64(ctx.BlockHeight()); j++ {
-			allEmision = allEmision.Add(GetRewardOldForBlock(j))
-		}
+	//if !helpers.IsMainnet(ctx.ChainID()) {
+	//	allEmision = helpers.EtherToWei(sdk.NewInt(1))
+	//	for j := uint64(1); j < uint64(ctx.BlockHeight()); j++ {
+	//		allEmision = allEmision.Add(GetRewardOldForBlock(j))
+	//	}
+	//} else {
+	for j := uint64(blockStartCalcEmission); j < uint64(ctx.BlockHeight()); j++ {
+		allEmision = allEmision.Add(GetRewardOldForBlock(j))
 	}
+	//}
 
 	return allEmision
 }
