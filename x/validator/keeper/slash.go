@@ -137,24 +137,24 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 
 	//////////////////////////////////////////////////
 	// 4. burn coins
-	if !accum.GetCoinsToBurnBonded().IsZero() {
-		err := k.coinKeeper.BurnPoolCoins(ctx, types.BondedPoolName, accum.GetCoinsToBurnBonded())
-		if err != nil {
-			panic(fmt.Errorf("error in burn in bonded pool: %s", err.Error()))
-		}
-	}
-	if !accum.GetCoinsToBurnUnbonded().IsZero() {
-		err := k.coinKeeper.BurnPoolCoins(ctx, types.NotBondedPoolName, accum.GetCoinsToBurnUnbonded())
-		if err != nil {
-			panic(fmt.Errorf("error in burn in not_bonded pool: %s", err.Error()))
-		}
-	}
-	if !accum.GetCoinsToBurnNFT().IsZero() {
-		err := k.coinKeeper.BurnPoolCoins(ctx, nfttypes.ReservedPool, accum.GetCoinsToBurnNFT())
-		if err != nil {
-			panic(fmt.Errorf("error in burn for nft reserved pool: %s", err.Error()))
-		}
-	}
+	//if !accum.GetCoinsToBurnBonded().IsZero() {
+	//	err := k.coinKeeper.BurnPoolCoins(ctx, types.BondedPoolName, accum.GetCoinsToBurnBonded())
+	//	if err != nil {
+	//		panic(fmt.Errorf("error in burn in bonded pool: %s", err.Error()))
+	//	}
+	//}
+	//if !accum.GetCoinsToBurnUnbonded().IsZero() {
+	//	err := k.coinKeeper.BurnPoolCoins(ctx, types.NotBondedPoolName, accum.GetCoinsToBurnUnbonded())
+	//	if err != nil {
+	//		panic(fmt.Errorf("error in burn in not_bonded pool: %s", err.Error()))
+	//	}
+	//}
+	//if !accum.GetCoinsToBurnNFT().IsZero() {
+	//	err := k.coinKeeper.BurnPoolCoins(ctx, nfttypes.ReservedPool, accum.GetCoinsToBurnNFT())
+	//	if err != nil {
+	//		panic(fmt.Errorf("error in burn for nft reserved pool: %s", err.Error()))
+	//	}
+	//}
 
 	//////////////////////////////////////////////////
 	// 5. change stakes of custom coins

@@ -584,40 +584,40 @@ func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator) {
 		delegation := baseAmounts[i].Delegation
 		stake := delegation.Stake
 		delegator := delegation.GetDelegator()
-		switch validator.Status {
-		case types.BondStatus_Bonded:
-			switch stake.Type {
-			case types.StakeType_Coin:
-				amt := stake.Stake
-
-				if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(
-					ctx, types.BondedPoolName, delegator, sdk.NewCoins(amt),
-				); err != nil {
-					panic(err)
-				}
-
-			case types.StakeType_NFT:
-				if err := k.nftKeeper.TransferSubTokens(ctx, k.GetBondedPool(ctx).GetAddress(), delegator, stake.GetID(), stake.GetSubTokenIDs()); err != nil {
-					panic(err)
-				}
-			}
-		case types.BondStatus_Unbonded:
-			switch stake.Type {
-			case types.StakeType_Coin:
-				amt := stake.Stake
-
-				if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(
-					ctx, types.NotBondedPoolName, delegator, sdk.NewCoins(amt),
-				); err != nil {
-					panic(err)
-				}
-
-			case types.StakeType_NFT:
-				if err := k.nftKeeper.TransferSubTokens(ctx, k.GetNotBondedPool(ctx).GetAddress(), delegator, stake.GetID(), stake.GetSubTokenIDs()); err != nil {
-					panic(err)
-				}
-			}
-		}
+		//switch validator.Status {
+		//case types.BondStatus_Bonded:
+		//	switch stake.Type {
+		//	case types.StakeType_Coin:
+		//		amt := stake.Stake
+		//
+		//		if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(
+		//			ctx, types.BondedPoolName, delegator, sdk.NewCoins(amt),
+		//		); err != nil {
+		//			panic(err)
+		//		}
+		//
+		//	case types.StakeType_NFT:
+		//		if err := k.nftKeeper.TransferSubTokens(ctx, k.GetBondedPool(ctx).GetAddress(), delegator, stake.GetID(), stake.GetSubTokenIDs()); err != nil {
+		//			panic(err)
+		//		}
+		//	}
+		//case types.BondStatus_Unbonded:
+		//	switch stake.Type {
+		//	case types.StakeType_Coin:
+		//		amt := stake.Stake
+		//
+		//		if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(
+		//			ctx, types.NotBondedPoolName, delegator, sdk.NewCoins(amt),
+		//		); err != nil {
+		//			panic(err)
+		//		}
+		//
+		//	case types.StakeType_NFT:
+		//		if err := k.nftKeeper.TransferSubTokens(ctx, k.GetNotBondedPool(ctx).GetAddress(), delegator, stake.GetID(), stake.GetSubTokenIDs()); err != nil {
+		//			panic(err)
+		//		}
+		//	}
+		//}
 
 		remainStake, err := k.CalculateRemainStake(ctx, delegation.Stake, delegation.Stake)
 		if err != nil {
