@@ -339,14 +339,14 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 	// - The tokens from the bonded validators that are being kicked out from the validator set
 	// need to be transferred to the NotBonded pool.
 
-	err = k.transferBetweenPools(ctx, types.BondStatus_Bonded, types.BondStatus_Unbonded, amtFromBondedToNotBonded, nftsFromBondedToNotBonded)
-	if err != nil {
-		return nil, err
-	}
-	err = k.transferBetweenPools(ctx, types.BondStatus_Unbonded, types.BondStatus_Bonded, amtFromNotBondedToBonded, nftsFromNotBondedToBonded)
-	if err != nil {
-		return nil, err
-	}
+	//err = k.transferBetweenPools(ctx, types.BondStatus_Bonded, types.BondStatus_Unbonded, amtFromBondedToNotBonded, nftsFromBondedToNotBonded)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//err = k.transferBetweenPools(ctx, types.BondStatus_Unbonded, types.BondStatus_Bonded, amtFromNotBondedToBonded, nftsFromNotBondedToBonded)
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	// set total power on lookup index if there are any updates
 	if len(updates) > 0 {
