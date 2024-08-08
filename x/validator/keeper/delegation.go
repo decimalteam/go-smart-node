@@ -1089,21 +1089,21 @@ func (k Keeper) CompleteRedelegation(
 
 			stake := entry.Stake
 			// return coins
-			switch stake.Type {
-			case types.StakeType_Coin:
-				amt := stake.Stake
-
-				if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(
-					ctx, types.NotBondedPoolName, delegator, sdk.NewCoins(amt),
-				); err != nil {
-					return err
-				}
-
-			case types.StakeType_NFT:
-				if err := k.nftKeeper.TransferSubTokens(ctx, k.GetNotBondedPool(ctx).GetAddress(), delegator, stake.GetID(), stake.GetSubTokenIDs()); err != nil {
-					return err
-				}
-			}
+			//switch stake.Type {
+			//case types.StakeType_Coin:
+			//	amt := stake.Stake
+			//
+			//	if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(
+			//		ctx, types.NotBondedPoolName, delegator, sdk.NewCoins(amt),
+			//	); err != nil {
+			//		return err
+			//	}
+			//
+			//case types.StakeType_NFT:
+			//	if err := k.nftKeeper.TransferSubTokens(ctx, k.GetNotBondedPool(ctx).GetAddress(), delegator, stake.GetID(), stake.GetSubTokenIDs()); err != nil {
+			//		return err
+			//	}
+			//}
 			k.SubCustomCoinStaked(ctx, stake.Stake)
 
 			// delegate

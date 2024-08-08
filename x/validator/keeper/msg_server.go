@@ -746,10 +746,10 @@ func (k msgServer) _cancelRedelegation(ctx sdk.Context, msgDelegator, msgValidat
 	}
 	k.SetDelegation(ctx, delegation)
 
-	err = k.TransferStakeBetweenPools(ctx, types.BondStatus_Unbonded, validatorSrc.GetStatus(), stake)
-	if err != nil {
-		return err
-	}
+	//err = k.TransferStakeBetweenPools(ctx, types.BondStatus_Unbonded, validatorSrc.GetStatus(), stake)
+	//if err != nil {
+	//	return err
+	//}
 
 	if remainStake.IsEmpty() {
 		red.RemoveEntry(redEntryIndex)
