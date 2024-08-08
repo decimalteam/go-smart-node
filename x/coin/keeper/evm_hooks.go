@@ -91,7 +91,7 @@ func (k *Keeper) PostTxProcessing(
 		if errEvent == nil {
 			if eventCenterByID.Name == "TokenDeployed" {
 				_ = tokenContractCenter.UnpackIntoInterface(&tokenAddress, eventCenterByID.Name, log.Data)
-				fmt.Println(tokenAddress)
+
 				err = k.CreateCoinEvent(ctx, tokenUpdated.NewReserve, tokenAddress.Meta, tokenAddress.TokenAddress.String())
 				if err != nil {
 					return status.Error(codes.Internal, err.Error())
@@ -136,6 +136,10 @@ func (k *Keeper) CreateCoinEvent(ctx sdk.Context, reserve *big.Int, token tokenC
 
 	tokenAddress = strings.ToLower(tokenAddress)
 	coinDenom := token.Symbol
+
+	if reserve == nil {
+		reserve = big.NewInt(0)
+	}
 
 	// Ensure coin does not exist
 	coinExist, err := k.GetCoin(ctx, coinDenom)
