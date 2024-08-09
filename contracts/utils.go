@@ -108,9 +108,9 @@ func GetIsMigration(
 
 func GetContractCenter(chainID string) string {
 	if helpers.IsMainnet(chainID) {
-		return "0x2r32432"
+		return "0xc108715a06f76caa96fa2c943ebf05159c29a87d"
 	} else if helpers.IsTestnet(chainID) {
-		return "0x464eB51b5965f4520B7180E2cC7805c55f9cefDA"
+		return "0xc6e67e6b7fa068dca595d2b6d29378d1d2158b6f"
 	} else {
 		return "0x12aa4439bc5df831e070fd6fe3055f0c4da2e6d5"
 	}
