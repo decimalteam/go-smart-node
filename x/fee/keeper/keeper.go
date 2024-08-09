@@ -26,7 +26,7 @@ type Keeper struct {
 	authKeeper types.AccountKeeper
 	calcFunc   types.CalculateCommissionFunc
 
-	baseDenom *string
+	//baseDenom *string
 }
 
 // NewKeeper creates new instances of the nft Keeper
@@ -37,7 +37,7 @@ func NewKeeper(
 	bankKeeper keeper.Keeper,
 	coinKeeper types.CoinKeeper,
 	authKeeper types.AccountKeeper,
-	baseDenom string,
+	//baseDenom string,
 	calcFunc types.CalculateCommissionFunc,
 ) *Keeper {
 	// set KeyTable if it has not already been set
@@ -51,8 +51,8 @@ func NewKeeper(
 		bankKeeper: bankKeeper,
 		coinKeeper: coinKeeper,
 		authKeeper: authKeeper,
-		baseDenom:  &baseDenom,
-		calcFunc:   calcFunc,
+		//baseDenom:  &baseDenom,
+		calcFunc: calcFunc,
 	}
 }
 

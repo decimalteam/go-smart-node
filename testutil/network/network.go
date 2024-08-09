@@ -51,11 +51,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/evmos/ethermint/crypto/hd"
-	"github.com/evmos/ethermint/encoding"
-	"github.com/evmos/ethermint/server/config"
-	ethermint "github.com/evmos/ethermint/types"
-	evmtypes "github.com/evmos/ethermint/x/evm/types"
+	"github.com/decimalteam/ethermint/crypto/hd"
+	"github.com/decimalteam/ethermint/encoding"
+	"github.com/decimalteam/ethermint/server/config"
+	ethermint "github.com/decimalteam/ethermint/types"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"

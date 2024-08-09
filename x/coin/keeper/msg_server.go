@@ -18,7 +18,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	dscconfig "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
@@ -438,7 +437,7 @@ func (k Keeper) RedeemCheck(goCtx context.Context, msg *types.MsgRedeemCheck) (*
 
 	// Calculate correct fee
 	params := k.feeKeeper.GetModuleParams(ctx)
-	delPrice, err := k.feeKeeper.GetPrice(ctx, k.GetBaseDenom(ctx), feeconfig.DefaultQuote)
+	delPrice, err := k.feeKeeper.GetPrice(ctx, helpers.GetBaseDenom(ctx.ChainID()), feeconfig.DefaultQuote)
 	if err != nil {
 		return nil, err
 	}
@@ -835,7 +834,7 @@ func (k *Keeper) sellCoin(
 }
 
 func (k Keeper) getCreateCoinCommission(ctx sdk.Context, symbol string) (sdkmath.Int, error) {
-	baseDenomPrice, err := k.feeKeeper.GetPrice(ctx, dscconfig.BaseDenom, feeconfig.DefaultQuote)
+	baseDenomPrice, err := k.feeKeeper.GetPrice(ctx, helpers.GetBaseDenom(ctx.ChainID()), feeconfig.DefaultQuote)
 	if err != nil {
 		return sdkmath.Int{}, err
 	}

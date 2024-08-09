@@ -1,15 +1,13 @@
 package keeper
 
 import (
-	"math/big"
-
-	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
+	"math/big"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 )
 
 // implementation of interface FeeMarketKeeper
@@ -32,8 +30,8 @@ func (k Keeper) GetParams(ctx sdk.Context) feemarkettypes.Params {
 	// TODO: watch for new params
 	return feemarkettypes.NewParams(
 		false,                                  //noBaseFee bool,
-		1,                                      //baseFeeChangeDenom,
-		1,                                      //elasticityMultiplier uint32,
+		8,                                      //baseFeeChangeDenom,
+		2,                                      //elasticityMultiplier uint32,
 		k.GetBaseFee(ctx).Uint64(),             //baseFee uint64,
 		0,                                      //enableHeight int64,
 		minGasPrice,                            //minGasPrice sdk.Dec,
@@ -42,7 +40,7 @@ func (k Keeper) GetParams(ctx sdk.Context) feemarkettypes.Params {
 }
 
 func (k Keeper) GetMinGasPrice(ctx sdk.Context) sdk.Dec {
-	baseDenomPrice, err := k.GetPrice(ctx, config.BaseDenom, feeconfig.DefaultQuote)
+	baseDenomPrice, err := k.GetPrice(ctx, helpers.GetBaseDenom(ctx.ChainID()), feeconfig.DefaultQuote)
 	if err != nil {
 		panic(err)
 	}

@@ -1,6 +1,9 @@
 package keeper_test
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/contracts"
+	"encoding/json"
+	"github.com/ethereum/go-ethereum/common"
 	"testing"
 	"time"
 
@@ -67,6 +70,8 @@ func TestSetGetValidator(t *testing.T) {
 		validatortypes.NewDescription("monik", "ident", "website", "secur", "details"), sdk.ZeroDec())
 	require.NoError(t, err, "new validator")
 
+	val.DRC20Contract = common.BytesToAddress(val.GetOperator()).String()
+
 	// Set/Get Validator
 	dsc.ValidatorKeeper.SetValidator(ctx, val)
 	val2, found := dsc.ValidatorKeeper.GetValidator(ctx, vals[0])
@@ -80,7 +85,7 @@ func TestSetGetValidatorByConsAddr(t *testing.T) {
 	val, err := validatortypes.NewValidator(vals[0], accs[0], PKs[0],
 		validatortypes.NewDescription("monik", "ident", "website", "secur", "details"), sdk.ZeroDec())
 	require.NoError(t, err, "new validator")
-
+	val.DRC20Contract = common.BytesToAddress(val.GetOperator()).String()
 	// Set/Get Validator
 	dsc.ValidatorKeeper.SetValidator(ctx, val)
 
@@ -92,6 +97,40 @@ func TestSetGetValidatorByConsAddr(t *testing.T) {
 	val2, found := dsc.ValidatorKeeper.GetValidatorByConsAddrDecimal(ctx, consAdr)
 	require.True(t, found)
 	require.Equal(t, val, val2)
+}
+
+func TestSetValidatorByEvm(t *testing.T) {
+	_, dsc, ctx := createTestInput(t)
+
+	jsonData := "{\"operator_address\":\"0x3b5d6ed2d79628dab1163f73e7a1fdd4d5d9923b\",\"reward_address\":\"0x3b5d6ed2d79628dab1163f73e7a1fdd4d5d9923b\",\"consensus_pubkey\":\"k7+6GxAOns0lDlloIGlVJK8phsMW1PLiiT9kI42sBpE=\",\"description\":{\"moniker\":\"Name11\",\"identity\":\"https://testnet-nft-ipfs.decimalchain.com/ipfs/QmVrsHnDsT9ct3tUMD4JN2BwBTq9iQ3SzT34DzDUiuTLpL\",\"website\":\"sit111e.com\",\"security_contact\":\"ema11il@example.com\",\"details\":\"Descripti1on test11\"},\"commission\":\"11\"}"
+
+	var validatorInfo contracts.MasterValidatorValidatorAddedMeta
+	_ = json.Unmarshal([]byte(jsonData), &validatorInfo)
+
+	valAddr, _ := sdk.ValAddressFromHex(validatorInfo.OperatorAddress[2:])
+	validatorInfo.OperatorAddress = valAddr.String()
+
+	err := dsc.ValidatorKeeper.CreateValidatorFromEVM(ctx, validatorInfo)
+	require.NoError(t, err)
+
+	valAddr, err = sdk.ValAddressFromBech32(validatorInfo.OperatorAddress)
+	require.NoError(t, err)
+
+	val2, found := dsc.ValidatorKeeper.GetValidator(ctx, valAddr)
+	require.True(t, found)
+	require.Equal(t, validatorInfo.OperatorAddress, val2.OperatorAddress)
+
+	validatorInfo.Description.Details = "dsadsadsa dsa d"
+
+	err = dsc.ValidatorKeeper.CreateValidatorFromEVM(ctx, validatorInfo)
+	require.NoError(t, err)
+
+	valAddr, err = sdk.ValAddressFromBech32(validatorInfo.OperatorAddress)
+	require.NoError(t, err)
+
+	val2, found = dsc.ValidatorKeeper.GetValidator(ctx, valAddr)
+	require.True(t, found)
+	require.Equal(t, validatorInfo.OperatorAddress, val2.OperatorAddress)
 }
 
 func TestSetGetRewards(t *testing.T) {

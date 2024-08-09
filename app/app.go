@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	tmtypes "github.com/tendermint/tendermint/types"
 	"io"
 	"net/http"
 	"os"
@@ -80,23 +81,23 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	// IBC
-	ibc "github.com/cosmos/ibc-go/v5/modules/core"
-	ibcclient "github.com/cosmos/ibc-go/v5/modules/core/02-client"
-	ibcclientclient "github.com/cosmos/ibc-go/v5/modules/core/02-client/client"
-	ibchost "github.com/cosmos/ibc-go/v5/modules/core/24-host"
-	ibckeeper "github.com/cosmos/ibc-go/v5/modules/core/keeper"
+	ibc "github.com/cosmos/ibc-go/v6/modules/core"
+	ibcclient "github.com/cosmos/ibc-go/v6/modules/core/02-client"
+	ibcclientclient "github.com/cosmos/ibc-go/v6/modules/core/02-client/client"
+	ibchost "github.com/cosmos/ibc-go/v6/modules/core/24-host"
+	ibckeeper "github.com/cosmos/ibc-go/v6/modules/core/keeper"
 
 	// Ethermint
-	ethencoding "github.com/evmos/ethermint/encoding"
-	ethsrvflags "github.com/evmos/ethermint/server/flags"
-	ethtypes "github.com/evmos/ethermint/types"
+	ethencoding "github.com/decimalteam/ethermint/encoding"
+	ethsrvflags "github.com/decimalteam/ethermint/server/flags"
+	ethtypes "github.com/decimalteam/ethermint/types"
 
 	// Ethermint modules
-	evm "github.com/evmos/ethermint/x/evm"
-	evmkeeper "github.com/evmos/ethermint/x/evm/keeper"
-	evmtypes "github.com/evmos/ethermint/x/evm/types"
-	evmgeth "github.com/evmos/ethermint/x/evm/vm/geth"
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	evm "github.com/decimalteam/ethermint/x/evm"
+	evmkeeper "github.com/decimalteam/ethermint/x/evm/keeper"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
+	evmgeth "github.com/decimalteam/ethermint/x/evm/vm/geth"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 
 	// Unnamed import of statik for swagger UI support
 	// _ "bitbucket.org/decimalteam/go-smart-node/client/docs/statik"
@@ -262,7 +263,7 @@ type DSC struct {
 	ScopedIBCKeeper capabilitykeeper.ScopedKeeper
 
 	// Ethermint keepers
-	EvmKeeper *evmkeeper.Keeper
+	EvmKeeper evmkeeper.Keeper
 
 	// Decimal keepers
 	CoinKeeper      coinkeeper.Keeper
@@ -380,6 +381,9 @@ func NewDSC(
 		appOpts:           appOpts,
 	}
 
+	// get authority address
+	authAddr := authtypes.NewModuleAddress(govtypes.ModuleName)
+
 	// Init params keeper and subspaces
 	app.ParamsKeeper = initParamsKeeper(appCodec, cdc, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
 	// set the BaseApp's parameter store
@@ -465,12 +469,15 @@ func NewDSC(
 		app.AccountKeeper,
 		&app.FeeKeeper,
 		app.BankKeeper,
+		&app.EvmKeeper,
 	)
 	app.NFTKeeper = *nftkeeper.NewKeeper(
 		appCodec,
 		keys[nfttypes.StoreKey],
 		app.GetSubspace(nfttypes.ModuleName),
 		app.BankKeeper,
+		&app.EvmKeeper,
+		&app.CoinKeeper,
 	)
 	app.MultisigKeeper = *multisigkeeper.NewKeeper(
 		appCodec,
@@ -487,7 +494,6 @@ func NewDSC(
 		app.BankKeeper,
 		&app.CoinKeeper,
 		app.AccountKeeper,
-		cmdcfg.BaseDenom,
 		ante.CalculateFee,
 	)
 	app.ValidatorKeeper = validatorkeeper.NewKeeper(
@@ -499,15 +505,16 @@ func NewDSC(
 		&app.NFTKeeper,
 		&app.CoinKeeper,
 		&app.MultisigKeeper,
+		&app.EvmKeeper,
 	)
 
 	// Create Ethermint keepers
 
-	app.EvmKeeper = evmkeeper.NewKeeper(
+	app.EvmKeeper = *evmkeeper.NewKeeper(
 		appCodec,
 		keys[evmtypes.StoreKey],
 		tkeys[evmtypes.TransientKey],
-		app.GetSubspace(evmtypes.ModuleName),
+		authAddr,
 		app.AccountKeeper,
 		app.BankKeeper,
 		&app.ValidatorKeeper,
@@ -515,13 +522,21 @@ func NewDSC(
 		nil,
 		evmgeth.NewEVM,
 		cast.ToString(appOpts.Get(ethsrvflags.EVMTracer)),
+		app.GetSubspace(evmtypes.ModuleName),
 	)
 
 	// WARNING: Setting up dummy hooks is disabled because it causes doubling ABCI events in EVM transactions.
 	// NOTE: Since we do not actually use any EVM hooks lets them will be unset.
-	// app.EvmKeeper = app.EvmKeeper.SetHooks(
-	// 	evmkeeper.NewMultiEvmHooks(),
-	// )
+	app.EvmKeeper.SetHooks(
+		evmkeeper.NewMultiEvmHooks(
+			app.CoinKeeper.Hooks(),
+			app.NFTKeeper.Hooks(),
+			app.ValidatorKeeper.Hooks(),
+		),
+	)
+
+	//app.ValidatorKeeper.SetEvmKeeper(app.EvmKeeper)
+	//app.CoinKeeper = *app.CoinKeeper.SetEvmKeeper(app.EvmKeeper)
 
 	// Create upgrade keeper
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(
@@ -609,7 +624,7 @@ func NewDSC(
 		// IBC app modules
 		ibc.NewAppModule(app.IBCKeeper),
 		// Ethermint app modules
-		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper),
+		evm.NewAppModule(&app.EvmKeeper, app.AccountKeeper, app.GetSubspace(evmtypes.ModuleName)),
 
 		// Decimal app modules
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
@@ -739,7 +754,7 @@ func NewDSC(
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		ibc.NewAppModule(app.IBCKeeper),
-		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper),
+		evm.NewAppModule(&app.EvmKeeper, app.AccountKeeper, app.GetSubspace(evmtypes.ModuleName)),
 		coin.NewAppModule(appCodec, app.CoinKeeper, app.AccountKeeper, app.BankKeeper),
 		swap.NewAppModule(appCodec, app.SwapKeeper, app.AccountKeeper, app.BankKeeper),
 	)
@@ -760,7 +775,7 @@ func NewDSC(
 		Cdc:             appCodec,
 		AccountKeeper:   app.AccountKeeper,
 		BankKeeper:      app.BankKeeper,
-		EvmKeeper:       app.EvmKeeper,
+		EvmKeeper:       &app.EvmKeeper,
 		FeeMarketKeeper: app.FeeKeeper,
 		FeegrantKeeper:  app.FeeGrantKeeper,
 		IBCKeeper:       app.IBCKeeper,
@@ -781,7 +796,18 @@ func NewDSC(
 
 	app.SetAnteHandler(ante.NewAnteHandler(options))
 	app.SetEndBlocker(app.EndBlocker)
-	app.setupUpgradeHandlers()
+	genDoc := &tmtypes.GenesisDoc{}
+	if _, err = os.Stat(filepath.Join(homePath, "config", "genesis.json")); err != nil {
+		if !os.IsNotExist(err) {
+			tmos.Exit(err.Error())
+		}
+	} else {
+		genDoc, err = tmtypes.GenesisDocFromFile(filepath.Join(homePath, "config", "genesis.json"))
+		if err != nil {
+			tmos.Exit(err.Error())
+		}
+	}
+	app.setupUpgradeHandlers(genDoc.ChainID)
 
 	if loadLatest {
 		if err := app.LoadLatestVersion(); err != nil {
@@ -1042,7 +1068,7 @@ func initParamsKeeper(
 	// IBC subspaces
 	paramsKeeper.Subspace(ibchost.ModuleName)
 	// Ethermint subspaces
-	paramsKeeper.Subspace(evmtypes.ModuleName)
+	paramsKeeper.Subspace(evmtypes.ModuleName).WithKeyTable(evmtypes.ParamKeyTable())
 	//paramsKeeper.Subspace(recoverytypes.ModuleName)
 	// Decimal subspaces
 	paramsKeeper.Subspace(cointypes.ModuleName)
@@ -1054,8 +1080,8 @@ func initParamsKeeper(
 	return paramsKeeper
 }
 
-func (app *DSC) setupUpgradeHandlers() {
-	for _, uc := range UpgradeList {
+func (app *DSC) setupUpgradeHandlers(chainID string) {
+	for _, uc := range GetUpgradeList(chainID) {
 		app.UpgradeKeeper.SetUpgradeHandler(
 			uc.name,
 			uc.handler(app, app.mm, app.configurator),

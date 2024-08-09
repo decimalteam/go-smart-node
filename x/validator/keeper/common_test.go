@@ -10,7 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/keeper"
@@ -38,6 +38,7 @@ func createTestInput(t *testing.T) (*codec.LegacyAmino, *app.DSC, sdk.Context) {
 		&dsc.NFTKeeper,
 		&dsc.CoinKeeper,
 		&dsc.MultisigKeeper,
+		&dsc.EvmKeeper,
 	)
 	return dsc.LegacyAmino(), dsc, ctx
 }
@@ -54,3 +55,47 @@ func generateAddresses(dsc *app.DSC, ctx sdk.Context, numAddrs int, accCoins sdk
 
 	return addrDels, addrVals
 }
+
+//// DeployTestContract deploy a test erc20 contract and returns the contract address
+//func DeployTestContractCenter(t *testing.T, app *app.DSC, ctx sdk.Context, addressOwner common.Address, keyringSigner keyring.Signer) common.Address {
+//	//ctx := sdk.WrapSDKContext(ctx)
+//	chainID := app.EvmKeeper.ChainID()
+//
+//	//abiContract, _ := contracts.ContractCenterMetaData.GetAbi()
+//
+//	nonce := app.EvmKeeper.GetNonce(ctx, addressOwner)
+//
+//	data := []byte(contracts.ContractCenterBin)
+//	args, err := json.Marshal(&evmtypes.TransactionArgs{
+//		From: &addressOwner,
+//		Data: (*hexutil.Bytes)(&data),
+//	})
+//	require.NoError(t, err)
+//	res, err := app.EvmKeeper.EstimateGas(ctx, &evmtypes.EthCallRequest{
+//		Args:            args,
+//		GasCap:          uint64(config.DefaultGasCap),
+//		ProposerAddress: ctx.BlockHeader().ProposerAddress,
+//	})
+//	require.NoError(t, err)
+//
+//	var erc20DeployTx *evmtypes.MsgEthereumTx
+//	erc20DeployTx = evmtypes.NewTxContract(
+//		chainID,
+//		nonce,
+//		nil,     // amount
+//		res.Gas, // gasLimit
+//		nil,     // gasPrice
+//		app.FeeKeeper.GetBaseFee(ctx),
+//		big.NewInt(1),
+//		data,                   // input
+//		&ethtypes.AccessList{}, // accesses
+//	)
+//
+//	erc20DeployTx.From = addressOwner.Hex()
+//	err = erc20DeployTx.Sign(ethtypes.LatestSignerForChainID(chainID), keyringSigner)
+//	require.NoError(t, err)
+//	rsp, err := app.EvmKeeper.EthereumTx(ctx, erc20DeployTx)
+//	require.NoError(t, err)
+//	require.Empty(t, rsp.VmError)
+//	return crypto.CreateAddress(addressOwner, nonce)
+//}

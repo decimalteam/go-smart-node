@@ -16,7 +16,7 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -88,7 +88,6 @@ func (s *KeeperTestSuite) SetupTest() {
 		bankKeeper,
 		coinKeeper,
 		authKeeper,
-		baseDenom,
 		ante.CalculateFee,
 	)
 	dp := types.DefaultParams()

@@ -1,8 +1,13 @@
 package keeper_test
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/contracts/tokenCenter"
+	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"context"
 	"fmt"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/ethereum/go-ethereum/common"
+	"math/big"
 	"testing"
 
 	"bitbucket.org/decimalteam/go-smart-node/testutil"
@@ -10,6 +15,7 @@ import (
 	coinkeeper "bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/testcoin"
 	cointestutil "bitbucket.org/decimalteam/go-smart-node/x/coin/testutil"
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -102,6 +108,7 @@ func (s *KeeperTestSuite) SetupTest() {
 		acKeeper,
 		fkKeeper,
 		bankKeeper,
+		nil,
 	)
 	k.SetParams(ctx, types.DefaultParams())
 	// --
@@ -171,6 +178,114 @@ func TestKeeper_Coin(t *testing.T) {
 
 	// update coin volume and reserve
 	dsc.CoinKeeper.UpdateCoinVR(ctx, getCoin.Denom, helpers.EtherToWei(sdkmath.NewInt(10002)), helpers.EtherToWei(sdkmath.NewInt(1000000001)))
+}
+
+func TestKeeper_Coin_From_Hook(t *testing.T) {
+	dsc, ctx, _, _ := bootstrapKeeperTest(t, 1, sdk.Coins{
+		{
+			Denom:  baseDenom,
+			Amount: baseAmount,
+		},
+	})
+
+	denom := "testcoin"
+	newCoin := keeper.NewToken{
+		TokenData: tokenCenter.DecimalTokenCenterToken{
+			InitialMint:    big.NewInt(0),
+			MinTotalSupply: big.NewInt(0),
+			MaxTotalSupply: big.NewInt(5000),
+			Creator:        common.HexToAddress("0x73ef3CE5D88fFf56ff32B3083641a1792e87C7E6"),
+			Crr:            0,
+			Identity:       "",
+			Symbol:         denom,
+			Name:           denom,
+		},
+	}
+
+	// get authority address
+	authAddr := authtypes.NewModuleAddress(cointypes.ModuleName)
+
+	var checkCoin = types.Coin{
+		Title:         newCoin.TokenData.Name,
+		Denom:         newCoin.TokenData.Symbol,
+		CRR:           uint32(newCoin.TokenData.Crr),
+		Reserve:       math.NewIntFromBigInt(big.NewInt(5000)),
+		Volume:        math.NewIntFromBigInt(newCoin.TokenData.InitialMint),
+		LimitVolume:   math.NewIntFromBigInt(newCoin.TokenData.MaxTotalSupply),
+		MinVolume:     math.NewIntFromBigInt(newCoin.TokenData.MinTotalSupply),
+		Creator:       authAddr.String(),
+		Identity:      newCoin.TokenData.Identity,
+		DRC20Contract: "0x73ef3ce5d88fff56ff32b3083641a1792e87c7e6",
+	}
+
+	// check set coin
+	err := dsc.CoinKeeper.CreateCoinEvent(ctx, big.NewInt(5000), newCoin.TokenData, "0x73ef3CE5D88fFf56ff32B3083641a1792e87C7E6")
+	require.NoError(t, err)
+
+	// check get exist coin
+	getCoin, err := dsc.CoinKeeper.GetCoin(ctx, denom)
+	require.NoError(t, err)
+	require.True(t, getCoin.Equal(checkCoin))
+
+}
+
+func TestKeeper_Coin_Update_DRC(t *testing.T) {
+	dsc, ctx, addrs, _ := bootstrapKeeperTest(t, 1, sdk.Coins{
+		{
+			Denom:  baseDenom,
+			Amount: baseAmount,
+		},
+	})
+
+	denom := "testcoin"
+	newCoin := types.Coin{
+		Denom:       denom,
+		Title:       "test keeper coin functions coin",
+		CRR:         50,
+		Reserve:     helpers.EtherToWei(sdkmath.NewInt(5000)),
+		Volume:      helpers.EtherToWei(sdkmath.NewInt(10000)),
+		LimitVolume: helpers.EtherToWei(sdkmath.NewInt(1000000000)),
+		MinVolume:   sdk.ZeroInt(),
+		Creator:     addrs[0].String(),
+		Identity:    "",
+	}
+
+	// check set coin
+	dsc.CoinKeeper.SetCoin(ctx, newCoin)
+
+	// check get exist coin
+	getCoin, err := dsc.CoinKeeper.GetCoin(ctx, denom)
+	require.NoError(t, err)
+	require.True(t, getCoin.Equal(newCoin))
+
+	newCoinForUpdate := keeper.NewToken{
+		TokenData: tokenCenter.DecimalTokenCenterToken{
+			InitialMint:    big.NewInt(0),
+			MinTotalSupply: big.NewInt(0),
+			MaxTotalSupply: big.NewInt(5000),
+			Creator:        common.HexToAddress("0x73ef3CE5D88fFf56ff32B3083641a1792e87C7E6"),
+			Crr:            0,
+			Identity:       "",
+			Symbol:         denom,
+			Name:           denom,
+		},
+	}
+
+	// check set coin
+	err = dsc.CoinKeeper.CreateCoinEvent(ctx, big.NewInt(5000), newCoinForUpdate.TokenData, "0x73ef3CE5D88fFf56ff32B3083641a1792e87C7E6")
+	require.NoError(t, err)
+
+	getCoin.DRC20Contract = "0x73ef3ce5d88fff56ff32b3083641a1792e87c7e6"
+
+	// check get exist coin
+	getCoinUpdate, err := dsc.CoinKeeper.GetCoin(ctx, denom)
+	require.NoError(t, err)
+	require.True(t, getCoinUpdate.Equal(getCoin))
+
+	// check get exist coin
+	getCoinByDRC, err := dsc.CoinKeeper.GetCoinByDRC(ctx, getCoin.DRC20Contract)
+	require.NoError(t, err)
+	require.True(t, getCoinUpdate.Equal(getCoinByDRC))
 }
 
 func TestKeeper_Check(t *testing.T) {

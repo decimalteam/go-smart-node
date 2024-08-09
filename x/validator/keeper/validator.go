@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"time"
 
 	gogotypes "github.com/gogo/protobuf/types"
@@ -33,7 +34,7 @@ func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.ValAddress) (validator ty
 		validator.TotalRewards = sdkmath.ZeroInt()
 		validator.Stake = 0
 	}
-
+	validator.DRC20Contract = common.BytesToAddress(validator.GetOperator()).String()
 	return validator, true
 }
 

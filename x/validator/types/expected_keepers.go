@@ -36,6 +36,7 @@ type BankKeeper interface {
 	GetSupply(ctx sdk.Context, denom string) sdk.Coin
 
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
+	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 	SendCoinsFromModuleToModule(ctx sdk.Context, senderPool, recipientPool string, amt sdk.Coins) error
 	UndelegateCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	DelegateCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
@@ -59,6 +60,10 @@ type CoinKeeper interface {
 	BurnPoolCoins(ctx sdk.Context, poolName string, coins sdk.Coins) error
 	UpdateCoinVR(ctx sdk.Context, denom string, volume sdkmath.Int, reserve sdkmath.Int) error
 	IsCoinExists(ctx sdk.Context, denom string) bool
+	IsCoinExistsByDRC(ctx sdk.Context, addressDRC string) bool
+	GetCoinByDRC(ctx sdk.Context, addressDRC string) (coin cointypes.Coin, err error)
+	UpdateCoinDRC(ctx sdk.Context, denom string, addressDRC string) error
+	SetCoin(ctx sdk.Context, coin cointypes.Coin)
 }
 
 type MultisigKeeper interface {

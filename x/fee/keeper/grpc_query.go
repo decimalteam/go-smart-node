@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"context"
 	"encoding/hex"
 
@@ -12,7 +13,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdktx "github.com/cosmos/cosmos-sdk/types/tx"
 
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
@@ -106,6 +107,8 @@ func (k Keeper) BlockGas(c context.Context, _ *feemarkettypes.QueryBlockGasReque
 func (k Keeper) CalculateCommission(c context.Context, req *types.QueryCalculateCommissionRequest) (*types.QueryCalculateCommissionResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 
+	baseDenom := helpers.GetBaseDenom(ctx.ChainID())
+
 	bz, err := hex.DecodeString(req.TxBytes)
 	if err != nil {
 		return nil, err
@@ -116,13 +119,13 @@ func (k Keeper) CalculateCommission(c context.Context, req *types.QueryCalculate
 		return nil, err
 	}
 	params := k.GetModuleParams(ctx)
-	delPrice, err := k.GetPrice(ctx, *k.baseDenom, feeconfig.DefaultQuote)
+	delPrice, err := k.GetPrice(ctx, baseDenom, feeconfig.DefaultQuote)
 	if err != nil {
 		return nil, err
 	}
 
 	commission, err := k.calcFunc(k.cdc, []sdk.Msg{msg}, int64(len(bz)), delPrice.Price, params)
-	if req.Denom == *k.baseDenom {
+	if req.Denom == baseDenom {
 		return &types.QueryCalculateCommissionResponse{
 			Commission: commission,
 		}, nil
