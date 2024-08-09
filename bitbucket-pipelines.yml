@@ -199,35 +199,35 @@ definitions:
             artifacts:
               - build/**
 
-        - step:
-            name: Build on Centos 7 (latest)
-            image: centos:centos7
-            caches:
-              - go-src
-              - go-pkg
-            script:
-              - yum install -y epel-release
-              - yum install -y leveldb leveldb-devel snappy gcc git which wget make
-              - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-              - tar -xvf go1.21.4.linux-amd64.tar.gz
-              - mv go /usr/local
-              - export GOROOT=/usr/local/go
-              - export GOPATH=~/go
-              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-              - go version
-              - go env
-              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
-              - mkdir -pv "${PACKAGE_PATH}"
-              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
-              - export GO111MODULE=on
-              - cd "${PACKAGE_PATH}"
-              - go get ./...
-              - go test ./...
-              - make install
-              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
-              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
-            artifacts:
-              - build/**
+#        - step:
+#            name: Build on Centos 7 (latest)
+#            image: centos:centos7
+#            caches:
+#              - go-src
+#              - go-pkg
+#            script:
+#              - yum install -y epel-release
+#              - yum install -y leveldb leveldb-devel snappy gcc git which wget make
+#              - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+#              - tar -xvf go1.21.4.linux-amd64.tar.gz
+#              - mv go /usr/local
+#              - export GOROOT=/usr/local/go
+#              - export GOPATH=~/go
+#              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+#              - go version
+#              - go env
+#              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+#              - mkdir -pv "${PACKAGE_PATH}"
+#              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+#              - export GO111MODULE=on
+#              - cd "${PACKAGE_PATH}"
+#              - go get ./...
+#              - go test ./...
+#              - make install
+#              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
+#              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
+#            artifacts:
+#              - build/**
 
         - step:
             name: Build on Ubuntu 22.04
