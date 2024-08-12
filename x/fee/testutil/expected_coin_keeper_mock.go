@@ -18,6 +18,11 @@ type MockCoinKeeper struct {
 	recorder *MockCoinKeeperMockRecorder
 }
 
+func (m *MockCoinKeeper) GetBaseDenom(ctx types0.Context) string {
+	//TODO implement me
+	panic("implement me")
+}
+
 // MockCoinKeeperMockRecorder is the mock recorder for MockCoinKeeper.
 type MockCoinKeeperMockRecorder struct {
 	mock *MockCoinKeeper
