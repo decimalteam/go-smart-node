@@ -4,7 +4,6 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"context"
 	"encoding/hex"
-	"fmt"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -48,8 +47,7 @@ func (k Keeper) CoinPrice(c context.Context, req *types.QueryCoinPriceRequest) (
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 	ctx := sdk.UnwrapSDKContext(c)
-	fmt.Println("CoinPrice", ctx.ChainID())
-	fmt.Println("CoinPrice", req.Denom)
+
 	price, err := k.GetPrice(ctx, req.Denom, req.Quote)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -110,7 +108,7 @@ func (k Keeper) CalculateCommission(c context.Context, req *types.QueryCalculate
 	ctx := sdk.UnwrapSDKContext(c)
 
 	baseDenom := helpers.GetBaseDenom(ctx.ChainID())
-	fmt.Println("CalculateCommission", ctx.ChainID())
+
 	bz, err := hex.DecodeString(req.TxBytes)
 	if err != nil {
 		return nil, err
