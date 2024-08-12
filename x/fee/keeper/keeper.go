@@ -102,6 +102,8 @@ func (k *Keeper) GetPrice(
 			if len(value) == 0 {
 				return types.CoinPrice{}, errors.PriceNotFound
 			}
+		} else {
+			return types.CoinPrice{}, errors.PriceNotFound
 		}
 	}
 	var price types.CoinPrice
