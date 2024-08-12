@@ -93,8 +93,6 @@ func (k *Keeper) GetPrice(
 	quote string,
 ) (types.CoinPrice, error) {
 	store := ctx.KVStore(k.storeKey)
-	fmt.Println("denom", denom)
-	fmt.Println("ctx", ctx)
 	key := types.GetPriceKey(denom, quote)
 	value := store.Get(key)
 	if len(value) == 0 {

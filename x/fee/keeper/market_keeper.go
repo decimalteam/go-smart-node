@@ -16,6 +16,7 @@ import (
 var _ types.FeeMarketKeeper = &Keeper{}
 
 func (k Keeper) GetBaseFee(ctx sdk.Context) *big.Int {
+	fmt.Println("GetBaseFee", ctx.ChainID())
 	baseFee := k.GetMinGasPrice(ctx).TruncateInt()
 
 	return baseFee.BigInt()
@@ -26,6 +27,7 @@ func (k Keeper) GetBaseFeeEnabled(ctx sdk.Context) bool {
 }
 
 func (k Keeper) GetParams(ctx sdk.Context) feemarkettypes.Params {
+	fmt.Println("GetParams", ctx.ChainID())
 	minGasPrice := k.GetMinGasPrice(ctx)
 
 	// TODO: watch for new params
@@ -41,7 +43,6 @@ func (k Keeper) GetParams(ctx sdk.Context) feemarkettypes.Params {
 }
 
 func (k Keeper) GetMinGasPrice(ctx sdk.Context) sdk.Dec {
-	fmt.Println("GetMinGasPrice", ctx.ChainID())
 	baseDenomPrice, err := k.GetPrice(ctx, helpers.GetBaseDenom(ctx.ChainID()), feeconfig.DefaultQuote)
 	if err != nil {
 		panic(err)
