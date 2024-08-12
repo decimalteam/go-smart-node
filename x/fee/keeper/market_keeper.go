@@ -43,6 +43,8 @@ func (k Keeper) GetParams(ctx sdk.Context) feemarkettypes.Params {
 }
 
 func (k Keeper) GetMinGasPrice(ctx sdk.Context) sdk.Dec {
+	fmt.Println("GetMinGasPrice", k.coinKeeper.GetBaseDenom(ctx))
+
 	baseDenomPrice, err := k.GetPrice(ctx, helpers.GetBaseDenom(ctx.ChainID()), feeconfig.DefaultQuote)
 	if err != nil {
 		panic(err)
