@@ -94,7 +94,7 @@ func (k *Keeper) GetPrice(
 ) (types.CoinPrice, error) {
 	store := ctx.KVStore(k.storeKey)
 	fmt.Println("denom", denom)
-	fmt.Println("ctx", ctx.ChainID())
+	fmt.Println("ctx", ctx.BlockHeight())
 	key := types.GetPriceKey(denom, quote)
 	value := store.Get(key)
 	if len(value) == 0 {
