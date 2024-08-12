@@ -45,6 +45,7 @@ func IsMainnet(chainID string) bool {
 
 // GetBaseDenom returns base Denom of chain
 func GetBaseDenom(chainID string) string {
+	fmt.Println("GetBaseDenom", chainID)
 	if IsTestnet(chainID) {
 		return TestnetBaseDenom
 	}
