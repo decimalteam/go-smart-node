@@ -18,11 +18,6 @@ type MockCoinKeeper struct {
 	recorder *MockCoinKeeperMockRecorder
 }
 
-func (m *MockCoinKeeper) GetBaseDenom(ctx types0.Context) string {
-	//TODO implement me
-	panic("implement me")
-}
-
 // MockCoinKeeperMockRecorder is the mock recorder for MockCoinKeeper.
 type MockCoinKeeperMockRecorder struct {
 	mock *MockCoinKeeper
@@ -52,6 +47,20 @@ func (m *MockCoinKeeper) BurnPoolCoins(arg0 types0.Context, arg1 string, arg2 ty
 func (mr *MockCoinKeeperMockRecorder) BurnPoolCoins(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BurnPoolCoins", reflect.TypeOf((*MockCoinKeeper)(nil).BurnPoolCoins), arg0, arg1, arg2)
+}
+
+// GetBaseDenom mocks base method.
+func (m *MockCoinKeeper) GetBaseDenom(arg0 types0.Context) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBaseDenom", arg0)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetBaseDenom indicates an expected call of GetBaseDenom.
+func (mr *MockCoinKeeperMockRecorder) GetBaseDenom(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBaseDenom", reflect.TypeOf((*MockCoinKeeper)(nil).GetBaseDenom), arg0)
 }
 
 // GetCoin mocks base method.
