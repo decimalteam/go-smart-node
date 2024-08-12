@@ -3,6 +3,7 @@ package keeper
 import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
+	"fmt"
 	"math/big"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
@@ -40,6 +41,7 @@ func (k Keeper) GetParams(ctx sdk.Context) feemarkettypes.Params {
 }
 
 func (k Keeper) GetMinGasPrice(ctx sdk.Context) sdk.Dec {
+	fmt.Println("GetMinGasPrice", ctx.ChainID())
 	baseDenomPrice, err := k.GetPrice(ctx, helpers.GetBaseDenom(ctx.ChainID()), feeconfig.DefaultQuote)
 	if err != nil {
 		panic(err)

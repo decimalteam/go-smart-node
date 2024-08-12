@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
+	"fmt"
 	"math/big"
 	"strconv"
 	"strings"
@@ -834,6 +835,7 @@ func (k *Keeper) sellCoin(
 }
 
 func (k Keeper) getCreateCoinCommission(ctx sdk.Context, symbol string) (sdkmath.Int, error) {
+	fmt.Println("getCreateCoinCommission", ctx.ChainID())
 	baseDenomPrice, err := k.feeKeeper.GetPrice(ctx, helpers.GetBaseDenom(ctx.ChainID()), feeconfig.DefaultQuote)
 	if err != nil {
 		return sdkmath.Int{}, err

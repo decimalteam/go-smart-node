@@ -57,7 +57,7 @@ func (fd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, nex
 	}
 
 	params := fd.feeKeeper.GetModuleParams(ctx)
-	fmt.Println("AnteHandle", ctx.ChainID())
+
 	delPrice, err := fd.feeKeeper.GetPrice(ctx, helpers.GetBaseDenom(ctx.ChainID()), feeconfig.DefaultQuote)
 	if err != nil {
 		return ctx, err
