@@ -103,7 +103,6 @@ func (k *Keeper) GetPrice(
 				return types.CoinPrice{}, errors.PriceNotFound
 			}
 		}
-		return types.CoinPrice{}, errors.PriceNotFound
 	}
 	var price types.CoinPrice
 	err := k.cdc.UnmarshalLengthPrefixed(value, &price)

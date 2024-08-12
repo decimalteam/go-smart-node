@@ -3,7 +3,6 @@ package keeper
 import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	feeconfig "bitbucket.org/decimalteam/go-smart-node/x/fee/config"
-	"fmt"
 	"math/big"
 
 	"bitbucket.org/decimalteam/go-smart-node/x/fee/types"
@@ -16,7 +15,6 @@ import (
 var _ types.FeeMarketKeeper = &Keeper{}
 
 func (k Keeper) GetBaseFee(ctx sdk.Context) *big.Int {
-	fmt.Println("GetBaseFee", ctx.ChainID())
 	baseFee := k.GetMinGasPrice(ctx).TruncateInt()
 
 	return baseFee.BigInt()
