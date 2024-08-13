@@ -21,9 +21,6 @@ const (
 	NameOfSlugForGetAddressWDEL            = "wdel"
 	NameOfSlugForGetAddressMasterValidator = "master-validator"
 	EventChangeTokenCenter                 = "ContractAdded"
-
-	// DRC20MethodCreateToken defines the create method for DRC20 token
-	DRC20MethodCreateToken = "createToken"
 )
 
 // MasterValidatorValidatorAddedMeta represents a ReserveUpdated event raised by the Contracts contract.
