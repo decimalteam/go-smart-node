@@ -126,6 +126,7 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 	//fmt.Println(err)
 	dataAddress, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
 	fmt.Println("dataAddress", dataAddress)
+	fmt.Println("dataAddress", err)
 	ifNeedExec, err := k.QueryIfNeedExecuteFinish(ctx, common.HexToAddress(dataAddress))
 	if ifNeedExec {
 		resultExec, errexec := k.ExecuteQueueEVMAction(ctx, common.HexToAddress(dataAddress))
