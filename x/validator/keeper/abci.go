@@ -148,9 +148,8 @@ func (k Keeper) PayValidators(ctx sdk.Context) {
 
 	if baseCoin.LimitVolume.IsZero() {
 		baseCoin.LimitVolume = types.GetAllEmission(ctx)
-		k.coinKeeper.SetCoin(ctx, baseCoin)
 	} else {
 		baseCoin.LimitVolume.Add(rewards)
-		k.coinKeeper.SetCoin(ctx, baseCoin)
 	}
+	k.coinKeeper.SetCoin(ctx, baseCoin)
 }
