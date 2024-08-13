@@ -324,11 +324,15 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 
 func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.MasterValidatorValidatorAddedMeta) error {
 
-	commission, _ := sdkmath.NewIntFromString(validatorMeta.Commission)
-
-	if commission.Uint64() > 100 {
+	commissionChekc, _ := sdk.NewDecFromStr(validatorMeta.Commission)
+	commissionChekcInt := commissionChekc.TruncateInt()
+	if commissionChekcInt.GT(sdk.NewInt(100)) {
 		return errors.ValidatorCommissionIsTooBig
 	}
+	if commissionChekcInt.LT(sdk.NewInt(0)) {
+		return errors.ValidatorCommissionIsTooBig
+	}
+	commission, _ := sdkmath.NewIntFromString(validatorMeta.Commission)
 
 	rewardAddress, _ := types.GetDecimalAddressFromHex(validatorMeta.RewardAddress)
 

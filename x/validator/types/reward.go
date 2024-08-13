@@ -18,16 +18,16 @@ const (
 
 func GetAllEmission(ctx sdk.Context) sdk.Int {
 	allEmision := helpers.EtherToWei(sdk.NewInt(blockStartEmission))
-	//if !helpers.IsMainnet(ctx.ChainID()) {
-	//	allEmision = helpers.EtherToWei(sdk.NewInt(1))
-	//	for j := uint64(1); j < uint64(ctx.BlockHeight()); j++ {
-	//		allEmision = allEmision.Add(GetRewardOldForBlock(j))
-	//	}
-	//} else {
-	for j := uint64(blockStartCalcEmission); j < uint64(ctx.BlockHeight()); j++ {
-		allEmision = allEmision.Add(GetRewardOldForBlock(j))
+	if !helpers.IsMainnet(ctx.ChainID()) {
+		allEmision = helpers.EtherToWei(sdk.NewInt(1))
+		for j := uint64(1); j < uint64(ctx.BlockHeight()); j++ {
+			allEmision = allEmision.Add(GetRewardForBlock(j))
+		}
+	} else {
+		for j := uint64(blockStartCalcEmission); j < uint64(ctx.BlockHeight()); j++ {
+			allEmision = allEmision.Add(GetRewardOldForBlock(j))
+		}
 	}
-	//}
 
 	return allEmision
 }
