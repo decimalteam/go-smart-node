@@ -69,6 +69,7 @@ func GetAddressFromContractCenter(
 ) (string, error) {
 	contractCenter, _ := center.CenterMetaData.GetAbi()
 	contract := common.HexToAddress(GetContractCenter(ctx.ChainID()))
+	fmt.Println(contract.String())
 	methodCall := "getContractAddress"
 	// Address token center
 	res, err := evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, nameOfAddress)
