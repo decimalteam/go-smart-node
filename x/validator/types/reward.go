@@ -7,7 +7,7 @@ import (
 
 const (
 	lastBlock      = 46_656_000
-	firstReward    = 500
+	firstReward    = 5
 	firstOldReward = 50
 
 	firstIncrease          = 10
