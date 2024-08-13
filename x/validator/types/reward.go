@@ -20,11 +20,11 @@ func GetAllEmission(ctx sdk.Context) sdk.Int {
 	allEmision := helpers.EtherToWei(sdk.NewInt(blockStartEmission))
 	if helpers.IsDevnet(ctx.ChainID()) {
 		allEmision = helpers.EtherToWei(sdk.NewInt(0))
-		allEmision.Add(sdk.NewInt(40000000000000000000000000))
-		allEmision.Add(sdk.NewInt(8000000000000000000000000000))
-		allEmision.Add(sdk.NewInt(40000000000000000000000000))
-		allEmision.Add(sdk.NewInt(40000000000000000000000000))
-		allEmision.Add(sdk.NewInt(90000000000000000000000000))
+		allEmision.Add(sdk.NewInt(40000000))
+		allEmision.Add(sdk.NewInt(8000000000))
+		allEmision.Add(sdk.NewInt(40000000))
+		allEmision.Add(sdk.NewInt(40000000))
+		allEmision.Add(sdk.NewInt(90000000))
 		for j := uint64(1); j < uint64(ctx.BlockHeight()); j++ {
 			allEmision = allEmision.Add(GetRewardForBlock(j))
 		}
