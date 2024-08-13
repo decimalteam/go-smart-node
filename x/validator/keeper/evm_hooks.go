@@ -89,6 +89,8 @@ func (k Keeper) PostTxProcessing(
 	var newValidator validator.ValidatorValidatorMetaUpdated
 	var updateValidator validator.ValidatorValidatorUpdated
 
+	stakeUpdate := 0
+
 	for _, log := range recipient.Logs {
 		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
 		if errEvent == nil && addressValidator == strings.ToLower(log.Address.String()) {
@@ -121,7 +123,8 @@ func (k Keeper) PostTxProcessing(
 		}
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil && strings.ToLower(log.Address.String()) == addressDelegation {
-			if eventDelegationByID.Name == "StakeUpdated" {
+			if eventDelegationByID.Name == "StakeUpdated" && stakeUpdate == 0 {
+				stakeUpdate = stakeUpdate + 1
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
 				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
 				if err != nil {

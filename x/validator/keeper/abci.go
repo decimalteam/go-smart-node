@@ -90,13 +90,6 @@ func (k Keeper) PayValidators(ctx sdk.Context) {
 		panic(err)
 	}
 
-	if baseCoin.LimitVolume.IsZero() {
-		baseCoin.LimitVolume = types.GetAllEmission(ctx)
-	} else {
-		baseCoin.LimitVolume.Add(rewards)
-	}
-	k.coinKeeper.SetCoin(ctx, baseCoin)
-
 	feeCollector := k.authKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
 	feesCollectedCoins := k.bankKeeper.GetAllBalances(ctx, feeCollector.GetAddress())
 
@@ -121,6 +114,15 @@ func (k Keeper) PayValidators(ctx sdk.Context) {
 
 	// pay rewards to validators
 	remainder := sdk.NewIntFromBigInt(rewards.BigInt())
+	fmt.Println(baseCoin.LimitVolume)
+	if baseCoin.LimitVolume.IsZero() {
+		baseCoin.LimitVolume = types.GetAllEmission(ctx)
+	} else {
+		baseCoin.LimitVolume.Add(remainder)
+	}
+	fmt.Println(baseCoin.LimitVolume)
+	fmt.Println(baseDenom)
+	k.coinKeeper.SetCoin(ctx, baseCoin)
 
 	vals, powers, totalPower := k.GetAllValidatorsByPowerIndex(ctx)
 
