@@ -35,7 +35,7 @@ func GetAllEmission(ctx sdk.Context) sdk.Int {
 			allEmision = allEmision.Add(GetRewardOldForBlock(j))
 		}
 	}
-	if !helpers.IsMainnet(ctx.ChainID()) {
+	if helpers.IsMainnet(ctx.ChainID()) {
 		for j := uint64(blockStartCalcEmission); j < uint64(ctx.BlockHeight()); j++ {
 			allEmision = allEmision.Add(GetRewardOldForBlock(j))
 		}

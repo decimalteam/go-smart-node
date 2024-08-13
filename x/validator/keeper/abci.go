@@ -145,13 +145,14 @@ func (k Keeper) PayValidators(ctx sdk.Context) {
 	if err != nil {
 		panic(err)
 	}
-	//if baseCoin.LimitVolume.IsZero() {
-	baseCoin.LimitVolume = types.GetAllEmission(ctx)
-	k.coinKeeper.SetCoin(ctx, baseCoin)
-	//} else {
-	//	baseCoin.LimitVolume.Add(rewards)
-	//	k.coinKeeper.SetCoin(ctx, baseCoin)
-	//}
+	baseCoin.LimitVolume = sdk.NewInt(0)
+	if baseCoin.LimitVolume.IsZero() {
+		baseCoin.LimitVolume = types.GetAllEmission(ctx)
+		k.coinKeeper.SetCoin(ctx, baseCoin)
+	} else {
+		baseCoin.LimitVolume.Add(rewards)
+		k.coinKeeper.SetCoin(ctx, baseCoin)
+	}
 
 	if err != nil {
 		panic(err)
