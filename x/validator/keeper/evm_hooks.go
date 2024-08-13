@@ -326,11 +326,14 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 
 	commissionChekc, _ := sdk.NewDecFromStr(validatorMeta.Commission)
 	commissionChekcInt := commissionChekc.TruncateInt()
+	if commissionChekcInt.IsZero() {
+		return errors.ValidatorCommissionIsTooSmall
+	}
 	if commissionChekcInt.GT(sdk.NewInt(100)) {
 		return errors.ValidatorCommissionIsTooBig
 	}
 	if commissionChekcInt.LT(sdk.NewInt(0)) {
-		return errors.ValidatorCommissionIsTooBig
+		return errors.ValidatorCommissionIsTooSmall
 	}
 	commission, _ := sdkmath.NewIntFromString(validatorMeta.Commission)
 
