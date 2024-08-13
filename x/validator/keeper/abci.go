@@ -153,8 +153,4 @@ func (k Keeper) PayValidators(ctx sdk.Context) {
 		baseCoin.LimitVolume.Add(rewards)
 		k.coinKeeper.SetCoin(ctx, baseCoin)
 	}
-
-	if err != nil {
-		panic(err)
-	}
 }
