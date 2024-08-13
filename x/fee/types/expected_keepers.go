@@ -34,6 +34,7 @@ type FeeMarketKeeper interface {
 
 type CoinKeeper interface {
 	GetCoin(ctx sdk.Context, denom string) (coin cointypes.Coin, err error)
+	GetBaseDenom(ctx sdk.Context) string
 	BurnPoolCoins(ctx sdk.Context, poolName string, coins sdk.Coins) error
 }
 

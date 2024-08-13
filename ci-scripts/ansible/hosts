@@ -26,6 +26,7 @@ dev-explorer-worker-02      ansible_host=194.87.11.18 ansible_port=2226
 test-validator-01            ansible_host=185.242.122.126 ansible_port=2251
 test-validator-02            ansible_host=185.242.122.126 ansible_port=2252
 test-validator-03            ansible_host=185.242.122.126 ansible_port=2253
+backup-testnet               ansible_host=185.242.122.78
 
 [slave-host-testnet]
 test-gw-backend-01           ansible_host=185.242.122.126 ansible_port=2231

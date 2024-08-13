@@ -96,7 +96,15 @@ func (k *Keeper) GetPrice(
 	key := types.GetPriceKey(denom, quote)
 	value := store.Get(key)
 	if len(value) == 0 {
-		return types.CoinPrice{}, errors.PriceNotFound
+		if denom == "del" {
+			key = types.GetPriceKey("tdel", quote)
+			value = store.Get(key)
+			if len(value) == 0 {
+				return types.CoinPrice{}, errors.PriceNotFound
+			}
+		} else {
+			return types.CoinPrice{}, errors.PriceNotFound
+		}
 	}
 	var price types.CoinPrice
 	err := k.cdc.UnmarshalLengthPrefixed(value, &price)
