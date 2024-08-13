@@ -1,13 +1,9 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
 	types "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
@@ -34,162 +30,162 @@ import (
 //	Infraction was committed at the current height or at a past height,
 //	not at a height in the future
 func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeight int64, power int64, slashFactor sdk.Dec) {
-	logger := k.Logger(ctx)
-
-	if slashFactor.IsNegative() {
-		panic(fmt.Errorf("attempted to slash with a negative slash factor: %v", slashFactor))
-	}
-
-	if infractionHeight > ctx.BlockHeight() {
-		// Can't slash infractions in the future
-		panic(fmt.Sprintf(
-			"impossible attempt to slash future infraction at height %d but we are at height %d",
-			infractionHeight, ctx.BlockHeight()))
-	}
-
-	validator, found := k.GetValidatorByConsAddrDecimal(ctx, consAddr)
-	if !found {
-		// If not found, the validator must have been overslashed and removed - so we don't need to do anything
-		// NOTE:  Correctness dependent on invariant that unbonding delegations / redelegations must also have been completely
-		//        slashed in this case - which we don't explicitly check, but should be true.
-		// Log the slash attempt for future reference (maybe we should tag it too)
-		logger.Error(
-			"WARNING: ignored attempt to slash a nonexistent validator; we recommend you investigate immediately",
-			"validator", consAddr.String(),
-		)
-		return
-	}
-
-	// should not be slashing an unbonded validator
-	if validator.IsUnbonded() {
-		panic(fmt.Sprintf("should not be slashing unbonded validator: %s", validator.GetOperator()))
-	}
-
-	operatorAddress := validator.GetOperator()
-	valStatuses := make(map[string]types.BondStatus)
-	for _, v := range k.GetAllValidators(ctx) {
-		valStatuses[v.OperatorAddress] = v.Status
-	}
-
-	// call the before-modification hook
-	k.BeforeValidatorModified(ctx, operatorAddress)
-
-	//////////////////////////////////////////////////
-	// 1. precalculation for correct burn of slashed coins
-	accum := NewSlashesAccumulator(k, ctx, slashFactor, NewDecreasingFactors())
-	for _, delegation := range k.GetValidatorDelegations(ctx, operatorAddress) {
-		accum.AddDelegation(delegation, validator.Status, true)
-	}
-	if infractionHeight < ctx.BlockHeight() {
-		for _, undelegation := range k.GetUndelegationsFromValidator(ctx, operatorAddress) {
-			accum.AddUndelegation(undelegation, infractionHeight, true)
-		}
-		for _, redelegation := range k.GetRedelegationsFromSrcValidator(ctx, operatorAddress) {
-			accum.AddRedelegation(redelegation, infractionHeight, valStatuses, true)
-		}
-	}
-
-	// precalculation to check future coins burns
-	var factors = NewDecreasingFactors()
-	for _, coin := range accum.GetAllCoinsToBurn() {
-		if coin.Denom == k.coinKeeper.GetBaseDenom(ctx) {
-			factors.SetFactor(coin.Denom, sdk.OneDec())
-			continue
-		}
-		f, err := k.coinKeeper.GetDecreasingFactor(ctx, coin)
-		if err != nil {
-			panic(fmt.Errorf("error in GetDecreasingFactor %s: %s", coin.Denom, err.Error()))
-		}
-		factors.SetFactor(coin.Denom, f)
-	}
-
-	//////////////////////////////////////////////////
-	// 2. new accumulator to prepare changes
-	accum = NewSlashesAccumulator(k, ctx, slashFactor, factors)
-	for _, delegation := range k.GetValidatorDelegations(ctx, operatorAddress) {
-		accum.AddDelegation(delegation, validator.Status, false)
-	}
-	if infractionHeight < ctx.BlockHeight() {
-		for _, undelegation := range k.GetUndelegationsFromValidator(ctx, operatorAddress) {
-			accum.AddUndelegation(undelegation, infractionHeight, false)
-		}
-		for _, redelegation := range k.GetRedelegationsFromSrcValidator(ctx, operatorAddress) {
-			accum.AddRedelegation(redelegation, infractionHeight, valStatuses, false)
-		}
-	}
-
-	//////////////////////////////////////////////////
-	// 3. do changes
-	for _, delegation := range accum.GetDelegations() {
-		k.SetDelegation(ctx, delegation)
-	}
-	for _, undelegation := range accum.GetUndelegations() {
-		k.SetUndelegation(ctx, undelegation)
-	}
-	for _, redelegation := range accum.GetRedelegations() {
-		k.SetRedelegation(ctx, redelegation)
-	}
-	for _, chng := range accum.GetNFTChanges() {
-		for _, sub := range chng.subtokens {
-			k.nftKeeper.SetSubToken(ctx, chng.tokenID, sub)
-		}
-	}
-
-	//////////////////////////////////////////////////
-	// 4. burn coins
-	//if !accum.GetCoinsToBurnBonded().IsZero() {
-	//	err := k.coinKeeper.BurnPoolCoins(ctx, types.BondedPoolName, accum.GetCoinsToBurnBonded())
-	//	if err != nil {
-	//		panic(fmt.Errorf("error in burn in bonded pool: %s", err.Error()))
+	//logger := k.Logger(ctx)
+	//
+	//if slashFactor.IsNegative() {
+	//	panic(fmt.Errorf("attempted to slash with a negative slash factor: %v", slashFactor))
+	//}
+	//
+	//if infractionHeight > ctx.BlockHeight() {
+	//	// Can't slash infractions in the future
+	//	panic(fmt.Sprintf(
+	//		"impossible attempt to slash future infraction at height %d but we are at height %d",
+	//		infractionHeight, ctx.BlockHeight()))
+	//}
+	//
+	//validator, found := k.GetValidatorByConsAddrDecimal(ctx, consAddr)
+	//if !found {
+	//	// If not found, the validator must have been overslashed and removed - so we don't need to do anything
+	//	// NOTE:  Correctness dependent on invariant that unbonding delegations / redelegations must also have been completely
+	//	//        slashed in this case - which we don't explicitly check, but should be true.
+	//	// Log the slash attempt for future reference (maybe we should tag it too)
+	//	logger.Error(
+	//		"WARNING: ignored attempt to slash a nonexistent validator; we recommend you investigate immediately",
+	//		"validator", consAddr.String(),
+	//	)
+	//	return
+	//}
+	//
+	//// should not be slashing an unbonded validator
+	//if validator.IsUnbonded() {
+	//	panic(fmt.Sprintf("should not be slashing unbonded validator: %s", validator.GetOperator()))
+	//}
+	//
+	//operatorAddress := validator.GetOperator()
+	//valStatuses := make(map[string]types.BondStatus)
+	//for _, v := range k.GetAllValidators(ctx) {
+	//	valStatuses[v.OperatorAddress] = v.Status
+	//}
+	//
+	//// call the before-modification hook
+	//k.BeforeValidatorModified(ctx, operatorAddress)
+	//
+	////////////////////////////////////////////////////
+	//// 1. precalculation for correct burn of slashed coins
+	//accum := NewSlashesAccumulator(k, ctx, slashFactor, NewDecreasingFactors())
+	//for _, delegation := range k.GetValidatorDelegations(ctx, operatorAddress) {
+	//	accum.AddDelegation(delegation, validator.Status, true)
+	//}
+	//if infractionHeight < ctx.BlockHeight() {
+	//	for _, undelegation := range k.GetUndelegationsFromValidator(ctx, operatorAddress) {
+	//		accum.AddUndelegation(undelegation, infractionHeight, true)
+	//	}
+	//	for _, redelegation := range k.GetRedelegationsFromSrcValidator(ctx, operatorAddress) {
+	//		accum.AddRedelegation(redelegation, infractionHeight, valStatuses, true)
 	//	}
 	//}
-	//if !accum.GetCoinsToBurnUnbonded().IsZero() {
-	//	err := k.coinKeeper.BurnPoolCoins(ctx, types.NotBondedPoolName, accum.GetCoinsToBurnUnbonded())
+	//
+	//// precalculation to check future coins burns
+	//var factors = NewDecreasingFactors()
+	//for _, coin := range accum.GetAllCoinsToBurn() {
+	//	if coin.Denom == k.coinKeeper.GetBaseDenom(ctx) {
+	//		factors.SetFactor(coin.Denom, sdk.OneDec())
+	//		continue
+	//	}
+	//	f, err := k.coinKeeper.GetDecreasingFactor(ctx, coin)
 	//	if err != nil {
-	//		panic(fmt.Errorf("error in burn in not_bonded pool: %s", err.Error()))
+	//		panic(fmt.Errorf("error in GetDecreasingFactor %s: %s", coin.Denom, err.Error()))
+	//	}
+	//	factors.SetFactor(coin.Denom, f)
+	//}
+	//
+	////////////////////////////////////////////////////
+	//// 2. new accumulator to prepare changes
+	//accum = NewSlashesAccumulator(k, ctx, slashFactor, factors)
+	//for _, delegation := range k.GetValidatorDelegations(ctx, operatorAddress) {
+	//	accum.AddDelegation(delegation, validator.Status, false)
+	//}
+	//if infractionHeight < ctx.BlockHeight() {
+	//	for _, undelegation := range k.GetUndelegationsFromValidator(ctx, operatorAddress) {
+	//		accum.AddUndelegation(undelegation, infractionHeight, false)
+	//	}
+	//	for _, redelegation := range k.GetRedelegationsFromSrcValidator(ctx, operatorAddress) {
+	//		accum.AddRedelegation(redelegation, infractionHeight, valStatuses, false)
 	//	}
 	//}
-	//if !accum.GetCoinsToBurnNFT().IsZero() {
-	//	err := k.coinKeeper.BurnPoolCoins(ctx, nfttypes.ReservedPool, accum.GetCoinsToBurnNFT())
-	//	if err != nil {
-	//		panic(fmt.Errorf("error in burn for nft reserved pool: %s", err.Error()))
+	//
+	////////////////////////////////////////////////////
+	//// 3. do changes
+	//for _, delegation := range accum.GetDelegations() {
+	//	k.SetDelegation(ctx, delegation)
+	//}
+	//for _, undelegation := range accum.GetUndelegations() {
+	//	k.SetUndelegation(ctx, undelegation)
+	//}
+	//for _, redelegation := range accum.GetRedelegations() {
+	//	k.SetRedelegation(ctx, redelegation)
+	//}
+	//for _, chng := range accum.GetNFTChanges() {
+	//	for _, sub := range chng.subtokens {
+	//		k.nftKeeper.SetSubToken(ctx, chng.tokenID, sub)
 	//	}
 	//}
-
-	//////////////////////////////////////////////////
-	// 5. change stakes of custom coins
-	stakeDecreasing := accum.GetCoinsToBurnBonded().Add(accum.GetCoinsToBurnUnbonded()...).Add(accum.GetCoinsToBurnNFT()...)
-	for _, coin := range stakeDecreasing {
-		k.SubCustomCoinStaked(ctx, coin)
-	}
-
-	//////////////////////////////////////////////////
-	// 6. emit event
-	ev := accum.GetEvent(validator.OperatorAddress)
-	events.EmitTypedEvent(ctx, &ev)
-
-	//////////////////////////////////////////////////
-	// 7. call function evm for add Penalty to validator contract
-	masterValidatorAddress, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressMasterValidator)
-	fmt.Println(err)
-	executePenalty, err := k.ExecuteAddPenalty(ctx, common.HexToAddress(masterValidatorAddress), common.HexToAddress(validator.DRC20Contract), 1)
-	fmt.Println(err)
-	fmt.Println(executePenalty)
-
-	//////////////////////////////////////////////////
-	// 8. call function evm for burn reserve to coins
-	delegatorAddress, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
-	fmt.Println(err)
-	burnPenaltyTokens, err := k.ExecuteBurnPenaltyTokens(ctx, common.HexToAddress(delegatorAddress), common.HexToAddress(validator.DRC20Contract))
-	fmt.Println(err)
-	fmt.Println(burnPenaltyTokens)
-
-	logger.Info(
-		"validator slashed by slash factor",
-		"validator", validator.GetOperator().String(),
-		"slash_factor", slashFactor.String(),
-		"burned", accum.GetAllCoinsToBurn(),
-	)
+	//
+	////////////////////////////////////////////////////
+	//// 4. burn coins
+	////if !accum.GetCoinsToBurnBonded().IsZero() {
+	////	err := k.coinKeeper.BurnPoolCoins(ctx, types.BondedPoolName, accum.GetCoinsToBurnBonded())
+	////	if err != nil {
+	////		panic(fmt.Errorf("error in burn in bonded pool: %s", err.Error()))
+	////	}
+	////}
+	////if !accum.GetCoinsToBurnUnbonded().IsZero() {
+	////	err := k.coinKeeper.BurnPoolCoins(ctx, types.NotBondedPoolName, accum.GetCoinsToBurnUnbonded())
+	////	if err != nil {
+	////		panic(fmt.Errorf("error in burn in not_bonded pool: %s", err.Error()))
+	////	}
+	////}
+	////if !accum.GetCoinsToBurnNFT().IsZero() {
+	////	err := k.coinKeeper.BurnPoolCoins(ctx, nfttypes.ReservedPool, accum.GetCoinsToBurnNFT())
+	////	if err != nil {
+	////		panic(fmt.Errorf("error in burn for nft reserved pool: %s", err.Error()))
+	////	}
+	////}
+	//
+	////////////////////////////////////////////////////
+	//// 5. change stakes of custom coins
+	//stakeDecreasing := accum.GetCoinsToBurnBonded().Add(accum.GetCoinsToBurnUnbonded()...).Add(accum.GetCoinsToBurnNFT()...)
+	//for _, coin := range stakeDecreasing {
+	//	k.SubCustomCoinStaked(ctx, coin)
+	//}
+	//
+	////////////////////////////////////////////////////
+	//// 6. emit event
+	//ev := accum.GetEvent(validator.OperatorAddress)
+	//events.EmitTypedEvent(ctx, &ev)
+	//
+	////////////////////////////////////////////////////
+	//// 7. call function evm for add Penalty to validator contract
+	//masterValidatorAddress, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressMasterValidator)
+	//fmt.Println(err)
+	//executePenalty, err := k.ExecuteAddPenalty(ctx, common.HexToAddress(masterValidatorAddress), common.HexToAddress(validator.DRC20Contract), 1)
+	//fmt.Println(err)
+	//fmt.Println(executePenalty)
+	//
+	////////////////////////////////////////////////////
+	//// 8. call function evm for burn reserve to coins
+	//delegatorAddress, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
+	//fmt.Println(err)
+	//burnPenaltyTokens, err := k.ExecuteBurnPenaltyTokens(ctx, common.HexToAddress(delegatorAddress), common.HexToAddress(validator.DRC20Contract))
+	//fmt.Println(err)
+	//fmt.Println(burnPenaltyTokens)
+	//
+	//logger.Info(
+	//	"validator slashed by slash factor",
+	//	"validator", validator.GetOperator().String(),
+	//	"slash_factor", slashFactor.String(),
+	//	"burned", accum.GetAllCoinsToBurn(),
+	//)
 }
 
 // jail a validator
