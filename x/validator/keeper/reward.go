@@ -33,7 +33,12 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 	allRewards := sdk.NewInt(0)
 	allDelegationSum := sdk.NewInt(0)
 	allHoldBigOneYearsSum := sdk.NewInt(0)
-	allEmmision := types.GetAllEmission(ctx)
+
+	coin, err := k.coinKeeper.GetCoin(ctx, k.BaseDenom(ctx))
+	if err != nil {
+		return err
+	}
+	allEmmision := coin.LimitVolume
 
 	for _, val := range validators {
 		if val.Rewards.IsZero() {
@@ -62,9 +67,13 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 					return fmt.Errorf("not found price for custom coin %s, base denom is %s, validator is %s, delegator is %s", delStake.Denom, k.BaseDenom(ctx), validator.String(), del.Delegator)
 				}
 				baseAmount := sdk.NewDecFromInt(sdk.NewInt(0)).TruncateInt()
+				var deleteHolds []*types.StakeHold
 				for _, hold := range del.GetStake().GetHolds() {
 					dateStart := time.Unix(hold.HoldStartTime, 0)
 					dateEnd := time.Unix(hold.HoldEndTime, 0)
+					if hold.HoldStartTime == 0 {
+						deleteHolds = append(deleteHolds, hold)
+					}
 					difference := dateEnd.Sub(dateStart)
 					if (difference.Hours() / 24 / 365) >= 1 {
 						baseAmount = baseAmount.Add(sdk.NewDecFromInt(hold.Amount).Mul(delCoinPrice).TruncateInt())
@@ -290,7 +299,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 		e.Validators = append(e.Validators, valEvent)
 	}
 
-	err := events.EmitTypedEvent(ctx, &e)
+	err = events.EmitTypedEvent(ctx, &e)
 	if err != nil {
 		return err
 	}

@@ -2,6 +2,7 @@ package contracts
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts/center"
+	"bitbucket.org/decimalteam/go-smart-node/contracts/delegation"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"fmt"
@@ -127,7 +128,7 @@ func GetTimeRedelegation(
 	evmKeeper *evmkeeper.Keeper,
 	contract common.Address,
 ) (string, error) {
-	contractCenter, _ := center.CenterMetaData.GetAbi()
+	contractCenter, _ := delegation.DelegationMetaData.GetAbi()
 	methodCall := "getFreezeTime"
 	// Address token center
 	res, err := evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, 2)
