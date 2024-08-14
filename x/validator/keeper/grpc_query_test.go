@@ -3,6 +3,7 @@ package keeper_test
 import (
 	gocontext "context"
 	"fmt"
+	"math/big"
 	"testing"
 
 	sdkmath "cosmossdk.io/math"
@@ -452,7 +453,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryUnbondingDelegation() {
 	ubdStake := types.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10))))
 	remainStake, err := dsc.ValidatorKeeper.CalculateRemainStake(ctx, delegation.Stake, ubdStake)
 	suite.NoError(err)
-	_, err = dsc.ValidatorKeeper.Undelegate(ctx, addrAcc2, valAddr, ubdStake, remainStake, nil)
+	_, err = dsc.ValidatorKeeper.Undelegate(ctx, addrAcc2, valAddr, ubdStake, remainStake, big.NewInt(1))
 	suite.NoError(err)
 
 	unbond, found := dsc.ValidatorKeeper.GetUndelegation(ctx, addrAcc2, valAddr)
@@ -518,7 +519,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryDelegatorUndelegations() {
 	ubdStake1 := types.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10))))
 	remainStake1, err := dsc.ValidatorKeeper.CalculateRemainStake(ctx, delegation.Stake, ubdStake1)
 	suite.NoError(err)
-	_, err = dsc.ValidatorKeeper.Undelegate(ctx, addrAcc, valAddr1, ubdStake1, remainStake1, nil)
+	_, err = dsc.ValidatorKeeper.Undelegate(ctx, addrAcc, valAddr1, ubdStake1, remainStake1, big.NewInt(1))
 	suite.NoError(err)
 
 	// second undelegation
@@ -527,7 +528,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryDelegatorUndelegations() {
 	ubdStake2 := types.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10))))
 	remainStake2, err := dsc.ValidatorKeeper.CalculateRemainStake(ctx, delegation.Stake, ubdStake2)
 	suite.NoError(err)
-	_, err = dsc.ValidatorKeeper.Undelegate(ctx, addrAcc, valAddr2, ubdStake2, remainStake2, nil)
+	_, err = dsc.ValidatorKeeper.Undelegate(ctx, addrAcc, valAddr2, ubdStake2, remainStake2, big.NewInt(1))
 	suite.NoError(err)
 
 	unbond, found := dsc.ValidatorKeeper.GetUndelegation(ctx, addrAcc, valAddr1)
@@ -681,7 +682,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryRedelegations() {
 	redStake := types.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10))))
 	remainStake, err := dsc.ValidatorKeeper.CalculateRemainStake(ctx, delegation.Stake, redStake)
 	suite.NoError(err)
-	_, err = dsc.ValidatorKeeper.BeginRedelegation(ctx, addrAcc, val1.GetOperator(), val2.GetOperator(), redStake, remainStake, nil)
+	_, err = dsc.ValidatorKeeper.BeginRedelegation(ctx, addrAcc, val1.GetOperator(), val2.GetOperator(), redStake, remainStake, big.NewInt(1))
 	suite.NoError(err)
 
 	redel, found := dsc.ValidatorKeeper.GetRedelegation(ctx, addrAcc, val1.GetOperator(), val2.GetOperator())
@@ -772,7 +773,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryDelegatorRedelegations() {
 	redStake := types.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10))))
 	remainStake, err := dsc.ValidatorKeeper.CalculateRemainStake(ctx, delegation.Stake, redStake)
 	suite.NoError(err)
-	_, err = dsc.ValidatorKeeper.BeginRedelegation(ctx, addrAcc, val1.GetOperator(), val2.GetOperator(), redStake, remainStake, nil)
+	_, err = dsc.ValidatorKeeper.BeginRedelegation(ctx, addrAcc, val1.GetOperator(), val2.GetOperator(), redStake, remainStake, big.NewInt(1))
 	suite.NoError(err)
 
 	redel, found := dsc.ValidatorKeeper.GetRedelegation(ctx, addrAcc, val1.GetOperator(), val2.GetOperator())
@@ -853,7 +854,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidatorRedelegations() {
 	redStake := types.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10))))
 	remainStake, err := dsc.ValidatorKeeper.CalculateRemainStake(ctx, delegation.Stake, redStake)
 	suite.NoError(err)
-	_, err = dsc.ValidatorKeeper.BeginRedelegation(ctx, addrAcc, val1.GetOperator(), val2.GetOperator(), redStake, remainStake, nil)
+	_, err = dsc.ValidatorKeeper.BeginRedelegation(ctx, addrAcc, val1.GetOperator(), val2.GetOperator(), redStake, remainStake, big.NewInt(1))
 	suite.NoError(err)
 
 	redel, found := dsc.ValidatorKeeper.GetRedelegation(ctx, addrAcc, val1.GetOperator(), val2.GetOperator())
@@ -932,7 +933,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidatorUndelegations() {
 	ubdStake1 := types.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10))))
 	remainStake1, err := dsc.ValidatorKeeper.CalculateRemainStake(ctx, delegation.Stake, ubdStake1)
 	suite.NoError(err)
-	_, err = dsc.ValidatorKeeper.Undelegate(ctx, addrAcc1, valAddr1, ubdStake1, remainStake1, nil)
+	_, err = dsc.ValidatorKeeper.Undelegate(ctx, addrAcc1, valAddr1, ubdStake1, remainStake1, big.NewInt(1))
 	suite.NoError(err)
 
 	var req *types.QueryValidatorUndelegationsRequest

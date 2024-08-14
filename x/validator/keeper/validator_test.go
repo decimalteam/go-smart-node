@@ -4,6 +4,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"encoding/json"
 	"github.com/ethereum/go-ethereum/common"
+	"math/big"
 	"testing"
 	"time"
 
@@ -54,7 +55,7 @@ func bootstrapValidatorTest(t testing.TB, power int64, numAddrs int) (*app.DSC, 
 
 	remain, err := app.ValidatorKeeper.CalculateRemainStake(ctx, delegation.Stake, delegation.Stake)
 	require.NoError(t, err)
-	_, err = app.ValidatorKeeper.Undelegate(ctx, delegation.GetDelegator(), delegation.GetValidator(), delegation.Stake, remain, nil)
+	_, err = app.ValidatorKeeper.Undelegate(ctx, delegation.GetDelegator(), delegation.GetValidator(), delegation.Stake, remain, big.NewInt(1))
 	require.NoError(t, err)
 
 	// end block to unbond genesis validator
