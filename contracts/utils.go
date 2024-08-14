@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"math/big"
 )
 
 // evm coin center events
@@ -127,20 +128,20 @@ func GetTimeRedelegation(
 	ctx sdk.Context,
 	evmKeeper *evmkeeper.Keeper,
 	contract common.Address,
-) (string, error) {
+) (*big.Int, error) {
 	contractCenter, _ := delegation.DelegationMetaData.GetAbi()
 	methodCall := "getFreezeTime"
 	// Address token center
 	res, err := evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, uint8(2))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	data, err := contractCenter.Unpack(methodCall, res.Ret)
 	fmt.Println(data)
 	if len(data) == 0 {
-		return "", err
+		return nil, err
 	}
-	return data[0].(string), err
+	return data[0].(*big.Int), err
 }
 
 func GetContractCenter(chainID string) string {
