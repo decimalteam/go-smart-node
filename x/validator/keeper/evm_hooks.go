@@ -97,6 +97,7 @@ func (k Keeper) PostTxProcessing(
 		if errEvent == nil && strings.ToLower(log.Address.String()) == addressDelegation {
 			if eventDelegationByID.Name == "StakeAmountUpdated" {
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegationAmount, eventDelegationByID.Name, log)
+				fmt.Println(tokenDelegationAmount)
 			}
 		}
 	}
@@ -151,6 +152,7 @@ func (k Keeper) PostTxProcessing(
 					}
 				}
 				tokenDelegate.Stake.Amount = tokenDelegationAmount.ChangedAmount
+				fmt.Println(tokenDelegate)
 				err = k.Staked(ctx, tokenDelegate)
 				if err != nil {
 					return err
