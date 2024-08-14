@@ -395,7 +395,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 		Stake:      sdk.Coin{},
 	}
 
-	valAddr, err := sdk.ValAddressFromBech32(msg.OperatorAddress)
+	valAddr, err := sdk.ValAddressFromBech32(validatorMeta.OperatorAddress)
 	if err != nil {
 		return err
 	}
