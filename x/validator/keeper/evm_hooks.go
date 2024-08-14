@@ -86,10 +86,21 @@ func (k Keeper) PostTxProcessing(
 	var tokenDelegate delegation.DelegationStakeUpdated
 	var tokenUndelegate delegation.DelegationWithdrawRequest
 	var tokenRedelegation delegation.DelegationTransferRequest
+	var tokenDelegationAmount delegation.DelegationStakeAmountUpdated
 	var newValidator validator.ValidatorValidatorMetaUpdated
 	var updateValidator validator.ValidatorValidatorUpdated
 
 	stakeUpdate := 0
+
+	for _, log := range recipient.Logs {
+		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
+		if errEvent == nil && strings.ToLower(log.Address.String()) == addressDelegation {
+			if eventDelegationByID.Name == "StakeAmountUpdated" {
+				stakeUpdate = stakeUpdate + 1
+				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegationAmount, eventDelegationByID.Name, log)
+			}
+		}
+	}
 
 	for _, log := range recipient.Logs {
 		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
@@ -125,6 +136,9 @@ func (k Keeper) PostTxProcessing(
 		if errEvent == nil && strings.ToLower(log.Address.String()) == addressDelegation {
 			fmt.Println(eventDelegationByID.Name)
 			if eventDelegationByID.Name == "StakeUpdated" && stakeUpdate == 0 {
+				if tokenDelegationAmount.ChangedAmount == nil {
+					return errors.DelegationSumIsNotSet
+				}
 				stakeUpdate = stakeUpdate + 1
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
 				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
@@ -137,6 +151,7 @@ func (k Keeper) PostTxProcessing(
 						k.coinKeeper.SetCoin(ctx, coinUpdate)
 					}
 				}
+				tokenDelegate.Stake.Amount = tokenDelegationAmount.ChangedAmount
 				err = k.Staked(ctx, tokenDelegate)
 				if err != nil {
 					return err
@@ -178,34 +193,36 @@ func (k Keeper) PostTxProcessing(
 				}
 			}
 		}
-		_, errEvent = delegatorNftCenter.EventByID(log.Topics[0])
+		eventDelegationNftByID, errEvent := delegatorNftCenter.EventByID(log.Topics[0])
 		if errEvent == nil && log.Address.String() == addressDelegationNft {
-			return errors.ValidatorNftDelegationInactive
-			//if eventDelegationNftByID.Name == "StakedUpdated" {
-			//	_ = delegatorCenter.UnpackIntoInterface(&tokenDelegate, eventDelegationNftByID.Name, log.Data)
-			//	fmt.Println(tokenDelegate)
-			//	err := k.Staked(ctx, tokenDelegate)
-			//	if err != nil {
-			//		return err
-			//	}
-			//}
-			//
-			//if eventDelegationNftByID.Name == "RequestWithdraw" {
-			//	_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationNftByID.Name, log.Data)
-			//	fmt.Println(tokenUndelegate)
-			//	err := k.RequestWithdraw(ctx, tokenUndelegate)
-			//	if err != nil {
-			//		return err
-			//	}
-			//}
-			//if eventDelegationNftByID.Name == "RequestTransfer" {
-			//	_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationNftByID.Name, log.Data)
-			//	fmt.Println(tokenRedelegation)
-			//	err := k.RequestTransfer(ctx, tokenRedelegation)
-			//	if err != nil {
-			//		return err
-			//	}
-			//}
+			if eventDelegationNftByID.Name == "StakedUpdated" {
+				//_ = delegatorCenter.UnpackIntoInterface(&tokenDelegate, eventDelegationNftByID.Name, log.Data)
+				//fmt.Println(tokenDelegate)
+				//err := k.Staked(ctx, tokenDelegate)
+				//if err != nil {
+				//	return err
+				//}
+				return errors.ValidatorNftDelegationInactive
+			}
+
+			if eventDelegationNftByID.Name == "RequestWithdraw" {
+				//_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationNftByID.Name, log.Data)
+				//fmt.Println(tokenUndelegate)
+				//err := k.RequestWithdraw(ctx, tokenUndelegate)
+				//if err != nil {
+				//	return err
+				//}
+				return errors.ValidatorNftDelegationInactive
+			}
+			if eventDelegationNftByID.Name == "RequestTransfer" {
+				//_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationNftByID.Name, log.Data)
+				//fmt.Println(tokenRedelegation)
+				//err := k.RequestTransfer(ctx, tokenRedelegation)
+				//if err != nil {
+				//	return err
+				//}
+				return errors.ValidatorNftDelegationInactive
+			}
 		}
 	}
 

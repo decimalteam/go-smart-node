@@ -131,7 +131,7 @@ func GetTimeRedelegation(
 	contractCenter, _ := delegation.DelegationMetaData.GetAbi()
 	methodCall := "getFreezeTime"
 	// Address token center
-	res, err := evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, 2)
+	res, err := evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, uint8(2))
 	if err != nil {
 		return "", err
 	}

@@ -289,6 +289,25 @@
         "type": "bytes32"
       },
       {
+        "indexed": false,
+        "internalType": "int256",
+        "name": "changedAmount",
+        "type": "int256"
+      }
+    ],
+    "name": "StakeAmountUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "stakeId",
+        "type": "bytes32"
+      },
+      {
         "components": [
           {
             "internalType": "address",
