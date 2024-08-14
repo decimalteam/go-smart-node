@@ -50,4 +50,5 @@ var (
 	ValidatorCommissionIsTooSmall   = errors.New(codespace, 143, "validator commission is small of 0")
 	ValidatorNftDelegationInactive  = errors.New(codespace, 144, "nft delegation is inactive")
 	DelegationSumIsNotSet           = errors.New(codespace, 145, "delegation sum is not set")
+	StakeNotExist                   = errors.New(codespace, 146, "delegation not exist")
 )

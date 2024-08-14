@@ -273,10 +273,18 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 		return fmt.Errorf("not found validator %s", valAddr)
 	}
 
-	_ = k.Delegate(ctx, delegatorAddress, validatorCosmos, stake)
-	if err != nil {
-		return err
+	if stakeData.IsNew {
+		_ = k.Delegate(ctx, delegatorAddress, validatorCosmos, stake)
+		if err != nil {
+			return err
+		}
+	} else {
+		_ = k.TransferToHold(ctx, delegatorAddress, validatorCosmos, stake)
+		if err != nil {
+			return err
+		}
 	}
+
 	return nil
 }
 

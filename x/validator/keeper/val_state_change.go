@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"runtime/debug"
 	"sort"
+	"time"
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -131,7 +132,9 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 	fmt.Println("err", err)
 	fmt.Println("redelegationTime", redelegationTime)
 	fmt.Println("dataAddress", dataAddress)
-
+	params := k.GetParams(ctx)
+	params.RedelegationTime = time.Second * time.Duration(redelegationTime.Int64())
+	k.SetParams(ctx, params)
 	return validatorUpdates
 }
 

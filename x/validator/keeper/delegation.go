@@ -749,6 +749,24 @@ func (k Keeper) SubCustomCoinStaked(ctx sdk.Context, coin sdk.Coin) {
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
+// TransferToHold send existing delegation transfer to hold.
+func (k Keeper) TransferToHold(
+	ctx sdk.Context, delegator sdk.AccAddress, validator types.Validator, stake types.Stake,
+) error {
+	// 1. Get or create the delegation object
+	delegation, delegationFound := k.GetDelegation(ctx, delegator, validator.GetOperator(), stake.ID)
+	if !delegationFound {
+		return errors.StakeNotExist
+	} else {
+		delegation.Stake.Holds = append(delegation.Stake.Holds, stake.Holds...)
+	}
+
+	// Update delegation
+	k.SetDelegation(ctx, delegation)
+
+	return nil
+}
+
 // Delegate performs a delegation, set/update everything necessary within the store.
 // tokenSrc indicates the bond status of the incoming funds.
 // NFT subtoken ownership MUST BE checked before
@@ -766,10 +784,6 @@ func (k Keeper) Delegate(
 		if err != nil {
 			return err
 		}
-	}
-
-	if err != nil {
-		return err
 	}
 
 	// 3. transfer coin/nft
