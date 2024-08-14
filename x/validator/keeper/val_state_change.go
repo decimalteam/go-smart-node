@@ -128,7 +128,7 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 		fmt.Println(errexec)
 	}
 
-	if dataAddress == "0x0000000000000000000000000000000000000000" {
+	if dataAddress != "0x0000000000000000000000000000000000000000" {
 		redelegationTime, err := contracts.GetTimeRedelegation(ctx, k.evmKeeper, common.HexToAddress(dataAddress))
 		fmt.Println("err", err)
 		fmt.Println("redelegationTime", redelegationTime)
