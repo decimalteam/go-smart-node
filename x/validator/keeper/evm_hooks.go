@@ -286,7 +286,7 @@ func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.Dele
 		return err
 	}
 
-	_, err = k.Undelegate(ctx, delegatorAddress, valAddr, stake, remainStake)
+	_, err = k.Undelegate(ctx, delegatorAddress, valAddr, stake, remainStake, tokenUndelegate.FrozenStake.UnfreezeTimestamp)
 	if err != nil {
 		return err
 	}
@@ -317,7 +317,7 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 	}
 
 	_, err = k.BeginRedelegation(
-		ctx, delegatorAddress, valAddr, valAddr, stake, remainStake,
+		ctx, delegatorAddress, valAddr, valAddr, stake, remainStake, tokenRedelegation.FrozenStake.UnfreezeTimestamp,
 	)
 	if err != nil {
 		return err

@@ -499,7 +499,7 @@ func TestUndelegation(t *testing.T) {
 		remainStake, err := valK.CalculateRemainStake(ctx, defaultStake, unStake)
 		require.NoError(t, err)
 
-		_, err = valK.Undelegate(ctx, delAddr, valAddr, unStake, remainStake)
+		_, err = valK.Undelegate(ctx, delAddr, valAddr, unStake, remainStake, nil)
 		require.NoError(t, err)
 
 		rs, err := valK.GetValidatorRS(ctx, val.GetOperator())
@@ -527,7 +527,7 @@ func TestUndelegation(t *testing.T) {
 		remainStake, err := valK.CalculateRemainStake(ctx, ccStake, unStake)
 		require.NoError(t, err)
 
-		_, err = valK.Undelegate(ctx, delAddr, valAddr, unStake, remainStake)
+		_, err = valK.Undelegate(ctx, delAddr, valAddr, unStake, remainStake, nil)
 		require.NoError(t, err)
 
 		rs, err := valK.GetValidatorRS(ctx, val.GetOperator())
@@ -556,7 +556,7 @@ func TestUndelegation(t *testing.T) {
 		require.NoError(t, err)
 		reserveTotalStake := subTokenReserve.Amount.Mul(sdk.NewInt(1))
 
-		_, err = valK.Undelegate(ctx, delAddr, valAddr, unStake, remainStake)
+		_, err = valK.Undelegate(ctx, delAddr, valAddr, unStake, remainStake, nil)
 		require.NoError(t, err)
 
 		rs, err := valK.GetValidatorRS(ctx, val.GetOperator())
@@ -589,7 +589,7 @@ func TestUndelegation(t *testing.T) {
 		reserveTotalStake := subTokenCCReserve.Amount.Mul(sdk.NewInt(2))
 		unStakeInBaseCoin := formulas.CalculateSaleReturn(coin.Volume, coin.Reserve, uint(crr), reserveTotalStake)
 
-		_, err = valK.Undelegate(ctx, delAddr, valAddr, unStake, remainStake)
+		_, err = valK.Undelegate(ctx, delAddr, valAddr, unStake, remainStake, nil)
 		require.NoError(t, err)
 
 		rs, err := valK.GetValidatorRS(ctx, val.GetOperator())
@@ -618,7 +618,7 @@ func TestUndelegation(t *testing.T) {
 		remainStake, err := valK.CalculateRemainStake(ctx, defaultStake, unStake)
 		require.NoError(t, err)
 
-		_, err = valK.Undelegate(ctx, delAddr, valAddr, unStake, remainStake)
+		_, err = valK.Undelegate(ctx, delAddr, valAddr, unStake, remainStake, nil)
 		require.NoError(t, err)
 
 		rs, err := valK.GetValidatorRS(ctx, val.GetOperator())
@@ -646,7 +646,7 @@ func TestUndelegation(t *testing.T) {
 		remainStake, err := valK.CalculateRemainStake(ctx, ccStake, unStake)
 		require.NoError(t, err)
 
-		_, err = valK.Undelegate(ctx, delAddr, valAddr, unStake, remainStake)
+		_, err = valK.Undelegate(ctx, delAddr, valAddr, unStake, remainStake, nil)
 		require.NoError(t, err)
 
 		rs, err := valK.GetValidatorRS(ctx, val.GetOperator())
@@ -673,7 +673,7 @@ func TestUndelegation(t *testing.T) {
 		require.NoError(t, err)
 		reserveTotalStake := subTokenReserve.Amount.Mul(sdk.NewInt(1))
 
-		_, err = valK.Undelegate(ctx, delAddr, valAddr, unStake, remainStake)
+		_, err = valK.Undelegate(ctx, delAddr, valAddr, unStake, remainStake, nil)
 		require.NoError(t, err)
 
 		rs, err := valK.GetValidatorRS(ctx, val.GetOperator())
@@ -806,7 +806,7 @@ func TestRedelegation(t *testing.T) {
 		remainStake, err := valK.CalculateRemainStake(ctx, defaultStake, unStake)
 		require.NoError(t, err)
 
-		_, err = valK.BeginRedelegation(ctx, delAddr, valSrcAddr, valDstAddr, unStake, remainStake)
+		_, err = valK.BeginRedelegation(ctx, delAddr, valSrcAddr, valDstAddr, unStake, remainStake, nil)
 		require.NoError(t, err)
 
 		rs, err := valK.GetValidatorRS(ctx, valSrcAddr)
@@ -838,7 +838,7 @@ func TestRedelegation(t *testing.T) {
 		remainStake, err := valK.CalculateRemainStake(ctx, ccStake, unStake)
 		require.NoError(t, err)
 
-		_, err = valK.BeginRedelegation(ctx, delAddr, valSrcAddr, valDstAddr, unStake, remainStake)
+		_, err = valK.BeginRedelegation(ctx, delAddr, valSrcAddr, valDstAddr, unStake, remainStake, nil)
 		require.NoError(t, err)
 
 		rs, err := valK.GetValidatorRS(ctx, valSrcAddr)
@@ -871,7 +871,7 @@ func TestRedelegation(t *testing.T) {
 		require.NoError(t, err)
 		reserveTotalStake := subTokenReserve.Amount.Mul(sdk.NewInt(1))
 
-		_, err = valK.BeginRedelegation(ctx, delAddr, valSrcAddr, valDstAddr, unStake, remainStake)
+		_, err = valK.BeginRedelegation(ctx, delAddr, valSrcAddr, valDstAddr, unStake, remainStake, nil)
 		require.NoError(t, err)
 
 		rs, err := valK.GetValidatorRS(ctx, valSrcAddr)
@@ -905,7 +905,7 @@ func TestRedelegation(t *testing.T) {
 		reserveTotalStake := subTokenCCReserve.Amount.Mul(sdk.NewInt(2))
 		unStakeInBaseCoin := formulas.CalculateSaleReturn(coin.Volume, coin.Reserve, uint(crr), reserveTotalStake)
 
-		_, err = valK.BeginRedelegation(ctx, delAddr, valSrcAddr, valDstAddr, unStake, remainStake)
+		_, err = valK.BeginRedelegation(ctx, delAddr, valSrcAddr, valDstAddr, unStake, remainStake, nil)
 		require.NoError(t, err)
 
 		rs, err := valK.GetValidatorRS(ctx, valSrc.GetOperator())
@@ -936,7 +936,7 @@ func TestRedelegation(t *testing.T) {
 		remainStake, err := valK.CalculateRemainStake(ctx, defaultStake, unStake)
 		require.NoError(t, err)
 
-		_, err = valK.BeginRedelegation(ctx, delAddr, valSrcAddr, valDstAddr, unStake, remainStake)
+		_, err = valK.BeginRedelegation(ctx, delAddr, valSrcAddr, valDstAddr, unStake, remainStake, nil)
 		require.NoError(t, err)
 
 		rs, err := valK.GetValidatorRS(ctx, valSrcAddr)
@@ -967,7 +967,7 @@ func TestRedelegation(t *testing.T) {
 		remainStake, err := valK.CalculateRemainStake(ctx, ccStake, unStake)
 		require.NoError(t, err)
 
-		_, err = valK.BeginRedelegation(ctx, delAddr, valSrcAddr, valDstAddr, unStake, remainStake)
+		_, err = valK.BeginRedelegation(ctx, delAddr, valSrcAddr, valDstAddr, unStake, remainStake, nil)
 		require.NoError(t, err)
 
 		rs, err := valK.GetValidatorRS(ctx, valSrcAddr)
@@ -997,7 +997,7 @@ func TestRedelegation(t *testing.T) {
 		require.NoError(t, err)
 		reserveTotalStake := subTokenReserve.Amount.Mul(sdk.NewInt(1))
 
-		_, err = valK.BeginRedelegation(ctx, delAddr, valSrcAddr, valDstAddr, unStake, remainStake)
+		_, err = valK.BeginRedelegation(ctx, delAddr, valSrcAddr, valDstAddr, unStake, remainStake, nil)
 		require.NoError(t, err)
 
 		rs, err := valK.GetValidatorRS(ctx, val.GetOperator())

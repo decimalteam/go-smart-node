@@ -54,7 +54,7 @@ func bootstrapValidatorTest(t testing.TB, power int64, numAddrs int) (*app.DSC, 
 
 	remain, err := app.ValidatorKeeper.CalculateRemainStake(ctx, delegation.Stake, delegation.Stake)
 	require.NoError(t, err)
-	_, err = app.ValidatorKeeper.Undelegate(ctx, delegation.GetDelegator(), delegation.GetValidator(), delegation.Stake, remain)
+	_, err = app.ValidatorKeeper.Undelegate(ctx, delegation.GetDelegator(), delegation.GetValidator(), delegation.Stake, remain, nil)
 	require.NoError(t, err)
 
 	// end block to unbond genesis validator

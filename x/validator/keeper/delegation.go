@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"math/big"
 	"time"
 
 	sdkmath "cosmossdk.io/math"
@@ -911,10 +912,7 @@ func (k Keeper) transferBetweenPools(ctx sdk.Context, statusSrc types.BondStatus
 // stake and remainStake must be calculated before by CalculateUnbondStake
 // It create an unbonding object and insert into the unbonding queue which will be
 // processed during EndBlocker.
-func (k Keeper) Undelegate(
-	ctx sdk.Context, delegator sdk.AccAddress, valAddress sdk.ValAddress,
-	stake types.Stake, remainStake types.Stake,
-) (time.Time, error) {
+func (k Keeper) Undelegate(ctx sdk.Context, delegator sdk.AccAddress, valAddress sdk.ValAddress, stake types.Stake, remainStake types.Stake, timestamp *big.Int) (time.Time, error) {
 	//validator, found := k.GetValidator(ctx, valAddress)
 	//if !found {
 	//	return time.Time{}, errors.ValidatorNotFound
@@ -935,7 +933,7 @@ func (k Keeper) Undelegate(
 	//	return time.Time{}, err
 	//}
 
-	completionTime := ctx.BlockHeader().Time.Add(k.UndelegationTime(ctx))
+	completionTime := ctx.BlockHeader().Time.Add(time.Duration(timestamp.Int64()))
 	ubd := k.SetUndelegationEntry(ctx, delegator, valAddress, ctx.BlockHeight(), completionTime, stake)
 	k.InsertUBDQueue(ctx, ubd, completionTime)
 
@@ -1020,9 +1018,7 @@ func (k Keeper) CompleteUnbonding(ctx sdk.Context, delegator sdk.AccAddress, val
 // BeginRedelegation begins unbonding / redelegation and creates a redelegation
 // record.
 // stake and remainStake MUST BE calculated before by ValidateUnbondStake
-func (k Keeper) BeginRedelegation(
-	ctx sdk.Context, delegator sdk.AccAddress, validatorSrc, validatorDst sdk.ValAddress, stake types.Stake, remainStake types.Stake,
-) (completionTime time.Time, err error) {
+func (k Keeper) BeginRedelegation(ctx sdk.Context, delegator sdk.AccAddress, validatorSrc, validatorDst sdk.ValAddress, stake, remainStake types.Stake, timestamp *big.Int) (completionTime time.Time, err error) {
 	// 1. preparations, checks
 	if bytes.Equal(validatorSrc, validatorDst) {
 		return time.Time{}, errors.SelfRedelegation
@@ -1033,10 +1029,10 @@ func (k Keeper) BeginRedelegation(
 		return time.Time{}, errors.BadRedelegationDst
 	}
 
-	//srcValidator, found := k.GetValidator(ctx, validatorSrc)
-	//if !found {
-	//	return time.Time{}, errors.BadRedelegationSrc
-	//}
+	_, found = k.GetValidator(ctx, validatorSrc)
+	if !found {
+		return time.Time{}, errors.BadRedelegationSrc
+	}
 
 	if k.HasMaxRedelegationEntries(ctx, delegator, validatorSrc, validatorDst) {
 		return time.Time{}, errors.MaxRedelegationEntries
@@ -1056,7 +1052,9 @@ func (k Keeper) BeginRedelegation(
 	//}
 
 	// create the unbonding delegation
-	completionTime, height := k.getBeginInfo(ctx, validatorSrc)
+
+	completionTime = ctx.BlockHeader().Time.Add(time.Duration(timestamp.Int64()))
+	height := ctx.BlockHeight()
 
 	red := k.SetRedelegationEntry(
 		ctx, delegator, validatorSrc, validatorDst,
