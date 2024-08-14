@@ -90,7 +90,6 @@ func (k Keeper) PayValidators(ctx sdk.Context) {
 		panic(err)
 	}
 
-	baseCoin.LimitVolume = sdk.NewInt(0)
 	if baseCoin.LimitVolume.IsZero() {
 		baseCoin.LimitVolume = types.GetAllEmission(ctx)
 	} else {

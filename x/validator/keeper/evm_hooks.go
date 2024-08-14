@@ -230,7 +230,7 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 
 	stake := validatorType.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(stakeData.Stake.Amount)})
 
-	if stakeData.Stake.HoldTimestamp != nil {
+	if stakeData.Stake.HoldTimestamp.Int64() != 0 {
 		var newHold validatorType.StakeHold
 		newHold.Amount = math.NewIntFromBigInt(stakeData.Stake.Amount)
 		newHold.HoldStartTime = time.Now().Unix()
@@ -265,6 +265,7 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 }
 
 func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.DelegationWithdrawRequest) error {
+
 	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, tokenUndelegate.FrozenStake.Stake.Token.String())
 	if err != nil {
 		return errors.CoinDoesNotExist

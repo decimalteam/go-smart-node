@@ -102,6 +102,46 @@ func GetIsMigration(
 	return data[0].(bool), err
 }
 
+func GetTimeUndelegate(
+	ctx sdk.Context,
+	evmKeeper *evmkeeper.Keeper,
+	contract common.Address,
+) (bool, error) {
+	contractCenter, _ := center.CenterMetaData.GetAbi()
+	methodCall := "getFreezeTime"
+	// Address token center
+	res, err := evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, 1)
+	if err != nil {
+		return false, err
+	}
+	data, err := contractCenter.Unpack(methodCall, res.Ret)
+	fmt.Println(data)
+	if len(data) == 0 {
+		return false, err
+	}
+	return data[0].(bool), err
+}
+
+func GetTimeRedelegation(
+	ctx sdk.Context,
+	evmKeeper *evmkeeper.Keeper,
+	contract common.Address,
+) (string, error) {
+	contractCenter, _ := center.CenterMetaData.GetAbi()
+	methodCall := "getFreezeTime"
+	// Address token center
+	res, err := evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, 2)
+	if err != nil {
+		return "", err
+	}
+	data, err := contractCenter.Unpack(methodCall, res.Ret)
+	fmt.Println(data)
+	if len(data) == 0 {
+		return "", err
+	}
+	return data[0].(string), err
+}
+
 func GetContractCenter(chainID string) string {
 	if helpers.IsMainnet(chainID) {
 		return "0xc108715a06f76caa96fa2c943ebf05159c29a87d"

@@ -2,13 +2,12 @@ package types
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
 	lastBlock      = 46_656_000
-	firstReward    = 500
+	firstReward    = 5
 	firstOldReward = 50
 
 	firstIncrease          = 10
@@ -29,7 +28,6 @@ func GetAllEmission(ctx sdk.Context) sdk.Int {
 		for j := uint64(1); j < uint64(ctx.BlockHeight()); j++ {
 			allEmision = allEmision.Add(GetRewardForBlock(j))
 		}
-		fmt.Println(allEmision, ctx.ChainID())
 	}
 	if helpers.IsTestnet(ctx.ChainID()) {
 		allEmision = helpers.EtherToWei(sdk.NewInt(1253403114))

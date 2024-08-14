@@ -119,11 +119,6 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 		}
 	}
 
-	////dataAddress, err := k.QueryAddressDelegation(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
-	//isMigration, err := contracts.GetIsMigration(ctx, k.evmKeeper)
-	//fmt.Println(types.GetAllEmission(ctx))
-	//fmt.Println(isMigration)
-	//fmt.Println(err)
 	dataAddress, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
 	ifNeedExec, err := k.QueryIfNeedExecuteFinish(ctx, common.HexToAddress(dataAddress))
 	if ifNeedExec {
@@ -131,6 +126,10 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 		fmt.Println(resultExec)
 		fmt.Println(errexec)
 	}
+
+	redelegationTime, err := contracts.GetTimeRedelegation(ctx, k.evmKeeper, common.HexToAddress(dataAddress))
+	fmt.Println("err", err)
+	fmt.Println("redelegationTime", redelegationTime)
 
 	return validatorUpdates
 }
