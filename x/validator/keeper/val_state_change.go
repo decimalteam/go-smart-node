@@ -130,6 +130,7 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 	redelegationTime, err := contracts.GetTimeRedelegation(ctx, k.evmKeeper, common.HexToAddress(dataAddress))
 	fmt.Println("err", err)
 	fmt.Println("redelegationTime", redelegationTime)
+	fmt.Println("dataAddress", dataAddress)
 
 	return validatorUpdates
 }
