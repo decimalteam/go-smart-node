@@ -108,20 +108,20 @@ func GetTimeUndelegate(
 	ctx sdk.Context,
 	evmKeeper *evmkeeper.Keeper,
 	contract common.Address,
-) (bool, error) {
+) (*big.Int, error) {
 	contractCenter, _ := center.CenterMetaData.GetAbi()
 	methodCall := "getFreezeTime"
 	// Address token center
 	res, err := evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, 1)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 	data, err := contractCenter.Unpack(methodCall, res.Ret)
 	fmt.Println(data)
 	if len(data) == 0 {
-		return false, err
+		return nil, err
 	}
-	return data[0].(bool), err
+	return data[0].(*big.Int), err
 }
 
 func GetTimeRedelegation(

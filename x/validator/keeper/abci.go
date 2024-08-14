@@ -1,7 +1,9 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -62,6 +64,21 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 		if err != nil {
 			panic(err)
 		}
+
+		dataAddress, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
+		if err == nil {
+			params := k.GetParams(ctx)
+			undelegationTime, err := contracts.GetTimeUndelegate(ctx, k.evmKeeper, common.HexToAddress(dataAddress))
+			if err == nil {
+				params.UndelegationTime = time.Second * time.Duration(undelegationTime.Int64())
+			}
+			redelegationTime, err := contracts.GetTimeRedelegation(ctx, k.evmKeeper, common.HexToAddress(dataAddress))
+			if err == nil {
+				params.RedelegationTime = time.Second * time.Duration(redelegationTime.Int64())
+			}
+			k.SetParams(ctx, params)
+		}
+
 	} else {
 		ctx.Logger().Debug(
 			fmt.Sprintf("Duration simple block (%s)", helpers.DurationToString(time.Since(start))),

@@ -1,20 +1,16 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"bytes"
+	sdkmath "cosmossdk.io/math"
 	goerrors "errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
-	"runtime/debug"
-	"sort"
-	"time"
-
-	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/decimalteam/ethermint/types"
 	gogotypes "github.com/gogo/protobuf/types"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"runtime/debug"
+	"sort"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
@@ -118,24 +114,6 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 		if err != nil {
 			continue
 		}
-	}
-
-	dataAddress, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
-	ifNeedExec, err := k.QueryIfNeedExecuteFinish(ctx, common.HexToAddress(dataAddress))
-	if ifNeedExec {
-		resultExec, errexec := k.ExecuteQueueEVMAction(ctx, common.HexToAddress(dataAddress))
-		fmt.Println(resultExec)
-		fmt.Println(errexec)
-	}
-
-	if dataAddress != "0x0000000000000000000000000000000000000000" {
-		redelegationTime, err := contracts.GetTimeRedelegation(ctx, k.evmKeeper, common.HexToAddress(dataAddress))
-		fmt.Println("err", err)
-		fmt.Println("redelegationTime", redelegationTime)
-		fmt.Println("dataAddress", dataAddress)
-		params := k.GetParams(ctx)
-		params.RedelegationTime = time.Second * time.Duration(redelegationTime.Int64())
-		k.SetParams(ctx, params)
 	}
 
 	return validatorUpdates
