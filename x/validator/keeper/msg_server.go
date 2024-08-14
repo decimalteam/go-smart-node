@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"math/big"
 	"time"
 
 	sdkmath "cosmossdk.io/math"
@@ -416,7 +415,7 @@ func (k msgServer) _redelegate(ctx sdk.Context, msgDelegator, msgValidatorSrc, m
 		return time.Time{}, err
 	}
 
-	completionTime, err := k.BeginRedelegation(ctx, delegatorAddress, valSrcAddr, valDstAddr, stake, remainStake, big.NewInt(1))
+	completionTime, err := k.BeginRedelegation(ctx, delegatorAddress, valSrcAddr, valDstAddr, stake, remainStake, nil)
 	if err != nil {
 		return time.Time{}, err
 	}
@@ -494,7 +493,7 @@ func (k msgServer) _undelegate(ctx sdk.Context, msgDelegator string, msgValidato
 		return time.Time{}, err
 	}
 
-	completionTime, err := k.Keeper.Undelegate(ctx, delegatorAddress, validatorAddr, stake, remainStake, big.NewInt(1))
+	completionTime, err := k.Keeper.Undelegate(ctx, delegatorAddress, validatorAddr, stake, remainStake, nil)
 	if err != nil {
 		return time.Time{}, err
 	}
