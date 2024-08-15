@@ -166,7 +166,6 @@ func (k Keeper) PostTxProcessing(
 					}
 				}
 				tokenDelegate.Stake.Amount = tokenDelegationAmount.ChangedAmount
-				fmt.Println(tokenDelegate)
 				err = k.Staked(ctx, tokenDelegate, true)
 				if err != nil {
 					return err
@@ -186,7 +185,6 @@ func (k Keeper) PostTxProcessing(
 					}
 				}
 				transferExistStake.Stake.Amount = tokenDelegationAmount.ChangedAmount
-				fmt.Println(transferExistStake)
 				err = k.Staked(ctx, transferExistStake, false)
 				if err != nil {
 					return err
@@ -205,6 +203,7 @@ func (k Keeper) PostTxProcessing(
 						k.coinKeeper.SetCoin(ctx, coinUpdate)
 					}
 				}
+				fmt.Println(tokenUndelegate)
 				err = k.RequestWithdraw(ctx, tokenUndelegate)
 				if err != nil {
 					return err
@@ -335,6 +334,14 @@ func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.Dele
 	}
 
 	stake := validatorType.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(tokenUndelegate.FrozenStake.Stake.Amount)})
+
+	if tokenUndelegate.FrozenStake.Stake.HoldTimestamp.Int64() != 0 {
+		var newHold validatorType.StakeHold
+		newHold.Amount = math.NewIntFromBigInt(tokenUndelegate.FrozenStake.Stake.Amount)
+		newHold.HoldStartTime = time.Now().Unix()
+		newHold.HoldEndTime = tokenUndelegate.FrozenStake.Stake.HoldTimestamp.Int64()
+		stake.Holds = append(stake.Holds, &newHold)
+	}
 
 	delegatorAddress, _ := types.GetDecimalAddressFromHex(tokenUndelegate.FrozenStake.Stake.Delegator.String())
 

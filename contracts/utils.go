@@ -109,14 +109,14 @@ func GetTimeUndelegate(
 	evmKeeper *evmkeeper.Keeper,
 	contract common.Address,
 ) (*big.Int, error) {
-	contractCenter, _ := center.CenterMetaData.GetAbi()
+	contractDelegation, _ := delegation.DelegationMetaData.GetAbi()
 	methodCall := "getFreezeTime"
 	// Address token center
-	res, err := evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, uint8(1))
+	res, err := evmKeeper.CallEVM(ctx, *contractDelegation, common.Address(types.ModuleAddress), contract, false, methodCall, uint8(1))
 	if err != nil {
 		return nil, err
 	}
-	data, err := contractCenter.Unpack(methodCall, res.Ret)
+	data, err := contractDelegation.Unpack(methodCall, res.Ret)
 	fmt.Println(data)
 	if len(data) == 0 {
 		return nil, err
@@ -129,14 +129,14 @@ func GetTimeRedelegation(
 	evmKeeper *evmkeeper.Keeper,
 	contract common.Address,
 ) (*big.Int, error) {
-	contractCenter, _ := delegation.DelegationMetaData.GetAbi()
+	contractDelegation, _ := delegation.DelegationMetaData.GetAbi()
 	methodCall := "getFreezeTime"
 	// Address token center
-	res, err := evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, uint8(2))
+	res, err := evmKeeper.CallEVM(ctx, *contractDelegation, common.Address(types.ModuleAddress), contract, false, methodCall, uint8(2))
 	if err != nil {
 		return nil, err
 	}
-	data, err := contractCenter.Unpack(methodCall, res.Ret)
+	data, err := contractDelegation.Unpack(methodCall, res.Ret)
 	fmt.Println(data)
 	if len(data) == 0 {
 		return nil, err
