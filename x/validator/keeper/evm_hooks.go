@@ -90,15 +90,21 @@ func (k Keeper) PostTxProcessing(
 	var newValidator validator.ValidatorValidatorMetaUpdated
 	var updateValidator validator.ValidatorValidatorUpdated
 
-	stakeUpdate := 0
+	var stakeUpdate []delegation.DelegationStakeUpdated
+
+	redelegation := false
+	undelegate := false
 
 	for _, log := range recipient.Logs {
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
-		if errEvent == nil && strings.ToLower(log.Address.String()) == addressDelegation {
-			if eventDelegationByID.Name == "StakeAmountUpdated" {
-				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegationAmount, eventDelegationByID.Name, log)
-				fmt.Println(tokenDelegationAmount)
+		if errEvent == nil {
+			if eventDelegationByID.Name == "RequestWithdraw" {
+				undelegate = true
 			}
+			if eventDelegationByID.Name == "StakeUpdated" {
+				redelegation = true
+			}
+			fmt.Println(eventDelegationByID.Name)
 		}
 	}
 
@@ -135,11 +141,10 @@ func (k Keeper) PostTxProcessing(
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil && strings.ToLower(log.Address.String()) == addressDelegation {
 			fmt.Println(eventDelegationByID.Name)
-			if eventDelegationByID.Name == "StakeUpdated" && stakeUpdate == 0 {
+			if eventDelegationByID.Name == "StakeUpdated" && !redelegation && !undelegate {
 				if tokenDelegationAmount.ChangedAmount == nil {
 					return errors.DelegationSumIsNotSet
 				}
-				stakeUpdate = stakeUpdate + 1
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
 				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
 				if err != nil {
@@ -227,6 +232,9 @@ func (k Keeper) PostTxProcessing(
 		}
 	}
 
+	if len(stakeUpdate) == 0 {
+
+	}
 	// Check if processed method
 	//switch methodId.Name {
 	//case types.ContractMethodCreateValidator:
@@ -241,7 +249,7 @@ func (k Keeper) PostTxProcessing(
 
 func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpdated) error {
 
-	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, stakeData.Stake.Token.String())
+	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, "del")
 	if err != nil {
 		return errors.CoinDoesNotExist
 	}
@@ -275,16 +283,9 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 		return fmt.Errorf("not found validator %s", valAddr)
 	}
 
-	if stakeData.IsNew {
-		_ = k.Delegate(ctx, delegatorAddress, validatorCosmos, stake)
-		if err != nil {
-			return err
-		}
-	} else {
-		_ = k.TransferToHold(ctx, delegatorAddress, validatorCosmos, stake)
-		if err != nil {
-			return err
-		}
+	_ = k.Delegate(ctx, delegatorAddress, validatorCosmos, stake)
+	if err != nil {
+		return err
 	}
 
 	return nil
