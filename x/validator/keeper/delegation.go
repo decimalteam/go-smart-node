@@ -854,6 +854,7 @@ func (k Keeper) Delegate(
 	k.SetValidatorByPowerIndex(ctx, validator)
 
 	k.AddCustomCoinStaked(ctx, stake.GetStake())
+	fmt.Println("finis staked")
 	return nil
 }
 
