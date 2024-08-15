@@ -112,7 +112,7 @@ func GetTimeUndelegate(
 	contractCenter, _ := center.CenterMetaData.GetAbi()
 	methodCall := "getFreezeTime"
 	// Address token center
-	res, err := evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, 1)
+	res, err := evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, uint8(2))
 	if err != nil {
 		return nil, err
 	}

@@ -94,6 +94,7 @@ func (k Keeper) PostTxProcessing(
 
 	redelegation := false
 	undelegate := false
+	stakedHold := false
 
 	for _, log := range recipient.Logs {
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
@@ -103,6 +104,9 @@ func (k Keeper) PostTxProcessing(
 			}
 			if eventDelegationByID.Name == "RequestTransfer" {
 				redelegation = true
+			}
+			if eventDelegationByID.Name == "StakeHolded" {
+				stakedHold = true
 			}
 			fmt.Println(eventDelegationByID.Name)
 		}
@@ -141,7 +145,10 @@ func (k Keeper) PostTxProcessing(
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil && strings.ToLower(log.Address.String()) == addressDelegation {
 			fmt.Println(eventDelegationByID.Name)
-			if eventDelegationByID.Name == "StakeUpdated" && !redelegation && !undelegate {
+			if eventDelegationByID.Name == "StakeAmountUpdated" {
+				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegationAmount, eventDelegationByID.Name, log)
+			}
+			if eventDelegationByID.Name == "StakeUpdated" && !redelegation && !undelegate && !stakedHold {
 				if tokenDelegationAmount.ChangedAmount == nil {
 					return errors.DelegationSumIsNotSet
 				}
