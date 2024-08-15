@@ -84,17 +84,19 @@ func (k Keeper) PostTxProcessing(
 
 	// this var is only for new token create from token center
 	var tokenDelegate delegation.DelegationStakeUpdated
+	var transferExistStake delegation.DelegationStakeUpdated
 	var tokenUndelegate delegation.DelegationWithdrawRequest
 	var tokenRedelegation delegation.DelegationTransferRequest
 	var tokenDelegationAmount delegation.DelegationStakeAmountUpdated
 	var newValidator validator.ValidatorValidatorMetaUpdated
 	var updateValidator validator.ValidatorValidatorUpdated
 
-	var stakeUpdate []delegation.DelegationStakeUpdated
+	//var stakeUpdate []delegation.DelegationStakeUpdated
 
 	redelegation := false
 	undelegate := false
 	stakedHold := false
+	stakeUpdate := 0
 
 	for _, log := range recipient.Logs {
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
@@ -108,7 +110,6 @@ func (k Keeper) PostTxProcessing(
 			if eventDelegationByID.Name == "StakeHolded" {
 				stakedHold = true
 			}
-			fmt.Println(eventDelegationByID.Name)
 		}
 	}
 
@@ -148,10 +149,11 @@ func (k Keeper) PostTxProcessing(
 			if eventDelegationByID.Name == "StakeAmountUpdated" {
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegationAmount, eventDelegationByID.Name, log)
 			}
-			if eventDelegationByID.Name == "StakeUpdated" && !redelegation && !undelegate && !stakedHold {
+			if eventDelegationByID.Name == "StakeUpdated" && !redelegation && !undelegate && !stakedHold && stakeUpdate == 0 {
 				if tokenDelegationAmount.ChangedAmount == nil {
 					return errors.DelegationSumIsNotSet
 				}
+				stakeUpdate = stakeUpdate + 1
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
 				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
 				if err != nil {
@@ -165,7 +167,27 @@ func (k Keeper) PostTxProcessing(
 				}
 				tokenDelegate.Stake.Amount = tokenDelegationAmount.ChangedAmount
 				fmt.Println(tokenDelegate)
-				err = k.Staked(ctx, tokenDelegate)
+				err = k.Staked(ctx, tokenDelegate, true)
+				if err != nil {
+					return err
+				}
+			}
+
+			if eventDelegationByID.Name == "StakeHolded" {
+				_ = contracts.UnpackLog(delegatorCenter, &transferExistStake, eventDelegationByID.Name, log)
+				_, err := k.coinKeeper.GetCoinByDRC(ctx, transferExistStake.Stake.Token.String())
+				if err != nil {
+					symbolToken, _ := k.QuerySymbolToken(ctx, transferExistStake.Stake.Token)
+					coinUpdate, err := k.coinKeeper.GetCoin(ctx, symbolToken)
+					if err == nil {
+						_ = k.coinKeeper.UpdateCoinDRC(ctx, symbolToken, transferExistStake.Stake.Token.String())
+						coinUpdate.DRC20Contract = transferExistStake.Stake.Token.String()
+						k.coinKeeper.SetCoin(ctx, coinUpdate)
+					}
+				}
+				transferExistStake.Stake.Amount = tokenDelegationAmount.ChangedAmount
+				fmt.Println(transferExistStake)
+				err = k.Staked(ctx, transferExistStake, false)
 				if err != nil {
 					return err
 				}
@@ -239,9 +261,9 @@ func (k Keeper) PostTxProcessing(
 		}
 	}
 
-	if len(stakeUpdate) == 0 {
-
-	}
+	//if len(stakeUpdate) == 0 {
+	//
+	//}
 	// Check if processed method
 	//switch methodId.Name {
 	//case types.ContractMethodCreateValidator:
@@ -254,9 +276,9 @@ func (k Keeper) PostTxProcessing(
 	return nil
 }
 
-func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpdated) error {
+func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpdated, newStake bool) error {
 
-	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, "del")
+	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, stakeData.Stake.Token.String())
 	if err != nil {
 		return errors.CoinDoesNotExist
 	}
@@ -290,9 +312,16 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 		return fmt.Errorf("not found validator %s", valAddr)
 	}
 
-	_ = k.Delegate(ctx, delegatorAddress, validatorCosmos, stake)
-	if err != nil {
-		return err
+	if newStake {
+		_ = k.Delegate(ctx, delegatorAddress, validatorCosmos, stake)
+		if err != nil {
+			return err
+		}
+	} else {
+		_ = k.TransferToHold(ctx, delegatorAddress, validatorCosmos, stake)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
