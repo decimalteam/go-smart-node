@@ -132,11 +132,6 @@ import (
 	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
-// TODO: Move to some other place and use address with known private key!
-const (
-	UpgraderAddress = "d01f4j9efhhy8ehjkfddqr80gv5kkl3e5yu7jxqvg"
-)
-
 var (
 	// DefaultNodeHome defines default home directory for the application daemon.
 	DefaultNodeHome = os.ExpandEnv(fmt.Sprintf("$HOME/.%s/daemon", cmdcfg.AppName))
@@ -315,6 +310,18 @@ func NewDSC(
 	err = cmdcfg.UpdatesInfo.Save()
 	if err != nil && !errors.Is(err, syscall.ENOENT) {
 		panic(fmt.Sprintf("error: write permissions '%s'", err.Error()))
+	}
+
+	genDoc := &tmtypes.GenesisDoc{}
+	if _, err = os.Stat(filepath.Join(homePath, "config", "genesis.json")); err != nil {
+		if !os.IsNotExist(err) {
+			tmos.Exit(err.Error())
+		}
+	} else {
+		genDoc, err = tmtypes.GenesisDocFromFile(filepath.Join(homePath, "config", "genesis.json"))
+		if err != nil {
+			tmos.Exit(err.Error())
+		}
 	}
 
 	appCodec := encodingConfig.Codec
@@ -545,7 +552,7 @@ func NewDSC(
 		appCodec,
 		homePath,
 		app.BaseApp,
-		UpgraderAddress,
+		upgrade.GetAddressForUpdate(genDoc.ChainID),
 	)
 
 	// Create IBC keeper
@@ -796,17 +803,7 @@ func NewDSC(
 
 	app.SetAnteHandler(ante.NewAnteHandler(options))
 	app.SetEndBlocker(app.EndBlocker)
-	genDoc := &tmtypes.GenesisDoc{}
-	if _, err = os.Stat(filepath.Join(homePath, "config", "genesis.json")); err != nil {
-		if !os.IsNotExist(err) {
-			tmos.Exit(err.Error())
-		}
-	} else {
-		genDoc, err = tmtypes.GenesisDocFromFile(filepath.Join(homePath, "config", "genesis.json"))
-		if err != nil {
-			tmos.Exit(err.Error())
-		}
-	}
+
 	app.setupUpgradeHandlers(genDoc.ChainID)
 
 	if loadLatest {
