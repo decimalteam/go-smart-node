@@ -928,9 +928,8 @@ func (k Keeper) transferBetweenPools(ctx sdk.Context, statusSrc types.BondStatus
 // It create an unbonding object and insert into the unbonding queue which will be
 // processed during EndBlocker.
 func (k Keeper) Undelegate(ctx sdk.Context, delegator sdk.AccAddress, valAddress sdk.ValAddress, stake types.Stake, remainStake types.Stake, timestamp *big.Int) (time.Time, error) {
-	if timestamp == nil {
-		timestamp = big.NewInt(k.UndelegationTime(ctx).Nanoseconds())
-	}
+
+	timestamp = big.NewInt(k.UndelegationTime(ctx).Nanoseconds())
 
 	//validator, found := k.GetValidator(ctx, valAddress)
 	//if !found {
