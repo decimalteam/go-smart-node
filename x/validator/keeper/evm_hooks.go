@@ -408,7 +408,7 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 	}
 
 	_, err = k.BeginRedelegation(
-		ctx, delegatorAddress, srcValAddr, valAddr, stake, remainStake, tokenRedelegation.FrozenStake.UnfreezeTimestamp,
+		ctx, delegatorAddress, srcValAddr, valAddr, stake, remainStake, nil,
 	)
 	if err != nil {
 		return err
