@@ -104,7 +104,7 @@ func (k Keeper) PostTxProcessing(
 			if eventDelegationByID.Name == "RequestWithdraw" {
 				undelegate = true
 			}
-			if eventDelegationByID.Name == "RequestTransfer" {
+			if eventDelegationByID.Name == "TransferRequest" {
 				redelegation = true
 			}
 			if eventDelegationByID.Name == "StakeHolded" {
