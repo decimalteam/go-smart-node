@@ -1081,7 +1081,7 @@ func (k Keeper) BeginRedelegation(ctx sdk.Context, delegator sdk.AccAddress, val
 		height, completionTime, stake,
 	)
 	k.InsertRedelegationQueue(ctx, red, completionTime)
-
+	fmt.Println("finish redelegation")
 	return completionTime, nil
 }
 
