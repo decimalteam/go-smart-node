@@ -113,6 +113,8 @@ func (k Keeper) PostTxProcessing(
 		}
 	}
 
+	srcValidatorRedelegation := ""
+
 	for _, log := range recipient.Logs {
 		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
 		if errEvent == nil && addressValidator == strings.ToLower(log.Address.String()) {
@@ -148,6 +150,10 @@ func (k Keeper) PostTxProcessing(
 			fmt.Println(eventDelegationByID.Name)
 			if eventDelegationByID.Name == "StakeAmountUpdated" {
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegationAmount, eventDelegationByID.Name, log)
+			}
+			if eventDelegationByID.Name == "StakeUpdated" && redelegation && !undelegate && !stakedHold && stakeUpdate == 0 {
+				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
+				srcValidatorRedelegation = tokenDelegate.Stake.Delegator.String()
 			}
 			if eventDelegationByID.Name == "StakeUpdated" && !redelegation && !undelegate && !stakedHold && stakeUpdate == 0 {
 				if tokenDelegationAmount.ChangedAmount == nil {
@@ -221,7 +227,7 @@ func (k Keeper) PostTxProcessing(
 						k.coinKeeper.SetCoin(ctx, coinUpdate)
 					}
 				}
-				err = k.RequestTransfer(ctx, tokenRedelegation)
+				err = k.RequestTransfer(ctx, tokenRedelegation, srcValidatorRedelegation)
 				if err != nil {
 					return err
 				}
@@ -365,7 +371,7 @@ func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.Dele
 	return nil
 }
 
-func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.DelegationTransferRequest) error {
+func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.DelegationTransferRequest, srcValidator string) error {
 	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, tokenRedelegation.FrozenStake.Stake.Token.String())
 	if err != nil {
 		return errors.CoinDoesNotExist
@@ -375,12 +381,14 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 
 	delegatorAddress, _ := types.GetDecimalAddressFromHex(tokenRedelegation.FrozenStake.Stake.Delegator.String())
 
-	valAddr, err := sdk.ValAddressFromHex(tokenRedelegation.FrozenStake.Stake.Validator.String()[2:])
+	srcValAddr, err := sdk.ValAddressFromHex(srcValidator[2:])
 
-	delegationCosmos, found := k.GetDelegation(ctx, delegatorAddress, valAddr, stake.ID)
+	delegationCosmos, found := k.GetDelegation(ctx, delegatorAddress, srcValAddr, stake.ID)
 	if !found {
 		return errors.DelegationNotFound
 	}
+
+	valAddr, err := sdk.ValAddressFromHex(tokenRedelegation.FrozenStake.Stake.Validator.String()[2:])
 
 	remainStake, err := k.CalculateRemainStake(ctx, delegationCosmos.Stake, stake)
 	if err != nil {
@@ -398,7 +406,7 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 	}
 
 	_, err = k.BeginRedelegation(
-		ctx, delegatorAddress, valAddr, valAddr, stake, remainStake, tokenRedelegation.FrozenStake.UnfreezeTimestamp,
+		ctx, delegatorAddress, srcValAddr, valAddr, stake, remainStake, tokenRedelegation.FrozenStake.UnfreezeTimestamp,
 	)
 	if err != nil {
 		return err
