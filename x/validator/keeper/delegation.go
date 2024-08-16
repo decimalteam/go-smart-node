@@ -1232,6 +1232,15 @@ func (k Keeper) CalculateRemainStake(
 			return types.Stake{}, errors.StakeTooSmall
 		}
 		remainStake = types.NewStakeCoin(source.Stake.Sub(stake.Stake))
+		if len(stake.Holds) != 0 {
+			holdSub := stake.Holds[0]
+			for _, hold := range source.Holds {
+				if hold.HoldEndTime == holdSub.HoldEndTime {
+					hold.Amount.Sub(holdSub.Amount)
+				}
+				remainStake.Holds = append(remainStake.Holds, hold)
+			}
+		}
 	case types.StakeType_NFT:
 		source.Stake = k.getSumSubTokensReserve(ctx, source.ID, source.GetSubTokenIDs())
 		if !types.SetHasSubset(source.SubTokenIDs, stake.SubTokenIDs) {
