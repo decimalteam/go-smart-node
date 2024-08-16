@@ -151,7 +151,7 @@ func (k Keeper) PostTxProcessing(
 			if eventDelegationByID.Name == "StakeAmountUpdated" {
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegationAmount, eventDelegationByID.Name, log)
 			}
-			if eventDelegationByID.Name == "StakeUpdated" && redelegation && !undelegate && !stakedHold && stakeUpdate == 0 {
+			if eventDelegationByID.Name == "StakeUpdated" && redelegation && !undelegate && !stakedHold {
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
 				srcValidatorRedelegation = tokenDelegate.Stake.Delegator.String()
 			}
@@ -217,16 +217,18 @@ func (k Keeper) PostTxProcessing(
 			}
 			if eventDelegationByID.Name == "TransferRequest" {
 				_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationByID.Name, log.Data)
-				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
+				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenRedelegation.FrozenStake.Stake.Token.String())
 				if err != nil {
-					symbolToken, _ := k.QuerySymbolToken(ctx, tokenDelegate.Stake.Token)
+					symbolToken, _ := k.QuerySymbolToken(ctx, tokenRedelegation.FrozenStake.Stake.Token)
 					coinUpdate, err := k.coinKeeper.GetCoin(ctx, symbolToken)
 					if err == nil {
 						_ = k.coinKeeper.UpdateCoinDRC(ctx, symbolToken, tokenDelegate.Stake.Token.String())
-						coinUpdate.DRC20Contract = tokenDelegate.Stake.Token.String()
+						coinUpdate.DRC20Contract = tokenRedelegation.FrozenStake.Stake.Token.String()
 						k.coinKeeper.SetCoin(ctx, coinUpdate)
 					}
 				}
+				fmt.Println(tokenRedelegation)
+				fmt.Println(srcValidatorRedelegation)
 				err = k.RequestTransfer(ctx, tokenRedelegation, srcValidatorRedelegation)
 				if err != nil {
 					return err
