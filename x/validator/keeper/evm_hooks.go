@@ -101,7 +101,7 @@ func (k Keeper) PostTxProcessing(
 	for _, log := range recipient.Logs {
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
-			if eventDelegationByID.Name == "RequestWithdraw" {
+			if eventDelegationByID.Name == "WithdrawRequest" {
 				undelegate = true
 			}
 			if eventDelegationByID.Name == "TransferRequest" {
@@ -197,7 +197,7 @@ func (k Keeper) PostTxProcessing(
 				}
 			}
 
-			if eventDelegationByID.Name == "RequestWithdraw" {
+			if eventDelegationByID.Name == "WithdrawRequest" {
 				_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationByID.Name, log.Data)
 				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
 				if err != nil {
@@ -401,7 +401,7 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 		holdSub := stake.Holds[0]
 		for _, hold := range remainStake.Holds {
 			if hold.HoldEndTime == holdSub.HoldEndTime {
-				hold.Amount.Sub(holdSub.Amount)
+				hold.Amount = hold.Amount.Sub(holdSub.Amount)
 			}
 			remainStake.Holds = append(remainStake.Holds, hold)
 		}

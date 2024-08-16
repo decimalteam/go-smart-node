@@ -951,7 +951,7 @@ func (k Keeper) Undelegate(ctx sdk.Context, delegator sdk.AccAddress, valAddress
 	//	return time.Time{}, err
 	//}
 
-	completionTime := ctx.BlockHeader().Time.Add(time.Duration(timestamp.Int64()))
+	completionTime := ctx.BlockHeader().Time.Add(k.UndelegationTime(ctx))
 	ubd := k.SetUndelegationEntry(ctx, delegator, valAddress, ctx.BlockHeight(), completionTime, stake)
 	k.InsertUBDQueue(ctx, ubd, completionTime)
 
@@ -1037,7 +1037,6 @@ func (k Keeper) CompleteUnbonding(ctx sdk.Context, delegator sdk.AccAddress, val
 // record.
 // stake and remainStake MUST BE calculated before by ValidateUnbondStake
 func (k Keeper) BeginRedelegation(ctx sdk.Context, delegator sdk.AccAddress, validatorSrc, validatorDst sdk.ValAddress, stake, remainStake types.Stake, timestamp *big.Int) (completionTime time.Time, err error) {
-	timestamp = big.NewInt(k.RedelegationTime(ctx).Milliseconds())
 
 	// 1. preparations, checks
 	if bytes.Equal(validatorSrc, validatorDst) {
@@ -1073,7 +1072,7 @@ func (k Keeper) BeginRedelegation(ctx sdk.Context, delegator sdk.AccAddress, val
 
 	// create the unbonding delegation
 
-	completionTime = ctx.BlockHeader().Time.Add(time.Duration(timestamp.Int64()))
+	completionTime = ctx.BlockHeader().Time.Add(k.RedelegationTime(ctx))
 	height := ctx.BlockHeight()
 
 	red := k.SetRedelegationEntry(
