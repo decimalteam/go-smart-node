@@ -387,6 +387,16 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 		return err
 	}
 
+	if len(stake.Holds) != 0 {
+		holdSub := stake.Holds[0]
+		for _, hold := range remainStake.Holds {
+			if hold.HoldEndTime == holdSub.HoldEndTime {
+				hold.Amount.Sub(holdSub.Amount)
+			}
+			remainStake.Holds = append(remainStake.Holds, hold)
+		}
+	}
+
 	_, err = k.BeginRedelegation(
 		ctx, delegatorAddress, valAddr, valAddr, stake, remainStake, tokenRedelegation.FrozenStake.UnfreezeTimestamp,
 	)
