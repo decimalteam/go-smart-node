@@ -97,6 +97,7 @@ func (k Keeper) PostTxProcessing(
 	undelegate := false
 	stakedHold := false
 	transferCompleted := false
+	withdrawCompleted := false
 	stakeUpdate := 0
 
 	for _, log := range recipient.Logs {
@@ -113,6 +114,9 @@ func (k Keeper) PostTxProcessing(
 			}
 			if eventDelegationByID.Name == "TransferCompleted" {
 				transferCompleted = true
+			}
+			if eventDelegationByID.Name == "WithdrawCompleted" {
+				withdrawCompleted = true
 			}
 		}
 	}
@@ -155,11 +159,11 @@ func (k Keeper) PostTxProcessing(
 			if eventDelegationByID.Name == "StakeAmountUpdated" {
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegationAmount, eventDelegationByID.Name, log)
 			}
-			if eventDelegationByID.Name == "StakeUpdated" && redelegation && !undelegate && !stakedHold && !transferCompleted {
+			if eventDelegationByID.Name == "StakeUpdated" && redelegation && !undelegate && !stakedHold && !transferCompleted && !withdrawCompleted {
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
 				srcValidatorRedelegation = tokenDelegate.Stake.Validator.String()
 			}
-			if eventDelegationByID.Name == "StakeUpdated" && !redelegation && !undelegate && !stakedHold && !transferCompleted && stakeUpdate == 0 {
+			if eventDelegationByID.Name == "StakeUpdated" && !redelegation && !undelegate && !stakedHold && !transferCompleted && !withdrawCompleted && stakeUpdate == 0 {
 				if tokenDelegationAmount.ChangedAmount == nil {
 					return errors.DelegationSumIsNotSet
 				}
