@@ -381,6 +381,14 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 
 	stake := validatorType.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(tokenRedelegation.FrozenStake.Stake.Amount)})
 
+	if tokenRedelegation.FrozenStake.Stake.HoldTimestamp.Int64() != 0 {
+		var newHold validatorType.StakeHold
+		newHold.Amount = math.NewIntFromBigInt(tokenRedelegation.FrozenStake.Stake.Amount)
+		newHold.HoldStartTime = time.Now().Unix()
+		newHold.HoldEndTime = tokenRedelegation.FrozenStake.Stake.HoldTimestamp.Int64()
+		stake.Holds = append(stake.Holds, &newHold)
+	}
+
 	delegatorAddress, _ := types.GetDecimalAddressFromHex(tokenRedelegation.FrozenStake.Stake.Delegator.String())
 
 	srcValAddr, err := sdk.ValAddressFromHex(srcValidator[2:])
