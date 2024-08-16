@@ -153,7 +153,7 @@ func (k Keeper) PostTxProcessing(
 			}
 			if eventDelegationByID.Name == "StakeUpdated" && redelegation && !undelegate && !stakedHold {
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
-				srcValidatorRedelegation = tokenDelegate.Stake.Delegator.String()
+				srcValidatorRedelegation = tokenDelegate.Stake.Validator.String()
 			}
 			if eventDelegationByID.Name == "StakeUpdated" && !redelegation && !undelegate && !stakedHold && stakeUpdate == 0 {
 				if tokenDelegationAmount.ChangedAmount == nil {
@@ -291,7 +291,7 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 	}
 
 	stake := validatorType.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(stakeData.Stake.Amount)})
-	fmt.Println("stakeData.Stake.HoldTimestamp.Int64()", stakeData.Stake.HoldTimestamp.Int64())
+
 	if stakeData.Stake.HoldTimestamp.Int64() != 0 {
 		var newHold validatorType.StakeHold
 		newHold.Amount = math.NewIntFromBigInt(stakeData.Stake.Amount)
