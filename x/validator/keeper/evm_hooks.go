@@ -209,7 +209,7 @@ func (k Keeper) PostTxProcessing(
 					return err
 				}
 			}
-			if eventDelegationByID.Name == "RequestTransfer" {
+			if eventDelegationByID.Name == "TransferRequest" {
 				_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationByID.Name, log.Data)
 				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
 				if err != nil {
