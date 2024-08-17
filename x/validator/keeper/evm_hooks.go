@@ -372,7 +372,10 @@ func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.Dele
 
 	valAddr, err := sdk.ValAddressFromBech32(tokenUndelegate.FrozenStake.Stake.Validator.String()[2:])
 	fmt.Println("valAddr.String()")
-	fmt.Println(valAddr.String())
+	if err == nil {
+		fmt.Println(valAddr.String())
+	}
+
 	fmt.Println(delegatorAddress.String())
 	delegationCosmos, found := k.GetDelegation(ctx, delegatorAddress, valAddr, stake.ID)
 	if !found {
