@@ -78,7 +78,7 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 			}
 			k.SetParams(ctx, params)
 		}
-
+		k.DeleteHoldMature(ctx)
 	} else {
 		ctx.Logger().Debug(
 			fmt.Sprintf("Duration simple block (%s)", helpers.DurationToString(time.Since(start))),
@@ -107,7 +107,6 @@ func (k Keeper) PayValidators(ctx sdk.Context) {
 		panic(err)
 	}
 
-	baseCoin.LimitVolume = sdk.NewInt(0)
 	if baseCoin.LimitVolume.IsZero() {
 		baseCoin.LimitVolume = types.GetAllEmission(ctx)
 	} else {

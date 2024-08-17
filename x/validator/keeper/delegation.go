@@ -41,6 +41,27 @@ func (k Keeper) GetAllDelegations(ctx sdk.Context) (delegations []types.Delegati
 	return delegations
 }
 
+// DeleteHoldMature Delete Hold mature returns all delegations (used during genesis dump).
+func (k Keeper) DeleteHoldMature(ctx sdk.Context) {
+	k.IterateAllDelegations(ctx, func(delegation types.Delegation) bool {
+
+		var resultClear []*types.StakeHold
+		for _, hold := range delegation.GetStake().GetHolds() {
+			timeNow := time.Now().Unix()
+			timeHoldEnd := time.Unix(hold.HoldEndTime, 0)
+			if timeHoldEnd.Unix() > timeNow {
+				resultClear = append(resultClear, hold)
+			}
+		}
+		if len(delegation.GetStake().GetHolds()) != len(resultClear) {
+			delStake := types.NewDelegation(delegation.GetDelegator(), delegation.GetValidator(), delegation.Stake)
+			delStake.Stake.Holds = resultClear
+			k.SetDelegation(ctx, delStake)
+		}
+		return true
+	})
+}
+
 // GetAllDelegationsByValidator returns all delegations by validator stored in the application state.
 func (k Keeper) GetAllDelegationsByValidator(ctx sdk.Context) (delegations map[string][]types.Delegation) {
 	delegations = make(map[string][]types.Delegation)
