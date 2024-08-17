@@ -25,6 +25,7 @@ func GetAllEmission(ctx sdk.Context) sdk.Int {
 		allEmision = allEmision.Add(helpers.EtherToWei(sdk.NewInt(40000000)))
 		allEmision = allEmision.Add(helpers.EtherToWei(sdk.NewInt(40000000)))
 		allEmision = allEmision.Add(helpers.EtherToWei(sdk.NewInt(90000000)))
+		allEmision = allEmision.Add(helpers.EtherToWei(sdk.NewInt(90000000)))
 		for j := uint64(1); j < uint64(ctx.BlockHeight()); j++ {
 			allEmision = allEmision.Add(GetRewardForBlock(j))
 		}
