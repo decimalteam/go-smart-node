@@ -245,6 +245,15 @@ func (k Keeper) PostTxProcessing(
 		}
 		eventDelegationNftByID, errEvent := delegatorNftCenter.EventByID(log.Topics[0])
 		if errEvent == nil && log.Address.String() == addressDelegationNft {
+			if eventDelegationNftByID.Name == "StakeHolded" {
+				//_ = delegatorCenter.UnpackIntoInterface(&tokenDelegate, eventDelegationNftByID.Name, log.Data)
+				//fmt.Println(tokenDelegate)
+				//err := k.Staked(ctx, tokenDelegate)
+				//if err != nil {
+				//	return err
+				//}
+				return errors.ValidatorNftDelegationInactive
+			}
 			if eventDelegationNftByID.Name == "StakedUpdated" {
 				//_ = delegatorCenter.UnpackIntoInterface(&tokenDelegate, eventDelegationNftByID.Name, log.Data)
 				//fmt.Println(tokenDelegate)
@@ -255,7 +264,7 @@ func (k Keeper) PostTxProcessing(
 				return errors.ValidatorNftDelegationInactive
 			}
 
-			if eventDelegationNftByID.Name == "RequestWithdraw" {
+			if eventDelegationNftByID.Name == "WithdrawRequest" {
 				//_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationNftByID.Name, log.Data)
 				//fmt.Println(tokenUndelegate)
 				//err := k.RequestWithdraw(ctx, tokenUndelegate)
@@ -264,7 +273,7 @@ func (k Keeper) PostTxProcessing(
 				//}
 				return errors.ValidatorNftDelegationInactive
 			}
-			if eventDelegationNftByID.Name == "RequestTransfer" {
+			if eventDelegationNftByID.Name == "TransferRequest" {
 				//_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationNftByID.Name, log.Data)
 				//fmt.Println(tokenRedelegation)
 				//err := k.RequestTransfer(ctx, tokenRedelegation)
