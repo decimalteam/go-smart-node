@@ -428,7 +428,7 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 			if hold.HoldEndTime == holdSub.HoldEndTime {
 				hold.Amount = hold.Amount.Sub(holdSub.Amount)
 			}
-			remainStake.Holds = append(remainStake.Holds, hold)
+			//remainStake.Holds = append(remainStake.Holds, hold)
 		}
 	}
 
