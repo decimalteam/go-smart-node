@@ -1062,8 +1062,8 @@ func TestRedelegationHold(t *testing.T) {
 
 	var newHold types.StakeHold
 	newHold.Amount = keeper.TokensFromConsensusPower(4)
-	newHold.HoldStartTime = time.Now().Unix()
-	newHold.HoldEndTime = time.Now().Add(time.Duration(time.Now().Unix() + 20)).Unix()
+	newHold.HoldStartTime = ctx.BlockHeader().Time.Unix()
+	newHold.HoldEndTime = ctx.BlockHeader().Time.Unix()
 	defaultStake.Holds = append(defaultStake.Holds, &newHold)
 
 	// construct the validators
@@ -1176,6 +1176,13 @@ func TestRedelegationHold(t *testing.T) {
 		require.True(t, ok)
 		require.True(t, v.Equal(exDel))
 	}
+	blockHeader = ctx.BlockHeader()
+	blockHeader.Time = blockHeader.Time.Add(time.Hour * 1000000)
+	ctx = ctx.WithBlockHeader(blockHeader)
+	valK.DeleteHoldMature(ctx)
+	//time.Sleep(time.Duration(20))
+	delegationsAll := valK.GetAllDelegations(ctx)
+	require.NotNil(t, delegationsAll)
 }
 
 // tests Get/Set/Remove UnbondingDelegation

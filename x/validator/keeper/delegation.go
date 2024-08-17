@@ -47,15 +47,14 @@ func (k Keeper) DeleteHoldMature(ctx sdk.Context) {
 
 		var resultClear []*types.StakeHold
 		for _, hold := range delegation.GetStake().GetHolds() {
-			timeNow := time.Now().Unix()
 			timeHoldEnd := time.Unix(hold.HoldEndTime, 0)
-			if timeHoldEnd.Unix() > timeNow {
+			if ctx.BlockHeader().Time.Add(time.Hour * 48).Before(timeHoldEnd) {
 				resultClear = append(resultClear, hold)
 			}
 		}
 		if len(delegation.GetStake().GetHolds()) != len(resultClear) {
+			delegation.Stake.Holds = resultClear
 			delStake := types.NewDelegation(delegation.GetDelegator(), delegation.GetValidator(), delegation.Stake)
-			delStake.Stake.Holds = resultClear
 			k.SetDelegation(ctx, delStake)
 		}
 		return true
