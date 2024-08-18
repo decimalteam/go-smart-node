@@ -240,6 +240,9 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 			if allHoldBigOneYearsSum.LT(sdk.NewInt(1)) {
 				continue
 			}
+			if sumRewardForHold.LT(sdk.NewInt(1)) {
+				continue
+			}
 			rewardHold := sumRewardForHold.Mul(sumHold).Quo(allHoldBigOneYearsSum)
 			if rewardHold.LT(sdk.NewInt(1)) {
 				continue
