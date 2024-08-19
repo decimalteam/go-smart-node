@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -1063,7 +1064,7 @@ func TestRedelegationHold(t *testing.T) {
 	var newHold types.StakeHold
 	newHold.Amount = keeper.TokensFromConsensusPower(4)
 	newHold.HoldStartTime = ctx.BlockHeader().Time.Unix()
-	newHold.HoldEndTime = ctx.BlockHeader().Time.Unix()
+	newHold.HoldEndTime = ctx.BlockHeader().Time.Unix() + 10000
 	defaultStake.Holds = append(defaultStake.Holds, &newHold)
 
 	// construct the validators
@@ -1087,6 +1088,9 @@ func TestRedelegationHold(t *testing.T) {
 	require.NoError(t, err)
 
 	expectDelegations := make(map[string]types.Delegation)
+	valK.DeleteHoldMature(ctx)
+	delegationsAll := valK.GetAllDelegations(ctx)
+	require.NotNil(t, delegationsAll)
 
 	// redelegate base coin
 	{
@@ -1112,7 +1116,9 @@ func TestRedelegationHold(t *testing.T) {
 				//remainStake.Holds = append(remainStake.Holds, hold)
 			}
 		}
-
+		fmt.Println(delAddr.String())
+		fmt.Println(valSrcAddr.String())
+		fmt.Println(valDstAddr.String())
 		_, err = valK.BeginRedelegation(ctx, delAddr, valSrcAddr, valDstAddr, unStake, remainStake, nil)
 		require.NoError(t, err)
 
@@ -1180,8 +1186,9 @@ func TestRedelegationHold(t *testing.T) {
 	blockHeader.Time = blockHeader.Time.Add(time.Hour * 1000000)
 	ctx = ctx.WithBlockHeader(blockHeader)
 	valK.DeleteHoldMature(ctx)
+	fmt.Println(ctx.BlockHeader().Time.Unix())
 	//time.Sleep(time.Duration(20))
-	delegationsAll := valK.GetAllDelegations(ctx)
+	delegationsAll = valK.GetAllDelegations(ctx)
 	require.NotNil(t, delegationsAll)
 }
 
