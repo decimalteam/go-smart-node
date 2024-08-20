@@ -107,7 +107,7 @@ func (k Keeper) PostTxProcessing(
 				_ = validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data)
 				var validatorInfo contracts.MasterValidatorValidatorAddedMeta
 				_ = json.Unmarshal([]byte(newValidator.Meta), &validatorInfo)
-				valAddr, _ := sdk.ValAddressFromBech32(msg.From.String())
+				valAddr, _ := sdk.ValAddressFromHex(msg.From.String()[2:])
 				validatorInfo.OperatorAddress = valAddr.String()
 				fmt.Println(validatorInfo)
 				err := k.CreateValidatorFromEVM(ctx, validatorInfo)
