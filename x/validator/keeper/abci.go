@@ -1,7 +1,9 @@
 package keeper
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -62,6 +64,21 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 		if err != nil {
 			panic(err)
 		}
+
+		dataAddress, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
+		if err == nil {
+			params := k.GetParams(ctx)
+			undelegationTime, err := contracts.GetTimeUndelegate(ctx, k.evmKeeper, common.HexToAddress(dataAddress))
+			if err == nil {
+				params.UndelegationTime = time.Second * time.Duration(undelegationTime.Int64())
+			}
+			redelegationTime, err := contracts.GetTimeRedelegation(ctx, k.evmKeeper, common.HexToAddress(dataAddress))
+			if err == nil {
+				params.RedelegationTime = time.Second * time.Duration(redelegationTime.Int64())
+			}
+			k.SetParams(ctx, params)
+		}
+		k.DeleteHoldMature(ctx)
 	} else {
 		ctx.Logger().Debug(
 			fmt.Sprintf("Duration simple block (%s)", helpers.DurationToString(time.Since(start))),
@@ -89,6 +106,14 @@ func (k Keeper) PayValidators(ctx sdk.Context) {
 	if err != nil {
 		panic(err)
 	}
+
+	if baseCoin.LimitVolume.IsZero() {
+		baseCoin.LimitVolume = types.GetAllEmission(ctx)
+	} else {
+		baseCoin.LimitVolume = baseCoin.LimitVolume.Add(rewards)
+	}
+
+	k.coinKeeper.SetCoin(ctx, baseCoin)
 
 	feeCollector := k.authKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
 	feesCollectedCoins := k.bankKeeper.GetAllBalances(ctx, feeCollector.GetAddress())
@@ -142,10 +167,6 @@ func (k Keeper) PayValidators(ctx sdk.Context) {
 		panic(err)
 	}
 	err = k.coinKeeper.UpdateCoinVR(ctx, baseDenom, baseCoin.Volume.Add(distributed), baseCoin.Reserve)
-	if err != nil {
-		panic(err)
-	}
-
 	if err != nil {
 		panic(err)
 	}

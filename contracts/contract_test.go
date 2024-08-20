@@ -2,10 +2,9 @@ package contracts
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts/center"
+	"bitbucket.org/decimalteam/go-smart-node/contracts/delegation"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/nftCenter"
-	"bitbucket.org/decimalteam/go-smart-node/contracts/validator"
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -22,11 +21,11 @@ func TestInitCmd(t *testing.T) {
 	}
 
 	contractCenter, err := center.NewCenterCaller(
-		common.HexToAddress("0xa052da26a526e251db6390834009464ab0398ddc"),
+		common.HexToAddress("0xe5268fd6a4d041f20cbb92c662ceff1efe4c861e"),
 		web3Client,
 	)
 
-	address, err := contractCenter.GetAddress(&bind.CallOpts{}, NameOfSlugForGetAddressNftCenter)
+	address, err := contractCenter.GetContractAddress(&bind.CallOpts{}, NameOfSlugForGetAddressNftCenter)
 	if err != nil {
 		return
 	}
@@ -35,39 +34,101 @@ func TestInitCmd(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	recipient, err := web3Client.TransactionReceipt(context.Background(), common.HexToHash("0xcb06c8abf3a91996ebe42056447ac8fb6e009bd4b22afb95e252c85d24134a6d"))
+	recipient, err := web3Client.TransactionReceipt(context.Background(), common.HexToHash("0x60819d8d2ec33e8de31613c0a46cb6c13990eb56b083e5b29eb17bebc1c05c4e"))
 	if err != nil {
 		return
 	}
 
-	//tokenDelegation, _ := delegation.DelegationMetaData.GetAbi()
+	delegatorCenter, _ := delegation.DelegationMetaData.GetAbi()
 	//nftContractCenter, _ := nftCenter.NftCenterMetaData.GetAbi()
 	//nftContract721, _ := nft721.Nft721MetaData.GetAbi()
 	//tokenContract, _ := token.TokenMetaData.GetAbi()
-	validatorContract, _ := validator.ValidatorMetaData.GetAbi()
+	//validatorContract, _ := validator.ValidatorMetaData.GetAbi()
 
+	var tokenDelegate delegation.DelegationStakeUpdated
 	//var tokenAddress nftCenter.NftCenterNFTCreated
 	//var tokenReserve token.TokenTransfer
 	//var nft721Mint nft721.Nft721Transfer
 	//var tokenDelegationUser validator.ValidatorValidatorMetaUpdated
-	var validatorMeta validator.ValidatorValidatorMetaUpdated
+	//var validatorMeta validator.ValidatorValidatorMetaUpdated
 
 	for _, log := range recipient.Logs {
-		eventValidatorByID, errEvent := validatorContract.EventByID(log.Topics[0])
+		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
-			if eventValidatorByID.Name == "ValidatorMetaUpdated" {
-				_ = UnpackLog(validatorContract, &validatorMeta, eventValidatorByID.Name, log)
-				//tokenAddress.TokenAddress = common.HexToAddress(log.Topics[1].Hex())
-				fmt.Println(validatorMeta)
-				var validatorInfo MasterValidatorValidatorAddedMeta
-				_ = json.Unmarshal([]byte(validatorMeta.Meta), &validatorInfo)
-				fmt.Println(validatorMeta)
-				//err = k.CreateCoinEvent(ctx, tokenUpdated.NewReserve, tokenAddress.Meta, tokenAddress.TokenAddress.String())
-				//if err != nil {
-				//	return status.Error(codes.Internal, err.Error())
-				//}
-			}
+			fmt.Println(eventDelegationByID.Name)
+			//if eventDelegationByID.Name == "StakeUpdated" && stakeUpdate == 0 {
+			//	if tokenDelegationAmount.ChangedAmount == nil {
+			//		return errors.DelegationSumIsNotSet
+			//	}
+			_ = UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
+			//	stakeUpdate = stakeUpdate + 1
+			//	_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
+			//	if err != nil {
+			//		symbolToken, _ := k.QuerySymbolToken(ctx, tokenDelegate.Stake.Token)
+			//		coinUpdate, err := k.coinKeeper.GetCoin(ctx, symbolToken)
+			//		if err == nil {
+			//			_ = k.coinKeeper.UpdateCoinDRC(ctx, symbolToken, tokenDelegate.Stake.Token.String())
+			//			coinUpdate.DRC20Contract = tokenDelegate.Stake.Token.String()
+			//			k.coinKeeper.SetCoin(ctx, coinUpdate)
+			//		}
+			//	}
+			//	tokenDelegate.Stake.Amount = tokenDelegationAmount.ChangedAmount
+			//	err = k.Staked(ctx, tokenDelegate)
+			//	if err != nil {
+			//		return err
+			//	}
+			//}
+			//
+			//if eventDelegationByID.Name == "RequestWithdraw" {
+			//	_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationByID.Name, log.Data)
+			//	_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
+			//	if err != nil {
+			//		symbolToken, _ := k.QuerySymbolToken(ctx, tokenDelegate.Stake.Token)
+			//		coinUpdate, err := k.coinKeeper.GetCoin(ctx, symbolToken)
+			//		if err == nil {
+			//			_ = k.coinKeeper.UpdateCoinDRC(ctx, symbolToken, tokenDelegate.Stake.Token.String())
+			//			coinUpdate.DRC20Contract = tokenDelegate.Stake.Token.String()
+			//			k.coinKeeper.SetCoin(ctx, coinUpdate)
+			//		}
+			//	}
+			//	err = k.RequestWithdraw(ctx, tokenUndelegate)
+			//	if err != nil {
+			//		return err
+			//	}
+			//}
+			//if eventDelegationByID.Name == "RequestTransfer" {
+			//	_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationByID.Name, log.Data)
+			//	_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
+			//	if err != nil {
+			//		symbolToken, _ := k.QuerySymbolToken(ctx, tokenDelegate.Stake.Token)
+			//		coinUpdate, err := k.coinKeeper.GetCoin(ctx, symbolToken)
+			//		if err == nil {
+			//			_ = k.coinKeeper.UpdateCoinDRC(ctx, symbolToken, tokenDelegate.Stake.Token.String())
+			//			coinUpdate.DRC20Contract = tokenDelegate.Stake.Token.String()
+			//			k.coinKeeper.SetCoin(ctx, coinUpdate)
+			//		}
+			//	}
+			//	err = k.RequestTransfer(ctx, tokenRedelegation)
+			//	if err != nil {
+			//		return err
+			//	}
+			//}
 		}
+		//eventValidatorByID, errEvent := validatorContract.EventByID(log.Topics[0])
+		//if errEvent == nil {
+		//	if eventValidatorByID.Name == "ValidatorMetaUpdated" {
+		//		_ = UnpackLog(validatorContract, &validatorMeta, eventValidatorByID.Name, log)
+		//		//tokenAddress.TokenAddress = common.HexToAddress(log.Topics[1].Hex())
+		//		fmt.Println(validatorMeta)
+		//		var validatorInfo MasterValidatorValidatorAddedMeta
+		//		_ = json.Unmarshal([]byte(validatorMeta.Meta), &validatorInfo)
+		//		fmt.Println(validatorMeta)
+		//		//err = k.CreateCoinEvent(ctx, tokenUpdated.NewReserve, tokenAddress.Meta, tokenAddress.TokenAddress.String())
+		//		//if err != nil {
+		//		//	return status.Error(codes.Internal, err.Error())
+		//		//}
+		//	}
+		//}
 		//eventDelegationByID, errEvent := tokenDelegation.EventByID(log.Topics[0])
 		//if errEvent == nil {
 		//	if eventDelegationByID.Name == "StakeUpdated" {

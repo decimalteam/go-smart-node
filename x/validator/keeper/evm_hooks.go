@@ -21,7 +21,6 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/tendermint/tendermint/crypto"
@@ -84,27 +83,50 @@ func (k Keeper) PostTxProcessing(
 
 	// this var is only for new token create from token center
 	var tokenDelegate delegation.DelegationStakeUpdated
+	var transferExistStake delegation.DelegationStakeUpdated
 	var tokenUndelegate delegation.DelegationWithdrawRequest
 	var tokenRedelegation delegation.DelegationTransferRequest
+	var tokenDelegationAmount delegation.DelegationStakeAmountUpdated
 	var newValidator validator.ValidatorValidatorMetaUpdated
 	var updateValidator validator.ValidatorValidatorUpdated
+
+	//var stakeUpdate []delegation.DelegationStakeUpdated
+
+	redelegation := false
+	undelegate := false
+	stakedHold := false
+	transferCompleted := false
+	withdrawCompleted := false
+	stakeUpdate := 0
 
 	for _, log := range recipient.Logs {
 		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
 		if errEvent == nil && addressValidator == strings.ToLower(log.Address.String()) {
+			fmt.Println(eventValidatorByID.Name)
 			if eventValidatorByID.Name == "ValidatorMetaUpdated" {
 				_ = validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data)
 				var validatorInfo contracts.MasterValidatorValidatorAddedMeta
+				fmt.Println(newValidator.Meta)
 				_ = json.Unmarshal([]byte(newValidator.Meta), &validatorInfo)
 				valAddr, _ := sdk.ValAddressFromHex(msg.From.String()[2:])
 				validatorInfo.OperatorAddress = valAddr.String()
+				fmt.Println(validatorInfo)
 				err := k.CreateValidatorFromEVM(ctx, validatorInfo)
 				if err != nil {
 					return err
 				}
 			}
+		}
+	}
+
+	for _, log := range recipient.Logs {
+		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
+		if errEvent == nil && addressValidator == strings.ToLower(log.Address.String()) {
+			fmt.Println(eventValidatorByID.Name)
 			if eventValidatorByID.Name == "ValidatorUpdated" {
-				cosmosAddressValidator, _ := types.GetDecimalAddressFromHex(common.BytesToAddress(log.Topics[1].Bytes()).String())
+				_ = validatorMaster.UnpackIntoInterface(&updateValidator, eventValidatorByID.Name, log.Data)
+				fmt.Println(updateValidator)
+				cosmosAddressValidator, _ := sdk.ValAddressFromHex(updateValidator.Validator.String()[2:])
 				if updateValidator.Paused == false {
 					err := k.SetOnlineFromEvm(ctx, cosmosAddressValidator.String())
 					if err != nil {
@@ -119,9 +141,47 @@ func (k Keeper) PostTxProcessing(
 				}
 			}
 		}
+	}
+
+	for _, log := range recipient.Logs {
+		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
+		if errEvent == nil {
+			if eventDelegationByID.Name == "WithdrawRequest" {
+				undelegate = true
+			}
+			if eventDelegationByID.Name == "TransferRequest" {
+				redelegation = true
+			}
+			if eventDelegationByID.Name == "StakeHolded" {
+				stakedHold = true
+			}
+			if eventDelegationByID.Name == "TransferCompleted" {
+				transferCompleted = true
+			}
+			if eventDelegationByID.Name == "WithdrawCompleted" {
+				withdrawCompleted = true
+			}
+		}
+	}
+
+	srcValidatorRedelegation := ""
+
+	for _, log := range recipient.Logs {
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil && strings.ToLower(log.Address.String()) == addressDelegation {
-			if eventDelegationByID.Name == "StakeUpdated" {
+			fmt.Println(eventDelegationByID.Name)
+			if eventDelegationByID.Name == "StakeAmountUpdated" {
+				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegationAmount, eventDelegationByID.Name, log)
+			}
+			if eventDelegationByID.Name == "StakeUpdated" && redelegation && !undelegate && !stakedHold && !transferCompleted && !withdrawCompleted {
+				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
+				srcValidatorRedelegation = tokenDelegate.Stake.Validator.String()
+			}
+			if eventDelegationByID.Name == "StakeUpdated" && !redelegation && !undelegate && !stakedHold && !transferCompleted && !withdrawCompleted && stakeUpdate == 0 {
+				if tokenDelegationAmount.ChangedAmount == nil {
+					return errors.DelegationSumIsNotSet
+				}
+				stakeUpdate = stakeUpdate + 1
 				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
 				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
 				if err != nil {
@@ -133,13 +193,33 @@ func (k Keeper) PostTxProcessing(
 						k.coinKeeper.SetCoin(ctx, coinUpdate)
 					}
 				}
-				err = k.Staked(ctx, tokenDelegate)
+				tokenDelegate.Stake.Amount = tokenDelegationAmount.ChangedAmount
+				err = k.Staked(ctx, tokenDelegate, true)
 				if err != nil {
 					return err
 				}
 			}
 
-			if eventDelegationByID.Name == "RequestWithdraw" {
+			if eventDelegationByID.Name == "StakeHolded" {
+				_ = contracts.UnpackLog(delegatorCenter, &transferExistStake, eventDelegationByID.Name, log)
+				_, err := k.coinKeeper.GetCoinByDRC(ctx, transferExistStake.Stake.Token.String())
+				if err != nil {
+					symbolToken, _ := k.QuerySymbolToken(ctx, transferExistStake.Stake.Token)
+					coinUpdate, err := k.coinKeeper.GetCoin(ctx, symbolToken)
+					if err == nil {
+						_ = k.coinKeeper.UpdateCoinDRC(ctx, symbolToken, transferExistStake.Stake.Token.String())
+						coinUpdate.DRC20Contract = transferExistStake.Stake.Token.String()
+						k.coinKeeper.SetCoin(ctx, coinUpdate)
+					}
+				}
+				transferExistStake.Stake.Amount = tokenDelegationAmount.ChangedAmount
+				err = k.Staked(ctx, transferExistStake, false)
+				if err != nil {
+					return err
+				}
+			}
+
+			if eventDelegationByID.Name == "WithdrawRequest" {
 				_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationByID.Name, log.Data)
 				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
 				if err != nil {
@@ -151,60 +231,77 @@ func (k Keeper) PostTxProcessing(
 						k.coinKeeper.SetCoin(ctx, coinUpdate)
 					}
 				}
+				fmt.Println(tokenUndelegate)
 				err = k.RequestWithdraw(ctx, tokenUndelegate)
 				if err != nil {
 					return err
 				}
 			}
-			if eventDelegationByID.Name == "RequestTransfer" {
+			if eventDelegationByID.Name == "TransferRequest" {
 				_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationByID.Name, log.Data)
-				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
+				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenRedelegation.FrozenStake.Stake.Token.String())
 				if err != nil {
-					symbolToken, _ := k.QuerySymbolToken(ctx, tokenDelegate.Stake.Token)
+					symbolToken, _ := k.QuerySymbolToken(ctx, tokenRedelegation.FrozenStake.Stake.Token)
 					coinUpdate, err := k.coinKeeper.GetCoin(ctx, symbolToken)
 					if err == nil {
 						_ = k.coinKeeper.UpdateCoinDRC(ctx, symbolToken, tokenDelegate.Stake.Token.String())
-						coinUpdate.DRC20Contract = tokenDelegate.Stake.Token.String()
+						coinUpdate.DRC20Contract = tokenRedelegation.FrozenStake.Stake.Token.String()
 						k.coinKeeper.SetCoin(ctx, coinUpdate)
 					}
 				}
-				err = k.RequestTransfer(ctx, tokenRedelegation)
+				fmt.Println(tokenRedelegation)
+				fmt.Println(srcValidatorRedelegation)
+				err = k.RequestTransfer(ctx, tokenRedelegation, srcValidatorRedelegation)
 				if err != nil {
 					return err
 				}
 			}
 		}
-		_, errEvent = delegatorNftCenter.EventByID(log.Topics[0])
+		eventDelegationNftByID, errEvent := delegatorNftCenter.EventByID(log.Topics[0])
 		if errEvent == nil && log.Address.String() == addressDelegationNft {
-			return errors.ValidatorNftDelegationInactive
-			//if eventDelegationNftByID.Name == "StakedUpdated" {
-			//	_ = delegatorCenter.UnpackIntoInterface(&tokenDelegate, eventDelegationNftByID.Name, log.Data)
-			//	fmt.Println(tokenDelegate)
-			//	err := k.Staked(ctx, tokenDelegate)
-			//	if err != nil {
-			//		return err
-			//	}
-			//}
-			//
-			//if eventDelegationNftByID.Name == "RequestWithdraw" {
-			//	_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationNftByID.Name, log.Data)
-			//	fmt.Println(tokenUndelegate)
-			//	err := k.RequestWithdraw(ctx, tokenUndelegate)
-			//	if err != nil {
-			//		return err
-			//	}
-			//}
-			//if eventDelegationNftByID.Name == "RequestTransfer" {
-			//	_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationNftByID.Name, log.Data)
-			//	fmt.Println(tokenRedelegation)
-			//	err := k.RequestTransfer(ctx, tokenRedelegation)
-			//	if err != nil {
-			//		return err
-			//	}
-			//}
+			if eventDelegationNftByID.Name == "StakeHolded" {
+				//_ = delegatorCenter.UnpackIntoInterface(&tokenDelegate, eventDelegationNftByID.Name, log.Data)
+				//fmt.Println(tokenDelegate)
+				//err := k.Staked(ctx, tokenDelegate)
+				//if err != nil {
+				//	return err
+				//}
+				return errors.ValidatorNftDelegationInactive
+			}
+			if eventDelegationNftByID.Name == "StakedUpdated" {
+				//_ = delegatorCenter.UnpackIntoInterface(&tokenDelegate, eventDelegationNftByID.Name, log.Data)
+				//fmt.Println(tokenDelegate)
+				//err := k.Staked(ctx, tokenDelegate)
+				//if err != nil {
+				//	return err
+				//}
+				return errors.ValidatorNftDelegationInactive
+			}
+
+			if eventDelegationNftByID.Name == "WithdrawRequest" {
+				//_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationNftByID.Name, log.Data)
+				//fmt.Println(tokenUndelegate)
+				//err := k.RequestWithdraw(ctx, tokenUndelegate)
+				//if err != nil {
+				//	return err
+				//}
+				return errors.ValidatorNftDelegationInactive
+			}
+			if eventDelegationNftByID.Name == "TransferRequest" {
+				//_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationNftByID.Name, log.Data)
+				//fmt.Println(tokenRedelegation)
+				//err := k.RequestTransfer(ctx, tokenRedelegation)
+				//if err != nil {
+				//	return err
+				//}
+				return errors.ValidatorNftDelegationInactive
+			}
 		}
 	}
 
+	//if len(stakeUpdate) == 0 {
+	//
+	//}
 	// Check if processed method
 	//switch methodId.Name {
 	//case types.ContractMethodCreateValidator:
@@ -217,7 +314,7 @@ func (k Keeper) PostTxProcessing(
 	return nil
 }
 
-func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpdated) error {
+func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpdated, newStake bool) error {
 
 	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, stakeData.Stake.Token.String())
 	if err != nil {
@@ -226,7 +323,7 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 
 	stake := validatorType.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(stakeData.Stake.Amount)})
 
-	if stakeData.Stake.HoldTimestamp != nil {
+	if stakeData.Stake.HoldTimestamp.Int64() != 0 {
 		var newHold validatorType.StakeHold
 		newHold.Amount = math.NewIntFromBigInt(stakeData.Stake.Amount)
 		newHold.HoldStartTime = time.Now().Unix()
@@ -253,14 +350,23 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 		return fmt.Errorf("not found validator %s", valAddr)
 	}
 
-	_ = k.Delegate(ctx, delegatorAddress, validatorCosmos, stake)
-	if err != nil {
-		return err
+	if newStake {
+		_ = k.Delegate(ctx, delegatorAddress, validatorCosmos, stake)
+		if err != nil {
+			return err
+		}
+	} else {
+		_ = k.TransferToHold(ctx, delegatorAddress, validatorCosmos, stake)
+		if err != nil {
+			return err
+		}
 	}
+
 	return nil
 }
 
 func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.DelegationWithdrawRequest) error {
+
 	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, tokenUndelegate.FrozenStake.Stake.Token.String())
 	if err != nil {
 		return errors.CoinDoesNotExist
@@ -268,9 +374,17 @@ func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.Dele
 
 	stake := validatorType.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(tokenUndelegate.FrozenStake.Stake.Amount)})
 
+	if tokenUndelegate.FrozenStake.Stake.HoldTimestamp.Int64() != 0 {
+		var newHold validatorType.StakeHold
+		newHold.Amount = math.NewIntFromBigInt(tokenUndelegate.FrozenStake.Stake.Amount)
+		newHold.HoldStartTime = time.Now().Unix()
+		newHold.HoldEndTime = tokenUndelegate.FrozenStake.Stake.HoldTimestamp.Int64()
+		stake.Holds = append(stake.Holds, &newHold)
+	}
+
 	delegatorAddress, _ := types.GetDecimalAddressFromHex(tokenUndelegate.FrozenStake.Stake.Delegator.String())
 
-	valAddr, err := sdk.ValAddressFromBech32(tokenUndelegate.FrozenStake.Stake.Validator.String()[2:])
+	valAddr, err := sdk.ValAddressFromHex(tokenUndelegate.FrozenStake.Stake.Validator.String()[2:])
 
 	delegationCosmos, found := k.GetDelegation(ctx, delegatorAddress, valAddr, stake.ID)
 	if !found {
@@ -282,7 +396,7 @@ func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.Dele
 		return err
 	}
 
-	_, err = k.Undelegate(ctx, delegatorAddress, valAddr, stake, remainStake)
+	_, err = k.Undelegate(ctx, delegatorAddress, valAddr, stake, remainStake, nil)
 	if err != nil {
 		return err
 	}
@@ -290,7 +404,7 @@ func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.Dele
 	return nil
 }
 
-func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.DelegationTransferRequest) error {
+func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.DelegationTransferRequest, srcValidator string) error {
 	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, tokenRedelegation.FrozenStake.Stake.Token.String())
 	if err != nil {
 		return errors.CoinDoesNotExist
@@ -298,22 +412,42 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 
 	stake := validatorType.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(tokenRedelegation.FrozenStake.Stake.Amount)})
 
+	if tokenRedelegation.FrozenStake.Stake.HoldTimestamp.Int64() != 0 {
+		var newHold validatorType.StakeHold
+		newHold.Amount = math.NewIntFromBigInt(tokenRedelegation.FrozenStake.Stake.Amount)
+		newHold.HoldStartTime = time.Now().Unix()
+		newHold.HoldEndTime = tokenRedelegation.FrozenStake.Stake.HoldTimestamp.Int64()
+		stake.Holds = append(stake.Holds, &newHold)
+	}
+
 	delegatorAddress, _ := types.GetDecimalAddressFromHex(tokenRedelegation.FrozenStake.Stake.Delegator.String())
 
-	valAddr, err := sdk.ValAddressFromHex(tokenRedelegation.FrozenStake.Stake.Validator.String()[2:])
+	srcValAddr, err := sdk.ValAddressFromHex(srcValidator[2:])
 
-	delegationCosmos, found := k.GetDelegation(ctx, delegatorAddress, valAddr, stake.ID)
+	delegationCosmos, found := k.GetDelegation(ctx, delegatorAddress, srcValAddr, stake.ID)
 	if !found {
 		return errors.DelegationNotFound
 	}
+
+	valAddr, err := sdk.ValAddressFromHex(tokenRedelegation.FrozenStake.Stake.Validator.String()[2:])
 
 	remainStake, err := k.CalculateRemainStake(ctx, delegationCosmos.Stake, stake)
 	if err != nil {
 		return err
 	}
 
+	if len(stake.Holds) != 0 {
+		holdSub := stake.Holds[0]
+		for _, hold := range remainStake.Holds {
+			if hold.HoldEndTime == holdSub.HoldEndTime {
+				hold.Amount = hold.Amount.Sub(holdSub.Amount)
+			}
+			//remainStake.Holds = append(remainStake.Holds, hold)
+		}
+	}
+
 	_, err = k.BeginRedelegation(
-		ctx, delegatorAddress, valAddr, valAddr, stake, remainStake,
+		ctx, delegatorAddress, srcValAddr, valAddr, stake, remainStake, nil,
 	)
 	if err != nil {
 		return err
@@ -324,11 +458,17 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 
 func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.MasterValidatorValidatorAddedMeta) error {
 
-	commission, _ := sdkmath.NewIntFromString(validatorMeta.Commission)
-
-	if commission.Uint64() > 100 {
+	commissionChekc, _ := sdk.NewDecFromStr(fmt.Sprintf("%d", validatorMeta.Commission))
+	commissionChekcInt := commissionChekc.TruncateInt()
+	fmt.Println("commissionChekcInt")
+	if commissionChekcInt.GT(sdk.NewInt(100)) {
 		return errors.ValidatorCommissionIsTooBig
 	}
+	if commissionChekcInt.LT(sdk.NewInt(0)) {
+		return errors.ValidatorCommissionIsTooSmall
+	}
+	fmt.Println("validatorMeta", validatorMeta)
+	commission, _ := sdkmath.NewIntFromString(fmt.Sprintf("%d", validatorMeta.Commission))
 
 	rewardAddress, _ := types.GetDecimalAddressFromHex(validatorMeta.RewardAddress)
 
@@ -341,9 +481,9 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	if err != nil {
 		return err
 	}
-
+	fmt.Println("MsgCreateValidator")
 	msg := validatorType.MsgCreateValidator{
-		OperatorAddress: validatorMeta.OperatorAddress,
+		OperatorAddress: rewardAddress.String(),
 		RewardAddress:   rewardAddress.String(),
 		ConsensusPubkey: typescodec.UnsafePackAny(valPubKey),
 		Description: validatorType.Description{
@@ -356,8 +496,8 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 		Commission: sdk.NewDecFromInt(commission),
 		Stake:      sdk.Coin{},
 	}
-
-	valAddr, err := sdk.ValAddressFromBech32(msg.OperatorAddress)
+	fmt.Println("ValAddressFromBech32")
+	valAddr, err := sdk.ValAddressFromBech32(validatorMeta.OperatorAddress)
 	if err != nil {
 		return err
 	}
@@ -393,7 +533,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	if !ok {
 		return errors.InvalidConsensusPubKey
 	}
-
+	fmt.Println("ValAddressFromBech32")
 	if _, found := k.GetValidatorByConsAddrDecimal(ctx, sdk.GetConsAddress(pk)); found {
 		return errors.ValidatorPublicKeyAlreadyExists
 	}
@@ -423,7 +563,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	}
 	validatorCosmos.Online = false
 	validatorCosmos.Jailed = false
-
+	fmt.Println("ValAddressFromBech32")
 	k.SetValidator(ctx, validatorCosmos)
 	k.SetValidatorByConsAddr(ctx, validatorCosmos)
 	k.SetNewValidatorByPowerIndex(ctx, validatorCosmos)
@@ -432,7 +572,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	if err = k.AfterValidatorCreated(ctx, validatorCosmos.GetOperator()); err != nil {
 		return err
 	}
-
+	fmt.Println("ValAddressFromBech32")
 	err = events.EmitTypedEvent(ctx, &validatorType.EventCreateValidator{
 		Sender:          sdk.AccAddress(valAddr).String(),
 		Validator:       valAddr.String(),
@@ -445,6 +585,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	if err != nil {
 		return errors.Internal.Wrapf("err: %s", err.Error())
 	}
+	fmt.Println("finish create")
 	return nil
 }
 

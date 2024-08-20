@@ -1,19 +1,16 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"bytes"
+	sdkmath "cosmossdk.io/math"
 	goerrors "errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
-	"runtime/debug"
-	"sort"
-
-	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/decimalteam/ethermint/types"
 	gogotypes "github.com/gogo/protobuf/types"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"runtime/debug"
+	"sort"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
@@ -118,41 +115,6 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 			continue
 		}
 	}
-
-	//dataAddress, err := k.QueryAddressDelegation(ctx, common.HexToAddress(contracts.GetContractCenter(ctx.ChainID())))
-	isMigration, err := contracts.GetIsMigration(ctx, k.evmKeeper)
-	fmt.Println(types.GetAllEmission(ctx))
-	fmt.Println(isMigration)
-	fmt.Println(err)
-	dataAddress, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
-	ifNeedExec, err := k.QueryIfNeedExecuteFinish(ctx, common.HexToAddress(dataAddress))
-	if ifNeedExec {
-		resultExec, errexec := k.ExecuteQueueEVMAction(ctx, common.HexToAddress(dataAddress))
-		fmt.Println(resultExec)
-		fmt.Println(errexec)
-	}
-
-	notBondedPool := k.GetNotBondedPool(ctx).GetAddress()
-	bondedPool := k.GetBondedPool(ctx).GetAddress()
-	//var receiverName string
-	//var receiverPool sdk.AccAddress
-	//switch {
-	//case validator.IsBonded():
-	//	receiverName = types.BondedPoolName
-	//	receiverPool = bondedPool
-	//case validator.IsUnbonding(), validator.IsUnbonded():
-	//	receiverName = types.NotBondedPoolName
-	//	receiverPool = notBondedPool
-	//default:
-	//	return errors.ValidatorStatusUnknown
-	//}
-
-	balance := k.bankKeeper.GetBalance(ctx, notBondedPool, "del")
-	fmt.Println("notBondedPool")
-	fmt.Println(balance.Amount)
-	balanceNo := k.bankKeeper.GetBalance(ctx, bondedPool, "del")
-	fmt.Println("bondedPool")
-	fmt.Println(balanceNo.Amount)
 
 	return validatorUpdates
 }

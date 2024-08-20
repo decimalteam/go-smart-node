@@ -2,6 +2,7 @@ package contracts
 
 import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts/center"
+	"bitbucket.org/decimalteam/go-smart-node/contracts/delegation"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"math/big"
 )
 
 // evm coin center events
@@ -21,9 +23,6 @@ const (
 	NameOfSlugForGetAddressWDEL            = "wdel"
 	NameOfSlugForGetAddressMasterValidator = "master-validator"
 	EventChangeTokenCenter                 = "ContractAdded"
-
-	// DRC20MethodCreateToken defines the create method for DRC20 token
-	DRC20MethodCreateToken = "createToken"
 )
 
 // MasterValidatorValidatorAddedMeta represents a ReserveUpdated event raised by the Contracts contract.
@@ -38,7 +37,7 @@ type MasterValidatorValidatorAddedMeta struct {
 		SecurityContact string `json:"security_contact"`
 		Details         string `json:"details"`
 	} `json:"description"`
-	Commission string `json:"commission"`
+	Commission int `json:"commission"`
 }
 
 func UnpackInputsData(v interface{}, inputs abi.Arguments, data []byte) error {
@@ -72,14 +71,13 @@ func GetAddressFromContractCenter(
 ) (string, error) {
 	contractCenter, _ := center.CenterMetaData.GetAbi()
 	contract := common.HexToAddress(GetContractCenter(ctx.ChainID()))
-	methodCall := "getAddress"
+	methodCall := "getContractAddress"
 	// Address token center
 	res, err := evmKeeper.CallEVM(ctx, *contractCenter, common.Address(types.ModuleAddress), contract, false, methodCall, nameOfAddress)
 	if err != nil {
 		return new(common.Address).Hex(), err
 	}
 	data, err := contractCenter.Unpack(methodCall, res.Ret)
-	fmt.Println(data)
 	if len(data) == 0 {
 		return new(common.Address).Hex(), err
 	}
@@ -106,12 +104,52 @@ func GetIsMigration(
 	return data[0].(bool), err
 }
 
+func GetTimeUndelegate(
+	ctx sdk.Context,
+	evmKeeper *evmkeeper.Keeper,
+	contract common.Address,
+) (*big.Int, error) {
+	contractDelegation, _ := delegation.DelegationMetaData.GetAbi()
+	methodCall := "getFreezeTime"
+	// Address token center
+	res, err := evmKeeper.CallEVM(ctx, *contractDelegation, common.Address(types.ModuleAddress), contract, false, methodCall, uint8(1))
+	if err != nil {
+		return nil, err
+	}
+	data, err := contractDelegation.Unpack(methodCall, res.Ret)
+	fmt.Println(data)
+	if len(data) == 0 {
+		return nil, err
+	}
+	return data[0].(*big.Int), err
+}
+
+func GetTimeRedelegation(
+	ctx sdk.Context,
+	evmKeeper *evmkeeper.Keeper,
+	contract common.Address,
+) (*big.Int, error) {
+	contractDelegation, _ := delegation.DelegationMetaData.GetAbi()
+	methodCall := "getFreezeTime"
+	// Address token center
+	res, err := evmKeeper.CallEVM(ctx, *contractDelegation, common.Address(types.ModuleAddress), contract, false, methodCall, uint8(2))
+	if err != nil {
+		return nil, err
+	}
+	data, err := contractDelegation.Unpack(methodCall, res.Ret)
+	fmt.Println(data)
+	if len(data) == 0 {
+		return nil, err
+	}
+	return data[0].(*big.Int), err
+}
+
 func GetContractCenter(chainID string) string {
 	if helpers.IsMainnet(chainID) {
 		return "0xc108715a06f76caa96fa2c943ebf05159c29a87d"
 	} else if helpers.IsTestnet(chainID) {
 		return "0xc6e67e6b7fa068dca595d2b6d29378d1d2158b6f"
 	} else {
-		return "0x12aa4439bc5df831e070fd6fe3055f0c4da2e6d5"
+		return "0x481487aeafc60512233a08da240fc7af99c0f696"
 	}
 }

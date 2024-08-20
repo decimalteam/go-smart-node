@@ -11,7 +11,6 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"cosmossdk.io/math"
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
@@ -68,7 +67,7 @@ func (k *Keeper) PostTxProcessing(
 
 	contractTokenCenter, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressTokenCenter)
 
-	fmt.Print(contractTokenCenter)
+	//fmt.Print(contractTokenCenter)
 	tokenContractCenter, _ := tokenCenter.TokenCenterMetaData.GetAbi()
 	coinContract, _ := token.TokenMetaData.GetAbi()
 	addressWDEL, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressWDEL)

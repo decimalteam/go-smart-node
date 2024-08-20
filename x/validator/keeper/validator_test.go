@@ -3,7 +3,9 @@ package keeper_test
 import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"encoding/json"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"math/big"
 	"testing"
 	"time"
 
@@ -54,7 +56,7 @@ func bootstrapValidatorTest(t testing.TB, power int64, numAddrs int) (*app.DSC, 
 
 	remain, err := app.ValidatorKeeper.CalculateRemainStake(ctx, delegation.Stake, delegation.Stake)
 	require.NoError(t, err)
-	_, err = app.ValidatorKeeper.Undelegate(ctx, delegation.GetDelegator(), delegation.GetValidator(), delegation.Stake, remain)
+	_, err = app.ValidatorKeeper.Undelegate(ctx, delegation.GetDelegator(), delegation.GetValidator(), delegation.Stake, remain, big.NewInt(1))
 	require.NoError(t, err)
 
 	// end block to unbond genesis validator
@@ -82,6 +84,7 @@ func TestSetGetValidator(t *testing.T) {
 func TestSetGetValidatorByConsAddr(t *testing.T) {
 	_, dsc, ctx := createTestInput(t)
 	accs, vals := generateAddresses(dsc, ctx, 10, defaultCoins)
+	fmt.Println(vals[0].String())
 	val, err := validatortypes.NewValidator(vals[0], accs[0], PKs[0],
 		validatortypes.NewDescription("monik", "ident", "website", "secur", "details"), sdk.ZeroDec())
 	require.NoError(t, err, "new validator")
@@ -102,13 +105,13 @@ func TestSetGetValidatorByConsAddr(t *testing.T) {
 func TestSetValidatorByEvm(t *testing.T) {
 	_, dsc, ctx := createTestInput(t)
 
-	jsonData := "{\"operator_address\":\"0x3b5d6ed2d79628dab1163f73e7a1fdd4d5d9923b\",\"reward_address\":\"0x3b5d6ed2d79628dab1163f73e7a1fdd4d5d9923b\",\"consensus_pubkey\":\"k7+6GxAOns0lDlloIGlVJK8phsMW1PLiiT9kI42sBpE=\",\"description\":{\"moniker\":\"Name11\",\"identity\":\"https://testnet-nft-ipfs.decimalchain.com/ipfs/QmVrsHnDsT9ct3tUMD4JN2BwBTq9iQ3SzT34DzDUiuTLpL\",\"website\":\"sit111e.com\",\"security_contact\":\"ema11il@example.com\",\"details\":\"Descripti1on test11\"},\"commission\":\"11\"}"
+	jsonData := "{\"operator_address\":\"d0valoper1x6f7ww0mnfmhjevf3spnn4rw97d0d2j7ec5l9m\",\"reward_address\":\"0x3693e739fb9a777965898c0339d46e2f9af6aa5e\",\"consensus_pubkey\":\"zzF22DhElCE2ht9bBk/TxZcLB1qc3PxVCD7dgpj30og=\",\"coin\":\"DEL\",\"stake\":\"100\",\"description\":{\"moniker\":\"dsadsa\",\"identity\":\"ipfs://QmdBi1Vb2ywZkFuDD69f3Zxb2x2iMG4JNqWnYDZeBGC3rY\",\"website\":\"\",\"security_contact\":\"dsadsadsa@gmail.com\",\"details\":\"dsadsadsadsa\"},\"commission\":20}"
 
 	var validatorInfo contracts.MasterValidatorValidatorAddedMeta
 	_ = json.Unmarshal([]byte(jsonData), &validatorInfo)
 
-	valAddr, _ := sdk.ValAddressFromHex(validatorInfo.OperatorAddress[2:])
-	validatorInfo.OperatorAddress = valAddr.String()
+	valAddr, _ := sdk.ValAddressFromBech32(validatorInfo.OperatorAddress)
+	//validatorInfo.OperatorAddress = valAddr.String()
 
 	err := dsc.ValidatorKeeper.CreateValidatorFromEVM(ctx, validatorInfo)
 	require.NoError(t, err)

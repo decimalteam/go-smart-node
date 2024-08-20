@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"math/big"
 	"time"
 
 	sdkmath "cosmossdk.io/math"
@@ -38,6 +39,35 @@ func (k Keeper) GetAllDelegations(ctx sdk.Context) (delegations []types.Delegati
 		return false
 	})
 	return delegations
+}
+
+// DeleteHoldMature Delete Hold mature returns all delegations (used during genesis dump).
+func (k Keeper) DeleteHoldMature(ctx sdk.Context) {
+	var delegations []types.Delegation
+	k.IterateAllDelegations(ctx, func(delegation types.Delegation) bool {
+		delegations = append(delegations, delegation)
+		return false
+	})
+
+	for _, delegation := range delegations {
+		var resultClear []*types.StakeHold
+		for _, hold := range delegation.GetStake().GetHolds() {
+			timeHoldEnd := time.Unix(hold.HoldEndTime, 0)
+			if ctx.BlockHeader().Time.Before(timeHoldEnd) {
+				resultClear = append(resultClear, hold)
+			}
+		}
+		if len(delegation.GetStake().GetHolds()) != len(resultClear) {
+			stake := types.NewStakeCoin(sdk.Coin{Denom: delegation.Stake.Stake.Denom, Amount: delegation.Stake.Stake.Amount})
+			if resultClear != nil {
+				stake.Holds = resultClear
+			}
+
+			delStake := types.NewDelegation(delegation.GetDelegator(), delegation.GetValidator(), stake)
+
+			k.SetDelegation(ctx, delStake)
+		}
+	}
 }
 
 // GetAllDelegationsByValidator returns all delegations by validator stored in the application state.
@@ -748,6 +778,24 @@ func (k Keeper) SubCustomCoinStaked(ctx sdk.Context, coin sdk.Coin) {
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
+// TransferToHold send existing delegation transfer to hold.
+func (k Keeper) TransferToHold(
+	ctx sdk.Context, delegator sdk.AccAddress, validator types.Validator, stake types.Stake,
+) error {
+	// 1. Get or create the delegation object
+	delegation, delegationFound := k.GetDelegation(ctx, delegator, validator.GetOperator(), stake.ID)
+	if !delegationFound {
+		return errors.StakeNotExist
+	} else {
+		delegation.Stake.Holds = append(delegation.Stake.Holds, stake.Holds...)
+	}
+
+	// Update delegation
+	k.SetDelegation(ctx, delegation)
+
+	return nil
+}
+
 // Delegate performs a delegation, set/update everything necessary within the store.
 // tokenSrc indicates the bond status of the incoming funds.
 // NFT subtoken ownership MUST BE checked before
@@ -765,10 +813,6 @@ func (k Keeper) Delegate(
 		if err != nil {
 			return err
 		}
-	}
-
-	if err != nil {
-		return err
 	}
 
 	// 3. transfer coin/nft
@@ -839,6 +883,7 @@ func (k Keeper) Delegate(
 	k.SetValidatorByPowerIndex(ctx, validator)
 
 	k.AddCustomCoinStaked(ctx, stake.GetStake())
+	fmt.Println("finis staked")
 	return nil
 }
 
@@ -911,10 +956,10 @@ func (k Keeper) transferBetweenPools(ctx sdk.Context, statusSrc types.BondStatus
 // stake and remainStake must be calculated before by CalculateUnbondStake
 // It create an unbonding object and insert into the unbonding queue which will be
 // processed during EndBlocker.
-func (k Keeper) Undelegate(
-	ctx sdk.Context, delegator sdk.AccAddress, valAddress sdk.ValAddress,
-	stake types.Stake, remainStake types.Stake,
-) (time.Time, error) {
+func (k Keeper) Undelegate(ctx sdk.Context, delegator sdk.AccAddress, valAddress sdk.ValAddress, stake types.Stake, remainStake types.Stake, timestamp *big.Int) (time.Time, error) {
+
+	timestamp = big.NewInt(k.UndelegationTime(ctx).Nanoseconds())
+
 	//validator, found := k.GetValidator(ctx, valAddress)
 	//if !found {
 	//	return time.Time{}, errors.ValidatorNotFound
@@ -1020,9 +1065,8 @@ func (k Keeper) CompleteUnbonding(ctx sdk.Context, delegator sdk.AccAddress, val
 // BeginRedelegation begins unbonding / redelegation and creates a redelegation
 // record.
 // stake and remainStake MUST BE calculated before by ValidateUnbondStake
-func (k Keeper) BeginRedelegation(
-	ctx sdk.Context, delegator sdk.AccAddress, validatorSrc, validatorDst sdk.ValAddress, stake types.Stake, remainStake types.Stake,
-) (completionTime time.Time, err error) {
+func (k Keeper) BeginRedelegation(ctx sdk.Context, delegator sdk.AccAddress, validatorSrc, validatorDst sdk.ValAddress, stake, remainStake types.Stake, timestamp *big.Int) (completionTime time.Time, err error) {
+
 	// 1. preparations, checks
 	if bytes.Equal(validatorSrc, validatorDst) {
 		return time.Time{}, errors.SelfRedelegation
@@ -1033,10 +1077,10 @@ func (k Keeper) BeginRedelegation(
 		return time.Time{}, errors.BadRedelegationDst
 	}
 
-	//srcValidator, found := k.GetValidator(ctx, validatorSrc)
-	//if !found {
-	//	return time.Time{}, errors.BadRedelegationSrc
-	//}
+	_, found = k.GetValidator(ctx, validatorSrc)
+	if !found {
+		return time.Time{}, errors.BadRedelegationSrc
+	}
 
 	if k.HasMaxRedelegationEntries(ctx, delegator, validatorSrc, validatorDst) {
 		return time.Time{}, errors.MaxRedelegationEntries
@@ -1056,14 +1100,16 @@ func (k Keeper) BeginRedelegation(
 	//}
 
 	// create the unbonding delegation
-	completionTime, height := k.getBeginInfo(ctx, validatorSrc)
+
+	completionTime = ctx.BlockHeader().Time.Add(k.RedelegationTime(ctx))
+	height := ctx.BlockHeight()
 
 	red := k.SetRedelegationEntry(
 		ctx, delegator, validatorSrc, validatorDst,
 		height, completionTime, stake,
 	)
 	k.InsertRedelegationQueue(ctx, red, completionTime)
-
+	fmt.Println("finish redelegation")
 	return completionTime, nil
 }
 
@@ -1211,6 +1257,7 @@ func (k Keeper) CalculateRemainStake(
 			return types.Stake{}, errors.StakeTooSmall
 		}
 		remainStake = types.NewStakeCoin(source.Stake.Sub(stake.Stake))
+		remainStake.Holds = source.Holds
 	case types.StakeType_NFT:
 		source.Stake = k.getSumSubTokensReserve(ctx, source.ID, source.GetSubTokenIDs())
 		if !types.SetHasSubset(source.SubTokenIDs, stake.SubTokenIDs) {
