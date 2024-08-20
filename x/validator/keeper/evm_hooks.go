@@ -106,6 +106,7 @@ func (k Keeper) PostTxProcessing(
 			if eventValidatorByID.Name == "ValidatorMetaUpdated" {
 				_ = validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data)
 				var validatorInfo contracts.MasterValidatorValidatorAddedMeta
+				fmt.Println(newValidator.Meta)
 				_ = json.Unmarshal([]byte(newValidator.Meta), &validatorInfo)
 				valAddr, _ := sdk.ValAddressFromHex(msg.From.String()[2:])
 				validatorInfo.OperatorAddress = valAddr.String()
