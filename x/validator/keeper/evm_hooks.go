@@ -532,7 +532,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	if !ok {
 		return errors.InvalidConsensusPubKey
 	}
-
+	fmt.Println("ValAddressFromBech32")
 	if _, found := k.GetValidatorByConsAddrDecimal(ctx, sdk.GetConsAddress(pk)); found {
 		return errors.ValidatorPublicKeyAlreadyExists
 	}
@@ -562,7 +562,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	}
 	validatorCosmos.Online = false
 	validatorCosmos.Jailed = false
-
+	fmt.Println("ValAddressFromBech32")
 	k.SetValidator(ctx, validatorCosmos)
 	k.SetValidatorByConsAddr(ctx, validatorCosmos)
 	k.SetNewValidatorByPowerIndex(ctx, validatorCosmos)
@@ -571,7 +571,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	if err = k.AfterValidatorCreated(ctx, validatorCosmos.GetOperator()); err != nil {
 		return err
 	}
-
+	fmt.Println("ValAddressFromBech32")
 	err = events.EmitTypedEvent(ctx, &validatorType.EventCreateValidator{
 		Sender:          sdk.AccAddress(valAddr).String(),
 		Validator:       valAddr.String(),
@@ -584,6 +584,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	if err != nil {
 		return errors.Internal.Wrapf("err: %s", err.Error())
 	}
+	fmt.Println("finish create")
 	return nil
 }
 
