@@ -458,15 +458,14 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 
 	commissionChekc, _ := sdk.NewDecFromStr(validatorMeta.Commission)
 	commissionChekcInt := commissionChekc.TruncateInt()
-	if commissionChekcInt.IsZero() {
-		return errors.ValidatorCommissionIsTooSmall
-	}
+	fmt.Println("commissionChekcInt")
 	if commissionChekcInt.GT(sdk.NewInt(100)) {
 		return errors.ValidatorCommissionIsTooBig
 	}
 	if commissionChekcInt.LT(sdk.NewInt(0)) {
 		return errors.ValidatorCommissionIsTooSmall
 	}
+	fmt.Println("validatorMeta", validatorMeta)
 	commission, _ := sdkmath.NewIntFromString(validatorMeta.Commission)
 
 	rewardAddress, _ := types.GetDecimalAddressFromHex(validatorMeta.RewardAddress)
@@ -482,7 +481,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	}
 	fmt.Println("MsgCreateValidator")
 	msg := validatorType.MsgCreateValidator{
-		OperatorAddress: validatorMeta.OperatorAddress,
+		OperatorAddress: rewardAddress.String(),
 		RewardAddress:   rewardAddress.String(),
 		ConsensusPubkey: typescodec.UnsafePackAny(valPubKey),
 		Description: validatorType.Description{
