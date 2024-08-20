@@ -21,7 +21,6 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/tendermint/tendermint/crypto"
@@ -116,8 +115,16 @@ func (k Keeper) PostTxProcessing(
 					return err
 				}
 			}
+		}
+	}
+
+	for _, log := range recipient.Logs {
+		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
+		if errEvent == nil && addressValidator == strings.ToLower(log.Address.String()) {
+			fmt.Println(eventValidatorByID.Name)
 			if eventValidatorByID.Name == "ValidatorUpdated" {
-				cosmosAddressValidator, _ := sdk.ValAddressFromHex(common.BytesToAddress(log.Topics[1].Bytes()).String())
+				_ = validatorMaster.UnpackIntoInterface(&updateValidator, eventValidatorByID.Name, log.Data)
+				cosmosAddressValidator, _ := sdk.ValAddressFromHex(updateValidator.Validator.String()[2:])
 				if updateValidator.Paused == false {
 					err := k.SetOnlineFromEvm(ctx, cosmosAddressValidator.String())
 					if err != nil {
