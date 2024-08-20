@@ -103,6 +103,7 @@ func (k Keeper) PostTxProcessing(
 	for _, log := range recipient.Logs {
 		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
 		if errEvent == nil && addressValidator == strings.ToLower(log.Address.String()) {
+			fmt.Println(eventValidatorByID.Name)
 			if eventValidatorByID.Name == "ValidatorMetaUpdated" {
 				_ = validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data)
 				var validatorInfo contracts.MasterValidatorValidatorAddedMeta
@@ -116,7 +117,7 @@ func (k Keeper) PostTxProcessing(
 				}
 			}
 			if eventValidatorByID.Name == "ValidatorUpdated" {
-				cosmosAddressValidator, _ := types.GetDecimalAddressFromHex(common.BytesToAddress(log.Topics[1].Bytes()).String())
+				cosmosAddressValidator, _ := sdk.ValAddressFromHex(common.BytesToAddress(log.Topics[1].Bytes()).String())
 				if updateValidator.Paused == false {
 					err := k.SetOnlineFromEvm(ctx, cosmosAddressValidator.String())
 					if err != nil {
