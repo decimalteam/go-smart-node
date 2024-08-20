@@ -109,6 +109,7 @@ func (k Keeper) PostTxProcessing(
 				_ = json.Unmarshal([]byte(newValidator.Meta), &validatorInfo)
 				valAddr, _ := sdk.ValAddressFromBech32(msg.From.String())
 				validatorInfo.OperatorAddress = valAddr.String()
+				fmt.Println(validatorInfo)
 				err := k.CreateValidatorFromEVM(ctx, validatorInfo)
 				if err != nil {
 					return err
