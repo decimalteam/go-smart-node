@@ -101,6 +101,38 @@ func (k Keeper) PostTxProcessing(
 	stakeUpdate := 0
 
 	for _, log := range recipient.Logs {
+		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
+		if errEvent == nil && addressValidator == strings.ToLower(log.Address.String()) {
+			if eventValidatorByID.Name == "ValidatorMetaUpdated" {
+				_ = validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data)
+				var validatorInfo contracts.MasterValidatorValidatorAddedMeta
+				_ = json.Unmarshal([]byte(newValidator.Meta), &validatorInfo)
+				valAddr, _ := sdk.ValAddressFromBech32(msg.From.String())
+				validatorInfo.OperatorAddress = valAddr.String()
+				err := k.CreateValidatorFromEVM(ctx, validatorInfo)
+				if err != nil {
+					return err
+				}
+			}
+			if eventValidatorByID.Name == "ValidatorUpdated" {
+				cosmosAddressValidator, _ := types.GetDecimalAddressFromHex(common.BytesToAddress(log.Topics[1].Bytes()).String())
+				if updateValidator.Paused == false {
+					err := k.SetOnlineFromEvm(ctx, cosmosAddressValidator.String())
+					if err != nil {
+						return err
+					}
+				}
+				if updateValidator.Paused == true {
+					err := k.SetOfflineFromEvm(ctx, cosmosAddressValidator.String())
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
+
+	for _, log := range recipient.Logs {
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
 			if eventDelegationByID.Name == "WithdrawRequest" {
@@ -124,35 +156,6 @@ func (k Keeper) PostTxProcessing(
 	srcValidatorRedelegation := ""
 
 	for _, log := range recipient.Logs {
-		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
-		if errEvent == nil && addressValidator == strings.ToLower(log.Address.String()) {
-			if eventValidatorByID.Name == "ValidatorMetaUpdated" {
-				_ = validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data)
-				var validatorInfo contracts.MasterValidatorValidatorAddedMeta
-				_ = json.Unmarshal([]byte(newValidator.Meta), &validatorInfo)
-				valAddr, _ := types.GetDecimalAddressFromHex(msg.From.String())
-				validatorInfo.OperatorAddress = valAddr.String()
-				err := k.CreateValidatorFromEVM(ctx, validatorInfo)
-				if err != nil {
-					return err
-				}
-			}
-			if eventValidatorByID.Name == "ValidatorUpdated" {
-				cosmosAddressValidator, _ := types.GetDecimalAddressFromHex(common.BytesToAddress(log.Topics[1].Bytes()).String())
-				if updateValidator.Paused == false {
-					err := k.SetOnlineFromEvm(ctx, cosmosAddressValidator.String())
-					if err != nil {
-						return err
-					}
-				}
-				if updateValidator.Paused == true {
-					err := k.SetOfflineFromEvm(ctx, cosmosAddressValidator.String())
-					if err != nil {
-						return err
-					}
-				}
-			}
-		}
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil && strings.ToLower(log.Address.String()) == addressDelegation {
 			fmt.Println(eventDelegationByID.Name)
