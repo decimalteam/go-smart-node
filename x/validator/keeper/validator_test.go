@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"encoding/json"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"testing"
@@ -83,6 +84,7 @@ func TestSetGetValidator(t *testing.T) {
 func TestSetGetValidatorByConsAddr(t *testing.T) {
 	_, dsc, ctx := createTestInput(t)
 	accs, vals := generateAddresses(dsc, ctx, 10, defaultCoins)
+	fmt.Println(vals[0].String())
 	val, err := validatortypes.NewValidator(vals[0], accs[0], PKs[0],
 		validatortypes.NewDescription("monik", "ident", "website", "secur", "details"), sdk.ZeroDec())
 	require.NoError(t, err, "new validator")
@@ -103,13 +105,13 @@ func TestSetGetValidatorByConsAddr(t *testing.T) {
 func TestSetValidatorByEvm(t *testing.T) {
 	_, dsc, ctx := createTestInput(t)
 
-	jsonData := "{\"operator_address\":\"0x3b5d6ed2d79628dab1163f73e7a1fdd4d5d9923b\",\"reward_address\":\"0x3b5d6ed2d79628dab1163f73e7a1fdd4d5d9923b\",\"consensus_pubkey\":\"k7+6GxAOns0lDlloIGlVJK8phsMW1PLiiT9kI42sBpE=\",\"description\":{\"moniker\":\"Name11\",\"identity\":\"https://testnet-nft-ipfs.decimalchain.com/ipfs/QmVrsHnDsT9ct3tUMD4JN2BwBTq9iQ3SzT34DzDUiuTLpL\",\"website\":\"sit111e.com\",\"security_contact\":\"ema11il@example.com\",\"details\":\"Descripti1on test11\"},\"commission\":\"11\"}"
+	jsonData := "{\"operator_address\":\"d0valoper1ls4clm09y4fjrhffhz9hh5rdy5fmnx3ufrkc8e\",\"reward_address\":\"0xfc2b8fede5255321dd29b88b7bd06d2513b99a3c\",\"consensus_pubkey\":\"zzF22DhElCE2ht9bBk/TxZcLB1qc3PxVCD7dgpj30og=\",\"description\":{\"moniker\":\"Name11\",\"identity\":\"https://testnet-nft-ipfs.decimalchain.com/ipfs/QmVrsHnDsT9ct3tUMD4JN2BwBTq9iQ3SzT34DzDUiuTLpL\",\"website\":\"sit111e.com\",\"security_contact\":\"ema11il@example.com\",\"details\":\"Descripti1on test11\"},\"commission\":\"11\"}"
 
 	var validatorInfo contracts.MasterValidatorValidatorAddedMeta
 	_ = json.Unmarshal([]byte(jsonData), &validatorInfo)
 
-	valAddr, _ := sdk.ValAddressFromHex(validatorInfo.OperatorAddress[2:])
-	validatorInfo.OperatorAddress = valAddr.String()
+	valAddr, _ := sdk.ValAddressFromBech32(validatorInfo.OperatorAddress)
+	//validatorInfo.OperatorAddress = valAddr.String()
 
 	err := dsc.ValidatorKeeper.CreateValidatorFromEVM(ctx, validatorInfo)
 	require.NoError(t, err)

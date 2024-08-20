@@ -480,7 +480,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 	if err != nil {
 		return err
 	}
-
+	fmt.Println("MsgCreateValidator")
 	msg := validatorType.MsgCreateValidator{
 		OperatorAddress: validatorMeta.OperatorAddress,
 		RewardAddress:   rewardAddress.String(),
@@ -495,7 +495,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 		Commission: sdk.NewDecFromInt(commission),
 		Stake:      sdk.Coin{},
 	}
-
+	fmt.Println("ValAddressFromBech32")
 	valAddr, err := sdk.ValAddressFromBech32(validatorMeta.OperatorAddress)
 	if err != nil {
 		return err
