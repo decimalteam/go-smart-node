@@ -105,7 +105,7 @@ func TestSetGetValidatorByConsAddr(t *testing.T) {
 func TestSetValidatorByEvm(t *testing.T) {
 	_, dsc, ctx := createTestInput(t)
 
-	jsonData := "{\"operator_address\":\"d0valoper1ls4clm09y4fjrhffhz9hh5rdy5fmnx3ufrkc8e\",\"reward_address\":\"0xfc2b8fede5255321dd29b88b7bd06d2513b99a3c\",\"consensus_pubkey\":\"zzF22DhElCE2ht9bBk/TxZcLB1qc3PxVCD7dgpj30og=\",\"description\":{\"moniker\":\"Name11\",\"identity\":\"https://testnet-nft-ipfs.decimalchain.com/ipfs/QmVrsHnDsT9ct3tUMD4JN2BwBTq9iQ3SzT34DzDUiuTLpL\",\"website\":\"sit111e.com\",\"security_contact\":\"ema11il@example.com\",\"details\":\"Descripti1on test11\"},\"commission\":\"11\"}"
+	jsonData := "{\"operator_address\":\"d0valoper1x6f7ww0mnfmhjevf3spnn4rw97d0d2j7ec5l9m\",\"reward_address\":\"0x3693e739fb9a777965898c0339d46e2f9af6aa5e\",\"consensus_pubkey\":\"zzF22DhElCE2ht9bBk/TxZcLB1qc3PxVCD7dgpj30og=\",\"coin\":\"DEL\",\"stake\":\"100\",\"description\":{\"moniker\":\"dsadsa\",\"identity\":\"ipfs://QmdBi1Vb2ywZkFuDD69f3Zxb2x2iMG4JNqWnYDZeBGC3rY\",\"website\":\"\",\"security_contact\":\"dsadsadsa@gmail.com\",\"details\":\"dsadsadsadsa\"},\"commission\":20}"
 
 	var validatorInfo contracts.MasterValidatorValidatorAddedMeta
 	_ = json.Unmarshal([]byte(jsonData), &validatorInfo)

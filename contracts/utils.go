@@ -37,7 +37,7 @@ type MasterValidatorValidatorAddedMeta struct {
 		SecurityContact string `json:"security_contact"`
 		Details         string `json:"details"`
 	} `json:"description"`
-	Commission string `json:"commission"`
+	Commission int `json:"commission"`
 }
 
 func UnpackInputsData(v interface{}, inputs abi.Arguments, data []byte) error {

@@ -457,7 +457,7 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 
 func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.MasterValidatorValidatorAddedMeta) error {
 
-	commissionChekc, _ := sdk.NewDecFromStr(validatorMeta.Commission)
+	commissionChekc, _ := sdk.NewDecFromStr(fmt.Sprintf("%d", validatorMeta.Commission))
 	commissionChekcInt := commissionChekc.TruncateInt()
 	fmt.Println("commissionChekcInt")
 	if commissionChekcInt.GT(sdk.NewInt(100)) {
@@ -467,7 +467,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 		return errors.ValidatorCommissionIsTooSmall
 	}
 	fmt.Println("validatorMeta", validatorMeta)
-	commission, _ := sdkmath.NewIntFromString(validatorMeta.Commission)
+	commission, _ := sdkmath.NewIntFromString(fmt.Sprintf("%d", validatorMeta.Commission))
 
 	rewardAddress, _ := types.GetDecimalAddressFromHex(validatorMeta.RewardAddress)
 
