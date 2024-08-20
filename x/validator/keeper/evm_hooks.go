@@ -124,7 +124,7 @@ func (k Keeper) PostTxProcessing(
 		if errEvent == nil && addressValidator == strings.ToLower(log.Address.String()) {
 			fmt.Println(eventValidatorByID.Name)
 			if eventValidatorByID.Name == "ValidatorUpdated" {
-				_ = validatorMaster.UnpackIntoInterface(&updateValidator, eventValidatorByID.Name, log.Data)
+				_ = contracts.UnpackLog(validatorMaster, &updateValidator, eventValidatorByID.Name, log)
 				fmt.Println(updateValidator)
 				cosmosAddressValidator, _ := sdk.ValAddressFromHex(updateValidator.Validator.String()[2:])
 				if updateValidator.Paused == false {
