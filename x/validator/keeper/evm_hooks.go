@@ -97,6 +97,7 @@ func (k Keeper) PostTxProcessing(
 	stakedHold := false
 	transferCompleted := false
 	withdrawCompleted := false
+	createValidator := false
 	stakeUpdate := 0
 
 	for _, log := range recipient.Logs {
@@ -104,6 +105,7 @@ func (k Keeper) PostTxProcessing(
 		if errEvent == nil && addressValidator == strings.ToLower(log.Address.String()) {
 			fmt.Println(eventValidatorByID.Name)
 			if eventValidatorByID.Name == "ValidatorMetaUpdated" {
+				createValidator = true
 				_ = validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data)
 				var validatorInfo contracts.MasterValidatorValidatorAddedMeta
 				fmt.Println(newValidator.Meta)
@@ -123,8 +125,8 @@ func (k Keeper) PostTxProcessing(
 		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
 		if errEvent == nil && addressValidator == strings.ToLower(log.Address.String()) {
 			fmt.Println(eventValidatorByID.Name)
-			if eventValidatorByID.Name == "ValidatorUpdated" {
-				_ = validatorMaster.UnpackIntoInterface(&updateValidator, eventValidatorByID.Name, log.Data)
+			if eventValidatorByID.Name == "ValidatorUpdated" && !createValidator {
+				_ = contracts.UnpackLog(validatorMaster, &updateValidator, eventValidatorByID.Name, log)
 				fmt.Println(updateValidator)
 				cosmosAddressValidator, _ := sdk.ValAddressFromHex(updateValidator.Validator.String()[2:])
 				if updateValidator.Paused == false {
