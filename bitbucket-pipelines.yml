@@ -1,5 +1,5 @@
 ---
-image: python:3.8.18
+image: python:3.8
 
 definitions:
   steps:
@@ -89,6 +89,38 @@ definitions:
             else echo 0; fi
 
     - parallel: &repo_build
+
+        - step:
+             name: Build on Centos 7 (latest)
+             image: centos:centos7
+             caches:
+               - go-src
+               - go-pkg
+             script:
+               - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
+               - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
+               - dnf install -y epel-release
+               - dnf install -y leveldb leveldb-devel snappy gcc git which wget make --nobest
+               - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+               - tar -xvf go1.21.4.linux-amd64.tar.gz
+               - mv go /usr/local
+               - export GOROOT=/usr/local/go
+               - export GOPATH=~/go
+               - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+               - go version
+               - go env
+               - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+               - mkdir -pv "${PACKAGE_PATH}"
+               - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+               - export GO111MODULE=on
+               - cd "${PACKAGE_PATH}"
+               - go get ./...
+               - go test ./...
+               - make install
+               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
+               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
+             artifacts:
+               - build/**
 
         - step:
              name: Build on Centos 8 (latest)
@@ -429,12 +461,10 @@ pipelines:
     master:
       - step: *mirror
       - step: *build
-      - step: *worker-docker-build
 
     stage:
       - step: *mirror
       - step: *build
-      - step: *worker-docker-build
       - step:
           deployment: Staging
           <<: *deploy
@@ -442,7 +472,6 @@ pipelines:
     development:
       - step: *mirror
       - step: *build
-      - step: *worker-docker-build
       - step:
           deployment: Test
           <<: *deploy
@@ -606,6 +635,7 @@ pipelines:
                 DELETE_FLAG: "true"
                 DEBUG: "true"
                 EXTRA_ARGS: "-aP"
+      - step: *worker-docker-build
 
     build-and-deploy-binary-files-to-repo-TESTnet:
       - parallel: *repo_build
@@ -622,6 +652,7 @@ pipelines:
                 DELETE_FLAG: "true"
                 DEBUG: "true"
                 EXTRA_ARGS: "-aP"
+      - step: *worker-docker-build
 
     build-and-deploy-binary-files-to-repo-MAINnet:
       - parallel: *repo_build
@@ -638,3 +669,4 @@ pipelines:
                 DELETE_FLAG: "true"
                 DEBUG: "true"
                 EXTRA_ARGS: "-aP"
+      - step: *worker-docker-build
