@@ -97,8 +97,8 @@ definitions:
                - go-src
                - go-pkg
              script:
-               - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
-               - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
+               - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+               - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
                - dnf install -y epel-release
                - dnf install -y leveldb leveldb-devel snappy gcc git which wget make --nobest
                - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
