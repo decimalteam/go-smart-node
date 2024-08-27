@@ -116,6 +116,16 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 		}
 	}
 
+	// send coin reserve
+
+	nbPool := k.GetNotBondedPool(ctx).GetAddress()
+	coins := k.bankKeeper.GetAllBalances(ctx, nbPool)
+	fmt.Println(coins)
+
+	bPool := k.GetBondedPool(ctx).GetAddress()
+	coins = k.bankKeeper.GetAllBalances(ctx, bPool)
+	fmt.Println(coins)
+
 	return validatorUpdates
 }
 
