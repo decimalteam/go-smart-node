@@ -71,7 +71,7 @@ func (k *Keeper) PostTxProcessing(
 	tokenContractCenter, _ := tokenCenter.TokenCenterMetaData.GetAbi()
 	coinContract, _ := token.TokenMetaData.GetAbi()
 	addressWDEL, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressWDEL)
-	coinDel, _ := k.GetCoin(ctx, "del")
+	coinDel, _ := k.GetCoin(ctx, k.GetBaseDenom(ctx))
 	if coinDel.DRC20Contract == "" || coinDel.DRC20Contract != addressWDEL {
 		_ = k.UpdateCoinDRC(ctx, coinDel.Denom, addressWDEL)
 		coinDel.DRC20Contract = addressWDEL
