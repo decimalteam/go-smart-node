@@ -58,6 +58,7 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 	fmt.Println("coins")
 	nbPool := k.GetNotBondedPool(ctx).GetAddress()
 	coins := k.bankKeeper.GetAllBalances(ctx, nbPool)
+	fmt.Println(nbPool.String())
 	fmt.Println(coins)
 
 	bPool := k.GetBondedPool(ctx).GetAddress()
