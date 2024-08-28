@@ -86,12 +86,13 @@ func (k *Keeper) PostTxProcessing(
 	for _, log := range recipient.Logs {
 		eventCoinByID, errEvent := coinContract.EventByID(log.Topics[0])
 		if errEvent == nil {
+			fmt.Println(eventCoinByID.Name)
 			if eventCoinByID.Name == "ReserveUpdated" {
 				_, err = k.GetCoinByDRC(ctx, log.Address.String())
 				if err != nil {
 					continue
 				}
-				_ = contracts.UnpackInputsData(&tokenUpdated, eventCoinByID.Inputs, log.Data)
+				_ = contracts.UnpackLog(coinContract, &tokenUpdated, eventCoinByID.Name, log)
 				_ = k.UpdateCoinFromEvent(ctx, tokenUpdated, log.Address.String())
 			}
 		}
@@ -105,10 +106,13 @@ func (k *Keeper) PostTxProcessing(
 		if errEvent == nil {
 			fmt.Println(eventCenterByID.Name)
 			if eventCenterByID.Name == "TokenDeployed" {
-				_ = tokenContractCenter.UnpackIntoInterface(&tokenAddress, eventCenterByID.Name, log.Data)
+				_ = contracts.UnpackLog(tokenContractCenter, &tokenAddress, eventCenterByID.Name, log)
+				fmt.Println(tokenUpdated)
+				fmt.Println(tokenAddress)
 				if tokenUpdated.NewReserve == nil {
 					return fmt.Errorf("reserve is nil")
 				}
+				fmt.Println(tokenUpdated)
 				err = k.CreateCoinEvent(ctx, tokenUpdated.NewReserve, tokenAddress.Meta, tokenAddress.TokenAddress.String())
 				if err != nil {
 					return status.Error(codes.Internal, err.Error())
