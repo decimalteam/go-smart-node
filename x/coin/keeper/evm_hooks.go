@@ -11,7 +11,6 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"cosmossdk.io/math"
-	"errors"
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -107,8 +106,8 @@ func (k *Keeper) PostTxProcessing(
 			fmt.Println(eventCenterByID.Name)
 			if eventCenterByID.Name == "TokenDeployed" {
 				_ = tokenContractCenter.UnpackIntoInterface(&tokenAddress, eventCenterByID.Name, log.Data)
-				if tokenUpdated.NewReserve.Int64() == 0 {
-					return errors.New("reserve is 0")
+				if tokenUpdated.NewReserve == nil {
+					return fmt.Errorf("reserve is nil")
 				}
 				err = k.CreateCoinEvent(ctx, tokenUpdated.NewReserve, tokenAddress.Meta, tokenAddress.TokenAddress.String())
 				if err != nil {
@@ -149,7 +148,7 @@ func (k *Keeper) CreateCoinEvent(ctx sdk.Context, reserve *big.Int, token tokenC
 	coinDenom := token.Symbol
 
 	if reserve == nil {
-		return errors.New("reserve is nil")
+		return fmt.Errorf("reserve is nil")
 	}
 
 	// Ensure coin does not exist
