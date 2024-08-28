@@ -11,6 +11,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"cosmossdk.io/math"
+	"errors"
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -84,19 +85,15 @@ func (k *Keeper) PostTxProcessing(
 	var tokenUpdated token.TokenReserveUpdated
 
 	for _, log := range recipient.Logs {
-		if log.Address.String() != contractTokenCenter {
-			continue
-		}
-		eventCenterByID, errEvent := tokenContractCenter.EventByID(log.Topics[0])
+		eventCoinByID, errEvent := coinContract.EventByID(log.Topics[0])
 		if errEvent == nil {
-			fmt.Println(eventCenterByID.Name)
-			if eventCenterByID.Name == "TokenDeployed" {
-				_ = tokenContractCenter.UnpackIntoInterface(&tokenAddress, eventCenterByID.Name, log.Data)
-
-				err = k.CreateCoinEvent(ctx, tokenUpdated.NewReserve, tokenAddress.Meta, tokenAddress.TokenAddress.String())
+			if eventCoinByID.Name == "ReserveUpdated" {
+				_, err = k.GetCoinByDRC(ctx, log.Address.String())
 				if err != nil {
-					return status.Error(codes.Internal, err.Error())
+					return nil
 				}
+				_ = contracts.UnpackInputsData(&tokenUpdated, eventCoinByID.Inputs, log.Data)
+				_ = k.UpdateCoinFromEvent(ctx, tokenUpdated, log.Address.String())
 			}
 		}
 	}
@@ -105,11 +102,18 @@ func (k *Keeper) PostTxProcessing(
 		if log.Address.String() != contractTokenCenter {
 			continue
 		}
-		eventCoinByID, errEvent := coinContract.EventByID(log.Topics[0])
+		eventCenterByID, errEvent := tokenContractCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
-			if eventCoinByID.Name == "ReserveUpdated" {
-				_ = contracts.UnpackInputsData(&tokenUpdated, eventCoinByID.Inputs, log.Data)
-				_ = k.UpdateCoinFromEvent(ctx, tokenUpdated, log.Address.String())
+			fmt.Println(eventCenterByID.Name)
+			if eventCenterByID.Name == "TokenDeployed" {
+				_ = tokenContractCenter.UnpackIntoInterface(&tokenAddress, eventCenterByID.Name, log.Data)
+				if tokenUpdated.NewReserve.Int64() == 0 {
+					return errors.New("reserve is 0")
+				}
+				err = k.CreateCoinEvent(ctx, tokenUpdated.NewReserve, tokenAddress.Meta, tokenAddress.TokenAddress.String())
+				if err != nil {
+					return status.Error(codes.Internal, err.Error())
+				}
 			}
 		}
 	}
@@ -145,7 +149,7 @@ func (k *Keeper) CreateCoinEvent(ctx sdk.Context, reserve *big.Int, token tokenC
 	coinDenom := token.Symbol
 
 	if reserve == nil {
-		reserve = big.NewInt(0)
+		return errors.New("reserve is nil")
 	}
 
 	// Ensure coin does not exist
