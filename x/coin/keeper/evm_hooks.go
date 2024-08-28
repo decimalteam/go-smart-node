@@ -11,6 +11,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	"cosmossdk.io/math"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
@@ -88,6 +89,7 @@ func (k *Keeper) PostTxProcessing(
 		}
 		eventCenterByID, errEvent := tokenContractCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
+			fmt.Println(eventCenterByID.Name)
 			if eventCenterByID.Name == "TokenDeployed" {
 				_ = tokenContractCenter.UnpackIntoInterface(&tokenAddress, eventCenterByID.Name, log.Data)
 
@@ -96,6 +98,12 @@ func (k *Keeper) PostTxProcessing(
 					return status.Error(codes.Internal, err.Error())
 				}
 			}
+		}
+	}
+
+	for _, log := range recipient.Logs {
+		if log.Address.String() != contractTokenCenter {
+			continue
 		}
 		eventCoinByID, errEvent := coinContract.EventByID(log.Topics[0])
 		if errEvent == nil {
