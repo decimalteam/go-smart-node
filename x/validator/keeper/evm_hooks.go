@@ -227,13 +227,13 @@ func (k Keeper) PostTxProcessing(
 
 			if eventDelegationByID.Name == "WithdrawRequest" {
 				_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationByID.Name, log.Data)
-				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
+				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenUndelegate.FrozenStake.Stake.Token.String())
 				if err != nil {
-					symbolToken, _ := k.QuerySymbolToken(ctx, tokenDelegate.Stake.Token)
+					symbolToken, _ := k.QuerySymbolToken(ctx, tokenUndelegate.FrozenStake.Stake.Token)
 					coinUpdate, err := k.coinKeeper.GetCoin(ctx, symbolToken)
 					if err == nil {
-						_ = k.coinKeeper.UpdateCoinDRC(ctx, symbolToken, tokenDelegate.Stake.Token.String())
-						coinUpdate.DRC20Contract = tokenDelegate.Stake.Token.String()
+						_ = k.coinKeeper.UpdateCoinDRC(ctx, symbolToken, tokenUndelegate.FrozenStake.Stake.Token.String())
+						coinUpdate.DRC20Contract = tokenUndelegate.FrozenStake.Stake.Token.String()
 						k.coinKeeper.SetCoin(ctx, coinUpdate)
 					}
 				}
@@ -379,6 +379,10 @@ func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.Dele
 
 	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, tokenUndelegate.FrozenStake.Stake.Token.String())
 	if err != nil {
+		return errors.CoinDoesNotExist
+	}
+
+	if coinStake.Denom == "" {
 		return errors.CoinDoesNotExist
 	}
 
