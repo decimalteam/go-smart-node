@@ -90,7 +90,7 @@ func (k *Keeper) PostTxProcessing(
 			if eventCoinByID.Name == "ReserveUpdated" {
 				_, err = k.GetCoinByDRC(ctx, log.Address.String())
 				if err != nil {
-					return nil
+					continue
 				}
 				_ = contracts.UnpackInputsData(&tokenUpdated, eventCoinByID.Inputs, log.Data)
 				_ = k.UpdateCoinFromEvent(ctx, tokenUpdated, log.Address.String())
