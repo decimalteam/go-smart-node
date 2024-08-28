@@ -237,6 +237,7 @@ func (k Keeper) PostTxProcessing(
 						k.coinKeeper.SetCoin(ctx, coinUpdate)
 					}
 				}
+				tokenUndelegate.FrozenStake.Stake.Amount = tokenDelegationAmount.ChangedAmount
 				fmt.Println(tokenUndelegate)
 				err = k.RequestWithdraw(ctx, tokenUndelegate)
 				if err != nil {
