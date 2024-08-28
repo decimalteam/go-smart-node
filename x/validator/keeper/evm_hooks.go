@@ -327,6 +327,10 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 		return errors.CoinDoesNotExist
 	}
 
+	if coinStake.Denom == "" {
+		return errors.CoinDoesNotExist
+	}
+
 	stake := validatorType.NewStakeCoin(sdk.Coin{Denom: coinStake.Denom, Amount: math.NewIntFromBigInt(stakeData.Stake.Amount)})
 
 	if stakeData.Stake.HoldTimestamp.Int64() != 0 {
