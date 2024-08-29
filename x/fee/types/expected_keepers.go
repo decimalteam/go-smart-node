@@ -13,7 +13,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 )
 
 type FeeKeeper interface {
@@ -34,6 +34,7 @@ type FeeMarketKeeper interface {
 
 type CoinKeeper interface {
 	GetCoin(ctx sdk.Context, denom string) (coin cointypes.Coin, err error)
+	GetBaseDenom(ctx sdk.Context) string
 	BurnPoolCoins(ctx sdk.Context, poolName string, coins sdk.Coins) error
 }
 

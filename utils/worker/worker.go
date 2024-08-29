@@ -149,8 +149,9 @@ func (w *Worker) GetBlockResult(height int64, txNum int) *Block {
 	web3Body := web3Block.Body()
 	web3Transactions := make([]*TransactionEVM, len(web3Body.Transactions))
 	for i, tx := range web3Body.Transactions {
-		msg, err := tx.AsMessage(web3types.NewLondonSigner(w.web3ChainId), nil)
-		w.panicError(err)
+
+		from, _ := web3types.NewLondonSigner(w.web3ChainId).Sender(tx)
+
 		web3Transactions[i] = &TransactionEVM{
 			Type:             web3hexutil.Uint64(tx.Type()),
 			Hash:             tx.Hash(),
@@ -158,16 +159,16 @@ func (w *Worker) GetBlockResult(height int64, txNum int) *Block {
 			BlockHash:        web3Block.Hash(),
 			BlockNumber:      web3hexutil.Uint64(web3Block.NumberU64()),
 			TransactionIndex: web3hexutil.Uint64(uint64(i)),
-			From:             msg.From(),
-			To:               msg.To(),
-			Value:            (*web3hexutil.Big)(msg.Value()),
-			Data:             web3hexutil.Bytes(msg.Data()),
-			Gas:              web3hexutil.Uint64(msg.Gas()),
-			GasPrice:         (*web3hexutil.Big)(msg.GasPrice()),
+			From:             from,
+			To:               tx.To(),
+			Value:            (*web3hexutil.Big)(tx.Value()),
+			Data:             web3hexutil.Bytes(tx.Data()),
+			Gas:              web3hexutil.Uint64(tx.Gas()),
+			GasPrice:         (*web3hexutil.Big)(tx.GasPrice()),
 			ChainId:          (*web3hexutil.Big)(tx.ChainId()),
-			AccessList:       msg.AccessList(),
-			GasTipCap:        (*web3hexutil.Big)(msg.GasTipCap()),
-			GasFeeCap:        (*web3hexutil.Big)(msg.GasFeeCap()),
+			AccessList:       tx.AccessList(),
+			GasTipCap:        (*web3hexutil.Big)(tx.GasTipCap()),
+			GasFeeCap:        (*web3hexutil.Big)(tx.GasFeeCap()),
 		}
 	}
 	web3Receipts := <-web3ReceiptsChan

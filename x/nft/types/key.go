@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/binary"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
@@ -49,6 +48,7 @@ const (
 var (
 	keyPrefixCollection         = []byte{0x11} // prefix for each key to NFT collections
 	keyPrefixCollectionCounter  = []byte{0x12} // prefix for each key to NFT collection counter object
+	keyPrefixCollectionDRC      = []byte{0x13} // prefix for each key to NFT collections
 	keyPrefixToken              = []byte{0x21} // prefix for each key to NFT token
 	keyPrefixTokenCounter       = []byte{0x22} // prefix for each key to NFT token counter object
 	keyPrefixSubToken           = []byte{0x31} // prefix for each key to NFT sub-token
@@ -65,6 +65,11 @@ func GetCollectionsKey() []byte {
 // GetCollectionsByCreatorKey returns the key prefix of the NFT collections created by specified creator.
 func GetCollectionsByCreatorKey(creator sdk.AccAddress) []byte {
 	return append(GetCollectionsKey(), creator.Bytes()...)
+}
+
+// GetCollectionsByAddressDRCKey returns the key prefix of the NFT collections created by specified creator.
+func GetCollectionsByAddressDRCKey(addressDRC string) []byte {
+	return append(keyPrefixCollectionDRC, []byte(addressDRC)...)
 }
 
 // GetCollectionKey returns the key of the NFT collection.

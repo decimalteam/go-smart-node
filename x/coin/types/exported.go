@@ -19,6 +19,8 @@ type CoinKeeper interface {
 	GetCoin(ctx sdk.Context, denom string) (coin Coin, err error)
 	SetCoin(ctx sdk.Context, coin Coin)
 	UpdateCoinVR(ctx sdk.Context, denom string, volume sdkmath.Int, reserve sdkmath.Int) error
+	IsCoinExistsByDRC(ctx sdk.Context, addressDRC string) bool
+	GetCoinByDRC(ctx sdk.Context, addressDRC string) (coin Coin, err error)
 
 	// Checks
 	IsCheckRedeemed(ctx sdk.Context, check *Check) bool

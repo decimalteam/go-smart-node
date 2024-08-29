@@ -1,0 +1,10 @@
+FROM golang:1.21-alpine as builder
+RUN apk add build-base
+WORKDIR /usr/local/src
+COPY . .
+RUN go get ./...
+RUN go build cmd/worker/*
+
+FROM alpine
+COPY --from=builder /usr/local/src/main /usr/local/bin/worker
+CMD ["/usr/local/bin/worker"]

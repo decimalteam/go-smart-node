@@ -4,6 +4,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/utils/formulas"
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"strings"
 
 	sdkmath "cosmossdk.io/math"
@@ -55,7 +56,7 @@ func (k Querier) Validators(c context.Context, req *types.QueryValidatorsRequest
 			val.TotalRewards = rs.TotalRewards
 			val.Stake = rs.Stake
 		}
-
+		val.DRC20Contract = common.BytesToAddress(val.GetOperator()).String()
 		return val, nil
 	}, func() *types.Validator {
 		return &types.Validator{}
@@ -92,6 +93,8 @@ func (k Querier) Validator(c context.Context, req *types.QueryValidatorRequest) 
 	if !found {
 		return nil, status.Errorf(codes.NotFound, "validator %s not found", req.Validator)
 	}
+
+	validator.DRC20Contract = common.BytesToAddress(validator.GetOperator()).String()
 
 	return &types.QueryValidatorResponse{Validator: validator}, nil
 }

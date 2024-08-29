@@ -13,8 +13,8 @@ import (
 	sdkTx "github.com/cosmos/cosmos-sdk/types/tx"
 	signingtypes "github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
-	etherminthd "github.com/evmos/ethermint/crypto/hd"
-	"github.com/evmos/ethermint/encoding"
+	etherminthd "github.com/decimalteam/ethermint/crypto/hd"
+	"github.com/decimalteam/ethermint/encoding"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 )
@@ -71,7 +71,7 @@ type cliTestResulter struct {
 	msgs []sdk.Msg
 }
 
-//TxConfig
+// TxConfig
 func (c *cliTestResulter) TxEncoder() sdk.TxEncoder {
 	return func(tx sdk.Tx) ([]byte, error) {
 		return nil, nil

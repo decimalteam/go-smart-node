@@ -12,11 +12,11 @@ import (
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
-	ibcante "github.com/cosmos/ibc-go/v5/modules/core/ante"
-	ibckeeper "github.com/cosmos/ibc-go/v5/modules/core/keeper"
+	ibcante "github.com/cosmos/ibc-go/v6/modules/core/ante"
+	ibckeeper "github.com/cosmos/ibc-go/v6/modules/core/keeper"
 
-	ethante "github.com/evmos/ethermint/app/ante"
-	evmtypes "github.com/evmos/ethermint/x/evm/types"
+	ethante "github.com/decimalteam/ethermint/app/ante"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
 	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
@@ -119,31 +119,31 @@ func newCosmosAnteHandler(options HandlerOptions) sdk.AnteHandler {
 
 // newCosmosAnteHandlerEip712 creates the ante handler for transactions signed with EIP-712
 // keep in sync with newCosmosAnteHandler, except signature verification
-func newCosmosAnteHandlerEip712(options HandlerOptions) sdk.AnteHandler {
-	return sdk.ChainAnteDecorators(
-		ethante.RejectMessagesDecorator{}, // reject MsgEthereumTxs
-		NewSetUpContextDecorator(),
-		NewCountMsgDecorator(),
-		// NOTE: extensions option decorator removed
-		// authante.NewRejectExtensionOptionsDecorator(),
-		ethante.NewMinGasPriceDecorator(options.FeeMarketKeeper, options.EvmKeeper),
-		authante.NewValidateBasicDecorator(),
-		authante.NewTxTimeoutHeightDecorator(),
-		authante.NewValidateMemoDecorator(options.AccountKeeper),
-		authante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		NewPreCreateAccountDecorator(options.AccountKeeper), // should be before SetPubKeyDecorator
-		NewFeeDecorator(options.CoinKeeper, options.BankKeeper, options.AccountKeeper, options.FeeKeeper, options.Cdc),
-		NewValidatorCommissionDecorator(options.Cdc),
-		// SetPubKeyDecorator must be called before all signature verification decorators
-		authante.NewSetPubKeyDecorator(options.AccountKeeper),
-		authante.NewValidateSigCountDecorator(options.AccountKeeper),
-		authante.NewSigGasConsumeDecorator(options.AccountKeeper, options.SigGasConsumer),
-		// Note: signature verification uses EIP instead of the cosmos signature validator
-		ethante.NewLegacyEip712SigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
-		NewPostCreateAccountDecorator(options.AccountKeeper), // should be after SigVerificationDecorator
-		NewLegacyActualizerDecorator(options.LegacyKeeper),
-		authante.NewIncrementSequenceDecorator(options.AccountKeeper),
-		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
-		ethante.NewGasWantedDecorator(options.EvmKeeper, options.FeeMarketKeeper),
-	)
-}
+//func newCosmosAnteHandlerEip712(options HandlerOptions) sdk.AnteHandler {
+//	return sdk.ChainAnteDecorators(
+//		ethante.RejectMessagesDecorator{}, // reject MsgEthereumTxs
+//		NewSetUpContextDecorator(),
+//		NewCountMsgDecorator(),
+//		// NOTE: extensions option decorator removed
+//		// authante.NewRejectExtensionOptionsDecorator(),
+//		ethante.NewMinGasPriceDecorator(options.FeeMarketKeeper, options.EvmKeeper),
+//		authante.NewValidateBasicDecorator(),
+//		authante.NewTxTimeoutHeightDecorator(),
+//		authante.NewValidateMemoDecorator(options.AccountKeeper),
+//		authante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
+//		NewPreCreateAccountDecorator(options.AccountKeeper), // should be before SetPubKeyDecorator
+//		NewFeeDecorator(options.CoinKeeper, options.BankKeeper, options.AccountKeeper, options.FeeKeeper, options.Cdc),
+//		NewValidatorCommissionDecorator(options.Cdc),
+//		// SetPubKeyDecorator must be called before all signature verification decorators
+//		authante.NewSetPubKeyDecorator(options.AccountKeeper),
+//		authante.NewValidateSigCountDecorator(options.AccountKeeper),
+//		authante.NewSigGasConsumeDecorator(options.AccountKeeper, options.SigGasConsumer),
+//		// Note: signature verification uses EIP instead of the cosmos signature validator
+//		ethante.NewLegacyEip712SigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
+//		NewPostCreateAccountDecorator(options.AccountKeeper), // should be after SigVerificationDecorator
+//		NewLegacyActualizerDecorator(options.LegacyKeeper),
+//		authante.NewIncrementSequenceDecorator(options.AccountKeeper),
+//		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
+//		ethante.NewGasWantedDecorator(options.EvmKeeper, options.FeeMarketKeeper),
+//	)
+//}

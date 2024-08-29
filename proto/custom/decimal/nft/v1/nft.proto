@@ -8,6 +8,18 @@ import "cosmos/base/v1beta1/coin.proto";
 
 option go_package = "bitbucket.org/decimalteam/go-smart-node/x/nft/types";
 
+// StakeType is the type of a delegation stake.
+enum NftType {
+  option (gogoproto.goproto_enum_prefix) = true;
+
+  // UNSPECIFIED defines an invalid stake type.
+  NFT_TYPE_UNSPECIFIED = 0 [ (gogoproto.enumvalue_customname) = "Unspecified" ];
+  // COIN defines the type for stakes in coin.
+  NFT_TYPE_721 = 1 [ (gogoproto.enumvalue_customname) = "NFT721" ];
+  // NFT defines the type for stakes in NFT.
+  NFT_TYPE_1155 = 2 [ (gogoproto.enumvalue_customname) = "NFT1155" ];
+}
+
 // Collection defines NFT collection which is just a set of NFT tokens.
 message Collection {
   option (gogoproto.equal) = true;
@@ -23,6 +35,12 @@ message Collection {
 
   // tokens defines the list of NFT tokens containing in the NFT collection.
   repeated Token tokens = 4 [ (gogoproto.castrepeated) = "Tokens" ];
+
+  // type of nft on drc type contract.
+  NftType typeNft = 5;
+
+  // address nft defines the NFT collection name.
+  string addressDRC = 6;
 }
 
 // CollectionCounter defines object containing counter of minted NFT tokens in the collection.

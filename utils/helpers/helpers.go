@@ -15,12 +15,51 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+const (
+	// MainnetChainID defines the Decimal EIP155 chain ID for mainnet
+	MainnetChainID = "decimal_75"
+
+	// TestnetChainID defines the Decimal EIP155 chain ID for testnet
+	TestnetChainID = "decimal_202020-"
+	// TestnetBaseDenom defines the Decimal testnet denomination
+	TestnetBaseDenom = "tdel"
+
+	// DevnetChainID defines the Decimal EIP155 chain ID for devnet
+	DevnetChainID = "decimal_20202020-"
+
+	// BaseDenom defines the Decimal mainnet denomination
+	BaseDenom = "del"
+)
+
 var (
 	bigE15 = new(big.Int).Exp(big.NewInt(10), big.NewInt(15), nil)
 	bigE18 = new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)
 	sdkE15 = sdkmath.NewIntFromBigInt(bigE15)
 	sdkE18 = sdkmath.NewIntFromBigInt(bigE18)
 )
+
+// IsMainnet returns true if the chain-id has the Decimal mainnet EIP155 chain prefix.
+func IsMainnet(chainID string) bool {
+	return strings.HasPrefix(chainID, MainnetChainID)
+}
+
+// GetBaseDenom returns base Denom of chain
+func GetBaseDenom(chainID string) string {
+	if IsTestnet(chainID) {
+		return TestnetBaseDenom
+	}
+	return BaseDenom
+}
+
+// IsTestnet returns true if the chain-id has the Decimal testnet EIP155 chain prefix.
+func IsTestnet(chainID string) bool {
+	return strings.HasPrefix(chainID, TestnetChainID)
+}
+
+// IsDevnet returns true if the chain-id has the Decimal testnet EIP155 chain prefix.
+func IsDevnet(chainID string) bool {
+	return strings.HasPrefix(chainID, DevnetChainID)
+}
 
 func BipToPip(bip sdkmath.Int) sdkmath.Int {
 	return bip.Mul(sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)))

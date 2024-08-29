@@ -3,6 +3,7 @@ package main
 // DONTCOVER
 
 import (
+	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	"bufio"
 	"encoding/json"
 	"fmt"
@@ -36,13 +37,11 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
-	"github.com/evmos/ethermint/crypto/hd"
-	"github.com/evmos/ethermint/server/config"
-	srvflags "github.com/evmos/ethermint/server/flags"
-	ethtypes "github.com/evmos/ethermint/types"
-	evmtypes "github.com/evmos/ethermint/x/evm/types"
+	"github.com/decimalteam/ethermint/crypto/hd"
+	"github.com/decimalteam/ethermint/server/config"
+	srvflags "github.com/decimalteam/ethermint/server/flags"
+	ethtypes "github.com/decimalteam/ethermint/types"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	dsckr "bitbucket.org/decimalteam/go-smart-node/crypto/keyring"
@@ -305,13 +304,13 @@ func initTestnetFiles(
 		})
 
 		valTokens := sdk.TokensFromConsensusPower(100, ethtypes.PowerReduction)
-		createValMsg, err := stakingtypes.NewMsgCreateValidator(
+		createValMsg, err := validatortypes.NewMsgCreateValidator(
 			sdk.ValAddress(addr),
+			addr,
 			valPubKeys[i],
+			validatortypes.NewDescription(nodeDirName, "", "", "", ""),
+			sdk.OneDec(),
 			sdk.NewCoin(cmdcfg.BaseDenom, valTokens),
-			stakingtypes.NewDescription(nodeDirName, "", "", "", ""),
-			stakingtypes.NewCommissionRates(sdk.OneDec(), sdk.OneDec(), sdk.OneDec()),
-			sdk.OneInt(),
 		)
 		if err != nil {
 			return err
@@ -399,11 +398,11 @@ func initGenFiles(
 	bankGenState.Balances = genBalances
 	appGenState[banktypes.ModuleName] = clientCtx.Codec.MustMarshalJSON(&bankGenState)
 
-	var stakingGenState stakingtypes.GenesisState
-	clientCtx.Codec.MustUnmarshalJSON(appGenState[stakingtypes.ModuleName], &stakingGenState)
+	var validatorGenState validatortypes.GenesisState
+	clientCtx.Codec.MustUnmarshalJSON(appGenState[validatortypes.ModuleName], &validatorGenState)
 
-	stakingGenState.Params.BondDenom = coinDenom
-	appGenState[stakingtypes.ModuleName] = clientCtx.Codec.MustMarshalJSON(&stakingGenState)
+	validatorGenState.Params.BaseDenom = coinDenom
+	appGenState[validatortypes.ModuleName] = clientCtx.Codec.MustMarshalJSON(&validatorGenState)
 
 	var govGenState govtypesv1.GenesisState
 	clientCtx.Codec.MustUnmarshalJSON(appGenState[govtypes.ModuleName], &govGenState)

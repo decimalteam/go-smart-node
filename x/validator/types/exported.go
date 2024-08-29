@@ -51,4 +51,5 @@ type StakeI interface {
 	GetID() string
 	GetStake() sdk.Coin
 	GetSubTokenIDs() []uint32
+	GetHolds() []*StakeHold
 }

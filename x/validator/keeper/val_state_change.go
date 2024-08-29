@@ -2,16 +2,15 @@ package keeper
 
 import (
 	"bytes"
+	sdkmath "cosmossdk.io/math"
 	goerrors "errors"
 	"fmt"
-	"runtime/debug"
-	"sort"
-
-	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	ethtypes "github.com/evmos/ethermint/types"
+	ethtypes "github.com/decimalteam/ethermint/types"
 	gogotypes "github.com/gogo/protobuf/types"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"runtime/debug"
+	"sort"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
@@ -302,14 +301,14 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 	// - The tokens from the bonded validators that are being kicked out from the validator set
 	// need to be transferred to the NotBonded pool.
 
-	err = k.transferBetweenPools(ctx, types.BondStatus_Bonded, types.BondStatus_Unbonded, amtFromBondedToNotBonded, nftsFromBondedToNotBonded)
-	if err != nil {
-		return nil, err
-	}
-	err = k.transferBetweenPools(ctx, types.BondStatus_Unbonded, types.BondStatus_Bonded, amtFromNotBondedToBonded, nftsFromNotBondedToBonded)
-	if err != nil {
-		return nil, err
-	}
+	//err = k.transferBetweenPools(ctx, types.BondStatus_Bonded, types.BondStatus_Unbonded, amtFromBondedToNotBonded, nftsFromBondedToNotBonded)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//err = k.transferBetweenPools(ctx, types.BondStatus_Unbonded, types.BondStatus_Bonded, amtFromNotBondedToBonded, nftsFromNotBondedToBonded)
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	// set total power on lookup index if there are any updates
 	if len(updates) > 0 {
@@ -547,40 +546,40 @@ func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator) {
 		delegation := baseAmounts[i].Delegation
 		stake := delegation.Stake
 		delegator := delegation.GetDelegator()
-		switch validator.Status {
-		case types.BondStatus_Bonded:
-			switch stake.Type {
-			case types.StakeType_Coin:
-				amt := stake.Stake
-
-				if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(
-					ctx, types.BondedPoolName, delegator, sdk.NewCoins(amt),
-				); err != nil {
-					panic(err)
-				}
-
-			case types.StakeType_NFT:
-				if err := k.nftKeeper.TransferSubTokens(ctx, k.GetBondedPool(ctx).GetAddress(), delegator, stake.GetID(), stake.GetSubTokenIDs()); err != nil {
-					panic(err)
-				}
-			}
-		case types.BondStatus_Unbonded:
-			switch stake.Type {
-			case types.StakeType_Coin:
-				amt := stake.Stake
-
-				if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(
-					ctx, types.NotBondedPoolName, delegator, sdk.NewCoins(amt),
-				); err != nil {
-					panic(err)
-				}
-
-			case types.StakeType_NFT:
-				if err := k.nftKeeper.TransferSubTokens(ctx, k.GetNotBondedPool(ctx).GetAddress(), delegator, stake.GetID(), stake.GetSubTokenIDs()); err != nil {
-					panic(err)
-				}
-			}
-		}
+		//switch validator.Status {
+		//case types.BondStatus_Bonded:
+		//	switch stake.Type {
+		//	case types.StakeType_Coin:
+		//		amt := stake.Stake
+		//
+		//		if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(
+		//			ctx, types.BondedPoolName, delegator, sdk.NewCoins(amt),
+		//		); err != nil {
+		//			panic(err)
+		//		}
+		//
+		//	case types.StakeType_NFT:
+		//		if err := k.nftKeeper.TransferSubTokens(ctx, k.GetBondedPool(ctx).GetAddress(), delegator, stake.GetID(), stake.GetSubTokenIDs()); err != nil {
+		//			panic(err)
+		//		}
+		//	}
+		//case types.BondStatus_Unbonded:
+		//	switch stake.Type {
+		//	case types.StakeType_Coin:
+		//		amt := stake.Stake
+		//
+		//		if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(
+		//			ctx, types.NotBondedPoolName, delegator, sdk.NewCoins(amt),
+		//		); err != nil {
+		//			panic(err)
+		//		}
+		//
+		//	case types.StakeType_NFT:
+		//		if err := k.nftKeeper.TransferSubTokens(ctx, k.GetNotBondedPool(ctx).GetAddress(), delegator, stake.GetID(), stake.GetSubTokenIDs()); err != nil {
+		//			panic(err)
+		//		}
+		//	}
+		//}
 
 		remainStake, err := k.CalculateRemainStake(ctx, delegation.Stake, delegation.Stake)
 		if err != nil {

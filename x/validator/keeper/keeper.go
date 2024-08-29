@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	evmkeeper "github.com/decimalteam/ethermint/x/evm/keeper"
 
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -28,6 +29,7 @@ type Keeper struct {
 	multisigKeeper types.MultisigKeeper
 	hooks          types.StakingHooks
 	paramstore     paramtypes.Subspace
+	evmKeeper      *evmkeeper.Keeper
 }
 
 // NewKeeper creates new Keeper instance.
@@ -40,6 +42,7 @@ func NewKeeper(
 	nk types.NFTKeeper,
 	ck types.CoinKeeper,
 	mk types.MultisigKeeper,
+	evm *evmkeeper.Keeper,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -64,6 +67,7 @@ func NewKeeper(
 		coinKeeper:     ck,
 		multisigKeeper: mk,
 		paramstore:     ps,
+		evmKeeper:      evm,
 		hooks:          nil,
 	}
 }
@@ -90,4 +94,9 @@ func (k Keeper) SetLastTotalPower(ctx sdk.Context, power sdkmath.Int) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(&sdk.IntProto{Int: power})
 	store.Set(types.GetLastTotalPowerKey(), bz)
+}
+
+// SetEvmKeeper sets the last total validators power.
+func (k *Keeper) SetEvmKeeper(evmKeeper *evmkeeper.Keeper) {
+	k.evmKeeper = evmKeeper
 }

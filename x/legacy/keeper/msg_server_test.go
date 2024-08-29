@@ -5,8 +5,8 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/evmos/ethermint/crypto/ethsecp256k1"
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	"github.com/decimalteam/ethermint/crypto/ethsecp256k1"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"

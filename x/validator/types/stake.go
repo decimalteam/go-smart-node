@@ -12,6 +12,7 @@ func NewStakeCoin(stake sdk.Coin) Stake {
 		ID:          stake.Denom,
 		Stake:       stake,
 		SubTokenIDs: nil,
+		Holds:       nil,
 	}
 }
 
@@ -47,6 +48,11 @@ func (s Stake) GetStake() sdk.Coin {
 // GetSubTokenIDs returns the list of staked NFT sub-token IDs.
 func (s Stake) GetSubTokenIDs() []uint32 {
 	return s.SubTokenIDs
+}
+
+// GetSubTokenIDs returns the list of staked NFT sub-token IDs.
+func (s Stake) GetHolds() []*StakeHold {
+	return s.Holds
 }
 
 func (s Stake) AddSubTokens(newSubTokens []uint32) ([]uint32, error) {
@@ -94,6 +100,11 @@ func (s Stake) Add(a Stake) (Stake, error) {
 		if err != nil {
 			return Stake{}, err
 		}
+	}
+	if len(a.Holds) != 0 {
+		result.Holds = append(s.Holds, a.Holds...)
+	} else {
+		result.Holds = s.Holds
 	}
 	return result, nil
 }

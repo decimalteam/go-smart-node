@@ -1,12 +1,12 @@
 package ante
 
 import (
+	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
 	authante "github.com/cosmos/cosmos-sdk/x/auth/ante"
-
-	ethante "github.com/evmos/ethermint/app/ante"
+	updatetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	ethante "github.com/decimalteam/ethermint/app/ante"
 )
 
 // NewAnteHandler returns an ante handler responsible for attempting to route an
@@ -29,12 +29,12 @@ func NewAnteHandler(options HandlerOptions) sdk.AnteHandler {
 				case "/ethermint.evm.v1.ExtensionOptionsEthereumTx":
 					// handle as *evmtypes.MsgEthereumTx
 					anteHandler = newEthAnteHandler(options)
-				case "/ethermint.types.v1.ExtensionOptionsWeb3Tx":
-					// handle as normal Decimal SDK tx, except signature is checked for EIP712 representation
-					anteHandler = newCosmosAnteHandlerEip712(options)
-				case "/ethermint.types.v1.ExtensionOptionDynamicFeeTx":
-					// cosmos-sdk tx with dynamic fee extension
-					anteHandler = newCosmosAnteHandler(options)
+				//case "/ethermint.types.v1.ExtensionOptionsWeb3Tx":
+				//	// handle as normal Decimal SDK tx, except signature is checked for EIP712 representation
+				//	anteHandler = newCosmosAnteHandlerEip712(options)
+				//case "/ethermint.types.v1.ExtensionOptionDynamicFeeTx":
+				//	// cosmos-sdk tx with dynamic fee extension
+				//	anteHandler = newCosmosAnteHandler(options)
 				default:
 					return ctx, sdkerrors.ErrUnknownExtensionOptions
 				}
@@ -43,14 +43,26 @@ func NewAnteHandler(options HandlerOptions) sdk.AnteHandler {
 			}
 		}
 
-		// handle as totally normal Decimal SDK tx
 		switch tx.(type) {
 		case sdk.Tx:
-			anteHandler = newCosmosAnteHandler(options)
+			for _, msg := range tx.GetMsgs() {
+				if _, ok := msg.(*updatetypes.MsgSoftwareUpgrade); ok {
+					anteHandler = newCosmosAnteHandler(options)
+					return anteHandler(ctx, tx, sim)
+				}
+				if _, ok := msg.(*updatetypes.MsgCancelUpgrade); ok {
+					anteHandler = newCosmosAnteHandler(options)
+					return anteHandler(ctx, tx, sim)
+				}
+				if _, ok := msg.(*validatortypes.MsgSetOnline); ok {
+					anteHandler = newCosmosAnteHandler(options)
+					return anteHandler(ctx, tx, sim)
+				}
+			}
 		default:
 			return ctx, sdkerrors.ErrUnknownRequest
 		}
 
-		return anteHandler(ctx, tx, sim)
+		return ctx, sdkerrors.ErrUnknownRequest
 	}
 }

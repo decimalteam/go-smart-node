@@ -8,7 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 
-	"github.com/evmos/ethermint/crypto/ethsecp256k1"
+	"github.com/decimalteam/ethermint/crypto/ethsecp256k1"
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"github.com/cosmos/cosmos-sdk/codec/legacy"

@@ -10,10 +10,10 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	sdkAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	ethante "github.com/evmos/ethermint/app/ante"
-	ethermint "github.com/evmos/ethermint/types"
-	evmkeeper "github.com/evmos/ethermint/x/evm/keeper"
-	evmtypes "github.com/evmos/ethermint/x/evm/types"
+	ethante "github.com/decimalteam/ethermint/app/ante"
+	ethermint "github.com/decimalteam/ethermint/types"
+	evmkeeper "github.com/decimalteam/ethermint/x/evm/keeper"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
@@ -70,6 +70,7 @@ func (egcd EthGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 	blockHeight := big.NewInt(ctx.BlockHeight())
 	homestead := ethCfg.IsHomestead(blockHeight)
 	istanbul := ethCfg.IsIstanbul(blockHeight)
+	isShanghai := ethCfg.IsShanghai(blockHeight, uint64(ctx.BlockTime().Unix()))
 	evmDenom := params.EvmDenom
 	gasWanted := uint64(0)
 	baseFee := egcd.evmKeeper.GetBaseFee(ctx, ethCfg)
@@ -99,7 +100,7 @@ func (egcd EthGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 			gasWanted += txData.GetGas()
 		}
 
-		fees, err := evmkeeper.VerifyFee(txData, evmDenom, baseFee, homestead, istanbul, ctx.IsCheckTx())
+		fees, err := evmkeeper.VerifyFee(txData, evmDenom, baseFee, homestead, istanbul, isShanghai, ctx.IsCheckTx())
 		if err != nil {
 			return ctx, sdkerrors.Wrapf(err, "failed to verify the fees")
 		}

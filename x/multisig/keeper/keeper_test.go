@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"testing"
 
 	"bitbucket.org/decimalteam/go-smart-node/testutil"
@@ -15,7 +16,7 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+	feemarkettypes "github.com/decimalteam/ethermint/x/feemarket/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -84,9 +85,9 @@ func (s *KeeperTestSuite) SetupTest() {
 	var emptyAccount authtypes.AccountI
 	ctrl := gomock.NewController(s.T())
 	bankKeeper := mstestutil.NewMockKeeper(ctrl)
-	bankKeeper.EXPECT().GetAllBalances(ctx, defaultWalletAddress).AnyTimes().Return(defaultCoins)
-	bankKeeper.EXPECT().GetAllBalances(ctx, existsWalletAddress).AnyTimes().Return(sdk.NewCoins(sdk.NewCoin(defaultDenom, sdk.NewInt(0))))
-	bankKeeper.EXPECT().SendCoins(ctx, defaultWalletAddress, user1, defaultCoins).AnyTimes().Return(nil)
+	bankKeeper.EXPECT().GetAllBalances(ctx, defaultWalletAddress).AnyTimes().Return(sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, sdk.NewInt(1))))
+	bankKeeper.EXPECT().GetAllBalances(ctx, existsWalletAddress).AnyTimes().Return(sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, sdk.NewInt(0))))
+	bankKeeper.EXPECT().SendCoins(ctx, defaultWalletAddress, user1, sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, sdk.NewInt(1)))).AnyTimes().Return(nil)
 	accountKeeper := mstestutil.NewMockAccountKeeperI(ctrl)
 	accountKeeper.EXPECT().GetAccount(ctx, defaultWalletAddress).AnyTimes().Return(nil)
 	accountKeeper.EXPECT().GetAccount(ctx.WithTxBytes([]byte{1}), existsWalletAddress).AnyTimes().Return(emptyAccount)

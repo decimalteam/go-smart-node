@@ -61,6 +61,9 @@ message Validator {
   // stake is power of all delegations stake
   // NOTE: It is stored separately in the KVStore.
   int64 stake = 13;
+
+  // drc20_address is the hex address of ERC20 contract token
+  string drc20_address = 14 [ (gogoproto.customname) = "DRC20Contract" ];
 }
 
 // ValidatorRS defines internal object containing dynamic validator's info like rewards or stakes.
@@ -130,6 +133,10 @@ enum StakeType {
   STAKE_TYPE_COIN = 1 [ (gogoproto.enumvalue_customname) = "Coin" ];
   // NFT defines the type for stakes in NFT.
   STAKE_TYPE_NFT = 2 [ (gogoproto.enumvalue_customname) = "NFT" ];
+  // COIN defines the type for stakes in coin with hold.
+  STAKE_TYPE_COIN_HOLD = 3 [ (gogoproto.enumvalue_customname) = "CoinHold" ];
+  // NFT defines the type for stakes in NFT.
+  STAKE_TYPE_NFT_HOLD = 4 [ (gogoproto.enumvalue_customname) = "NFTHold" ];
 }
 
 // Stake contains all necessary info about a delegation stake.
@@ -150,6 +157,31 @@ message Stake {
   cosmos.base.v1beta1.Coin stake = 3 [ (gogoproto.nullable) = false ];
   // sub_token_ids defines list of NFT sub-token IDs.
   repeated uint32 sub_token_ids = 4 [ (gogoproto.customname) = "SubTokenIDs" ];
+
+  // creation_height defines the height at which the redelegation took place.
+  repeated StakeHold holds = 5 [ (gogoproto.customname) = "Holds" ];
+}
+
+// Stake contains all necessary info about a delegation stake.
+message StakeHold {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = true;
+
+  // stake defines amount of the coin delegated.
+  // For stake in Coin: contains actually delegated coin.
+  // For stake in NFT: contains total reserve of delegated NFT sub-tokens.
+  string amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  // sub_token_ids defines list of NFT sub-token IDs.
+  repeated uint32 sub_token_ids = 2 [ (gogoproto.customname) = "SubTokenIDs" ];
+
+  // creation_height defines the height at which the redelegation took place.
+  int64 hold_start_time = 3;
+  int64 hold_end_time = 4;
 }
 
 // Delegation represents the bond with coins/NTFs held by an account.

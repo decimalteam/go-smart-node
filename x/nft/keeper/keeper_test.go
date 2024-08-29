@@ -1,6 +1,10 @@
 package keeper_test
 
 import (
+	"bitbucket.org/decimalteam/go-smart-node/app"
+	testkeeper "bitbucket.org/decimalteam/go-smart-node/testutil/keeper"
+	"fmt"
+	"github.com/stretchr/testify/require"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -17,17 +21,21 @@ import (
 	tmtime "github.com/tendermint/tendermint/types/time"
 
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
+	cmdconfig "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	"bitbucket.org/decimalteam/go-smart-node/testutil"
 	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	nftkeeper "bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
 	nfttestutil "bitbucket.org/decimalteam/go-smart-node/x/nft/testutil"
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	sdkmath "cosmossdk.io/math"
 )
 
 var (
 	pk          = ed25519.GenPrivKey().PubKey()
 	addr        = sdk.AccAddress(pk.Address())
 	defaultCoin = sdk.NewCoin(cmdcfg.BaseDenom, types.DefaultMinReserveAmount)
+	baseDenom   = cmdconfig.BaseDenom
+	baseAmount  = helpers.EtherToWei(sdkmath.NewInt(1000000000000))
 )
 
 type KeeperTestSuite struct {
@@ -85,6 +93,8 @@ func (s *KeeperTestSuite) SetupTest() {
 		key,
 		space,
 		bankKeeper,
+		nil,
+		nil,
 	)
 	keeper.SetParams(ctx, types.DefaultParams())
 	// --
@@ -99,7 +109,47 @@ func (s *KeeperTestSuite) SetupTest() {
 	types.RegisterQueryServer(queryHelper, s.nftKeeper)
 	s.queryClient = types.NewQueryClient(queryHelper)
 	s.msgServer = keeper
-	//
+
+}
+
+func bootstrapKeeperTest(t *testing.T, numAddrs int, accCoins sdk.Coins) (*app.DSC, sdk.Context, []sdk.AccAddress, []sdk.ValAddress) {
+	_, dsc, ctx := testkeeper.GetBaseAppWithCustomKeeper(t)
+
+	addrDels, addrVals := testkeeper.GenerateAddresses(dsc, ctx, numAddrs, accCoins)
+	require.NotNil(t, addrDels)
+	require.NotNil(t, addrVals)
+
+	return dsc, ctx, addrDels, addrVals
+}
+
+func TestKeeper_Collection_Create(t *testing.T) {
+	dsc, ctx, addrs, _ := bootstrapKeeperTest(t, 1, sdk.Coins{
+		{
+			Denom:  baseDenom,
+			Amount: baseAmount,
+		},
+	})
+
+	//creatorAddress, _ := types2.GetDecimalAddressFromHex("0xED5bd94A68B4EeB55F0516d1a2b51cfa6c2EE829")
+	collection := types.Collection{
+		Creator:    addrs[0].String(),
+		Denom:      "symbol",
+		Supply:     0,
+		Tokens:     nil,
+		TypeNft:    types.NftType_Unspecified,
+		AddressDRC: "d01jnxuf8xk0gj20v595vchv40965exq4dx99x7de",
+	}
+	// write collection with it's counter
+	dsc.NFTKeeper.SetCollection(ctx, collection)
+	fmt.Println(collection)
+	creator, err := dsc.NFTKeeper.CollectionsByCreator(ctx, &types.QueryCollectionsByCreatorRequest{
+		Creator:    addrs[0].String(),
+		Pagination: nil,
+	})
+	if err != nil {
+		return
+	}
+	fmt.Println(creator)
 }
 
 func (s *KeeperTestSuite) TestParams() {

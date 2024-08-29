@@ -415,9 +415,7 @@ func (k msgServer) _redelegate(ctx sdk.Context, msgDelegator, msgValidatorSrc, m
 		return time.Time{}, err
 	}
 
-	completionTime, err := k.BeginRedelegation(
-		ctx, delegatorAddress, valSrcAddr, valDstAddr, stake, remainStake,
-	)
+	completionTime, err := k.BeginRedelegation(ctx, delegatorAddress, valSrcAddr, valDstAddr, stake, remainStake, nil)
 	if err != nil {
 		return time.Time{}, err
 	}
@@ -495,7 +493,7 @@ func (k msgServer) _undelegate(ctx sdk.Context, msgDelegator string, msgValidato
 		return time.Time{}, err
 	}
 
-	completionTime, err := k.Keeper.Undelegate(ctx, delegatorAddress, validatorAddr, stake, remainStake)
+	completionTime, err := k.Keeper.Undelegate(ctx, delegatorAddress, validatorAddr, stake, remainStake, nil)
 	if err != nil {
 		return time.Time{}, err
 	}
@@ -746,10 +744,10 @@ func (k msgServer) _cancelRedelegation(ctx sdk.Context, msgDelegator, msgValidat
 	}
 	k.SetDelegation(ctx, delegation)
 
-	err = k.TransferStakeBetweenPools(ctx, types.BondStatus_Unbonded, validatorSrc.GetStatus(), stake)
-	if err != nil {
-		return err
-	}
+	//err = k.TransferStakeBetweenPools(ctx, types.BondStatus_Unbonded, validatorSrc.GetStatus(), stake)
+	//if err != nil {
+	//	return err
+	//}
 
 	if remainStake.IsEmpty() {
 		red.RemoveEntry(redEntryIndex)

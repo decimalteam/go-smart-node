@@ -1,9 +1,8 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"bitbucket.org/decimalteam/go-smart-node/x/nft/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // GetCollections returns all the NFTs collections.
@@ -45,8 +44,10 @@ func (k *Keeper) SetCollection(ctx sdk.Context, collection types.Collection) {
 
 	// write only creator address and denom to the main record
 	bz := k.cdc.MustMarshalLengthPrefixed(&types.Collection{
-		Creator: collection.Creator,
-		Denom:   collection.Denom,
+		Creator:    collection.Creator,
+		Denom:      collection.Denom,
+		TypeNft:    collection.TypeNft,
+		AddressDRC: collection.AddressDRC,
 	})
 	store.Set(key, bz)
 
