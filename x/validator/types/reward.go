@@ -50,11 +50,16 @@ func GetRewardForBlock(blockHeight uint64) sdk.Int {
 	if blockHeight >= lastBlock {
 		return sdk.NewInt(0)
 	}
-	newBlock := blockHeight - blockNewReward
+
 	reward := sdk.NewInt(firstReward)
 	rewardIncrease := sdk.NewInt(firstIncrease)
 
-	reward = reward.Add(sdk.NewInt(int64(newBlock / 475000)).Mul(rewardIncrease))
+	newBlock := sdk.NewInt(int64(blockHeight)).Sub(sdk.NewInt(int64(blockNewReward)))
+	if newBlock.IsNegative() {
+		return helpers.BipToPip(reward)
+	}
+
+	reward = reward.Add(sdk.NewInt(newBlock.Int64() / 475000).Mul(rewardIncrease))
 	return helpers.BipToPip(reward)
 }
 
