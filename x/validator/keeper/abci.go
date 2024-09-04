@@ -54,17 +54,6 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 
 	updates := k.BlockValidatorUpdates(ctx)
 
-	// send coin reserve
-	fmt.Println("coins")
-	nbPool := k.GetNotBondedPool(ctx).GetAddress()
-	coins := k.bankKeeper.GetAllBalances(ctx, nbPool)
-	fmt.Println(nbPool.String())
-	fmt.Println(coins)
-
-	bPool := k.GetBondedPool(ctx).GetAddress()
-	coins = k.bankKeeper.GetAllBalances(ctx, bPool)
-	fmt.Println(coins.String())
-
 	k.PayValidators(ctx)
 
 	if height%120 == 0 {

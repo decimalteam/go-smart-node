@@ -7,11 +7,12 @@ import (
 
 const (
 	lastBlock      = 46_656_000
-	firstReward    = 5
+	firstReward    = 1300
 	firstOldReward = 50
 
 	firstIncrease          = 10
 	firstOldIncrease       = 5
+	blockNewReward         = 22280701
 	blockStartCalcEmission = 22034999
 	blockStartEmission     = 10472536871
 )
@@ -53,7 +54,12 @@ func GetRewardForBlock(blockHeight uint64) sdk.Int {
 	reward := sdk.NewInt(firstReward)
 	rewardIncrease := sdk.NewInt(firstIncrease)
 
-	reward = reward.Add(sdk.NewInt(int64(blockHeight / 475000)).Mul(rewardIncrease))
+	newBlock := sdk.NewInt(int64(blockHeight)).Sub(sdk.NewInt(int64(blockNewReward)))
+	if newBlock.IsNegative() {
+		return helpers.BipToPip(reward)
+	}
+
+	reward = reward.Add(sdk.NewInt(newBlock.Int64() / 475000).Mul(rewardIncrease))
 	return helpers.BipToPip(reward)
 }
 

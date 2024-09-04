@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -9,7 +10,8 @@ import (
 // Test to demonstrate small remainder after rewards pay
 func TestRewards(t *testing.T) {
 	t.SkipNow()
-	rewards := GetRewardForBlock(40000)
+	rewards := GetRewardForBlock(23302795)
+	fmt.Println(rewards)
 	var powers = []int64{30198431, 30022398, 30000000}
 	var totalPower = sdk.NewInt(powers[0] + powers[1] + powers[2])
 	remainder := sdk.NewIntFromBigInt(rewards.BigInt())

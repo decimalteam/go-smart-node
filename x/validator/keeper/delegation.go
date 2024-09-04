@@ -884,6 +884,12 @@ func (k Keeper) Delegate(
 
 	k.AddCustomCoinStaked(ctx, stake.GetStake())
 	fmt.Println("finis staked")
+
+	_, found := k.GetDelegation(ctx, delegator, valAddress, stake.ID)
+	if !found {
+		return errors.DelegationNotFound
+	}
+
 	return nil
 }
 
