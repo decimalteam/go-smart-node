@@ -3,510 +3,484 @@ image: python:3.8
 
 definitions:
   steps:
+  - step: &mirror
+      name: Sync GitHub Mirror
+      image: alpine/git:latest
+      clone:
+        enabled: false
+      script:
+      - git clone --bare git@bitbucket.org:decimalteam/go-smart-node.git
+      - cd go-smart-node.git
+      - git push --mirror git@github.com:decimalteam/go-smart-node.git
 
-    - step: &mirror
-        name: Sync GitHub Mirror
-        image: alpine/git:latest
-        clone:
-          enabled: false
+  - step: &worker-docker-build
+      name: Build Worker Docker Alpine image
+      script:
+      - export BITBUCKET_COMMIT_SHORT="${BITBUCKET_COMMIT::7}"
+      - docker login ${REGISTRY_URL} -u ${REGISTRY_LOGIN} -p ${REGISTRY_PASSWORD}
+      - docker build -t ${REGISTRY_URL}/worker:${BITBUCKET_COMMIT_SHORT} -t ${REGISTRY_URL}/worker:${BITBUCKET_BRANCH}
+        -f Dockerfile-worker .
+      - docker push --all-tags ${REGISTRY_URL}/worker
+      services:
+      - docker
+
+  - step: &build
+      name: Build
+      image: centos:centos8
+      caches:
+      - go-src
+      - go-pkg
+      script:
+      - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
+      - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g'
+        /etc/yum.repos.d/CentOS-Linux-*
+      - dnf install -y epel-release
+      - dnf install -y  leveldb leveldb-devel snappy gcc git which wget make --nobest
+      - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+      - tar -xvf go1.21.4.linux-amd64.tar.gz
+      - mv go /usr/local
+      - export GOROOT=/usr/local/go
+      - export GOPATH=~/go
+      - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+      - go version
+      - go env
+      - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+      - mkdir -pv "${PACKAGE_PATH}"
+      - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+      - export GO111MODULE=on
+      - cd "${PACKAGE_PATH}"
+      - go get ./...
+      - go test ./...
+      - make install
+      - mkdir ${BITBUCKET_CLONE_DIR}/build
+      - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build
+      artifacts:
+      - build/**
+
+  - step:
+      name: Deploy
+      caches: &deploy_cache
+      - pip
+      script: &deploy_script
+      - MESSAGE=`git log --format=%B -n 1 $BITBUCKET_COMMIT`
+      - pip3 install ansible==2.10.7
+      - pip3 install psycopg2
+      - chmod 700 ci-scripts/ansible
+      - cd ci-scripts/ansible
+      - if [[ $MESSAGE == *\[update\]* ]]; then ansible-playbook -i hosts -l "$MASTER_HOST,
+        $SLAVE_HOST" -e "ansible_user=$USERNAME decimal_keys=$DECIMAL_KEYS chain_id=$CHAIN_ID
+        artifacts=$BITBUCKET_CLONE_DIR/build" decimal-nodes-update.yml; else echo
+        0; fi
+      - if [[ $MESSAGE == *\[reset\]* ]]; then ansible-playbook -i hosts -l "$MASTER_HOST"
+        -e "ansible_user=$USERNAME mode=master decimal_keys=$DECIMAL_KEYS chain_id=$CHAIN_ID
+        artifacts=$BITBUCKET_CLONE_DIR/build persistent_peers=$PERSISTENT_PEERS" decimal-nodes-init.yml;
+        else echo 0; fi
+      - if [[ $MESSAGE == *\[reset\]* ]]; then ansible-playbook -i hosts -l "$SLAVE_HOST"
+        -e "ansible_user=$USERNAME mode=slave chain_id=$CHAIN_ID decimal_keys=$DECIMAL_KEYS
+        artifacts=$BITBUCKET_CLONE_DIR/build src_genesis=$SRC_GENESIS persistent_peers=$PERSISTENT_PEERS"
+        decimal-nodes-init.yml; else echo 0; fi
+
+  - parallel: &repo_build
+    - step:
+        name: Build on Centos 7 (latest)
+        image: centos:centos7
+        caches:
+        - go-src
+        - go-pkg
         script:
-          - git clone --bare git@bitbucket.org:decimalteam/go-smart-node.git
-          - cd go-smart-node.git
-          - git push --mirror git@github.com:decimalteam/go-smart-node.git
+        - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+        - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g'
+          /etc/yum.repos.d/CentOS-*
+        - yum install -y epel-release
+        - yum install -y leveldb leveldb-devel snappy gcc git which wget make
+        - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+        - tar -xvf go1.21.4.linux-amd64.tar.gz
+        - mv go /usr/local
+        - export GOROOT=/usr/local/go
+        - export GOPATH=~/go
+        - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+        - go version
+        - go env
+        - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+        - mkdir -pv "${PACKAGE_PATH}"
+        - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+        - export GO111MODULE=on
+        - cd "${PACKAGE_PATH}"
+        - go get ./...
+        - go test ./...
+        - make install
+        - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
+        - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
+        artifacts:
+        - build/**
 
-    - step: &worker-docker-build
-        name: Build Worker Docker Alpine image
-        script:
-          - export BITBUCKET_COMMIT_SHORT="${BITBUCKET_COMMIT::7}"
-          - docker login ${REGISTRY_URL} -u ${REGISTRY_LOGIN} -p ${REGISTRY_PASSWORD}
-          - docker build -t ${REGISTRY_URL}/worker:${BITBUCKET_COMMIT_SHORT} -t ${REGISTRY_URL}/worker:${BITBUCKET_BRANCH} -f Dockerfile-worker .
-          - docker push --all-tags ${REGISTRY_URL}/worker
-        services:
-          - docker
-
-    - step: &build
-        name: Build
+    - step:
+        name: Build on Centos 8 (latest)
         image: centos:centos8
         caches:
-          - go-src
-          - go-pkg
+        - go-src
+        - go-pkg
         script:
-          - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
-          - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
-          - dnf install -y epel-release
-          - dnf install -y  leveldb leveldb-devel snappy gcc git which wget make --nobest
-          - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-          - tar -xvf go1.21.4.linux-amd64.tar.gz
-          - mv go /usr/local
-          - export GOROOT=/usr/local/go
-          - export GOPATH=~/go
-          - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-          - go version
-          - go env
-          - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
-          - mkdir -pv "${PACKAGE_PATH}"
-          - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
-          - export GO111MODULE=on
-          - cd "${PACKAGE_PATH}"
-          - go get ./...
-          - go test ./...
-          - make install
-          - mkdir ${BITBUCKET_CLONE_DIR}/build
-          - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build
+        - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
+        - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g'
+          /etc/yum.repos.d/CentOS-Linux-*
+        - dnf install -y epel-release
+        - dnf install -y leveldb leveldb-devel snappy gcc git which wget make --nobest
+        - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+        - tar -xvf go1.21.4.linux-amd64.tar.gz
+        - mv go /usr/local
+        - export GOROOT=/usr/local/go
+        - export GOPATH=~/go
+        - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+        - go version
+        - go env
+        - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+        - mkdir -pv "${PACKAGE_PATH}"
+        - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+        - export GO111MODULE=on
+        - cd "${PACKAGE_PATH}"
+        - go get ./...
+        - go test ./...
+        - make install
+        - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/centos/8/
+        - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/centos/8/
         artifacts:
-          - build/**
+        - build/**
 
-    - step: &deploy
-        name: Deploy
+    - step:
+        name: Build on Oracle Linux 9 (latest)
+        image: oraclelinux:9
         caches:
-          - pip
+        - go-src
+        - go-pkg
         script:
-          - MESSAGE=`git log --format=%B -n 1 $BITBUCKET_COMMIT` # getting commit message
-          - pip3 install ansible==2.10.7
-          - pip3 install psycopg2
+        - dnf install -y oracle-epel-release-el9
+        - dnf install -y tar leveldb leveldb-devel snappy gcc git which wget make
+          --nobest
+        - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+        - tar -xvf go1.21.4.linux-amd64.tar.gz
+        - mv go /usr/local
+        - export GOROOT=/usr/local/go
+        - export GOPATH=~/go
+        - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+        - go version
+        - go env
+        - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+        - mkdir -pv "${PACKAGE_PATH}"
+        - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+        - export GO111MODULE=on
+        - cd "${PACKAGE_PATH}"
+        - go get ./...
+        - go test ./...
+        - make install
+        - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ol/9/
+        - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ol/9/
+        - cd ${BITBUCKET_CLONE_DIR}/build/linux/ol
+        - ln -s 9 9.0
+        - ln -s 9 9.1
+        - ln -s 9 9.2
+        - ln -s 9 9.3
+        - ln -s 9 9.4
+        artifacts:
+        - build/**
 
-          - chmod 700 ci-scripts/ansible
-          - cd ci-scripts/ansible
+    - step:
+        name: Build on Oracle Linux 8 (latest)
+        image: oraclelinux:8
+        caches:
+        - go-src
+        - go-pkg
+        script:
+        - dnf install -y oracle-epel-release-el8
+        - dnf install -y tar leveldb leveldb-devel snappy gcc git which wget make
+          --nobest
+        - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+        - tar -xvf go1.21.4.linux-amd64.tar.gz
+        - mv go /usr/local
+        - export GOROOT=/usr/local/go
+        - export GOPATH=~/go
+        - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+        - go version
+        - go env
+        - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+        - mkdir -pv "${PACKAGE_PATH}"
+        - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+        - export GO111MODULE=on
+        - cd "${PACKAGE_PATH}"
+        - go get ./...
+        - go test ./...
+        - make install
+        - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ol/8/
+        - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ol/8/
+        - cd ${BITBUCKET_CLONE_DIR}/build/linux/ol
+        - ln -s 8 8.1
+        - ln -s 8 8.2
+        - ln -s 8 8.3
+        - ln -s 8 8.4
+        - ln -s 8 8.5
+        - ln -s 8 8.6
+        - ln -s 8 8.7
+        - ln -s 8 8.8
+        - ln -s 8 8.9
+        - ln -s 8 8.10
+        artifacts:
+        - build/**
 
-          # run update playbook
-          - if [[ $MESSAGE == *\[update\]* ]]; then
-            ansible-playbook -i hosts -l "$MASTER_HOST, $SLAVE_HOST" -e "ansible_user=$USERNAME decimal_keys=$DECIMAL_KEYS chain_id=$CHAIN_ID artifacts=$BITBUCKET_CLONE_DIR/build" decimal-nodes-update.yml;
-            else echo 0; fi
+    - step:
+        name: Build on Ubuntu 24.04
+        image: ubuntu:24.04
+        caches:
+        - go-src
+        - go-pkg
+        script:
+        - apt-get update -y
+        - apt-get install -y build-essential
+        - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev
+          git ca-certificates wget
+        - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+        - tar -xvf go1.21.4.linux-amd64.tar.gz
+        - mv go /usr/local
+        - export GOROOT=/usr/local/go
+        - export GOPATH=~/go
+        - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+        - go version
+        - go env
+        - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+        - mkdir -pv "${PACKAGE_PATH}"
+        - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+        - export GO111MODULE=on
+        - cd "${PACKAGE_PATH}"
+        - go get ./...
+        - go test ./...
+        - make install
+        - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/24.04/
+        - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/24.04/
+        artifacts:
+        - build/**
 
-          # run reset playbook for MASTER HOSTS
-          - if [[ $MESSAGE == *\[reset\]* ]]; then
-            ansible-playbook -i hosts -l "$MASTER_HOST" -e "ansible_user=$USERNAME mode=master decimal_keys=$DECIMAL_KEYS chain_id=$CHAIN_ID artifacts=$BITBUCKET_CLONE_DIR/build persistent_peers=$PERSISTENT_PEERS" decimal-nodes-init.yml;
-            else echo 0; fi
+    - step:
+        name: Build on Ubuntu 22.04
+        image: ubuntu:22.04
+        caches:
+        - go-src
+        - go-pkg
+        script:
+        - apt-get update -y
+        - apt-get install -y build-essential
+        - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev
+          git ca-certificates wget
+        - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+        - tar -xvf go1.21.4.linux-amd64.tar.gz
+        - mv go /usr/local
+        - export GOROOT=/usr/local/go
+        - export GOPATH=~/go
+        - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+        - go version
+        - go env
+        - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+        - mkdir -pv "${PACKAGE_PATH}"
+        - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+        - export GO111MODULE=on
+        - cd "${PACKAGE_PATH}"
+        - go get ./...
+        - go test ./...
+        - make install
+        - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/22.04/
+        - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/22.04/
+        artifacts:
+        - build/**
 
-          # run reset playbook for EXPLORER HOSTS
-          #- if [[ $MESSAGE == *\[reset\]* ]]; then
-          #  ansible-playbook -i hosts -l "$EXPLORER_HOST" -e "ansible_user=$USERNAME" decimal-explorer-init.yml;
-          #  else echo 0; fi
+    - step:
+        name: Build on Ubuntu 20.04
+        image: ubuntu:20.04
+        caches:
+        - go-src
+        - go-pkg
+        script:
+        - apt-get update -y
+        - apt-get install -y build-essential
+        - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev
+          git ca-certificates wget
+        - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+        - tar -xvf go1.21.4.linux-amd64.tar.gz
+        - mv go /usr/local
+        - export GOROOT=/usr/local/go
+        - export GOPATH=~/go
+        - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+        - go version
+        - go env
+        - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+        - mkdir -pv "${PACKAGE_PATH}"
+        - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+        - export GO111MODULE=on
+        - cd "${PACKAGE_PATH}"
+        - go get ./...
+        - go test ./...
+        - make install
+        - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/20.04/
+        - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/20.04/
+        artifacts:
+        - build/**
 
-          # run reset playbook for SLAVE HOSTS
-          - if [[ $MESSAGE == *\[reset\]* ]]; then
-            ansible-playbook -i hosts -l "$SLAVE_HOST" -e "ansible_user=$USERNAME mode=slave chain_id=$CHAIN_ID decimal_keys=$DECIMAL_KEYS artifacts=$BITBUCKET_CLONE_DIR/build src_genesis=$SRC_GENESIS persistent_peers=$PERSISTENT_PEERS" decimal-nodes-init.yml;
-            else echo 0; fi
+    - step:
+        name: Build on Ubuntu 18.04
+        image: ubuntu:18.04
+        caches:
+        - go-src
+        - go-pkg
+        script:
+        - apt-get update -y
+        - apt-get install -y build-essential
+        - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev
+          git ca-certificates wget
+        - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+        - tar -xvf go1.21.4.linux-amd64.tar.gz
+        - mv go /usr/local
+        - export GOROOT=/usr/local/go
+        - export GOPATH=~/go
+        - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+        - go version
+        - go env
+        - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+        - mkdir -pv "${PACKAGE_PATH}"
+        - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+        - export GO111MODULE=on
+        - cd "${PACKAGE_PATH}"
+        - go get ./...
+        - go test ./...
+        - make install
+        - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/18.04/
+        - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/18.04/
+        artifacts:
+        - build/**
 
-    - parallel: &repo_build
+    - step:
+        name: Build on Ubuntu 16.04
+        image: ubuntu:16.04
+        caches:
+        - go-src
+        - go-pkg
+        script:
+        - apt-get update -y
+        - apt-get install -y build-essential
+        - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev
+          git ca-certificates wget
+        - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+        - tar -xvf go1.21.4.linux-amd64.tar.gz
+        - mv go /usr/local
+        - export GOROOT=/usr/local/go
+        - export GOPATH=~/go
+        - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+        - go version
+        - go env
+        - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+        - mkdir -pv "${PACKAGE_PATH}"
+        - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+        - export GO111MODULE=on
+        - cd "${PACKAGE_PATH}"
+        - go get ./...
+        - go test ./...
+        - make install
+        - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/16.04/
+        - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/16.04/
+        artifacts:
+        - build/**
 
-        - step:
-             name: Build on Centos 7 (latest)
-             image: centos:centos7
-             caches:
-               - go-src
-               - go-pkg
-             script:
-               - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
-               - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
-               - yum install -y epel-release
-               - yum install -y leveldb leveldb-devel snappy gcc git which wget make
-               - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-               - tar -xvf go1.21.4.linux-amd64.tar.gz
-               - mv go /usr/local
-               - export GOROOT=/usr/local/go
-               - export GOPATH=~/go
-               - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-               - go version
-               - go env
-               - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
-               - mkdir -pv "${PACKAGE_PATH}"
-               - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
-               - export GO111MODULE=on
-               - cd "${PACKAGE_PATH}"
-               - go get ./...
-               - go test ./...
-               - make install
-               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
-               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
-             artifacts:
-               - build/**
+    - step:
+        name: Build on Debian 12
+        image: debian:12
+        caches:
+        - go-src
+        - go-pkg
+        script:
+        - apt-get update -y
+        - apt-get install -y build-essential
+        - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev
+          git ca-certificates wget
+        - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+        - tar -xvf go1.21.4.linux-amd64.tar.gz
+        - mv go /usr/local
+        - export GOROOT=/usr/local/go
+        - export GOPATH=~/go
+        - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+        - go version
+        - go env
+        - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+        - mkdir -pv "${PACKAGE_PATH}"
+        - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+        - export GO111MODULE=on
+        - cd "${PACKAGE_PATH}"
+        - go get ./...
+        - go test ./...
+        - make install
+        - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/12/
+        - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/12/
+        artifacts:
+        - build/**
 
-        - step:
-             name: Build on Centos 8 (latest)
-             image: centos:centos8
-             caches:
-               - go-src
-               - go-pkg
-             script:
-               - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
-               - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
-               - dnf install -y epel-release
-               - dnf install -y leveldb leveldb-devel snappy gcc git which wget make --nobest
-               - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-               - tar -xvf go1.21.4.linux-amd64.tar.gz
-               - mv go /usr/local
-               - export GOROOT=/usr/local/go
-               - export GOPATH=~/go
-               - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-               - go version
-               - go env
-               - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
-               - mkdir -pv "${PACKAGE_PATH}"
-               - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
-               - export GO111MODULE=on
-               - cd "${PACKAGE_PATH}"
-               - go get ./...
-               - go test ./...
-               - make install
-               - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/centos/8/
-               - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/centos/8/
-             artifacts:
-               - build/**
+    - step:
+        name: Build on Debian 11
+        image: debian:11
+        caches:
+        - go-src
+        - go-pkg
+        script:
+        - apt-get update -y
+        - apt-get install -y build-essential
+        - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev
+          git ca-certificates wget
+        - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+        - tar -xvf go1.21.4.linux-amd64.tar.gz
+        - mv go /usr/local
+        - export GOROOT=/usr/local/go
+        - export GOPATH=~/go
+        - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+        - go version
+        - go env
+        - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+        - mkdir -pv "${PACKAGE_PATH}"
+        - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+        - export GO111MODULE=on
+        - cd "${PACKAGE_PATH}"
+        - go get ./...
+        - go test ./...
+        - make install
+        - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/11/
+        - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/11/
+        artifacts:
+        - build/**
 
-        - step:
-            name: Build on Oracle Linux 9 (latest)
-            image: oraclelinux:9
-            caches:
-              - go-src
-              - go-pkg
-            script:
-              - dnf install -y oracle-epel-release-el9
-              - dnf install -y tar leveldb leveldb-devel snappy gcc git which wget make --nobest
-              - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-              - tar -xvf go1.21.4.linux-amd64.tar.gz
-              - mv go /usr/local
-              - export GOROOT=/usr/local/go
-              - export GOPATH=~/go
-              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-              - go version
-              - go env
-              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
-              - mkdir -pv "${PACKAGE_PATH}"
-              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
-              - export GO111MODULE=on
-              - cd "${PACKAGE_PATH}"
-              - go get ./...
-              - go test ./...
-              - make install
-              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ol/9/
-              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ol/9/
-              - cd ${BITBUCKET_CLONE_DIR}/build/linux/ol
-              - ln -s 9 9.0
-              - ln -s 9 9.1
-              - ln -s 9 9.2
-              - ln -s 9 9.3
-              - ln -s 9 9.4
-            artifacts:
-              - build/**
-
-        - step:
-            name: Build on Oracle Linux 8 (latest)
-            image: oraclelinux:8
-            caches:
-              - go-src
-              - go-pkg
-            script:
-              - dnf install -y oracle-epel-release-el8
-              - dnf install -y tar leveldb leveldb-devel snappy gcc git which wget make --nobest
-              - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-              - tar -xvf go1.21.4.linux-amd64.tar.gz
-              - mv go /usr/local
-              - export GOROOT=/usr/local/go
-              - export GOPATH=~/go
-              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-              - go version
-              - go env
-              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
-              - mkdir -pv "${PACKAGE_PATH}"
-              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
-              - export GO111MODULE=on
-              - cd "${PACKAGE_PATH}"
-              - go get ./...
-              - go test ./...
-              - make install
-              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ol/8/
-              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ol/8/
-              - cd ${BITBUCKET_CLONE_DIR}/build/linux/ol
-              - ln -s 8 8.1
-              - ln -s 8 8.2
-              - ln -s 8 8.3
-              - ln -s 8 8.4
-              - ln -s 8 8.5
-              - ln -s 8 8.6
-              - ln -s 8 8.7
-              - ln -s 8 8.8
-              - ln -s 8 8.9
-              - ln -s 8 8.10
-            artifacts:
-              - build/**
-
-#        - step:
-#            name: Build on Centos 7 (latest)
-#            image: centos:centos7
-#            caches:
-#              - go-src
-#              - go-pkg
-#            script:
-#              - yum install -y epel-release
-#              - yum install -y leveldb leveldb-devel snappy gcc git which wget make
-#              - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-#              - tar -xvf go1.21.4.linux-amd64.tar.gz
-#              - mv go /usr/local
-#              - export GOROOT=/usr/local/go
-#              - export GOPATH=~/go
-#              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-#              - go version
-#              - go env
-#              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
-#              - mkdir -pv "${PACKAGE_PATH}"
-#              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
-#              - export GO111MODULE=on
-#              - cd "${PACKAGE_PATH}"
-#              - go get ./...
-#              - go test ./...
-#              - make install
-#              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
-#              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/centos/7/
-#            artifacts:
-#              - build/**
-
-        - step:
-            name: Build on Ubuntu 24.04
-            image: ubuntu:24.04
-            caches:
-              - go-src
-              - go-pkg
-            script:
-              - apt-get update -y
-              - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
-              - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-              - tar -xvf go1.21.4.linux-amd64.tar.gz
-              - mv go /usr/local
-              - export GOROOT=/usr/local/go
-              - export GOPATH=~/go
-              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-              - go version
-              - go env
-              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
-              - mkdir -pv "${PACKAGE_PATH}"
-              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
-              - export GO111MODULE=on
-              - cd "${PACKAGE_PATH}"
-              - go get ./...
-              - go test ./...
-              - make install
-              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/24.04/
-              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/24.04/
-            artifacts:
-              - build/**
-
-            name: Build on Ubuntu 22.04
-            image: ubuntu:22.04
-            caches:
-              - go-src
-              - go-pkg
-            script:
-              - apt-get update -y
-              - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
-              - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-              - tar -xvf go1.21.4.linux-amd64.tar.gz
-              - mv go /usr/local
-              - export GOROOT=/usr/local/go
-              - export GOPATH=~/go
-              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-              - go version
-              - go env
-              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
-              - mkdir -pv "${PACKAGE_PATH}"
-              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
-              - export GO111MODULE=on
-              - cd "${PACKAGE_PATH}"
-              - go get ./...
-              - go test ./...
-              - make install
-              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/22.04/
-              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/22.04/
-            artifacts:
-              - build/**
-
-        - step:
-            name: Build on Ubuntu 20.04
-            image: ubuntu:20.04
-            caches:
-              - go-src
-              - go-pkg
-            script:
-              - apt-get update -y
-              - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
-              - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-              - tar -xvf go1.21.4.linux-amd64.tar.gz
-              - mv go /usr/local
-              - export GOROOT=/usr/local/go
-              - export GOPATH=~/go
-              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-              - go version
-              - go env
-              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
-              - mkdir -pv "${PACKAGE_PATH}"
-              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
-              - export GO111MODULE=on
-              - cd "${PACKAGE_PATH}"
-              - go get ./...
-              - go test ./...
-              - make install
-              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/20.04/
-              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/20.04/
-            artifacts:
-              - build/**
-
-        - step:
-            name: Build on Ubuntu 18.04
-            image: ubuntu:18.04
-            caches:
-              - go-src
-              - go-pkg
-            script:
-              - apt-get update -y
-              - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
-              - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-              - tar -xvf go1.21.4.linux-amd64.tar.gz
-              - mv go /usr/local
-              - export GOROOT=/usr/local/go
-              - export GOPATH=~/go
-              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-              - go version
-              - go env
-              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
-              - mkdir -pv "${PACKAGE_PATH}"
-              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
-              - export GO111MODULE=on
-              - cd "${PACKAGE_PATH}"
-              - go get ./...
-              - go test ./...
-              - make install
-              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/18.04/
-              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/18.04/
-            artifacts:
-              - build/**
-
-        - step:
-            name: Build on Ubuntu 16.04
-            image: ubuntu:16.04
-            caches:
-              - go-src
-              - go-pkg
-            script:
-              - apt-get update -y
-              - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
-              - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-              - tar -xvf go1.21.4.linux-amd64.tar.gz
-              - mv go /usr/local
-              - export GOROOT=/usr/local/go
-              - export GOPATH=~/go
-              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-              - go version
-              - go env
-              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
-              - mkdir -pv "${PACKAGE_PATH}"
-              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
-              - export GO111MODULE=on
-              - cd "${PACKAGE_PATH}"
-              - go get ./...
-              - go test ./...
-              - make install
-              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/16.04/
-              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/16.04/
-            artifacts:
-              - build/**
-
-        - step:
-            name: Build on Debian 12
-            image: debian:12
-            caches:
-              - go-src
-              - go-pkg
-            script:
-              - apt-get update -y
-              - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
-              - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-              - tar -xvf go1.21.4.linux-amd64.tar.gz
-              - mv go /usr/local
-              - export GOROOT=/usr/local/go
-              - export GOPATH=~/go
-              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-              - go version
-              - go env
-              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
-              - mkdir -pv "${PACKAGE_PATH}"
-              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
-              - export GO111MODULE=on
-              - cd "${PACKAGE_PATH}"
-              - go get ./...
-              - go test ./...
-              - make install
-              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/12/
-              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/12/
-            artifacts:
-              - build/**
-
-            name: Build on Debian 11
-            image: debian:11
-            caches:
-              - go-src
-              - go-pkg
-            script:
-              - apt-get update -y
-              - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
-              - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-              - tar -xvf go1.21.4.linux-amd64.tar.gz
-              - mv go /usr/local
-              - export GOROOT=/usr/local/go
-              - export GOPATH=~/go
-              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-              - go version
-              - go env
-              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
-              - mkdir -pv "${PACKAGE_PATH}"
-              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
-              - export GO111MODULE=on
-              - cd "${PACKAGE_PATH}"
-              - go get ./...
-              - go test ./...
-              - make install
-              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/11/
-              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/11/
-            artifacts:
-              - build/**
-
-        - step:
-            name: Build on Debian 10
-            image: debian:10
-            caches:
-              - go-src
-              - go-pkg
-            script:
-              - apt-get update -y
-              - apt-get install -y build-essential
-              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
-              - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-              - tar -xvf go1.21.4.linux-amd64.tar.gz
-              - mv go /usr/local
-              - export GOROOT=/usr/local/go
-              - export GOPATH=~/go
-              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-              - go version
-              - go env
-              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
-              - mkdir -pv "${PACKAGE_PATH}"
-              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
-              - export GO111MODULE=on
-              - cd "${PACKAGE_PATH}"
-              - go get ./...
-              - go test ./...
-              - make install
-              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/10/
-              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/10/
-            artifacts:
-              - build/**
-
+    - step:
+        name: Build on Debian 10
+        image: debian:10
+        caches:
+        - go-src
+        - go-pkg
+        script:
+        - apt-get update -y
+        - apt-get install -y build-essential
+        - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev
+          git ca-certificates wget
+        - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+        - tar -xvf go1.21.4.linux-amd64.tar.gz
+        - mv go /usr/local
+        - export GOROOT=/usr/local/go
+        - export GOPATH=~/go
+        - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+        - go version
+        - go env
+        - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+        - mkdir -pv "${PACKAGE_PATH}"
+        - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+        - export GO111MODULE=on
+        - cd "${PACKAGE_PATH}"
+        - go get ./...
+        - go test ./...
+        - make install
+        - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/10/
+        - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/10/
+        artifacts:
+        - build/**
 
   caches:
     pip: ~/.cache/pip
@@ -519,214 +493,235 @@ options:
 pipelines:
   branches:
     master:
-      - step: *mirror
-      - step: *build
+    - step: *mirror
+    - step: *build
 
     stage:
-      - step: *mirror
-      - step: *build
-      - step:
-          deployment: Staging
-          <<: *deploy
+    - step: *mirror
+    - step: *build
+    - step:
+        name: Deploy
+        caches: *deploy_cache
+        script: *deploy_script
+        deployment: Staging
 
     development:
-      - step: *mirror
-      - step: *build
-      - step:
-          deployment: Test
-          <<: *deploy
+    - step: *mirror
+    - step: *build
+    - step:
+        name: Deploy
+        caches: *deploy_cache
+        script: *deploy_script
+        deployment: Test
 
   custom:
     worker-docker-build:
-      - step:
-          name: Worker Docker Alpine image
-          script:
-            - export BITBUCKET_COMMIT_SHORT="${BITBUCKET_COMMIT::7}"
-            - docker login ${REGISTRY_URL} -u ${REGISTRY_LOGIN} -p ${REGISTRY_PASSWORD}
-            - docker build -t ${REGISTRY_URL}/${BITBUCKET_REPO_SLUG}:${BITBUCKET_COMMIT_SHORT} -t ${REGISTRY_URL}/${BITBUCKET_REPO_SLUG}:${BITBUCKET_BRANCH} -f Dockerfile-worker .
-            - docker push --all-tags ${REGISTRY_URL}/${BITBUCKET_REPO_SLUG}
-          services:
-            - docker
+    - step:
+        name: Worker Docker Alpine image
+        script:
+        - export BITBUCKET_COMMIT_SHORT="${BITBUCKET_COMMIT::7}"
+        - docker login ${REGISTRY_URL} -u ${REGISTRY_LOGIN} -p ${REGISTRY_PASSWORD}
+        - docker build -t ${REGISTRY_URL}/${BITBUCKET_REPO_SLUG}:${BITBUCKET_COMMIT_SHORT}
+          -t ${REGISTRY_URL}/${BITBUCKET_REPO_SLUG}:${BITBUCKET_BRANCH} -f Dockerfile-worker
+          .
+        - docker push --all-tags ${REGISTRY_URL}/${BITBUCKET_REPO_SLUG}
+        services:
+        - docker
 
     worker-dev-smart-chain:
-      - step:
-          name: Build worker
-          image: centos:centos8
-          caches:
-            - go-src
-            - go-pkg
-          script:
-            - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
-            - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
-            - dnf install -y epel-release
-            - dnf install -y snappy gcc git which wget make
-            - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-            - tar -xvf go1.21.4.linux-amd64.tar.gz
-            - mv go /usr/local
-            - export GOROOT=/usr/local/go
-            - export GOPATH=~/go
-            - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-            - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
-            - mkdir -pv "${PACKAGE_PATH}"
-            - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
-            - export GO111MODULE=on
-            - cd "${PACKAGE_PATH}"
-            - go get ./...
-            - go build cmd/worker/*
-            - COSMOS_BUILD_OPTIONS=goleveldb make install
-            - mkdir ${BITBUCKET_CLONE_DIR}/build
-            - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build
-            - cp ${PACKAGE_PATH}/cmd/worker/* ${BITBUCKET_CLONE_DIR}/build
-          artifacts:
-            - build/**
+    - step:
+        name: Build worker
+        image: centos:centos8
+        caches:
+        - go-src
+        - go-pkg
+        script:
+        - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
+        - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g'
+          /etc/yum.repos.d/CentOS-Linux-*
+        - dnf install -y epel-release
+        - dnf install -y snappy gcc git which wget make
+        - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+        - tar -xvf go1.21.4.linux-amd64.tar.gz
+        - mv go /usr/local
+        - export GOROOT=/usr/local/go
+        - export GOPATH=~/go
+        - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+        - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+        - mkdir -pv "${PACKAGE_PATH}"
+        - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+        - export GO111MODULE=on
+        - cd "${PACKAGE_PATH}"
+        - go get ./...
+        - go build cmd/worker/*
+        - COSMOS_BUILD_OPTIONS=goleveldb make install
+        - mkdir ${BITBUCKET_CLONE_DIR}/build
+        - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build
+        - cp ${PACKAGE_PATH}/cmd/worker/* ${BITBUCKET_CLONE_DIR}/build
+        artifacts:
+        - build/**
 
-      - step:
-          name: Deploy
-          deployment: Test
-          caches:
-            - pip
-          script:
-            - MESSAGE=`git log --format=%B -n 1 $BITBUCKET_COMMIT` # getting commit message
-            - pip3 install ansible==2.10.7
-            - chmod 700 ci-scripts/ansible
-            - cd ci-scripts/ansible
-            - ansible-playbook -i hosts -l "$WORKER_HOST" -e "ansible_user=$USERNAME artifacts=$BITBUCKET_CLONE_DIR/build INDEXER_URL_WORKER=$INDEXER_URL_WORKER RPC_URL_WORKER=$RPC_URL_WORKER WEB3_URL_WORKER=$WEB3_URL_WORKER decimal_bin_worker=$DECIMAL_BIN_WORKER" decimal-worker-build.yml
+    - step:
+        name: Deploy
+        deployment: Test
+        caches:
+        - pip
+        script:
+        - MESSAGE=`git log --format=%B -n 1 $BITBUCKET_COMMIT`
+        - pip3 install ansible==2.10.7
+        - chmod 700 ci-scripts/ansible
+        - cd ci-scripts/ansible
+        - ansible-playbook -i hosts -l "$WORKER_HOST" -e "ansible_user=$USERNAME artifacts=$BITBUCKET_CLONE_DIR/build
+          INDEXER_URL_WORKER=$INDEXER_URL_WORKER RPC_URL_WORKER=$RPC_URL_WORKER WEB3_URL_WORKER=$WEB3_URL_WORKER
+          decimal_bin_worker=$DECIMAL_BIN_WORKER" decimal-worker-build.yml
 
     worker-testnet-smart-chain:
-      - step:
-          name: Build worker
-          image: centos:centos8
-          caches:
-            - go-src
-            - go-pkg
-          script:
-            - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
-            - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
-            - dnf install -y epel-release
-            - dnf install -y snappy gcc git which wget make
-            - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-            - tar -xvf go1.21.4.linux-amd64.tar.gz
-            - mv go /usr/local
-            - export GOROOT=/usr/local/go
-            - export GOPATH=~/go
-            - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-            - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
-            - mkdir -pv "${PACKAGE_PATH}"
-            - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
-            - export GO111MODULE=on
-            - cd "${PACKAGE_PATH}"
-            - go get ./...
-            - go build cmd/worker/*
-            - COSMOS_BUILD_OPTIONS=goleveldb make install
-            - mkdir ${BITBUCKET_CLONE_DIR}/build
-            - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build
-            - cp ${PACKAGE_PATH}/cmd/worker/* ${BITBUCKET_CLONE_DIR}/build
-          artifacts:
-            - build/**
+    - step:
+        name: Build worker
+        image: centos:centos8
+        caches:
+        - go-src
+        - go-pkg
+        script:
+        - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
+        - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g'
+          /etc/yum.repos.d/CentOS-Linux-*
+        - dnf install -y epel-release
+        - dnf install -y snappy gcc git which wget make
+        - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+        - tar -xvf go1.21.4.linux-amd64.tar.gz
+        - mv go /usr/local
+        - export GOROOT=/usr/local/go
+        - export GOPATH=~/go
+        - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+        - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+        - mkdir -pv "${PACKAGE_PATH}"
+        - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+        - export GO111MODULE=on
+        - cd "${PACKAGE_PATH}"
+        - go get ./...
+        - go build cmd/worker/*
+        - COSMOS_BUILD_OPTIONS=goleveldb make install
+        - mkdir ${BITBUCKET_CLONE_DIR}/build
+        - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build
+        - cp ${PACKAGE_PATH}/cmd/worker/* ${BITBUCKET_CLONE_DIR}/build
+        artifacts:
+        - build/**
 
-      - step:
-          name: Deploy
-          deployment: Staging
-          caches:
-            - pip
-          script:
-            - MESSAGE=`git log --format=%B -n 1 $BITBUCKET_COMMIT` # getting commit message
-            - pip3 install ansible==2.10.7
-            - chmod 700 ci-scripts/ansible
-            - cd ci-scripts/ansible
-            - ansible-playbook -i hosts -l "$WORKER_HOST" -e "ansible_user=$USERNAME artifacts=$BITBUCKET_CLONE_DIR/build INDEXER_URL_WORKER=$INDEXER_URL_WORKER RPC_URL_WORKER=$RPC_URL_WORKER WEB3_URL_WORKER=$WEB3_URL_WORKER decimal_bin_worker=$DECIMAL_BIN_WORKER" decimal-worker-build.yml
+    - step:
+        name: Deploy
+        deployment: Staging
+        caches:
+        - pip
+        script:
+        - MESSAGE=`git log --format=%B -n 1 $BITBUCKET_COMMIT`
+        - pip3 install ansible==2.10.7
+        - chmod 700 ci-scripts/ansible
+        - cd ci-scripts/ansible
+        - ansible-playbook -i hosts -l "$WORKER_HOST" -e "ansible_user=$USERNAME artifacts=$BITBUCKET_CLONE_DIR/build
+          INDEXER_URL_WORKER=$INDEXER_URL_WORKER RPC_URL_WORKER=$RPC_URL_WORKER WEB3_URL_WORKER=$WEB3_URL_WORKER
+          decimal_bin_worker=$DECIMAL_BIN_WORKER" decimal-worker-build.yml
 
     worker-mainnet-smart-chain:
-      - step:
-          name: Build worker
-          image: centos:centos8
-          caches:
-            - go-src
-            - go-pkg
-          script:
-            - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
-            - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
-            - dnf install -y epel-release
-            - dnf install -y snappy gcc git which wget make
-            - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
-            - tar -xvf go1.21.4.linux-amd64.tar.gz
-            - mv go /usr/local
-            - export GOROOT=/usr/local/go
-            - export GOPATH=~/go
-            - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-            - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
-            - mkdir -pv "${PACKAGE_PATH}"
-            - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
-            - export GO111MODULE=on
-            - cd "${PACKAGE_PATH}"
-            - go get ./...
-            - go build cmd/worker/*
-            - COSMOS_BUILD_OPTIONS=goleveldb make install
-            - mkdir ${BITBUCKET_CLONE_DIR}/build
-            - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build
-            - cp ${PACKAGE_PATH}/cmd/worker/* ${BITBUCKET_CLONE_DIR}/build
-          artifacts:
-            - build/**
+    - step:
+        name: Build worker
+        image: centos:centos8
+        caches:
+        - go-src
+        - go-pkg
+        script:
+        - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
+        - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g'
+          /etc/yum.repos.d/CentOS-Linux-*
+        - dnf install -y epel-release
+        - dnf install -y snappy gcc git which wget make
+        - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+        - tar -xvf go1.21.4.linux-amd64.tar.gz
+        - mv go /usr/local
+        - export GOROOT=/usr/local/go
+        - export GOPATH=~/go
+        - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+        - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+        - mkdir -pv "${PACKAGE_PATH}"
+        - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+        - export GO111MODULE=on
+        - cd "${PACKAGE_PATH}"
+        - go get ./...
+        - go build cmd/worker/*
+        - COSMOS_BUILD_OPTIONS=goleveldb make install
+        - mkdir ${BITBUCKET_CLONE_DIR}/build
+        - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build
+        - cp ${PACKAGE_PATH}/cmd/worker/* ${BITBUCKET_CLONE_DIR}/build
+        artifacts:
+        - build/**
 
-      - step:
-          name: Deploy
-          deployment: Production
-          caches:
-            - pip
-          script:
-            - MESSAGE=`git log --format=%B -n 1 $BITBUCKET_COMMIT` # getting commit message
-            - pip3 install ansible==2.10.7
-            - chmod 700 ci-scripts/ansible
-            - cd ci-scripts/ansible
-            - ansible-playbook -i hosts -l "$WORKER_HOST" -e "ansible_user=$USERNAME artifacts=$BITBUCKET_CLONE_DIR/build INDEXER_URL_WORKER=$INDEXER_URL_WORKER RPC_URL_WORKER=$RPC_URL_WORKER WEB3_URL_WORKER=$WEB3_URL_WORKER decimal_bin_worker=$DECIMAL_BIN_WORKER" decimal-worker-build.yml
+    - step:
+        name: Deploy
+        deployment: Production
+        caches:
+        - pip
+        script:
+        - MESSAGE=`git log --format=%B -n 1 $BITBUCKET_COMMIT`
+        - pip3 install ansible==2.10.7
+        - chmod 700 ci-scripts/ansible
+        - cd ci-scripts/ansible
+        - ansible-playbook -i hosts -l "$WORKER_HOST" -e "ansible_user=$USERNAME artifacts=$BITBUCKET_CLONE_DIR/build
+          INDEXER_URL_WORKER=$INDEXER_URL_WORKER RPC_URL_WORKER=$RPC_URL_WORKER WEB3_URL_WORKER=$WEB3_URL_WORKER
+          decimal_bin_worker=$DECIMAL_BIN_WORKER" decimal-worker-build.yml
 
     build-and-deploy-binary-files-to-repo-DEVnet:
-      - parallel: *repo_build
-      - step:
-          name: Deploy
-          deployment: Test
-          script:
-            - pipe: atlassian/rsync-deploy:0.12.0
-              variables:
-                USER: $REPO_USER
-                SERVER: $REPO_HOST
-                LOCAL_PATH: "build/"
-                REMOTE_PATH: $REPO_REMOTE_PATH/$REPO_UPDATE_BLOCK
-                DELETE_FLAG: "true"
-                DEBUG: "true"
-                EXTRA_ARGS: "-aP"
-      - step: *worker-docker-build
+    - parallel: *repo_build
+
+    - step:
+        name: Deploy
+        deployment: Test
+        script:
+        - pipe: atlassian/rsync-deploy:0.12.0
+          variables:
+            USER: $REPO_USER
+            SERVER: $REPO_HOST
+            LOCAL_PATH: build/
+            REMOTE_PATH: $REPO_REMOTE_PATH/$REPO_UPDATE_BLOCK
+            DELETE_FLAG: 'true'
+            DEBUG: 'true'
+            EXTRA_ARGS: -aP
+
+    - step: *worker-docker-build
 
     build-and-deploy-binary-files-to-repo-TESTnet:
-      - parallel: *repo_build
-      - step:
-          name: Deploy
-          deployment: Staging
-          script:
-            - pipe: atlassian/rsync-deploy:0.12.0
-              variables:
-                USER: $REPO_USER
-                SERVER: $REPO_HOST
-                LOCAL_PATH: "build/"
-                REMOTE_PATH: $REPO_REMOTE_PATH/$REPO_UPDATE_BLOCK
-                DELETE_FLAG: "true"
-                DEBUG: "true"
-                EXTRA_ARGS: "-aP"
-      - step: *worker-docker-build
+    - parallel: *repo_build
+
+    - step:
+        name: Deploy
+        deployment: Staging
+        script:
+        - pipe: atlassian/rsync-deploy:0.12.0
+          variables:
+            USER: $REPO_USER
+            SERVER: $REPO_HOST
+            LOCAL_PATH: build/
+            REMOTE_PATH: $REPO_REMOTE_PATH/$REPO_UPDATE_BLOCK
+            DELETE_FLAG: 'true'
+            DEBUG: 'true'
+            EXTRA_ARGS: -aP
+
+    - step: *worker-docker-build
 
     build-and-deploy-binary-files-to-repo-MAINnet:
-      - parallel: *repo_build
-      - step:
-          name: Deploy
-          deployment: Production
-          script:
-            - pipe: atlassian/rsync-deploy:0.12.0
-              variables:
-                USER: $REPO_USER
-                SERVER: $REPO_HOST
-                LOCAL_PATH: "build/"
-                REMOTE_PATH: $REPO_REMOTE_PATH/$REPO_UPDATE_BLOCK
-                DELETE_FLAG: "true"
-                DEBUG: "true"
-                EXTRA_ARGS: "-aP"
-      - step: *worker-docker-build
+    - parallel: *repo_build
+
+    - step:
+        name: Deploy
+        deployment: Production
+        script:
+        - pipe: atlassian/rsync-deploy:0.12.0
+          variables:
+            USER: $REPO_USER
+            SERVER: $REPO_HOST
+            LOCAL_PATH: build/
+            REMOTE_PATH: $REPO_REMOTE_PATH/$REPO_UPDATE_BLOCK
+            DELETE_FLAG: 'true'
+            DEBUG: 'true'
+            EXTRA_ARGS: -aP
+
+    - step: *worker-docker-build
