@@ -262,6 +262,36 @@ definitions:
 #              - build/**
 
         - step:
+            name: Build on Ubuntu 24.04
+            image: ubuntu:24.04
+            caches:
+              - go-src
+              - go-pkg
+            script:
+              - apt-get update -y
+              - apt-get install -y build-essential
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
+              - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+              - tar -xvf go1.21.4.linux-amd64.tar.gz
+              - mv go /usr/local
+              - export GOROOT=/usr/local/go
+              - export GOPATH=~/go
+              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+              - go version
+              - go env
+              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+              - mkdir -pv "${PACKAGE_PATH}"
+              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+              - export GO111MODULE=on
+              - cd "${PACKAGE_PATH}"
+              - go get ./...
+              - go test ./...
+              - make install
+              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/24.04/
+              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/ubuntu/24.04/
+            artifacts:
+              - build/**
+
             name: Build on Ubuntu 22.04
             image: ubuntu:22.04
             caches:
@@ -386,6 +416,36 @@ definitions:
               - build/**
 
         - step:
+            name: Build on Debian 12
+            image: debian:12
+            caches:
+              - go-src
+              - go-pkg
+            script:
+              - apt-get update -y
+              - apt-get install -y build-essential
+              - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev git ca-certificates wget
+              - wget https://golang.org/dl/go1.21.4.linux-amd64.tar.gz
+              - tar -xvf go1.21.4.linux-amd64.tar.gz
+              - mv go /usr/local
+              - export GOROOT=/usr/local/go
+              - export GOPATH=~/go
+              - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+              - go version
+              - go env
+              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+              - mkdir -pv "${PACKAGE_PATH}"
+              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+              - export GO111MODULE=on
+              - cd "${PACKAGE_PATH}"
+              - go get ./...
+              - go test ./...
+              - make install
+              - mkdir -p ${BITBUCKET_CLONE_DIR}/build/linux/debian/12/
+              - cp ${GOPATH}/bin/* ${BITBUCKET_CLONE_DIR}/build/linux/debian/12/
+            artifacts:
+              - build/**
+
             name: Build on Debian 11
             image: debian:11
             caches:
