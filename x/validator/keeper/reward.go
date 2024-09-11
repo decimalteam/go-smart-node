@@ -73,7 +73,6 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
         ctx.Logger().Info("Added rewards to total", "validator", validator, "rewards", rewards, "allRewards", allRewards)
 
         for _, del := range delByValidator[validator.String()] {
-            ctx.Logger().Info("Processing delegation", "delegator", del.Delegator)
             delStake := del.GetStake().GetStake()
 
             if delStake.Denom != k.BaseDenom(ctx) {
@@ -232,7 +231,6 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
                 ctx.Logger().Error("Failed to send reward to delegator", "error", err)
                 continue
             }
-            ctx.Logger().Info("Sent reward to delegator", "delegator", del.Delegator, "amount", reward)
             remainder = remainder.Sub(reward)
             // event
             if del.GetStake().GetType() == types.StakeType_Coin {
@@ -266,21 +264,16 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
                 valEvent.Delegators = append(valEvent.Delegators, nftEvent)
             }
             if sumHold.LT(sdk.NewInt(1)) {
-                ctx.Logger().Info("sumHold is less than 1, skipping hold reward", "delegator", del.Delegator)
                 continue
             }
             if allHoldBigOneYearsSum.LT(sdk.NewInt(1)) {
-                ctx.Logger().Info("allHoldBigOneYearsSum is less than 1, skipping hold reward", "delegator", del.Delegator)
                 continue
             }
             if sumRewardForHold.LT(sdk.NewInt(1)) {
-                ctx.Logger().Info("sumRewardForHold is less than 1, skipping hold reward", "delegator", del.Delegator)
                 continue
             }
 			rewardHold := sumRewardForHold.Mul(sumHold).Quo(allHoldBigOneYearsSum)
-            ctx.Logger().Info("Calculated hold reward", "delegator", del.Delegator, "rewardHold", rewardHold)
             if rewardHold.LT(sdk.NewInt(1)) {
-                ctx.Logger().Info("Hold reward is less than 1, skipping", "delegator", del.Delegator)
                 continue
             }
             // pay reward
@@ -289,7 +282,6 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
                 ctx.Logger().Error("Failed to send hold reward to delegator", "error", err, "delegator", del.Delegator)
                 continue
             }
-            ctx.Logger().Info("Sent hold reward to delegator", "delegator", del.Delegator, "amount", rewardHold)
             // event
             if del.GetStake().GetType() == types.StakeType_Coin {
                 // rewards coins
@@ -305,7 +297,6 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
                     NFTs: nil,
                 }
                 valEvent.DelegatorHolds = append(valEvent.DelegatorHolds, delEvent)
-                ctx.Logger().Info("Added coin hold reward event", "delegator", del.Delegator, "reward", rewardHold)
             }
             if del.GetStake().GetType() == types.StakeType_NFT {
                 // rewards nft
