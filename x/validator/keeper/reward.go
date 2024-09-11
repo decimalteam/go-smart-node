@@ -77,7 +77,6 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
             delStake := del.GetStake().GetStake()
 
             if delStake.Denom != k.BaseDenom(ctx) {
-                ctx.Logger().Info("Delegation is not in base denom", "denom", delStake.Denom)
                 delCoinPrice, ok := customCoinPrices[delStake.Denom]
                 if !ok {
                     ctx.Logger().Error("Price not found for custom coin", "denom", delStake.Denom)
@@ -99,7 +98,6 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
                     }
                 }
                 allHoldBigOneYearsSum = allHoldBigOneYearsSum.Add(baseAmount)
-                ctx.Logger().Info("Updated allHoldBigOneYearsSum", "sum", allHoldBigOneYearsSum)
             }
         }
     }
@@ -192,7 +190,6 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 
         remainder := rewards
         for _, del := range delByValidator[validator.String()] {
-            ctx.Logger().Info("Processing delegation for rewards", "delegator", del.Delegator)
             reward := sdk.NewIntFromBigInt(rewards.BigInt())
             // calculate share
             delStake := del.GetStake().GetStake()
@@ -200,7 +197,6 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
             baseAmount := delStake.Amount
             sumHold := sdk.NewDecFromInt(sdk.NewInt(0)).TruncateInt()
             if delStake.Denom != k.BaseDenom(ctx) {
-                ctx.Logger().Info("Delegation is not in base denom", "denom", delStake.Denom)
                 delCoinPrice, ok := customCoinPrices[delStake.Denom]
                 if !ok {
                     ctx.Logger().Error("Price not found for custom coin", "denom", delStake.Denom)
@@ -208,32 +204,26 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
                 }
                 baseAmount = sdk.NewDecFromInt(delStake.Amount).Mul(delCoinPrice).TruncateInt()
                 for _, hold := range del.GetStake().GetHolds() {
-                    ctx.Logger().Info("Processing hold", "startTime", hold.HoldStartTime, "endTime", hold.HoldEndTime)
                     dateStart := time.Unix(hold.HoldStartTime, 0)
                     dateEnd := time.Unix(hold.HoldEndTime, 0)
                     difference := dateEnd.Sub(dateStart)
                     if (difference.Hours() / 24 / 365) >= 1 {
                         sumHold = sumHold.Add(sdk.NewDecFromInt(hold.Amount).Mul(delCoinPrice).TruncateInt())
-                        ctx.Logger().Info("Added to sumHold", "amount", sumHold)
                     }
                 }
             } else {
                 for _, hold := range del.GetStake().GetHolds() {
-                    ctx.Logger().Info("Processing hold for base denom", "startTime", hold.HoldStartTime, "endTime", hold.HoldEndTime)
                     dateStart := time.Unix(hold.HoldStartTime, 0)
                     dateEnd := time.Unix(hold.HoldEndTime, 0)
                     difference := dateEnd.Sub(dateStart)
                     if (difference.Hours() / 24 / 365) >= 1 {
                         sumHold = sumHold.Add(sdk.NewDecFromInt(hold.Amount).TruncateInt())
-                        ctx.Logger().Info("Added to sumHold", "amount", sumHold)
                     }
                 }
             }
 
             reward = reward.Mul(baseAmount).Quo(totalStake)
-            ctx.Logger().Info("Calculated reward for delegator", "delegator", del.Delegator, "reward", reward)
             if reward.LT(sdk.NewInt(1)) {
-                ctx.Logger().Info("Reward is less than 1, skipping", "delegator", del.Delegator)
                 continue
             }
             // pay reward
