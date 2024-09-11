@@ -40,6 +40,14 @@ func (k *Keeper) ToBaseCoin(ctx sdk.Context, c sdk.Coin) sdk.Coin {
 
 	baseAmount := sdk.NewDecFromInt(c.Amount).Mul(customCoinPrice).TruncateInt()
 
+	if baseAmount.IsNegative() {
+		k.Logger(ctx).Error("Negative base amount calculated",
+			"original_coin", c,
+			"base_amount", baseAmount,
+			"custom_coin_price", customCoinPrice,
+		)
+		return sdk.NewCoin(baseDenom, sdk.ZeroInt())
+	}
 	return sdk.NewCoin(baseDenom, baseAmount)
 }
 

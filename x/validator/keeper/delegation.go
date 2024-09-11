@@ -74,8 +74,10 @@ func (k Keeper) DeleteHoldMature(ctx sdk.Context) {
 func (k Keeper) GetAllDelegationsByValidator(ctx sdk.Context) (delegations map[string][]types.Delegation) {
 	delegations = make(map[string][]types.Delegation)
 	k.IterateAllDelegations(ctx, func(delegation types.Delegation) bool {
-		valAddress := delegation.GetValidator().String()
-		delegations[valAddress] = append(delegations[valAddress], delegation)
+		if !delegation.GetStake().GetStake().Amount.IsNegative() {
+			valAddress := delegation.GetValidator().String()
+			delegations[valAddress] = append(delegations[valAddress], delegation)
+		}
 		return false
 	})
 	return

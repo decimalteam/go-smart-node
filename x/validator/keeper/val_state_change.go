@@ -532,6 +532,19 @@ func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator) {
 		BaseAmount sdkmath.Int
 	}, 0)
 	for i := range delegations {
+		if delegations[i].Stake.GetStake().Amount.IsNegative() {
+			k.Logger(ctx).Info("Negative stake amount detected",
+			"validator", validator.OperatorAddress,
+			"delegator", delegations[i].Delegator,
+			"stake_type", delegations[i].Stake.Type,
+			"stake_amount", delegations[i].Stake.GetStake().Amount,
+			"stake_denom", delegations[i].Stake.GetStake().Denom,
+			"stake_id", delegations[i].Stake.ID,
+			"stake_sub_token_ids", delegations[i].Stake.SubTokenIDs,
+		    )
+			continue
+		}
+
 		baseAmounts = append(baseAmounts, struct {
 			Delegation types.Delegation
 			BaseAmount sdkmath.Int
