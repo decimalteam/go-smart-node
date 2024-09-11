@@ -131,7 +131,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
         err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, daoWallet, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), daoVal)))
         if err != nil {
             ctx.Logger().Error("Failed to send DAO commission", "error", err)
-            return err
+            continue
         }
 
         ctx.Logger().Info("Calculating and sending Develop commission")
@@ -139,7 +139,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
         err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, developWallet, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), developVal)))
         if err != nil {
             ctx.Logger().Error("Failed to send Develop commission", "error", err)
-            return err
+            continue
         }
 
         rewards = rewards.Sub(daoVal)
