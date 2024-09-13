@@ -8,6 +8,7 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	"io"
 	"net/http"
+	"bytes"
 	"os"
 	"path/filepath"
 	"syscall"
@@ -79,6 +80,7 @@ import (
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	// IBC
 	ibc "github.com/cosmos/ibc-go/v6/modules/core"
@@ -1077,6 +1079,34 @@ func initParamsKeeper(
 	return paramsKeeper
 }
 
+// func (app *DSC) setupUpgradeHandlers(chainID string) {
+// 	for _, uc := range GetUpgradeList(chainID) {
+// 		app.UpgradeKeeper.SetUpgradeHandler(
+// 			uc.name,
+// 			uc.handler(app, app.mm, app.configurator),
+// 		)
+// 	}
+
+// 	// When a planned update height is reached, the old binary will panic
+// 	// writing on disk the height and name of the update that triggered it
+// 	// This will read that value, and execute the preparations for the upgrade.
+// 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
+// 	if err != nil {
+// 		panic(fmt.Errorf("failed to read upgrade info from disk: %w", err))
+// 	}
+
+// 	if app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+// 		return
+// 	}
+
+// 	var storeUpgrades *store.StoreUpgrades
+
+// 	if storeUpgrades != nil {
+// 		// configure store loader that checks if version == upgradeHeight and applies store upgrades
+// 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, storeUpgrades))
+// 	}
+// }
+
 func (app *DSC) setupUpgradeHandlers(chainID string) {
 	for _, uc := range GetUpgradeList(chainID) {
 		app.UpgradeKeeper.SetUpgradeHandler(
@@ -1084,6 +1114,53 @@ func (app *DSC) setupUpgradeHandlers(chainID string) {
 			uc.handler(app, app.mm, app.configurator),
 		)
 	}
+
+	app.UpgradeKeeper.SetUpgradeHandler(
+		"v2.2.3",
+		func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+
+			logger := ctx.Logger().With("upgrade", "v2.2.3")
+
+			validators := app.GetStakingKeeper().GetAllValidators(ctx)
+
+			logger.Info("Start changing validators.")
+
+			for _, validator := range validators {
+
+				store := ctx.KVStore(app.GetKey(stakingtypes.StoreKey))
+
+				deleted := false
+
+				iterator := sdk.KVStorePrefixIterator(store, stakingtypes.ValidatorsByPowerIndexKey)
+				defer iterator.Close()
+
+				for ; iterator.Valid(); iterator.Next() {
+					valAddr := stakingtypes.ParseValidatorPowerRankKey(iterator.Key())
+					val := sdk.ValAddress(valAddr).String()
+
+					if bytes.Equal(valAddr, validator.GetOperator()) {
+						if deleted {
+							logger.Info("Duplicate validator address is: " + val)
+						} else {
+							deleted = true
+						}
+						store.Delete(iterator.Key())
+					}
+				}
+
+				app.GetStakingKeeper().SetValidatorByPowerIndex(ctx, validator)
+				_, err := app.GetStakingKeeper().ApplyAndReturnValidatorSetUpdates(ctx)
+				if err != nil {
+					panic(err)
+				}
+
+			}
+
+			logger.Info("Updated all validator successfully.")
+
+			return app.mm.RunMigrations(ctx, app.configurator, fromVM)
+		},
+	)
 
 	// When a planned update height is reached, the old binary will panic
 	// writing on disk the height and name of the update that triggered it

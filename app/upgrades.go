@@ -73,3 +73,43 @@ var UpdateRewardAndMaxVars = func(app *DSC, mm *module.Manager, configurator mod
 		return mm.RunMigrations(ctx, configurator, fromVM)
 	}
 }
+
+// var FixValidatorDuplicates = func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+// 	return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+
+// 		validators := app.GetStakingKeeper().GetAllValidators(ctx)
+
+// 			for _, validator := range validators {
+				
+// 				// store := ctx.KVStore(app.)
+// 				store := ctx.KVStore(app.GetKey(stakingtypes.StoreKey))
+				
+// 				deleted := false
+
+// 				iterator := sdk.KVStorePrefixIterator(store, stakingtypes.ValidatorsByPowerIndexKey)
+// 				defer iterator.Close()
+
+// 				for ; iterator.Valid(); iterator.Next() {
+// 					valAddr := stakingtypes.ParseValidatorPowerRankKey(iterator.Key())
+// 					if bytes.Equal(valAddr, validator.GetOperator()) {
+// 						if deleted {
+// 							panic("found duplicate power index key")
+// 						} else {
+// 							deleted = true
+// 						}
+
+// 						store.Delete(iterator.Key())
+// 					}
+// 				}
+
+// 				app.GetStakingKeeper().SetValidatorByPowerIndex(ctx, validator)
+// 				_, err := app.GetStakingKeeper().ApplyAndReturnValidatorSetUpdates(ctx)
+
+// 				if err != nil {
+// 					panic(err)
+// 				}
+// 			}
+
+// 			return mm.RunMigrations(ctx, configurator, fromVM)
+// 	}
+// }
