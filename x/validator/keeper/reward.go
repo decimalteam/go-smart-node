@@ -51,13 +51,13 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 		daoVal := sdk.NewDecFromInt(rewards).Mul(DAOCommission).TruncateInt()
 		err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, daoWallet, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), daoVal)))
 		if err != nil {
-			return err
+			continue
 		}
 		// develop commission
 		developVal := sdk.NewDecFromInt(rewards).Mul(DevelopCommission).TruncateInt()
 		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, developWallet, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), developVal)))
 		if err != nil {
-			return err
+			continue
 		}
 		rewards = rewards.Sub(daoVal)
 		rewards = rewards.Sub(developVal)
@@ -76,7 +76,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 
 		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, valRewardAddress, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), valComission)))
 		if err != nil {
-			return err
+			continue
 		}
 
 		rewards = rewards.Sub(valComission)
