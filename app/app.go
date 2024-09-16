@@ -8,7 +8,7 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	"io"
 	"net/http"
-	"bytes"
+	// "bytes"
 	"os"
 	"path/filepath"
 	"syscall"
@@ -80,7 +80,6 @@ import (
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	// IBC
 	ibc "github.com/cosmos/ibc-go/v6/modules/core"
@@ -1115,52 +1114,52 @@ func (app *DSC) setupUpgradeHandlers(chainID string) {
 		)
 	}
 
-	app.UpgradeKeeper.SetUpgradeHandler(
-		"v2.2.3",
-		func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+	// app.UpgradeKeeper.SetUpgradeHandler(
+	// 	"v2.2.3",
+	// 	func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 
-			logger := ctx.Logger().With("upgrade", "v2.2.3")
+	// 		logger := ctx.Logger().With("upgrade", "v2.2.3")
 
-			validators := app.GetStakingKeeper().GetAllValidators(ctx)
+	// 		validators := app.GetStakingKeeper().GetAllValidators(ctx)
 
-			logger.Info("Start changing validators.")
+	// 		logger.Info("Start changing validators.")
 
-			for _, validator := range validators {
+	// 		for _, validator := range validators {
 
-				store := ctx.KVStore(app.GetKey(stakingtypes.StoreKey))
+	// 			store := ctx.KVStore(app.GetKey(stakingtypes.StoreKey))
 
-				deleted := false
+	// 			deleted := false
 
-				iterator := sdk.KVStorePrefixIterator(store, stakingtypes.ValidatorsByPowerIndexKey)
-				defer iterator.Close()
+	// 			iterator := sdk.KVStorePrefixIterator(store, stakingtypes.ValidatorsByPowerIndexKey)
+	// 			defer iterator.Close()
 
-				for ; iterator.Valid(); iterator.Next() {
-					valAddr := stakingtypes.ParseValidatorPowerRankKey(iterator.Key())
-					val := sdk.ValAddress(valAddr).String()
+	// 			for ; iterator.Valid(); iterator.Next() {
+	// 				valAddr := stakingtypes.ParseValidatorPowerRankKey(iterator.Key())
+	// 				val := sdk.ValAddress(valAddr).String()
 
-					if bytes.Equal(valAddr, validator.GetOperator()) {
-						if deleted {
-							logger.Info("Duplicate validator address is: " + val)
-						} else {
-							deleted = true
-						}
-						store.Delete(iterator.Key())
-					}
-				}
+	// 				if bytes.Equal(valAddr, validator.GetOperator()) {
+	// 					if deleted {
+	// 						logger.Info("Duplicate validator address is: " + val)
+	// 					} else {
+	// 						deleted = true
+	// 					}
+	// 					store.Delete(iterator.Key())
+	// 				}
+	// 			}
 
-				app.GetStakingKeeper().SetValidatorByPowerIndex(ctx, validator)
-				_, err := app.GetStakingKeeper().ApplyAndReturnValidatorSetUpdates(ctx)
-				if err != nil {
-					panic(err)
-				}
+	// 			app.GetStakingKeeper().SetValidatorByPowerIndex(ctx, validator)
+	// 			_, err := app.GetStakingKeeper().ApplyAndReturnValidatorSetUpdates(ctx)
+	// 			if err != nil {
+	// 				panic(err)
+	// 			}
 
-			}
+	// 		}
 
-			logger.Info("Updated all validator successfully.")
+	// 		logger.Info("Updated all validator successfully.")
 
-			return app.mm.RunMigrations(ctx, app.configurator, fromVM)
-		},
-	)
+	// 		return app.mm.RunMigrations(ctx, app.configurator, fromVM)
+	// 	},
+	// )
 
 	// When a planned update height is reached, the old binary will panic
 	// writing on disk the height and name of the update that triggered it

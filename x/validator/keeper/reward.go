@@ -117,70 +117,48 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 			}
 			// pay reward
 
-			// pay reward
 			err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, del.GetDelegator(), sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), reward)))
 			if err != nil {
-				ctx.Logger().Error("Failed to send reward to delegator", "error", err)
 				continue
 			}
 			remainder = remainder.Sub(reward)
 			// event
-			if del.GetStake().GetType() == types.StakeType_Coin {
-				// rewards coins
-				delEvent := types.DelegatorReward{
-					Delegator: del.Delegator,
-					Coins: []types.StakeReward{
-						{
-							ID:       k.BaseDenom(ctx),
-							Reward:   reward,
-							RewardID: del.GetStake().GetID(),
-						},
+			delEvent := types.DelegatorReward{
+				Delegator: del.Delegator,
+				Coins: []types.StakeReward{
+					{
+						ID:     k.BaseDenom(ctx),
+						Reward: reward,
 					},
-					NFTs: nil,
-				}
-				valEvent.Delegators = append(valEvent.Delegators, delEvent)
+				},
+				NFTs: nil,
 			}
-			if del.GetStake().GetType() == types.StakeType_NFT {
-				// rewards nft
-				nftEvent := types.DelegatorReward{
-					Delegator: del.Delegator,
-					Coins:     nil,
-					NFTs: []types.StakeReward{
-						{
-							ID:       del.GetStake().GetID(),
-							Reward:   reward,
-							RewardID: del.GetStake().GetID(),
-						},
-					},
-				}
-				valEvent.Delegators = append(valEvent.Delegators, nftEvent)
-			}
-
-			// update validator rewards
-			valRewards, err := k.GetValidatorRS(ctx, validator)
-			if err != nil {
-				return err
-			}
-			valRewards.Rewards = sdk.ZeroInt()
-			valRewards.Stake = TokensToConsensusPower(totalStake)
-			if val.Status != types.BondStatus_Bonded {
-				valRewards.Stake = 0
-			}
-			k.SetValidatorRS(ctx, validator, valRewards)
-
-			if val.Status == types.BondStatus_Bonded {
-				k.DeleteValidatorByPowerIndex(ctx, val)
-				val.Stake = TokensToConsensusPower(totalStake)
-				k.SetValidatorByPowerIndex(ctx, val)
-			}
-
-			e.Validators = append(e.Validators, valEvent)
+			valEvent.Delegators = append(valEvent.Delegators, delEvent)
 		}
-
-		err = events.EmitTypedEvent(ctx, &e)
+		// update validator rewards
+		valRewards, err := k.GetValidatorRS(ctx, validator)
 		if err != nil {
 			return err
 		}
+		valRewards.Rewards = sdk.ZeroInt()
+		valRewards.Stake = TokensToConsensusPower(totalStake)
+		if val.Status != types.BondStatus_Bonded {
+			valRewards.Stake = 0
+		}
+		k.SetValidatorRS(ctx, validator, valRewards)
+
+		if val.Status == types.BondStatus_Bonded {
+			k.DeleteValidatorByPowerIndex(ctx, val)
+			val.Stake = TokensToConsensusPower(totalStake)
+			k.SetValidatorByPowerIndex(ctx, val)
+		}
+
+		e.Validators = append(e.Validators, valEvent)
+	}
+
+	err := events.EmitTypedEvent(ctx, &e)
+	if err != nil {
+		return err
 	}
 	return nil
 }
