@@ -51,13 +51,13 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 		daoVal := sdk.NewDecFromInt(rewards).Mul(DAOCommission).TruncateInt()
 		err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, daoWallet, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), daoVal)))
 		if err != nil {
-			continue
+			return err
 		}
 		// develop commission
 		developVal := sdk.NewDecFromInt(rewards).Mul(DevelopCommission).TruncateInt()
 		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, developWallet, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), developVal)))
 		if err != nil {
-			continue
+			return err
 		}
 		rewards = rewards.Sub(daoVal)
 		rewards = rewards.Sub(developVal)
@@ -76,7 +76,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 
 		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, valRewardAddress, sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), valComission)))
 		if err != nil {
-			continue
+			return err
 		}
 
 		rewards = rewards.Sub(valComission)
@@ -116,24 +116,42 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 				continue
 			}
 			// pay reward
-
 			err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, del.GetDelegator(), sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), reward)))
 			if err != nil {
 				continue
 			}
 			remainder = remainder.Sub(reward)
 			// event
-			delEvent := types.DelegatorReward{
-				Delegator: del.Delegator,
-				Coins: []types.StakeReward{
-					{
-						ID:     k.BaseDenom(ctx),
-						Reward: reward,
+			if del.GetStake().GetType() == types.StakeType_Coin {
+				// rewards coins
+				delEvent := types.DelegatorReward{
+					Delegator: del.Delegator,
+					Coins: []types.StakeReward{
+						{
+							ID:       k.BaseDenom(ctx),
+							Reward:   reward,
+							RewardID: del.GetStake().GetID(),
+						},
 					},
-				},
-				NFTs: nil,
+					NFTs: nil,
+				}
+				valEvent.Delegators = append(valEvent.Delegators, delEvent)
 			}
-			valEvent.Delegators = append(valEvent.Delegators, delEvent)
+			if del.GetStake().GetType() == types.StakeType_NFT {
+				// rewards nft
+				nftEvent := types.DelegatorReward{
+					Delegator: del.Delegator,
+					Coins:     nil,
+					NFTs: []types.StakeReward{
+						{
+							ID:       del.GetStake().GetID(),
+							Reward:   reward,
+							RewardID: del.GetStake().GetID(),
+						},
+					},
+				}
+				valEvent.Delegators = append(valEvent.Delegators, nftEvent)
+			}
 		}
 		// update validator rewards
 		valRewards, err := k.GetValidatorRS(ctx, validator)
