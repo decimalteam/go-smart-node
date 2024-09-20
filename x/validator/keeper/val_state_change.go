@@ -534,14 +534,54 @@ func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator) {
 	for i := range delegations {
 		if delegations[i].Stake.GetStake().Amount.IsNegative() {
 			k.Logger(ctx).Info("Negative stake amount detected",
-			"validator", validator.OperatorAddress,
-			"delegator", delegations[i].Delegator,
-			"stake_type", delegations[i].Stake.Type,
-			"stake_amount", delegations[i].Stake.GetStake().Amount,
-			"stake_denom", delegations[i].Stake.GetStake().Denom,
-			"stake_id", delegations[i].Stake.ID,
-			"stake_sub_token_ids", delegations[i].Stake.SubTokenIDs,
-		    )
+				"validator", validator.OperatorAddress,
+				"delegator", delegations[i].Delegator,
+				"stake_type", delegations[i].Stake.Type,
+				"stake_amount", delegations[i].Stake.GetStake().Amount,
+				"stake_denom", delegations[i].Stake.GetStake().Denom,
+				"stake_id", delegations[i].Stake.ID,
+				"stake_sub_token_ids", delegations[i].Stake.SubTokenIDs,
+			)
+
+			// Remove the delegation
+			k.RemoveDelegation(ctx, delegations[i])
+			k.DecrementDelegationsCount(ctx, validator.GetOperator())
+
+			stakeBaseCoin := k.ToBaseCoin(ctx, delegations[i].Stake.GetStake())
+			stakePower := TokensToConsensusPower(stakeBaseCoin.Amount)
+
+			valAddr, err := sdk.ValAddressFromBech32(validator.OperatorAddress)
+			if err != nil {
+				panic(err)
+			}
+
+			// clean index
+			k.DeleteValidatorByPowerIndex(ctx, validator)
+			rs, err := k.GetValidatorRS(ctx, valAddr)
+			if err != nil {
+				panic(err)
+			}
+
+			// calculate validator new stake
+			if validator.Online {
+				validator.Stake -= stakePower
+				if validator.Stake < 0 {
+					validator.Stake = 0
+				}
+				rs.Stake -= stakePower
+				if rs.Stake < 0 {
+					rs.Stake = 0
+				}
+			} else {
+				if rs.Stake > 0 {
+					rs.Stake = 0
+					validator.Stake = 0
+				}
+			}
+			// write index
+			k.SetValidatorRS(ctx, valAddr, rs)
+			k.SetValidatorByPowerIndex(ctx, validator)
+
 			continue
 		}
 
