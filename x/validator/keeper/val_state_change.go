@@ -581,7 +581,32 @@ func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator) {
 			// write index
 			k.SetValidatorRS(ctx, valAddr, rs)
 			k.SetValidatorByPowerIndex(ctx, validator)
+			customCoinStaked := k.GetAllCustomCoinsStaked(ctx)
+			customCoinPrices := k.CalculateCustomCoinPrices(ctx, customCoinStaked)
 
+			validators := k.GetAllValidators(ctx)
+			delByValidator := k.GetAllDelegationsByValidator(ctx)
+			for _, val := range validators {
+				validator := val.GetOperator()
+				if val.Rewards.IsZero() {
+					continue
+				}
+				totalStake, err := k.CalculateTotalPowerWithDelegationsAndPrices(ctx, val.GetOperator(), delByValidator[validator.String()], customCoinPrices)
+				if err != nil {
+					panic(err)
+				}
+				// update validator rewards
+				valRewards, err := k.GetValidatorRS(ctx, validator)
+				if err != nil {
+					panic(err)
+				}
+				valRewards.Rewards = sdk.ZeroInt()
+				valRewards.Stake = TokensToConsensusPower(totalStake)
+				if val.Status != types.BondStatus_Bonded {
+					valRewards.Stake = 0
+				}
+				k.SetValidatorRS(ctx, validator, valRewards)
+			}
 			continue
 		}
 
