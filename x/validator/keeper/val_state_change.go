@@ -547,8 +547,7 @@ func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator) {
 			k.RemoveDelegation(ctx, delegations[i])
 			k.DecrementDelegationsCount(ctx, validator.GetOperator())
 
-			stakeBaseCoin := k.ToBaseCoin(ctx, delegations[i].Stake.GetStake())
-			stakePower := TokensToConsensusPower(stakeBaseCoin.Amount)
+			stakePower := TokensToConsensusPower(sdkmath.NewInt(0))
 
 			valAddr, err := sdk.ValAddressFromBech32(validator.OperatorAddress)
 			if err != nil {
@@ -581,6 +580,7 @@ func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator) {
 			// write index
 			k.SetValidatorRS(ctx, valAddr, rs)
 			k.SetValidatorByPowerIndex(ctx, validator)
+
 			customCoinStaked := k.GetAllCustomCoinsStaked(ctx)
 			customCoinPrices := k.CalculateCustomCoinPrices(ctx, customCoinStaked)
 
@@ -606,6 +606,7 @@ func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator) {
 					valRewards.Stake = 0
 				}
 				k.SetValidatorRS(ctx, validator, valRewards)
+				k.SetValidatorByPowerIndex(ctx, val)
 			}
 			continue
 		}

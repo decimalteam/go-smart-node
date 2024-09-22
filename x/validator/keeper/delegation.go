@@ -804,6 +804,9 @@ func (k Keeper) TransferToHold(
 func (k Keeper) Delegate(
 	ctx sdk.Context, delegator sdk.AccAddress, validator types.Validator, stake types.Stake,
 ) error {
+	if k.ToBaseCoin(ctx, stake.GetStake()).IsNegative() {
+		return errors.DelegationWrongType
+	}
 	var err error
 	// 1. Get or create the delegation object
 	delegation, delegationFound := k.GetDelegation(ctx, delegator, validator.GetOperator(), stake.ID)
