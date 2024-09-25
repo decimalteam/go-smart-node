@@ -1101,7 +1101,7 @@ func (app *DSC) setupUpgradeHandlers(chainID string) {
 	var storeUpgrades *store.StoreUpgrades
 
 	switch upgradeInfo.Name {
-	case "v2.2.3":
+	case "https://repo.decimalchain.com/22466601":
 		storeUpgrades = &store.StoreUpgrades{}
 	}
 
