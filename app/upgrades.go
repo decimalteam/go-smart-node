@@ -1,8 +1,10 @@
 package app
 
 import (
+	"bytes"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
@@ -74,42 +76,47 @@ var UpdateRewardAndMaxVars = func(app *DSC, mm *module.Manager, configurator mod
 	}
 }
 
-// var FixValidatorDuplicates = func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
-// 	return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+var ValidatorDuplicatesHandlerCreator = func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+	return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+		logger := ctx.Logger().With("upgrade", "v2.2.3")
 
-// 		validators := app.GetStakingKeeper().GetAllValidators(ctx)
+		validators := app.GetStakingKeeper().GetAllValidators(ctx)
 
-// 			for _, validator := range validators {
-				
-// 				// store := ctx.KVStore(app.)
-// 				store := ctx.KVStore(app.GetKey(stakingtypes.StoreKey))
-				
-// 				deleted := false
+		logger.Info("Start changing validators.")
 
-// 				iterator := sdk.KVStorePrefixIterator(store, stakingtypes.ValidatorsByPowerIndexKey)
-// 				defer iterator.Close()
+		for _, validator := range validators {
 
-// 				for ; iterator.Valid(); iterator.Next() {
-// 					valAddr := stakingtypes.ParseValidatorPowerRankKey(iterator.Key())
-// 					if bytes.Equal(valAddr, validator.GetOperator()) {
-// 						if deleted {
-// 							panic("found duplicate power index key")
-// 						} else {
-// 							deleted = true
-// 						}
+			store := ctx.KVStore(app.GetKey(stakingtypes.StoreKey))
 
-// 						store.Delete(iterator.Key())
-// 					}
-// 				}
+			deleted := false
 
-// 				app.GetStakingKeeper().SetValidatorByPowerIndex(ctx, validator)
-// 				_, err := app.GetStakingKeeper().ApplyAndReturnValidatorSetUpdates(ctx)
+			iterator := sdk.KVStorePrefixIterator(store, stakingtypes.ValidatorsByPowerIndexKey)
+			defer iterator.Close()
 
-// 				if err != nil {
-// 					panic(err)
-// 				}
-// 			}
+			for ; iterator.Valid(); iterator.Next() {
+				valAddr := stakingtypes.ParseValidatorPowerRankKey(iterator.Key())
+				val := sdk.ValAddress(valAddr).String()
 
-// 			return mm.RunMigrations(ctx, configurator, fromVM)
-// 	}
-// }
+				if bytes.Equal(valAddr, validator.GetOperator()) {
+					if deleted {
+						logger.Info("Duplicate validator address is: " + val)
+					} else {
+						deleted = true
+					}
+					store.Delete(iterator.Key())
+				}
+			}
+
+			app.GetStakingKeeper().SetValidatorByPowerIndex(ctx, validator)
+			_, err := app.GetStakingKeeper().ApplyAndReturnValidatorSetUpdates(ctx)
+			if err != nil {
+				panic(err)
+			}
+
+		}
+
+		logger.Info("Updated all validator successfully.")
+
+		return app.mm.RunMigrations(ctx, configurator, fromVM)
+	}
+}
