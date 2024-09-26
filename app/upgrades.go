@@ -4,8 +4,8 @@ import (
 	"bytes"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
 type UpgradeCreator struct {
@@ -86,15 +86,15 @@ var ValidatorDuplicatesHandlerCreator = func(app *DSC, mm *module.Manager, confi
 
 		for _, validator := range validators {
 
-			store := ctx.KVStore(app.GetKey(stakingtypes.StoreKey))
+			store := ctx.KVStore(app.GetKey(validatortypes.StoreKey))
 
 			deleted := false
 
-			iterator := sdk.KVStorePrefixIterator(store, stakingtypes.ValidatorsByPowerIndexKey)
+			iterator := sdk.KVStorePrefixIterator(store, validatortypes.GetValidatorsByPowerIndexKey())
 			defer iterator.Close()
 
 			for ; iterator.Valid(); iterator.Next() {
-				valAddr := stakingtypes.ParseValidatorPowerRankKey(iterator.Key())
+				valAddr := validatortypes.ParseValidatorPowerKey(iterator.Key())
 				val := sdk.ValAddress(valAddr).String()
 
 				if bytes.Equal(valAddr, validator.GetOperator()) {
