@@ -83,7 +83,7 @@ func (k Keeper) PostTxProcessing(
 
 	// this var is only for new token create from token center
 	var tokenDelegate delegation.DelegationStakeUpdated
-	// var transferExistStake delegation.DelegationStakeUpdated
+	var transferExistStake delegation.DelegationStakeUpdated
 	var tokenUndelegate delegation.DelegationWithdrawRequest
 	var tokenRedelegation delegation.DelegationTransferRequest
 	var tokenDelegationAmount delegation.DelegationStakeAmountUpdated
@@ -207,23 +207,22 @@ func (k Keeper) PostTxProcessing(
 			}
 
 			if eventDelegationByID.Name == "StakeHolded" {
-				// _ = contracts.UnpackLog(delegatorCenter, &transferExistStake, eventDelegationByID.Name, log)
-				// _, err := k.coinKeeper.GetCoinByDRC(ctx, transferExistStake.Stake.Token.String())
-				// if err != nil {
-				// 	symbolToken, _ := k.QuerySymbolToken(ctx, transferExistStake.Stake.Token)
-				// 	coinUpdate, err := k.coinKeeper.GetCoin(ctx, symbolToken)
-				// 	if err == nil {
-				// 		_ = k.coinKeeper.UpdateCoinDRC(ctx, symbolToken, transferExistStake.Stake.Token.String())
-				// 		coinUpdate.DRC20Contract = transferExistStake.Stake.Token.String()
-				// 		k.coinKeeper.SetCoin(ctx, coinUpdate)
-				// 	}
-				// }
-				// transferExistStake.Stake.Amount = tokenDelegationAmount.ChangedAmount
-				// err = k.Staked(ctx, transferExistStake, false)
-				// if err != nil {
-				// 	return err
-				// }
-				return errors.ValidatorNftDelegationInactive
+				_ = contracts.UnpackLog(delegatorCenter, &transferExistStake, eventDelegationByID.Name, log)
+				_, err := k.coinKeeper.GetCoinByDRC(ctx, transferExistStake.Stake.Token.String())
+				if err != nil {
+					symbolToken, _ := k.QuerySymbolToken(ctx, transferExistStake.Stake.Token)
+					coinUpdate, err := k.coinKeeper.GetCoin(ctx, symbolToken)
+					if err == nil {
+						_ = k.coinKeeper.UpdateCoinDRC(ctx, symbolToken, transferExistStake.Stake.Token.String())
+						coinUpdate.DRC20Contract = transferExistStake.Stake.Token.String()
+						k.coinKeeper.SetCoin(ctx, coinUpdate)
+					}
+				}
+				transferExistStake.Stake.Amount = tokenDelegationAmount.ChangedAmount
+				err = k.Staked(ctx, transferExistStake, false)
+				if err != nil {
+					return err
+				}
 			}
 
 			if eventDelegationByID.Name == "WithdrawRequest" {
