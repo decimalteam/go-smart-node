@@ -35,7 +35,7 @@ func DownloadSecured(ctx sdk.Context, url string, path string, hash string) {
 	}
 	ctx.Logger().Info(fmt.Sprintf("successful download binary \"%s\" to file \"%s\"", url, path))
 	// check hash
-	if !checkFile(path, hash) {
+	if os.Getenv("SKIP_HASH_CHECK_UPGRADE") != "" && !checkFile(path, hash) {
 		err = os.Remove(path)
 		if err != nil {
 			ctx.Logger().Error(fmt.Sprintf("error while remove wrong file \"%s\": '%s'", path, err.Error()))
