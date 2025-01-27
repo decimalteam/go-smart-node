@@ -476,6 +476,10 @@ pipelines:
           deployment: Test
           <<: *deploy
 
+    block_time_fix/22280701:
+      - step: *mirror
+      - step: *build
+
   custom:
     worker-docker-build:
       - step:
