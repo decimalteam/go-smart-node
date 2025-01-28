@@ -29,6 +29,8 @@ var (
 // a migration to be executed if needed upon this switch (migration defined in the new binary)
 // skipUpgradeHeightArray is a set of block heights for which the upgrade must be skipped
 func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
+	autoUpgradeDisabled := os.Getenv("AUTO_UPGRADE_DISABLED") != ""
+
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
 	plan, found := k.GetUpgradePlan(ctx)
@@ -67,7 +69,7 @@ func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
 	_, ok := downloadStat[plan.Name]
 
 	// To make sure clear upgrade is executed at the same block
-	if ctx.BlockHeight() < plan.Height && !ok {
+	if !autoUpgradeDisabled && ctx.BlockHeight() < plan.Height && !ok {
 		mapping := planMapping(plan)
 		if mapping == nil {
 			logger.Error("error: plan mapping decode")
@@ -119,18 +121,20 @@ func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
 
 		// Prepare shutdown if we don't have an upgrade handler for this upgrade name (meaning this software is out of date)
 		if !k.HasHandler(plan.Name) {
-			if _, err := os.Stat(getDownloadFileName(cmdcfg.AppBinName)); err == nil {
-				err = changeBinary(plan)
-				if err != nil {
-					panic(fmt.Errorf("failed to change binaries err: %s", err.Error()))
+			if !autoUpgradeDisabled {
+				if _, err := os.Stat(getDownloadFileName(cmdcfg.AppBinName)); err == nil {
+					err = changeBinary(plan)
+					if err != nil {
+						panic(fmt.Errorf("failed to change binaries err: %s", err.Error()))
+					}
 				}
-			}
 
-			// Write the upgrade info to disk. The UpgradeStoreLoader uses this info to perform or skip
-			// store migrations.
-			err := k.DumpUpgradeInfoToDisk(ctx.BlockHeight(), plan)
-			if err != nil {
-				panic(fmt.Errorf("unable to write upgrade info to filesystem: %s", err.Error()))
+				// Write the upgrade info to disk. The UpgradeStoreLoader uses this info to perform or skip
+				// store migrations.
+				err := k.DumpUpgradeInfoToDisk(ctx.BlockHeight(), plan)
+				if err != nil {
+					panic(fmt.Errorf("unable to write upgrade info to filesystem: %s", err.Error()))
+				}
 			}
 
 			upgradeMsg := BuildUpgradeNeededMsg(plan)
