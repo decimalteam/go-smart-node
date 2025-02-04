@@ -27,7 +27,11 @@ func init() {
 }
 
 func GetFixedBlockTime(ctx sdk.Context) int64 {
-	var fixedTime = ctx.BlockTime().Unix()
+	var fixedTime = ctx.BlockTime().Unix() + 5
+	if ctx.BlockTime().Nanosecond() > 500000000 {
+		fixedTime += 1
+	}
+
 	if fix, ok := fixes[ctx.BlockHeight()]; ok {
 		fixedTime = fix
 	}
