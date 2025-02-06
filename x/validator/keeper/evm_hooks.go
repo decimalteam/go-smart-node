@@ -26,7 +26,6 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	cmtjson "github.com/tendermint/tendermint/libs/json"
 	"strings"
-	"time"
 )
 
 var _ evmtypes.EvmHooks = Hooks{}
