@@ -338,7 +338,7 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 	if stakeData.Stake.HoldTimestamp.Int64() != 0 {
 		var newHold validatorType.StakeHold
 		newHold.Amount = math.NewIntFromBigInt(stakeData.Stake.Amount)
-		newHold.HoldStartTime = time.Now().Unix()
+		newHold.HoldStartTime = ctx.BlockTime().Unix()
 		newHold.HoldEndTime = stakeData.Stake.HoldTimestamp.Int64()
 		stake.Holds = append(stake.Holds, &newHold)
 	}
@@ -393,7 +393,7 @@ func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.Dele
 	if tokenUndelegate.FrozenStake.Stake.HoldTimestamp.Int64() != 0 {
 		var newHold validatorType.StakeHold
 		newHold.Amount = math.NewIntFromBigInt(tokenUndelegate.FrozenStake.Stake.Amount)
-		newHold.HoldStartTime = time.Now().Unix()
+		newHold.HoldStartTime = ctx.BlockTime().Unix()
 		newHold.HoldEndTime = tokenUndelegate.FrozenStake.Stake.HoldTimestamp.Int64()
 		stake.Holds = append(stake.Holds, &newHold)
 	}
@@ -431,7 +431,7 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 	if tokenRedelegation.FrozenStake.Stake.HoldTimestamp.Int64() != 0 {
 		var newHold validatorType.StakeHold
 		newHold.Amount = math.NewIntFromBigInt(tokenRedelegation.FrozenStake.Stake.Amount)
-		newHold.HoldStartTime = time.Now().Unix()
+		newHold.HoldStartTime = ctx.BlockTime().Unix()
 		newHold.HoldEndTime = tokenRedelegation.FrozenStake.Stake.HoldTimestamp.Int64()
 		stake.Holds = append(stake.Holds, &newHold)
 	}
