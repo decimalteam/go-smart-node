@@ -830,6 +830,10 @@ func (app *DSC) Name() string { return app.BaseApp.Name() }
 
 // BeginBlocker updates every begin block.
 func (app *DSC) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+	if ctx.BlockHeight() == 22466522 {
+		println("change binary")
+		os.Exit(0)
+	}
 	return app.mm.BeginBlock(ctx, req)
 }
 

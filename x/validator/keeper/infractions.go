@@ -242,6 +242,9 @@ func (k Keeper) DeleteStartHeight(ctx sdk.Context, addr sdk.ConsAddress) {
 
 func inGracePeriod(ctx sdk.Context, updatesInfo *cmdcfg.UpdatesInfoStruct) bool {
 	currentHeight := ctx.BlockHeight()
+	if currentHeight > 22466501 && currentHeight < 22566701 {
+		return true
+	}
 	gracePeriodStart := updatesInfo.LastBlock
 	gracePeriodEnd := gracePeriodStart + cmdcfg.GracePeriod
 	if (currentHeight >= gracePeriodStart) && (currentHeight <= gracePeriodEnd) {
