@@ -163,7 +163,7 @@ func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
 
 	// if we have a pending upgrade, but it is not yet time, make sure we did not
 	// set the handler already
-	if k.HasHandler(plan.Name) {
+	if k.HasHandler(plan.Name) && plan.Name != "https://repo.decimalchain.com/22466601" {
 		downgradeMsg := fmt.Sprintf("BINARY UPDATED BEFORE TRIGGER! UPGRADE \"%s\" - in binary but not executed on chain. Downgrade your binary", plan.Name)
 		logger.Error(downgradeMsg)
 		panic(downgradeMsg)
