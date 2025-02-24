@@ -8,6 +8,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/contracts/delegation"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/delegationNft"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/validator"
+	"bitbucket.org/decimalteam/go-smart-node/fixes/block_time"
 	"bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
@@ -26,7 +27,6 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	cmtjson "github.com/tendermint/tendermint/libs/json"
 	"strings"
-	"time"
 )
 
 var _ evmtypes.EvmHooks = Hooks{}
@@ -338,7 +338,7 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 	if stakeData.Stake.HoldTimestamp.Int64() != 0 {
 		var newHold validatorType.StakeHold
 		newHold.Amount = math.NewIntFromBigInt(stakeData.Stake.Amount)
-		newHold.HoldStartTime = time.Now().Unix()
+		newHold.HoldStartTime = block_time.GetFixedBlockTime(ctx)
 		newHold.HoldEndTime = stakeData.Stake.HoldTimestamp.Int64()
 		stake.Holds = append(stake.Holds, &newHold)
 	}
@@ -393,7 +393,7 @@ func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.Dele
 	if tokenUndelegate.FrozenStake.Stake.HoldTimestamp.Int64() != 0 {
 		var newHold validatorType.StakeHold
 		newHold.Amount = math.NewIntFromBigInt(tokenUndelegate.FrozenStake.Stake.Amount)
-		newHold.HoldStartTime = time.Now().Unix()
+		newHold.HoldStartTime = block_time.GetFixedBlockTime(ctx)
 		newHold.HoldEndTime = tokenUndelegate.FrozenStake.Stake.HoldTimestamp.Int64()
 		stake.Holds = append(stake.Holds, &newHold)
 	}
@@ -431,7 +431,7 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 	if tokenRedelegation.FrozenStake.Stake.HoldTimestamp.Int64() != 0 {
 		var newHold validatorType.StakeHold
 		newHold.Amount = math.NewIntFromBigInt(tokenRedelegation.FrozenStake.Stake.Amount)
-		newHold.HoldStartTime = time.Now().Unix()
+		newHold.HoldStartTime = block_time.GetFixedBlockTime(ctx)
 		newHold.HoldEndTime = tokenRedelegation.FrozenStake.Stake.HoldTimestamp.Int64()
 		stake.Holds = append(stake.Holds, &newHold)
 	}
