@@ -46,7 +46,9 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 		}
 		validator := val.GetOperator()
 
-		totalStake, err := k.CalculateTotalPowerWithDelegationsAndPrices(ctx, val.GetOperator(), delByValidator[validator.String()], customCoinPrices)
+		totalStake, err := k.CalculateTotalPowerWithDelegationsAndPrices(
+			ctx, val.GetOperator(), delByValidator[validator.String()], customCoinPrices,
+		)
 
 		if err != nil {
 			return err
@@ -64,7 +66,10 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 			if delStake.Denom != k.BaseDenom(ctx) {
 				delCoinPrice, ok := customCoinPrices[delStake.Denom]
 				if !ok {
-					return fmt.Errorf("not found price for custom coin %s, base denom is %s, validator is %s, delegator is %s", delStake.Denom, k.BaseDenom(ctx), validator.String(), del.Delegator)
+					return fmt.Errorf(
+						"not found price for custom coin %s, base denom is %s, validator is %s, delegator is %s",
+						delStake.Denom, k.BaseDenom(ctx), validator.String(), del.Delegator,
+					)
 				}
 				baseAmount := sdk.NewDecFromInt(sdk.NewInt(0)).TruncateInt()
 				var deleteHolds []*types.StakeHold
@@ -80,6 +85,8 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 					}
 				}
 				allHoldBigOneYearsSum = allHoldBigOneYearsSum.Add(baseAmount)
+			} else {
+				allHoldBigOneYearsSum = allHoldBigOneYearsSum.Add(delStake.Amount)
 			}
 		}
 	}
@@ -124,7 +131,6 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 		}
 		rewards = rewards.Sub(daoVal)
 		rewards = rewards.Sub(developVal)
-
 		// validator commission
 		valComission := sdk.NewDecFromInt(rewards).Mul(val.Commission).TruncateInt()
 		var valRewardAddress sdk.AccAddress
@@ -248,7 +254,9 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 				continue
 			}
 			// pay reward
-			err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, del.GetDelegator(), sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), rewardHold)))
+			err = k.bankKeeper.SendCoinsFromModuleToAccount(
+				ctx, types.ModuleName, del.GetDelegator(), sdk.NewCoins(sdk.NewCoin(k.BaseDenom(ctx), rewardHold)),
+			)
 			if err != nil {
 				continue
 			}

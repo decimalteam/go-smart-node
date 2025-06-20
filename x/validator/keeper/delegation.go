@@ -74,8 +74,10 @@ func (k Keeper) DeleteHoldMature(ctx sdk.Context) {
 func (k Keeper) GetAllDelegationsByValidator(ctx sdk.Context) (delegations map[string][]types.Delegation) {
 	delegations = make(map[string][]types.Delegation)
 	k.IterateAllDelegations(ctx, func(delegation types.Delegation) bool {
-		valAddress := delegation.GetValidator().String()
-		delegations[valAddress] = append(delegations[valAddress], delegation)
+		if !delegation.GetStake().GetStake().Amount.IsNegative() {
+			valAddress := delegation.GetValidator().String()
+			delegations[valAddress] = append(delegations[valAddress], delegation)
+		}
 		return false
 	})
 	return
@@ -802,6 +804,9 @@ func (k Keeper) TransferToHold(
 func (k Keeper) Delegate(
 	ctx sdk.Context, delegator sdk.AccAddress, validator types.Validator, stake types.Stake,
 ) error {
+	if stake.Stake.IsNegative() || k.ToBaseCoin(ctx, stake.GetStake()).IsNegative() {
+		return errors.DelegationWrongType
+	}
 	var err error
 	// 1. Get or create the delegation object
 	delegation, delegationFound := k.GetDelegation(ctx, delegator, validator.GetOperator(), stake.ID)

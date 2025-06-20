@@ -1063,8 +1063,8 @@ func TestRedelegationHold(t *testing.T) {
 
 	var newHold types.StakeHold
 	newHold.Amount = keeper.TokensFromConsensusPower(4)
-	newHold.HoldStartTime = ctx.BlockHeader().Time.Unix()
-	newHold.HoldEndTime = ctx.BlockHeader().Time.Unix() + 10000
+	newHold.HoldStartTime = ctx.BlockTime().Unix()
+	newHold.HoldEndTime = ctx.BlockTime().Unix() + 10000
 	defaultStake.Holds = append(defaultStake.Holds, &newHold)
 
 	// construct the validators

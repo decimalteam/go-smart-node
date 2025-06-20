@@ -2,9 +2,9 @@ package keeper_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
+	abci "github.com/tendermint/tendermint/abci/types"
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -17,6 +17,68 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/keeper"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
+
+func TestPayRewards_HoldBug_BaseOnly(t *testing.T) {
+	_, dsc, ctx := createTestInput(t)
+	valK := dsc.ValidatorKeeper
+
+	accs, vals := generateAddresses(
+		dsc, ctx, 2, sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(1000000000)))),
+	)
+	funder := accs[0]
+	delegatorBase := accs[1]
+
+	validatorAddr := vals[0]
+	consPubKey := PKs[0]
+	validatorStake := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(1_000)))
+
+	msgCreateVal, err := types.NewMsgCreateValidator(
+		validatorAddr, funder, consPubKey,
+		types.Description{Moniker: "val-base-only"}, sdk.ZeroDec(),
+		validatorStake,
+	)
+	require.NoError(t, err)
+	_, err = keeper.NewMsgServerImpl(valK).CreateValidator(sdk.WrapSDKContext(ctx), msgCreateVal)
+	require.NoError(t, err)
+	_, err = keeper.NewMsgServerImpl(valK).SetOnline(sdk.WrapSDKContext(ctx), types.NewMsgSetOnline(validatorAddr))
+	require.NoError(t, err)
+
+	dsc.EndBlock(abci.RequestEndBlock{})
+
+	valObj, found := valK.GetValidator(ctx, validatorAddr)
+	require.True(t, found)
+	require.Equal(t, types.BondStatus_Bonded, valObj.Status)
+
+	now := ctx.BlockTime()
+	holdEnd := now.AddDate(1, 0, 1).Unix()
+
+	stakeBase := types.NewStakeCoin(
+		sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(1_000))),
+	)
+	stakeBase.Holds = []*types.StakeHold{{
+		Amount:        helpers.EtherToWei(sdkmath.NewInt(1_000)),
+		HoldStartTime: now.Unix(),
+		HoldEndTime:   holdEnd,
+	}}
+	require.NoError(t, valK.Delegate(ctx, delegatorBase, valObj, stakeBase))
+
+	valRS, err := valK.GetValidatorRS(ctx, valObj.GetOperator())
+	require.NoError(t, err)
+	valRS.Rewards = sdk.NewIntFromUint64(500_000)
+	valK.SetValidatorRS(ctx, valObj.GetOperator(), valRS)
+
+	beforeBal := dsc.BankKeeper.GetAllBalances(ctx, delegatorBase).AmountOf(cmdcfg.BaseDenom)
+
+	require.NoError(t, valK.PayRewards(ctx))
+
+	afterBal := dsc.BankKeeper.GetAllBalances(ctx, delegatorBase).AmountOf(cmdcfg.BaseDenom)
+
+	println(afterBal.Sub(beforeBal).String())
+	require.Equal(
+		t, beforeBal, afterBal,
+		"",
+	)
+}
 
 func TestPayValidators(t *testing.T) {
 	const legacyRewardAddress = "dx14elhyzmq95f98wrkvujtsr5cyudffp6q2hfkhs"
@@ -286,8 +348,8 @@ func TestPayValidators(t *testing.T) {
 	//stake35 := types.NewStakeCoin(sdk.NewCoin(ccDenom2, helpers.EtherToWei(sdkmath.NewInt(1200))))
 	var newHold types.StakeHold
 	newHold.Amount = helpers.EtherToWei(sdkmath.NewInt(1200))
-	newHold.HoldStartTime = time.Now().Unix()
-	newHold.HoldEndTime = time.Now().AddDate(1, 0, 1).Unix()
+	newHold.HoldStartTime = ctx.BlockTime().Unix()
+	newHold.HoldEndTime = ctx.BlockTime().AddDate(1, 0, 1).Unix()
 	stake34.Holds = append(stake34.Holds, &newHold)
 	{
 		err = valK.Delegate(ctx, accs[3], val2, stake32)

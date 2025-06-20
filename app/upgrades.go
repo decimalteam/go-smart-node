@@ -1,9 +1,11 @@
 package app
 
 import (
+	"bytes"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
 type UpgradeCreator struct {
@@ -71,5 +73,50 @@ var UpdateRewardAndMaxVars = func(app *DSC, mm *module.Manager, configurator mod
 		//app.ValidatorKeeper.SetParams(ctx, params)
 
 		return mm.RunMigrations(ctx, configurator, fromVM)
+	}
+}
+
+var ValidatorDuplicatesHandlerCreator = func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+	return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+		logger := ctx.Logger().With("upgrade", "v2.2.3")
+
+		validators := app.GetStakingKeeper().GetAllValidators(ctx)
+
+		logger.Info("Start changing validators.")
+
+		for _, validator := range validators {
+
+			store := ctx.KVStore(app.GetKey(validatortypes.StoreKey))
+
+			deleted := false
+
+			iterator := sdk.KVStorePrefixIterator(store, validatortypes.GetValidatorsByPowerIndexKey())
+			defer iterator.Close()
+
+			for ; iterator.Valid(); iterator.Next() {
+				valAddr := validatortypes.ParseValidatorPowerKey(iterator.Key())
+				val := sdk.ValAddress(valAddr).String()
+
+				if bytes.Equal(valAddr, validator.GetOperator()) {
+					if deleted {
+						logger.Info("Duplicate validator address is: " + val)
+					} else {
+						deleted = true
+					}
+					store.Delete(iterator.Key())
+				}
+			}
+
+			app.GetStakingKeeper().SetValidatorByPowerIndex(ctx, validator)
+			_, err := app.GetStakingKeeper().ApplyAndReturnValidatorSetUpdates(ctx)
+			if err != nil {
+				panic(err)
+			}
+
+		}
+
+		logger.Info("Updated all validator successfully.")
+
+		return app.mm.RunMigrations(ctx, configurator, fromVM)
 	}
 }

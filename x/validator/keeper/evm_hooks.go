@@ -26,7 +26,6 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	cmtjson "github.com/tendermint/tendermint/libs/json"
 	"strings"
-	"time"
 )
 
 var _ evmtypes.EvmHooks = Hooks{}
@@ -83,7 +82,7 @@ func (k Keeper) PostTxProcessing(
 
 	// this var is only for new token create from token center
 	var tokenDelegate delegation.DelegationStakeUpdated
-	var transferExistStake delegation.DelegationStakeUpdated
+	// var transferExistStake delegation.DelegationStakeUpdated
 	var tokenUndelegate delegation.DelegationWithdrawRequest
 	var tokenRedelegation delegation.DelegationTransferRequest
 	var tokenDelegationAmount delegation.DelegationStakeAmountUpdated
@@ -207,22 +206,23 @@ func (k Keeper) PostTxProcessing(
 			}
 
 			if eventDelegationByID.Name == "StakeHolded" {
-				_ = contracts.UnpackLog(delegatorCenter, &transferExistStake, eventDelegationByID.Name, log)
-				_, err := k.coinKeeper.GetCoinByDRC(ctx, transferExistStake.Stake.Token.String())
-				if err != nil {
-					symbolToken, _ := k.QuerySymbolToken(ctx, transferExistStake.Stake.Token)
-					coinUpdate, err := k.coinKeeper.GetCoin(ctx, symbolToken)
-					if err == nil {
-						_ = k.coinKeeper.UpdateCoinDRC(ctx, symbolToken, transferExistStake.Stake.Token.String())
-						coinUpdate.DRC20Contract = transferExistStake.Stake.Token.String()
-						k.coinKeeper.SetCoin(ctx, coinUpdate)
-					}
-				}
-				transferExistStake.Stake.Amount = tokenDelegationAmount.ChangedAmount
-				err = k.Staked(ctx, transferExistStake, false)
-				if err != nil {
-					return err
-				}
+				// _ = contracts.UnpackLog(delegatorCenter, &transferExistStake, eventDelegationByID.Name, log)
+				// _, err := k.coinKeeper.GetCoinByDRC(ctx, transferExistStake.Stake.Token.String())
+				// if err != nil {
+				// 	symbolToken, _ := k.QuerySymbolToken(ctx, transferExistStake.Stake.Token)
+				// 	coinUpdate, err := k.coinKeeper.GetCoin(ctx, symbolToken)
+				// 	if err == nil {
+				// 		_ = k.coinKeeper.UpdateCoinDRC(ctx, symbolToken, transferExistStake.Stake.Token.String())
+				// 		coinUpdate.DRC20Contract = transferExistStake.Stake.Token.String()
+				// 		k.coinKeeper.SetCoin(ctx, coinUpdate)
+				// 	}
+				// }
+				// transferExistStake.Stake.Amount = tokenDelegationAmount.ChangedAmount
+				// err = k.Staked(ctx, transferExistStake, false)
+				// if err != nil {
+				// 	return err
+				// }
+				return errors.ValidatorNftDelegationInactive
 			}
 
 			if eventDelegationByID.Name == "WithdrawRequest" {
@@ -337,7 +337,7 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 	if stakeData.Stake.HoldTimestamp.Int64() != 0 {
 		var newHold validatorType.StakeHold
 		newHold.Amount = math.NewIntFromBigInt(stakeData.Stake.Amount)
-		newHold.HoldStartTime = time.Now().Unix()
+		newHold.HoldStartTime = ctx.BlockTime().Unix()
 		newHold.HoldEndTime = stakeData.Stake.HoldTimestamp.Int64()
 		stake.Holds = append(stake.Holds, &newHold)
 	}
@@ -392,7 +392,7 @@ func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.Dele
 	if tokenUndelegate.FrozenStake.Stake.HoldTimestamp.Int64() != 0 {
 		var newHold validatorType.StakeHold
 		newHold.Amount = math.NewIntFromBigInt(tokenUndelegate.FrozenStake.Stake.Amount)
-		newHold.HoldStartTime = time.Now().Unix()
+		newHold.HoldStartTime = ctx.BlockTime().Unix()
 		newHold.HoldEndTime = tokenUndelegate.FrozenStake.Stake.HoldTimestamp.Int64()
 		stake.Holds = append(stake.Holds, &newHold)
 	}
@@ -430,7 +430,7 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 	if tokenRedelegation.FrozenStake.Stake.HoldTimestamp.Int64() != 0 {
 		var newHold validatorType.StakeHold
 		newHold.Amount = math.NewIntFromBigInt(tokenRedelegation.FrozenStake.Stake.Amount)
-		newHold.HoldStartTime = time.Now().Unix()
+		newHold.HoldStartTime = ctx.BlockTime().Unix()
 		newHold.HoldEndTime = tokenRedelegation.FrozenStake.Stake.HoldTimestamp.Int64()
 		stake.Holds = append(stake.Holds, &newHold)
 	}

@@ -532,6 +532,85 @@ func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator) {
 		BaseAmount sdkmath.Int
 	}, 0)
 	for i := range delegations {
+		if delegations[i].Stake.GetStake().Amount.IsNegative() {
+			k.Logger(ctx).Info("Negative stake amount detected",
+				"validator", validator.OperatorAddress,
+				"delegator", delegations[i].Delegator,
+				"stake_type", delegations[i].Stake.Type,
+				"stake_amount", delegations[i].Stake.GetStake().Amount,
+				"stake_denom", delegations[i].Stake.GetStake().Denom,
+				"stake_id", delegations[i].Stake.ID,
+				"stake_sub_token_ids", delegations[i].Stake.SubTokenIDs,
+			)
+
+			// Remove the delegation
+			k.RemoveDelegation(ctx, delegations[i])
+			k.DecrementDelegationsCount(ctx, validator.GetOperator())
+
+			stakePower := TokensToConsensusPower(sdkmath.NewInt(0))
+
+			valAddr, err := sdk.ValAddressFromBech32(validator.OperatorAddress)
+			if err != nil {
+				panic(err)
+			}
+
+			// clean index
+			k.DeleteValidatorByPowerIndex(ctx, validator)
+			rs, err := k.GetValidatorRS(ctx, valAddr)
+			if err != nil {
+				panic(err)
+			}
+
+			// calculate validator new stake
+			if validator.Online {
+				validator.Stake -= stakePower
+				if validator.Stake < 0 {
+					validator.Stake = 0
+				}
+				rs.Stake -= stakePower
+				if rs.Stake < 0 {
+					rs.Stake = 0
+				}
+			} else {
+				if rs.Stake > 0 {
+					rs.Stake = 0
+					validator.Stake = 0
+				}
+			}
+			// write index
+			k.SetValidatorRS(ctx, valAddr, rs)
+			k.SetValidatorByPowerIndex(ctx, validator)
+
+			customCoinStaked := k.GetAllCustomCoinsStaked(ctx)
+			customCoinPrices := k.CalculateCustomCoinPrices(ctx, customCoinStaked)
+
+			validators := k.GetAllValidators(ctx)
+			delByValidator := k.GetAllDelegationsByValidator(ctx)
+			for _, val := range validators {
+				validator := val.GetOperator()
+				if val.Rewards.IsZero() {
+					continue
+				}
+				totalStake, err := k.CalculateTotalPowerWithDelegationsAndPrices(ctx, val.GetOperator(), delByValidator[validator.String()], customCoinPrices)
+				if err != nil {
+					panic(err)
+				}
+				// update validator rewards
+				valRewards, err := k.GetValidatorRS(ctx, validator)
+				if err != nil {
+					panic(err)
+				}
+				valRewards.Rewards = sdk.ZeroInt()
+				valRewards.Stake = TokensToConsensusPower(totalStake)
+				if val.Status != types.BondStatus_Bonded {
+					valRewards.Stake = 0
+				}
+				k.SetValidatorRS(ctx, validator, valRewards)
+				k.SetValidatorByPowerIndex(ctx, val)
+			}
+			continue
+		}
+
 		baseAmounts = append(baseAmounts, struct {
 			Delegation types.Delegation
 			BaseAmount sdkmath.Int
