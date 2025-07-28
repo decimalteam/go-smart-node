@@ -1,10 +1,11 @@
 package keeper
 
 import (
-	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	"time"
+
+	"bitbucket.org/decimalteam/go-smart-node/contracts"
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -60,10 +61,14 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 		ctx.Logger().Debug(
 			fmt.Sprintf("Duration 120 block (%s)", helpers.DurationToString(time.Since(start))),
 		)
-		err := k.PayRewards(ctx)
+
+		cachedCtx, write := ctx.CacheContext()
+		err := k.PayRewards(cachedCtx)
 		if err != nil {
-			panic(err)
+			ctx.Logger().Error("Failed to pay rewards, rolling back", "err", err.Error())
+			return updates
 		}
+		write()
 
 		dataAddress, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
 		if err == nil {
