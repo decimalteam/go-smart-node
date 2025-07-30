@@ -133,6 +133,9 @@ func TestDoubleSignature(t *testing.T) {
 	_, dsc, ctx := createTestInput(t)
 	msgsrv := keeper.NewMsgServerImpl(dsc.ValidatorKeeper)
 
+	//disable grace period
+	cmdcfg.UpdatesInfo.LastBlock = 1000000
+
 	balance := sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(100000)))
 	accs, vals := generateAddresses(dsc, ctx, 10, sdk.NewCoins(balance))
 	consAdr := sdk.GetConsAddress(PKs[0])
