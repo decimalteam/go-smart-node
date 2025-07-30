@@ -166,12 +166,15 @@ func (k Keeper) HandleDoubleSign(ctx sdk.Context, addr crypto.Address, infractio
 	// That's fine since this is just used to filter unbonding delegations & redelegations.
 	distributionHeight := infractionHeight - sdk.ValidatorUpdateDelay
 
-	// Slash validator
-	// `power` is the int64 power of the validator as provided to/by
-	// Tendermint. This value is validator.Tokens as sent to Tendermint via
-	// ABCI, and now received as evidence.
-	// The fraction is passed in to separately to slash unbonding and rebonding delegations.
-	k.Slash(ctx, consAddr, distributionHeight, power, params.SlashFractionDoubleSign)
+	inGrace := inGracePeriod(ctx, cmdcfg.UpdatesInfo)
+	if !inGrace {
+		// Slash validator
+		// `power` is the int64 power of the validator as provided to/by
+		// Tendermint. This value is validator.Tokens as sent to Tendermint via
+		// ABCI, and now received as evidence.
+		// The fraction is passed in to separately to slash unbonding and rebonding delegations
+		k.Slash(ctx, consAddr, distributionHeight, power, params.SlashFractionDoubleSign)
+	}
 
 	// Jail validator if not already jailed
 	// begin unbonding validator if not already unbonding (tombstone)
