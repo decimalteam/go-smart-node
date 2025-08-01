@@ -138,7 +138,7 @@ var TransferDaoAndVals = func(app *DSC, mm *module.Manager, configurator module.
 		}
 
 		if err := app.BankKeeper.SendCoins(
-			ctx, oldDaoAccount, newDaoAccount, app.BankKeeper.GetAllBalances(ctx, oldDevelopAccount),
+			ctx, oldDaoAccount, newDaoAccount, app.BankKeeper.GetAllBalances(ctx, oldDaoAccount),
 		); err != nil {
 			panic(err)
 		}
