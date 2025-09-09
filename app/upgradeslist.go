@@ -19,7 +19,7 @@ var UpgradeListTestnet = []UpgradeCreator{
 	{"https://testnet-repo.decimalchain.com/15069701", DummyUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/15586201", DummyUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/15698601", DummyUpgradeHandlerCreator},
-	{"https://testnet-repo.decimalchain.com/16378194", DummyUpgradeHandlerCreator},
+	{"https://testnet-repo.decimalchain.com/16379201", DummyUpgradeHandlerCreator},
 
 }
 var UpgradeListMainnet = []UpgradeCreator{
