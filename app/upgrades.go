@@ -2,10 +2,11 @@ package app
 
 import (
 	"bytes"
+
+	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
 type UpgradeCreator struct {
@@ -118,5 +119,30 @@ var ValidatorDuplicatesHandlerCreator = func(app *DSC, mm *module.Manager, confi
 		logger.Info("Updated all validator successfully.")
 
 		return app.mm.RunMigrations(ctx, configurator, fromVM)
+	}
+}
+
+var TransferDaoAndVals = func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+	return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+
+		var oldDaoAccount = sdk.MustAccAddressFromBech32("d01pk2rurh73er88p032qrd6kq5xmu53thjqc22mu")
+		var oldDevelopAccount = sdk.MustAccAddressFromBech32("d01gsa4w0cuyjqwt9j7qtc32m6n0lkyxfan9s2ghh")
+
+		var newDaoAccount = sdk.MustAccAddressFromBech32("d01zafwcqd3vwcjmtcfgwnt37r02ta38mr9w0da3k")
+		var newDevelopAccount = sdk.MustAccAddressFromBech32("d01hv3zxnm2x4sgnyaap7luwt783c04xxjfdlnt9u")
+
+		if err := app.BankKeeper.SendCoins(
+			ctx, oldDevelopAccount, newDevelopAccount, app.BankKeeper.GetAllBalances(ctx, oldDevelopAccount),
+		); err != nil {
+			panic(err)
+		}
+
+		if err := app.BankKeeper.SendCoins(
+			ctx, oldDaoAccount, newDaoAccount, app.BankKeeper.GetAllBalances(ctx, oldDaoAccount),
+		); err != nil {
+			panic(err)
+		}
+
+		return mm.RunMigrations(ctx, configurator, fromVM)
 	}
 }
