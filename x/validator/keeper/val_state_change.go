@@ -2,16 +2,19 @@ package keeper
 
 import (
 	"bytes"
-	sdkmath "cosmossdk.io/math"
 	goerrors "errors"
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	ethtypes "github.com/decimalteam/ethermint/types"
-	gogotypes "github.com/gogo/protobuf/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 	"runtime/debug"
 	"sort"
 
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	ethtypes "github.com/decimalteam/ethermint/types"
+	"github.com/ethereum/go-ethereum/common"
+	gogotypes "github.com/gogo/protobuf/types"
+	abci "github.com/tendermint/tendermint/abci/types"
+
+	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
@@ -681,7 +684,40 @@ func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator) {
 			panic(errors.Internal.Wrapf("err: %s", err.Error()))
 		}
 
+		err = k.forceWithdraw(ctx, delegation)
+		if err != nil {
+			fmt.Printf("forceWithdraw error: %v\n", err)
+		}
 	}
+}
+
+func (k Keeper) forceWithdraw(ctx sdk.Context, delegation types.Delegation) error {
+	delegationAddress, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
+	if err != nil {
+		return err
+	}
+
+	// Convert validator address from bech32 to hex
+	valAddr, err := sdk.ValAddressFromBech32(delegation.Validator)
+	if err != nil {
+		return err
+	}
+	validatorAddr := common.BytesToAddress(valAddr.Bytes())
+
+	// Convert delegator address from bech32 to hex
+	delAddr, err := sdk.AccAddressFromBech32(delegation.Delegator)
+	if err != nil {
+		return err
+	}
+	delegatorAddr := common.BytesToAddress(delAddr.Bytes())
+	amount := delegation.GetStake().GetStake().Amount.BigInt()
+	coin, err := k.coinKeeper.GetCoin(ctx, delegation.GetStake().GetStake().Denom)
+	if err != nil {
+		return err
+	}
+	tokenAddress := common.HexToAddress(coin.DRC20Contract)
+	_, err = k.ExecuteForceWithdrawal(ctx, common.HexToAddress(delegationAddress), validatorAddr, delegatorAddr, tokenAddress, amount)
+	return err
 }
 
 func (k Keeper) getValidatorsCountForBlock(ctx sdk.Context, block int64) uint32 {

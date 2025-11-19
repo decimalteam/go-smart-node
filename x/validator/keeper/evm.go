@@ -4,6 +4,8 @@
 package keeper
 
 import (
+	"math/big"
+
 	"bitbucket.org/decimalteam/go-smart-node/contracts/delegation"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/token"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/validator"
@@ -111,6 +113,23 @@ func (k *Keeper) ExecuteBurnPenaltyTokens(
 	contractDelegation, _ := delegation.DelegationMetaData.GetAbi()
 	methodCall := "burnPenaltyTokensValidator"
 	_, err := k.evmKeeper.CallEVM(ctx, *contractDelegation, common.Address(types.ModuleAddress), contract, true, methodCall, validatorAddress)
+	if err != nil {
+		return false, err
+	}
+	return true, err
+}
+
+func (k *Keeper) ExecuteForceWithdrawal(
+	ctx sdk.Context,
+	contract common.Address,
+	validatorAddress common.Address,
+	delegatorAddress common.Address,
+	tokenAddress common.Address,
+	amount *big.Int,
+) (bool, error) {
+	contractDelegation, _ := delegation.DelegationMetaData.GetAbi()
+	methodCall := "forcedWithdrawal"
+	_, err := k.evmKeeper.CallEVM(ctx, *contractDelegation, common.Address{}, contract, true, methodCall, validatorAddress, delegatorAddress, amount, tokenAddress)
 	if err != nil {
 		return false, err
 	}
