@@ -22,7 +22,7 @@ var UpgradeListTestnet = []UpgradeCreator{
 	{"https://testnet-repo.decimalchain.com/16379201", DummyUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/16406401", TransferDaoAndVals},
 	{"https://testnet-repo.decimalchain.com/17576701", DummyUpgradeHandlerCreator},
-
+	{"https://testnet-repo.decimalchain.com/17621701", DummyUpgradeHandlerCreator},
 }
 var UpgradeListMainnet = []UpgradeCreator{
 	{"https://repo.decimalchain.com/12830301", FixSendUpgradeHandlerCreator},
