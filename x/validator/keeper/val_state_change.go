@@ -692,6 +692,8 @@ func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator) {
 }
 
 func (k Keeper) forceWithdraw(ctx sdk.Context, delegation types.Delegation) error {
+	k.Logger(ctx).Info("Force Withdrawal begin", "delegator", delegation.Delegator, "validator", delegation.Validator)
+
 	delegationAddress, err := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
 	if err != nil {
 		return err
@@ -716,7 +718,9 @@ func (k Keeper) forceWithdraw(ctx sdk.Context, delegation types.Delegation) erro
 		return err
 	}
 	tokenAddress := common.HexToAddress(coin.DRC20Contract)
+	k.Logger(ctx).Info("Force Withdrawal execute", "contract", delegationAddress, "validator", validatorAddr.String(), "delegator", delegatorAddr.String(), "token", tokenAddress.String(), "amount", amount.String())
 	_, err = k.ExecuteForceWithdrawal(ctx, common.HexToAddress(delegationAddress), validatorAddr, delegatorAddr, tokenAddress, amount)
+	k.Logger(ctx).Info("Force Withdrawal end", "err", err)
 	return err
 }
 
