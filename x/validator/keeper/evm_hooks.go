@@ -130,13 +130,13 @@ func (k Keeper) PostTxProcessing(
 				_ = contracts.UnpackLog(validatorMaster, &updateValidator, eventValidatorByID.Name, log)
 				fmt.Println(updateValidator)
 				cosmosAddressValidator, _ := sdk.ValAddressFromHex(updateValidator.Validator.String()[2:])
-				if updateValidator.Paused == false {
+				if !updateValidator.Paused {
 					err := k.SetOnlineFromEvm(ctx, cosmosAddressValidator.String())
 					if err != nil {
 						return err
 					}
 				}
-				if updateValidator.Paused == true {
+				if updateValidator.Paused {
 					err := k.SetOfflineFromEvm(ctx, cosmosAddressValidator.String())
 					if err != nil {
 						return err
@@ -264,44 +264,43 @@ func (k Keeper) PostTxProcessing(
 				}
 			}
 		}
+
 		eventDelegationNftByID, errEvent := delegatorNftCenter.EventByID(log.Topics[0])
 		if errEvent == nil && log.Address.String() == addressDelegationNft {
 			if eventDelegationNftByID.Name == "StakeHolded" {
-				//_ = delegatorCenter.UnpackIntoInterface(&tokenDelegate, eventDelegationNftByID.Name, log.Data)
-				//fmt.Println(tokenDelegate)
-				//err := k.Staked(ctx, tokenDelegate)
-				//if err != nil {
-				//	return err
-				//}
-				return errors.ValidatorNftDelegationInactive
+				_ = delegatorCenter.UnpackIntoInterface(&tokenDelegate, eventDelegationNftByID.Name, log.Data)
+				fmt.Println(tokenDelegate)
+				err := k.Staked(ctx, tokenDelegate, false)
+				if err != nil {
+					return err
+				}
 			}
+
 			if eventDelegationNftByID.Name == "StakedUpdated" {
-				//_ = delegatorCenter.UnpackIntoInterface(&tokenDelegate, eventDelegationNftByID.Name, log.Data)
-				//fmt.Println(tokenDelegate)
-				//err := k.Staked(ctx, tokenDelegate)
-				//if err != nil {
-				//	return err
-				//}
-				return errors.ValidatorNftDelegationInactive
+				_ = delegatorCenter.UnpackIntoInterface(&tokenDelegate, eventDelegationNftByID.Name, log.Data)
+				fmt.Println(tokenDelegate)
+				err := k.Staked(ctx, tokenDelegate, true)
+				if err != nil {
+					return err
+				}
 			}
 
 			if eventDelegationNftByID.Name == "WithdrawRequest" {
-				//_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationNftByID.Name, log.Data)
-				//fmt.Println(tokenUndelegate)
-				//err := k.RequestWithdraw(ctx, tokenUndelegate)
-				//if err != nil {
-				//	return err
-				//}
-				return errors.ValidatorNftDelegationInactive
+				_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationNftByID.Name, log.Data)
+				fmt.Println(tokenUndelegate)
+				err := k.RequestWithdraw(ctx, tokenUndelegate)
+				if err != nil {
+					return err
+				}
 			}
+
 			if eventDelegationNftByID.Name == "TransferRequest" {
-				//_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationNftByID.Name, log.Data)
-				//fmt.Println(tokenRedelegation)
-				//err := k.RequestTransfer(ctx, tokenRedelegation)
-				//if err != nil {
-				//	return err
-				//}
-				return errors.ValidatorNftDelegationInactive
+				_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationNftByID.Name, log.Data)
+				fmt.Println(tokenRedelegation)
+				err := k.RequestTransfer(ctx, tokenRedelegation, srcValidatorRedelegation)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
