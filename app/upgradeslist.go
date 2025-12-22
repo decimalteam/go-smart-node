@@ -39,6 +39,7 @@ var UpgradeListMainnet = []UpgradeCreator{
 	{"https://repo.decimalchain.com/27916701", DummyUpgradeHandlerCreator},
 	{"https://repo.decimalchain.com/27994701", TransferDaoAndVals},
  	{"https://repo.decimalchain.com/28728701", DummyUpgradeHandlerCreator},
+	{"https://repo.decimalchain.com/29512333", DummyUpgradeHandlerCreator},
 
 }
 
