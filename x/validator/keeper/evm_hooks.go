@@ -634,6 +634,9 @@ func (k Keeper) SetOnlineFromEvm(goCtx sdk.Context, validatorAddr string) error 
 	validatorCosmos.Online = true
 	validatorCosmos.Jailed = false
 
+	// Clear auto-unbond timer when validator comes back online
+	k.DeleteValidatorOfflineSince(ctx, valAddr)
+
 	delByValidator := k.GetAllDelegationsByValidator(ctx)
 	customCoinStaked := k.GetAllCustomCoinsStaked(ctx)
 	customCoinPrices := k.CalculateCustomCoinPrices(ctx, customCoinStaked)
@@ -699,6 +702,9 @@ func (k Keeper) SetOfflineFromEvm(goCtx sdk.Context, validatorAddrHex string) er
 	validatorCosmos.Online = false
 	// TODO: optimize
 	k.SetValidator(ctx, validatorCosmos)
+
+	// Start auto-unbond timer
+	k.SetValidatorOfflineSince(ctx, valAddr, ctx.BlockTime())
 
 	consAdr, err := validatorCosmos.GetConsAddr()
 	if err != nil {

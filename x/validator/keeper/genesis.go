@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"time"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
@@ -165,6 +166,15 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) (res []ab
 		}
 	}
 
+	// Restore offline-since entries for auto-unbond tracking
+	for _, entry := range data.ValidatorOfflineSince {
+		valAddr, err := sdk.ValAddressFromBech32(entry.ValidatorAddress)
+		if err != nil {
+			panic(err)
+		}
+		k.SetValidatorOfflineSince(ctx, valAddr, entry.OfflineSince)
+	}
+
 	// check if the unbonded and bonded pools accounts exists
 	bondedPool := k.GetBondedPool(ctx)
 	if bondedPool == nil {
@@ -254,15 +264,25 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		return false
 	})
 
+	var offlineSinceEntries []types.ValidatorOfflineSince
+	k.IterateValidatorOfflineSince(ctx, func(valAddr sdk.ValAddress, offlineSince time.Time) bool {
+		offlineSinceEntries = append(offlineSinceEntries, types.ValidatorOfflineSince{
+			ValidatorAddress: valAddr.String(),
+			OfflineSince:     offlineSince,
+		})
+		return false
+	})
+
 	return &types.GenesisState{
-		Params:              k.GetParams(ctx),
-		LastTotalPower:      k.GetLastTotalPower(ctx).Int64(),
-		LastValidatorPowers: lastValidatorPowers,
-		Validators:          k.GetAllValidators(ctx),
-		Delegations:         k.GetAllDelegations(ctx),
-		Undelegations:       undelegations,
-		Redelegations:       redelegations,
-		Exported:            true,
+		Params:                k.GetParams(ctx),
+		LastTotalPower:        k.GetLastTotalPower(ctx).Int64(),
+		LastValidatorPowers:   lastValidatorPowers,
+		Validators:            k.GetAllValidators(ctx),
+		Delegations:           k.GetAllDelegations(ctx),
+		Undelegations:         undelegations,
+		Redelegations:         redelegations,
+		Exported:              true,
+		ValidatorOfflineSince: offlineSinceEntries,
 	}
 }
 

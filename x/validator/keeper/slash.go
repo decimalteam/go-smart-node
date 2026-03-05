@@ -202,6 +202,13 @@ func (k Keeper) Jail(ctx sdk.Context, consAddr sdk.ConsAddress) {
 	validator.Jailed = true
 	validator.Online = false
 	k.SetValidator(ctx, validator)
+
+	// Set OfflineSince only if not already set (validator could have been offline before being jailed)
+	valAddr := validator.GetOperator()
+	if _, found := k.GetValidatorOfflineSince(ctx, valAddr); !found {
+		k.SetValidatorOfflineSince(ctx, valAddr, ctx.BlockTime())
+	}
+
 	// Jailed validator will be processe in ApplyAndReturnValidatorSetUpdates
 	//k.DeleteValidatorByPowerIndex(ctx, validator)
 	// Deleting of start height reset MissedBlockCounter

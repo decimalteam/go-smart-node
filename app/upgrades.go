@@ -150,6 +150,29 @@ var TransferDaoAndVals = func(app *DSC, mm *module.Manager, configurator module.
 	}
 }
 
+var AutoUnbondMigrationHandlerCreator = func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+	return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+		logger := ctx.Logger().With("upgrade", plan.Name)
+
+		// Set OfflineSince = ctx.BlockTime() for all currently offline validators.
+		// This gives them the full auto-unbond timeout window from the upgrade moment.
+		validators := app.ValidatorKeeper.GetAllValidators(ctx)
+		count := 0
+		for _, val := range validators {
+			if !val.Online {
+				valAddr := val.GetOperator()
+				if _, found := app.ValidatorKeeper.GetValidatorOfflineSince(ctx, valAddr); !found {
+					app.ValidatorKeeper.SetValidatorOfflineSince(ctx, valAddr, ctx.BlockTime())
+					count++
+				}
+			}
+		}
+		logger.Info(fmt.Sprintf("auto-unbond migration: initialized OfflineSince for %d offline validators", count))
+
+		return mm.RunMigrations(ctx, configurator, fromVM)
+	}
+}
+
 // StakeMigration defines a single old->new address pair for stake migration.
 type StakeMigration struct {
 	OldHex string

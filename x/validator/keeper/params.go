@@ -80,6 +80,16 @@ func (k Keeper) BaseDenom(ctx sdk.Context) (res string) {
 	return
 }
 
+// AutoUnbondTimeout returns the duration after which offline validators are auto-unbonded.
+func (k Keeper) AutoUnbondTimeout(ctx sdk.Context) (res time.Duration) {
+	if k.paramstore.Has(ctx, types.KeyAutoUnbondTimeout) {
+		k.paramstore.Get(ctx, types.KeyAutoUnbondTimeout, &res)
+	} else {
+		res = types.DefaultAutoUnbondTimeout
+	}
+	return
+}
+
 // GetParams returns all parameters as types.Params.
 func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 	return types.NewParams(
@@ -94,6 +104,7 @@ func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 		k.MinSignedPerWindow(ctx),
 		k.SlashFractionDowntime(ctx),
 		k.SlashFractionDoubleSign(ctx),
+		k.AutoUnbondTimeout(ctx),
 	)
 }
 

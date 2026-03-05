@@ -36,6 +36,9 @@ const (
 	DefaultSignedBlocksWindow int64 = 24
 
 	DefaultBaseDenom = cmdcfg.BaseDenom
+
+	// DefaultAutoUnbondTimeout = 30 days
+	DefaultAutoUnbondTimeout time.Duration = time.Hour * 24 * 30
 )
 
 var (
@@ -60,6 +63,7 @@ var (
 	KeyMinSignedPerWindow      = []byte("MinSignedPerWindow")
 	KeySlashFractionDowntime   = []byte("SlashFractionDowntime")
 	KeySlashFractionDoubleSign = []byte("SlashFractionDoubleSign")
+	KeyAutoUnbondTimeout       = []byte("AutoUnbondTimeout")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -83,6 +87,7 @@ func DefaultParams() Params {
 		MinSignedPerWindow:      DefaultMinSignedPerWindow,
 		SlashFractionDowntime:   DefaultSlashFractionDowntime,
 		SlashFractionDoubleSign: DefaultSlashFractionDoubleSign,
+		AutoUnbondTimeout:       DefaultAutoUnbondTimeout,
 	}
 }
 
@@ -99,6 +104,7 @@ func NewParams(
 	minSignedPerWindow sdk.Dec,
 	slashFractionDowntime sdk.Dec,
 	slashFractionDoubleSign sdk.Dec,
+	autoUnbondTimeout time.Duration,
 ) Params {
 	return Params{
 		MaxValidators:           maxValidators,
@@ -112,6 +118,7 @@ func NewParams(
 		MinSignedPerWindow:      minSignedPerWindow,
 		SlashFractionDowntime:   slashFractionDowntime,
 		SlashFractionDoubleSign: slashFractionDoubleSign,
+		AutoUnbondTimeout:       autoUnbondTimeout,
 	}
 }
 
@@ -129,6 +136,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(KeyMinSignedPerWindow, &p.MinSignedPerWindow, validateDec),
 		paramtypes.NewParamSetPair(KeySlashFractionDowntime, &p.SlashFractionDowntime, validateDec),
 		paramtypes.NewParamSetPair(KeySlashFractionDoubleSign, &p.SlashFractionDoubleSign, validateDec),
+		paramtypes.NewParamSetPair(KeyAutoUnbondTimeout, &p.AutoUnbondTimeout, validateAutoUnbondTimeout),
 	}
 }
 
@@ -165,6 +173,9 @@ func (p Params) Validate() (err error) {
 		return
 	}
 	if err = validateDec(p.SlashFractionDoubleSign); err != nil {
+		return
+	}
+	if err = validateAutoUnbondTimeout(p.AutoUnbondTimeout); err != nil {
 		return
 	}
 	return
@@ -264,5 +275,16 @@ func validateBaseDenom(i interface{}) error {
 		return fmt.Errorf("wrong denom value")
 	}
 
+	return nil
+}
+
+func validateAutoUnbondTimeout(i interface{}) error {
+	v, ok := i.(time.Duration)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	if v < 0 {
+		return fmt.Errorf("auto-unbond timeout must be non-negative: %d", v)
+	}
 	return nil
 }
