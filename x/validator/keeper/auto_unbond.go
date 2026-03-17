@@ -56,7 +56,7 @@ func (k Keeper) enqueueAutoUnbond(ctx sdk.Context, valAddr sdk.ValAddress) {
 }
 
 // ExecuteAutoUnbondEnqueue calls the EVM delegation contract to enqueue
-// an auto-unbond entry. Follows the ExecuteForceWithdrawal pattern.
+// an auto-unbond entry for async processing by the external bot.
 func (k *Keeper) ExecuteAutoUnbondEnqueue(ctx sdk.Context, del types.Delegation) error {
 	delegationAddress, err := contracts.GetAddressFromContractCenter(
 		ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)

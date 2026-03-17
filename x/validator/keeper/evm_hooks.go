@@ -402,7 +402,13 @@ func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.Dele
 
 	delegationCosmos, found := k.GetDelegation(ctx, delegatorAddress, valAddr, stake.ID)
 	if !found {
-		return errors.DelegationNotFound
+		// Delegation already removed by CheckDelegations (force-undelegate).
+		// EVM-side withdrawal completes normally; Cosmos side is already done.
+		ctx.Logger().Info("WithdrawRequest: delegation not found, skipping",
+			"delegator", delegatorAddress,
+			"validator", valAddr,
+		)
+		return nil
 	}
 
 	remainStake, err := k.CalculateRemainStake(ctx, delegationCosmos.Stake, stake)
