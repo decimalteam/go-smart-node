@@ -270,7 +270,12 @@ var MainnetStakeMigrations = []StakeMigration{
 }
 
 // Testnet migration addresses
-var TestnetStakeMigrations = []StakeMigration{}
+var TestnetStakeMigrations = []StakeMigration{
+	{"0x0b94c822596dbb629be24dab4c5e0d6aa79a2980", "0xb48eb2301ca6a5af54b11e1769fae5a5b6d63c8b"},
+	{"0xe2d9b3af39c9a9b74aea41b7bc85e2aec7e975d9", "0xa13b78f8aa52c2f0ffd13326a1ba4eab977e70c0"},
+	{"0x1d1db8d3264b667759d737a95a39d66852e43549", "0xd5602db45634282a6f545675e7dce76d2a40ad1d"},
+	{"0x8d76bea7bb18f9b92157e0d45414c9c8a3793386", "0xa1bd770ddf1bbeda438938bbf90fe6caefdca8eb"},
+}
 
 // MigrateStakesHandlerCreator is the mainnet handler (kept for backwards compatibility with upgradeslist.go)
 var MigrateStakesHandlerCreator = NewMigrateStakesHandler(MainnetStakeMigrations)
