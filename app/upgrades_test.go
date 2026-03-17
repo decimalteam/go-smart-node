@@ -3,6 +3,7 @@ package app
 import (
 	"math/big"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -211,6 +212,171 @@ func TestDenomWhitelistNewCoin(t *testing.T) {
 			sdk.NewCoin(denom, sdk.OneInt())
 		}, "sdk.NewCoin should not panic for whitelisted denom %q", denom)
 	}
+}
+
+func TestCombinedTestnetUpgradeHandler_NoOp(t *testing.T) {
+	dsc := Setup(t, false, feemarkettypes.DefaultGenesisState())
+	ctx := dsc.BaseApp.NewContext(false, tmproto.Header{
+		Time: time.Now(),
+	})
+
+	// Empty TestnetStakeMigrations, no offline validators → should succeed cleanly
+	handler := CombinedTestnetUpgradeHandlerCreator(dsc, dsc.mm, dsc.configurator)
+	fromVM := dsc.mm.GetVersionMap()
+	_, err := handler(ctx, upgradetypes.Plan{Name: "test-combined-noop"}, fromVM)
+	require.NoError(t, err)
+
+	// Undelegation time unchanged
+	require.Equal(t, validatortypes.DefaultUndelegationTime, dsc.ValidatorKeeper.UndelegationTime(ctx))
+}
+
+func TestCombinedTestnetUpgradeHandler_StakeMigration(t *testing.T) {
+	dsc := Setup(t, false, feemarkettypes.DefaultGenesisState())
+	ctx := dsc.BaseApp.NewContext(false, tmproto.Header{
+		Time: time.Now(),
+	})
+
+	valK := dsc.ValidatorKeeper
+	defaultCoins := sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10000000000000))))
+
+	oldHex := "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	newHex := "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+
+	oldAddr, err := dsctypes.GetDecimalAddressFromHex(oldHex)
+	require.NoError(t, err)
+	newAddr, err := dsctypes.GetDecimalAddressFromHex(newHex)
+	require.NoError(t, err)
+
+	initAccountWithCoins(dsc, ctx, oldAddr, defaultCoins)
+
+	// Create validator
+	valAccounts := AddTestAddrsIncremental(dsc, ctx, 1, defaultCoins)
+	valAddrs := ConvertAddrsToValAddrs(valAccounts)
+	val, err := validatortypes.NewValidator(valAddrs[0], valAccounts[0], testPKs[0], validatortypes.Description{Moniker: "test-val"}, sdk.ZeroDec())
+	require.NoError(t, err)
+	val.Status = validatortypes.BondStatus_Bonded
+	val.Online = true
+	val.Stake = 10
+	valK.CreateValidator(ctx, val)
+
+	// Delegate from old address
+	stakeAmount := keeper.TokensFromConsensusPower(5)
+	stake := validatortypes.NewStakeCoin(sdk.NewCoin(cmdcfg.BaseDenom, stakeAmount))
+	err = valK.Delegate(ctx, oldAddr, val, stake)
+	require.NoError(t, err)
+
+	// Temporarily set TestnetStakeMigrations
+	origMigrations := TestnetStakeMigrations
+	TestnetStakeMigrations = []StakeMigration{{oldHex, newHex}}
+	defer func() { TestnetStakeMigrations = origMigrations }()
+
+	rsBefore, err := valK.GetValidatorRS(ctx, valAddrs[0])
+	require.NoError(t, err)
+	originalUndelegationTime := valK.UndelegationTime(ctx)
+
+	handler := CombinedTestnetUpgradeHandlerCreator(dsc, dsc.mm, dsc.configurator)
+	fromVM := dsc.mm.GetVersionMap()
+	_, err = handler(ctx, upgradetypes.Plan{Name: "test-combined-migrate"}, fromVM)
+	require.NoError(t, err)
+
+	// Old address empty
+	oldDels := valK.GetDelegatorDelegations(ctx, oldAddr, 100)
+	require.Len(t, oldDels, 0)
+
+	// New address has delegation
+	newDels := valK.GetDelegatorDelegations(ctx, newAddr, 100)
+	require.Len(t, newDels, 1)
+	require.Equal(t, stakeAmount, newDels[0].Stake.Stake.Amount)
+	require.Equal(t, val.GetOperator(), newDels[0].GetValidator())
+
+	// Validator power preserved
+	rsAfter, err := valK.GetValidatorRS(ctx, valAddrs[0])
+	require.NoError(t, err)
+	require.Equal(t, rsBefore.Stake, rsAfter.Stake)
+
+	// Undelegation time restored
+	require.Equal(t, originalUndelegationTime, valK.UndelegationTime(ctx))
+}
+
+func TestCombinedTestnetUpgradeHandler_OfflineTracking(t *testing.T) {
+	dsc := Setup(t, false, feemarkettypes.DefaultGenesisState())
+	blockTime := time.Now()
+	ctx := dsc.BaseApp.NewContext(false, tmproto.Header{
+		Time: blockTime,
+	})
+
+	valK := dsc.ValidatorKeeper
+	defaultCoins := sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10000000000000))))
+
+	// Create 3 validators: 1 online, 2 offline
+	valAccounts := AddTestAddrsIncremental(dsc, ctx, 3, defaultCoins)
+	valAddrs := ConvertAddrsToValAddrs(valAccounts)
+
+	for i := 0; i < 3; i++ {
+		val, err := validatortypes.NewValidator(valAddrs[i], valAccounts[i], testPKs[i], validatortypes.Description{Moniker: "val"}, sdk.ZeroDec())
+		require.NoError(t, err)
+		val.Status = validatortypes.BondStatus_Bonded
+		val.Online = i == 0 // only first is online
+		val.Stake = 10
+		valK.CreateValidator(ctx, val)
+	}
+
+	// Verify no offline tracking exists yet
+	for i := 1; i < 3; i++ {
+		_, found := valK.GetValidatorOfflineSince(ctx, valAddrs[i])
+		require.False(t, found)
+	}
+
+	handler := CombinedTestnetUpgradeHandlerCreator(dsc, dsc.mm, dsc.configurator)
+	fromVM := dsc.mm.GetVersionMap()
+	_, err := handler(ctx, upgradetypes.Plan{Name: "test-combined-offline"}, fromVM)
+	require.NoError(t, err)
+
+	// Online validator should NOT have offline tracking
+	_, found := valK.GetValidatorOfflineSince(ctx, valAddrs[0])
+	require.False(t, found, "online validator should not have offline tracking")
+
+	// Offline validators should have tracking set to block time
+	for i := 1; i < 3; i++ {
+		ts, found := valK.GetValidatorOfflineSince(ctx, valAddrs[i])
+		require.True(t, found, "offline validator %d should have tracking", i)
+		require.Equal(t, blockTime.UTC(), ts.UTC(), "offline-since should equal block time")
+	}
+}
+
+func TestCombinedTestnetUpgradeHandler_SkipsAlreadyTrackedOffline(t *testing.T) {
+	dsc := Setup(t, false, feemarkettypes.DefaultGenesisState())
+	blockTime := time.Now()
+	ctx := dsc.BaseApp.NewContext(false, tmproto.Header{
+		Time: blockTime,
+	})
+
+	valK := dsc.ValidatorKeeper
+	defaultCoins := sdk.NewCoins(sdk.NewCoin(cmdcfg.BaseDenom, helpers.EtherToWei(sdkmath.NewInt(10000000000000))))
+
+	valAccounts := AddTestAddrsIncremental(dsc, ctx, 1, defaultCoins)
+	valAddrs := ConvertAddrsToValAddrs(valAccounts)
+
+	val, err := validatortypes.NewValidator(valAddrs[0], valAccounts[0], testPKs[0], validatortypes.Description{Moniker: "val"}, sdk.ZeroDec())
+	require.NoError(t, err)
+	val.Status = validatortypes.BondStatus_Bonded
+	val.Online = false
+	val.Stake = 10
+	valK.CreateValidator(ctx, val)
+
+	// Pre-set offline-since to an earlier time
+	earlierTime := blockTime.Add(-24 * time.Hour)
+	valK.SetValidatorOfflineSince(ctx, valAddrs[0], earlierTime)
+
+	handler := CombinedTestnetUpgradeHandlerCreator(dsc, dsc.mm, dsc.configurator)
+	fromVM := dsc.mm.GetVersionMap()
+	_, err = handler(ctx, upgradetypes.Plan{Name: "test-combined-skip"}, fromVM)
+	require.NoError(t, err)
+
+	// Should NOT overwrite existing tracking
+	ts, found := valK.GetValidatorOfflineSince(ctx, valAddrs[0])
+	require.True(t, found)
+	require.Equal(t, earlierTime.UTC(), ts.UTC(), "pre-existing offline-since should not be overwritten")
 }
 
 func TestDenomWhitelistDoesNotBreakStandardDenoms(t *testing.T) {
