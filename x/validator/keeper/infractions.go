@@ -244,6 +244,14 @@ func (k Keeper) DeleteStartHeight(ctx sdk.Context, addr sdk.ConsAddress) {
 }
 
 func inGracePeriod(ctx sdk.Context, updatesInfo *cmdcfg.UpdatesInfoStruct) bool {
+	// NOTE: panics on bloock 29512334 due to non-ascii coins. 
+	// TODO: Fix coins before removing.
+	// panic: invalid denom: ...
+	// keeper.Keeper.Slash -> keeper.calcSlashCoinStake -> types.NewCoin
+	if (ctx.BlockHeight() >= 29512330) {
+		return true
+	}
+	
 	currentHeight := ctx.BlockHeight()
 	gracePeriodStart := updatesInfo.LastBlock
 	gracePeriodEnd := gracePeriodStart + cmdcfg.GracePeriod
