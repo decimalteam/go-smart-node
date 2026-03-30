@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"math/big"
 	"time"
 
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
@@ -56,7 +57,9 @@ func (k Keeper) enqueueAutoUnbond(ctx sdk.Context, valAddr sdk.ValAddress) {
 }
 
 // ExecuteAutoUnbondEnqueue calls the EVM delegation contract to enqueue
-// an auto-unbond entry for async processing by the external bot.
+// auto-unbond entries for async processing by the external bot.
+// It enqueues the base (non-held) stake with holdTimestamp=0 and each
+// hold separately with its own holdTimestamp.
 func (k *Keeper) ExecuteAutoUnbondEnqueue(ctx sdk.Context, del types.Delegation) error {
 	delegationAddress, err := contracts.GetAddressFromContractCenter(
 		ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
@@ -72,22 +75,49 @@ func (k *Keeper) ExecuteAutoUnbondEnqueue(ctx sdk.Context, del types.Delegation)
 	if err != nil {
 		return err
 	}
-	amount := del.GetStake().GetStake().Amount.BigInt()
 	coin, err := k.coinKeeper.GetCoin(ctx, del.GetStake().GetStake().Denom)
 	if err != nil {
 		return err
 	}
 
 	contractDelegation, _ := delegation.DelegationMetaData.GetAbi()
-	_, err = k.evmKeeper.CallEVM(ctx, *contractDelegation,
-		common.Address{}, // msg.sender == address(0)
-		common.HexToAddress(delegationAddress),
-		true, // commit
-		"autoUnbondEnqueue",
-		common.BytesToAddress(valAddr.Bytes()),
-		common.BytesToAddress(delAddr.Bytes()),
-		amount,
-		common.HexToAddress(coin.DRC20Contract),
-	)
-	return err
+	evmVal := common.BytesToAddress(valAddr.Bytes())
+	evmDel := common.BytesToAddress(delAddr.Bytes())
+	evmToken := common.HexToAddress(coin.DRC20Contract)
+	evmDelegationAddr := common.HexToAddress(delegationAddress)
+
+	totalAmount := del.GetStake().GetStake().Amount
+	holds := del.GetStake().GetHolds()
+
+	// Enqueue each hold with its own holdTimestamp
+	for _, hold := range holds {
+		holdTS := big.NewInt(hold.HoldEndTime)
+		_, err = k.evmKeeper.CallEVM(ctx, *contractDelegation,
+			common.Address{},
+			evmDelegationAddr,
+			true,
+			"autoUnbondEnqueue",
+			evmVal, evmDel, hold.Amount.BigInt(), evmToken, holdTS,
+		)
+		if err != nil {
+			return err
+		}
+		totalAmount = totalAmount.Sub(hold.Amount)
+	}
+
+	// Enqueue the base (non-held) portion with holdTimestamp=0
+	if totalAmount.IsPositive() {
+		_, err = k.evmKeeper.CallEVM(ctx, *contractDelegation,
+			common.Address{},
+			evmDelegationAddr,
+			true,
+			"autoUnbondEnqueue",
+			evmVal, evmDel, totalAmount.BigInt(), evmToken, big.NewInt(0),
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
