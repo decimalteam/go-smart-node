@@ -130,13 +130,13 @@ func (k Keeper) PostTxProcessing(
 				_ = contracts.UnpackLog(validatorMaster, &updateValidator, eventValidatorByID.Name, log)
 				fmt.Println(updateValidator)
 				cosmosAddressValidator, _ := sdk.ValAddressFromHex(updateValidator.Validator.String()[2:])
-				if !updateValidator.Paused {
+				if updateValidator.Paused == false {
 					err := k.SetOnlineFromEvm(ctx, cosmosAddressValidator.String())
 					if err != nil {
 						return err
 					}
 				}
-				if updateValidator.Paused {
+				if updateValidator.Paused == true {
 					err := k.SetOfflineFromEvm(ctx, cosmosAddressValidator.String())
 					if err != nil {
 						return err
