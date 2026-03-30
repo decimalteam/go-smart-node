@@ -280,6 +280,95 @@ var TestnetStakeMigrations = []StakeMigration{
 // MigrateStakesHandlerCreator is the mainnet handler (kept for backwards compatibility with upgradeslist.go)
 var MigrateStakesHandlerCreator = NewMigrateStakesHandler(MainnetStakeMigrations)
 
+// CombinedMainnetUpgradeHandlerCreator runs mainnet migrations in a single upgrade:
+// 1. Migrate stakes from old delegator addresses to new ones
+// 2. Initialize auto-unbond tracking for offline validators
+var CombinedMainnetUpgradeHandlerCreator = func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+	return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+		logger := ctx.Logger().With("upgrade", plan.Name)
+
+		// --- Step 1: Migrate stakes ---
+		logger.Info("step 1: migrating stakes")
+		{
+			validatorSubspace := app.GetSubspace(validatortypes.ModuleName)
+			var originalUndelegationTime time.Duration
+			validatorSubspace.Get(ctx, validatortypes.KeyUndelegationTime, &originalUndelegationTime)
+			validatorSubspace.Set(ctx, validatortypes.KeyUndelegationTime, time.Duration(0))
+
+			for _, m := range MainnetStakeMigrations {
+				oldAddr, err := dsctypes.GetDecimalAddressFromHex(m.OldHex)
+				if err != nil {
+					panic(fmt.Errorf("invalid old address %s: %w", m.OldHex, err))
+				}
+				newAddr, err := dsctypes.GetDecimalAddressFromHex(m.NewHex)
+				if err != nil {
+					panic(fmt.Errorf("invalid new address %s: %w", m.NewHex, err))
+				}
+
+				delegations := app.ValidatorKeeper.GetDelegatorDelegations(ctx, oldAddr, 65535)
+				logger.Info(fmt.Sprintf("migrating %d delegations from %s to %s", len(delegations), m.OldHex, m.NewHex))
+
+				for _, del := range delegations {
+					valAddr := del.GetValidator()
+					stake := del.Stake
+
+					var remainStake validatortypes.Stake
+					switch stake.Type {
+					case validatortypes.StakeType_Coin:
+						remainStake = validatortypes.NewStakeCoin(sdk.Coin{Denom: stake.Stake.Denom, Amount: sdk.ZeroInt()})
+					case validatortypes.StakeType_NFT:
+						remainStake = validatortypes.NewStakeNFT(stake.ID, nil, sdk.Coin{Denom: stake.Stake.Denom, Amount: sdk.ZeroInt()})
+					}
+
+					_, err = app.ValidatorKeeper.Undelegate(ctx, oldAddr, valAddr, stake, remainStake, nil)
+					if err != nil {
+						panic(fmt.Errorf("failed to undelegate %s from validator %s: %w", stake.ID, valAddr, err))
+					}
+
+					err = app.ValidatorKeeper.CompleteUnbonding(ctx, oldAddr, valAddr)
+					if err != nil {
+						panic(fmt.Errorf("failed to complete unbonding for %s: %w", stake.ID, err))
+					}
+
+					validator, found := app.ValidatorKeeper.GetValidator(ctx, valAddr)
+					if !found {
+						panic(fmt.Errorf("validator not found: %s", valAddr))
+					}
+
+					err = app.ValidatorKeeper.Delegate(ctx, newAddr, validator, stake)
+					if err != nil {
+						panic(fmt.Errorf("failed to delegate %s to new address: %w", stake.ID, err))
+					}
+
+					logger.Info(fmt.Sprintf("  migrated stake %s (%s) on validator %s", stake.ID, stake.Stake.Amount, valAddr))
+				}
+			}
+
+			validatorSubspace.Set(ctx, validatortypes.KeyUndelegationTime, originalUndelegationTime)
+			logger.Info("step 1 complete: stakes migrated")
+		}
+
+		// --- Step 2: Initialize auto-unbond tracking ---
+		logger.Info("step 2: initializing auto-unbond tracking for offline validators")
+		{
+			validators := app.ValidatorKeeper.GetAllValidators(ctx)
+			count := 0
+			for _, val := range validators {
+				if !val.Online {
+					valAddr := val.GetOperator()
+					if _, found := app.ValidatorKeeper.GetValidatorOfflineSince(ctx, valAddr); !found {
+						app.ValidatorKeeper.SetValidatorOfflineSince(ctx, valAddr, ctx.BlockTime())
+						count++
+					}
+				}
+			}
+			logger.Info(fmt.Sprintf("step 2 complete: initialized OfflineSince for %d offline validators", count))
+		}
+
+		return mm.RunMigrations(ctx, configurator, fromVM)
+	}
+}
+
 // CombinedTestnetUpgradeHandlerCreator runs testnet migrations in a single upgrade:
 // 1. Migrate stakes from old delegator addresses to new ones
 // 2. Initialize auto-unbond tracking for offline validators
