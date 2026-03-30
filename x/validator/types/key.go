@@ -102,6 +102,7 @@ var (
 	keyPrefixMissedBlock                = []byte{0x61} // prefix for missed blocks
 	keyPrefixStartHeight                = []byte{0x62} // prefix for starting block
 	keyPrefixCustomCoinStaked           = []byte{0x71} // prefix for custom coin total staked in delegations
+	keyPrefixValidatorOfflineSince      = []byte{0x45} // prefix for validator offline-since timestamp (auto-unbond)
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -525,4 +526,18 @@ func GetAllCustomCoinsStaked() []byte {
 
 func GetCustomCoinStaked(denom string) []byte {
 	return append(keyPrefixCustomCoinStaked, []byte(denom)...)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Validator Offline Since (auto-unbond) ///////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// GetAllValidatorOfflineSinceKey returns the prefix key for all offline-since entries.
+func GetAllValidatorOfflineSinceKey() []byte {
+	return keyPrefixValidatorOfflineSince
+}
+
+// GetValidatorOfflineSinceKey returns the key for a specific validator's offline-since timestamp.
+func GetValidatorOfflineSinceKey(valAddr sdk.ValAddress) []byte {
+	return append(GetAllValidatorOfflineSinceKey(), address.MustLengthPrefix(valAddr)...)
 }

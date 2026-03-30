@@ -84,6 +84,9 @@ func EndBlocker(ctx sdk.Context, k Keeper, req abci.RequestEndBlock) []abci.Vali
 			k.SetParams(ctx, params)
 		}
 		k.DeleteHoldMature(ctx)
+
+		// Phase 1: Enqueue auto-unbonds for expired validators
+		k.ProcessAutoUnbond(ctx)
 	} else {
 		ctx.Logger().Debug(
 			fmt.Sprintf("Duration simple block (%s)", helpers.DurationToString(time.Since(start))),

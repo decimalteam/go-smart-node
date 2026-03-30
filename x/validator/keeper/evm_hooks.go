@@ -264,6 +264,7 @@ func (k Keeper) PostTxProcessing(
 				}
 			}
 		}
+
 		eventDelegationNftByID, errEvent := delegatorNftCenter.EventByID(log.Topics[0])
 		if errEvent == nil && log.Address.String() == addressDelegationNft {
 			if eventDelegationNftByID.Name == "StakeHolded" {
@@ -403,7 +404,13 @@ func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.Dele
 
 	delegationCosmos, found := k.GetDelegation(ctx, delegatorAddress, valAddr, stake.ID)
 	if !found {
-		return errors.DelegationNotFound
+		// Delegation already removed by CheckDelegations (force-undelegate).
+		// EVM-side withdrawal completes normally; Cosmos side is already done.
+		ctx.Logger().Info("WithdrawRequest: delegation not found, skipping",
+			"delegator", delegatorAddress,
+			"validator", valAddr,
+		)
+		return nil
 	}
 
 	remainStake, err := k.CalculateRemainStake(ctx, delegationCosmos.Stake, stake)
@@ -635,6 +642,9 @@ func (k Keeper) SetOnlineFromEvm(goCtx sdk.Context, validatorAddr string) error 
 	validatorCosmos.Online = true
 	validatorCosmos.Jailed = false
 
+	// Clear auto-unbond timer when validator comes back online
+	k.DeleteValidatorOfflineSince(ctx, valAddr)
+
 	delByValidator := k.GetAllDelegationsByValidator(ctx)
 	customCoinStaked := k.GetAllCustomCoinsStaked(ctx)
 	customCoinPrices := k.CalculateCustomCoinPrices(ctx, customCoinStaked)
@@ -700,6 +710,9 @@ func (k Keeper) SetOfflineFromEvm(goCtx sdk.Context, validatorAddrHex string) er
 	validatorCosmos.Online = false
 	// TODO: optimize
 	k.SetValidator(ctx, validatorCosmos)
+
+	// Start auto-unbond timer
+	k.SetValidatorOfflineSince(ctx, valAddr, ctx.BlockTime())
 
 	consAdr, err := validatorCosmos.GetConsAddr()
 	if err != nil {

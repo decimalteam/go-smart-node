@@ -20,9 +20,15 @@ var UpgradeListTestnet = []UpgradeCreator{
 	{"https://testnet-repo.decimalchain.com/15586201", DummyUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/15698601", DummyUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/16379201", DummyUpgradeHandlerCreator},
-	{"https://testnet-repo.decimalchain.com/17514701", DummyUpgradeHandlerCreator},
-
+	{"https://testnet-repo.decimalchain.com/16406401", TransferDaoAndVals},
+    {"https://testnet-repo.decimalchain.com/17514701", DummyUpgradeHandlerCreator},
+	{"https://testnet-repo.decimalchain.com/17576701", DummyUpgradeHandlerCreator},
+	{"https://testnet-repo.decimalchain.com/17621701", DummyUpgradeHandlerCreator},
+	{"https://testnet-repo.decimalchain.com/17628701", DummyUpgradeHandlerCreator},
+	{"https://testnet-repo.decimalchain.com/17700701", DummyUpgradeHandlerCreator},
+	{"https://testnet-repo.decimalchain.com/19354701", CombinedTestnetUpgradeHandlerCreator},
 }
+
 var UpgradeListMainnet = []UpgradeCreator{
 	{"https://repo.decimalchain.com/12830301", FixSendUpgradeHandlerCreator},
 	{"https://repo.decimalchain.com/13798601", DummyUpgradeHandlerCreator},
@@ -40,7 +46,7 @@ var UpgradeListMainnet = []UpgradeCreator{
 	{"https://repo.decimalchain.com/27994701", TransferDaoAndVals},
  	{"https://repo.decimalchain.com/28728701", DummyUpgradeHandlerCreator},
 	{"https://repo.decimalchain.com/29512333", DummyUpgradeHandlerCreator},
-
+	{"https://repo.decimalchain.com/31047201", CombinedMainnetUpgradeHandlerCreator},
 }
 
 func GetUpgradeList(chainID string) []UpgradeCreator {

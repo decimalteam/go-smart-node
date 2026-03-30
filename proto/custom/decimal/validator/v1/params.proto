@@ -42,4 +42,10 @@ message Params {
   bytes slash_fraction_downtime = 14
       [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec", (gogoproto.nullable) = false];
 
+  // auto_unbond_timeout defines the duration after which all stakes are
+  // force-unbonded from a continuously offline validator.
+  // Set to 0 to disable auto-unbond.
+  google.protobuf.Duration auto_unbond_timeout = 15
+      [ (gogoproto.nullable) = false, (gogoproto.stdduration) = true ];
+
 }

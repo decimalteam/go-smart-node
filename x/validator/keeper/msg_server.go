@@ -196,6 +196,9 @@ func (k msgServer) SetOnline(goCtx context.Context, msg *types.MsgSetOnline) (*t
 	validator.Online = true
 	validator.Jailed = false
 
+	// Clear auto-unbond timer when validator comes back online
+	k.DeleteValidatorOfflineSince(ctx, valAddr)
+
 	delByValidator := k.GetAllDelegationsByValidator(ctx)
 	customCoinStaked := k.GetAllCustomCoinsStaked(ctx)
 	customCoinPrices := k.CalculateCustomCoinPrices(ctx, customCoinStaked)
@@ -261,6 +264,9 @@ func (k msgServer) SetOffline(goCtx context.Context, msg *types.MsgSetOffline) (
 	validator.Online = false
 	// TODO: optimize
 	k.SetValidator(ctx, validator)
+
+	// Start auto-unbond timer
+	k.SetValidatorOfflineSince(ctx, valAddr, ctx.BlockTime())
 
 	consAdr, err := validator.GetConsAddr()
 	if err != nil {

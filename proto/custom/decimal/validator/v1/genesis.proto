@@ -5,6 +5,8 @@ import "gogoproto/gogo.proto";
 
 import "cosmos_proto/cosmos.proto";
 
+import "google/protobuf/timestamp.proto";
+
 import "decimal/validator/v1/validator.proto";
 import "decimal/validator/v1/params.proto";
 
@@ -28,6 +30,15 @@ message GenesisState {
   Params params = 7 [ (gogoproto.nullable) = false ];
   // exported is true if genesis was exported from the state.
   bool exported = 8;
+  // validator_offline_since contains offline-since timestamps for auto-unbond tracking.
+  repeated ValidatorOfflineSince validator_offline_since = 9 [ (gogoproto.nullable) = false ];
+}
+
+// ValidatorOfflineSince stores when a validator went offline for auto-unbond tracking.
+message ValidatorOfflineSince {
+  string validator_address = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  google.protobuf.Timestamp offline_since = 2
+      [ (gogoproto.nullable) = false, (gogoproto.stdtime) = true ];
 }
 
 // LastValidatorPower defines an object containing a pair of validator address and it's voting power.

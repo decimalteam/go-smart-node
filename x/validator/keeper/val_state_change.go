@@ -2,15 +2,16 @@ package keeper
 
 import (
 	"bytes"
-	sdkmath "cosmossdk.io/math"
 	goerrors "errors"
 	"fmt"
+	"runtime/debug"
+	"sort"
+
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/decimalteam/ethermint/types"
 	gogotypes "github.com/gogo/protobuf/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"runtime/debug"
-	"sort"
 
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/errors"
@@ -681,8 +682,16 @@ func (k Keeper) CheckDelegations(ctx sdk.Context, validator types.Validator) {
 			panic(errors.Internal.Wrapf("err: %s", err.Error()))
 		}
 
+		err = k.ExecuteAutoUnbondEnqueue(ctx, delegation)
+		if err != nil {
+			ctx.Logger().Error("force-withdraw: enqueue failed",
+				"validator", delegation.Validator,
+				"delegator", delegation.Delegator,
+				"err", err)
+		}
 	}
 }
+
 
 func (k Keeper) getValidatorsCountForBlock(ctx sdk.Context, block int64) uint32 {
 	count := uint32(16 + (block/432000)*4)
