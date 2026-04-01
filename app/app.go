@@ -208,9 +208,10 @@ var (
 
 	// Module accounts that are allowed to receive tokens
 	allowedReceivingModAcc = map[string]bool{
-		distrtypes.ModuleName: true,
-		cointypes.ModuleName:  true, // TODO: ?
-		swaptypes.SwapPool:    true,
+		distrtypes.ModuleName:    true,
+		cointypes.ModuleName:     true, // TODO: ?
+		swaptypes.SwapPool:       true,
+		validatortypes.ModuleName: true,
 	}
 )
 
