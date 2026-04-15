@@ -48,6 +48,7 @@ var UpgradeListMainnet = []UpgradeCreator{
 	{"https://repo.decimalchain.com/29512333", DummyUpgradeHandlerCreator},
 	{"https://repo.decimalchain.com/31049701", CombinedMainnetUpgradeHandlerCreator},
 	{"https://repo.decimalchain.com/31080201", DummyUpgradeHandlerCreator},
+	{"https://repo.decimalchain.com/31295301", DummyUpgradeHandlerCreator},
 }
 
 func GetUpgradeList(chainID string) []UpgradeCreator {

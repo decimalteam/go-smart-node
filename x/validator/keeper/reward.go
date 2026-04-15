@@ -72,13 +72,9 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 					)
 				}
 				baseAmount := sdk.NewDecFromInt(sdk.NewInt(0)).TruncateInt()
-				var deleteHolds []*types.StakeHold
 				for _, hold := range del.GetStake().GetHolds() {
 					dateStart := time.Unix(hold.HoldStartTime, 0)
 					dateEnd := time.Unix(hold.HoldEndTime, 0)
-					if hold.HoldStartTime == 0 {
-						deleteHolds = append(deleteHolds, hold)
-					}
 					difference := dateEnd.Sub(dateStart)
 					if (difference.Hours() / 24 / 365) >= 1 {
 						baseAmount = baseAmount.Add(sdk.NewDecFromInt(hold.Amount).Mul(delCoinPrice).TruncateInt())
@@ -86,7 +82,14 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 				}
 				allHoldBigOneYearsSum = allHoldBigOneYearsSum.Add(baseAmount)
 			} else {
-				allHoldBigOneYearsSum = allHoldBigOneYearsSum.Add(delStake.Amount)
+				for _, hold := range del.GetStake().GetHolds() {
+					dateStart := time.Unix(hold.HoldStartTime, 0)
+					dateEnd := time.Unix(hold.HoldEndTime, 0)
+					difference := dateEnd.Sub(dateStart)
+					if (difference.Hours() / 24 / 365) >= 1 {
+						allHoldBigOneYearsSum = allHoldBigOneYearsSum.Add(hold.Amount)
+					}
+				}
 			}
 		}
 	}
@@ -106,6 +109,7 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 		validator := val.GetOperator()
 		rewards := val.Rewards
 		accumRewards := sdk.NewDecFromInt(rewards).Mul(sdk.NewDecFromInt(percentForHold).QuoInt64(100)).TruncateInt()
+		rewards = rewards.Sub(accumRewards)
 
 		//daoWallet, err := k.getDAO(ctx)
 		//if err != nil {
