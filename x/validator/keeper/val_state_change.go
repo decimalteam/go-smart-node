@@ -183,7 +183,16 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		// part of the bonded validator set
 		valAddrSdk := sdk.ValAddress(iterator.Value())
 		valAddr := sdk.ValAddress(iterator.Value()).String()
-		validator := k.mustGetValidator(ctx, sdk.ValAddress(iterator.Value()))
+		validatorRec, found := k.GetValidator(ctx, valAddrSdk)
+		if !found {
+			// orphan power index entry for a removed validator — clean it up and skip
+			ctx.Logger().Error("removing orphan power index entry for deleted validator",
+				"validator", valAddr,
+			)
+			ctx.KVStore(k.storeKey).Delete(iterator.Key())
+			continue
+		}
+		validator := validatorRec
 
 		// state transitions
 		switch {
@@ -291,7 +300,16 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 	}
 
 	for _, valAddrBytes := range noLongerBonded {
-		validator := k.mustGetValidator(ctx, sdk.ValAddress(valAddrBytes))
+		valAddr := sdk.ValAddress(valAddrBytes)
+		validator, found := k.GetValidator(ctx, valAddr)
+		if !found {
+			// Validator already removed from store — still clean up the last-power index
+			ctx.Logger().Error("cleaning up last-power entry for already-deleted validator",
+				"validator", valAddr.String(),
+			)
+			k.DeleteLastValidatorPower(ctx, valAddr)
+			continue
+		}
 		k.DeleteLastValidatorPower(ctx, validator.GetOperator())
 		updates = append(updates, validator.ABCIValidatorUpdateZero())
 	}
