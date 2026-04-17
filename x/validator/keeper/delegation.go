@@ -89,8 +89,26 @@ func (k Keeper) GetValidatorDelegations(ctx sdk.Context, validator sdk.ValAddres
 	iterator := sdk.KVStorePrefixIterator(store, types.GetValidatorDelegationsKey(validator))
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		key := types.GetDelegationKeyFromValIndexKey(iterator.Key())
+		indexKey := iterator.Key()
+		// Delegation index keys must contain at least prefix + valAddrLen + valAddr + delAddrLen + delAddr + 1 byte denom.
+		// Keys with empty denom (length too short) are corrupt entries — skip and clean up.
+		if len(indexKey) < 44 {
+			ctx.Logger().Error("skipping corrupt delegation index key (empty denom)",
+				"validator", validator.String(),
+				"key_len", len(indexKey),
+			)
+			store.Delete(indexKey)
+			continue
+		}
+		key := types.GetDelegationKeyFromValIndexKey(indexKey)
 		value := store.Get(key)
+		if value == nil {
+			ctx.Logger().Error("delegation index key points to missing delegation, cleaning up",
+				"validator", validator.String(),
+			)
+			store.Delete(indexKey)
+			continue
+		}
 		delegation := types.MustUnmarshalDelegation(k.cdc, value)
 		delegations = append(delegations, delegation)
 	}
@@ -178,6 +196,13 @@ func (k Keeper) SetDelegation(ctx sdk.Context, delegation types.Delegation) {
 	delegator := delegation.GetDelegator()
 	validator := delegation.GetValidator()
 	denom := delegation.GetStake().GetID()
+	if denom == "" {
+		ctx.Logger().Error("BUG: SetDelegation called with empty Stake.ID, skipping",
+			"delegator", delegation.Delegator,
+			"validator", delegation.Validator,
+		)
+		return
+	}
 	store := ctx.KVStore(k.storeKey)
 	b := types.MustMarshalDelegation(k.cdc, delegation)
 	store.Set(types.GetDelegationKey(delegator, validator, denom), b)
