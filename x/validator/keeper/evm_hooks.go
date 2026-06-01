@@ -480,17 +480,21 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 
 func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.MasterValidatorValidatorAddedMeta) error {
 
-	commissionChekc, _ := sdk.NewDecFromStr(fmt.Sprintf("%d", validatorMeta.Commission))
-	commissionChekcInt := commissionChekc.TruncateInt()
-	fmt.Println("commissionChekcInt")
-	if commissionChekcInt.GT(sdk.NewInt(100)) {
+	// Commission arrives in the validator meta as a percentage in [0, 100]
+	// (e.g. "20" or "20.000000000000000000" for 20%). Validators persist it as
+	// a fraction in [0, 1] to match genesis and the reward math
+	// (reward.go: sdk.NewDecFromInt(rewards).Mul(val.Commission)), so divide by 100.
+	commissionPct, err := sdk.NewDecFromStr(strings.TrimSpace(validatorMeta.Commission.String()))
+	if err != nil {
+		return errors.Internal.Wrapf("invalid validator commission %q: %s", validatorMeta.Commission.String(), err.Error())
+	}
+	if commissionPct.GT(sdk.NewDec(100)) {
 		return errors.ValidatorCommissionIsTooBig
 	}
-	if commissionChekcInt.LT(sdk.NewInt(0)) {
+	if commissionPct.IsNegative() {
 		return errors.ValidatorCommissionIsTooSmall
 	}
-	fmt.Println("validatorMeta", validatorMeta)
-	commission, _ := sdkmath.NewIntFromString(fmt.Sprintf("%d", validatorMeta.Commission))
+	commissionFraction := commissionPct.QuoInt64(100)
 
 	rewardAddress, _ := types.GetDecimalAddressFromHex(validatorMeta.RewardAddress)
 
@@ -515,7 +519,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 			SecurityContact: validatorMeta.Description.SecurityContact,
 			Details:         validatorMeta.Description.Details,
 		},
-		Commission: sdk.NewDecFromInt(commission),
+		Commission: commissionFraction,
 		Stake:      sdk.Coin{},
 	}
 	fmt.Println("ValAddressFromBech32")
@@ -539,6 +543,7 @@ func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.
 
 		valEdit.Description = description
 		valEdit.RewardAddress = msg.RewardAddress
+		valEdit.Commission = msg.Commission
 
 		k.SetValidator(ctx, valEdit)
 
