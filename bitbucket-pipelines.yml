@@ -20,7 +20,13 @@ definitions:
       - docker login ${REGISTRY_URL} -u ${REGISTRY_LOGIN} -p ${REGISTRY_PASSWORD}
       - docker build -t ${REGISTRY_URL}/worker:${BITBUCKET_COMMIT_SHORT} -t ${REGISTRY_URL}/worker:${BITBUCKET_BRANCH}
         -f Dockerfile-worker .
-      - docker push --all-tags ${REGISTRY_URL}/worker
+      - echo "REGISTRY_URL=${REGISTRY_URL}"
+      - echo "BITBUCKET_BRANCH=${BITBUCKET_BRANCH}"
+      - echo "BITBUCKET_COMMIT_SHORT=${BITBUCKET_COMMIT_SHORT}"
+      - echo "Images before push:"
+      - docker images ${REGISTRY_URL}/worker
+      - docker push ${REGISTRY_URL}/worker:${BITBUCKET_COMMIT_SHORT}
+      - docker push ${REGISTRY_URL}/worker:${BITBUCKET_BRANCH}
       services:
       - docker
 
@@ -526,7 +532,14 @@ pipelines:
         - docker build -t ${REGISTRY_URL}/${BITBUCKET_REPO_SLUG}:${BITBUCKET_COMMIT_SHORT}
           -t ${REGISTRY_URL}/${BITBUCKET_REPO_SLUG}:${BITBUCKET_BRANCH} -f Dockerfile-worker
           .
-        - docker push --all-tags ${REGISTRY_URL}/${BITBUCKET_REPO_SLUG}
+        - echo "REGISTRY_URL=${REGISTRY_URL}"
+        - echo "BITBUCKET_REPO_SLUG=${BITBUCKET_REPO_SLUG}"
+        - echo "BITBUCKET_BRANCH=${BITBUCKET_BRANCH}"
+        - echo "BITBUCKET_COMMIT_SHORT=${BITBUCKET_COMMIT_SHORT}"
+        - echo "Images before push:"
+        - docker images ${REGISTRY_URL}/${BITBUCKET_REPO_SLUG}
+        - docker push ${REGISTRY_URL}/${BITBUCKET_REPO_SLUG}:${BITBUCKET_COMMIT_SHORT}
+        - docker push ${REGISTRY_URL}/${BITBUCKET_REPO_SLUG}:${BITBUCKET_BRANCH}
         services:
         - docker
 
