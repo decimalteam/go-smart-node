@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
+	"strings"
 )
 
 // evm coin center events
@@ -37,8 +38,26 @@ type MasterValidatorValidatorAddedMeta struct {
 		SecurityContact string `json:"security_contact"`
 		Details         string `json:"details"`
 	} `json:"description"`
-	Commission int `json:"commission"`
+	Commission CommissionField `json:"commission"`
 }
+
+// CommissionField holds a validator commission value taken from the EVM
+// validator meta. The on-the-wire value is a PERCENTAGE in [0, 100] and may be
+// encoded either as a JSON number (e.g. 20) or as a JSON string (e.g. "20" or
+// "20.000000000000000000", the form produced by the JS SDK / sync-service).
+// The raw textual value is preserved; callers convert it to the fractional
+// commission ([0, 1]) that validators persist (commission / 100).
+type CommissionField string
+
+// UnmarshalJSON accepts both the JSON number and JSON string encodings by
+// stripping any surrounding quotes; the numeric content is preserved verbatim.
+func (c *CommissionField) UnmarshalJSON(data []byte) error {
+	*c = CommissionField(strings.Trim(string(data), `"`))
+	return nil
+}
+
+// String returns the raw commission text (percentage units).
+func (c CommissionField) String() string { return string(c) }
 
 func UnpackInputsData(v interface{}, inputs abi.Arguments, data []byte) error {
 	unpacked, err := inputs.Unpack(data)

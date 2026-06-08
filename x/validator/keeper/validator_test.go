@@ -136,6 +136,49 @@ func TestSetValidatorByEvm(t *testing.T) {
 	require.Equal(t, validatorInfo.OperatorAddress, val2.OperatorAddress)
 }
 
+// TestCommissionFromEVM locks the commission-change fix:
+//   - meta commission is a PERCENTAGE (0-100) and is stored as a fraction (/100);
+//   - it parses from both JSON string ("10", "25.000000000000000000") and number (20);
+//   - it is applied on the EDIT path for an already-existing validator (the reported bug).
+func TestCommissionFromEVM(t *testing.T) {
+	_, dsc, ctx := createTestInput(t)
+
+	const operator = "d0valoper1x6f7ww0mnfmhjevf3spnn4rw97d0d2j7ec5l9m"
+	const pubkey = "zzF22DhElCE2ht9bBk/TxZcLB1qc3PxVCD7dgpj30og="
+
+	metaJSON := func(commission string) string {
+		return fmt.Sprintf("{\"operator_address\":\"%s\",\"reward_address\":\"0x3693e739fb9a777965898c0339d46e2f9af6aa5e\",\"consensus_pubkey\":\"%s\",\"description\":{\"moniker\":\"m\",\"identity\":\"\",\"website\":\"\",\"security_contact\":\"\",\"details\":\"\"},\"commission\":%s}", operator, pubkey, commission)
+	}
+
+	apply := func(commission string) {
+		var info contracts.MasterValidatorValidatorAddedMeta
+		require.NoError(t, json.Unmarshal([]byte(metaJSON(commission)), &info))
+		require.NoError(t, dsc.ValidatorKeeper.CreateValidatorFromEVM(ctx, info))
+	}
+
+	valAddr, err := sdk.ValAddressFromBech32(operator)
+	require.NoError(t, err)
+
+	// Create with a string-percentage commission ("10" => fraction 0.10).
+	apply("\"10\"")
+	val, found := dsc.ValidatorKeeper.GetValidator(ctx, valAddr)
+	require.True(t, found)
+	require.Equal(t, sdk.MustNewDecFromStr("0.1").String(), val.Commission.String())
+
+	// Edit the SAME validator: commission must now be applied (this was the bug).
+	// Also covers the sync-service wire format ("25.000000000000000000").
+	apply("\"25.000000000000000000\"")
+	val, found = dsc.ValidatorKeeper.GetValidator(ctx, valAddr)
+	require.True(t, found)
+	require.Equal(t, sdk.MustNewDecFromStr("0.25").String(), val.Commission.String())
+
+	// Numeric JSON form stays backward-compatible (20 => fraction 0.20).
+	apply("20")
+	val, found = dsc.ValidatorKeeper.GetValidator(ctx, valAddr)
+	require.True(t, found)
+	require.Equal(t, sdk.MustNewDecFromStr("0.2").String(), val.Commission.String())
+}
+
 func TestSetGetRewards(t *testing.T) {
 	_, dsc, ctx := createTestInput(t)
 	_, vals := generateAddresses(dsc, ctx, 10, defaultCoins)

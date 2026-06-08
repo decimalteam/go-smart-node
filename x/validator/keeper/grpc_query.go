@@ -123,8 +123,16 @@ func (k Querier) ValidatorDelegations(c context.Context, req *types.QueryValidat
 
 	var delegations []types.Delegation
 	pageRes, err := query.Paginate(valStore, req.Pagination, func(key []byte, _ []byte) error {
-		realKey := types.GetDelegationKeyFromValIndexKey(append(byValPrefix, key...))
-		del, err := types.UnmarshalDelegation(k.cdc, store.Get(realKey))
+		fullKey := append(byValPrefix, key...)
+		if len(fullKey) < 44 {
+			return nil // skip corrupt index entry with empty denom
+		}
+		realKey := types.GetDelegationKeyFromValIndexKey(fullKey)
+		value := store.Get(realKey)
+		if value == nil {
+			return nil // skip dangling index entry
+		}
+		del, err := types.UnmarshalDelegation(k.cdc, value)
 		if err != nil {
 			return err
 		}
@@ -253,8 +261,16 @@ func (k Querier) Delegations(c context.Context, req *types.QueryDelegationsReque
 	iterator := sdk.KVStorePrefixIterator(store, types.GetValidatorDelegatorDelegationsKey(valAddr, delAddr))
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		realKey := types.GetDelegationKeyFromValIndexKey(iterator.Key())
-		del, err := types.UnmarshalDelegation(k.cdc, store.Get(realKey))
+		indexKey := iterator.Key()
+		if len(indexKey) < 44 {
+			continue // skip corrupt index entry with empty denom
+		}
+		realKey := types.GetDelegationKeyFromValIndexKey(indexKey)
+		value := store.Get(realKey)
+		if value == nil {
+			continue // skip dangling index entry
+		}
+		del, err := types.UnmarshalDelegation(k.cdc, value)
 		if err != nil {
 			return nil, err
 		}
