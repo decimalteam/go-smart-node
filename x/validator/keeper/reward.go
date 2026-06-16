@@ -20,6 +20,12 @@ var developAccount = "d01hv3zxnm2x4sgnyaap7luwt783c04xxjfdlnt9u"
 var DAOCommission = sdk.NewDec(5).QuoInt64(100)
 var DevelopCommission = sdk.NewDec(5).QuoInt64(100)
 
+// MaxPercentForHold caps the share of each payout reserved for the >=1yr hold
+// bucket. It guarantees regular delegators (and dao/develop/commission) a floor
+// share (>=10%) even when a low staked/LimitVolume ratio would otherwise push
+// percentForHold to 100 and starve everyone but long-term holders.
+var MaxPercentForHold = sdk.NewInt(90)
+
 func (k Keeper) PayRewards(ctx sdk.Context) error {
 	e := types.EventPayRewards{}
 
@@ -98,6 +104,10 @@ func (k Keeper) PayRewards(ctx sdk.Context) error {
 	percentForHold = sdk.NewInt(100).Sub(percentForHold)
 	if percentForHold.IsNegative() {
 		percentForHold = sdk.NewInt(0)
+	}
+	// Cap the hold reservation so regular distribution always keeps a floor share.
+	if percentForHold.GT(MaxPercentForHold) {
+		percentForHold = MaxPercentForHold
 	}
 	// calculation percent from all reward percent sum for hold
 	sumRewardForHold := sdk.NewDecFromInt(allRewards).Mul(sdk.NewDecFromInt(percentForHold).QuoInt64(100)).TruncateInt()
