@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
+	"time"
 
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/delegation"
@@ -394,6 +395,18 @@ func rewriteFrozenStakeForNFT(
 	return coin.Validator, true, nil
 }
 
+// resolveHoldStartTime picks a hold's start time. For a brand-new hold bucket
+// (contract isNew flag) it trusts the contract-supplied start, falling back to the
+// current block time when the event carries 0 (pre-backfill stakes / defense-in-depth
+// against a 0 that would read as >=1yr old). For a top-up to an existing bucket it
+// always uses the current block time, preserving the per-segment anti-gaming behaviour.
+func resolveHoldStartTime(blockTime time.Time, eventStart *big.Int, isNewBucket bool) int64 {
+	if isNewBucket && eventStart != nil && eventStart.Sign() > 0 {
+		return eventStart.Int64()
+	}
+	return blockTime.Unix()
+}
+
 func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpdated, newStake bool) error {
 
 	coinStake, err := k.coinKeeper.GetCoinByDRC(ctx, stakeData.Stake.Token.String())
@@ -410,7 +423,7 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 	if stakeData.Stake.HoldTimestamp.Int64() != 0 {
 		var newHold validatorType.StakeHold
 		newHold.Amount = math.NewIntFromBigInt(stakeData.Stake.Amount)
-		newHold.HoldStartTime = ctx.BlockTime().Unix()
+		newHold.HoldStartTime = resolveHoldStartTime(ctx.BlockTime(), stakeData.Stake.HoldStartTime, stakeData.IsNew)
 		newHold.HoldEndTime = stakeData.Stake.HoldTimestamp.Int64()
 		stake.Holds = append(stake.Holds, &newHold)
 	}
@@ -465,7 +478,7 @@ func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.Dele
 	if tokenUndelegate.FrozenStake.Stake.HoldTimestamp.Int64() != 0 {
 		var newHold validatorType.StakeHold
 		newHold.Amount = math.NewIntFromBigInt(tokenUndelegate.FrozenStake.Stake.Amount)
-		newHold.HoldStartTime = ctx.BlockTime().Unix()
+		newHold.HoldStartTime = resolveHoldStartTime(ctx.BlockTime(), tokenUndelegate.FrozenStake.Stake.HoldStartTime, true)
 		newHold.HoldEndTime = tokenUndelegate.FrozenStake.Stake.HoldTimestamp.Int64()
 		stake.Holds = append(stake.Holds, &newHold)
 	}
@@ -527,11 +540,12 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 	if tokenRedelegation.FrozenStake.Stake.HoldTimestamp.Int64() != 0 {
 		var newHold validatorType.StakeHold
 		newHold.Amount = math.NewIntFromBigInt(tokenRedelegation.FrozenStake.Stake.Amount)
-		// Placeholder start: the EVM Stake carries only the absolute hold end (HoldTimestamp),
-		// not a start. applyTransferredHold below rebuilds the moved hold(s) from the source
-		// delegation using each source hold's real HoldStartTime, so this placeholder is not
-		// used for the redelegated (destination) hold.
-		newHold.HoldStartTime = ctx.BlockTime().Unix()
+		// The start read from the FrozenStake event is the stored original hold start.
+		// applyTransferredHold below rebuilds the moved hold(s) from source delegation
+		// hold segments (each with its own real HoldStartTime), overwriting this value
+		// for the redelegated (destination) hold. Pass isNewBucket=true so the event
+		// value is trusted with the 0-guard fallback.
+		newHold.HoldStartTime = resolveHoldStartTime(ctx.BlockTime(), tokenRedelegation.FrozenStake.Stake.HoldStartTime, true)
 		newHold.HoldEndTime = tokenRedelegation.FrozenStake.Stake.HoldTimestamp.Int64()
 		stake.Holds = append(stake.Holds, &newHold)
 	}

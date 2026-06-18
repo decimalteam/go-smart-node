@@ -481,6 +481,22 @@ var RewardPerBlockSyncHandlerCreator = func(app *DSC, mm *module.Manager, config
 	}
 }
 
+// HoldStartTimeBackfillHandlerCreator backfills each native hold's start time from node state
+// into the delegation contract's _stakes[stakeId].holdStartTime storage slot.
+// Register this handler at the block height where the upgraded delegation contract
+// (which includes the holdStartTime Stake field) goes live on-chain.
+var HoldStartTimeBackfillHandlerCreator = func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+	return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+		logger := ctx.Logger().With("upgrade", plan.Name)
+		written, err := BackfillHoldStartTimes(ctx, app)
+		if err != nil {
+			return nil, err
+		}
+		logger.Info(fmt.Sprintf("hold-start-time backfill wrote %d contract slots", written))
+		return mm.RunMigrations(ctx, configurator, fromVM)
+	}
+}
+
 // CombinedTestnetUpgradeHandlerCreator runs testnet migrations in a single upgrade:
 // 1. Migrate stakes from old delegator addresses to new ones
 // 2. Initialize auto-unbond tracking for offline validators
