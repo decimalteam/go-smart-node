@@ -11,6 +11,13 @@ import (
 var UpgradeListDevnet = []UpgradeCreator{
 	{"https://devnet-repo.decimalchain.com/523001", DummyUpgradeHandlerCreator},
 }
+// TODO(rewardPerBlock): at deploy, add the following entry once the contract upgrade height
+// is known (must be at or after the master-validator contract upgrade that introduces the
+// rewardPerBlock field/getter). The EVM hook keeps node state in sync afterwards; this
+// one-time handler seeds any value already set on the contract:
+//   UpgradeListTestnet: {"https://testnet-repo.decimalchain.com/<HEIGHT>", RewardPerBlockSyncHandlerCreator},
+//   UpgradeListMainnet: {"https://repo.decimalchain.com/<HEIGHT>", RewardPerBlockSyncHandlerCreator},
+
 var UpgradeListTestnet = []UpgradeCreator{
 	{"https://testnet-repo.decimalchain.com/6489301", FixSendUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/7377901", DummyUpgradeHandlerCreator},

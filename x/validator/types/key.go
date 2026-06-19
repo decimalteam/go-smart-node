@@ -80,6 +80,9 @@ var (
 
 // Delegation related records:
 //   - CustomCoinStaked:  0x71<denom>   :  sdkmath.Int
+
+// Emission related records:
+//   - RewardPerBlockOverride:  0x91   :  sdkmath.Int (presence => override enabled)
 var (
 	keyPrefixLastValidatorPowers        = []byte{0x11} // prefix for each key to a validator index (for bonded validators)
 	keyPrefixLastTotalPower             = []byte{0x12} // prefix for the total power record
@@ -105,6 +108,7 @@ var (
 	keyPrefixValidatorOfflineSince      = []byte{0x45} // prefix for validator offline-since timestamp (auto-unbond)
 	keyPrefixHaltInfo                   = []byte{0x81} // prefix for emergency hard-halt info (singleton)
 	keyPrefixFreezeInfo                 = []byte{0x82} // prefix for emergency soft-freeze info (singleton)
+	keyRewardPerBlockOverride           = []byte{0x91} // singleton key for the contract-set per-block reward override
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -556,4 +560,15 @@ func GetHaltInfoKey() []byte {
 // GetFreezeInfoKey returns the key for the emergency soft-freeze info record.
 func GetFreezeInfoKey() []byte {
 	return keyPrefixFreezeInfo
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Reward per block override ////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// GetRewardPerBlockOverrideKey returns the singleton key holding the
+// contract-set per-block reward override. Presence of the key means the
+// override is enabled; absence means the node uses its built-in schedule.
+func GetRewardPerBlockOverrideKey() []byte {
+	return keyRewardPerBlockOverride
 }

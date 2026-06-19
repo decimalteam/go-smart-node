@@ -451,6 +451,22 @@ var CombinedMainnetUpgradeHandlerCreator = func(app *DSC, mm *module.Manager, co
 	}
 }
 
+// RewardPerBlockSyncHandlerCreator mirrors the master-validator contract's
+// getRewardPerBlock() override into validator module state (sync contract -> node).
+// Register this handler at the block height where the upgraded master-validator
+// contract (which includes the rewardPerBlock field/getter) goes live on-chain.
+var RewardPerBlockSyncHandlerCreator = func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+	return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+		logger := ctx.Logger().With("upgrade", plan.Name)
+		amount, enabled, err := SyncRewardPerBlockOverride(ctx, app)
+		if err != nil {
+			return nil, err
+		}
+		logger.Info(fmt.Sprintf("reward-per-block override synced from contract: enabled=%t amount=%s", enabled, amount.String()))
+		return mm.RunMigrations(ctx, configurator, fromVM)
+	}
+}
+
 // CombinedTestnetUpgradeHandlerCreator runs testnet migrations in a single upgrade:
 // 1. Migrate stakes from old delegator addresses to new ones
 // 2. Initialize auto-unbond tracking for offline validators

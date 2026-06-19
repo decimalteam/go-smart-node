@@ -143,6 +143,18 @@ func (k Keeper) PostTxProcessing(
 					}
 				}
 			}
+			// Contract-set per-block reward override. The node clamps the value
+			// to the built-in schedule (reduce-only) when consuming it in
+			// GetBlockReward, so this only ever lowers emission.
+			if eventValidatorByID.Name == "RewardPerBlockUpdated" {
+				var rewardPerBlockUpdated validator.ValidatorRewardPerBlockUpdated
+				_ = contracts.UnpackLog(validatorMaster, &rewardPerBlockUpdated, eventValidatorByID.Name, log)
+				if rewardPerBlockUpdated.Enabled {
+					k.SetRewardPerBlockOverride(ctx, sdkmath.NewIntFromBigInt(rewardPerBlockUpdated.RewardPerBlock))
+				} else {
+					k.ClearRewardPerBlockOverride(ctx)
+				}
+			}
 		}
 	}
 

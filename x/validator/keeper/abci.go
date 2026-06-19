@@ -111,7 +111,10 @@ func (k Keeper) PayValidators(ctx sdk.Context) {
 	height := ctx.BlockHeight()
 
 	// calculate emmission
-	rewards := types.GetRewardForBlock(uint64(height))
+	// Uses the contract-set per-block reward override when present, clamped to
+	// the built-in schedule (reduce-only): emission can never exceed the
+	// scheduled reward. Falls back to the schedule when no override is set.
+	rewards := k.GetBlockReward(ctx, uint64(height))
 
 	err := ctx.EventManager().EmitTypedEvents(&types.EventEmission{
 		Amount: rewards,
