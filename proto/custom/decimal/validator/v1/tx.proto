@@ -56,6 +56,18 @@ service Msg {
 
   // CancelUndelegationNFT defines a method for canceling the undelegation and delegate back to the validator.
   rpc CancelUndelegationNFT(MsgCancelUndelegationNFT) returns (MsgCancelUndelegationNFTResponse);
+
+  // HaltChain schedules a hard consensus halt of the chain (halt-admin only).
+  rpc HaltChain(MsgHaltChain) returns (MsgHaltChainResponse);
+
+  // ResumeChain clears a scheduled or active hard halt (halt-admin only).
+  rpc ResumeChain(MsgResumeChain) returns (MsgResumeChainResponse);
+
+  // FreezeChain soft-freezes the chain, rejecting all non-emergency transactions (halt-admin only).
+  rpc FreezeChain(MsgFreezeChain) returns (MsgFreezeChainResponse);
+
+  // UnfreezeChain lifts a soft freeze (halt-admin only).
+  rpc UnfreezeChain(MsgUnfreezeChain) returns (MsgUnfreezeChainResponse);
 }
 
 // MsgCreateValidator defines a SDK message for creating a new validator.
@@ -339,3 +351,69 @@ message MsgCancelUndelegationNFT {
 
 // MsgCancelUndelegationNFTResponse
 message MsgCancelUndelegationNFTResponse {}
+
+// MsgHaltChain defines a message to schedule a hard consensus halt of the chain.
+// Only the dedicated halt-admin may send it. The transaction merely records the
+// halt in state; the validator BeginBlocker performs the actual panic-halt.
+message MsgHaltChain {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  // sender is the bech32-encoded address of the halt admin.
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // height is the block height at which the chain must halt.
+  // 0 means "halt at the next block"; otherwise it must be greater than the current height.
+  int64 height = 2;
+  // reason is a free-form human-readable explanation for the halt.
+  string reason = 3;
+}
+
+// MsgHaltChainResponse defines the Msg/HaltChain response type.
+message MsgHaltChainResponse {}
+
+// MsgResumeChain defines a message to clear a scheduled or active hard halt.
+message MsgResumeChain {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  // sender is the bech32-encoded address of the halt admin.
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+}
+
+// MsgResumeChainResponse defines the Msg/ResumeChain response type.
+message MsgResumeChainResponse {}
+
+// MsgFreezeChain defines a message to soft-freeze the chain so that it rejects
+// all transactions except emergency admin messages.
+message MsgFreezeChain {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  // sender is the bech32-encoded address of the halt admin.
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // reason is a free-form human-readable explanation for the freeze.
+  string reason = 2;
+}
+
+// MsgFreezeChainResponse defines the Msg/FreezeChain response type.
+message MsgFreezeChainResponse {}
+
+// MsgUnfreezeChain defines a message to lift a soft freeze.
+message MsgUnfreezeChain {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  // sender is the bech32-encoded address of the halt admin.
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+}
+
+// MsgUnfreezeChainResponse defines the Msg/UnfreezeChain response type.
+message MsgUnfreezeChainResponse {}

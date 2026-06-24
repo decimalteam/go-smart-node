@@ -103,6 +103,8 @@ var (
 	keyPrefixStartHeight                = []byte{0x62} // prefix for starting block
 	keyPrefixCustomCoinStaked           = []byte{0x71} // prefix for custom coin total staked in delegations
 	keyPrefixValidatorOfflineSince      = []byte{0x45} // prefix for validator offline-since timestamp (auto-unbond)
+	keyPrefixHaltInfo                   = []byte{0x81} // prefix for emergency hard-halt info (singleton)
+	keyPrefixFreezeInfo                 = []byte{0x82} // prefix for emergency soft-freeze info (singleton)
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -540,4 +542,18 @@ func GetAllValidatorOfflineSinceKey() []byte {
 // GetValidatorOfflineSinceKey returns the key for a specific validator's offline-since timestamp.
 func GetValidatorOfflineSinceKey(valAddr sdk.ValAddress) []byte {
 	return append(GetAllValidatorOfflineSinceKey(), address.MustLengthPrefix(valAddr)...)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Emergency halt / freeze (singletons) ////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// GetHaltInfoKey returns the key for the emergency hard-halt info record.
+func GetHaltInfoKey() []byte {
+	return keyPrefixHaltInfo
+}
+
+// GetFreezeInfoKey returns the key for the emergency soft-freeze info record.
+func GetFreezeInfoKey() []byte {
+	return keyPrefixFreezeInfo
 }

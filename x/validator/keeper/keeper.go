@@ -30,6 +30,10 @@ type Keeper struct {
 	hooks          types.StakingHooks
 	paramstore     paramtypes.Subspace
 	evmKeeper      *evmkeeper.Keeper
+	// skipHalt, when true, makes the BeginBlocker skip the emergency hard-halt
+	// panic for this node boot. It is driven by the --unsafe-skip-halt node flag
+	// and used for coordinated resume after a hard halt.
+	skipHalt bool
 }
 
 // NewKeeper creates new Keeper instance.
@@ -99,4 +103,10 @@ func (k Keeper) SetLastTotalPower(ctx sdk.Context, power sdkmath.Int) {
 // SetEvmKeeper sets the last total validators power.
 func (k *Keeper) SetEvmKeeper(evmKeeper *evmkeeper.Keeper) {
 	k.evmKeeper = evmKeeper
+}
+
+// SetSkipHalt configures whether the BeginBlocker should skip the emergency
+// hard-halt panic for this node boot (driven by the --unsafe-skip-halt flag).
+func (k *Keeper) SetSkipHalt(skip bool) {
+	k.skipHalt = skip
 }

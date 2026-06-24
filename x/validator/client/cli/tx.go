@@ -54,6 +54,10 @@ func GetTxCmd() *cobra.Command {
 		NewCancelUndelegateNFTCmd(),
 		NewCancelRedelegateCmd(),
 		NewCancelRedelegateNFTCmd(),
+		NewHaltChainCmd(),
+		NewResumeChainCmd(),
+		NewFreezeChainCmd(),
+		NewUnfreezeChainCmd(),
 	)
 
 	return stakingTxCmd

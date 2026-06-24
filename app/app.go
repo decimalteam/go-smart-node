@@ -140,6 +140,12 @@ var (
 	DefaultNodeHome = os.ExpandEnv(fmt.Sprintf("$HOME/.%s/daemon", cmdcfg.AppName))
 )
 
+// FlagUnsafeSkipHalt is the node start flag that, when set, makes the validator
+// BeginBlocker skip the emergency admin hard-halt panic for this boot. It is the
+// halt analogue of the SDK's --unsafe-skip-upgrades and is used for coordinated
+// resume after a hard halt (boot past the halt, then broadcast MsgResumeChain).
+const FlagUnsafeSkipHalt = "unsafe-skip-halt"
+
 var (
 	// MainnetChainIDPrefix defines the EVM EIP155 chain ID prefix for Decimal mainnet.
 	MainnetChainIDPrefix = fmt.Sprintf("%s_%d", cmdcfg.AppName, cmdcfg.MainnetChainID)
@@ -518,6 +524,8 @@ func NewDSC(
 		&app.MultisigKeeper,
 		&app.EvmKeeper,
 	)
+	// Drive the emergency hard-halt skip from the --unsafe-skip-halt node flag.
+	app.ValidatorKeeper.SetSkipHalt(cast.ToBool(appOpts.Get(FlagUnsafeSkipHalt)))
 
 	// Create Ethermint keepers
 
@@ -793,6 +801,7 @@ func NewDSC(
 		CoinKeeper:      &app.CoinKeeper,
 		FeeKeeper:       &app.FeeKeeper,
 		LegacyKeeper:    &app.LegacyKeeper,
+		ValidatorKeeper: &app.ValidatorKeeper,
 		SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 		SigGasConsumer:  SigVerificationGasConsumer,
 		MaxTxGasWanted:  maxGasWanted,

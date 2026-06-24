@@ -155,6 +155,8 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 func addModuleInitFlags(startCmd *cobra.Command) {
 	crisis.AddModuleInitFlags(startCmd)
+	startCmd.Flags().Bool(app.FlagUnsafeSkipHalt, false,
+		"Skip the emergency admin hard-halt panic in the validator BeginBlocker for this boot (used for coordinated resume)")
 }
 
 func queryCommand() *cobra.Command {

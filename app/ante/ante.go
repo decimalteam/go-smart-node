@@ -58,6 +58,16 @@ func NewAnteHandler(options HandlerOptions) sdk.AnteHandler {
 					anteHandler = newCosmosAnteHandler(options)
 					return anteHandler(ctx, tx, sim)
 				}
+				// Emergency admin control messages must be accepted as native
+				// Cosmos transactions so the chain can be halted/frozen and resumed.
+				switch msg.(type) {
+				case *validatortypes.MsgHaltChain,
+					*validatortypes.MsgResumeChain,
+					*validatortypes.MsgFreezeChain,
+					*validatortypes.MsgUnfreezeChain:
+					anteHandler = newCosmosAnteHandler(options)
+					return anteHandler(ctx, tx, sim)
+				}
 			}
 		default:
 			return ctx, sdkerrors.ErrUnknownRequest

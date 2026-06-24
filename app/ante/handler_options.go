@@ -34,6 +34,7 @@ type HandlerOptions struct {
 	CoinKeeper             cointypes.CoinKeeper
 	LegacyKeeper           legacytypes.LegacyKeeper
 	FeeKeeper              feetypes.FeeKeeper
+	ValidatorKeeper        FreezeKeeper
 	SignModeHandler        authsigning.SignModeHandler
 	SigGasConsumer         func(meter sdk.GasMeter, sig signing.SignatureV2, params authtypes.Params) error
 	Cdc                    codec.BinaryCodec
@@ -68,6 +69,9 @@ func (options HandlerOptions) Validate() error {
 	if options.LegacyKeeper == nil {
 		return sdkerrors.Wrap(sdkerrors.ErrLogic, "legacy keeper is required for AnteHandler")
 	}
+	if options.ValidatorKeeper == nil {
+		return sdkerrors.Wrap(sdkerrors.ErrLogic, "validator keeper is required for AnteHandler")
+	}
 	return nil
 }
 
@@ -75,6 +79,7 @@ func (options HandlerOptions) Validate() error {
 func newEthAnteHandler(options HandlerOptions) sdk.AnteHandler {
 	return sdk.ChainAnteDecorators(
 		ethante.NewEthSetUpContextDecorator(options.EvmKeeper), // outermost AnteDecorator. SetUpContext must be called first
+		NewFreezeDecorator(options.ValidatorKeeper),            // reject all EVM txs while the chain is soft-frozen
 		NewCountMsgDecorator(),
 		ethante.NewEthMempoolFeeDecorator(options.EvmKeeper),                   // Check eth effective gas price against minimal-gas-prices
 		NewEthMinGasPriceDecorator(options.FeeMarketKeeper, options.EvmKeeper), // Check eth effective gas price against the global MinGasPrice
@@ -95,6 +100,7 @@ func newCosmosAnteHandler(options HandlerOptions) sdk.AnteHandler {
 	return sdk.ChainAnteDecorators(
 		ethante.RejectMessagesDecorator{}, // reject MsgEthereumTxs
 		NewSetUpContextDecorator(),
+		NewFreezeDecorator(options.ValidatorKeeper), // reject non-emergency txs while the chain is soft-frozen
 		NewCountMsgDecorator(),
 		authante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
 		authante.NewValidateBasicDecorator(),

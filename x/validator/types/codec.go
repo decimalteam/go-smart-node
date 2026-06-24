@@ -32,6 +32,10 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgCancelRedelegationNFT{},
 		&MsgCancelUndelegation{},
 		&MsgCancelUndelegationNFT{},
+		&MsgHaltChain{},
+		&MsgResumeChain{},
+		&MsgFreezeChain{},
+		&MsgUnfreezeChain{},
 	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }

@@ -126,6 +126,11 @@ func CalculateFee(cdc codec.BinaryCodec, msgs []sdk.Msg, txBytesLen int64, delPr
 			case *validator.MsgCancelRedelegationNFT:
 				msgsFee = msgsFee.Add(helpers.DecToDecWithE18(params.ValidatorRedelegateNFT))
 		*/
+		// validator emergency admin operations (free, like software upgrades)
+		case *validator.MsgHaltChain:
+		case *validator.MsgResumeChain:
+		case *validator.MsgFreezeChain:
+		case *validator.MsgUnfreezeChain:
 		// fee
 		case *fee.MsgUpdateCoinPrices:
 		case *upgrade.MsgSoftwareUpgrade:
