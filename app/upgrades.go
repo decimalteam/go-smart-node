@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"time"
 
+	"bitbucket.org/decimalteam/go-smart-node/app/redenom"
 	dsctypes "bitbucket.org/decimalteam/go-smart-node/types"
 	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 )
 
 type UpgradeCreator struct {
@@ -275,6 +278,47 @@ var TestnetStakeMigrations = []StakeMigration{
 	{"0xe2d9b3af39c9a9b74aea41b7bc85e2aec7e975d9", "0xa13b78f8aa52c2f0ffd13326a1ba4eab977e70c0"},
 	{"0x1d1db8d3264b667759d737a95a39d66852e43549", "0xd5602db45634282a6f545675e7dce76d2a40ad1d"},
 	{"0x8d76bea7bb18f9b92157e0d45414c9c8a3793386", "0xa1bd770ddf1bbeda438938bbf90fe6caefdca8eb"},
+}
+
+// RedenominationUpgradeHandlerCreator divides every DEL-denominated amount in both
+// Cosmos module state and EVM contract storage by 1000 (keeping 18 decimals), voids
+// and refunds outstanding DEL checks, and rescales DEL-denominated threshold params.
+var RedenominationUpgradeHandlerCreator = func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+	return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+		logger := ctx.Logger().With("upgrade", plan.Name)
+		logger.Info("starting DEL redenomination", "divisor", redenom.DefaultDivisor.String())
+
+		keepers := redenom.Keepers{
+			Bank:      app.BankKeeper,
+			Coin:      &app.CoinKeeper,
+			Validator: app.ValidatorKeeper,
+			NFT:       &app.NFTKeeper,
+			Legacy:    &app.LegacyKeeper,
+			Gov:       app.GovKeeper,
+			Account:   app.AccountKeeper,
+			EVM:       &app.EvmKeeper,
+		}
+		storeKeys := redenom.StoreKeys{
+			Bank: app.GetKey(banktypes.StoreKey),
+			EVM:  app.GetKey(evmtypes.StoreKey),
+		}
+
+		report, err := redenom.Redenominate(ctx, keepers, storeKeys, redenom.DefaultDivisor)
+		if err != nil {
+			return nil, fmt.Errorf("redenomination failed: %w", err)
+		}
+		logger.Info("DEL redenomination complete",
+			"oldSupply", report.OldSupplyDel.String(),
+			"newSupply", report.NewSupplyDel.String(),
+			"supplyRemoved", report.SupplyRemoved.String(),
+			"roundingDust", report.RoundingDust.String(),
+			"validatorsZeroed", len(report.ValidatorsZeroed),
+			"checksVoided", report.ChecksVoided,
+			"checksRefundedDel", report.ChecksRefundedDel.String(),
+		)
+
+		return mm.RunMigrations(ctx, configurator, fromVM)
+	}
 }
 
 // MigrateStakesHandlerCreator is the mainnet handler (kept for backwards compatibility with upgradeslist.go)

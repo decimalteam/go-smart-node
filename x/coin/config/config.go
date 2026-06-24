@@ -14,5 +14,5 @@ var (
 	MaxCoinTitleLength = 64
 	MinCoinSupply      = helpers.EtherToWei(sdkmath.NewInt(1))
 	MaxCoinSupply      = helpers.EtherToWei(sdkmath.NewInt(1_000_000_000_000_000))
-	MinCoinReserve     = helpers.EtherToWei(sdkmath.NewInt(1000))
+	MinCoinReserve     = helpers.EtherToWei(sdkmath.NewInt(1))
 )

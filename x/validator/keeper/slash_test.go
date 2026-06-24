@@ -52,27 +52,32 @@ func TestFactorCalculation(t *testing.T) {
 		"-",
 	))
 	require.NoError(t, err)
-	// coin for factor 0.5: crr = 100, vol=1000, res=2000, collector=400, burn=200
+	// coin for factor 0.5: crr = 100, vol=1000, res=2, collector=400, burn=200.
+	// Re-anchored for the ÷1000 redenomination (config.MinCoinReserve = 1 DEL): reserve is
+	// 2 DEL (floor+1 DEL, mirroring the old floor+floor=2000-DEL anchor) so that burning
+	// down to the floor caps the decreasing factor at 0.5, exactly as it did pre-÷1000.
 	_, err = dsc.CoinKeeper.CreateCoin(goCtx, cointypes.NewMsgCreateCoin(
 		addrDels[0],
 		"factor05",
 		"factor05",
 		100,
 		helpers.EtherToWei(sdkmath.NewInt(1000)),
-		helpers.EtherToWei(sdkmath.NewInt(2000)),
+		helpers.EtherToWei(sdkmath.NewInt(2)),
 		helpers.EtherToWei(sdkmath.NewInt(10_000)),
 		sdkmath.ZeroInt(),
 		"-",
 	))
 	require.NoError(t, err)
-	// coin for factor 0.0: crr = 10, vol=2000, res=2000, collector=200, burn=400
+	// coin for factor 0.0: crr = 10, vol=2000, res=2, collector=200, burn=400.
+	// Re-anchored for ÷1000 (floor 1 DEL): reserve 2 DEL (floor+1) so the reserve-limited
+	// branch caps the burn below the collector and the factor floors to 0.0, as pre-÷1000.
 	_, err = dsc.CoinKeeper.CreateCoin(goCtx, cointypes.NewMsgCreateCoin(
 		addrDels[0],
 		"factor00",
 		"factor00",
 		10,
 		helpers.EtherToWei(sdkmath.NewInt(2000)),
-		helpers.EtherToWei(sdkmath.NewInt(2000)),
+		helpers.EtherToWei(sdkmath.NewInt(2)),
 		helpers.EtherToWei(sdkmath.NewInt(10_000)),
 		sdkmath.ZeroInt(),
 		"-",

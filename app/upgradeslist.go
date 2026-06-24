@@ -21,7 +21,7 @@ var UpgradeListTestnet = []UpgradeCreator{
 	{"https://testnet-repo.decimalchain.com/15698601", DummyUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/16379201", DummyUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/16406401", TransferDaoAndVals},
-    {"https://testnet-repo.decimalchain.com/17514701", DummyUpgradeHandlerCreator},
+	{"https://testnet-repo.decimalchain.com/17514701", DummyUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/17576701", DummyUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/17621701", DummyUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/17628701", DummyUpgradeHandlerCreator},
@@ -31,6 +31,8 @@ var UpgradeListTestnet = []UpgradeCreator{
 	{"https://testnet-repo.decimalchain.com/20562701", DummyUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/20611201", DummyUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/20800401", DummyUpgradeHandlerCreator},
+	// DEL redenomination (÷1000)
+	// {"https://testnet-repo.decimalchain.com/<HEIGHT>", RedenominationUpgradeHandlerCreator},
 }
 
 var UpgradeListMainnet = []UpgradeCreator{
@@ -48,11 +50,13 @@ var UpgradeListMainnet = []UpgradeCreator{
 	{"https://repo.decimalchain.com/27259201", DummyUpgradeHandlerCreator},
 	{"https://repo.decimalchain.com/27916701", DummyUpgradeHandlerCreator},
 	{"https://repo.decimalchain.com/27994701", TransferDaoAndVals},
- 	{"https://repo.decimalchain.com/28728701", DummyUpgradeHandlerCreator},
+	{"https://repo.decimalchain.com/28728701", DummyUpgradeHandlerCreator},
 	{"https://repo.decimalchain.com/29512333", DummyUpgradeHandlerCreator},
 	{"https://repo.decimalchain.com/31049701", CombinedMainnetUpgradeHandlerCreator},
 	{"https://repo.decimalchain.com/31080201", DummyUpgradeHandlerCreator},
 	{"https://repo.decimalchain.com/31295301", DummyUpgradeHandlerCreator},
+	// DEL redenomination (÷1000)
+	// {"https://repo.decimalchain.com/<HEIGHT>", RedenominationUpgradeHandlerCreator},
 }
 
 func GetUpgradeList(chainID string) []UpgradeCreator {

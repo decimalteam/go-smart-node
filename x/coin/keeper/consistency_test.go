@@ -56,7 +56,7 @@ func TestDecreasingFactor(t *testing.T) {
 			reserve:           config.MinCoinReserve.Add(helpers.EtherToWei(sdkmath.NewInt(1000))),
 			amountInCollector: helpers.EtherToWei(sdkmath.NewInt(500)),
 			amountToBurn:      helpers.EtherToWei(sdkmath.NewInt(500)),
-			expectFactor:      sdk.MustNewDecFromStr("0.001"),
+			expectFactor:      sdk.OneDec(),
 		},
 		{
 			name:              "normal without collector 50 crr",
@@ -83,7 +83,7 @@ func TestDecreasingFactor(t *testing.T) {
 			reserve:           config.MinCoinReserve.Add(helpers.EtherToWei(sdkmath.NewInt(1000))),
 			amountInCollector: helpers.EtherToWei(sdkmath.NewInt(0)),
 			amountToBurn:      helpers.EtherToWei(sdkmath.NewInt(500)),
-			expectFactor:      sdk.MustNewDecFromStr("0.134067950943311560"),
+			expectFactor:      sdk.MustNewDecFromStr("0.998723440815246904"),
 		},
 		{
 			name:              "normal, result 0.5",
@@ -92,7 +92,16 @@ func TestDecreasingFactor(t *testing.T) {
 			reserve:           helpers.EtherToWei(sdkmath.NewInt(2000)),
 			amountInCollector: helpers.EtherToWei(sdkmath.NewInt(400)),
 			amountToBurn:      helpers.EtherToWei(sdkmath.NewInt(200)),
-			expectFactor:      sdk.MustNewDecFromStr("0.5"),
+			expectFactor:      sdk.OneDec(),
+		},
+		{
+			name:              "reserve-limited near new 1-DEL floor",
+			crr:               100,
+			volume:            helpers.EtherToWei(sdkmath.NewInt(100)),
+			reserve:           config.MinCoinReserve.Add(helpers.EtherToWei(sdkmath.NewInt(1))),
+			amountInCollector: helpers.EtherToWei(sdkmath.NewInt(0)),
+			amountToBurn:      helpers.EtherToWei(sdkmath.NewInt(60)),
+			expectFactor:      sdk.MustNewDecFromStr("0.833333333333333333"),
 		},
 	}
 	for _, tc := range testCases {

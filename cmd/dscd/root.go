@@ -123,6 +123,8 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		NewTestnetCmd(app.ModuleBasics, banktypes.GenesisBalancesIterator{}),
 		debug.Cmd(),
 		config.Cmd(),
+		RedenomDryRunCmd(encodingConfig),
+		EVMDelAuditCmd(encodingConfig),
 	)
 
 	a := appCreator{encodingConfig}
