@@ -31,8 +31,11 @@ var UpgradeListTestnet = []UpgradeCreator{
 	{"https://testnet-repo.decimalchain.com/20562701", DummyUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/20611201", DummyUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/20800401", DummyUpgradeHandlerCreator},
-	// DEL redenomination (÷1000)
-	// {"https://testnet-repo.decimalchain.com/<HEIGHT>", RedenominationUpgradeHandlerCreator},
+	// DEL redenomination (÷1000). The second field is the coordinated UTC restart time:
+	// the chain halts after this upgrade until that instant so off-chain providers can
+	// migrate first. When uncommenting, set <HEIGHT> and the restart time, and add the
+	// "time" import to this file.
+	// {"https://testnet-repo.decimalchain.com/<HEIGHT>", RedenominationUpgradeHandlerCreator(time.Date(2026, time.July, 1, 9, 0, 0, 0, time.UTC))},
 }
 
 var UpgradeListMainnet = []UpgradeCreator{
@@ -55,8 +58,11 @@ var UpgradeListMainnet = []UpgradeCreator{
 	{"https://repo.decimalchain.com/31049701", CombinedMainnetUpgradeHandlerCreator},
 	{"https://repo.decimalchain.com/31080201", DummyUpgradeHandlerCreator},
 	{"https://repo.decimalchain.com/31295301", DummyUpgradeHandlerCreator},
-	// DEL redenomination (÷1000)
-	// {"https://repo.decimalchain.com/<HEIGHT>", RedenominationUpgradeHandlerCreator},
+	// DEL redenomination (÷1000). The second field is the coordinated UTC restart time:
+	// the chain halts after this upgrade until that instant so off-chain providers can
+	// migrate first. When uncommenting, set <HEIGHT> and the restart time, and add the
+	// "time" import to this file.
+	// {"https://repo.decimalchain.com/<HEIGHT>", RedenominationUpgradeHandlerCreator(time.Date(2026, time.July, 1, 9, 0, 0, 0, time.UTC))},
 }
 
 func GetUpgradeList(chainID string) []UpgradeCreator {
