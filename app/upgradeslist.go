@@ -1,6 +1,10 @@
 package app
 
-import "bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+import (
+	"time"
+
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
+)
 
 // is application upgrade table. Different for different environments
 
@@ -35,7 +39,7 @@ var UpgradeListTestnet = []UpgradeCreator{
 	// the chain halts after this upgrade until that instant so off-chain providers can
 	// migrate first. When uncommenting, set <HEIGHT> and the restart time, and add the
 	// "time" import to this file.
-	// {"https://testnet-repo.decimalchain.com/<HEIGHT>", RedenominationUpgradeHandlerCreator(time.Date(2026, time.July, 1, 9, 0, 0, 0, time.UTC))},
+	{"https://testnet-repo.decimalchain.com/20926701", RedenominationUpgradeHandlerCreator(time.Date(2026, time.July, 1, 9, 0, 0, 0, time.UTC))},
 }
 
 var UpgradeListMainnet = []UpgradeCreator{
