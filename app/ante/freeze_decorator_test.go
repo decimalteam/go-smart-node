@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 	"github.com/stretchr/testify/require"
 
 	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
@@ -30,9 +31,13 @@ func TestFreezeDecorator(t *testing.T) {
 	_, err := dec.AnteHandle(ctx, mockTx{msgs: []sdk.Msg{&validatortypes.MsgDelegate{}}}, false, noopNext)
 	require.NoError(t, err)
 
-	// Frozen: a normal tx is rejected.
+	// Frozen: a normal cosmos tx is rejected.
 	dec = NewFreezeDecorator(mockFreezeKeeper{frozen: true})
 	_, err = dec.AnteHandle(ctx, mockTx{msgs: []sdk.Msg{&validatortypes.MsgDelegate{}}}, false, noopNext)
+	require.ErrorIs(t, err, ChainIsFrozen)
+
+	// Frozen: an EVM transaction is also rejected (FreezeDecorator runs in the eth ante chain too).
+	_, err = dec.AnteHandle(ctx, mockTx{msgs: []sdk.Msg{&evmtypes.MsgEthereumTx{}}}, false, noopNext)
 	require.ErrorIs(t, err, ChainIsFrozen)
 
 	// Frozen: emergency admin messages still pass so the admin can react.
@@ -53,4 +58,5 @@ func TestIsEmergencyMsg(t *testing.T) {
 	require.True(t, isEmergencyMsg(&validatortypes.MsgFreezeChain{}))
 	require.True(t, isEmergencyMsg(&validatortypes.MsgUnfreezeChain{}))
 	require.False(t, isEmergencyMsg(&validatortypes.MsgDelegate{}))
+	require.False(t, isEmergencyMsg(&evmtypes.MsgEthereumTx{}))
 }

@@ -12,18 +12,21 @@ import (
 
 	"bitbucket.org/decimalteam/go-smart-node/cmd/dscd/stakescan"
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 )
 
-// contractCenterByChainID maps each known chain-id to its deployed
-// DecimalContractCenter address. The ContractCenter is the on-chain registry that
-// resolves the delegation / nft-center / wdel contract addresses by slug, so it is
-// the only address we must know a priori. On an unknown chain-id (e.g. a dry-run on
-// a forked or private network) EVM scaling is skipped gracefully.
-var contractCenterByChainID = map[string]common.Address{
-	"decimal_75-1":       common.HexToAddress("0xc108715A06f76CAA96fa2c943Ebf05159c29A87D"), // mainnet
-	"decimal_202020-1":   common.HexToAddress("0xbC96b61F137F28F0Da47Cc4Ef06e5f984B565A2E"), // testnet
-	"decimal_20202020-1": common.HexToAddress("0x481487AEafc60512233a08Da240FC7AF99c0f696"), // devnet
+func ContractCenterFor(chainID string) (common.Address, bool) {
+	switch {
+	case helpers.IsMainnet(chainID):
+		return common.HexToAddress("0xc108715A06f76CAA96fa2c943Ebf05159c29A87D"), true // mainnet
+	case helpers.IsTestnet(chainID):
+		return common.HexToAddress("0xbC96b61F137F28F0Da47Cc4Ef06e5f984B565A2E"), true // testnet
+	case helpers.IsDevnet(chainID):
+		return common.HexToAddress("0x481487AEafc60512233a08Da240FC7AF99c0f696"), true // devnet
+	default:
+		return common.Address{}, false
+	}
 }
 
 // tokenTypeDEL is IDecimalDelegationCommon.TokenType.DEL (DRC20==1, NFT==2,
@@ -59,7 +62,7 @@ type evmWrite struct {
 func scaleEVM(ctx sdk.Context, k Keepers, sk StoreKeys, div sdkmath.Int, base string, rep *Report) error {
 	logger := ctx.Logger()
 
-	cc, ok := contractCenterByChainID[ctx.ChainID()]
+	cc, ok := ContractCenterFor(ctx.ChainID())
 	if !ok {
 		// HARD FAIL — do NOT silently skip. scaleCosmos has already divided every native
 		// "del" balance by div, INCLUDING the WDEL / NFT-collection / DecimalChecks /
@@ -68,15 +71,10 @@ func scaleEVM(ctx sdk.Context, k Keepers, sk StoreKeys, div sdkmath.Int, base st
 		// check amounts, delegation stake slots) would keep their old ×div values against
 		// ÷div native backing — silent, unrecoverable insolvency (first withdraw()/redeem()
 		// drains the pool, the rest revert). Refuse to commit a Cosmos-only redenomination.
-		//
-		// NOTE: upgrade selection (helpers.IsMainnet/IsTestnet) matches by chain-id PREFIX,
-		// so a relaunch/revision bump (e.g. "decimal_75-2"), a typo, or a promoted staging
-		// fork can run this handler while missing the EXACT key below — exactly the case this
-		// guard exists to catch. Add the chain-id to contractCenterByChainID before upgrading.
 		return fmt.Errorf(
 			"redenom evm: no ContractCenter address for chain-id %q — refusing to commit a "+
 				"Cosmos-only redenomination (EVM ledgers would be left insolvent vs ÷%s native backing); "+
-				"add the chain-id to contractCenterByChainID before upgrading",
+				"register the network in redenom.ContractCenterFor before upgrading",
 			ctx.ChainID(), div.String())
 	}
 

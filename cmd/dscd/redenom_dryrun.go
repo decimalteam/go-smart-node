@@ -32,14 +32,6 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
-// contractCenterByChainID maps a cosmos chain-id to its DecimalContractCenter proxy
-// address, used to resolve the delegation contract offline for the EVM cross-check.
-var ccDryRunByChainID = map[string]common.Address{
-	"decimal_75-1":       common.HexToAddress("0xc108715A06f76CAA96fa2c943Ebf05159c29A87D"), // mainnet
-	"decimal_202020-1":   common.HexToAddress("0xbC96b61F137F28F0Da47Cc4Ef06e5f984B565A2E"), // testnet
-	"decimal_20202020-1": common.HexToAddress("0x481487AEafc60512233a08Da240FC7AF99c0f696"), // devnet
-}
-
 // RedenomDryRunCmd runs the DEL redenomination against an offline node snapshot in a
 // cache-only context (nothing is ever committed), then asserts the post-state
 // invariants and prints a PASS/FAIL report. The node MUST be stopped (LevelDB is a
@@ -184,7 +176,7 @@ func captureBefore(ctx sdk.Context, a *app.DSC, base, chainID string, sampleN in
 // sampleEVMStakes resolves the delegation + wdel contracts and captures up to sampleN
 // DEL coin-stake amount slots with their pre-scale values.
 func sampleEVMStakes(ctx sdk.Context, a *app.DSC, chainID string, sampleN int) ([]stakeSample, common.Address, common.Address) {
-	ccAddr, ok := ccDryRunByChainID[chainID]
+	ccAddr, ok := redenom.ContractCenterFor(chainID)
 	if !ok {
 		return nil, common.Address{}, common.Address{}
 	}

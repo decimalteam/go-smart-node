@@ -21,6 +21,7 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"bitbucket.org/decimalteam/go-smart-node/app"
+	"bitbucket.org/decimalteam/go-smart-node/app/redenom"
 	"bitbucket.org/decimalteam/go-smart-node/cmd/dscd/stakescan"
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	nfttypes "bitbucket.org/decimalteam/go-smart-node/x/nft/types"
@@ -115,7 +116,7 @@ on-chain _reserve[tokenId].amount sum against its native del backing. The node m
 			var nftCenterStore stakescan.Storage
 			// DecimalNFTCenter._nfts mapping (field 0 of this ERC-7201 struct → field slot == base).
 			nftCenterBase := common.HexToHash("0xc21943c83a3e2d63fb720a275e35cd8758d28f083d0aa8e8050823efbb0ffb00")
-			if cc, ok := ccDryRunByChainID[chainID]; ok {
+			if cc, ok := redenom.ContractCenterFor(chainID); ok {
 				label[cc] = "contract-center"
 				ccStore := scanStorage(kv, cc)
 				for _, sl := range []string{
@@ -134,7 +135,7 @@ on-chain _reserve[tokenId].amount sum against its native del backing. The node m
 					}
 				}
 			} else {
-				fmt.Fprintf(out, "WARNING\tchain-id %q not in contractCenter map — system contracts unlabeled\n", chainID)
+				fmt.Fprintf(out, "WARNING\tchain-id %q is an unknown network family (not in redenom.ContractCenterFor) — system contracts unlabeled\n", chainID)
 			}
 			_ = nftCenterStore
 			_ = nftCenterBase
