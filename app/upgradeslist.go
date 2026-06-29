@@ -47,6 +47,7 @@ var UpgradeListTestnet = []UpgradeCreator{
 	// migrate first. When uncommenting, set <HEIGHT> and the restart time, and add the
 	// "time" import to this file.
 	{"https://testnet-repo.decimalchain.com/20927201", RedenominationUpgradeHandlerCreator(time.Date(2026, time.June, 25, 15, 0, 0, 0, time.UTC))},
+	{"https://testnet-repo.decimalchain.com/20971140", RewardPerBlockSyncHandlerCreator},
 }
 
 var UpgradeListMainnet = []UpgradeCreator{
