@@ -329,6 +329,20 @@ func RedenominationUpgradeHandlerCreator(coordinatedStartTime time.Time) func(ap
 				"checksRefundedDel", report.ChecksRefundedDel.String(),
 			)
 
+			// Seed the per-block reward override from the master-validator contract
+			// (getRewardPerBlock -> validator module state). The redenomination is the
+			// upgrade at which the contract-driven reward takes effect on-chain, so we
+			// initialize node state here; the EVM hook keeps it in sync afterwards.
+			// A sync failure (contract not deployed / override unset) must NOT abort the
+			// one-time state rewrite, so it is logged and the upgrade continues — the
+			// node simply falls back to the built-in emission schedule.
+			if amount, enabled, syncErr := SyncRewardPerBlockOverride(ctx, app); syncErr != nil {
+				logger.Error("redenomination: reward-per-block override seed failed; falling back to schedule", "error", syncErr)
+			} else {
+				logger.Info("redenomination: reward-per-block override seeded from contract",
+					"enabled", enabled, "amount", amount.String())
+			}
+
 			newVM, err := mm.RunMigrations(ctx, configurator, fromVM)
 			if err != nil {
 				return newVM, err
