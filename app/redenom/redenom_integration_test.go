@@ -96,6 +96,64 @@ func TestRedenominate_BankAndSupply(t *testing.T) {
 	require.True(t, report.SupplyRemoved.Equal(oldSupply.Sub(newSupply)))
 }
 
+// TestRedenominate_BaseCoinRecord validates that the base coin's whole record is
+// scaled: Volume -> new bank supply, Reserve -> floored, and (the E2 fix) LimitVolume
+// -> floored. LimitVolume lives in the main coin record (not the CoinVR sub-record that
+// UpdateCoinVR writes), and it is the denominator of the x/validator reward
+// "percentForHold" split; leaving it ×1000 while stakes are scaled ÷1000 pins
+// percentForHold to its 90% cap and diverts ~90% of every block's reward.
+func TestRedenominate_BaseCoinRecord(t *testing.T) {
+	dscApp := app.Setup(t, false, nil)
+	ctx := dscApp.BaseApp.NewContext(false, tmproto.Header{
+		Height:  1,
+		ChainID: "decimal_20202020-1",
+		Time:    time.Now(),
+	})
+	base := cmdcfg.BaseDenom
+
+	// Fund one account so the base coin has a non-zero bank supply to reconcile against.
+	bal := sdkmath.NewIntWithDecimal(1_000_000, 18)
+	coins := sdk.NewCoins(sdk.NewCoin(base, bal))
+	require.NoError(t, dscApp.BankKeeper.MintCoins(ctx, cointypes.ModuleName, coins))
+	acc := sdk.AccAddress(append([]byte("redenombasecoin"), make([]byte, 5)...)[:20])
+	require.NoError(t, dscApp.BankKeeper.SendCoinsFromModuleToAccount(ctx, cointypes.ModuleName, acc, coins))
+
+	// Establish a base coin record with a non-trivial Reserve and LimitVolume.
+	reserve := sdkmath.NewIntWithDecimal(700_000, 18)
+	limit := sdkmath.NewIntWithDecimal(108_000_000, 18) // emission cap, far above supply
+	dscApp.CoinKeeper.SetCoin(ctx, cointypes.Coin{
+		Denom:       base,
+		Title:       "Decimal",
+		CRR:         100,
+		Reserve:     reserve,
+		Volume:      bal,
+		LimitVolume: limit,
+		MinVolume:   sdkmath.ZeroInt(),
+	})
+
+	keepers := redenom.Keepers{
+		Bank: dscApp.BankKeeper, Coin: &dscApp.CoinKeeper, Validator: dscApp.ValidatorKeeper,
+		NFT: &dscApp.NFTKeeper, Legacy: &dscApp.LegacyKeeper, Gov: dscApp.GovKeeper,
+		Account: dscApp.AccountKeeper, EVM: &dscApp.EvmKeeper,
+	}
+	storeKeys := redenom.StoreKeys{
+		Bank: dscApp.GetKey(banktypes.StoreKey),
+		EVM:  dscApp.GetKey(evmtypes.StoreKey),
+	}
+
+	div := sdkmath.NewInt(1000)
+	report, err := redenom.Redenominate(ctx, keepers, storeKeys, div)
+	require.NoError(t, err)
+
+	got, err := dscApp.CoinKeeper.GetCoin(ctx, base)
+	require.NoError(t, err)
+
+	// Volume tracks the new bank supply; Reserve and LimitVolume are floored by div.
+	require.True(t, got.Volume.Equal(report.NewSupplyDel), "volume %s != new supply %s", got.Volume, report.NewSupplyDel)
+	require.True(t, got.Reserve.Equal(reserve.Quo(div)), "reserve %s != floor %s", got.Reserve, reserve.Quo(div))
+	require.True(t, got.LimitVolume.Equal(limit.Quo(div)), "LimitVolume %s != floor %s", got.LimitVolume, limit.Quo(div))
+}
+
 // TestRedenominate_RejectsBadDivisor guards the divisor precondition.
 func TestRedenominate_RejectsBadDivisor(t *testing.T) {
 	dscApp := app.Setup(t, false, nil)

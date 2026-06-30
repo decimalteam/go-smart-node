@@ -140,6 +140,20 @@ func scaleCoins(ctx sdk.Context, k Keepers, div sdkmath.Int, base string, newSup
 			if err := k.Coin.UpdateCoinVR(ctx, c.Denom, newSupply, divFloor(c.Reserve, div)); err != nil {
 				return err
 			}
+			// The base coin's LimitVolume lives in the main coin record (UpdateCoinVR only
+			// writes the CoinVR sub-record), so it must be scaled here too. It tracks
+			// cumulative emission (x/validator abci.go) and is the denominator of the reward
+			// "percentForHold" split (x/validator reward.go): percentForHold = 100 -
+			// allDelegationSum/LimitVolume*100. Leaving it ×1000 while allDelegationSum is
+			// scaled ÷1000 makes the ratio ~0, pinning percentForHold to its 90% cap and
+			// diverting ~90% of every block's reward away from regular delegators into the
+			// >=1yr hold pool. Floor it by div to keep the staked/emission ratio invariant.
+			baseCoin, err := k.Coin.GetCoin(ctx, c.Denom)
+			if err != nil {
+				return err
+			}
+			baseCoin.LimitVolume = divFloor(baseCoin.LimitVolume, div)
+			k.Coin.SetCoin(ctx, baseCoin)
 			continue
 		}
 		if err := k.Coin.UpdateCoinVR(ctx, c.Denom, c.Volume, divFloor(c.Reserve, div)); err != nil {
