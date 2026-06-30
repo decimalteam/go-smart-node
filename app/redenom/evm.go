@@ -180,11 +180,17 @@ func collectDelegationWrites(
 		rep.EVMCoinStakeSlots++
 	}
 
-	// NFT stakes: scale the DEL reserve (base+6). The reserve is always DEL; the NFT
-	// intrinsic amount (base+2) may be custom and is left untouched.
+	// NFT stakes: scale the reserve (base+6) ONLY when it is DEL-denominated. The
+	// delegation contract sets reserveToken = WETH()(=WDEL) for a DEL reserve and the
+	// custom DRC20 address otherwise (DecimalDelegation.sol delegateNFT paths), so a
+	// reserveToken != wdel reserve is a custom coin whose amount must NOT be divided.
+	// (The NFT intrinsic amount at base+2 is custom-or-DEL but always left untouched.)
 	for _, ns := range res.NFTStakes {
 		addHolder(ns.Delegator)
 		addHolder(ns.Validator)
+		if ns.ReserveToken != wdel {
+			continue
+		}
 		out = append(out, evmWrite{addr, stakescan.NFTStakeReserveAmountSlot(ns.BaseSlot), divInt(ns.ReserveAmount, divBig)})
 		rep.EVMNFTReserveSlots++
 	}
