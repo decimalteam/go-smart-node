@@ -130,6 +130,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		EVMDelAuditCmd(encodingConfig),
 		ForkTakeoverCmd(encodingConfig),
 		ForkFundCmd(encodingConfig),
+		ForkTimewarpCmd(encodingConfig),
 	)
 
 	a := appCreator{encodingConfig}
