@@ -28,6 +28,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/app"
 	"bitbucket.org/decimalteam/go-smart-node/app/redenom"
 	"bitbucket.org/decimalteam/go-smart-node/cmd/dscd/stakescan"
+	validatorkeeper "bitbucket.org/decimalteam/go-smart-node/x/validator/keeper"
 	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
@@ -370,6 +371,66 @@ func verifyAfter(ctx sdk.Context, a *app.DSC, base string, div sdkmath.Int, b be
 	if b.holdInconsist > 0 {
 		res.note(fmt.Sprintf("%d base stakes already had Σholds>stake BEFORE redenom (pre-existing hold corruption, unrelated to the ÷ rewrite) — carried through as-is", b.holdInconsist))
 	}
+
+	// 9. C1 EndBlocker-panic invariant (docs/redenom-full-audit-2026-07-02.md R7).
+	// repowerValidators recomputes each validator's power from the scaled stakes and
+	// re-keys the ValidatorByPowerIndex. If it leaves an indexed validator in a state
+	// the EndBlocker transition switch cannot classify (notably {Unbonded, Online,
+	// Stake==0}) the next block halts/corrupts the validator set. No other check looks
+	// at the power index, so verify it directly (index-key power == scaled stake, and
+	// every indexed validator classifiable by the switch).
+	if err := a.ValidatorKeeper.CheckPowerIndexConsistency(ctx); err != nil {
+		res.check("power index consistent (C1: no EndBlocker default-panic state)", false, err.Error())
+	} else {
+		res.check("power index consistent (C1: no EndBlocker default-panic state)", true, "")
+	}
+
+	// 10. Independently recompute each validator's power from the scaled stakes +
+	// scaled custom-coin prices (mirrors repowerValidators / PayRewards) and assert it
+	// matches the stored RS.Stake for validators kept in the power index. Idle/offline
+	// validators are intentionally left at RS.Stake==0 by repowerValidators, so only
+	// indexed validators are required to carry their exact recomputed power.
+	verifyRepoweredCorrectly(ctx, a, res)
+}
+
+// verifyRepoweredCorrectly recomputes consensus power from the post-scale stakes and
+// asserts stored RS.Stake matches for every validator still in the power index.
+func verifyRepoweredCorrectly(ctx sdk.Context, a *app.DSC, res *checkResult) {
+	k := a.ValidatorKeeper
+
+	indexed := map[string]bool{}
+	validators, _, _ := k.GetAllValidatorsByPowerIndex(ctx)
+	for _, v := range validators {
+		indexed[v.OperatorAddress] = true
+	}
+
+	ccs := k.GetAllCustomCoinsStaked(ctx)
+	prices := k.CalculateCustomCoinPrices(ctx, ccs)
+	delsByVal := k.GetAllDelegationsByValidator(ctx)
+
+	checked, fails := 0, 0
+	for _, val := range k.GetAllValidators(ctx) {
+		if !indexed[val.OperatorAddress] {
+			continue
+		}
+		op := val.GetOperator()
+		rs, err := k.GetValidatorRS(ctx, op)
+		if err != nil {
+			fails++
+			continue
+		}
+		total, err := k.CalculateTotalPowerWithDelegationsAndPrices(ctx, op, validatortypes.Delegations(delsByVal[op.String()]), prices)
+		if err != nil {
+			fails++
+			continue
+		}
+		checked++
+		if rs.Stake != validatorkeeper.TokensToConsensusPower(total) {
+			fails++
+		}
+	}
+	res.check(fmt.Sprintf("indexed validators carry recomputed scaled power (%d checked)", checked), fails == 0,
+		fmt.Sprintf("%d validators: RS.Stake != power recomputed from scaled stakes", fails))
 }
 
 // countHoldInconsistent counts base-denom stakes (delegations + undelegation +
