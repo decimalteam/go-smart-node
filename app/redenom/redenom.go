@@ -78,6 +78,7 @@ type Report struct {
 	BankAccountsScaled  int
 	DelegationsScaled   int
 	UndelegationsScaled int
+	HoldsScaled         int
 	RedelegationsScaled int
 	ValidatorsRepowered int
 	CustomReservesScaled int
@@ -169,12 +170,14 @@ func Redenominate(ctx sdk.Context, k Keepers, sk StoreKeys, divisor sdkmath.Int)
 		"roundingDust", rep.RoundingDust.String(),
 		"bankAccountsScaled", rep.BankAccountsScaled,
 		"delegations", rep.DelegationsScaled,
+		"stakeHoldsScaled", rep.HoldsScaled,
 		"validatorsRepowered", rep.ValidatorsRepowered,
 		"validatorsZeroed", len(rep.ValidatorsZeroed),
 		"customReserves", rep.CustomReservesScaled,
 		"nftReserves", rep.NFTReservesScaled,
 		"evmCoinStakeSlots", rep.EVMCoinStakeSlots,
 		"evmNftReserveSlots", rep.EVMNFTReserveSlots,
+		"evmValidatorReserveSlots", rep.EVMValidatorReserveSlots,
 		"checksVoided", rep.ChecksVoided,
 		"checksRefundedDel", rep.ChecksRefundedDel.String(),
 	)

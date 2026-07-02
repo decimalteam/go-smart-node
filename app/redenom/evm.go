@@ -217,6 +217,42 @@ func collectDelegationWrites(
 		rep.EVMFrozenSlots++
 	}
 
+	// Per-validator reserve aggregates: _validatorTokens[validator][hashedTokenID
+	// (token,tokenId)].reserve accumulates stake.amount per (validator, token) pair
+	// (DecimalDelegationCommon.sol _addValidatorReserve) and feeds the penalty burn
+	// (_applyPenaltiesToValidator), so a DEL-keyed reserve is a DEL amount that must
+	// be divided together with the stakes that feed it. The mapping keys are only
+	// derivable from the stakes themselves: collect them from every reconstructed
+	// DEL stake (active and frozen), dedup per slot, and divide the CURRENT stored
+	// value. Custom-coin keys and the adjacent penaltyIndex word are never touched;
+	// absent/zero reserves emit no write.
+	seenValReserve := make(map[common.Hash]bool)
+	scaleValidatorReserve := func(st stakescan.Stake) {
+		if st.TokenType != tokenTypeDEL {
+			return
+		}
+		slot := stakescan.ValidatorReserveAmountSlot(stakescan.DelegationBase, st.Validator, st.Token, st.TokenID)
+		if seenValReserve[slot] {
+			return
+		}
+		seenValReserve[slot] = true
+		cur := new(big.Int).SetBytes(delStore[slot].Bytes())
+		if cur.Sign() == 0 {
+			return
+		}
+		out = append(out, evmWrite{addr, slot, divInt(cur, divBig)})
+		rep.EVMValidatorReserveSlots++
+	}
+	for _, cs := range res.CoinStakes {
+		scaleValidatorReserve(cs.Stake)
+	}
+	for _, fz := range res.FrozenLive {
+		scaleValidatorReserve(fz.Stake)
+	}
+	for _, fz := range res.FrozenDeprecated {
+		scaleValidatorReserve(fz.Stake)
+	}
+
 	// Auto-unbond queues. DEL entries have Token==WDEL (the DEL coin's DRC20Contract);
 	// the zero address is also treated as native DEL defensively. Non-DEL (custom DRC20)
 	// entries are skipped and counted for the log.
@@ -238,6 +274,7 @@ func collectDelegationWrites(
 		"coinStakesDEL", rep.EVMCoinStakeSlots,
 		"nftReserveSlots", rep.EVMNFTReserveSlots,
 		"frozenDELSlots", rep.EVMFrozenSlots,
+		"validatorReserveSlots", rep.EVMValidatorReserveSlots,
 		"autoUnbondDELSlots", rep.EVMAutoUnbondSlots,
 		"autoUnbondQueues", len(queues),
 		"autoUnbondSkippedNonDEL", skippedNonDEL,

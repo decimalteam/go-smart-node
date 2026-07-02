@@ -15,6 +15,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/app/redenom"
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
 // TestRedenominate_BankAndSupply validates the riskiest piece end-to-end through the
@@ -152,6 +153,132 @@ func TestRedenominate_BaseCoinRecord(t *testing.T) {
 	require.True(t, got.Volume.Equal(report.NewSupplyDel), "volume %s != new supply %s", got.Volume, report.NewSupplyDel)
 	require.True(t, got.Reserve.Equal(reserve.Quo(div)), "reserve %s != floor %s", got.Reserve, reserve.Quo(div))
 	require.True(t, got.LimitVolume.Equal(limit.Quo(div)), "LimitVolume %s != floor %s", got.LimitVolume, limit.Quo(div))
+}
+
+// TestRedenominate_StakeHoldAmounts is the R3 regression
+// (redenom-full-audit-2026-07-02.md): every StakeHold.Amount inside base-denom
+// delegation/undelegation/redelegation stakes must be floored together with the
+// stake amount it is a part of — otherwise ≥1yr holds keep ×1000 reward weight
+// (PayRewards weighs holds by hold.Amount) and auto-unbond computes
+// scaledStake − Σ(×1000 holds) < 0, stranding the non-held portion. Custom-coin
+// stakes and their holds stay untouched.
+func TestRedenominate_StakeHoldAmounts(t *testing.T) {
+	dscApp := app.Setup(t, false, nil)
+	ctx := dscApp.BaseApp.NewContext(false, tmproto.Header{
+		Height:  1,
+		ChainID: "decimal_20202020-1",
+		Time:    time.Now(),
+	})
+	base := cmdcfg.BaseDenom
+
+	delegator := sdk.AccAddress(append([]byte("redenomholddeleg"), make([]byte, 4)...)[:20]).String()
+	validator := sdk.ValAddress(append([]byte("redenomholdval"), make([]byte, 6)...)[:20]).String()
+	validator2 := sdk.ValAddress(append([]byte("redenomholdval2"), make([]byte, 5)...)[:20]).String()
+
+	holds := func(amts ...int64) []*validatortypes.StakeHold {
+		var hs []*validatortypes.StakeHold
+		for i, a := range amts {
+			hs = append(hs, &validatortypes.StakeHold{
+				Amount:        sdkmath.NewInt(a),
+				HoldStartTime: 1000 + int64(i),
+				HoldEndTime:   2000 + int64(i),
+			})
+		}
+		return hs
+	}
+	coinStake := func(denom string, amt int64, hs []*validatortypes.StakeHold) validatortypes.Stake {
+		return validatortypes.Stake{
+			Type:  validatortypes.StakeType_Coin,
+			ID:    denom,
+			Stake: sdk.NewCoin(denom, sdkmath.NewInt(amt)),
+			Holds: hs,
+		}
+	}
+
+	// DEL delegation with two holds; custom-coin delegation with one hold.
+	dscApp.ValidatorKeeper.SetDelegation(ctx, validatortypes.Delegation{
+		Delegator: delegator, Validator: validator,
+		Stake: coinStake(base, 5000, holds(3000, 1000)),
+	})
+	dscApp.ValidatorKeeper.SetDelegation(ctx, validatortypes.Delegation{
+		Delegator: delegator, Validator: validator,
+		Stake: coinStake("custcoin", 7000, holds(7000)),
+	})
+	// DEL undelegation and redelegation entries with holds.
+	dscApp.ValidatorKeeper.SetUndelegation(ctx, validatortypes.Undelegation{
+		Delegator: delegator, Validator: validator,
+		Entries: []validatortypes.UndelegationEntry{{
+			CreationHeight: 1, CompletionTime: time.Now().Add(time.Hour),
+			Stake: coinStake(base, 4000, holds(2000)),
+		}},
+	})
+	dscApp.ValidatorKeeper.SetRedelegation(ctx, validatortypes.Redelegation{
+		Delegator: delegator, ValidatorSrc: validator, ValidatorDst: validator2,
+		Entries: []validatortypes.RedelegationEntry{{
+			CreationHeight: 1, CompletionTime: time.Now().Add(time.Hour),
+			Stake: coinStake(base, 6000, holds(5000)),
+		}},
+	})
+
+	keepers := redenom.Keepers{
+		Bank: dscApp.BankKeeper, Coin: &dscApp.CoinKeeper, Validator: dscApp.ValidatorKeeper,
+		NFT: &dscApp.NFTKeeper, Legacy: &dscApp.LegacyKeeper, Gov: dscApp.GovKeeper,
+		Account: dscApp.AccountKeeper, EVM: &dscApp.EvmKeeper,
+	}
+	storeKeys := redenom.StoreKeys{
+		Bank: dscApp.GetKey(banktypes.StoreKey),
+		EVM:  dscApp.GetKey(evmtypes.StoreKey),
+	}
+
+	div := sdkmath.NewInt(1000)
+	_, err := redenom.Redenominate(ctx, keepers, storeKeys, div)
+	require.NoError(t, err)
+
+	requireHolds := func(st validatortypes.Stake, want ...int64) {
+		require.Len(t, st.Holds, len(want))
+		sum := sdkmath.ZeroInt()
+		for i, w := range want {
+			require.Truef(t, st.Holds[i].Amount.Equal(sdkmath.NewInt(w)),
+				"hold %d of %s stake: got %s want %d", i, st.Stake.Denom, st.Holds[i].Amount, w)
+			sum = sum.Add(st.Holds[i].Amount)
+		}
+		require.Truef(t, sum.LTE(st.Stake.Amount),
+			"Σholds %s > stake %s for %s", sum, st.Stake.Amount, st.Stake.Denom)
+	}
+
+	seen := 0
+	for _, d := range dscApp.ValidatorKeeper.GetAllDelegations(ctx) {
+		if d.Delegator != delegator {
+			continue // ignore genesis self-delegations from app.Setup
+		}
+		seen++
+		switch d.Stake.Stake.Denom {
+		case base:
+			require.True(t, d.Stake.Stake.Amount.Equal(sdkmath.NewInt(5)))
+			requireHolds(d.Stake, 3, 1)
+		case "custcoin":
+			require.True(t, d.Stake.Stake.Amount.Equal(sdkmath.NewInt(7000)), "custom stake must be untouched")
+			requireHolds(d.Stake, 7000)
+		}
+	}
+	require.Equal(t, 2, seen, "both test delegations must be found")
+
+	dscApp.ValidatorKeeper.IterateUndelegations(ctx, func(_ int64, ubd validatortypes.Undelegation) bool {
+		if ubd.Delegator != delegator {
+			return false
+		}
+		require.True(t, ubd.Entries[0].Stake.Stake.Amount.Equal(sdkmath.NewInt(4)))
+		requireHolds(ubd.Entries[0].Stake, 2)
+		return false
+	})
+	dscApp.ValidatorKeeper.IterateRedelegations(ctx, func(_ int64, red validatortypes.Redelegation) bool {
+		if red.Delegator != delegator {
+			return false
+		}
+		require.True(t, red.Entries[0].Stake.Stake.Amount.Equal(sdkmath.NewInt(6)))
+		requireHolds(red.Entries[0].Stake, 5)
+		return false
+	})
 }
 
 // TestRedenominate_RejectsBadDivisor guards the divisor precondition.

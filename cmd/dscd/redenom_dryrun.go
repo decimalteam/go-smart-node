@@ -124,6 +124,8 @@ type beforeState struct {
 	customReserve   map[string]sdkmath.Int
 	sampleBalances  []balSample // up to sampleN del accounts
 	sampleStakes    []stakeSample
+	sampleValRes    []stakeSample // per-validator DEL reserve aggregates (_validatorTokens)
+	holdInconsist   int           // base stakes with Σholds > stake BEFORE scaling (pre-existing)
 	delegationAddr  common.Address
 	wdelAddr        common.Address
 }
@@ -161,6 +163,7 @@ func captureBefore(ctx sdk.Context, a *app.DSC, base, chainID string, sampleN in
 		b.customVolume[c.Denom] = c.Volume
 		b.customReserve[c.Denom] = c.Reserve
 	}
+	b.holdInconsist = countHoldInconsistent(ctx, a, base)
 	if sampleN > 0 {
 		a.BankKeeper.IterateAllBalances(ctx, func(addr sdk.AccAddress, coin sdk.Coin) bool {
 			if coin.Denom == base && len(b.sampleBalances) < sampleN {
@@ -168,24 +171,26 @@ func captureBefore(ctx sdk.Context, a *app.DSC, base, chainID string, sampleN in
 			}
 			return len(b.sampleBalances) >= sampleN
 		})
-		b.sampleStakes, b.delegationAddr, b.wdelAddr = sampleEVMStakes(ctx, a, chainID, sampleN)
+		b.sampleStakes, b.sampleValRes, b.delegationAddr, b.wdelAddr = sampleEVMStakes(ctx, a, chainID, sampleN)
 	}
 	return b
 }
 
 // sampleEVMStakes resolves the delegation + wdel contracts and captures up to sampleN
-// DEL coin-stake amount slots with their pre-scale values.
-func sampleEVMStakes(ctx sdk.Context, a *app.DSC, chainID string, sampleN int) ([]stakeSample, common.Address, common.Address) {
+// DEL coin-stake amount slots plus the per-validator DEL reserve aggregate slots
+// (_validatorTokens[validator][hashedTokenID].reserve, derived from active + frozen
+// DEL stakes exactly like the production rewrite) with their pre-scale values.
+func sampleEVMStakes(ctx sdk.Context, a *app.DSC, chainID string, sampleN int) ([]stakeSample, []stakeSample, common.Address, common.Address) {
 	ccAddr, ok := redenom.ContractCenterFor(chainID)
 	if !ok {
-		return nil, common.Address{}, common.Address{}
+		return nil, nil, common.Address{}, common.Address{}
 	}
 	kv := ctx.KVStore(a.GetKey(evmtypes.StoreKey))
 	ccStore := scanStorage(kv, ccAddr)
 	delegationAddr := stakescan.ResolveAddressBySymbol(ccStore, "delegation")
 	wdelAddr := stakescan.ResolveAddressBySymbol(ccStore, "wdel")
 	if delegationAddr == (common.Address{}) {
-		return nil, common.Address{}, wdelAddr
+		return nil, nil, common.Address{}, wdelAddr
 	}
 	storage := scanStorage(kv, delegationAddr)
 	res := stakescan.Reconstruct(storage, stakescan.DelegationBase)
@@ -199,7 +204,34 @@ func sampleEVMStakes(ctx sdk.Context, a *app.DSC, chainID string, sampleN int) (
 			break
 		}
 	}
-	return out, delegationAddr, wdelAddr
+
+	var valRes []stakeSample
+	seen := map[common.Hash]bool{}
+	captureReserve := func(st stakescan.Stake) {
+		if st.TokenType != 4 || len(valRes) >= sampleN {
+			return
+		}
+		slot := stakescan.ValidatorReserveAmountSlot(stakescan.DelegationBase, st.Validator, st.Token, st.TokenID)
+		if seen[slot] {
+			return
+		}
+		seen[slot] = true
+		old := new(big.Int).SetBytes(storage[slot].Bytes())
+		if old.Sign() == 0 {
+			return // absent/zero reserve: the rewrite emits no write
+		}
+		valRes = append(valRes, stakeSample{slot: slot, old: sdkmath.NewIntFromBigInt(old)})
+	}
+	for _, cs := range res.CoinStakes {
+		captureReserve(cs.Stake)
+	}
+	for _, fz := range res.FrozenLive {
+		captureReserve(fz.Stake)
+	}
+	for _, fz := range res.FrozenDeprecated {
+		captureReserve(fz.Stake)
+	}
+	return out, valRes, delegationAddr, wdelAddr
 }
 
 func verifyAfter(ctx sdk.Context, a *app.DSC, base string, div sdkmath.Int, b beforeState, report redenom.Report, res *checkResult) {
@@ -312,6 +344,75 @@ func verifyAfter(ctx sdk.Context, a *app.DSC, base string, div sdkmath.Int, b be
 		res.check(fmt.Sprintf("EVM delegation DEL stakes floored (%d sampled)", len(b.sampleStakes)), evmFails == 0,
 			fmt.Sprintf("%d mismatches", evmFails))
 	}
+
+	// 7. Per-validator DEL reserve aggregates (_validatorTokens[..].reserve) floored.
+	if len(b.sampleValRes) > 0 {
+		vrFails := 0
+		for _, s := range b.sampleValRes {
+			got := sdkmath.NewIntFromBigInt(new(big.Int).SetBytes(a.EvmKeeper.GetState(ctx, b.delegationAddr, s.slot).Bytes()))
+			if !got.Equal(floor(s.old)) {
+				vrFails++
+			}
+		}
+		res.check(fmt.Sprintf("EVM validator DEL reserves floored (%d sampled)", len(b.sampleValRes)), vrFails == 0,
+			fmt.Sprintf("%d mismatches", vrFails))
+	}
+
+	// 8. Redenomination must scale StakeHold.Amount together with the stake amount, so
+	// it can only PRESERVE the Σholds<=stake invariant, never break it: flooring both
+	// sides keeps Σfloor(h) <= floor(Σh) <= floor(S). If holds were left unscaled while
+	// the stake was divided, nearly every held base stake would flip to Σholds>stake.
+	// So the safety check is that the post-scale count of inconsistent base stakes does
+	// not EXCEED the pre-scale count (pre-existing corruption is reported, not failed on).
+	postInconsist := countHoldInconsistent(ctx, a, base)
+	res.check("redenom introduces no new stake-hold inconsistency (Σholds>stake)", postInconsist <= b.holdInconsist,
+		fmt.Sprintf("pre=%d post=%d (a jump means holds were not scaled with the stake)", b.holdInconsist, postInconsist))
+	if b.holdInconsist > 0 {
+		res.note(fmt.Sprintf("%d base stakes already had Σholds>stake BEFORE redenom (pre-existing hold corruption, unrelated to the ÷ rewrite) — carried through as-is", b.holdInconsist))
+	}
+}
+
+// countHoldInconsistent counts base-denom stakes (delegations + undelegation +
+// redelegation entries) whose Σ StakeHold.Amount exceeds the stake amount or that
+// carry a negative hold — the condition that breaks PayRewards weighting and
+// strands the non-held portion in auto-unbond.
+func countHoldInconsistent(ctx sdk.Context, a *app.DSC, base string) int {
+	n := 0
+	inspect := func(st validatortypes.Stake) {
+		if st.Stake.Denom != base {
+			return
+		}
+		sum := sdkmath.ZeroInt()
+		for _, h := range st.Holds {
+			if h == nil || h.Amount.IsNil() {
+				continue
+			}
+			if h.Amount.IsNegative() {
+				n++
+				return
+			}
+			sum = sum.Add(h.Amount)
+		}
+		if sum.GT(st.Stake.Amount) {
+			n++
+		}
+	}
+	for _, d := range a.ValidatorKeeper.GetAllDelegations(ctx) {
+		inspect(d.Stake)
+	}
+	a.ValidatorKeeper.IterateUndelegations(ctx, func(_ int64, ubd validatortypes.Undelegation) bool {
+		for i := range ubd.Entries {
+			inspect(ubd.Entries[i].Stake)
+		}
+		return false
+	})
+	a.ValidatorKeeper.IterateRedelegations(ctx, func(_ int64, red validatortypes.Redelegation) bool {
+		for i := range red.Entries {
+			inspect(red.Entries[i].Stake)
+		}
+		return false
+	})
+	return n
 }
 
 // sumScaledCoinDelStakes sums the now-scaled active coin-DEL delegation amounts. The
@@ -365,8 +466,8 @@ func printReport(out *tabwriter.Writer, r redenom.Report) {
 	fmt.Fprintf(out, "validators repowered\t%d (zeroed %d)\n", r.ValidatorsRepowered, len(r.ValidatorsZeroed))
 	fmt.Fprintf(out, "custom reserves / nft reserves\t%d / %d\n", r.CustomReservesScaled, r.NFTReservesScaled)
 	fmt.Fprintf(out, "legacy records\t%d\n", r.LegacyRecordsScaled)
-	fmt.Fprintf(out, "EVM coin-stake / nft-reserve / frozen / autounbond slots\t%d / %d / %d / %d\n",
-		r.EVMCoinStakeSlots, r.EVMNFTReserveSlots, r.EVMFrozenSlots, r.EVMAutoUnbondSlots)
+	fmt.Fprintf(out, "EVM coin-stake / nft-reserve / frozen / autounbond / validator-reserve slots\t%d / %d / %d / %d / %d\n",
+		r.EVMCoinStakeSlots, r.EVMNFTReserveSlots, r.EVMFrozenSlots, r.EVMAutoUnbondSlots, r.EVMValidatorReserveSlots)
 	fmt.Fprintf(out, "EVM NFT collections scaled / rejected (del)\t%d / %d (%s)\n",
 		r.EVMNFTCollectionsScaled, r.EVMNFTCollectionsFailed, r.EVMNFTFailedDel)
 	fmt.Fprintf(out, "checks voided / refunded del\t%d / %s\n", r.ChecksVoided, r.ChecksRefundedDel)

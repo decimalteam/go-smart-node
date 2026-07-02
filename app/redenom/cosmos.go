@@ -54,6 +54,7 @@ func scaleValidatorStakes(ctx sdk.Context, k Keepers, div sdkmath.Int, base stri
 	for _, del := range k.Validator.GetAllDelegations(ctx) {
 		if del.Stake.Stake.Denom == base {
 			del.Stake.Stake.Amount = divFloor(del.Stake.Stake.Amount, div)
+			scaleStakeHolds(&del.Stake, div, rep)
 			k.Validator.SetDelegation(ctx, del)
 			rep.DelegationsScaled++
 		}
@@ -69,6 +70,7 @@ func scaleValidatorStakes(ctx sdk.Context, k Keepers, div sdkmath.Int, base stri
 		for i := range ubd.Entries {
 			if ubd.Entries[i].Stake.Stake.Denom == base {
 				ubd.Entries[i].Stake.Stake.Amount = divFloor(ubd.Entries[i].Stake.Stake.Amount, div)
+				scaleStakeHolds(&ubd.Entries[i].Stake, div, rep)
 				changed = true
 			}
 		}
@@ -88,6 +90,7 @@ func scaleValidatorStakes(ctx sdk.Context, k Keepers, div sdkmath.Int, base stri
 		for i := range red.Entries {
 			if red.Entries[i].Stake.Stake.Denom == base {
 				red.Entries[i].Stake.Stake.Amount = divFloor(red.Entries[i].Stake.Stake.Amount, div)
+				scaleStakeHolds(&red.Entries[i].Stake, div, rep)
 				changed = true
 			}
 		}
@@ -95,6 +98,23 @@ func scaleValidatorStakes(ctx sdk.Context, k Keepers, div sdkmath.Int, base stri
 			k.Validator.SetRedelegation(ctx, red)
 			rep.RedelegationsScaled++
 		}
+	}
+}
+
+// scaleStakeHolds floors every StakeHold.Amount inside a base-denom stake. Hold
+// amounts partition the stake amount in the SAME denomination (PayRewards weighs
+// ≥1yr holds by hold.Amount; auto-unbond enqueues per-hold amounts and the
+// stake − Σholds remainder), so they must be divided together with Stake.Amount.
+// Flooring both sides keeps the Σholds ≤ stake invariant on consistent input:
+// floor(S) ≥ floor(Σh) ≥ Σfloor(h). Callers gate on Stake.Stake.Denom == base,
+// which also covers NFT stakes whose reserve coin is "del".
+func scaleStakeHolds(st *validatortypes.Stake, div sdkmath.Int, rep *Report) {
+	for _, h := range st.Holds {
+		if h == nil || h.Amount.IsNil() {
+			continue
+		}
+		h.Amount = divFloor(h.Amount, div)
+		rep.HoldsScaled++
 	}
 }
 

@@ -124,6 +124,26 @@ func AutoUnbondAmountSlot(fieldSlot common.Hash, index uint64) common.Hash {
 	return slotAdd(elem, 2)
 }
 
+// --- per-validator token reserve (ValidatorReserve) slot math (mirrors coverage.go) ---
+
+// ValidatorReserveBase returns the base slot of
+// _validatorTokens[validator][hashedTokenID(token, tokenId)] — a ValidatorReserve
+// {penaltyIndex@+0, reserve@+1} (DecimalDelegationCommon.sol _getValidatorReserve):
+// keccak256(hashedTokenID ‖ keccak256(leftPad32(validator) ‖ base+5)), with
+// hashedTokenID = keccak256(abi.encodePacked(token, tokenId)) (_getHashedTokenId).
+func ValidatorReserveBase(base common.Hash, validator, token common.Address, tokenID *big.Int) common.Hash {
+	mid := mappingSlotBytes32(common.BytesToHash(validator.Bytes()), slotAdd(base, fValidatorTokens))
+	return mappingSlotBytes32(hashedTokenID(token, tokenID), mid)
+}
+
+// ValidatorReserveAmountSlot returns the slot holding ValidatorReserve.reserve —
+// the running per-(validator, token) stake aggregate maintained by
+// _addValidatorReserve / _reduceValidatorReserve — i.e. ValidatorReserveBase+1.
+// For a DEL stake the key token is WDEL, so the stored reserve is a DEL amount.
+func ValidatorReserveAmountSlot(base common.Hash, validator, token common.Address, tokenID *big.Int) common.Hash {
+	return slotAdd(ValidatorReserveBase(base, validator, token, tokenID), 1)
+}
+
 // --- WDEL / ERC20 mapping(address => uint256) balance slot math ---
 
 // WDELBalancesField is the storage slot of WDEL's `balanceOf` mapping. WDEL is the

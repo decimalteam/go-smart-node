@@ -11,6 +11,7 @@ import (
 
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/validator"
+	"bitbucket.org/decimalteam/go-smart-node/utils/helpers"
 	"bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
@@ -85,6 +86,27 @@ func TestGetBlockReward_AfterEmissionEnd(t *testing.T) {
 
 	k.SetRewardPerBlockOverride(ctx, sdkmath.NewInt(1_000_000_000))
 	require.True(t, k.GetBlockReward(ctx, endedHeight).IsZero())
+}
+
+// TestGetRewardForBlock_Redenominated is the E1/R4 regression
+// (docs/redenom-full-audit-2026-07-02.md): the per-block emission schedule ships
+// divided by 1000 with the DEL 1000:1 redenomination binary, so the network does not
+// pay 1000× the intended value per block after the state rewrite. The base reward is
+// 1.3 DEL/block (1300 * 1e18 / 1000) and it steps up by 0.01 DEL every 475000 blocks
+// past blockNewReward.
+func TestGetRewardForBlock_Redenominated(t *testing.T) {
+	// Base reward before the step-up region (blockNewReward = 22280701).
+	base := types.GetRewardForBlock(1)
+	wantBase := helpers.BipToPip(sdkmath.NewInt(1300)).QuoRaw(1000) // 1.3 DEL
+	require.True(t, base.Equal(wantBase), "base reward: got %s want %s", base, wantBase)
+
+	// One full 475000-block step past blockNewReward adds one increase (10 -> 0.01 DEL).
+	stepped := types.GetRewardForBlock(22280701 + 475000)
+	wantStepped := helpers.BipToPip(sdkmath.NewInt(1300 + 10)).QuoRaw(1000) // 1.31 DEL
+	require.True(t, stepped.Equal(wantStepped), "stepped reward: got %s want %s", stepped, wantStepped)
+
+	// After the schedule ends, emission is zero.
+	require.True(t, types.GetRewardForBlock(46_656_000).IsZero())
 }
 
 // TestRewardPerBlockUpdated_UnpackLog validates the ABI fragment + generated
