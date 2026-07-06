@@ -15,6 +15,7 @@ import (
 	"bitbucket.org/decimalteam/go-smart-node/app/redenom"
 	cmdcfg "bitbucket.org/decimalteam/go-smart-node/cmd/config"
 	cointypes "bitbucket.org/decimalteam/go-smart-node/x/coin/types"
+	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 )
 
@@ -61,7 +62,7 @@ func TestRedenominate_BankAndSupply(t *testing.T) {
 	keepers := redenom.Keepers{
 		Bank: dscApp.BankKeeper, Coin: &dscApp.CoinKeeper, Validator: dscApp.ValidatorKeeper,
 		NFT: &dscApp.NFTKeeper, Legacy: &dscApp.LegacyKeeper, Gov: dscApp.GovKeeper,
-		Account: dscApp.AccountKeeper, EVM: &dscApp.EvmKeeper,
+		Account: dscApp.AccountKeeper, EVM: &dscApp.EvmKeeper, Fee: &dscApp.FeeKeeper,
 	}
 	storeKeys := redenom.StoreKeys{
 		Bank: dscApp.GetKey(banktypes.StoreKey),
@@ -135,7 +136,7 @@ func TestRedenominate_BaseCoinRecord(t *testing.T) {
 	keepers := redenom.Keepers{
 		Bank: dscApp.BankKeeper, Coin: &dscApp.CoinKeeper, Validator: dscApp.ValidatorKeeper,
 		NFT: &dscApp.NFTKeeper, Legacy: &dscApp.LegacyKeeper, Gov: dscApp.GovKeeper,
-		Account: dscApp.AccountKeeper, EVM: &dscApp.EvmKeeper,
+		Account: dscApp.AccountKeeper, EVM: &dscApp.EvmKeeper, Fee: &dscApp.FeeKeeper,
 	}
 	storeKeys := redenom.StoreKeys{
 		Bank: dscApp.GetKey(banktypes.StoreKey),
@@ -223,7 +224,7 @@ func TestRedenominate_StakeHoldAmounts(t *testing.T) {
 	keepers := redenom.Keepers{
 		Bank: dscApp.BankKeeper, Coin: &dscApp.CoinKeeper, Validator: dscApp.ValidatorKeeper,
 		NFT: &dscApp.NFTKeeper, Legacy: &dscApp.LegacyKeeper, Gov: dscApp.GovKeeper,
-		Account: dscApp.AccountKeeper, EVM: &dscApp.EvmKeeper,
+		Account: dscApp.AccountKeeper, EVM: &dscApp.EvmKeeper, Fee: &dscApp.FeeKeeper,
 	}
 	storeKeys := redenom.StoreKeys{
 		Bank: dscApp.GetKey(banktypes.StoreKey),
@@ -288,9 +289,56 @@ func TestRedenominate_RejectsBadDivisor(t *testing.T) {
 	keepers := redenom.Keepers{
 		Bank: dscApp.BankKeeper, Coin: &dscApp.CoinKeeper, Validator: dscApp.ValidatorKeeper,
 		NFT: &dscApp.NFTKeeper, Legacy: &dscApp.LegacyKeeper, Gov: dscApp.GovKeeper,
-		Account: dscApp.AccountKeeper, EVM: &dscApp.EvmKeeper,
+		Account: dscApp.AccountKeeper, EVM: &dscApp.EvmKeeper, Fee: &dscApp.FeeKeeper,
 	}
 	sk := redenom.StoreKeys{Bank: dscApp.GetKey(banktypes.StoreKey), EVM: dscApp.GetKey(evmtypes.StoreKey)}
 	_, err := redenom.Redenominate(ctx, keepers, sk, sdkmath.OneInt())
 	require.Error(t, err)
+}
+
+// TestRedenominate_FeeOraclePrice validates the fee-layer fix (fork rehearsal
+// 2026-07-06 F-9/F-10): the base coin's fiat oracle price must be MULTIPLIED by the
+// divisor (one new DEL is worth div× more), which in turn divides the derived EVM
+// base fee / min gas price (x/fee GetMinGasPrice = EvmGasPrice / price) by div.
+// Leaving the record unscaled keeps every EVM and Cosmos fee at div× its intended
+// real value (measured live on the mainnet fork: 21k-gas transfer = 1.125 new DEL
+// instead of 0.001125).
+func TestRedenominate_FeeOraclePrice(t *testing.T) {
+	dscApp := app.Setup(t, false, nil)
+	ctx := dscApp.BaseApp.NewContext(false, tmproto.Header{
+		Height: 1, ChainID: "decimal_20202020-1", Time: time.Now(),
+	})
+	base := cmdcfg.BaseDenom
+
+	// The live mainnet value at the rehearsal snapshot: del/usd = 0.04.
+	require.NoError(t, dscApp.FeeKeeper.SavePrice(ctx, feetypes.CoinPrice{
+		Denom: base, Quote: "usd", Price: sdk.MustNewDecFromStr("0.04"),
+	}))
+	minGasBefore := dscApp.FeeKeeper.GetMinGasPrice(ctx)
+
+	keepers := redenom.Keepers{
+		Bank: dscApp.BankKeeper, Coin: &dscApp.CoinKeeper, Validator: dscApp.ValidatorKeeper,
+		NFT: &dscApp.NFTKeeper, Legacy: &dscApp.LegacyKeeper, Gov: dscApp.GovKeeper,
+		Account: dscApp.AccountKeeper, EVM: &dscApp.EvmKeeper, Fee: &dscApp.FeeKeeper,
+	}
+	sk := redenom.StoreKeys{Bank: dscApp.GetKey(banktypes.StoreKey), EVM: dscApp.GetKey(evmtypes.StoreKey)}
+	div := sdkmath.NewInt(1000)
+	report, err := redenom.Redenominate(ctx, keepers, sk, div)
+	require.NoError(t, err)
+	require.GreaterOrEqual(t, report.FeePricesScaled, 1)
+
+	price, err := dscApp.FeeKeeper.GetPrice(ctx, base, "usd")
+	require.NoError(t, err)
+	require.True(t, price.Price.Equal(sdk.MustNewDecFromStr("40")), "price %s != 40", price.Price)
+
+	// The derived EVM min gas price (== base fee) drops by exactly div.
+	minGasAfter := dscApp.FeeKeeper.GetMinGasPrice(ctx)
+	require.True(t, minGasAfter.MulInt(div).Equal(minGasBefore),
+		"minGasPrice %s != before %s ÷ %s", minGasAfter, minGasBefore, div)
+
+	// A missing fee keeper must hard-fail, never silently skip the fee layer.
+	badKeepers := keepers
+	badKeepers.Fee = nil
+	_, err = redenom.Redenominate(ctx, badKeepers, sk, div)
+	require.ErrorContains(t, err, "fee keeper not wired")
 }

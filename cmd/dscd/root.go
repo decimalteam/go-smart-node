@@ -124,7 +124,15 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		debug.Cmd(),
 		config.Cmd(),
 		RedenomDryRunCmd(encodingConfig),
+		RedenomVerifyCmd(encodingConfig),
+		RedenomRawVerifyCmd(encodingConfig),
+		RedenomEVMScanCmd(encodingConfig),
 		EVMDelAuditCmd(encodingConfig),
+		ForkTakeoverCmd(encodingConfig),
+		ForkFundCmd(encodingConfig),
+		ForkTimewarpCmd(encodingConfig),
+		ForkSetOwnerCmd(encodingConfig),
+		ForkSchedulePlanCmd(encodingConfig),
 	)
 
 	a := appCreator{encodingConfig}
