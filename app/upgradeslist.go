@@ -48,10 +48,7 @@ var UpgradeListTestnet = []UpgradeCreator{
 	// "time" import to this file.
 	{"https://testnet-repo.decimalchain.com/20927201", RedenominationUpgradeHandlerCreator(time.Date(2026, time.June, 25, 15, 0, 0, 0, time.UTC))},
 	{"https://testnet-repo.decimalchain.com/20971140", RewardPerBlockSyncHandlerCreator},
-	// Oracle re-enablement: set the fee oracle to the production key and create
-	// its account, paired with the ante change allowing MsgUpdateCoinPrices.
-	// Set <HEIGHT> at deploy time:
-	// {"https://testnet-repo.decimalchain.com/<HEIGHT>", SetOracleUpgradeHandlerCreator},
+	{"https://testnet-repo.decimalchain.com/21084201", SetOracleUpgradeHandlerCreator},
 }
 
 var UpgradeListMainnet = []UpgradeCreator{
