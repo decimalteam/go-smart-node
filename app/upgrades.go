@@ -570,3 +570,22 @@ var CombinedTestnetUpgradeHandlerCreator = func(app *DSC, mm *module.Manager, co
 		return mm.RunMigrations(ctx, configurator, fromVM)
 	}
 }
+
+// SetOracleUpgradeHandlerCreator sets the fee module oracle address to the
+// production oracle key and makes sure its account exists so it can sign
+// MsgUpdateCoinPrices transactions. Idempotent: safe to run on chains where
+// the params or the account are already in place.
+var SetOracleUpgradeHandlerCreator = func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+	return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+		params := app.FeeKeeper.GetModuleParams(ctx)
+		params.Oracle = "d01ma3a28797etsr2e2cc9mluz89vfqgnljeu96dy"
+		app.FeeKeeper.SetModuleParams(ctx, params)
+
+		oracle := sdk.MustAccAddressFromBech32(params.Oracle)
+		if !app.AccountKeeper.HasAccount(ctx, oracle) {
+			app.AccountKeeper.SetAccount(ctx, app.AccountKeeper.NewAccountWithAddress(ctx, oracle))
+		}
+
+		return mm.RunMigrations(ctx, configurator, fromVM)
+	}
+}
