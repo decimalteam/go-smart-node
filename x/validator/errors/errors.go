@@ -51,4 +51,7 @@ var (
 	ValidatorNftDelegationInactive  = errors.New(codespace, 144, "nft delegation is inactive")
 	DelegationSumIsNotSet           = errors.New(codespace, 145, "delegation sum is not set")
 	StakeNotExist                   = errors.New(codespace, 146, "delegation not exist")
+	UnauthorizedHaltAdmin           = errors.New(codespace, 147, "sender is not the emergency halt-admin")
+	InvalidHaltHeight               = errors.New(codespace, 148, "halt height must be 0 (next block) or greater than the current height")
+	HaltAdminNotConfigured          = errors.New(codespace, 149, "emergency halt-admin is not configured for this chain")
 )

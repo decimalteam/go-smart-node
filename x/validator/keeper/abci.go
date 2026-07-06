@@ -22,6 +22,18 @@ import (
 func BeginBlocker(ctx sdk.Context, k Keeper, req abci.RequestBeginBlock) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
+	// Emergency hard halt: if the halt-admin has scheduled a halt and we have
+	// reached the target height, panic to stop consensus (same mechanism the
+	// upgrade module uses). The block at the halt height is never committed, so
+	// the halt persists across restarts until an operator boots with
+	// --unsafe-skip-halt and the admin broadcasts MsgResumeChain.
+	if info, halt := k.ShouldHardHalt(ctx); halt {
+		panic(fmt.Sprintf(
+			"CHAIN HALTED by emergency admin at height %d (scheduled for %d): %s",
+			ctx.BlockHeight(), info.Height, info.Reason,
+		))
+	}
+
 	params := k.GetParams(ctx)
 
 	// Iterate over all the validators which *should* have signed this block
@@ -99,7 +111,10 @@ func (k Keeper) PayValidators(ctx sdk.Context) {
 	height := ctx.BlockHeight()
 
 	// calculate emmission
-	rewards := types.GetRewardForBlock(uint64(height))
+	// Uses the contract-set per-block reward override when present, clamped to
+	// the built-in schedule (reduce-only): emission can never exceed the
+	// scheduled reward. Falls back to the schedule when no override is set.
+	rewards := k.GetBlockReward(ctx, uint64(height))
 
 	err := ctx.EventManager().EmitTypedEvents(&types.EventEmission{
 		Amount: rewards,

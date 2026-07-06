@@ -44,6 +44,7 @@ func GetQueryCmd() *cobra.Command {
 		GetCmdQueryPool(),
 		GetCmdQueryCustomCoinPrice(),
 		GetCmdQueryTotalCustomCoin(),
+		GetCmdQueryEmergencyStatus(),
 	)
 
 	return stakingQueryCmd

@@ -19,4 +19,5 @@ var (
 	CountOfMsgsMustBeOne           = errors.New(codespace, 10, "count of messages must be 1")
 	InvalidAddressOfCreatedAccount = errors.New(codespace, 11, "invalid address of created account")
 	UnableToFindCreatedAccount     = errors.New(codespace, 12, "unable to find created account")
+	ChainIsFrozen                  = errors.New(codespace, 13, "chain is frozen by emergency admin; only emergency admin messages are accepted")
 )

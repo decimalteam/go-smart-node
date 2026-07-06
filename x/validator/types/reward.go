@@ -46,6 +46,14 @@ func GetAllEmission(ctx sdk.Context) sdk.Int {
 	return allEmision
 }
 
+// GetRewardForBlock returns the per-block emission for the given height. The reward
+// is divided by 1000 relative to the historical schedule: this binary ships with the
+// DEL 1000:1 redenomination, so from the upgrade height onward each minted unit is
+// worth 1000× more and the pre-redenom schedule (1300 DEL/block +10 per 475k blocks)
+// would pay 1000× the intended value (docs/redenom-full-audit-2026-07-02.md E1/R4).
+// Pre-upgrade heights are produced by the previous binary, so no runtime height gate
+// is needed. The exact live per-block reward is supplied via the contract override on
+// upgrade; this schedule is the reduce-only clamp ceiling / fallback.
 func GetRewardForBlock(blockHeight uint64) sdk.Int {
 	if blockHeight >= lastBlock {
 		return sdk.NewInt(0)
@@ -56,11 +64,11 @@ func GetRewardForBlock(blockHeight uint64) sdk.Int {
 
 	newBlock := sdk.NewInt(int64(blockHeight)).Sub(sdk.NewInt(int64(blockNewReward)))
 	if newBlock.IsNegative() {
-		return helpers.BipToPip(reward)
+		return helpers.BipToPip(reward).QuoRaw(1000)
 	}
 
 	reward = reward.Add(sdk.NewInt(newBlock.Int64() / 475000).Mul(rewardIncrease))
-	return helpers.BipToPip(reward)
+	return helpers.BipToPip(reward).QuoRaw(1000)
 }
 
 func GetRewardOldForBlock(blockHeight uint64) sdk.Int {

@@ -123,6 +123,16 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		NewTestnetCmd(app.ModuleBasics, banktypes.GenesisBalancesIterator{}),
 		debug.Cmd(),
 		config.Cmd(),
+		RedenomDryRunCmd(encodingConfig),
+		RedenomVerifyCmd(encodingConfig),
+		RedenomRawVerifyCmd(encodingConfig),
+		RedenomEVMScanCmd(encodingConfig),
+		EVMDelAuditCmd(encodingConfig),
+		ForkTakeoverCmd(encodingConfig),
+		ForkFundCmd(encodingConfig),
+		ForkTimewarpCmd(encodingConfig),
+		ForkSetOwnerCmd(encodingConfig),
+		ForkSchedulePlanCmd(encodingConfig),
 	)
 
 	a := appCreator{encodingConfig}
@@ -153,6 +163,8 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 func addModuleInitFlags(startCmd *cobra.Command) {
 	crisis.AddModuleInitFlags(startCmd)
+	startCmd.Flags().Bool(app.FlagUnsafeSkipHalt, false,
+		"Skip the emergency admin hard-halt panic in the validator BeginBlocker for this boot (used for coordinated resume)")
 }
 
 func queryCommand() *cobra.Command {

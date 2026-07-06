@@ -69,6 +69,22 @@ func (k *Keeper) setToken(ctx sdk.Context, t types.Token) {
 	store.Set(key, bz)
 }
 
+// SetTokenReserveForMigration overwrites a token's Reserve in place, preserving all
+// other token fields. It is intended only for one-time state migrations (the DEL
+// redenomination upgrade). Minted/Burnt/SubTokens are zeroed in the main record to
+// match CreateToken's contract (those are stored separately). Returns false if the
+// token does not exist.
+func (k *Keeper) SetTokenReserveForMigration(ctx sdk.Context, id string, reserve sdk.Coin) bool {
+	token, found := k.GetToken(ctx, id)
+	if !found {
+		return false
+	}
+	token.Reserve = reserve
+	token.Minted, token.Burnt, token.SubTokens = 0, 0, nil
+	k.setToken(ctx, token)
+	return true
+}
+
 // updateTokenURI removes previous NFT token URI and writes new one to the KVStore.
 func (k *Keeper) updateTokenURI(ctx sdk.Context, oldTokenURI string, newTokenURI string) {
 	k.removeTokenURI(ctx, oldTokenURI)

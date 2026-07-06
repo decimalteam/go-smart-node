@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"time"
 
+	"bitbucket.org/decimalteam/go-smart-node/app/redenom"
 	dsctypes "bitbucket.org/decimalteam/go-smart-node/types"
 	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 )
 
 type UpgradeCreator struct {
@@ -277,6 +280,100 @@ var TestnetStakeMigrations = []StakeMigration{
 	{"0x8d76bea7bb18f9b92157e0d45414c9c8a3793386", "0xa1bd770ddf1bbeda438938bbf90fe6caefdca8eb"},
 }
 
+// RedenominationUpgradeHandlerCreator divides every DEL-denominated amount in both
+// Cosmos module state and EVM contract storage by 1000 (keeping 18 decimals), voids
+// and refunds outstanding DEL checks, and rescales DEL-denominated threshold params.
+//
+// coordinatedStartTime is the wall-clock instant (UTC) at which the network should
+// resume producing blocks. After the redenomination and module migrations finish,
+// the handler blocks the upgrade block until this instant, halting the chain for the
+// intervening maintenance window so off-chain service providers (explorers, wallets,
+// bridges, indexers) can update their code to the new denomination before blocks flow
+// again. Every validator targets the SAME absolute instant and sleeps the real
+// remaining wall-clock time, so they resume in lockstep no matter when each operator
+// swapped binaries; a node that starts after the instant skips the wait and catches
+// up. The wait affects only timing, never state, so the resulting app hash is
+// identical on every node. A zero-value time (the Go default) disables the wait.
+func RedenominationUpgradeHandlerCreator(coordinatedStartTime time.Time) func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+	return func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+		return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+			logger := ctx.Logger().With("upgrade", plan.Name)
+			logger.Info("starting DEL redenomination", "divisor", redenom.DefaultDivisor.String())
+
+			keepers := redenom.Keepers{
+				Bank:      app.BankKeeper,
+				Coin:      &app.CoinKeeper,
+				Validator: app.ValidatorKeeper,
+				NFT:       &app.NFTKeeper,
+				Legacy:    &app.LegacyKeeper,
+				Gov:       app.GovKeeper,
+				Account:   app.AccountKeeper,
+				EVM:       &app.EvmKeeper,
+				Fee:       &app.FeeKeeper,
+			}
+			storeKeys := redenom.StoreKeys{
+				Bank: app.GetKey(banktypes.StoreKey),
+				EVM:  app.GetKey(evmtypes.StoreKey),
+			}
+
+			report, err := redenom.Redenominate(ctx, keepers, storeKeys, redenom.DefaultDivisor)
+			if err != nil {
+				return nil, fmt.Errorf("redenomination failed: %w", err)
+			}
+			logger.Info("DEL redenomination complete",
+				"oldSupply", report.OldSupplyDel.String(),
+				"newSupply", report.NewSupplyDel.String(),
+				"supplyRemoved", report.SupplyRemoved.String(),
+				"roundingDust", report.RoundingDust.String(),
+				"validatorsZeroed", len(report.ValidatorsZeroed),
+				"checksVoided", report.ChecksVoided,
+				"checksRefundedDel", report.ChecksRefundedDel.String(),
+			)
+
+			// Seed the per-block reward override from the master-validator contract
+			// (getRewardPerBlock -> validator module state). The redenomination is the
+			// upgrade at which the contract-driven reward takes effect on-chain, so we
+			// initialize node state here; the EVM hook keeps it in sync afterwards.
+			// A sync failure (contract not deployed / override unset) must NOT abort the
+			// one-time state rewrite, so it is logged and the upgrade continues — the
+			// node simply falls back to the built-in emission schedule.
+			if amount, enabled, syncErr := SyncRewardPerBlockOverride(ctx, app); syncErr != nil {
+				logger.Error("redenomination: reward-per-block override seed failed; falling back to schedule", "error", syncErr)
+			} else {
+				logger.Info("redenomination: reward-per-block override seeded from contract",
+					"enabled", enabled, "amount", amount.String())
+			}
+
+			newVM, err := mm.RunMigrations(ctx, configurator, fromVM)
+			if err != nil {
+				return newVM, err
+			}
+
+			// Coordinated maintenance window: hold the upgrade block until the agreed
+			// wall-clock instant so off-chain integrators can migrate before blocks
+			// resume. Sleeping inside BeginBlock stalls consensus on this block on every
+			// validator identically; they all commit it and move on together once
+			// coordinatedStartTime is reached. Using the real remaining wall-clock time
+			// (not the block header time) means a node that restarted late waits less,
+			// so the whole set converges on the same resume instant.
+			if wait := time.Until(coordinatedStartTime); wait > 0 {
+				logger.Info("redenomination: holding chain for coordinated restart",
+					"resumeAt", coordinatedStartTime.UTC().Format(time.RFC3339),
+					"wait", wait.String(),
+				)
+				time.Sleep(wait)
+				logger.Info("redenomination: maintenance window elapsed, resuming block production")
+			} else {
+				logger.Info("redenomination: coordinated restart time already passed, resuming immediately",
+					"resumeAt", coordinatedStartTime.UTC().Format(time.RFC3339),
+				)
+			}
+
+			return newVM, nil
+		}
+	}
+}
+
 // MigrateStakesHandlerCreator is the mainnet handler (kept for backwards compatibility with upgradeslist.go)
 var MigrateStakesHandlerCreator = NewMigrateStakesHandler(MainnetStakeMigrations)
 
@@ -365,6 +462,22 @@ var CombinedMainnetUpgradeHandlerCreator = func(app *DSC, mm *module.Manager, co
 			logger.Info(fmt.Sprintf("step 2 complete: initialized OfflineSince for %d offline validators", count))
 		}
 
+		return mm.RunMigrations(ctx, configurator, fromVM)
+	}
+}
+
+// RewardPerBlockSyncHandlerCreator mirrors the master-validator contract's
+// getRewardPerBlock() override into validator module state (sync contract -> node).
+// Register this handler at the block height where the upgraded master-validator
+// contract (which includes the rewardPerBlock field/getter) goes live on-chain.
+var RewardPerBlockSyncHandlerCreator = func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+	return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+		logger := ctx.Logger().With("upgrade", plan.Name)
+		amount, enabled, err := SyncRewardPerBlockOverride(ctx, app)
+		if err != nil {
+			return nil, err
+		}
+		logger.Info(fmt.Sprintf("reward-per-block override synced from contract: enabled=%t amount=%s", enabled, amount.String()))
 		return mm.RunMigrations(ctx, configurator, fromVM)
 	}
 }

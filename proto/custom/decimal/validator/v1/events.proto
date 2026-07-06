@@ -335,3 +335,26 @@ message SlashNFTSubToken {
   // slash is the slashed NFT sub-token reserve.
   cosmos.base.v1beta1.Coin slash = 2 [ (gogoproto.nullable) = false ];
 }
+
+// EventChainHaltScheduled defines event emitted when a hard consensus halt is scheduled.
+message EventChainHaltScheduled {
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  int64 height = 2;
+  string reason = 3;
+}
+
+// EventChainResumed defines event emitted when a scheduled or active hard halt is cleared.
+message EventChainResumed {
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+}
+
+// EventChainFrozen defines event emitted when the chain is soft-frozen.
+message EventChainFrozen {
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string reason = 2;
+}
+
+// EventChainUnfrozen defines event emitted when a soft freeze is lifted.
+message EventChainUnfrozen {
+  string sender = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+}

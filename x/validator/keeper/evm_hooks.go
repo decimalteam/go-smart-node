@@ -143,6 +143,18 @@ func (k Keeper) PostTxProcessing(
 					}
 				}
 			}
+			// Contract-set per-block reward override. The node clamps the value
+			// to the built-in schedule (reduce-only) when consuming it in
+			// GetBlockReward, so this only ever lowers emission.
+			if eventValidatorByID.Name == "RewardPerBlockUpdated" {
+				var rewardPerBlockUpdated validator.ValidatorRewardPerBlockUpdated
+				_ = contracts.UnpackLog(validatorMaster, &rewardPerBlockUpdated, eventValidatorByID.Name, log)
+				if rewardPerBlockUpdated.Enabled {
+					k.SetRewardPerBlockOverride(ctx, sdkmath.NewIntFromBigInt(rewardPerBlockUpdated.RewardPerBlock))
+				} else {
+					k.ClearRewardPerBlockOverride(ctx)
+				}
+			}
 		}
 	}
 
@@ -418,6 +430,24 @@ func (k Keeper) RequestWithdraw(ctx sdk.Context, tokenUndelegate delegation.Dele
 		return err
 	}
 
+	if len(stake.Holds) != 0 {
+		moved := stake.Holds[0]
+		// Subtract the withdrawn held amount from the source delegation's remaining holds so
+		// sum(holds) does not exceed the remaining stake (otherwise a partial held withdraw
+		// over-pays the >=1yr long-hold reward bonus and over-enqueues auto-unbond). Withdraw
+		// has no destination, so the rebuilt moved sub-holds are discarded.
+		var leftover math.Int
+		remainStake.Holds, _, leftover = applyTransferredHold(remainStake.Holds, moved)
+		if leftover.IsPositive() {
+			// Hold already (partly) pruned by DeleteHoldMature after expiry; clamp at zero.
+			ctx.Logger().Debug("WithdrawRequest: withdrawn hold exceeds source hold records",
+				"delegator", delegatorAddress.String(),
+				"hold_end", moved.HoldEndTime,
+				"leftover", leftover.String(),
+			)
+		}
+	}
+
 	_, err = k.Undelegate(ctx, delegatorAddress, valAddr, stake, remainStake, nil)
 	if err != nil {
 		return err
@@ -437,6 +467,10 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 	if tokenRedelegation.FrozenStake.Stake.HoldTimestamp.Int64() != 0 {
 		var newHold validatorType.StakeHold
 		newHold.Amount = math.NewIntFromBigInt(tokenRedelegation.FrozenStake.Stake.Amount)
+		// Placeholder start: the EVM Stake carries only the absolute hold end (HoldTimestamp),
+		// not a start. applyTransferredHold below rebuilds the moved hold(s) from the source
+		// delegation using each source hold's real HoldStartTime, so this placeholder is not
+		// used for the redelegated (destination) hold.
 		newHold.HoldStartTime = ctx.BlockTime().Unix()
 		newHold.HoldEndTime = tokenRedelegation.FrozenStake.Stake.HoldTimestamp.Int64()
 		stake.Holds = append(stake.Holds, &newHold)
@@ -459,12 +493,20 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 	}
 
 	if len(stake.Holds) != 0 {
-		holdSub := stake.Holds[0]
-		for _, hold := range remainStake.Holds {
-			if hold.HoldEndTime == holdSub.HoldEndTime {
-				hold.Amount = hold.Amount.Sub(holdSub.Amount)
-			}
-			//remainStake.Holds = append(remainStake.Holds, hold)
+		moved := stake.Holds[0]
+		// Subtract the moved held amount from the source's holds and rebuild the moved
+		// hold(s) as per-source-start segments, which become the destination's held credit.
+		// The destination is credited exactly what was sourced; any leftover (a hold no
+		// longer recorded on the node, e.g. matured and pruned) lands as ordinary unheld
+		// stake on the destination instead of inheriting a >=1yr reward window.
+		var leftover math.Int
+		remainStake.Holds, stake.Holds, leftover = applyTransferredHold(remainStake.Holds, moved)
+		if leftover.IsPositive() {
+			ctx.Logger().Debug("RequestTransfer: transferred hold exceeds source hold records",
+				"delegator", delegatorAddress.String(),
+				"hold_end", moved.HoldEndTime,
+				"leftover", leftover.String(),
+			)
 		}
 	}
 
@@ -476,6 +518,51 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 	}
 
 	return nil
+}
+
+// applyTransferredHold reconciles a redelegated/withdrawn held amount (moved) against a
+// source delegation's holds at moved.HoldEndTime. It returns the source's remaining holds,
+// the moved amount split into per-source-start sub-holds, and any amount that could not be
+// sourced (leftover).
+//
+// The EVM merges all holds with the same (validator, delegator, token, holdTimestamp) into
+// one stake, whereas the node stores holds as an un-merged list — so the node may carry
+// several entries for one HoldEndTime, each with its own real HoldStartTime. The moved
+// amount is drawn from those entries in order (FIFO), clamped so no hold goes negative, and
+// each drawn segment becomes a moved sub-hold carrying the REAL start of the source hold it
+// came from. This (a) prevents a young same-end hold from inheriting an older hold's >=1yr
+// long-hold reward window, and (b) credits the destination a held amount equal to exactly
+// what was sourced — never more. Fully consumed and any pre-existing non-positive source
+// holds are dropped.
+//
+// leftover is the moved amount with no matching source hold (>0 only on EVM/node desync,
+// e.g. a hold that already matured and was pruned by DeleteHoldMature but is still movable
+// on the EVM). In that case sum(movedHolds) = moved.Amount - leftover, and the caller leaves
+// the remaining moved principal as ordinary (unheld) stake on the destination.
+func applyTransferredHold(
+	remainHolds []*validatorType.StakeHold, moved *validatorType.StakeHold,
+) (kept, movedHolds []*validatorType.StakeHold, leftover math.Int) {
+	remaining := moved.Amount
+	kept = make([]*validatorType.StakeHold, 0, len(remainHolds))
+	for _, hold := range remainHolds {
+		if hold.HoldEndTime == moved.HoldEndTime && remaining.IsPositive() && hold.Amount.IsPositive() {
+			sub := hold.Amount
+			if sub.GT(remaining) {
+				sub = remaining
+			}
+			movedHolds = append(movedHolds, &validatorType.StakeHold{
+				Amount:        sub,
+				HoldStartTime: hold.HoldStartTime,
+				HoldEndTime:   moved.HoldEndTime,
+			})
+			hold.Amount = hold.Amount.Sub(sub)
+			remaining = remaining.Sub(sub)
+		}
+		if hold.Amount.IsPositive() {
+			kept = append(kept, hold)
+		}
+	}
+	return kept, movedHolds, remaining
 }
 
 func (k Keeper) CreateValidatorFromEVM(ctx sdk.Context, validatorMeta contracts.MasterValidatorValidatorAddedMeta) error {

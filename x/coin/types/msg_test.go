@@ -161,7 +161,9 @@ func TestCreateCoin(t *testing.T) {
 			title:          "some coin",
 			crr:            20,
 			initialVolume:  helpers.EtherToWei(sdkmath.NewInt(1)),
-			initialReserve: helpers.EtherToWei(sdkmath.NewInt(999)),
+			// 1 wei below the minimum reserve, robust to the MinCoinReserve value (the DEL
+			// redenomination scales it from 1000 DEL to 1 DEL).
+			initialReserve: coinconfig.MinCoinReserve.Sub(sdkmath.OneInt()),
 			limitVolume:    helpers.EtherToWei(sdkmath.NewInt(100000)),
 			identity:       "some coin",
 			expectError:    true,

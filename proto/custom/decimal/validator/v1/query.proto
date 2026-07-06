@@ -103,6 +103,11 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/decimal/validator/v1/params";
   }
+
+  // EmergencyStatus queries the current emergency hard-halt and soft-freeze state.
+  rpc EmergencyStatus(QueryEmergencyStatusRequest) returns (QueryEmergencyStatusResponse) {
+    option (google.api.http).get = "/decimal/validator/v1/emergency_status";
+  }
 }
 
 // QueryValidatorsRequest is request type for the Query/Validators RPC method.
@@ -368,6 +373,17 @@ message QueryParamsRequest {}
 message QueryParamsResponse {
   // params holds all the parameters of this module.
   Params params = 1 [ (gogoproto.nullable) = false ];
+}
+
+// QueryEmergencyStatusRequest is request type for the Query/EmergencyStatus RPC method.
+message QueryEmergencyStatusRequest {}
+
+// QueryEmergencyStatusResponse is response type for the Query/EmergencyStatus RPC method.
+message QueryEmergencyStatusResponse {
+  // halt holds the current emergency hard-halt state.
+  HaltInfo halt = 1 [ (gogoproto.nullable) = false ];
+  // freeze holds the current emergency soft-freeze state.
+  FreezeInfo freeze = 2 [ (gogoproto.nullable) = false ];
 }
 
 message QueryCustomCoinPriceRequest {
