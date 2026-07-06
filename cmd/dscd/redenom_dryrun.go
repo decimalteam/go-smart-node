@@ -85,7 +85,7 @@ The node must be stopped. Nothing is committed; the on-disk state is left unchan
 			keepers := redenom.Keepers{
 				Bank: dscApp.BankKeeper, Coin: &dscApp.CoinKeeper, Validator: dscApp.ValidatorKeeper,
 				NFT: &dscApp.NFTKeeper, Legacy: &dscApp.LegacyKeeper, Gov: dscApp.GovKeeper,
-				Account: dscApp.AccountKeeper, EVM: &dscApp.EvmKeeper,
+				Account: dscApp.AccountKeeper, EVM: &dscApp.EvmKeeper, Fee: &dscApp.FeeKeeper,
 			}
 			storeKeys := redenom.StoreKeys{Bank: dscApp.GetKey(banktypes.StoreKey), EVM: dscApp.GetKey(evmtypes.StoreKey)}
 
@@ -129,6 +129,8 @@ type beforeState struct {
 	holdInconsist   int           // base stakes with Σholds > stake BEFORE scaling (pre-existing)
 	delegationAddr  common.Address
 	wdelAddr        common.Address
+	oldFeePrice     sdk.Dec // base-denom fiat oracle price (x/fee) — root of the whole fee layer
+	oldMinGasPrice  sdk.Dec // derived EVM min gas price / base fee (EvmGasPrice / oldFeePrice)
 }
 
 type balSample struct {
@@ -165,6 +167,10 @@ func captureBefore(ctx sdk.Context, a *app.DSC, base, chainID string, sampleN in
 		b.customReserve[c.Denom] = c.Reserve
 	}
 	b.holdInconsist = countHoldInconsistent(ctx, a, base)
+	if p, err := a.FeeKeeper.GetPrice(ctx, base, "usd"); err == nil {
+		b.oldFeePrice = p.Price
+		b.oldMinGasPrice = a.FeeKeeper.GetMinGasPrice(ctx)
+	}
 	if sampleN > 0 {
 		a.BankKeeper.IterateAllBalances(ctx, func(addr sdk.AccAddress, coin sdk.Coin) bool {
 			if coin.Denom == base && len(b.sampleBalances) < sampleN {
@@ -391,6 +397,22 @@ func verifyAfter(ctx sdk.Context, a *app.DSC, base string, div sdkmath.Int, b be
 	// validators are intentionally left at RS.Stake==0 by repowerValidators, so only
 	// indexed validators are required to carry their exact recomputed power.
 	verifyRepoweredCorrectly(ctx, a, res)
+
+	// 11. Fee layer (fork rehearsal 2026-07-06 F-9/F-10): the base coin's fiat oracle
+	// price must be ×div, which divides the DERIVED EVM min gas price / base fee
+	// (x/fee GetMinGasPrice = EvmGasPrice / price) by exactly div. Without this, every
+	// EVM and Cosmos fee stays at div× its intended real value after the upgrade.
+	if b.oldFeePrice.IsNil() {
+		res.check("fee oracle base price ×div (fee layer)", false, "no base-denom fiat price found before the upgrade")
+	} else {
+		newPrice, err := a.FeeKeeper.GetPrice(ctx, base, "usd")
+		res.check("fee oracle base price ×div (fee layer)",
+			err == nil && newPrice.Price.Equal(b.oldFeePrice.MulInt(div)),
+			fmt.Sprintf("old=%s new=%v err=%v", b.oldFeePrice, newPrice.Price, err))
+		newMinGas := a.FeeKeeper.GetMinGasPrice(ctx)
+		res.check("EVM min gas price / base fee ÷div", newMinGas.MulInt(div).Equal(b.oldMinGasPrice),
+			fmt.Sprintf("old=%s new=%s", b.oldMinGasPrice, newMinGas))
+	}
 }
 
 // verifyRepoweredCorrectly recomputes consensus power from the post-scale stakes and
