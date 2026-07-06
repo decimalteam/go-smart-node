@@ -1,6 +1,7 @@
 package ante
 
 import (
+	feetypes "bitbucket.org/decimalteam/go-smart-node/x/fee/types"
 	validatortypes "bitbucket.org/decimalteam/go-smart-node/x/validator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -55,6 +56,13 @@ func NewAnteHandler(options HandlerOptions) sdk.AnteHandler {
 					return anteHandler(ctx, tx, sim)
 				}
 				if _, ok := msg.(*validatortypes.MsgSetOnline); ok {
+					anteHandler = newCosmosAnteHandler(options)
+					return anteHandler(ctx, tx, sim)
+				}
+				// Coin price updates are signed by the oracle address enforced
+				// in x/fee msg server (params.Oracle), so it is safe to route
+				// them through the native Cosmos ante handler.
+				if _, ok := msg.(*feetypes.MsgUpdateCoinPrices); ok {
 					anteHandler = newCosmosAnteHandler(options)
 					return anteHandler(ctx, tx, sim)
 				}
