@@ -30,7 +30,6 @@ import (
 	coinkeeper "bitbucket.org/decimalteam/go-smart-node/x/coin/keeper"
 	evmkeeper "github.com/decimalteam/ethermint/x/evm/keeper"
 
-	feekeeper "bitbucket.org/decimalteam/go-smart-node/x/fee/keeper"
 	legacykeeper "bitbucket.org/decimalteam/go-smart-node/x/legacy/keeper"
 	nftkeeper "bitbucket.org/decimalteam/go-smart-node/x/nft/keeper"
 	validatorkeeper "bitbucket.org/decimalteam/go-smart-node/x/validator/keeper"
@@ -50,7 +49,6 @@ type Keepers struct {
 	Gov       govkeeper.Keeper
 	Account   authkeeper.AccountKeeper
 	EVM       *evmkeeper.Keeper
-	Fee       *feekeeper.Keeper // x/fee (customfee): fiat oracle price, from which the EVM base fee is derived
 }
 
 // StoreKeys carries the raw store keys used for direct store manipulation (the
@@ -86,7 +84,6 @@ type Report struct {
 	CustomReservesScaled int
 	NFTReservesScaled   int
 	LegacyRecordsScaled int
-	FeePricesScaled     int // base-denom fiat oracle prices multiplied by div (fee layer: EVM base fee + Cosmos tx fees)
 
 	// Validators that were Bonded but whose new power floors to 0 (rollout gate).
 	ValidatorsZeroed []string
@@ -178,7 +175,6 @@ func Redenominate(ctx sdk.Context, k Keepers, sk StoreKeys, divisor sdkmath.Int)
 		"validatorsZeroed", len(rep.ValidatorsZeroed),
 		"customReserves", rep.CustomReservesScaled,
 		"nftReserves", rep.NFTReservesScaled,
-		"feePricesScaled", rep.FeePricesScaled,
 		"evmCoinStakeSlots", rep.EVMCoinStakeSlots,
 		"evmNftReserveSlots", rep.EVMNFTReserveSlots,
 		"evmValidatorReserveSlots", rep.EVMValidatorReserveSlots,

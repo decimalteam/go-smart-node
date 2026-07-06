@@ -1,8 +1,6 @@
 package redenom
 
 import (
-	"fmt"
-
 	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -26,9 +24,7 @@ import (
 //     validator EndBlocker's BlockValidatorUpdates emits the diff to Tendermint, so
 //     this function does NOT call ApplyAndReturnValidatorSetUpdates itself;
 //  6. scale DEL-denominated threshold params (coin BaseVolume, nft MinReserveAmount,
-//     gov MinDeposit) so minimums stay economically equivalent;
-//  7. multiply the base coin's fiat oracle price by div (one new DEL is worth div×
-//     more) — the whole fee layer derives from that record.
+//     gov MinDeposit) so minimums stay economically equivalent.
 func scaleCosmos(ctx sdk.Context, k Keepers, sk StoreKeys, div sdkmath.Int, base string, rep *Report) error {
 	scaleValidatorStakes(ctx, k, div, base, rep)
 
@@ -47,50 +43,6 @@ func scaleCosmos(ctx sdk.Context, k Keepers, sk StoreKeys, div sdkmath.Int, base
 	}
 	if err := scaleThresholds(ctx, k, div, base); err != nil {
 		return err
-	}
-	if err := scaleFeeOraclePrices(ctx, k, div, base, rep); err != nil {
-		return err
-	}
-	return nil
-}
-
-// scaleFeeOraclePrices multiplies the base coin's fiat oracle price (x/fee CoinPrice,
-// e.g. del/usd) by div: after the ÷div redenomination one new base unit is worth div×
-// more fiat, so its quoted price must be ×div. This record is the root of the ENTIRE
-// fee layer: Cosmos tx fees convert fiat-priced fee units to DEL through it, and the
-// EVM base fee / min gas price is derived as EvmGasPrice(fiat) / price
-// (x/fee/keeper/market_keeper.go GetMinGasPrice). Leaving it unscaled keeps every fee
-// at div× its intended real value from the resume instant until an oracle update —
-// measured live on the 2026-07-06 mainnet-fork rehearsal (a 21k-gas transfer cost
-// 1.125 NEW DEL instead of 0.001125). UpdatedAt is preserved: it still records the
-// last ORACLE quote instant, and the oracle overwrites the whole record on its next
-// push. The tdel record is scaled too when base is del — x/fee GetPrice falls back
-// del->tdel, so a stale tdel record could otherwise serve an unscaled price.
-func scaleFeeOraclePrices(ctx sdk.Context, k Keepers, div sdkmath.Int, base string, rep *Report) error {
-	if k.Fee == nil {
-		// Refuse to run without the fee keeper: silently skipping would commit a state
-		// where all fees are div× overpriced (same hard-fail philosophy as scaleEVM).
-		return fmt.Errorf("redenom: fee keeper not wired — base-denom oracle price would stay unscaled (all fees ×%s)", div)
-	}
-	prices, err := k.Fee.GetPrices(ctx)
-	if err != nil {
-		return fmt.Errorf("redenom: read fee oracle prices: %w", err)
-	}
-	for _, p := range prices {
-		if p.Denom != base && !(base == "del" && p.Denom == "tdel") {
-			continue
-		}
-		p.Price = p.Price.MulInt(div)
-		if err := k.Fee.SavePrice(ctx, p); err != nil {
-			return fmt.Errorf("redenom: save scaled fee oracle price %s/%s: %w", p.Denom, p.Quote, err)
-		}
-		rep.FeePricesScaled++
-	}
-	if rep.FeePricesScaled == 0 {
-		// No stored price means GetMinGasPrice would already panic pre-upgrade, so this
-		// should be unreachable on a live network; fail loudly rather than let the fee
-		// layer stay silently unscaled.
-		return fmt.Errorf("redenom: no %s fiat oracle price found to scale", base)
 	}
 	return nil
 }

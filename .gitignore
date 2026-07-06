@@ -87,4 +87,3 @@ contracts/@openzeppelin/*
 .stash
 *.txt
 *.csv
-/docs/

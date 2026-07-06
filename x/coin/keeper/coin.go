@@ -219,19 +219,3 @@ func (k *Keeper) setCoinDRC(store sdk.KVStore, denom string, addressDRC string) 
 	})
 	store.Set(key, value)
 }
-
-// IterateCoinDRC iterates every CoinDRC index record (denom <-> DRC20 contract address).
-// Records are stored lowercased and keyed by DRC address (see setCoinDRC). Return true
-// from cb to stop early.
-func (k *Keeper) IterateCoinDRC(ctx sdk.Context, cb func(denom, drc20 string) (stop bool)) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, []byte{0x13}) // keyPrefixCoinDRC (x/coin/types/key.go:35)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		var rec types.CoinDRC
-		k.cdc.MustUnmarshalLengthPrefixed(iterator.Value(), &rec)
-		if cb(rec.Denom, rec.DRC20Contract) {
-			return
-		}
-	}
-}
