@@ -309,6 +309,7 @@ func RedenominationUpgradeHandlerCreator(coordinatedStartTime time.Time) func(ap
 				Gov:       app.GovKeeper,
 				Account:   app.AccountKeeper,
 				EVM:       &app.EvmKeeper,
+				Fee:       &app.FeeKeeper,
 			}
 			storeKeys := redenom.StoreKeys{
 				Bank: app.GetKey(banktypes.StoreKey),
