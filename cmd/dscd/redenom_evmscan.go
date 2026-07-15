@@ -387,4 +387,3 @@ func scanEVMStorage(ctx sdk.Context, evmKey storetypes.StoreKey, fn func(key, va
 		fn(key, it.Value())
 	}
 }
-

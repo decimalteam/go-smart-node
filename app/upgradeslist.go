@@ -17,6 +17,12 @@ var UpgradeListDevnet = []UpgradeCreator{
 // one-time handler seeds any value already set on the contract:
 //   UpgradeListTestnet: {"https://testnet-repo.decimalchain.com/<HEIGHT>", RewardPerBlockSyncHandlerCreator},
 //   UpgradeListMainnet: {"https://repo.decimalchain.com/<HEIGHT>", RewardPerBlockSyncHandlerCreator},
+// TODO(holdStartTime): at deploy, add the following entry to UpgradeListTestnet once the
+// contract upgrade height is known (must be at or after the EVM delegation contract upgrade
+// that introduces the holdStartTime Stake field):
+//   {"https://testnet-repo.decimalchain.com/<HEIGHT>", HoldStartTimeBackfillHandlerCreator},
+// And similarly to UpgradeListMainnet:
+//   {"https://repo.decimalchain.com/<HEIGHT>", HoldStartTimeBackfillHandlerCreator},
 
 var UpgradeListTestnet = []UpgradeCreator{
 	{"https://testnet-repo.decimalchain.com/6489301", FixSendUpgradeHandlerCreator},
