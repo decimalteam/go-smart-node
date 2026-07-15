@@ -55,6 +55,7 @@ var UpgradeListTestnet = []UpgradeCreator{
 	{"https://testnet-repo.decimalchain.com/20927201", RedenominationUpgradeHandlerCreator(time.Date(2026, time.June, 25, 15, 0, 0, 0, time.UTC))},
 	{"https://testnet-repo.decimalchain.com/20971140", RewardPerBlockSyncHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/21084201", SetOracleUpgradeHandlerCreator},
+	{"https://testnet-repo.decimalchain.com/21231530", HoldStartTimeBackfillHandlerCreator},
 }
 
 var UpgradeListMainnet = []UpgradeCreator{
