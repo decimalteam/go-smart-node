@@ -56,6 +56,7 @@ var UpgradeListTestnet = []UpgradeCreator{
 	{"https://testnet-repo.decimalchain.com/20971140", RewardPerBlockSyncHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/21084201", SetOracleUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/21231530", HoldStartTimeBackfillHandlerCreator},
+	{"https://testnet-repo.decimalchain.com/21326180", HalveEvmGasPriceUpgradeHandlerCreator},
 }
 
 var UpgradeListMainnet = []UpgradeCreator{
