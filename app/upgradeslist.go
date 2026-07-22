@@ -13,7 +13,7 @@ var UpgradeListDevnet = []UpgradeCreator{
 }
 // TODO(rewardPerBlock): at deploy, add the following entry once the contract upgrade height
 // is known (must be at or after the master-validator contract upgrade that introduces the
-// rewardPerBlock field/getter). The EVM hook keeps node state in sync afterwards this
+// rewardPerBlock field/getter). The EVM hook keeps node state in sync afterwards this.
 // one-time handler seeds any value already set on the contract:
 //   UpgradeListTestnet: {"https://testnet-repo.decimalchain.com/<HEIGHT>", RewardPerBlockSyncHandlerCreator},
 //   UpgradeListMainnet: {"https://repo.decimalchain.com/<HEIGHT>", RewardPerBlockSyncHandlerCreator},
@@ -56,7 +56,7 @@ var UpgradeListTestnet = []UpgradeCreator{
 	{"https://testnet-repo.decimalchain.com/20971140", RewardPerBlockSyncHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/21084201", SetOracleUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/21231530", HoldStartTimeBackfillHandlerCreator},
-	{"https://testnet-repo.decimalchain.com/21326180", HalveEvmGasPriceUpgradeHandlerCreator},
+	{"https://testnet-repo.decimalchain.com/21343701", HalveEvmGasPriceUpgradeHandlerCreator},
 }
 
 var UpgradeListMainnet = []UpgradeCreator{
