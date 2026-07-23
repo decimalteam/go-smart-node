@@ -129,9 +129,9 @@ type fullState struct {
 	// Cosmos
 	bankDel    map[string]sdkmath.Int // addr.String() -> old del balance
 	oldSupply  sdkmath.Int
-	delegs     []amt    // delegation del stakes (positional; no deletions)
-	undelegs   []amt    // undelegation entry del stakes
-	redelegs   []amt    // redelegation entry del stakes
+	delegs     []amt // delegation del stakes (positional; no deletions)
+	undelegs   []amt // undelegation entry del stakes
+	redelegs   []amt // redelegation entry del stakes
 	delReserve sdkmath.Int
 	delLimit   sdkmath.Int            // base coin LimitVolume (emission cap / percentForHold denominator; floored)
 	custVol    map[string]sdkmath.Int // custom denom -> volume (must be unchanged)
@@ -153,17 +153,17 @@ type fullState struct {
 	nftDropColl int          // count of dropped collections
 	nftDropDel  sdkmath.Int  // total (old) reserve dust left unscaled in dropped collections
 	// Checks: slots that must be voided (==0) after; refund accounting.
-	checksAddr     common.Address
-	checkVoid      []common.Hash          // slots that should be zero after
-	checkRefund    sdkmath.Int            // total expected refund (sum of floored DEL check amounts)
-	checkRefundN   int                    // number of outstanding DEL checks
-	refundByAddr   map[string]sdkmath.Int // creator AccAddress.String() -> floored refund credited
+	checksAddr   common.Address
+	checkVoid    []common.Hash          // slots that should be zero after
+	checkRefund  sdkmath.Int            // total expected refund (sum of floored DEL check amounts)
+	checkRefundN int                    // number of outstanding DEL checks
+	refundByAddr map[string]sdkmath.Int // creator AccAddress.String() -> floored refund credited
 
 	// Full storage snapshots for corruption diff (delegation, wdel, checks).
-	delegAddr  common.Address
-	wdelAddr   common.Address
-	delegStore stakescan.Storage
-	wdelStore  stakescan.Storage
+	delegAddr   common.Address
+	wdelAddr    common.Address
+	delegStore  stakescan.Storage
+	wdelStore   stakescan.Storage
 	checksStore stakescan.Storage
 }
 
@@ -172,11 +172,11 @@ type amt struct {
 	old sdkmath.Int
 }
 type valRS struct {
-	op            string
-	rewards       sdkmath.Int
-	totalRewards  sdkmath.Int
-	power         int64
-	bonded        bool
+	op           string
+	rewards      sdkmath.Int
+	totalRewards sdkmath.Int
+	power        int64
+	bonded       bool
 }
 
 func (s *fullState) summary() string {
@@ -285,6 +285,7 @@ func captureAll(ctx sdk.Context, a *app.DSC, base, chainID string, div sdkmath.I
 			s.thrGovDep = append(s.thrGovDep, amt{c.Denom, c.Amount})
 		}
 	}
+
 	if p, err := a.FeeKeeper.GetPrice(ctx, base, "usd"); err == nil {
 		s.feePrice = p.Price
 		s.minGas = a.FeeKeeper.GetMinGasPrice(ctx)
@@ -598,7 +599,6 @@ func verifyAll(ctx sdk.Context, a *app.DSC, base string, div sdkmath.Int, b *ful
 		res.check("EVM min gas price / base fee ÷div", newMinGas.MulInt(div).Equal(b.minGas),
 			fmt.Sprintf("old=%s new=%s", b.minGas, newMinGas))
 	}
-
 	// --- EVM: every re-identified DEL slot floored ---
 	verifyEVMSlots(ctx, a, div, res, "EVM delegation DEL slots", b.evmDeleg)
 	verifyEVMSlots(ctx, a, div, res, "EVM WDEL ledger slots", b.evmWdel)
