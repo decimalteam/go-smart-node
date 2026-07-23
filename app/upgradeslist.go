@@ -13,7 +13,7 @@ var UpgradeListDevnet = []UpgradeCreator{
 }
 // TODO(rewardPerBlock): at deploy, add the following entry once the contract upgrade height
 // is known (must be at or after the master-validator contract upgrade that introduces the
-// rewardPerBlock field/getter). The EVM hook keeps node state in sync afterwards this.
+// rewardPerBlock field/getter). The EVM hook keeps node state in sync afterwards; this
 // one-time handler seeds any value already set on the contract:
 //   UpgradeListTestnet: {"https://testnet-repo.decimalchain.com/<HEIGHT>", RewardPerBlockSyncHandlerCreator},
 //   UpgradeListMainnet: {"https://repo.decimalchain.com/<HEIGHT>", RewardPerBlockSyncHandlerCreator},
@@ -79,12 +79,13 @@ var UpgradeListMainnet = []UpgradeCreator{
 	{"https://repo.decimalchain.com/31049701", CombinedMainnetUpgradeHandlerCreator},
 	{"https://repo.decimalchain.com/31080201", DummyUpgradeHandlerCreator},
 	{"https://repo.decimalchain.com/31295301", DummyUpgradeHandlerCreator},
-	{"https://repo.decimalchain.com/32811496", HalveEvmGasPriceUpgradeHandlerCreator},
+	{"https://repo.decimalchain.com/32135701", DummyUpgradeHandlerCreator},
 	// DEL redenomination (÷1000). The second field is the coordinated UTC restart time:
 	// the chain halts after this upgrade until that instant so off-chain providers can
 	// migrate first. When uncommenting, set <HEIGHT> and the restart time, and add the
 	// "time" import to this file.
-	// {"https://repo.decimalchain.com/<HEIGHT>", RedenominationUpgradeHandlerCreator(time.Date(2026, time.June, 25, 15, 0, 0, 0, time.UTC))},
+	{"https://repo.decimalchain.com/32576201", RedenominationUpgradeHandlerCreator(time.Date(2026, time.July, 8, 11, 0, 0, 0, time.UTC))},
+	{"https://repo.decimalchain.com/32811496", HalveEvmGasPriceUpgradeHandlerCreator},
 }
 
 func GetUpgradeList(chainID string) []UpgradeCreator {
