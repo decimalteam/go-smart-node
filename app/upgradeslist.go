@@ -49,6 +49,7 @@ var UpgradeListTestnet = []UpgradeCreator{
 	{"https://testnet-repo.decimalchain.com/20927201", RedenominationUpgradeHandlerCreator(time.Date(2026, time.June, 25, 15, 0, 0, 0, time.UTC))},
 	{"https://testnet-repo.decimalchain.com/20971140", RewardPerBlockSyncHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/21084201", SetOracleUpgradeHandlerCreator},
+	{"https://testnet-repo.decimalchain.com/21343701", HalveEvmGasPriceUpgradeHandlerCreator},
 }
 
 var UpgradeListMainnet = []UpgradeCreator{
@@ -77,6 +78,7 @@ var UpgradeListMainnet = []UpgradeCreator{
 	// migrate first. When uncommenting, set <HEIGHT> and the restart time, and add the
 	// "time" import to this file.
 	{"https://repo.decimalchain.com/32576201", RedenominationUpgradeHandlerCreator(time.Date(2026, time.July, 8, 11, 0, 0, 0, time.UTC))},
+	{"https://repo.decimalchain.com/32811496", HalveEvmGasPriceUpgradeHandlerCreator},
 }
 
 func GetUpgradeList(chainID string) []UpgradeCreator {
