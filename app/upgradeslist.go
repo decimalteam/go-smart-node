@@ -79,6 +79,7 @@ var UpgradeListMainnet = []UpgradeCreator{
 	{"https://repo.decimalchain.com/31049701", CombinedMainnetUpgradeHandlerCreator},
 	{"https://repo.decimalchain.com/31080201", DummyUpgradeHandlerCreator},
 	{"https://repo.decimalchain.com/31295301", DummyUpgradeHandlerCreator},
+	{"https://repo.decimalchain.com/32811496", HalveEvmGasPriceUpgradeHandlerCreator},
 	// DEL redenomination (÷1000). The second field is the coordinated UTC restart time:
 	// the chain halts after this upgrade until that instant so off-chain providers can
 	// migrate first. When uncommenting, set <HEIGHT> and the restart time, and add the
