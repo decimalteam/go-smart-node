@@ -589,3 +589,18 @@ var SetOracleUpgradeHandlerCreator = func(app *DSC, mm *module.Manager, configur
 		return mm.RunMigrations(ctx, configurator, fromVM)
 	}
 }
+
+// HalveEvmGasPriceUpgradeHandlerCreator halves the fee module's EvmGasPrice, the
+// fiat price of one unit of EVM gas. Every EVM fee is EvmGasPrice * gas (the DEL
+// oracle price cancels out in GetMinGasPrice), so this halves the real cost of
+// every EVM transaction. Cosmos fees (TxByteFee and the per-message prices) are
+// priced separately and are left untouched.
+var HalveEvmGasPriceUpgradeHandlerCreator = func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+	return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+		params := app.FeeKeeper.GetModuleParams(ctx)
+		params.EvmGasPrice = params.EvmGasPrice.QuoInt64(2)
+		app.FeeKeeper.SetModuleParams(ctx, params)
+
+		return mm.RunMigrations(ctx, configurator, fromVM)
+	}
+}
