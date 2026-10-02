@@ -86,6 +86,9 @@ var UpgradeListMainnet = []UpgradeCreator{
 	// "time" import to this file.
 	{"https://repo.decimalchain.com/32576201", RedenominationUpgradeHandlerCreator(time.Date(2026, time.July, 8, 11, 0, 0, 0, time.UTC))},
 	{"https://repo.decimalchain.com/32811496", HalveEvmGasPriceUpgradeHandlerCreator},
+	// Delegation-desync recovery (app/desync_repair.go): repair + both event layouts + hold-start
+	// backfill + reward sync. Fires after the paused delegation contract is upgraded.
+	{DesyncRepairPlanName, DelegationDesyncRepairHandlerCreator},
 }
 
 func GetUpgradeList(chainID string) []UpgradeCreator {

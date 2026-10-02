@@ -12,6 +12,7 @@ import (
 
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/delegation"
+	"bitbucket.org/decimalteam/go-smart-node/contracts/delegationv7"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/validator"
 	"bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
@@ -80,6 +81,22 @@ func (k Keeper) PostTxProcessing(
 	addressDelegation = strings.ToLower(addressDelegation)
 	validatorMaster, _ := validator.ValidatorMetaData.GetAbi()
 	delegatorCenter, _ := delegation.DelegationMetaData.GetAbi()
+
+	// Delegation-contract logs, translated to the current event layout once the
+	// legacy-event repair is active (see evm_hooks_legacy.go). Before that flag is
+	// set the receipt logs are used as-is, so earlier blocks replay unchanged.
+	delegationLogs := recipient.Logs
+	if k.LegacyDelegationEventsEnabled(ctx) {
+		legacyCenter, _ := delegationv7.DelegationMetaData.GetAbi()
+		normalized, err := normalizeDelegationLogs(recipient.Logs, addressDelegation, delegatorCenter, legacyCenter)
+		if err != nil {
+			return err
+		}
+		delegationLogs = normalized
+		if err := k.rejectLegacyNftDelegation(ctx, recipient.Logs); err != nil {
+			return err
+		}
+	}
 
 	// this var is only for new token create from token center
 	var tokenDelegate delegation.DelegationStakeUpdated
@@ -158,7 +175,7 @@ func (k Keeper) PostTxProcessing(
 		}
 	}
 
-	for _, log := range recipient.Logs {
+	for _, log := range delegationLogs {
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
 			if eventDelegationByID.Name == "WithdrawRequest" {
@@ -189,7 +206,7 @@ func (k Keeper) PostTxProcessing(
 	// withdraw/transfer emits both under the same stakeId as the frozen-stake request.
 	coinByStakeId := make(map[[32]byte]delegation.IDecimalDelegationCommonStake)
 	amountByStakeId := make(map[[32]byte]*big.Int)
-	for _, log := range recipient.Logs {
+	for _, log := range delegationLogs {
 		if len(log.Topics) == 0 {
 			continue
 		}
@@ -211,7 +228,7 @@ func (k Keeper) PostTxProcessing(
 		}
 	}
 
-	for _, log := range recipient.Logs {
+	for _, log := range delegationLogs {
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil && strings.ToLower(log.Address.String()) == addressDelegation {
 			fmt.Println(eventDelegationByID.Name)
