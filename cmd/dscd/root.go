@@ -129,6 +129,8 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		RedenomEVMScanCmd(encodingConfig),
 		EVMDelAuditCmd(encodingConfig),
 		ForkTakeoverCmd(encodingConfig),
+		ForkTakeoverMultiCmd(encodingConfig),
+		StateSnapshotCmd(encodingConfig),
 		ForkFundCmd(encodingConfig),
 		ForkTimewarpCmd(encodingConfig),
 		ForkSetOwnerCmd(encodingConfig),
