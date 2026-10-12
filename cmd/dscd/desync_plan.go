@@ -81,6 +81,11 @@ func DesyncPlanCmd(encCfg params.EncodingConfig) *cobra.Command {
 				return err
 			}
 			fmt.Fprintf(out, "height %d time %d\nplan: %s\n", height, unix, plan.Stats.String())
+			if residual, pst, err := app.ResidualAfterPreIncident(ctx, dscApp, plan); err == nil {
+				fmt.Fprintf(out, "pre-incident list: %s; residual to repair=%d\n", pst.String(), len(residual))
+			} else {
+				return err
+			}
 			migrated, merr := app.DelegationContractMigrated(ctx, dscApp)
 			fmt.Fprintf(out, "contract upgraded+migrated (hold-start backfill will run): %t %v\n", migrated, merr)
 			{
@@ -202,6 +207,10 @@ func DesyncPlanCmd(encCfg params.EncodingConfig) *cobra.Command {
 					}
 				}
 			}
+			// Same as the upgrade handler: keep the pre-incident drift.
+			if _, err := app.ApplyPreIncidentDrift(&plan); err != nil {
+				return err
+			}
 			rep, err := app.ApplyDelegationRepair(ctx, dscApp, plan)
 			if dbg := os.Getenv("DESYNC_DEBUG_DELEGATOR"); dbg != "" {
 				addr, _ := sdk.AccAddressFromBech32(dbg)
@@ -227,8 +236,19 @@ func DesyncPlanCmd(encCfg params.EncodingConfig) *cobra.Command {
 				}
 				fmt.Fprintf(out, "  residual: %s %s %q node=%s(found=%t) target=%s holds=%v\n", d.Target.Validator, d.Target.Delegator, d.Target.Denom, d.NodeAmount, d.NodeFound, d.Target.Amount, d.Target.Holds)
 			}
-			if again.Stats.Differing != 0 {
-				return fmt.Errorf("re-plan still differs on %d keys", again.Stats.Differing)
+			residual, pst, err := app.ResidualAfterPreIncident(ctx, dscApp, again)
+			if err != nil {
+				return err
+			}
+			fmt.Fprintf(out, "re-plan after pre-incident list: %s; residual=%d\n", pst.String(), len(residual))
+			for i, d := range residual {
+				if i == 20 {
+					break
+				}
+				fmt.Fprintf(out, "  residual after list: %s %s %q node=%s target=%s holds=%v\n", d.Target.Validator, d.Target.Delegator, d.Target.Denom, d.NodeAmount, d.Target.Amount, d.Target.Holds)
+			}
+			if len(residual) != 0 {
+				return fmt.Errorf("re-plan still differs on %d keys beyond the pre-incident list", len(residual))
 			}
 			return nil
 		},

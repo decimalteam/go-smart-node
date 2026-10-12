@@ -62,8 +62,9 @@ var ozOwnableSlot = common.HexToHash("0x9016d09d72d40fdae2fd8ceac6b6234c7706214f
 // EIP-1967 implementation slot.
 var eip1967ImplSlot = common.HexToHash("0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc")
 
-// migrateFrozenChunk keeps one migrateFrozenStakesLayout call (185-250k gas per
-// entry, cold storage) well under the 25M per-call EVM gas cap. Running out of gas
+// migrateFrozenChunk keeps one migrateFrozenStakesLayout call (~200k gas per entry,
+// cold storage; 30 entries ≈ 6M) under the per-call EVM gas cap, which is
+// min(block max_gas, 25M) = 10M on mainnet. Running out of gas
 // inside the library delegatecall surfaces as a bare revert, so a reverted chunk is
 // retried at half size before giving up.
 const migrateFrozenChunk = 30
@@ -152,10 +153,9 @@ func UpgradeDelegationContract(ctx sdk.Context, app *DSC) (DelegationContractUpg
 	rep.SourceSha256 = art.SourceSha256
 	ek := &app.EvmKeeper
 
-	// The deployer's nonce determines the deployed addresses, so it needs an account.
-	if app.AccountKeeper.GetAccount(ctx, d.from.Bytes()) == nil {
-		app.AccountKeeper.SetAccount(ctx, app.AccountKeeper.NewAccountWithAddress(ctx, d.from.Bytes()))
-	}
+	// The deployer's nonce determines the deployed addresses, so it needs an account;
+	// it must stay a module account (the per-block reward mints through it).
+	app.AccountKeeper.GetModuleAccount(ctx, validatortypes.ModuleName)
 	rep.OldImpl = common.BytesToAddress(ek.GetState(ctx, d.proxy, eip1967ImplSlot).Bytes())
 
 	// 1. deploy library and implementation

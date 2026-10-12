@@ -71,6 +71,11 @@ var DelegationDesyncRepairHandlerCreator = func(app *DSC, mm *module.Manager, co
 			return nil, err
 		}
 		logger.Info("delegation desync repair plan: " + p.Stats.String())
+		pst, err := ApplyPreIncidentDrift(&p)
+		if err != nil {
+			return nil, err
+		}
+		logger.Info("pre-incident drift kept: " + pst.String())
 		rep, err := ApplyDelegationRepair(ctx, app, p)
 		if err != nil {
 			return nil, err
