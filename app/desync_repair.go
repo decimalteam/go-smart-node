@@ -34,15 +34,38 @@ const (
 	contractTokenTypeDEL   = 4
 )
 
-// DelegationDesyncRepairHandlerCreator is the single mainnet recovery upgrade. It runs
-// while the delegation contract is paused and already upgraded, and in order:
-// reconciles node delegations with the contract (the custodian of the staked tokens)
-// using only on-chain state, switches on decoding of both event layouts, copies node
-// hold start times into the contract, and re-syncs the per-block reward.
-// See PlanDelegationRepair.
+// DelegationDesyncRepairHandlerCreator is the single mainnet recovery upgrade. In one
+// block, with no owner transactions before or after it, it:
+//  1. upgrades the delegation contract (deploy, upgrade, frozen-queue migration; see
+//     UpgradeDelegationContract), unless the owner already did;
+//  2. resets every expired, never-reset contract hold (permissionless resetHolds);
+//  3. reconciles node delegations with the contract (the custodian of the staked
+//     tokens) using only on-chain state (see PlanDelegationRepair);
+//  4. switches on decoding of both event layouts;
+//  5. copies node hold start times into the contract;
+//  6. re-syncs the per-block reward.
 var DelegationDesyncRepairHandlerCreator = func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 		logger := ctx.Logger().With("upgrade", plan.Name)
+
+		up, err := UpgradeDelegationContract(ctx, app)
+		if err != nil {
+			return nil, fmt.Errorf("delegation contract upgrade: %w", err)
+		}
+		logger.Info("delegation contract upgrade: " + up.String())
+
+		// The repair plan lists the expired holds; resetting them changes the contract
+		// side, so plan again afterwards.
+		pre, err := PlanDelegationRepair(ctx, app)
+		if err != nil {
+			return nil, err
+		}
+		reset, skipped, err := ResetExpiredHolds(ctx, app, pre.ExpiredHolds)
+		if err != nil {
+			return nil, err
+		}
+		logger.Info(fmt.Sprintf("expired holds reset: %d of %d (skipped %d)", reset, len(pre.ExpiredHolds), skipped))
+
 		p, err := PlanDelegationRepair(ctx, app)
 		if err != nil {
 			return nil, err
@@ -58,20 +81,12 @@ var DelegationDesyncRepairHandlerCreator = func(app *DSC, mm *module.Manager, co
 		}
 		app.ValidatorKeeper.EnableLegacyDelegationEvents(ctx)
 
-		// The delegation contract is upgraded (holdStartTime Stake field + migrated frozen
-		// queue) while paused, before this height. Copy every node hold start into it now,
-		// after the repair, so restored holds get theirs too. A contract that is not yet
-		// migrated is left alone: the backfill can run in a later upgrade, and halting the
-		// chain here would be worse.
-		if migrated, err := delegationContractMigrated(ctx, app); err != nil || !migrated {
-			logger.Error(fmt.Sprintf("hold-start-time backfill SKIPPED: delegation contract not upgraded/migrated (err=%v)", err))
-		} else {
-			written, err := BackfillHoldStartTimes(ctx, app)
-			if err != nil {
-				return nil, err
-			}
-			logger.Info(fmt.Sprintf("hold-start-time backfill wrote %d contract slots", written))
+		// After the repair, so restored holds get their start time too.
+		written, err := BackfillHoldStartTimes(ctx, app)
+		if err != nil {
+			return nil, err
 		}
+		logger.Info(fmt.Sprintf("hold-start-time backfill wrote %d contract slots", written))
 
 		amount, enabled, err := SyncRewardPerBlockOverride(ctx, app)
 		if err != nil {
