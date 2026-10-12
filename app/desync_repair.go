@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"sort"
 	"strings"
+	"time"
 
 	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -15,6 +16,7 @@ import (
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/tendermint/tendermint/libs/log"
 
 	"bitbucket.org/decimalteam/go-smart-node/cmd/dscd/stakescan"
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
@@ -27,6 +29,14 @@ import (
 // DesyncRepairPlanName is the mainnet upgrade plan that runs the delegation-desync
 // repair. Set the real height at release; a registered but unscheduled name never runs.
 var DesyncRepairPlanName = "https://repo.decimalchain.com/33990001"
+
+// DesyncRepairResumeAt is the coordinated restart instant (RFC 3339, UTC): after the
+// repair the upgrade block is held until then, exactly like the redenomination
+// upgrade, so explorers, the subgraph, frontends and the bot switch to the new
+// delegation ABI before blocks resume. Every validator sleeps the real remaining
+// wall-clock time, so they resume together; timing never affects state. Empty or
+// past means no wait. Set the real value at release.
+var DesyncRepairResumeAt = ""
 
 // Contract token types that the node mirrors as coin delegations.
 const (
@@ -98,7 +108,12 @@ var DelegationDesyncRepairHandlerCreator = func(app *DSC, mm *module.Manager, co
 			return nil, err
 		}
 		logger.Info(fmt.Sprintf("reward-per-block override synced from contract: enabled=%t amount=%s", enabled, amount.String()))
-		return mm.RunMigrations(ctx, configurator, fromVM)
+		newVM, err := mm.RunMigrations(ctx, configurator, fromVM)
+		if err != nil {
+			return newVM, err
+		}
+		holdUntilResume(logger, DesyncRepairResumeAt)
+		return newVM, nil
 	}
 }
 
@@ -717,4 +732,25 @@ func AutoUnbondQueueValue(ctx sdk.Context, app *DSC, from uint64) (int, sdkmath.
 // hold-start backfill (contract upgraded and frozen queue fully migrated).
 func DelegationContractMigrated(ctx sdk.Context, app *DSC) (bool, error) {
 	return delegationContractMigrated(ctx, app)
+}
+
+// holdUntilResume blocks the upgrade block until the coordinated restart instant
+// (see DesyncRepairResumeAt). An unparsable value is logged and ignored instead of
+// halting: the wait only coordinates timing.
+func holdUntilResume(logger log.Logger, resumeAt string) {
+	if resumeAt == "" {
+		return
+	}
+	at, err := time.Parse(time.RFC3339, resumeAt)
+	if err != nil {
+		logger.Error("coordinated restart time is invalid, resuming immediately", "resumeAt", resumeAt, "err", err)
+		return
+	}
+	if wait := time.Until(at); wait > 0 {
+		logger.Info("holding chain for coordinated restart", "resumeAt", at.UTC().Format(time.RFC3339), "wait", wait.String())
+		time.Sleep(wait)
+		logger.Info("maintenance window elapsed, resuming block production")
+		return
+	}
+	logger.Info("coordinated restart time already passed, resuming immediately", "resumeAt", at.UTC().Format(time.RFC3339))
 }
