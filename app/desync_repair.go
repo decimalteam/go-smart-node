@@ -28,7 +28,7 @@ import (
 
 // DesyncRepairPlanName is the mainnet upgrade plan that runs the delegation-desync
 // repair. Set the real height at release; a registered but unscheduled name never runs.
-var DesyncRepairPlanName = "https://repo.decimalchain.com/33990001"
+var DesyncRepairPlanName = "https://repo.decimalchain.com/34197201"
 
 // DesyncRepairResumeAt is the coordinated restart instant (RFC 3339, UTC): after the
 // repair the upgrade block is held until then, exactly like the redenomination
@@ -36,7 +36,7 @@ var DesyncRepairPlanName = "https://repo.decimalchain.com/33990001"
 // delegation ABI before blocks resume. Every validator sleeps the real remaining
 // wall-clock time, so they resume together; timing never affects state. Empty or
 // past means no wait. Set the real value at release.
-var DesyncRepairResumeAt = ""
+var DesyncRepairResumeAt = "2026-10-20T11:30:00Z"
 
 // Contract token types that the node mirrors as coin delegations.
 const (

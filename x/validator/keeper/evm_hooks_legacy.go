@@ -148,9 +148,12 @@ func (k Keeper) rejectLegacyNftDelegation(ctx sdk.Context, logs []*ethtypes.Log)
 	return nil
 }
 
-// isLegacyNftDeposit reports whether logs contain a stake (deposit) event of the
-// legacy NFT delegation contract.
+// isLegacyNftDeposit reports whether logs stake (deposit) into the legacy NFT delegation
+// contract: a StakeUpdated/StakeHolded of it with no exit event of it in the same tx. Its
+// exits emit StakeUpdated too (the stake decrease on a withdraw/transfer request, the
+// re-stake when a transfer completes), and those must pass.
 func isLegacyNftDeposit(logs []*ethtypes.Log, addressDelegationNft string, nftCenter *abi.ABI) bool {
+	staked := false
 	for _, log := range logs {
 		if log == nil || len(log.Topics) == 0 || strings.ToLower(log.Address.String()) != addressDelegationNft {
 			continue
@@ -159,9 +162,12 @@ func isLegacyNftDeposit(logs []*ethtypes.Log, addressDelegationNft string, nftCe
 		if err != nil {
 			continue
 		}
-		if ev.Name == "StakeUpdated" || ev.Name == "StakeHolded" {
-			return true
+		switch ev.Name {
+		case "StakeUpdated", "StakeHolded":
+			staked = true
+		case "WithdrawRequest", "TransferRequest", "WithdrawCompleted", "TransferCompleted":
+			return false
 		}
 	}
-	return false
+	return staked
 }

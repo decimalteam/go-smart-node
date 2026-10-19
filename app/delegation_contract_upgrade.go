@@ -332,10 +332,16 @@ func ResetExpiredHolds(ctx sdk.Context, app *DSC, holds []ExpiredHold) (reset, s
 		// A reverted call leaves no state behind (CallEVM commits only on success).
 		if _, err := d.call(ctx, "resetHolds", g.val, g.del, g.tok, ts); err == nil {
 			reset += len(ends)
+			// One line per bucket: the call emits no tx logs, so off-chain indexers
+			// (the subgraph) take the exact list of reset holds from here.
+			for _, e := range ends {
+				ctx.Logger().Info("expired hold reset", "validator", g.val.Hex(), "delegator", g.del.Hex(), "token", g.tok.Hex(), "holdTimestamp", e)
+			}
 			return
 		}
 		if len(ends) == 1 {
 			skipped++
+			ctx.Logger().Info("expired hold reset skipped", "validator", g.val.Hex(), "delegator", g.del.Hex(), "token", g.tok.Hex(), "holdTimestamp", ends[0])
 			return
 		}
 		mid := len(ends) / 2

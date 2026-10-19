@@ -180,5 +180,10 @@ func TestIsLegacyNftDeposit(t *testing.T) {
 	}
 	for _, name := range []string{"WithdrawRequest", "TransferRequest", "WithdrawCompleted", "TransferCompleted"} {
 		require.False(t, isLegacyNftDeposit([]*ethtypes.Log{at(legacyNft, name)}, legacyNft, nftAbi), "exits stay allowed: "+name)
+		// as emitted: the exit's own stake update comes with it (before or after)
+		require.False(t, isLegacyNftDeposit([]*ethtypes.Log{at(legacyNft, "StakeAmountUpdated"), at(legacyNft, "StakeUpdated"), at(legacyNft, name)}, legacyNft, nftAbi), "exit with its stake update: "+name)
+		require.False(t, isLegacyNftDeposit([]*ethtypes.Log{at(legacyNft, name), at(legacyNft, "StakeUpdated")}, legacyNft, nftAbi), "completion with re-stake: "+name)
 	}
+	// an exit of another contract does not excuse a legacy deposit
+	require.True(t, isLegacyNftDeposit([]*ethtypes.Log{at(mainnetDelegation, "WithdrawRequest"), at(legacyNft, "StakeUpdated")}, legacyNft, nftAbi))
 }
