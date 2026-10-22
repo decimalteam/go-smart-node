@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
-	"sort"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -27,12 +26,11 @@ import (
 //  2. make that account the proxy owner for the duration of the handler, pause,
 //     upgrade the proxy, migrate the frozen-stake queue to the holdStartTime layout
 //     with the contract's own migrateFrozenStakesLayout, unpause, and write the
-//     original owner back;
-//  3. reset the expired, never-reset hold buckets with the permissionless resetHolds,
-//     so the auto-unbond queue (holdTimestamp=0 entries) can withdraw them.
+//     original owner back.
 //
 // It all happens in one block: users never see a paused or half-migrated contract.
-// A contract that is already upgraded and migrated is not upgraded again.
+// A contract that is already upgraded and migrated is not upgraded again, unless forced
+// (testnet, whose contract got the holdStartTime implementation in July).
 
 //go:embed delegationupgrade/delegation_flattened.json
 var delegationFlattenedJSON []byte
@@ -69,9 +67,6 @@ var eip1967ImplSlot = common.HexToHash("0x360894a13ba1a3210667c828492db98dca3e20
 // retried at half size before giving up.
 const migrateFrozenChunk = 30
 
-// resetHoldsChunk bounds one resetHolds call.
-const resetHoldsChunk = 20
-
 const delegationAdminABI = `[
  {"type":"function","name":"pause","stateMutability":"nonpayable","inputs":[],"outputs":[]},
  {"type":"function","name":"unpause","stateMutability":"nonpayable","inputs":[],"outputs":[]},
@@ -79,8 +74,7 @@ const delegationAdminABI = `[
  {"type":"function","name":"owner","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"address"}]},
  {"type":"function","name":"upgrade","stateMutability":"nonpayable","inputs":[{"name":"newImpl","type":"address"},{"name":"data","type":"bytes"}],"outputs":[]},
  {"type":"function","name":"migrateFrozenStakesLayout","stateMutability":"nonpayable","inputs":[{"name":"count","type":"uint256"}],"outputs":[]},
- {"type":"function","name":"frozenStakesMigrationProgress","stateMutability":"view","inputs":[],"outputs":[{"name":"migrated","type":"uint256"},{"name":"total","type":"uint256"}]},
- {"type":"function","name":"resetHolds","stateMutability":"nonpayable","inputs":[{"name":"validator","type":"address"},{"name":"delegator","type":"address"},{"name":"token","type":"address"},{"name":"holdTimestamps","type":"uint256[]"}],"outputs":[]}
+ {"type":"function","name":"frozenStakesMigrationProgress","stateMutability":"view","inputs":[],"outputs":[{"name":"migrated","type":"uint256"},{"name":"total","type":"uint256"}]}
 ]`
 
 // DelegationContractUpgradeReport summarizes the atomic contract upgrade.
@@ -136,9 +130,10 @@ func (d *delegationAdmin) call(ctx sdk.Context, method string, args ...interface
 
 // UpgradeDelegationContract runs steps 1 and 2. Any error aborts the upgrade handler
 // (chain halt at H), so the chain never continues with a half-upgraded contract.
-func UpgradeDelegationContract(ctx sdk.Context, app *DSC) (DelegationContractUpgradeReport, error) {
+// Without force, a contract that is already upgraded and migrated is left alone.
+func UpgradeDelegationContract(ctx sdk.Context, app *DSC, force bool) (DelegationContractUpgradeReport, error) {
 	var rep DelegationContractUpgradeReport
-	if migrated, err := delegationContractMigrated(ctx, app); err == nil && migrated {
+	if migrated, err := delegationContractMigrated(ctx, app); !force && err == nil && migrated {
 		rep.AlreadyUpgraded = true
 		return rep, nil
 	}
@@ -292,83 +287,4 @@ func linkLibrary(hexCode string, refs map[string]map[string][]linkRef, lib commo
 		return nil, fmt.Errorf("unresolved link placeholder")
 	}
 	return common.FromHex("0x" + string(code)), nil
-}
-
-// ResetExpiredHolds moves the given expired hold buckets into their base stakes with
-// the permissionless resetHolds, in deterministic order. A batch that reverts is split
-// down to single buckets; a single bucket that still reverts is counted as skipped
-// and never aborts the upgrade.
-func ResetExpiredHolds(ctx sdk.Context, app *DSC, holds []ExpiredHold) (reset, skipped int, err error) {
-	d, err := newDelegationAdmin(ctx, app)
-	if err != nil {
-		return 0, 0, err
-	}
-	type group struct {
-		val, del, tok common.Address
-		ends          []int64
-	}
-	groups := map[string]*group{}
-	for _, h := range holds {
-		k := h.Validator.Hex() + h.Delegator.Hex() + h.Token.Hex()
-		g, ok := groups[k]
-		if !ok {
-			g = &group{val: h.Validator, del: h.Delegator, tok: h.Token}
-			groups[k] = g
-		}
-		g.ends = append(g.ends, h.HoldTimestamp)
-	}
-	keys := make([]string, 0, len(groups))
-	for k := range groups {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	var sweep func(g *group, ends []int64)
-	sweep = func(g *group, ends []int64) {
-		ts := make([]*big.Int, len(ends))
-		for i, e := range ends {
-			ts[i] = big.NewInt(e)
-		}
-		// A reverted call leaves no state behind (CallEVM commits only on success).
-		if _, err := d.call(ctx, "resetHolds", g.val, g.del, g.tok, ts); err == nil {
-			reset += len(ends)
-			// One line per bucket: the call emits no tx logs, so off-chain indexers
-			// (the subgraph) take the exact list of reset holds from here.
-			for _, e := range ends {
-				ctx.Logger().Info("expired hold reset", "validator", g.val.Hex(), "delegator", g.del.Hex(), "token", g.tok.Hex(), "holdTimestamp", e)
-			}
-			return
-		}
-		if len(ends) == 1 {
-			skipped++
-			ctx.Logger().Info("expired hold reset skipped", "validator", g.val.Hex(), "delegator", g.del.Hex(), "token", g.tok.Hex(), "holdTimestamp", ends[0])
-			return
-		}
-		mid := len(ends) / 2
-		sweep(g, ends[:mid])
-		sweep(g, ends[mid:])
-	}
-	for _, k := range keys {
-		g := groups[k]
-		sort.Slice(g.ends, func(i, j int) bool { return g.ends[i] < g.ends[j] })
-		g.ends = dedupInt64(g.ends)
-		for i := 0; i < len(g.ends); i += resetHoldsChunk {
-			j := i + resetHoldsChunk
-			if j > len(g.ends) {
-				j = len(g.ends)
-			}
-			sweep(g, g.ends[i:j])
-		}
-	}
-	return reset, skipped, nil
-}
-
-func dedupInt64(s []int64) []int64 {
-	out := s[:0]
-	for i, v := range s {
-		if i == 0 || v != s[i-1] {
-			out = append(out, v)
-		}
-	}
-	return out
 }

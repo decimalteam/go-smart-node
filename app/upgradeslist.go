@@ -57,6 +57,9 @@ var UpgradeListTestnet = []UpgradeCreator{
 	{"https://testnet-repo.decimalchain.com/21084201", SetOracleUpgradeHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/21231530", HoldStartTimeBackfillHandlerCreator},
 	{"https://testnet-repo.decimalchain.com/21343701", HalveEvmGasPriceUpgradeHandlerCreator},
+	// Rehearsal of the mainnet delegation-desync recovery (app/desync_repair.go) with the
+	// same embedded contract build: forced contract upgrade, full repair, no restart wait.
+	{DesyncRepairTestnetPlanName, DelegationRecoveryTestnetHandlerCreator},
 }
 
 var UpgradeListMainnet = []UpgradeCreator{

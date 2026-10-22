@@ -44,76 +44,101 @@ const (
 	contractTokenTypeDEL   = 4
 )
 
+// DesyncRepairTestnetPlanName is the testnet rehearsal of the recovery upgrade. Set the
+// real height at release; a registered but unscheduled name never runs.
+var DesyncRepairTestnetPlanName = "https://testnet-repo.decimalchain.com/22350301"
+
+// delegationRecoveryOptions are the per-network differences of the recovery upgrade.
+type delegationRecoveryOptions struct {
+	// forceContractUpgrade deploys the embedded implementation even when the proxy
+	// already runs a migrated holdStartTime implementation (testnet: upgraded in July,
+	// so without it the NFT fixes would never reach the contract).
+	forceContractUpgrade bool
+	// keepPreIncidentDrift applies the embedded mainnet pre-incident drift list.
+	keepPreIncidentDrift bool
+	// resumeAt is the coordinated restart instant, see DesyncRepairResumeAt.
+	resumeAt string
+}
+
 // DelegationDesyncRepairHandlerCreator is the single mainnet recovery upgrade. In one
 // block, with no owner transactions before or after it, it:
 //  1. upgrades the delegation contract (deploy, upgrade, frozen-queue migration; see
 //     UpgradeDelegationContract), unless the owner already did;
-//  2. resets every expired, never-reset contract hold (permissionless resetHolds);
-//  3. reconciles node delegations with the contract (the custodian of the staked
+//  2. reconciles node delegations with the contract (the custodian of the staked
 //     tokens) using only on-chain state (see PlanDelegationRepair);
-//  4. switches on decoding of both event layouts;
-//  5. copies node hold start times into the contract;
-//  6. re-syncs the per-block reward.
-var DelegationDesyncRepairHandlerCreator = func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
-	return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
-		logger := ctx.Logger().With("upgrade", plan.Name)
+//  3. switches on decoding of both event layouts;
+//  4. copies node hold start times into the contract;
+//  5. re-syncs the per-block reward.
+//
+// Expired, never-reset contract holds are not touched (see the handler body).
+var DelegationDesyncRepairHandlerCreator = delegationRecoveryHandlerCreator(delegationRecoveryOptions{
+	keepPreIncidentDrift: true,
+	resumeAt:             DesyncRepairResumeAt,
+})
 
-		up, err := UpgradeDelegationContract(ctx, app)
-		if err != nil {
-			return nil, fmt.Errorf("delegation contract upgrade: %w", err)
-		}
-		logger.Info("delegation contract upgrade: " + up.String())
+// DelegationRecoveryTestnetHandlerCreator runs the same steps on testnet, which never had
+// the 32811496 incident: its contract already runs a migrated holdStartTime
+// implementation (0x5d43b2, July), so the embedded build is deployed regardless; the
+// mainnet drift list does not apply, so every difference is repaired; no restart wait.
+var DelegationRecoveryTestnetHandlerCreator = delegationRecoveryHandlerCreator(delegationRecoveryOptions{
+	forceContractUpgrade: true,
+})
 
-		// The repair plan lists the expired holds; resetting them changes the contract
-		// side, so plan again afterwards.
-		pre, err := PlanDelegationRepair(ctx, app)
-		if err != nil {
-			return nil, err
-		}
-		reset, skipped, err := ResetExpiredHolds(ctx, app, pre.ExpiredHolds)
-		if err != nil {
-			return nil, err
-		}
-		logger.Info(fmt.Sprintf("expired holds reset: %d of %d (skipped %d)", reset, len(pre.ExpiredHolds), skipped))
+func delegationRecoveryHandlerCreator(opts delegationRecoveryOptions) func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+	return func(app *DSC, mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+		return func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+			logger := ctx.Logger().With("upgrade", plan.Name)
 
-		p, err := PlanDelegationRepair(ctx, app)
-		if err != nil {
-			return nil, err
-		}
-		logger.Info("delegation desync repair plan: " + p.Stats.String())
-		pst, err := ApplyPreIncidentDrift(&p)
-		if err != nil {
-			return nil, err
-		}
-		logger.Info("pre-incident drift kept: " + pst.String())
-		rep, err := ApplyDelegationRepair(ctx, app, p)
-		if err != nil {
-			return nil, err
-		}
-		logger.Info("delegation desync repair applied: " + rep.String())
-		for _, s := range rep.Skipped {
-			logger.Info("delegation desync repair skipped: " + s)
-		}
-		app.ValidatorKeeper.EnableLegacyDelegationEvents(ctx)
+			up, err := UpgradeDelegationContract(ctx, app, opts.forceContractUpgrade)
+			if err != nil {
+				return nil, fmt.Errorf("delegation contract upgrade: %w", err)
+			}
+			logger.Info("delegation contract upgrade: " + up.String())
 
-		// After the repair, so restored holds get their start time too.
-		written, err := BackfillHoldStartTimes(ctx, app)
-		if err != nil {
-			return nil, err
-		}
-		logger.Info(fmt.Sprintf("hold-start-time backfill wrote %d contract slots", written))
+			// Expired, never-reset holds stay as they are: the repair does not need them
+			// reset, and resetting them here would change contract stakes without tx logs,
+			// invisible to the subgraph.
+			p, err := PlanDelegationRepair(ctx, app)
+			if err != nil {
+				return nil, err
+			}
+			logger.Info("delegation desync repair plan: " + p.Stats.String())
+			if opts.keepPreIncidentDrift {
+				pst, err := ApplyPreIncidentDrift(&p)
+				if err != nil {
+					return nil, err
+				}
+				logger.Info("pre-incident drift kept: " + pst.String())
+			}
+			rep, err := ApplyDelegationRepair(ctx, app, p)
+			if err != nil {
+				return nil, err
+			}
+			logger.Info("delegation desync repair applied: " + rep.String())
+			for _, s := range rep.Skipped {
+				logger.Info("delegation desync repair skipped: " + s)
+			}
+			app.ValidatorKeeper.EnableLegacyDelegationEvents(ctx)
 
-		amount, enabled, err := SyncRewardPerBlockOverride(ctx, app)
-		if err != nil {
-			return nil, err
+			// After the repair, so restored holds get their start time too.
+			written, err := BackfillHoldStartTimes(ctx, app)
+			if err != nil {
+				return nil, err
+			}
+			logger.Info(fmt.Sprintf("hold-start-time backfill wrote %d contract slots", written))
+
+			amount, enabled, err := SyncRewardPerBlockOverride(ctx, app)
+			if err != nil {
+				return nil, err
+			}
+			logger.Info(fmt.Sprintf("reward-per-block override synced from contract: enabled=%t amount=%s", enabled, amount.String()))
+			newVM, err := mm.RunMigrations(ctx, configurator, fromVM)
+			if err != nil {
+				return newVM, err
+			}
+			holdUntilResume(logger, opts.resumeAt)
+			return newVM, nil
 		}
-		logger.Info(fmt.Sprintf("reward-per-block override synced from contract: enabled=%t amount=%s", enabled, amount.String()))
-		newVM, err := mm.RunMigrations(ctx, configurator, fromVM)
-		if err != nil {
-			return newVM, err
-		}
-		holdUntilResume(logger, DesyncRepairResumeAt)
-		return newVM, nil
 	}
 }
 
