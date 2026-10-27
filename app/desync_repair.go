@@ -46,7 +46,7 @@ const (
 
 // DesyncRepairTestnetPlanName is the testnet rehearsal of the recovery upgrade. Set the
 // real height at release; a registered but unscheduled name never runs.
-var DesyncRepairTestnetPlanName = "https://testnet-repo.decimalchain.com/22350301"
+var DesyncRepairTestnetPlanName = "https://testnet-repo.decimalchain.com/22448401"
 
 // delegationRecoveryOptions are the per-network differences of the recovery upgrade.
 type delegationRecoveryOptions struct {
