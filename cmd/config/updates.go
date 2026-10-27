@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"path/filepath"
+	"runtime"
 )
 
 type UpdatesInfoStruct struct {
@@ -44,12 +46,43 @@ func (plan *UpdatesInfoStruct) Load() error {
 }
 
 func (plan *UpdatesInfoStruct) Save() error {
-	f, err := os.OpenFile(plan.filename, os.O_WRONLY|os.O_CREATE, 0644)
+	// This file is diagnostic only. Never expose a partially overwritten JSON
+	// document to readers, and never use it as proof of a committed migration.
+	bz, err := json.Marshal(plan)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-	return plan.save(f)
+	f, err := os.CreateTemp(filepath.Dir(plan.filename), ".updates-*")
+	if err != nil {
+		return err
+	}
+	temporary := f.Name()
+	defer os.Remove(temporary)
+	if _, err = f.Write(bz); err != nil {
+		f.Close()
+		return err
+	}
+	if err = f.Sync(); err != nil {
+		f.Close()
+		return err
+	}
+	if err = f.Close(); err != nil {
+		return err
+	}
+	if err = os.Rename(temporary, plan.filename); err != nil {
+		return err
+	}
+	// Directory sync makes the rename durable on supported Unix filesystems.
+	// Windows does not support syncing directories through os.File.Sync.
+	if runtime.GOOS != "windows" {
+		dir, openErr := os.Open(filepath.Dir(plan.filename))
+		if openErr != nil {
+			return openErr
+		}
+		defer dir.Close()
+		return dir.Sync()
+	}
+	return nil
 }
 
 func (plan *UpdatesInfoStruct) save(wrt io.Writer) error {
