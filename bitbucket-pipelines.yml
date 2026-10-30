@@ -431,6 +431,8 @@ definitions:
         - go-src
         - go-pkg
         script:
+        - sed -i 's|deb.debian.org|archive.debian.org|g' /etc/apt/sources.list
+        - echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
         - apt-get update -y
         - apt-get install -y build-essential
         - apt-get install -y --no-install-recommends libsnappy-dev libleveldb-dev
