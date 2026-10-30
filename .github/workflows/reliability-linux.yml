@@ -1,0 +1,73 @@
+name: Reliability Linux
+
+on:
+  push:
+    branches: [master, stage, 'fix/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reliability-linux-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  real-evm-and-packages:
+    name: Real EVM and affected packages (Linux)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 35
+    env:
+      CGO_ENABLED: '1'
+      CC: gcc
+      GOMAXPROCS: '2'
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out tested revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up pinned Go toolchain
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.24.4'
+          cache: true
+
+      - name: Record test environment
+        run: |
+          mkdir -p test-results
+          {
+            git rev-parse HEAD
+            uname -a
+            go version
+            go env GOOS GOARCH CGO_ENABLED CC
+            gcc --version
+          } | tee test-results/environment.log
+
+      - name: Test actual EVM crash recovery, auto-unbond and event rollback
+        run: |
+          go test -mod=readonly -p 2 -count=1 -v -timeout 10m \
+            -run '^TestIntegration.*RealEVM$' ./app \
+            |& tee test-results/real-evm.log
+          for test in TestIntegrationUpgradeCrashRealEVM TestIntegrationAutoUnbondRealEVM TestIntegrationEventRollbackRealEVM; do
+            grep -q -- "^--- PASS: ${test} " test-results/real-evm.log
+          done
+
+      - name: Test all affected packages
+        run: |
+          go test -mod=readonly -p 2 -count=1 -v -timeout 10m \
+            ./app ./x/validator/keeper ./x/upgrade ./cmd/config \
+            |& tee test-results/packages.log
+
+      - name: Retain environment and test logs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reliability-linux-${{ github.run_id }}-${{ github.run_attempt }}
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 14

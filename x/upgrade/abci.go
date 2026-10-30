@@ -59,10 +59,7 @@ func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
 
 	logger := ctx.Logger()
 
-	allBlocks := cmdcfg.UpdatesInfo.AllBlocks
-	if _, ok := allBlocks[plan.Name]; ok {
-		return
-	}
+	// Only committed UpgradeKeeper state decides whether a migration is done.
 
 	_, ok := downloadStat[plan.Name]
 
@@ -144,19 +141,7 @@ func BeginBlocker(k keeper.Keeper, ctx sdk.Context, _ abci.RequestBeginBlock) {
 
 		k.ApplyUpgrade(ctx, plan)
 
-		cmdcfg.UpdatesInfo.PushNewPlanHeight(plan.Height)
-		err := cmdcfg.UpdatesInfo.Save()
-		if err != nil {
-			logger.Error(fmt.Sprintf("push \"%s\" with error: %s", plan.Name, err.Error()))
-			os.Exit(2)
-		}
-
-		cmdcfg.UpdatesInfo.AddExecutedPlan(plan.Name, plan.Height)
-		err = cmdcfg.UpdatesInfo.Save()
-		if err != nil {
-			logger.Error(fmt.Sprintf("save \"%s\" with '%s'", plan.Name, err.Error()))
-			os.Exit(3)
-		}
+		// Do not persist local completion markers before the block commits.
 
 		return
 	}

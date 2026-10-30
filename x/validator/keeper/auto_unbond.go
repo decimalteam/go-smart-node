@@ -13,7 +13,7 @@ import (
 
 // ProcessAutoUnbond checks all offline validators and enqueues their
 // delegations for auto-unbond in the EVM delegation contract.
-func (k Keeper) ProcessAutoUnbond(ctx sdk.Context) {
+func (k Keeper) processAutoUnbondLegacy(ctx sdk.Context) {
 	timeout := k.AutoUnbondTimeout(ctx)
 
 	// Feature disabled
@@ -28,7 +28,7 @@ func (k Keeper) ProcessAutoUnbond(ctx sdk.Context) {
 			return false // not yet expired
 		}
 
-		k.enqueueAutoUnbond(ctx, valAddr)
+		k.enqueueAutoUnbondLegacy(ctx, valAddr)
 		k.DeleteValidatorOfflineSince(ctx, valAddr)
 		return false
 	})
@@ -36,7 +36,7 @@ func (k Keeper) ProcessAutoUnbond(ctx sdk.Context) {
 
 // enqueueAutoUnbond writes all delegations for a validator into the
 // EVM contract's auto-unbond queue.
-func (k Keeper) enqueueAutoUnbond(ctx sdk.Context, valAddr sdk.ValAddress) {
+func (k Keeper) enqueueAutoUnbondLegacy(ctx sdk.Context, valAddr sdk.ValAddress) {
 	delegations := k.GetValidatorDelegations(ctx, valAddr)
 
 	for _, del := range delegations {
@@ -120,4 +120,35 @@ func (k *Keeper) ExecuteAutoUnbondEnqueue(ctx sdk.Context, del types.Delegation)
 	}
 
 	return nil
+}
+
+// ProcessAutoUnbond retains the historical algorithm until the release activation
+// height. Afterwards, successful EVM writes and tracker removal commit together.
+func (k Keeper) ProcessAutoUnbond(ctx sdk.Context) {
+	if !k.reliabilityFixesEnabled(ctx) {
+		k.processAutoUnbondLegacy(ctx)
+		return
+	}
+	timeout := k.AutoUnbondTimeout(ctx)
+	if timeout == 0 {
+		return
+	}
+	cutoff := ctx.BlockTime().Add(-timeout)
+	k.IterateValidatorOfflineSince(ctx, func(valAddr sdk.ValAddress, since time.Time) bool {
+		if since.After(cutoff) {
+			return false
+		}
+		cached, commit := ctx.CacheContext()
+		delegations := k.GetValidatorDelegations(cached, valAddr)
+		for _, del := range delegations {
+			if err := k.ExecuteAutoUnbondEnqueue(cached, del); err != nil {
+				ctx.Logger().Error("auto-unbond batch rolled back; retry retained", "validator", valAddr, "delegator", del.Delegator, "err", err)
+				return false
+			}
+		}
+		k.DeleteValidatorOfflineSince(cached, valAddr)
+		commit()
+		ctx.Logger().Info("auto-unbond batch committed", "validator", valAddr, "delegations_count", len(delegations))
+		return false
+	})
 }

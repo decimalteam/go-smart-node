@@ -76,16 +76,22 @@ func (k Keeper) PostTxProcessing(
 	//params.UndelegationTime =
 	//k.SetParams(ctx)
 
-	addressValidator, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressMasterValidator)
-	addressDelegation, _ := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
+	strict := k.reliabilityFixesEnabled(ctx)
+	addressValidator, validatorAddressErr := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressMasterValidator)
+	addressDelegation, delegationAddressErr := contracts.GetAddressFromContractCenter(ctx, k.evmKeeper, contracts.NameOfSlugForGetAddressDelegation)
+	if strict && validatorAddressErr != nil {
+		return fmt.Errorf("resolve master-validator: %w", validatorAddressErr)
+	}
+	if strict && delegationAddressErr != nil {
+		return fmt.Errorf("resolve delegation: %w", delegationAddressErr)
+	}
+
 	addressValidator = strings.ToLower(addressValidator)
 	addressDelegation = strings.ToLower(addressDelegation)
 	validatorMaster, _ := validator.ValidatorMetaData.GetAbi()
 	delegatorCenter, _ := delegation.DelegationMetaData.GetAbi()
 
-	// Delegation-contract logs, translated to the current event layout once the
-	// legacy-event repair is active (see evm_hooks_legacy.go). Before that flag is
-	// set the receipt logs are used as-is, so earlier blocks replay unchanged.
+	// Normalize legacy delegation events before applying strict envelope checks.
 	delegationLogs := recipient.Logs
 	if k.LegacyDelegationEventsEnabled(ctx) {
 		legacyCenter, _ := delegationv7.DelegationMetaData.GetAbi()
@@ -96,6 +102,22 @@ func (k Keeper) PostTxProcessing(
 		delegationLogs = normalized
 		if err := k.rejectLegacyNftDelegation(ctx, recipient.Logs); err != nil {
 			return err
+		}
+	}
+	if strict {
+		for _, entry := range recipient.Logs {
+			if entry != nil && strings.ToLower(entry.Address.Hex()) == addressValidator {
+				if err := validateCriticalEventEnvelope(validatorMaster, entry); err != nil {
+					return err
+				}
+			}
+		}
+		for _, entry := range delegationLogs {
+			if entry != nil && strings.ToLower(entry.Address.Hex()) == addressDelegation {
+				if err := validateCriticalEventEnvelope(delegatorCenter, entry); err != nil {
+					return err
+				}
+			}
 		}
 	}
 
@@ -128,10 +150,14 @@ func (k Keeper) PostTxProcessing(
 			fmt.Println(eventValidatorByID.Name)
 			if eventValidatorByID.Name == "ValidatorMetaUpdated" {
 				createValidator = true
-				_ = validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data)
+				if decodeErr := validatorMaster.UnpackIntoInterface(&newValidator, eventValidatorByID.Name, log.Data); strict && decodeErr != nil {
+					return fmt.Errorf("financial event decode: %w", decodeErr)
+				}
 				var validatorInfo contracts.MasterValidatorValidatorAddedMeta
 				fmt.Println(newValidator.Meta)
-				_ = json.Unmarshal([]byte(newValidator.Meta), &validatorInfo)
+				if decodeErr := json.Unmarshal([]byte(newValidator.Meta), &validatorInfo); strict && decodeErr != nil {
+					return fmt.Errorf("financial event decode: %w", decodeErr)
+				}
 				valAddr, _ := sdk.ValAddressFromHex(msg.From.String()[2:])
 				validatorInfo.OperatorAddress = valAddr.String()
 				fmt.Println(validatorInfo)
@@ -151,7 +177,9 @@ func (k Keeper) PostTxProcessing(
 		if errEvent == nil && addressValidator == strings.ToLower(log.Address.String()) {
 			fmt.Println(eventValidatorByID.Name)
 			if eventValidatorByID.Name == "ValidatorUpdated" && !createValidator {
-				_ = contracts.UnpackLog(validatorMaster, &updateValidator, eventValidatorByID.Name, log)
+				if decodeErr := contracts.UnpackLog(validatorMaster, &updateValidator, eventValidatorByID.Name, log); strict && decodeErr != nil {
+					return fmt.Errorf("financial event decode: %w", decodeErr)
+				}
 				fmt.Println(updateValidator)
 				cosmosAddressValidator, _ := sdk.ValAddressFromHex(updateValidator.Validator.String()[2:])
 				if updateValidator.Paused == false {
@@ -172,7 +200,9 @@ func (k Keeper) PostTxProcessing(
 			// GetBlockReward, so this only ever lowers emission.
 			if eventValidatorByID.Name == "RewardPerBlockUpdated" {
 				var rewardPerBlockUpdated validator.ValidatorRewardPerBlockUpdated
-				_ = contracts.UnpackLog(validatorMaster, &rewardPerBlockUpdated, eventValidatorByID.Name, log)
+				if decodeErr := contracts.UnpackLog(validatorMaster, &rewardPerBlockUpdated, eventValidatorByID.Name, log); strict && decodeErr != nil {
+					return fmt.Errorf("financial event decode: %w", decodeErr)
+				}
 				if rewardPerBlockUpdated.Enabled {
 					k.SetRewardPerBlockOverride(ctx, sdkmath.NewIntFromBigInt(rewardPerBlockUpdated.RewardPerBlock))
 				} else {
@@ -224,10 +254,14 @@ func (k Keeper) PostTxProcessing(
 		if errEvent == nil && strings.ToLower(log.Address.String()) == addressDelegation {
 			fmt.Println(eventDelegationByID.Name)
 			if eventDelegationByID.Name == "StakeAmountUpdated" {
-				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegationAmount, eventDelegationByID.Name, log)
+				if decodeErr := contracts.UnpackLog(delegatorCenter, &tokenDelegationAmount, eventDelegationByID.Name, log); strict && decodeErr != nil {
+					return fmt.Errorf("financial event decode: %w", decodeErr)
+				}
 			}
 			if eventDelegationByID.Name == "StakeUpdated" && redelegation && !undelegate && !stakedHold && !transferCompleted && !withdrawCompleted && !stakeReset {
-				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
+				if decodeErr := contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log); strict && decodeErr != nil {
+					return fmt.Errorf("financial event decode: %w", decodeErr)
+				}
 				srcValidatorRedelegation = tokenDelegate.Stake.Validator.String()
 			}
 			if eventDelegationByID.Name == "StakeUpdated" && !redelegation && !undelegate && !stakedHold && !transferCompleted && !withdrawCompleted && !stakeReset && stakeUpdate == 0 {
@@ -235,7 +269,9 @@ func (k Keeper) PostTxProcessing(
 					return errors.DelegationSumIsNotSet
 				}
 				stakeUpdate = stakeUpdate + 1
-				_ = contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log)
+				if decodeErr := contracts.UnpackLog(delegatorCenter, &tokenDelegate, eventDelegationByID.Name, log); strict && decodeErr != nil {
+					return fmt.Errorf("financial event decode: %w", decodeErr)
+				}
 				_, err := k.coinKeeper.GetCoinByDRC(ctx, tokenDelegate.Stake.Token.String())
 				if err != nil {
 					symbolToken, _ := k.QuerySymbolToken(ctx, tokenDelegate.Stake.Token)
@@ -254,7 +290,9 @@ func (k Keeper) PostTxProcessing(
 			}
 
 			if eventDelegationByID.Name == "StakeHolded" {
-				_ = contracts.UnpackLog(delegatorCenter, &transferExistStake, eventDelegationByID.Name, log)
+				if decodeErr := contracts.UnpackLog(delegatorCenter, &transferExistStake, eventDelegationByID.Name, log); strict && decodeErr != nil {
+					return fmt.Errorf("financial event decode: %w", decodeErr)
+				}
 				_, err := k.coinKeeper.GetCoinByDRC(ctx, transferExistStake.Stake.Token.String())
 				if err != nil {
 					symbolToken, _ := k.QuerySymbolToken(ctx, transferExistStake.Stake.Token)
@@ -273,7 +311,9 @@ func (k Keeper) PostTxProcessing(
 			}
 
 			if eventDelegationByID.Name == "WithdrawRequest" {
-				_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationByID.Name, log.Data)
+				if decodeErr := delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationByID.Name, log.Data); strict && decodeErr != nil {
+					return fmt.Errorf("financial event decode: %w", decodeErr)
+				}
 				srcVal, applied, nftErr := rewriteFrozenStakeForNFT(&tokenUndelegate.FrozenStake.Stake, tokenUndelegate.StakeId, exitSiblings[i])
 				if nftErr != nil {
 					return nftErr
@@ -310,7 +350,9 @@ func (k Keeper) PostTxProcessing(
 				}
 			}
 			if eventDelegationByID.Name == "TransferRequest" {
-				_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationByID.Name, log.Data)
+				if decodeErr := delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationByID.Name, log.Data); strict && decodeErr != nil {
+					return fmt.Errorf("financial event decode: %w", decodeErr)
+				}
 				srcValidator := srcValidatorRedelegation
 				if src, applied, nftErr := rewriteFrozenStakeForNFT(&tokenRedelegation.FrozenStake.Stake, tokenRedelegation.StakeId, exitSiblings[i]); nftErr != nil {
 					return nftErr
@@ -514,12 +556,16 @@ func (k Keeper) Staked(ctx sdk.Context, stakeData delegation.DelegationStakeUpda
 	}
 
 	if newStake {
-		_ = k.Delegate(ctx, delegatorAddress, validatorCosmos, stake)
+		if err := k.Delegate(ctx, delegatorAddress, validatorCosmos, stake); k.reliabilityFixesEnabled(ctx) && err != nil {
+			return err
+		}
 		if err != nil {
 			return err
 		}
 	} else {
-		_ = k.TransferToHold(ctx, delegatorAddress, validatorCosmos, stake)
+		if err := k.TransferToHold(ctx, delegatorAddress, validatorCosmos, stake); k.reliabilityFixesEnabled(ctx) && err != nil {
+			return err
+		}
 		if err != nil {
 			return err
 		}

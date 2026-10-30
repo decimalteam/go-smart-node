@@ -1,0 +1,7 @@
+{
+  "name": "node-reliability-fixtures",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": { "compile": "node compile.cjs" },
+  "devDependencies": { "solc": "0.8.20" }
+}

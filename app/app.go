@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,7 +12,6 @@ import (
 	// "bytes"
 	"os"
 	"path/filepath"
-	"syscall"
 
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
@@ -308,19 +306,8 @@ func NewDSC(
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *DSC {
-	// load update info
-	// It's legacy method to load
-	cmdcfg.UpdatesInfo = cmdcfg.NewUpdatesInfo(filepath.Join(homePath, "data", cmdcfg.UpdatesName))
-	err := cmdcfg.UpdatesInfo.Load()
-	// NOTE: errors.Is(err, syscall.ENOENT) is workaround for pipeline tests
-	if err != nil && !errors.Is(err, syscall.ENOENT) {
-		panic(fmt.Sprintf("error: read permissions '%s'", err.Error()))
-	}
-
-	err = cmdcfg.UpdatesInfo.Save()
-	if err != nil && !errors.Is(err, syscall.ENOENT) {
-		panic(fmt.Sprintf("error: write permissions '%s'", err.Error()))
-	}
+	// Local upgrade journals are not consensus state and must not gate startup.
+	var err error
 
 	genDoc := &tmtypes.GenesisDoc{}
 	if _, err = os.Stat(filepath.Join(homePath, "config", "genesis.json")); err != nil {
@@ -1123,8 +1110,8 @@ func (app *DSC) setupUpgradeHandlers(chainID string) {
 	}
 
 	if storeUpgrades != nil {
-	    // configure store loader that checks if version == upgradeHeight and applies store upgrades
-	    app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, storeUpgrades))
+		// configure store loader that checks if version == upgradeHeight and applies store upgrades
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, storeUpgrades))
 	}
 
 	// if storeUpgrades != nil {
