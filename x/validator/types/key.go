@@ -109,6 +109,7 @@ var (
 	keyPrefixHaltInfo                   = []byte{0x81} // prefix for emergency hard-halt info (singleton)
 	keyPrefixFreezeInfo                 = []byte{0x82} // prefix for emergency soft-freeze info (singleton)
 	keyRewardPerBlockOverride           = []byte{0x91} // singleton key for the contract-set per-block reward override
+	keyLegacyDelegationEvents           = []byte{0x92} // singleton flag: decode legacy (7-field Stake) delegation contract events
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -571,4 +572,10 @@ func GetFreezeInfoKey() []byte {
 // override is enabled; absence means the node uses its built-in schedule.
 func GetRewardPerBlockOverrideKey() []byte {
 	return keyRewardPerBlockOverride
+}
+
+// GetLegacyDelegationEventsKey returns the singleton key of the flag that enables
+// decoding of legacy (7-field Stake) delegation contract events in the EVM hooks.
+func GetLegacyDelegationEventsKey() []byte {
+	return keyLegacyDelegationEvents
 }

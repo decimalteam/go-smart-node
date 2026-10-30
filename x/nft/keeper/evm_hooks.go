@@ -64,6 +64,9 @@ func (k *Keeper) PostTxProcessing(
 	var nftCreated nftCenter.NftCenterNFTCreated
 
 	for _, log := range recipient.Logs {
+		if len(log.Topics) == 0 {
+			continue
+		}
 		eventCenterByID, errEvent := nftContractCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
 			if eventCenterByID.Name == "NFTCreated" && log.Address.Hex() == contractNftCenter {

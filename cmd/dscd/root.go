@@ -133,6 +133,9 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		ForkTimewarpCmd(encodingConfig),
 		ForkSetOwnerCmd(encodingConfig),
 		ForkSchedulePlanCmd(encodingConfig),
+		DesyncPlanCmd(encodingConfig),
+		ArchiveDriftCmd(encodingConfig),
+		HoldBackfillTestCmd(encodingConfig),
 	)
 
 	a := appCreator{encodingConfig}

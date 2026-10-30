@@ -12,6 +12,7 @@ import (
 
 	"bitbucket.org/decimalteam/go-smart-node/contracts"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/delegation"
+	"bitbucket.org/decimalteam/go-smart-node/contracts/delegationv7"
 	"bitbucket.org/decimalteam/go-smart-node/contracts/validator"
 	"bitbucket.org/decimalteam/go-smart-node/types"
 	"bitbucket.org/decimalteam/go-smart-node/utils/events"
@@ -24,6 +25,7 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evmtypes "github.com/decimalteam/ethermint/x/evm/types"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
@@ -81,6 +83,22 @@ func (k Keeper) PostTxProcessing(
 	validatorMaster, _ := validator.ValidatorMetaData.GetAbi()
 	delegatorCenter, _ := delegation.DelegationMetaData.GetAbi()
 
+	// Delegation-contract logs, translated to the current event layout once the
+	// legacy-event repair is active (see evm_hooks_legacy.go). Before that flag is
+	// set the receipt logs are used as-is, so earlier blocks replay unchanged.
+	delegationLogs := recipient.Logs
+	if k.LegacyDelegationEventsEnabled(ctx) {
+		legacyCenter, _ := delegationv7.DelegationMetaData.GetAbi()
+		normalized, err := normalizeDelegationLogs(recipient.Logs, addressDelegation, delegatorCenter, legacyCenter)
+		if err != nil {
+			return err
+		}
+		delegationLogs = normalized
+		if err := k.rejectLegacyNftDelegation(ctx, recipient.Logs); err != nil {
+			return err
+		}
+	}
+
 	// this var is only for new token create from token center
 	var tokenDelegate delegation.DelegationStakeUpdated
 	var transferExistStake delegation.DelegationStakeUpdated
@@ -102,6 +120,9 @@ func (k Keeper) PostTxProcessing(
 	stakeUpdate := 0
 
 	for _, log := range recipient.Logs {
+		if len(log.Topics) == 0 {
+			continue
+		}
 		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
 		if errEvent == nil && addressValidator == strings.ToLower(log.Address.String()) {
 			fmt.Println(eventValidatorByID.Name)
@@ -123,6 +144,9 @@ func (k Keeper) PostTxProcessing(
 	}
 
 	for _, log := range recipient.Logs {
+		if len(log.Topics) == 0 {
+			continue
+		}
 		eventValidatorByID, errEvent := validatorMaster.EventByID(log.Topics[0])
 		if errEvent == nil && addressValidator == strings.ToLower(log.Address.String()) {
 			fmt.Println(eventValidatorByID.Name)
@@ -158,7 +182,10 @@ func (k Keeper) PostTxProcessing(
 		}
 	}
 
-	for _, log := range recipient.Logs {
+	for _, log := range delegationLogs {
+		if len(log.Topics) == 0 {
+			continue
+		}
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil {
 			if eventDelegationByID.Name == "WithdrawRequest" {
@@ -184,34 +211,15 @@ func (k Keeper) PostTxProcessing(
 
 	srcValidatorRedelegation := ""
 
-	// Index the coin-side events (StakeUpdated / StakeAmountUpdated) by stakeId so an NFT-typed
-	// WithdrawRequest/TransferRequest can be rewritten to coin-shaped before dispatch. NFT
-	// withdraw/transfer emits both under the same stakeId as the frozen-stake request.
-	coinByStakeId := make(map[[32]byte]delegation.IDecimalDelegationCommonStake)
-	amountByStakeId := make(map[[32]byte]*big.Int)
-	for _, log := range recipient.Logs {
+	// Pair each WithdrawRequest/TransferRequest with the coin-side StakeUpdated /
+	// StakeAmountUpdated emitted right before it, so an NFT-typed request can be rewritten
+	// to coin-shaped before dispatch (see pairExitSiblings).
+	exitSiblings := pairExitSiblings(delegationLogs, addressDelegation, delegatorCenter)
+
+	for i, log := range delegationLogs {
 		if len(log.Topics) == 0 {
 			continue
 		}
-		ev, evErr := delegatorCenter.EventByID(log.Topics[0])
-		if evErr != nil || strings.ToLower(log.Address.String()) != addressDelegation {
-			continue
-		}
-		switch ev.Name {
-		case "StakeUpdated":
-			var su delegation.DelegationStakeUpdated
-			if contracts.UnpackLog(delegatorCenter, &su, ev.Name, log) == nil {
-				coinByStakeId[su.StakeId] = su.Stake
-			}
-		case "StakeAmountUpdated":
-			var sa delegation.DelegationStakeAmountUpdated
-			if contracts.UnpackLog(delegatorCenter, &sa, ev.Name, log) == nil {
-				amountByStakeId[sa.StakeId] = sa.ChangedAmount
-			}
-		}
-	}
-
-	for _, log := range recipient.Logs {
 		eventDelegationByID, errEvent := delegatorCenter.EventByID(log.Topics[0])
 		if errEvent == nil && strings.ToLower(log.Address.String()) == addressDelegation {
 			fmt.Println(eventDelegationByID.Name)
@@ -266,7 +274,7 @@ func (k Keeper) PostTxProcessing(
 
 			if eventDelegationByID.Name == "WithdrawRequest" {
 				_ = delegatorCenter.UnpackIntoInterface(&tokenUndelegate, eventDelegationByID.Name, log.Data)
-				srcVal, applied, nftErr := rewriteFrozenStakeForNFT(&tokenUndelegate.FrozenStake.Stake, tokenUndelegate.StakeId, coinByStakeId, amountByStakeId)
+				srcVal, applied, nftErr := rewriteFrozenStakeForNFT(&tokenUndelegate.FrozenStake.Stake, tokenUndelegate.StakeId, exitSiblings[i])
 				if nftErr != nil {
 					return nftErr
 				}
@@ -304,7 +312,7 @@ func (k Keeper) PostTxProcessing(
 			if eventDelegationByID.Name == "TransferRequest" {
 				_ = delegatorCenter.UnpackIntoInterface(&tokenRedelegation, eventDelegationByID.Name, log.Data)
 				srcValidator := srcValidatorRedelegation
-				if src, applied, nftErr := rewriteFrozenStakeForNFT(&tokenRedelegation.FrozenStake.Stake, tokenRedelegation.StakeId, coinByStakeId, amountByStakeId); nftErr != nil {
+				if src, applied, nftErr := rewriteFrozenStakeForNFT(&tokenRedelegation.FrozenStake.Stake, tokenRedelegation.StakeId, exitSiblings[i]); nftErr != nil {
 					return nftErr
 				} else if applied {
 					srcValidator = src.String()
@@ -361,15 +369,76 @@ func isNFTStake(tokenType uint8) bool {
 	return tokenType == tokenTypeDRC721 || tokenType == tokenTypeDRC1155
 }
 
+// exitSibling is the coin-side StakeUpdated / StakeAmountUpdated pair that the contract
+// emits right before an exit request (WithdrawRequest / TransferRequest) under its stakeId.
+type exitSibling struct {
+	coin    *delegation.IDecimalDelegationCommonStake
+	changed *big.Int
+}
+
+// pairExitSiblings maps the index of every exit request in logs to the nearest preceding
+// StakeUpdated / StakeAmountUpdated of the same stakeId; each pair is consumed by one request.
+//
+// The stakeId of a coin stake does not depend on the NFT, so all reserve-backed NFTs and the
+// coins a delegator has with one validator in one token share it. Keying the siblings by
+// stakeId alone (last write wins) gave every exit of a multi-exit tx the amount of the last
+// one, e.g. withdrawing NFTs worth 10000 and 1 in one tx removed 2 from the node and left a
+// phantom 9999 delegation. The contract always emits the pair immediately before the request
+// (penalty updates, if any, come earlier), so position identifies it.
+func pairExitSiblings(logs []*ethtypes.Log, addressDelegation string, center *abi.ABI) map[int]exitSibling {
+	pairs := make(map[int]exitSibling)
+	pending := make(map[[32]byte]exitSibling)
+	for i, log := range logs {
+		if len(log.Topics) == 0 || strings.ToLower(log.Address.String()) != addressDelegation {
+			continue
+		}
+		ev, err := center.EventByID(log.Topics[0])
+		if err != nil {
+			continue
+		}
+		switch ev.Name {
+		case "StakeUpdated":
+			var su delegation.DelegationStakeUpdated
+			if contracts.UnpackLog(center, &su, ev.Name, log) == nil {
+				p := pending[su.StakeId]
+				stake := su.Stake
+				p.coin = &stake
+				pending[su.StakeId] = p
+			}
+		case "StakeAmountUpdated":
+			var sa delegation.DelegationStakeAmountUpdated
+			if contracts.UnpackLog(center, &sa, ev.Name, log) == nil {
+				p := pending[sa.StakeId]
+				p.changed = sa.ChangedAmount
+				pending[sa.StakeId] = p
+			}
+		case "WithdrawRequest":
+			var req delegation.DelegationWithdrawRequest
+			if center.UnpackIntoInterface(&req, ev.Name, log.Data) == nil {
+				pairs[i] = pending[req.StakeId]
+				delete(pending, req.StakeId)
+			}
+		case "TransferRequest":
+			var req delegation.DelegationTransferRequest
+			if center.UnpackIntoInterface(&req, ev.Name, log.Data) == nil {
+				pairs[i] = pending[req.StakeId]
+				delete(pending, req.StakeId)
+			}
+		}
+	}
+	return pairs
+}
+
 // rewriteFrozenStakeForNFT converts an NFT-typed frozen stake into a coin-shaped one so the
 // existing coin undelegate/redelegate path can process an NFT withdraw/redelegate.
 //
 // NFT withdraw/transfer events carry frozenStake.Stake.Token = the NFT contract (which the
 // contract's completion path needs) and Amount = 1/nftCount — the node cannot resolve that to a
-// coin. But the same tx also emits the coin-side StakeUpdated (Stake.Token = reserveToken, a real
-// coin; Stake.Validator = source validator) and StakeAmountUpdated (-reserveAmount), both under
-// the same stakeId. This rewrites the frozen stake's Token/Amount to the reserve coin + reserve
-// amount from those sibling events and returns the source validator for the redelegation path.
+// coin. But the contract emits the coin-side StakeUpdated (Stake.Token = reserveToken, a real
+// coin; Stake.Validator = source validator) and StakeAmountUpdated (-reserveAmount) under the
+// same stakeId right before the request (sib, see pairExitSiblings). This rewrites the frozen
+// stake's Token/Amount to the reserve coin + reserve amount from those sibling events and
+// returns the source validator for the redelegation path.
 //
 // applied=false (err=nil) for non-NFT stakes — the caller proceeds unchanged. err!=nil only when
 // the stake IS NFT-typed but the sibling coin events are missing (malformed tx / event desync),
@@ -377,22 +446,19 @@ func isNFTStake(tokenType uint8) bool {
 func rewriteFrozenStakeForNFT(
 	stake *delegation.IDecimalDelegationCommonStake,
 	stakeId [32]byte,
-	coinByStakeId map[[32]byte]delegation.IDecimalDelegationCommonStake,
-	amountByStakeId map[[32]byte]*big.Int,
+	sib exitSibling,
 ) (srcValidator common.Address, applied bool, err error) {
 	if stake == nil || !isNFTStake(stake.TokenType) {
 		return common.Address{}, false, nil
 	}
-	coin, hasCoin := coinByStakeId[stakeId]
-	changed, hasAmount := amountByStakeId[stakeId]
-	if !hasCoin || !hasAmount || changed == nil {
+	if sib.coin == nil || sib.changed == nil {
 		return common.Address{}, true, fmt.Errorf(
 			"nft exit stakeId %x: missing sibling coin event (haveStakeUpdated=%v haveStakeAmountUpdated=%v)",
-			stakeId, hasCoin, hasAmount && changed != nil)
+			stakeId, sib.coin != nil, sib.changed != nil)
 	}
-	stake.Token = coin.Token
-	stake.Amount = math.NewIntFromBigInt(changed).Abs().BigInt()
-	return coin.Validator, true, nil
+	stake.Token = sib.coin.Token
+	stake.Amount = math.NewIntFromBigInt(sib.changed).Abs().BigInt()
+	return sib.coin.Validator, true, nil
 }
 
 // resolveHoldStartTime picks a hold's start time. For a brand-new hold bucket
@@ -552,6 +618,11 @@ func (k Keeper) RequestTransfer(ctx sdk.Context, tokenRedelegation delegation.De
 
 	delegatorAddress, _ := types.GetDecimalAddressFromHex(tokenRedelegation.FrozenStake.Stake.Delegator.String())
 
+	// Empty when the tx carried no source-stake update the dispatcher could read (e.g. a
+	// transfer with hold reset): reject instead of panicking on the slice below.
+	if len(srcValidator) < 2 {
+		return errors.ValidatorNotFound
+	}
 	srcValAddr, err := sdk.ValAddressFromHex(srcValidator[2:])
 
 	delegationCosmos, found := k.GetDelegation(ctx, delegatorAddress, srcValAddr, stake.ID)

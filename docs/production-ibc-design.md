@@ -4,6 +4,16 @@ Decimal currently initializes IBC core, but app/app.go does not wire an ICS-20 T
 
 This is an architecture proposal. It does not enable transfers, create live clients/channels, change chain state or claim that relaying has already been tested.
 
+## Baseline after the mainnet recovery
+
+Reviewed against master `a46cb48d7965c1a64a495cebb22e735dfe4b9da3`, which schedules the delegation recovery at height 34342701. The recovery adds delegation-contract migration, node/contract reconciliation, legacy-event conversion, NFT exit pairing, hold-start backfill and reward synchronization. It does not add a TransferKeeper, an ICS-20 route or transfer module, and does not change the pinned SDK/IBC dependency family. The wiring and security work below is still required.
+
+Use post-recovery state and the deployed delegation ABI as the integration baseline. Preserve recovery handlers and historical event behavior for replay. The recovery deliberately retains documented pre-incident delegation drift; an acceptance check must distinguish that baseline from new unexplained drift rather than require every historical node/contract difference to become zero. Reconcile balances, staking/hold liabilities and pending exits before introducing IBC escrow. Only spendable assets may be transferred; a held or staked claim must not become spendable through a voucher, wrapper or refund path.
+
+ICS-20 receive, acknowledgement and timeout callbacks run through native application accounting. They must not rely on the EVM PostTxProcessing hook to mirror balances or enforce policy. Preserve the NFT multi-exit pairing and legacy-event fixes when adding a bank/EVM asset adapter, and exercise that adapter explicitly through both native IBC and EVM paths. NFT transfer remains outside this proposal's initial scope.
+
+Treat reliability corrections in PR #1 as a separate change, not functionality already present in this master. Before production IBC activation, verify crash-before-commit upgrade replay, retry behavior for partial auto-unbond batches, and rollback on malformed financial events on the final integrated release. A successful recovery block alone does not prove those failure paths are safe.
+
 ## Initial delivery scope
 
 The first production milestone should provide working IBC light clients, connection and unordered ICS-20 channel handshakes, native DEL transfers, receive/return paths, error acknowledgements and timeout refunds. Include a relayer runbook, monitoring and supply invariants.
@@ -98,6 +108,8 @@ These are proposed implementation acceptance tests, not tests already delivered 
 | Packet timeout | Exactly one refund; duplicate timeout/ack attempts cannot pay twice. |
 | Process restart between send and acknowledgement | Commitments persist and the relayer resumes without duplicating transfer effects. |
 | Upgrade with packets in flight | Client, channel, escrow and packet state survive migrations. |
+| Recovery baseline and asset adapter | Documented historical drift remains classified; no new unexplained drift or double backing appears after sends, returns, refunds and stake/hold exits. Native callbacks enforce accounting without relying on an EVM transaction hook. |
+| Recovery-era event compatibility | Legacy event conversion and multiple NFT exits retain their accounting behavior on the integrated release; IBC vouchers remain outside staking and NFT reserve accounting unless separately approved. |
 | Duplicate packet or invalid proof | Rejected without side effects. |
 | Expired or frozen client | Proof acceptance stops; recovery follows an explicit policy. |
 | Validator-set change / evidence / unbonding | IBC verification remains consistent with the custom validator keeper. |

@@ -84,6 +84,9 @@ func (k *Keeper) PostTxProcessing(
 	var tokenUpdated token.TokenReserveUpdated
 
 	for _, log := range recipient.Logs {
+		if len(log.Topics) == 0 {
+			continue
+		}
 		eventCoinByID, errEvent := coinContract.EventByID(log.Topics[0])
 		if errEvent == nil {
 			fmt.Println(eventCoinByID.Name)

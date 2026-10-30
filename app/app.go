@@ -932,6 +932,11 @@ func (app *DSC) GetKey(storeKey string) *store.KVStoreKey {
 	return app.keys[storeKey]
 }
 
+// KVStoreKeys returns all persistent store keys by name (offline tooling).
+func (app *DSC) KVStoreKeys() map[string]*store.KVStoreKey {
+	return app.keys
+}
+
 // GetTKey returns the TransientStoreKey for the provided store key.
 //
 // NOTE: This is solely to be used for testing purposes.
